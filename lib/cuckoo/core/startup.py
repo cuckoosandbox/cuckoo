@@ -6,16 +6,16 @@
 import os
 import shutil
 import sys
-import copy
 import json
 import socket
 import urllib
 import urllib2
 import logging
 import logging.handlers
+
 from distutils.version import LooseVersion
 
-from lib.cuckoo.common.colors import red, green, yellow, cyan
+from lib.cuckoo.common.colors import red, green, yellow
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
@@ -23,6 +23,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
+from lib.cuckoo.core.log import DatabaseHandler, ConsoleHandler
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.rooter import rooter, vpns
 
@@ -129,34 +130,6 @@ def check_version():
         else:
             print(green(" Good! ") + "You have the latest version "
                                      "available.\n")
-
-class DatabaseHandler(logging.Handler):
-    """Logging to database handler.
-    Used to log errors related to tasks in database.
-    """
-
-    def emit(self, record):
-        if hasattr(record, "task_id"):
-            db = Database()
-            db.add_error(record.msg, int(record.task_id))
-
-class ConsoleHandler(logging.StreamHandler):
-    """Logging to console handler."""
-
-    def emit(self, record):
-        colored = copy.copy(record)
-
-        if record.levelname == "WARNING":
-            colored.msg = yellow(record.msg)
-        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
-            colored.msg = red(record.msg)
-        else:
-            if "analysis procedure completed" in record.msg:
-                colored.msg = cyan(record.msg)
-            else:
-                colored.msg = record.msg
-
-        logging.StreamHandler.emit(self, colored)
 
 def init_logging():
     """Initializes logging."""
