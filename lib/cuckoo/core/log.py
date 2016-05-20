@@ -59,6 +59,10 @@ class ConsoleHandler(logging.StreamHandler):
 
         logging.StreamHandler.emit(self, colored)
 
-def init_task_log(task_id):
+def task_log_start(task_id):
     """Associate a thread with a task."""
     _tasks[thread.get_ident()] = task_id
+
+def task_log_stop(task_id):
+    """Disassociate a thread from a task."""
+    _tasks.pop(thread.get_ident(), None)

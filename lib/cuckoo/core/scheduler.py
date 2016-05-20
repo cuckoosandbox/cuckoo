@@ -19,7 +19,7 @@ from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from lib.cuckoo.core.guest import GuestManager
-from lib.cuckoo.core.log import init_task_log
+from lib.cuckoo.core.log import task_log_start, task_log_stop
 from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing
 from lib.cuckoo.core.plugins import RunSignatures, RunReporting
 from lib.cuckoo.core.resultserver import ResultServer
@@ -317,7 +317,7 @@ class AnalysisManager(threading.Thread):
             return False
 
         # Initiates per-task logging.
-        init_task_log(self.task.id)
+        task_log_start(self.task.id)
 
         self.store_task_info()
 
@@ -532,6 +532,7 @@ class AnalysisManager(threading.Thread):
         except:
             log.exception("Failure in AnalysisManager.run")
 
+        task_log_stop(self.task.id)
         active_analysis_count -= 1
 
 class Scheduler(object):
