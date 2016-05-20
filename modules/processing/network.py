@@ -90,6 +90,7 @@ class Pcap(object):
         # addresses that are no longer available.
         self.tcp_connections_dead = {}
         self.dead_hosts = {}
+        self.alive_hosts = {}
         # List containing all UDP packets.
         self.udp_connections = []
         self.udp_connections_seen = set()
@@ -622,6 +623,8 @@ class Pcap(object):
                         if not ((dst, dport, src, sport) in self.tcp_connections_seen or (src, sport, dst, dport) in self.tcp_connections_seen):
                             self.tcp_connections.append((src, sport, dst, dport, offset, ts-first_ts))
                             self.tcp_connections_seen.add((src, sport, dst, dport))
+
+                        self.alive_hosts[dst, dport] = True
                     else:
                         ipconn = (
                             connection["src"], tcp.sport,
@@ -684,11 +687,14 @@ class Pcap(object):
         self.results["dead_hosts"] = []
 
         # Report each IP/port combination as a dead host if we've had to retry
-        # at least 3 times to connect to it. TODO We should remove the IP/port
-        # combination from the list if the connection was successful later on
-        # during the analysis.
+        # at least 3 times to connect to it and if no successful connections
+        # were detected throughout the analysis.
         for (ip, port), count in self.dead_hosts.items():
-            if count > 2 and (ip, port) not in self.results["dead_hosts"]:
+            if count < 3 or (ip, port) in self.alive_hosts:
+                continue
+
+            # Report once.
+            if (ip, port) not in self.results["dead_hosts"]:
                 self.results["dead_hosts"].append((ip, port))
 
         return self.results
