@@ -109,6 +109,10 @@ class MongoDB(Report):
         if "network" not in report:
             report["network"] = {}
 
+        # This will likely hardcode the cuckoo.log to this point, but that
+        # should be fine.
+        report["debug"]["cuckoo"] = list(report["debug"]["cuckoo"])
+
         # Store path of the analysis path.
         report["info"]["analysis_path"] = self.analysis_path
 
