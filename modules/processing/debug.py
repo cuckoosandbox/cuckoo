@@ -3,12 +3,30 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import codecs
+import logging
+import os
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.core.database import Database
+
+log = logging.getLogger(__name__)
+
+class Logfile(list):
+    def __init__(self, filepath):
+        list.__init__(self)
+        self.filepath = filepath
+
+    def __iter__(self):
+        try:
+            for line in codecs.open(self.filepath, "rb", "utf-8"):
+                yield line
+        except Exception as e:
+            log.info("Error decoding %s: %s", self.filepath, e)
+
+    def __nonzero__(self):
+        return bool(os.path.getsize(self.filepath))
 
 class Debug(Processing):
     """Analysis debug information."""
@@ -32,15 +50,7 @@ class Debug(Processing):
                                             (self.log_path, e))
 
         if os.path.exists(self.cuckoolog_path):
-            try:
-                f = codecs.open(self.cuckoolog_path, "rb", "utf-8")
-                debug["cuckoo"] = f.readlines()
-            except ValueError as e:
-                raise CuckooProcessingError("Error decoding %s: %s" %
-                                            (self.cuckoolog_path, e))
-            except (IOError, OSError) as e:
-                raise CuckooProcessingError("Error opening %s: %s" %
-                                            (self.cuckoolog_path, e))
+            debug["cuckoo"] = Logfile(self.cuckoolog_path)
 
         for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
