@@ -21,6 +21,7 @@ from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.netlog import BsonParser
 from lib.cuckoo.common.utils import create_folder, Singleton
+from lib.cuckoo.core.log import task_log_start, task_log_stop
 
 log = logging.getLogger(__name__)
 
@@ -237,6 +238,9 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         if not self.storagepath:
             return
 
+        task, _ = self.server.get_ctx_for_ip(ip)
+        task_log_start(task.id)
+
         # Create all missing folders for this analysis.
         self.create_folders()
 
@@ -258,6 +262,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         except:
             log.exception("FIXME - exception in resultserver connection %s",
                           self.client_address)
+
+        task_log_stop(task.id)
 
     def open_process_log(self, event):
         pid = event["pid"]
