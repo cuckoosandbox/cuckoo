@@ -347,7 +347,7 @@ class FileUpload(ProtocolHandler):
             log.error("Unable to create folder %s", dir_part)
             return
 
-        file_path = os.path.join(self.storagepath, dump_path.strip())
+        file_path = os.path.join(self.storagepath, dump_path)
 
         if not file_path.startswith(self.storagepath):
             raise CuckooOperationalError(
