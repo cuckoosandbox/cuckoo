@@ -39,7 +39,7 @@ class TaskHandler(logging.Handler):
         )
 
         with open(logpath, "a+b") as f:
-            f.write("%s\n" % self.formatter.format(record))
+            f.write("%s\n" % self.format(record))
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
