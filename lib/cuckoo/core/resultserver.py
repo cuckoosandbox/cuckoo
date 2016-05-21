@@ -139,7 +139,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.startbuf = ""
         self.end_request = threading.Event()
         self.done_event = threading.Event()
-        self.pid, self.ppid, self.procname = None, None, None
         self.server.register_handler(self)
 
         if hasattr(select, "poll"):
@@ -277,7 +276,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         ppid = event["ppid"]
         procname = event["process_name"]
 
-        if self.pid is not None:
+        if self.rawlogfd:
             log.debug(
                 "ResultServer got a new process message but already "
                 "has pid %d ppid %s procname %s.", pid, ppid, procname
@@ -302,8 +301,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         filepath = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
         self.rawlogfd = open(filepath, "wb")
         self.rawlogfd.write(self.startbuf)
-
-        self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def create_folders(self):
         folders = "shots", "files", "logs", "buffer"
