@@ -187,6 +187,13 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 self.rawlogfd.write(buf)
             else:
                 self.startbuf += buf
+
+                if len(self.startbuf) > 0x10000:
+                    raise CuckooResultError(
+                        "Somebody is knowingly overflowing the startbuf "
+                        "buffer, possibly to use excessive amounts of memory."
+                    )
+
         return buf
 
     def read_any(self):
