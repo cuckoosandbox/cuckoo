@@ -279,6 +279,12 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 "ResultServer connection state inconsistent."
             )
 
+        if not isinstance(pid, (int, long)):
+            raise CuckooResultError(
+                "An invalid process identifier has been provided, this "
+                "could be a potential security hazard."
+            )
+
         # Only report this process when we're tracking it.
         if event["track"]:
             log.debug(
