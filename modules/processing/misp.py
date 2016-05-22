@@ -4,9 +4,11 @@
 
 import datetime
 import logging
+import os.path
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooProcessingError
 
 try:
     from pymisp import PyMISP
@@ -18,9 +20,15 @@ log = logging.getLogger(__name__)
 
 class MISP(Processing):
     """Enrich Cuckoo results with MISP data."""
+    order = 3
 
     def search_ioc(self, ioc):
-        r = self.misp.search_all(ioc)
+        try:
+            r = self.misp.search_all(ioc)
+        except Exception as e:
+            log.debug("Error searching for IOC (%r) on MISP: %s", ioc, e)
+            return
+
         if not r:
             return
 
@@ -28,22 +36,23 @@ class MISP(Processing):
             event = row.get("Event", {})
             event_id = event.get("id")
 
-            if event_id not in self.results:
-                self.results[event_id] = {
+            if event_id not in self.iocs:
+                url = os.path.join(self.url, "events/view", "%s" % event_id)
+                self.iocs[event_id] = {
                     "event_id": event_id,
                     "date": event.get("date"),
-                    "url": self.url + "events/view/",
+                    "url": url,
                     "level": event.get("threat_level_id"),
                     "info": event.get("info", "").strip(),
                     "iocs": [],
                 }
 
-            if ioc not in self.results[event_id]["iocs"]:
-                self.results[event_id]["iocs"].append(ioc)
+            if ioc not in self.iocs[event_id]["iocs"]:
+                self.iocs[event_id]["iocs"].append(ioc)
 
     def _parse_date(self, row):
         if not row.get("date"):
-            return
+            return datetime.datetime.now()
 
         return datetime.datetime.strptime(row["date"], "%Y-%m-%d")
 
@@ -59,14 +68,19 @@ class MISP(Processing):
 
         self.url = self.options.get("url", "")
         self.apikey = self.options.get("apikey", "")
+        maxioc = int(self.options.get("maxioc", 100))
 
         if not self.url or not self.apikey:
-            raise CuckooDependencyError(
+            raise CuckooProcessingError(
                 "Please configure the URL and API key for your MISP instance."
             )
 
+        # Ensure the URL ends with a trailing slash.
+        if not self.url.endswith("/"):
+            self.url += "/"
+
         self.key = "misp"
-        self.results = {}
+        self.iocs = {}
 
         self.misp = PyMISP(self.url, self.apikey, False, "json")
         iocs = set()
@@ -76,19 +90,20 @@ class MISP(Processing):
         for dropped in self.results.get("dropped", []):
             iocs.add(dropped.get("md5"))
 
-        for block in self.results.get("network", {}).get("hosts", []):
-            iocs.add(block.get("ip"))
-            iocs.add(block.get("hostname"))
+        iocs.update(self.results.get("network", {}).get("hosts", []))
 
-        # Remove empty entry.
-        if None in iocs:
-            iocs.remove(None)
+        for block in self.results.get("network", {}).get("domains", []):
+            iocs.add(block.get("ip"))
+            iocs.add(block.get("domain"))
+
+        # Remove empty entries and turn the collection into a list.
+        iocs = list(iocs.difference((None, "")))
 
         # Acquire all information related to IOCs.
-        for ioc in iocs:
+        for ioc in iocs[:maxioc]:
             self.search_ioc(ioc)
 
         # Sort IOC information by date and return all information.
         return sorted(
-            self.results.values(), key=self._parse_date, reverse=True
+            self.iocs.values(), key=self._parse_date, reverse=True
         )

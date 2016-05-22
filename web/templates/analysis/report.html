@@ -50,7 +50,7 @@
                 <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
             {% endif %}
             {% if analysis.misp %}
-                <li><a href="#misp" data-toggle="tab">MISP</a></li>
+                <li><a href="#misp" data-toggle="tab">MISP ({{ analysis.misp|length }})</a></li>
             {% endif %}
             <li><a href="#admin" data-toggle="tab">
                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>

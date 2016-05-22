@@ -10,39 +10,33 @@
         </tr>
         {% for event in analysis.misp %}
         <tr>
-            {% if event.url %}
-                <td><a href="{{event.url}}{{event.event_id}}" target="_blank">{{event.event_id}}</a></td>
+            <td>
+            {% if event.event_id != None %}
+                <a href="{{event.url}}" target="_blank">{{event.event_id}}</a>
             {% endif  %}
-            {% if event.date %}
-                <td>{{event.date}}</td>
-            {% endif %}
-            {% if event.iocs %}
-                <td>
-                    <ul>
-                    {% for ioc in event.iocs %}
-                        <li>{{ioc}}</li>
-                    {% endfor %}
-                    </ul>
-                </td>
-            {% endif %}
-            {% if event.info %}
-                <td>{{event.info}}</td>
-            {% endif %}
+            </td>
+            <td>{{event.date}}</td>
+            <td>
+            {% for ioc in event.iocs %}
+                <pre>{{ioc}}</pre>
+            {% endfor %}
+            </td>
+            <td>{{event.info}}</td>
+            <td>
             {% if event.level %}
-                <td>
-                    <p>
-                    {% if event.level == "4" %}
-                        <span class="label label-default">4</span>
-                    {% elif event.level == "3" %}
-                        <span class="label label-success">3</span>
-                    {% elif event.level == "2" %}
-                        <span class="label label-warning">2</span>
-                    {% elif event.level == "1"  %}
-                        <span class="label label-danger">1</span>
-                    {% endif %}
-                    </p>
-                </td>
+                <p>
+                {% if event.level == "4" %}
+                    <span class="label label-default">4</span>
+                {% elif event.level == "3" %}
+                    <span class="label label-success">3</span>
+                {% elif event.level == "2" %}
+                    <span class="label label-warning">2</span>
+                {% elif event.level == "1"  %}
+                    <span class="label label-danger">1</span>
+                {% endif %}
+                </p>
             {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
