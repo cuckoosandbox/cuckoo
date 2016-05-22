@@ -292,6 +292,8 @@ class Avd(Machinery):
             "shell", "/data/local/agent.sh",
         ]
         OSCommand.executeAsyncCommand(cmd)
+        # Sleep 10 seconds to allow the agent to startup properly
+        time.sleep(10)
 
     def check_adb_recognize_emulator(self, label):
         """Checks that ADB recognizes the emulator. Returns True if device is

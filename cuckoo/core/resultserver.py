@@ -21,6 +21,7 @@ from cuckoo.common.exceptions import CuckooResultError
 from cuckoo.common.netlog import BsonParser
 from cuckoo.common.utils import create_folder, Singleton
 from cuckoo.misc import cwd
+from cuckoo.core.log import task_log_start, task_log_stop
 
 log = logging.getLogger(__name__)
 
@@ -138,7 +139,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.startbuf = ""
         self.end_request = threading.Event()
         self.done_event = threading.Event()
-        self.pid, self.ppid, self.procname = None, None, None
         self.server.register_handler(self)
 
         if hasattr(select, "poll"):
@@ -186,6 +186,13 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 self.rawlogfd.write(buf)
             else:
                 self.startbuf += buf
+
+                if len(self.startbuf) > 0x10000:
+                    raise CuckooResultError(
+                        "Somebody is knowingly overflowing the startbuf "
+                        "buffer, possibly to use excessive amounts of memory."
+                    )
+
         return buf
 
     def read_any(self):
@@ -237,6 +244,9 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         if not self.storagepath:
             return
 
+        task, _ = self.server.get_ctx_for_ip(ip)
+        task_log_start(task.id)
+
         # Create all missing folders for this analysis.
         self.create_folders()
 
@@ -259,18 +269,26 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             log.exception("FIXME - exception in resultserver connection %s",
                           self.client_address)
 
+        task_log_stop(task.id)
+
     def open_process_log(self, event):
         pid = event["pid"]
         ppid = event["ppid"]
         procname = event["process_name"]
 
-        if self.pid is not None:
+        if self.rawlogfd:
             log.debug(
                 "ResultServer got a new process message but already "
                 "has pid %d ppid %s procname %s.", pid, ppid, procname
             )
             raise CuckooResultError(
                 "ResultServer connection state inconsistent."
+            )
+
+        if not isinstance(pid, (int, long)):
+            raise CuckooResultError(
+                "An invalid process identifier has been provided, this "
+                "could be a potential security hazard."
             )
 
         # Only report this process when we're tracking it.
@@ -283,8 +301,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         filepath = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
         self.rawlogfd = open(filepath, "wb")
         self.rawlogfd.write(self.startbuf)
-
-        self.pid, self.ppid, self.procname = pid, ppid, procname
 
     def create_folders(self):
         folders = "shots", "files", "logs", "buffer"
@@ -341,7 +357,7 @@ class FileUpload(ProtocolHandler):
             log.error("Unable to create folder %s", dir_part)
             return
 
-        file_path = os.path.join(self.storagepath, dump_path.strip())
+        file_path = os.path.join(self.storagepath, dump_path)
 
         if not file_path.startswith(self.storagepath):
             raise CuckooOperationalError(

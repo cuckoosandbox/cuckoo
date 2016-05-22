@@ -25,7 +25,7 @@ section to ``$CWD/conf/processing.conf`` (or
 ``cuckoo/data/conf/processing.conf`` in the Git repository)::
 
     [foobar]
-    enabled = on
+    enabled = yes
 
 Every module will then be initialized and executed and the data returned
 will be appended in a data structure that we'll call **global container**.

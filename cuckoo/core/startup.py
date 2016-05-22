@@ -6,17 +6,18 @@
 import os
 import shutil
 import sys
-import copy
 import json
+import socket
 import urllib
 import urllib2
 import logging
 import logging.handlers
-import socket
+
+from distutils.version import LooseVersion
 
 import cuckoo
 
-from cuckoo.common.colors import red, green, yellow, cyan
+from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
@@ -24,6 +25,7 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.utils import create_folders
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
+from cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd
 
@@ -99,49 +101,25 @@ def check_version():
         return
 
     try:
-        r = json.loads(response.read())
+        response_data = json.loads(response.read())
     except ValueError:
         print(red(" Failed! ") + "Invalid response.\n")
         return
 
-    if not r["error"]:
-        if r["response"] == "NEW_VERSION" and r["current"] != "1.2":
-            msg = "Cuckoo Sandbox version %s is available now." % r["current"]
+    stable_version = response_data["current"]
+
+    if CUCKOO_VERSION.endswith("-dev"):
+        print(yellow(" You are running a development version! Current stable is {}.".format(
+            stable_version)))
+    else:
+        if LooseVersion(CUCKOO_VERSION) < LooseVersion(stable_version):
+            msg = "Cuckoo Sandbox version {} is available now.".format(
+                stable_version)
+
             print(red(" Outdated! ") + msg)
-        elif r["current"] == "1.2":
-            print(yellow(" Okay! ") + "You are running a development version.")
         else:
             print(green(" Good! ") + "You have the latest version "
                                      "available.\n")
-
-
-class DatabaseHandler(logging.Handler):
-    """Logging to database handler.
-    Used to log errors related to tasks in database.
-    """
-
-    def emit(self, record):
-        if hasattr(record, "task_id"):
-            db = Database()
-            db.add_error(record.msg, int(record.task_id))
-
-class ConsoleHandler(logging.StreamHandler):
-    """Logging to console handler."""
-
-    def emit(self, record):
-        colored = copy.copy(record)
-
-        if record.levelname == "WARNING":
-            colored.msg = yellow(record.msg)
-        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
-            colored.msg = red(record.msg)
-        else:
-            if "analysis procedure completed" in record.msg:
-                colored.msg = cyan(record.msg)
-            else:
-                colored.msg = record.msg
-
-        logging.StreamHandler.emit(self, colored)
 
 def init_logging(level):
     """Initializes logging."""
@@ -163,6 +141,10 @@ def init_logging(level):
     dh = DatabaseHandler()
     dh.setLevel(logging.ERROR)
     log.addHandler(dh)
+
+    th = TaskHandler()
+    th.setFormatter(formatter)
+    log.addHandler(th)
 
     log.setLevel(level)
 

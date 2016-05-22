@@ -3,9 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+import os
+
 from _winreg import HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER
 
 from lib.common.abstracts import Package
+
+log = logging.getLogger(__name__)
 
 class PDF(Package):
     """PDF analysis package."""
@@ -38,4 +43,11 @@ class PDF(Package):
 
     def start(self, path):
         reader = self.get_path("Adobe Reader")
+
+        # Enforce the .pdf file extension.
+        if not path.endswith(".pdf"):
+            os.rename(path, path + ".pdf")
+            path += ".pdf"
+            log.info("Submitted file is missing extension, added .pdf")
+
         return self.execute(reader, args=[path], maximize=True)

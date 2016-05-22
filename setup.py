@@ -34,6 +34,7 @@ setup(
         "jsbeautifier==1.5.10",
         "oletools==0.42",
         "pefile==2016.3.28",
+        "pymisp==2.4.36",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.6",

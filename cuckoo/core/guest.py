@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import io
 import json
 import os
 import time
@@ -12,7 +13,6 @@ import logging
 import requests
 import xmlrpclib
 
-from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
 from cuckoo.common.config import Config
@@ -26,6 +26,51 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 db = Database()
+
+def analyzer_zipfile(platform, monitor):
+    """Creates the Zip file that is sent to the Guest."""
+    t = time.time()
+
+    zip_data = io.BytesIO()
+    zip_file = ZipFile(zip_data, "w", ZIP_STORED)
+
+    # Select the proper analyzer's folder according to the operating
+    # system associated with the current machine.
+    root = cwd("analyzer", platform)
+    root_len = len(os.path.abspath(root))
+
+    if not os.path.exists(root):
+        log.error("No valid analyzer found at path: %s", root)
+        return False
+
+    # Walk through everything inside the analyzer's folder and write
+    # them to the zip archive.
+    for root, dirs, files in os.walk(root):
+        archive_root = os.path.abspath(root)[root_len:]
+        for name in files:
+            path = os.path.join(root, name)
+            archive_name = os.path.join(archive_root, name)
+            zip_file.write(path, archive_name)
+
+    # Include the chosen monitoring component.
+    if platform == "windows":
+        dirpath = cwd("monitor", monitor)
+        for name in os.listdir(dirpath):
+            path = os.path.join(dirpath, name)
+            archive_name = os.path.join("/bin", name)
+            zip_file.write(path, archive_name)
+
+    zip_file.close()
+    data = zip_data.getvalue()
+
+    if time.time() - t > 10:
+        log.warning(
+            "It took more than 10 seconds to build the Analyzer Zip for the "
+            "Guest. This might be a serious performance penalty. Is your "
+            "analyzer/windows/ directory bloated with unnecessary files?"
+        )
+
+    return data
 
 class OldGuestManager(object):
     """Old and deprecated Guest Manager.
@@ -86,46 +131,17 @@ class OldGuestManager(object):
         """Upload analyzer to guest.
         @return: operation status.
         """
-        zip_data = StringIO()
-        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
+        zip_data = analyzer_zipfile(self.platform, monitor)
 
-        # Select the proper analyzer's folder according to the operating
-        # system associated with the current machine.
-        root = cwd("analyzer", self.platform)
-        root_len = len(os.path.abspath(root))
-
-        if not os.path.exists(root):
-            log.error("No valid analyzer found at path: %s", root)
-            return False
-
-        # Walk through everything inside the analyzer's folder and write
-        # them to the zip archive.
-        for root, dirs, files in os.walk(root):
-            archive_root = os.path.abspath(root)[root_len:]
-            for name in files:
-                path = os.path.join(root, name)
-                archive_name = os.path.join(archive_root, name)
-                zip_file.write(path, archive_name)
-
-        # Include the chosen monitoring component.
-        if self.platform == "windows":
-            dirpath = cwd("monitor", monitor)
-            for name in os.listdir(dirpath):
-                path = os.path.join(dirpath, name)
-                archive_name = os.path.join("/bin", name)
-                zip_file.write(path, archive_name)
-
-        zip_file.close()
-        data = xmlrpclib.Binary(zip_data.getvalue())
-        zip_data.close()
-
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s, monitor=%s)",
-                  self.id, self.ip, monitor)
+        log.debug(
+            "Uploading analyzer to guest (id=%s, ip=%s, monitor=%s, size=%d)",
+            self.id, self.ip, monitor, len(zip_data)
+        )
 
         # Send the zip containing the analyzer to the agent running inside
         # the guest.
         try:
-            self.server.add_analyzer(data)
+            self.server.add_analyzer(xmlrpclib.Binary(zip_data))
         except socket.timeout:
             raise CuckooGuestError("{0}: guest communication timeout: unable "
                                    "to upload agent, check networking or try "
@@ -296,40 +312,12 @@ class GuestManager(object):
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
-        zip_data = StringIO()
-        zip_file = ZipFile(zip_data, "w", ZIP_STORED)
+        zip_data = analyzer_zipfile(self.platform, monitor)
 
-        # Select the proper analyzer's folder according to the operating
-        # system associated with the current machine.
-        root = cwd("analyzer", self.platform)
-        root_len = len(os.path.abspath(root))
-
-        if not os.path.exists(root):
-            log.error("No valid analyzer found at path: %s", root)
-            return False
-
-        # Walk through everything inside the analyzer's folder and write
-        # them to the zip archive.
-        for root, dirs, files in os.walk(root):
-            archive_root = os.path.abspath(root)[root_len:]
-            for name in files:
-                path = os.path.join(root, name)
-                archive_name = os.path.join(archive_root, name)
-                zip_file.write(path, archive_name)
-
-        # Include the chosen monitoring component.
-        if self.platform == "windows":
-            dirpath = cwd("monitor", monitor)
-            for name in os.listdir(dirpath):
-                path = os.path.join(dirpath, name)
-                archive_name = os.path.join("/bin", name)
-                zip_file.write(path, archive_name)
-
-        zip_file.close()
-        zip_data.seek(0)
-
-        log.debug("Uploading analyzer to guest (id=%s, ip=%s, monitor=%s)",
-                  self.vmid, self.ipaddr, monitor)
+        log.debug(
+            "Uploading analyzer to guest (id=%s, ip=%s, monitor=%s, size=%d)",
+            self.vmid, self.ipaddr, monitor, len(zip_data)
+        )
 
         self.determine_analyzer_path()
         data = {
@@ -337,25 +325,22 @@ class GuestManager(object):
         }
         self.post("/extract", files={"zipfile": zip_data}, data=data)
 
-        zip_data.close()
-
     def add_config(self, options):
         """Upload the analysis.conf for this task to the Virtual Machine."""
-        config = StringIO()
-        config.write("[analysis]\n")
+        config = [
+            "[analysis]",
+        ]
         for key, value in options.items():
             # Encode datetime objects the way xmlrpc encodes them.
             if isinstance(value, datetime.datetime):
-                config.write("%s = %s\n" % (key, value.strftime("%Y%m%dT%H:%M:%S")))
+                config.append("%s = %s" % (key, value.strftime("%Y%m%dT%H:%M:%S")))
             else:
-                config.write("%s = %s\n" % (key, value))
-
-        config.seek(0)
+                config.append("%s = %s" % (key, value))
 
         data = {
             "filepath": os.path.join(self.analyzer_path, "analysis.conf"),
         }
-        self.post("/store", files={"file": config}, data=data)
+        self.post("/store", files={"file": "\n".join(config)}, data=data)
 
     def start_analysis(self, options, monitor):
         """Start the analysis by uploading all required files.

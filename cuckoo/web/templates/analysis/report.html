@@ -49,6 +49,9 @@
             {% if analysis.memory %}
                 <li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>
             {% endif %}
+            {% if analysis.misp %}
+                <li><a href="#misp" data-toggle="tab">MISP ({{ analysis.misp|length }})</a></li>
+            {% endif %}
             <li><a href="#admin" data-toggle="tab">
                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                 Admin</a>
@@ -86,6 +89,11 @@
     {% if analysis.memory %}
         <div class="tab-pane fade" id="memory">
             {% include "analysis/memory/index.html" %}
+        </div>
+    {% endif %}
+    {% if analysis.misp %}
+        <div class="tab-pane fade" id="misp">
+            {% include "analysis/misp/index.html" %}
         </div>
     {% endif %}
     <div class="tab-pane fade" id="admin">
