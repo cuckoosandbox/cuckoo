@@ -28,7 +28,7 @@ setup(
         "chardet==2.3.0",
         "click==6.6",
         "Django==1.8.4",
-        "dpkt==1.8.6.2",
+        "dpkt==1.8.7",
         "Flask==0.10.1",
         "HTTPReplay==0.1.15",
         "jsbeautifier==1.5.10",
