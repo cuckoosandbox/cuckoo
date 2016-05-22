@@ -6,9 +6,9 @@ import datetime
 import logging
 import os.path
 
-from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.exceptions import CuckooDependencyError
-from lib.cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.abstracts import Processing
+from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.exceptions import CuckooProcessingError
 
 try:
     from pymisp import PyMISP
