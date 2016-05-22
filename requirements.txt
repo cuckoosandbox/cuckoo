@@ -22,6 +22,7 @@ oletools==0.42
 http://pefile.googlecode.com/files/pefile-1.2.10-139.tar.gz#egg=pefile
 pyasn1==0.1.8
 pycparser==2.14
+pymisp==2.4.36
 pymongo==3.0.3
 pyOpenSSL==0.15.1
 python-dateutil==2.4.2
