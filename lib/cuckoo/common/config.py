@@ -18,7 +18,7 @@ class Config:
         @param file_name: file name without extension.
         @param cfg: configuration file path.
         """
-        config = ConfigParser.ConfigParser()
+        config = ConfigParser.ConfigParser(os.environ)
 
         if cfg:
             config.read(cfg)
