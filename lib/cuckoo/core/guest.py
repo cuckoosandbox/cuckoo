@@ -41,7 +41,9 @@ def analyzer_zipfile(platform, monitor):
 
     if not os.path.exists(root):
         log.error("No valid analyzer found at path: %s", root)
-        return False
+        raise CuckooGuestError(
+            "No valid analyzer found for %s platform!" % platform
+        )
 
     # Walk through everything inside the analyzer's folder and write
     # them to the zip archive.
