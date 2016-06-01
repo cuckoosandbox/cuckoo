@@ -17,6 +17,7 @@ from distributed.app import create_app
 from distributed.db import db, Task, Node, NodeStatus
 from distributed.exception import InvalidReport
 
+
 def scheduler():
     while True:
         for node in Node.query.filter_by(enabled=True, mode="normal").all():
@@ -44,6 +45,7 @@ def scheduler():
             db.session.commit()
 
         time.sleep(10)
+
 
 def status_caching():
     def fetch_stats(tasks):
@@ -73,89 +75,127 @@ def status_caching():
 
         time.sleep(30)
 
-def handle_node(instance):
+
+def handle_all_nodes_loop():
+    continue_running = True
+    while continue_running:
+        node_list = Node.query.filter_by(enabled=True)
+        start = time.time()
+        for node in node_list:
+            try:
+                handle_node(node=node)
+            except KeyboardInterrupt:
+                continue_running = False
+                break
+            except Exception:
+                log.exception("Failure handling node %s", node.name)
+        delay = min(time.time() - start, 0)
+        if delay:
+            time.sleep(delay)
+
+
+def handle_node_loop(instance):
     node = Node.query.filter_by(name=instance).first()
     if not node:
         log.critical("Node not found: %s", instance)
-        return
-
+        return False
     while True:
-        # Fetch the status of this node.
-        status = node_status(node.url)
-        if not status:
-            log.debug("Error retrieving status of node %s", node.name)
+        try:
+            handle_node(node=node)
             time.sleep(settings.interval)
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            log.exception("Failure handling node %s", node.name)
+
+
+def handle_node(instance=None, node=None):
+    if node is None:
+        if instance is None:
+            raise ValueError('instance required')
+        node = Node.query.filter_by(name=instance).first()
+        if not node:
+            raise RuntimeError("Node not found: %s" % (instance,))
+            log.critical("Node not found: %s", instance)
+            return False
+    else:
+        instance = node.name
+
+    # Fetch the status of this node.
+    status = node_status(node.url)
+    if not status:
+        log.debug("Error retrieving status of node %s", node.name)
+        return False
+
+    # Include the timestamp of when we retrieved this status.
+    status["timestamp"] = int(time.time())
+
+    # Add this node status to the database for monitoring purposes.
+    ns = NodeStatus(node.name, datetime.datetime.now(), status)
+    db.session.add(ns)
+    db.session.commit()
+
+    # Submission of new tasks.
+    if status["tasks"]["pending"] < settings.threshold:
+        q = Task.query.filter_by(node_id=node.id, status=Task.ASSIGNED)
+        q = q.order_by(Task.priority.desc(), Task.id)
+        tasks = q.limit(settings.threshold).all()
+        for t in tasks:
+            t.task_id = submit_task(node.url, t.to_dict())
+            t.status = Task.PROCESSING
+            t.delegated = datetime.datetime.now()
+
+        log.debug("Submitted %d tasks to %s", len(tasks), node.name)
+        db.session.commit()
+
+    # Fetching of reports.
+    tasks = fetch_tasks(node.url, status="reported")
+    for task in tasks[:settings.threshold]:
+        # In the case that a Cuckoo node has been reset over time it's
+        # possible that there are multiple combinations of
+        # node-id/task-id, in this case we take the last one available.
+        # (This makes it possible to re-setup a Cuckoo node).
+        q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
+        t = q.order_by(Task.id.desc()).first()
+
+        if t is None:
+            log.debug("Node %s task #%d has not been submitted "
+                      "by us!", instance, task["id"])
+
+            # Should we delete this task? Improve through the usage of
+            # the "owner" parameter.
+            delete_task(node.url, task["id"])
             continue
 
-        # Include the timestamp of when we retrieved this status.
-        status["timestamp"] = int(time.time())
+        dirpath = os.path.join(settings.reports_directory, "%d" % t.id)
+        if not os.path.isdir(dirpath):
+            os.makedirs(dirpath)
 
-        # Add this node status to the database for monitoring purposes.
-        ns = NodeStatus(node.name, datetime.datetime.now(), status)
-        db.session.add(ns)
-        db.session.commit()
+        # Fetch each report.
+        for report_format in settings.report_formats:
+            try:
+                store_report(node.url, t.task_id, report_format, dirpath)
+            except InvalidReport as e:
+                log.critical("Error fetching report: %s", e)
 
-        # Submission of new tasks.
-        if status["tasks"]["pending"] < settings.threshold:
-            q = Task.query.filter_by(node_id=node.id, status=Task.ASSIGNED)
-            q = q.order_by(Task.priority.desc(), Task.id)
-            tasks = q.limit(settings.threshold).all()
-            for t in tasks:
-                t.task_id = submit_task(node.url, t.to_dict())
-                t.status = Task.PROCESSING
-                t.delegated = datetime.datetime.now()
+        # Fetch the pcap file.
+        if settings.pcap:
+            pcap_path = os.path.join(dirpath, "dump.pcap")
+            fetch_pcap(node.url, t.task_id, pcap_path)
 
-            log.debug("Submitted %d tasks to %s", len(tasks), node.name)
-            db.session.commit()
+        # Delete the task and all its associated files from the
+        # Cuckoo node.
+        delete_task(node.url, t.task_id)
 
-        # Fetching of reports.
-        tasks = fetch_tasks(node.url, status="reported")
-        for task in tasks[:settings.threshold]:
-            # In the case that a Cuckoo node has been reset over time it's
-            # possible that there are multiple combinations of
-            # node-id/task-id, in this case we take the last one available.
-            # (This makes it possible to re-setup a Cuckoo node).
-            q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
-            t = q.order_by(Task.id.desc()).first()
+        t.status = Task.FINISHED
+        t.started = datetime.datetime.strptime(task["started_on"],
+                                               "%Y-%m-%d %H:%M:%S")
+        t.completed = datetime.datetime.now()
 
-            if t is None:
-                log.debug("Node %s task #%d has not been submitted "
-                          "by us!", instance, task["id"])
+    log.debug("Fetched %d reports from %s", len(tasks), node.name)
+    db.session.commit()
+    return True
 
-                # Should we delete this task? Improve through the usage of
-                # the "owner" parameter.
-                delete_task(node.url, task["id"])
-                continue
-
-            dirpath = os.path.join(settings.reports_directory, "%d" % t.id)
-            if not os.path.isdir(dirpath):
-                os.makedirs(dirpath)
-
-            # Fetch each report.
-            for report_format in settings.report_formats:
-                try:
-                    store_report(node.url, t.task_id, report_format, dirpath)
-                except InvalidReport as e:
-                    log.critical("Error fetching report: %s", e)
-
-            # Fetch the pcap file.
-            if settings.pcap:
-                pcap_path = os.path.join(dirpath, "dump.pcap")
-                fetch_pcap(node.url, t.task_id, pcap_path)
-
-            # Delete the task and all its associated files from the
-            # Cuckoo node.
-            delete_task(node.url, t.task_id)
-
-            t.status = Task.FINISHED
-            t.started = datetime.datetime.strptime(task["started_on"],
-                                                   "%Y-%m-%d %H:%M:%S")
-            t.completed = datetime.datetime.now()
-
-        log.debug("Fetched %d reports from %s", len(tasks), node.name)
-
-        db.session.commit()
-        time.sleep(settings.interval)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -179,5 +219,7 @@ if __name__ == "__main__":
             scheduler()
         elif args.instance == "dist.status":
             status_caching()
+        elif args.instance == "dist.handler":
+            handle_all_nodes_loop()
         else:
-            handle_node(args.instance)
+            handle_node_loop(args.instance)
