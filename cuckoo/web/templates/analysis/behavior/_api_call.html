@@ -29,7 +29,7 @@
                 {% endfor %}
             {% endif %}
             {% if key in call.flags %}
-                <span class="gray">({{ call.flags|get_item:key }})</span>
+                <span class="gray">({{ call.flags|get_item:key|ensurelist|join:", " }})</span>
             {% endif %}
             <br />
         {% endif %}

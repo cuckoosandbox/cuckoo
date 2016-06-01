@@ -31,7 +31,7 @@
 04c18ccf-1f57-4cbd-88cc-3900f5195ce3 ISearchRoot http://sourceforge.net/p/jedi-apilib/mailman/jedi-apilib-wscl-svn/?viewmonth=200902&viewday=11
 04d3d264-4a22-11d2-acc7-00c04f8eeba1 GFN_Setup.exe http://www.medbase.ca/download/VFOXPRO9.0/SETUP/SETUP.SDB
 05589fa1-c356-11ce-bf01-00aa0055595a AllowedControls https://technet.microsoft.com/nl-nl/library/Cc786827(v=WS.10).aspx
-06290bd1-48aa-11d2-8432-006008c3fbfc HKEY_CLASSES_ROOT http://www.windowrdb.com/w.php?w=hkcr-clsid-06290bd1-48aa-11d2-8432-006008c3fbfc
+06290bd1-48aa-11d2-8432-006008c3fbfc Scriptlet.Constructor http://www.windowrdb.com/w.php?w=hkcr-clsid-06290bd1-48aa-11d2-8432-006008c3fbfc
 06290bd5-48aa-11d2-8432-006008c3fbfc ActiveXVulnerability http://www.securityfocus.com/bid/598/exploit
 062e1261-a60e-11d0-82c2-00c04fd5ae38 IShellFolder2_QueryInterface_Unimplemented_interface https://www.winehq.org/pipermail/wine-users/2010-May/072093.html
 06849e9f-c8d7-4d59-b87d-784b7d6be0b3 AcroIEHlprObj http://www.systemlookup.com/CLSID/32558-AcroIEhelper_ocx_ACROIE_1_DLL_AcroIEhelper_dll_ACROIE_1_OCX.html
