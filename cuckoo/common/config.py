@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import ConfigParser
+import os
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import Dictionary
