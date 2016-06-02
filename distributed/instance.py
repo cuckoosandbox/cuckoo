@@ -89,8 +89,9 @@ def handle_all_nodes_loop():
                 break
             except Exception:
                 log.exception("Failure handling node %s", node.name)
-        delay = min(time.time() - start, 0)
-        if delay:
+        duration = max(0, time.time() - start)
+        delay = settings.interval - duration
+        if delay > 0:
             time.sleep(delay)
 
 
@@ -189,7 +190,7 @@ def handle_node(instance=None, node=None):
 
         t.status = Task.FINISHED
         t.started = datetime.datetime.strptime(task["started_on"],
-                                               "%Y-%m-%d %H:%M:%S")
+                                               "%Y%m%dT%H:%M:%S")
         t.completed = datetime.datetime.now()
 
     log.debug("Fetched %d reports from %s", len(tasks), node.name)
