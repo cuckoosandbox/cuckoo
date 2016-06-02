@@ -273,7 +273,7 @@ class GuestManager(object):
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        kwargs["timeout] = 10
+        kwargs["timeout"] = 10
         return requests.get(url, *args, **kwargs)
 
     def post(self, method, *args, **kwargs):
