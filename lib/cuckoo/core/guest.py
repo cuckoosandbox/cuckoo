@@ -279,7 +279,7 @@ class GuestManager(object):
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        kwargs["timeout] = 60
+        kwargs["timeout"] = 60
         return requests.post(url, *args, **kwargs)
 
     def wait_available(self):
