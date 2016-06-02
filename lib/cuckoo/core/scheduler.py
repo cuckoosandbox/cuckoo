@@ -336,6 +336,10 @@ class AnalysisManager(threading.Thread):
         if not self.init_storage():
             return False
 
+        # Initiates per-task logging.
+        task_log_start(self.task.id)
+
+
         self.store_task_info()
 
         if self.task.category == "file":
@@ -549,6 +553,7 @@ class AnalysisManager(threading.Thread):
         except:
             log.exception("Failure in AnalysisManager.run")
 
+        task_log_stop(self.task.id)
         active_analysis_count -= 1
 
 class Scheduler(object):
