@@ -65,6 +65,86 @@ class VirusTotalAPI(object):
         "patched", "patchfile", "downware", "dropped",
     ]
 
+    PLATFORMS = {
+        # Operating systems
+        'androidos': 'Android operating system',
+        'dos': 'MS-DOS platform',
+        'epoc': 'Psion devices',
+        'freebsd': 'FreeBSD platform',
+        'iphoneos': 'iPhone operating system',
+        'linux': 'Linux platform',
+        'macos': 'MAC 9.x platform or earlier',
+        'macos_x': 'MacOS X or later',
+        'os2': 'OS2 platform',
+        'palm': 'Palm operating system',
+        'solaris': 'System V-based Unix platforms',
+        'sunos': 'Unix platforms 4.1.3 or lower',
+        'symbos': 'Symbian operating system',
+        'unix': 'general Unix platforms',
+        'win16': 'Win16 (3.1) platform',
+        'win2k': 'Windows 2000 platform',
+        'win32': 'Windows 32-bit platform',
+        'win64': 'Windows 64-bit platform',
+        'win95': 'Windows 95, 98 and ME platforms',
+        'win98': 'Windows 98 platform only',
+        'wince': 'Windows CE platform',
+        'winnt': 'WinNT',
+        # Scripting languages
+        'abap': 'Advanced Business Application Programming scripts',
+        'alisp': 'ALisp scripts',
+        'amipro': 'AmiPro script',
+        'ansi': 'American National Standards Institute scripts',
+        'applescript': 'compiled Apple scripts',
+        'asp': 'Active Server Pages scripts',
+        'autoit': 'AutoIT scripts',
+        'bas': 'Basic scripts',
+        'bat': 'Basic scripts',
+        'corelscript': 'Corelscript scripts',
+        'hta': 'HTML Application scripts',
+        'html': 'HTML Application scripts',
+        'inf': 'Install scripts',
+        'irc': 'mIRC/pIRC scripts',
+        'java': 'Java binaries (classes)',
+        'js': 'Javascript scripts',
+        'logo': 'LOGO scripts',
+        'mpb': 'MapBasic scripts',
+        'msh': 'Monad shell scripts',
+        'msil': '.Net intermediate language scripts',
+        'perl': 'Perl scripts',
+        'php': 'Hypertext Preprocessor scripts',
+        'python': 'Python scripts',
+        'sap': 'SAP platform scripts',
+        'sh': 'Shell scripts',
+        'vba': 'Visual Basic for Applications scripts',
+        'vbs': 'Visual Basic scripts',
+        'winbat': 'Winbatch scripts',
+        'winhlp': 'Windows Help scripts',
+        'winreg': 'Windows registry scripts',
+        # Macros
+        'a97m': 'Access 97, 2000, XP, 2003, 2007, and 2010 macros',
+        'he': 'macro scripting',
+        'o97m': 'Office 97, 2000, XP, 2003, 2007, and 2010 macros - those that affect Word, Excel, and Powerpoint',
+        'pp97m': 'PowerPoint 97, 2000, XP, 2003, 2007, and 2010 macros',
+        'v5m': 'Visio5 macros',
+        'w1m': 'Word1Macro',
+        'w2m': 'Word2Macro',
+        'w97m': 'Word 97, 2000, XP, 2003, 2007, and 2010 macros',
+        'wm': 'Word 95 macros',
+        'x97m': 'Excel 97, 2000, XP, 2003, 2007, and 2010 macros',
+        'xf': 'Excel formulas',
+        'xm': 'Excel 95 macros',
+        # Other file types
+        'asx': 'XML metafile of Windows Media .asf files',
+        'hc': 'HyperCard Apple scripts',
+        'mime': 'MIME packets',
+        'netware': 'Novell Netware files',
+        'qt': 'Quicktime files',
+        'sb': 'StarBasic (Staroffice XML) files',
+        'swf': 'Shockwave Flash files',
+        'tsql': 'MS SQL server files',
+        'xml': 'XML files'
+    }
+
     def __init__(self, apikey, timeout, scan=0):
         """Initialize VirusTotal API with the API key and timeout.
         @param api_key: virustotal api key
@@ -167,6 +247,66 @@ class VirusTotalAPI(object):
         files = {"file": open(filepath, "rb")}
         r = self._request_json(self.FILE_SCAN, data=data, files=files)
         return dict(summary=dict(permalink=r.get("permalink")))
+
+
+
+    def detect_platform(self, tokens):
+        """Guess platform affected by malware based on tokenised VT name."""
+
+        def compare_platforms(self, token):
+            """Check whether token is one of predefined platforms."""
+            platform = ""
+            for os in self.PLATFORMS:
+                if os in token:
+                    return os
+            return platform
+
+        platform = "unknown"
+        used_token = ""
+        remaining_tokens = []
+
+        # TODO: only the first platform that is found is returned
+        for token in tokens:
+            # Check for multiplatform
+            if "multi" in token:
+                platform = "multi"
+                used_token = token
+                remaining_tokens = token.split("multi")
+                break
+
+            # Check for MS Office suite
+
+            # Check for OS
+            cp = compare_platforms(token)
+            if cp:
+                platform = cp
+                used_token = token
+                remaining_tokens = token.split(cp)
+                break
+
+            # Check for MS Windows name variants: "win" and "w" instead of "win"
+            if "win" in token:
+                platform = "win"
+                used_token = token
+                remaining_tokens = token.split("win")
+                break
+
+            found = re.findall(r"w([0-9]{2}|2k|ce|nt|bat|hlp|reg)", token)
+            # TODO: what if 2 or more matches are found
+            if found:
+                platform = "win" + found[0]
+                used_token = token
+                remaining_tokens = token.split("w"+found[0])
+                break
+
+        # Clean-up tokens
+        if used_token:
+            tokens.remove(token)
+            # remove empty strings from t
+            tokens += [t.strip() for t in remaining_tokens if t.strip()]
+
+        return platform, tokens
+
 
     def normalize(self, variant):
         """Normalize the variant name provided by an Anti Virus engine. This
