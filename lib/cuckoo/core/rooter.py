@@ -14,7 +14,8 @@ from lib.cuckoo.common.config import Config
 
 cfg = Config()
 log = logging.getLogger(__name__)
-unixpath = tempfile.mktemp()
+unixpath = tempfile.mktemp(dir=cfg.cuckoo.rooter_tmp
+                               if cfg.cuckoo.rooter_tmp else None)
 lock = threading.Lock()
 
 vpns = {}
