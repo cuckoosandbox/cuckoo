@@ -445,6 +445,88 @@ class VirusTotalAPI(object):
         return platform, tokens
 
 
+    def clean_tokens(self, tokens):
+        """Cleans tokenised malware name based on VARIANT_BLACKLIST.
+        The conditions for removing a substring are: exact match, prefix, and
+        suffix."""
+
+        def resolve_mapping(self, mapping, token):
+            """Find possible tokens mappings from longest to the shortest
+            string according to predefined MAPPING lookup table."""
+            new_token = ""
+            old_tokens = []
+
+            for key in mapping:
+                # if the token is constructed from multiple tokens
+                if token.startswith(key):
+                    new_token = self.MAPPING[key]
+                    old_tokens = token.split(key)
+                    break
+                if token.endswith(key):
+                    new_token = self.MAPPING[key]
+                    old_tokens = token.split(key)[0]
+                    break
+                if key in token:
+                    tokens_iter3.append(self.MAPPING[key])
+                    old_tokens = token.split(key)
+                    break
+
+            #clean old_tokens from empty strings
+            old_tokens = [t.strip() for t in old_tokens if t.strip()]
+
+            return new_token, old_tokens
+
+        # Remove tokens up to 2 letters
+        tokens_iter0 = [token for token in tokens if len(token) > 2]
+
+
+        # Handle blacklisted tokens and random (hex) hashes
+        tokens_iter1 = []
+        for token in tokens_iter0:
+            if token not in self.VARIANT_BLACKLIST and \
+                token not in self.FIX_BLACKLIST and\
+                not token.isdigit() and \
+                not re.match("[a-fA-F0-9]+$", token):
+                    tokens_iter1.append(token)
+
+        tokens_iter2 = []
+        for token in tokens_iter1:
+            for variant in self.FIX_BLACKLIST:
+                new_token = ""
+                if  token.startswith(variant):
+                    new_token = token.split(variant)[-1]
+                    tokens_iter2.append(new_token)
+                    break
+                if token.endswith(variant):
+                    new_token = token.split(variant)[0]
+                    tokens_iter2.append(new_token)
+                    break
+
+            # When none of the above apply keep the token
+            if not new_token:
+                tokens_iter2.append(token)
+
+        # Get proper names according to predefined mapping
+        sorted_mapping = sorted(self.MAPPING, key=len, reverse=True)
+        tokens_iter3 = []
+        while tokens_iter2:
+            token = tokens_iter2.pop()
+
+            if token in self.MAPPING:
+                tokens_iter3.append(self.MAPPING[token])
+                continue
+
+            new_token, old_tokens = resolve_mapping(sorted_mapping, token)
+            tokens_iter2 += old_tokens
+            if new_token:
+                tokens_iter3.append(new_token)
+            # If no new token found leave the token untouched
+            else:
+                tokens_iter3.append(token)
+
+        return tokens_iter3
+
+
     def normalize(self, variant):
         """Normalize the variant name provided by an Anti Virus engine. This
         attempts to extract the useful parts of a variant name by stripping
