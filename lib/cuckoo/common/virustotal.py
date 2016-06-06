@@ -31,38 +31,24 @@ class VirusTotalAPI(object):
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
 
     VARIANT_BLACKLIST = [
-        "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
-        "trojanclicker", "trojware", "win", "a variant of win32", "trj",
-        "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
-        "gen", "virus", "dropper", "generic suspicious", "spyware", "program",
-        "suspectcrc", "corrupt", "behaveslike", "crypt", "adclicker",
-        "troj", "injector", "cryptor", "packed", "adware", "macro", "msil4",
-        "suspicious", "worm", "msil", "msword", "drop", "keygen", "office",
-        "password", "malpack", "lookslike", "banker", "riskware", "unwanted",
-        "unclassifiedmalware", "ransom", "trojan horse", "trjndwnlder",
-        "trojandwnldr", "autorun", "trojandownloader", "trojandwnldr", "text",
-        "download", "excel", "msilobfuscator", "rootkit", "application",
-        "a variant of win64", "w97m", "shellcode", "o97m", "exploit",
-        "x97m", "maliciousmacro", "downldr", "msexcel", "pp97m", "other",
-        "trojandropper", "crypter", "a variant of msil", "macrodown",
-        "trojanapt", "dwnldr", "downldexe", "dload", "trojanhorse", "toolbar",
-        "mailer", "obfus", "obfuscator", "suspicious file", "optional",
-        "suspected of trojan", "heuristic", "rogue", "virtool", "infostealer",
-        "generic downloader", "generic malware", "undef", "inject", "packer",
-        "generic backdoor", "word", "macosx", "hack", "unknown", "downloader",
-        "trojanspy", "dldr", "msoffice", "osx32", "script", "stealer",
-        "not a virus", "html", "expl", "shellkode", "downagent", "win64",
-        "applicunwnt", "heur2", "ddos", "avkill", "servstart", "normal",
-        "encoder", "w2km_dloader", "docdl", "w97m_dloadr", "mo97", "dloader",
-        "x2km_dloadr", "w2km_dload", "w2km_dloade", "x2km_droppr", "exedown",
-        "encodefeature", "docdrop", "mw97", "adload", "a variant of pp97m",
-        "a variant of w97m", "badmacro", "bkdr", "docdrp", "exedrop",
-        "generic trojan", "malcrypt", "malicious website", "ransomlock",
-        "ransomcrypt", "reputation", "trojanransom", "pepatch", "risk",
-        "adplugin", "webtoolbar", "malagent", "genmalicious", "vbinject",
-        "vbcrypt", "inject2", "mdropper", "download3", "keylogger",
-        "downloader11", "damaged", "file", "dldrop", "msil7", "injcrypt",
-        "patched", "patchfile", "downware", "dropped",
+        "a", "variant", "of", "file", "generic", "not", "suspicious",
+        "file", "other", "potentially", "unwanted", "text", "optional",
+        "agent", "susp", "dangerousobject", "dangerous", "object", "corrupt",
+        "lookslike", "looks", "like", "unclassifiedmalware", "unclassified",
+        "malware", "horse", "application", "program", "malicious", "small",
+        "behaveslike", "behaves", "behave", "heuristic", "reputation",
+        "suspected", 'undef', 'unknown', 'normal', 'damaged',
+        'malagent', 'packer', 'password', 'patched', 'patchfile', 'pepatch',
+        'servstart', 'gen', 'generikcd', 'genmalicious', 'heur', 'heur2',
+        'adclicker', 'adload', 'applicunwnt', 'autorun', 'avkill', 'generik',
+        'encodefeature', 'encoder', 'infostealer', 'keylogger', 'obfus',
+        "website", "adplugin", "webtoolbar", "packed", "toolbar",
+        'obfuscator', 'stealer', 'suspectcrc'
+    ]
+
+    FIX_BLACKLIST = [ # prefixes&suffixes
+        'apt', "ms",
+        'vb', 'mal', 'pack', 'exe', 'enz' # 'doc'
     ]
 
     PLATFORMS = {
@@ -144,6 +130,133 @@ class VirusTotalAPI(object):
         'tsql': 'MS SQL server files',
         'xml': 'XML files'
     }
+
+    ALTERNATIVE_PLATFORMS = {
+        "multi":"multi",
+        "macro":"o97m",
+        "office":"o97m",
+        "excel":"x97m",
+        "word":"w97m",
+        "powerpoint":"pp97m",
+        "access":"a97m",
+        "msil":"msil"
+    }
+
+    TYPES = [
+        'Adware', #adware -> riskware
+        'Backdoor',
+        'Behavior',
+        'BrowserModifier',
+        'Constructor',
+        'DDoS',
+        'Dialer',
+        'DoS',
+        'Exploit', #
+        'HackTool', ##hack->riskware
+        'Joke',
+        'Misleading',
+        'MonitoringTool',
+        'Program',
+        'PWS',
+        'Ransom', #
+        'RemoteAccess',
+        'Rogue',
+        'Rootkit', # added # count #
+        'SettingsModifier',
+        'SoftwareBundler',
+        'Spammer',
+        'Spoofer',
+        'Spyware',
+        'Tool',
+        'Trojan', #
+        'TrojanClicker',
+        'TrojanDownloader', #
+        'TrojanDropper', #
+        'TrojanNotifier',
+        'TrojanProxy',
+        'TrojanSpy',
+        'VirTool',
+        'Virus',
+        'Worm' #
+    ]
+
+    MAPPING = {
+        "riskware":"riskware",
+        "risk":"riskware",
+        "adware":"riskware",
+        "bundler":"riskware",
+        "grayware":"riskware",
+        "hack":"riskware",
+        "hackkms":"riskware",
+        "hacktool":"riskware",
+        "hktl":"riskware",
+        "keygen":"riskware",
+        "kms":"riskware",
+        "onlinegames":"riskware",
+        "rogue":"riskware",
+        "rogueware":"riskware",
+        "scareware":"riskware",
+        "startpage":"riskware",
+        "suspicious":"riskware",
+        "unwanted":"riskware",
+        "trojan":"trojan",
+        "backdoor":"trojan",
+        "genericbackdoor":"trojan",
+        "banker":"trojan",
+        "bkdr":"trojan",
+        "trojbackdoor":"trojan",
+        "injector":"trojan",
+        "inject":"trojan",
+        "inj":"trojan",
+        "tr":"trojan",
+        "trj":"trojan",
+        "trjn":"trojan",
+        "troj":"trojan",
+        "trojware":"trojan",
+        "downloader":"downloader",
+        "loader":"downloader",
+        "exedown":"downloader",
+        "dldr":"downloader",
+        "dloader":"downloader",
+        "dloadr":"downloader",
+        "downldexe":"downloader",
+        "downldr":"downloader",
+        "down":"downloader",
+        "dload":"downloader",
+        "dloade":"downloader",
+        "dl":"downloader",
+        "download":"downloader",
+        "downagent":"downloader",
+        "downware":"downloader",
+        "dwnldr":"downloader",
+        "dwnlder":"downloader",
+        "load":"downloader",
+        "muldown":"downloader",
+        "ransom":"ransom",
+        "crypt":"ransom",
+        "crypter":"ransom",
+        "cryptor":"ransom",
+        "krypt":"ransom",
+        "kryptik":"ransom",
+        "lock":"ransom",
+        "ransom":"ransom",
+        "ransomcrypt":"ransom",
+        "ransomlock":"ransom",
+        "rootkit":"rootkit",
+        "rkit":"rootkit",
+        "rtk":"rootkit",
+        "sys":"rootkit",
+        # extension
+        "expl":"exploit",
+        "dropper":"dropper",
+        "mdropper":"dropper",
+        "dropped":"dropper",
+        "drop":"dropper",
+        "drp":"dropper",
+        "mailer":"mailer"
+    }
+
+    TEMPLATE = "{type}:{platform}/{family}.{variant}!{information}"
 
     def __init__(self, apikey, timeout, scan=0):
         """Initialize VirusTotal API with the API key and timeout.
