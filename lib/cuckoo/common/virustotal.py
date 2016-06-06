@@ -282,6 +282,7 @@ class VirusTotalAPI(object):
             raise CuckooOperationalError("Unable to fetch VirusTotal "
                                          "results: %r" % e.message)
 
+
     def _get_report(self, url, resource, summary=False):
         """Fetch the report of a file or URL."""
         data = dict(resource=resource, apikey=self.apikey)
@@ -362,14 +363,18 @@ class VirusTotalAPI(object):
         return dict(summary=dict(permalink=r.get("permalink")))
 
 
-
     def detect_platform(self, tokens):
         """Guess platform affected by malware based on tokenised VT name."""
 
-        def compare_platforms(self, token):
+        def compare_platforms(self, platform_list, token):
             """Check whether token is one of predefined platforms."""
             platform = ""
-            for os in self.PLATFORMS:
+            for os in platform_list:
+                if token.startswith(os):
+                    return  os
+                if os.startswith(token):
+                    return os
+            for os in platform_list:
                 if os in token:
                     return os
             return platform
@@ -380,17 +385,16 @@ class VirusTotalAPI(object):
 
         # TODO: only the first platform that is found is returned
         for token in tokens:
-            # Check for multiplatform
-            if "multi" in token:
-                platform = "multi"
+            # Check for alternative platforms
+            cp = compare_platforms(self.ALTERNATIVE_PLATFORMS, token)
+            if cp:
+                platform = self.ALTERNATIVE_PLATFORMS[cp]
                 used_token = token
-                remaining_tokens = token.split("multi")
+                remaining_tokens = token.split(cp)
                 break
 
-            # Check for MS Office suite
-
             # Check for OS
-            cp = compare_platforms(token)
+            cp = compare_platforms(self.PLATFORMS, token)
             if cp:
                 platform = cp
                 used_token = token
@@ -404,12 +408,32 @@ class VirusTotalAPI(object):
                 remaining_tokens = token.split("win")
                 break
 
-            found = re.findall(r"w([0-9]{2}|2k|ce|nt|bat|hlp|reg)", token)
+            # find windows edition encoded as "w.."; if the string is followed
+            # by "m" it's a macro and not an OS
+            found = re.findall(r"w(16|32|64|95|98|2k|ce|nt|bat|hlp|reg)(?!m)",
+                               token)
             # TODO: what if 2 or more matches are found
             if found:
                 platform = "win" + found[0]
                 used_token = token
                 remaining_tokens = token.split("w"+found[0])
+                break
+
+            # Handle MS Office macros # x w pp a
+            # Office 2K
+            found = re.findall(r"([a-zA-Z])2km", token)
+            if found:
+                platform = found[0] + "97m"
+                used_token = token
+                remaining_tokens = token.split(found[0] + "2km")
+                break
+
+            # Office 97 with missing "m"
+            found = re.findall(r"([a-zA-Z]97)", token)
+            if found:
+                platform = found[0] + "m"
+                used_token = token
+                remaining_tokens = token.split(found[0] + "m")
                 break
 
         # Clean-up tokens
