@@ -552,36 +552,54 @@ class VirusTotalAPI(object):
         """Normalize the variant name provided by an Anti Virus engine. This
         attempts to extract the useful parts of a variant name by stripping
         all the boilerplate stuff from it."""
-        if not variant:
-            return []
+        ret = {
+            "cve":[],
+            "platform":[],
+            "metatype":[],
+            "type":[],
+            "family":[]
+        }
 
-        ret = []
+        if not variant:
+            return ret
 
         # Handles "CVE-2012-1234", "CVE2012-1234".
         cve = re.search("CVE[-_]?(\\d{4})[-_](\\d{4})", variant)
         if cve:
-            ret.append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
+            ret["cve"].append("CVE-%s-%s" % (cve.group(1), cve.group(2)))
 
         # Handles "CVE121234".
         cve = re.search("CVE(\\d{2})(\\d{4})", variant)
         if cve:
-            ret.append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
+            ret["cve"].append("CVE-20%s-%s" % (cve.group(1), cve.group(2)))
 
-        for word in re.split("[\\.\\,\\-\\(\\)\\[\\]/!:_]", variant):
-            word = word.strip()
-            if len(word) < 4:
-                continue
+        # Split variant into tokens based on any punctuation symbol including _
+        vt_name = variant.encode("ascii", "ignore").lower()
+        tokens = re.findall(r"[a-zA-Z0-9]+", vt_name)
 
-            if word.lower() in self.VARIANT_BLACKLIST:
-                continue
+        tokens = self.clean_tokens(tokens)
+        ret["platform"], tokens = self.detect_platform(tokens)
 
-            # Random hashes that are specific to this file.
-            if re.match("[a-fA-F0-9]+$", word):
-                continue
+        # Discard too short tokens which are not recognised
+        tokens = [t for t in tokens if len(t) >= 4]
 
-            # Family names followed by "potentially unwanted".
-            if re.match("[a-zA-Z]{1,2} potentially unwanted", word.lower()):
-                continue
+        for token in tokens:
+            # Get metatype: trojan & riskware
+            if (token == "trojan" or token in self.TROJANS) and\
+                    "trojan" not in ret["metatype"]:
+                ret["metatype"].append("trojan")
+            if (token == "riskware" or token in self.RISKWARE) and\
+                    "riskware" not in ret["metatype"]:
+                ret["metatype"].append("riskware")
 
-            ret.append(word)
+            # Get type
+            if token != "trojan" and token != "riskware" and \
+                    token in self.TYPES:
+                ret["type"].append(token)
+
+            # Get family
+            if token != "trojan" and token != "riskware" and \
+                    token not in self.TYPES:
+                ret["family"].append(token)
+
         return ret
