@@ -20,6 +20,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
+from lib.cuckoo.common.exceptions import CuckooDisableModule
 
 log = logging.getLogger(__name__)
 
@@ -133,6 +134,8 @@ class RunAuxiliary(object):
                 current.start()
             except NotImplementedError:
                 pass
+            except CuckooDisableModule:
+                continue
             except Exception as e:
                 log.warning("Unable to start auxiliary module %s: %s",
                             module_name, e)
