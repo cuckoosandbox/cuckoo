@@ -387,7 +387,7 @@ class VirusTotalAPI(object):
     def detect_platform(self, tokens):
         """Guess platform affected by malware based on tokenised VT name."""
 
-        def compare_platforms(self, platform_list, token):
+        def compare_platforms(platform_list, token):
             """Check whether token is one of predefined platforms."""
             platform = ""
             for os in platform_list:
@@ -400,68 +400,65 @@ class VirusTotalAPI(object):
                     return os
             return platform
 
-        platform = "unknown"
-        used_token = ""
+        platform = []
         remaining_tokens = []
 
-        # TODO: only the first platform that is found is returned
-        for token in tokens:
+        while tokens:
+            token = tokens.pop()
+
             # Check for alternative platforms
             cp = compare_platforms(self.ALTERNATIVE_PLATFORMS, token)
             if cp:
-                platform = self.ALTERNATIVE_PLATFORMS[cp]
-                used_token = token
-                remaining_tokens = token.split(cp)
-                break
+                platform.append(self.ALTERNATIVE_PLATFORMS[cp])
+                remaining_tokens += token.split(cp)
+                continue
 
             # Check for OS
             cp = compare_platforms(self.PLATFORMS, token)
             if cp:
-                platform = cp
-                used_token = token
-                remaining_tokens = token.split(cp)
-                break
+                platform.append(cp)
+                remaining_tokens += token.split(cp)
+                continue
 
             # Check for MS Windows name variants: "win" and "w" instead of "win"
             if "win" in token:
-                platform = "win"
-                used_token = token
-                remaining_tokens = token.split("win")
-                break
+                platform.append("win")
+                remaining_tokens += token.split("win")
+                continue
 
             # find windows edition encoded as "w.."; if the string is followed
             # by "m" it's a macro and not an OS
             found = re.findall(r"w(16|32|64|95|98|2k|ce|nt|bat|hlp|reg)(?!m)",
                                token)
-            # TODO: what if 2 or more matches are found
+            # WARNING: only works for the first match
             if found:
-                platform = "win" + found[0]
-                used_token = token
-                remaining_tokens = token.split("w"+found[0])
-                break
+                platform.append("win" + found[0])
+                remaining_tokens += token.split("w"+found[0])
+                continue
 
             # Handle MS Office macros # x w pp a
             # Office 2K
             found = re.findall(r"([a-zA-Z])2km", token)
             if found:
-                platform = found[0] + "97m"
-                used_token = token
-                remaining_tokens = token.split(found[0] + "2km")
-                break
+                platform.append(found[0] + "97m")
+                remaining_tokens += token.split(found[0] + "2km")
+                continue
 
             # Office 97 with missing "m"
             found = re.findall(r"([a-zA-Z]97)", token)
             if found:
-                platform = found[0] + "m"
-                used_token = token
-                remaining_tokens = token.split(found[0] + "m")
-                break
+                platform.append(found[0] + "m")
+                remaining_tokens += token.split(found[0] + "m")
+                continue
 
-        # Clean-up tokens
-        if used_token:
-            tokens.remove(token)
-            # remove empty strings from t
-            tokens += [t.strip() for t in remaining_tokens if t.strip()]
+            # If none of the above apply transfer the token
+            remaining_tokens.append(token)
+
+        if not platform:
+            platform = ["unknown"]
+
+        # Remove empty strings tokens
+        tokens = [t.strip() for t in remaining_tokens if t.strip()]
 
         return platform, tokens
 
