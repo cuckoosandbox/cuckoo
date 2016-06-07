@@ -4,12 +4,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
+import _winreg
 
 from ctypes import windll, POINTER, byref, Structure, pointer
 from ctypes import c_ushort, c_wchar_p, c_void_p, create_string_buffer
 from ctypes.wintypes import HANDLE, DWORD, LPCWSTR, ULONG, LONG
-from _winreg import KEY_ALL_ACCESS, KEY_QUERY_VALUE, KEY_SET_VALUE
-from _winreg import REG_SZ, REG_MULTI_SZ
 
 log = logging.getLogger(__name__)
 
@@ -44,8 +43,9 @@ def rename_regkey(skey, ssubkey, dsubkey):
     Function by Thorsten Sick."""
     res_handle = HANDLE()
     options = DWORD(0)
-    res = RegOpenKeyExW(skey, ssubkey, options,
-                        KEY_ALL_ACCESS, byref(res_handle))
+    res = RegOpenKeyExW(
+        skey, ssubkey, options, _winreg.KEY_ALL_ACCESS, byref(res_handle)
+    )
     if not res:
         bsize = c_ushort(len(dsubkey) * 2)
         us = UNICODE_STRING()
@@ -63,18 +63,22 @@ def rename_regkey(skey, ssubkey, dsubkey):
 
 def regkey_exists(rootkey, subkey):
     res_handle = HANDLE()
-    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_QUERY_VALUE, byref(res_handle))
+    res = RegOpenKeyExW(
+        rootkey, subkey, 0, _winreg.KEY_QUERY_VALUE, byref(res_handle)
+    )
     RegCloseKey(res_handle)
     return not res
 
 def set_regkey(rootkey, subkey, name, type_, value):
-    if type_ == REG_SZ:
+    if type_ == _winreg.REG_SZ:
         value = unicode(value)
-    if type_ == REG_MULTI_SZ:
+    if type_ == _winreg.REG_MULTI_SZ:
         value = u"\u0000".join(value) + u"\u0000\u0000"
 
     res_handle = HANDLE()
-    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_SET_VALUE, byref(res_handle))
+    res = RegOpenKeyExW(
+        rootkey, subkey, 0, _winreg.KEY_SET_VALUE, byref(res_handle)
+    )
     if not res:
         RegSetValueExW(res_handle, name, 0, type_, value, len(value))
         RegCloseKey(res_handle)
@@ -85,15 +89,17 @@ def query_value(rootkey, subkey, name):
     value = create_string_buffer(1024 * 1024)
     length = DWORD(1024 * 1024)
 
-    res = RegOpenKeyExW(rootkey, subkey, 0, KEY_QUERY_VALUE, byref(res_handle))
+    res = RegOpenKeyExW(
+        rootkey, subkey, 0, _winreg.KEY_QUERY_VALUE, byref(res_handle)
+    )
     if not res:
         res = RegQueryValueExW(res_handle, name, None, byref(type_), value, byref(length))
         RegCloseKey(res_handle)
 
     if not res:
-        if type_.value == REG_SZ:
+        if type_.value == _winreg.REG_SZ:
             return value.raw[:length.value].decode("utf16").rstrip("\x00")
-        if type_.value == REG_MULTI_SZ:
+        if type_.value == _winreg.REG_MULTI_SZ:
             value = value.raw[:length.value].decode("utf16")
             return value.rstrip(u"\u0000").split(u"\u0000")
         return value.raw[:length.value]
