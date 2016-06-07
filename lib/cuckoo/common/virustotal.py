@@ -471,18 +471,22 @@ class VirusTotalAPI(object):
         def resolve_mapping(self, mapping, token):
             """Find possible tokens mappings from longest to the shortest
             string according to predefined MAPPING lookup table."""
+            # TODO: pick the most probable abbreviation combination i.e. the one
+            #       that uses all of the sub-tokens and not only a few
+            #       e.g. "adload"
             new_token = ""
             old_tokens = []
 
             for key in mapping:
                 # if the token is constructed from multiple tokens
+                # startswith and endswith should be separated here
                 if token.startswith(key):
                     new_token = self.MAPPING[key]
                     old_tokens = token.split(key)
                     break
                 if token.endswith(key):
                     new_token = self.MAPPING[key]
-                    old_tokens = token.split(key)[0]
+                    old_tokens = token.split(key)
                     break
                 if key in token:
                     tokens_iter3.append(self.MAPPING[key])
@@ -494,9 +498,13 @@ class VirusTotalAPI(object):
 
             return new_token, old_tokens
 
-        # Remove tokens up to 2 letters
-        tokens_iter0 = [token for token in tokens if len(token) > 2]
-
+        # Check 1:1 mappings
+        tokens_iter0 = []
+        for token in tokens:
+            if token in self.MAPPING:
+                tokens_iter0.append(self.MAPPING[token])
+            else:
+                tokens_iter0.append(token)
 
         # Handle blacklisted tokens and random (hex) hashes
         tokens_iter1 = []
@@ -504,7 +512,8 @@ class VirusTotalAPI(object):
             if token not in self.VARIANT_BLACKLIST and \
                 token not in self.FIX_BLACKLIST and\
                 not token.isdigit() and \
-                not re.match("[a-fA-F0-9]+$", token):
+                not re.match("[a-fA-F0-9]+$", token) and\
+                len(token) > 2:
                     tokens_iter1.append(token)
 
         tokens_iter2 = []
@@ -534,7 +543,7 @@ class VirusTotalAPI(object):
                 tokens_iter3.append(self.MAPPING[token])
                 continue
 
-            new_token, old_tokens = resolve_mapping(sorted_mapping, token)
+            new_token, old_tokens = resolve_mapping(self, sorted_mapping, token)
             tokens_iter2 += old_tokens
             if new_token:
                 tokens_iter3.append(new_token)
@@ -542,7 +551,11 @@ class VirusTotalAPI(object):
             else:
                 tokens_iter3.append(token)
 
-        return tokens_iter3
+        # Remove tokens up to 2 letters and the blacklisted ones
+        tokens_iter4 = [t for t in tokens_iter3 if len(t) > 2 and \
+                        t not in self.VARIANT_BLACKLIST]
+
+        return tokens_iter4
 
 
     def normalize(self, variant):
