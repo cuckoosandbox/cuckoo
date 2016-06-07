@@ -25,4 +25,5 @@ urlpatterns = [
         views.moloch),
     url(r"^(?P<task_id>\d+)/export/$", views.export_analysis),
     url(r"^import/$", views.import_analysis),
+    url(r"^(?P<task_id>\d+)/reboot/$", views.reboot_analysis),
 ]

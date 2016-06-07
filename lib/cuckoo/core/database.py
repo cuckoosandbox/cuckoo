@@ -1071,6 +1071,35 @@ class Database(object):
         return self.add(None, timeout=timeout, priority=999, owner=owner,
                         tags=tags, category="service")
 
+    def add_reboot(self, task_id, timeout=0, options="", priority=1,
+                   custom="", owner="", machine="", platform="", tags=None,
+                   memory=False, enforce_timeout=False, clock=None):
+        """Add a reboot task to database from an existing analysis.
+        @param task_id: task id of existing analysis.
+        @param timeout: selected timeout.
+        @param options: analysis options.
+        @param priority: analysis priority.
+        @param custom: custom options.
+        @param owner: task owner.
+        @param machine: selected machine.
+        @param platform: platform.
+        @param tags: tags for machine selection
+        @param memory: toggle full memory dump.
+        @param enforce_timeout: toggle full timeout execution.
+        @param clock: virtual machine clock time
+        @return: cursor or None.
+        """
+
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
+
+        return self.add("%s" % task_id, timeout, options, priority, custom,
+                        owner, machine, platform, tags, memory,
+                        enforce_timeout, clock, "reboot")
+
     @classlock
     def reschedule(self, task_id, priority=None):
         """Reschedule a task.
