@@ -114,7 +114,7 @@ def cuckoo_main(max_analysis_count=0):
 @click.pass_context
 def main(ctx, debug, quiet, maxcount, user, cwd):
     # Cuckoo Working Directory precedence:
-    # * Command-line option (--root)
+    # * Command-line option (--cwd)
     # * Environment option ("CUCKOO")
     # * Default value ("~/.cuckoo")
     set_cwd(os.path.expanduser(cwd))
@@ -338,7 +338,46 @@ def dnsserve(host, port, nxdomain, hardcode, verbose):
 
 @main.command()
 @click.argument("args", nargs=-1)
-def web(args):
+@click.option("-p", "--port", default=8000, help="Port to bind the API server on")
+@click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
+@click.option("--nginx", is_flag=True, help="Dump nginx configuration")
+@click.pass_context
+def web(ctx, args, port, uwsgi, nginx):
+    username = ctx.parent.user or os.getlogin()
+    if uwsgi:
+        print "[uwsgi]"
+        print "plugins = python"
+        if os.environ.get("VIRTUAL_ENV"):
+            print "virtualenv =", os.environ["VIRTUAL_ENV"]
+        print "module = cuckoo.web.web.wsgi"
+        print "uid =", username
+        print "gid =", username
+        dirpath = os.path.join(cuckoo.__path__[0], "web", "static")
+        print "static-map = /static=%s" % dirpath
+        print "# If you're getting errors about the PYTHON_EGG_CACHE, then"
+        print "# uncomment the following line and add some path that is"
+        print "# writable from the defined user."
+        print "# env = PYTHON_EGG_CACHE="
+        print "env = CUCKOO_FORCE=%s" % cwd()
+        return
+
+    if nginx:
+        print "upstream _uwsgi_cuckoo_web {"
+        print "    server unix:/run/uwsgi/app/cuckoo-web/socket;"
+        print "}"
+        print
+        print "server {"
+        print "    listen %d;" % port
+        print "    listen [::]:%d ipv6only=on;" % port
+        print
+        print "    # Cuckoo Web Interface"
+        print "    location / {"
+        print "        uwsgi_pass  _uwsgi_cuckoo_web;"
+        print "        include     uwsgi_params;"
+        print "    }"
+        print "}"
+        return
+
     # Switch to cuckoo/web and add the current path to sys.path as the Web
     # Interface is using local imports here and there.
     # TODO Rename local imports to either cuckoo.web.* or relative imports.

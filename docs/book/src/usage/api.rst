@@ -51,9 +51,10 @@ configuration as reported by the ``cuckoo api --uwsgi`` command::
     callable = app
     uid = cuckoo
     gid = cuckoo
+    env = CUCKOO_FORCE=/home/..somepath..
 
 This configuration inherits a number of settings from the distribution's
-default uWSGI configuration and importing ``cuckoo.apps.api`` from the Cuckoo
+default uWSGI configuration and imports ``cuckoo.apps.api`` from the Cuckoo
 package to do the actual work. In this example we installed Cuckoo in a
 virtualenv located at ``/home/cuckoo/cuckoo``. If Cuckoo is installed globally
 no virtualenv option is required.

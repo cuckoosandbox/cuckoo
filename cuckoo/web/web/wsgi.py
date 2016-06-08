@@ -19,6 +19,19 @@ framework.
 
 """
 import os
+import sys
+
+import cuckoo
+
+# When run under uWSGI the Cuckoo Working Directory will not have been set
+# yet and we'll have to do so ourselves.
+if not cuckoo.misc.cwd() and os.environ.get("CUCKOO_FORCE"):
+    cuckoo.misc.set_cwd(os.environ["CUCKOO_FORCE"])
+
+os.chdir(os.path.join(cuckoo.__path__[0], "web"))
+sys.path.insert(0, ".")
+
+cuckoo.core.database.Database().connect()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 
