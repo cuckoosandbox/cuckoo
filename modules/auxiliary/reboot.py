@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 class Reboot(Auxiliary):
     def start(self):
-        if self.task.category != "reboot":
+        if self.task.package != "reboot":
             raise CuckooDisableModule
 
     def cb_legacy_agent(self):

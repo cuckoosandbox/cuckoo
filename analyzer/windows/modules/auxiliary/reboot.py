@@ -15,7 +15,7 @@ class Reboot(Auxiliary):
     """Prepares the environment to behave as if the VM has been rebooted."""
 
     def start(self):
-        if self.analyzer.config.category != "reboot":
+        if self.analyzer.config.package != "reboot":
             return
 
         reboot_path = os.path.join(self.analyzer.path, "reboot.json")

@@ -1109,7 +1109,7 @@ class Database(object):
 
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
-                        memory, enforce_timeout, clock, "reboot")
+                        memory, enforce_timeout, clock, "file")
 
     @classlock
     def reschedule(self, task_id, priority=None):
