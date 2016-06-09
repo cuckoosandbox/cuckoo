@@ -22,6 +22,7 @@ from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooPackageError
+from lib.common.exceptions import CuckooDisableModule
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
@@ -597,6 +598,8 @@ class Analyzer(object):
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented",
                             aux.__class__.__name__)
+            except CuckooDisableModule:
+                continue
             except Exception as e:
                 log.warning("Cannot execute auxiliary module %s: %s",
                             aux.__class__.__name__, e)

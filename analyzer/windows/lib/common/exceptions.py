@@ -8,3 +8,6 @@ class CuckooError(Exception):
 
 class CuckooPackageError(Exception):
     pass
+
+class CuckooDisableModule(CuckooError):
+    """Exception for disabling a module dynamically."""

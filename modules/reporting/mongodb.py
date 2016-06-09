@@ -233,6 +233,21 @@ class MongoDB(Report):
             report["behavior"] = dict(report["behavior"])
             report["behavior"]["processes"] = new_processes
 
+        if report.get("procmon"):
+            procmon, chunk = [], []
+
+            for entry in report["procmon"]:
+                if len(chunk) == paginate:
+                    procmon.append(self.db.procmon.insert(chunk))
+                    chunk = []
+
+                chunk.append(entry)
+
+            if chunk:
+                procmon.append(self.db.procmon.insert(chunk))
+
+            report["procmon"] = procmon
+
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
         self.conn.close()

@@ -15,6 +15,7 @@ ipaddress==1.0.14
 itsdangerous==0.24
 Jinja2==2.8
 jsbeautifier==1.5.10
+lxml==3.6.0
 Mako==1.0.1
 MarkupSafe==0.23
 ndg-httpsclient==0.4.0
