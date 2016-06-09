@@ -249,12 +249,13 @@ class GuestManager(object):
     """This class represents the new Guest Manager. It operates on the new
     Cuckoo Agent which features a more abstract but more feature-rich API."""
 
-    def __init__(self, vmid, ipaddr, platform, task_id):
+    def __init__(self, vmid, ipaddr, platform, task_id, analysis_manager):
         self.vmid = vmid
         self.ipaddr = ipaddr
         self.port = CUCKOO_GUEST_PORT
         self.platform = platform
         self.task_id = task_id
+        self.analysis_manager = analysis_manager
 
         self.cfg = Config()
         self.timeout = None
@@ -269,6 +270,10 @@ class GuestManager(object):
         self.environ = {}
 
         self.options = {}
+
+    @property
+    def aux(self):
+        return self.analysis_manager.aux
 
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
@@ -371,6 +376,7 @@ class GuestManager(object):
             #          "Machines with the new Agent, but for now falling back "
             #          "to backwards compatibility with the old agent.")
             self.is_old = True
+            self.aux.callback("legacy_agent")
             self.old.start_analysis(options, monitor)
             return
 
@@ -410,6 +416,9 @@ class GuestManager(object):
 
         # Pass along the analysis.conf file.
         self.add_config(options)
+
+        # Allow Auxiliary modules to prepare the Guest.
+        self.aux.callback("prepare_guest")
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file":

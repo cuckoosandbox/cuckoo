@@ -356,6 +356,7 @@ class CommandPipeHandler(object):
 
             if not addr or not length:
                 continue
+
             Process(pid=pid).dump_memory_block(int(addr), int(length))
 
     def _handle_track(self, data):
@@ -424,6 +425,8 @@ class Analyzer(object):
         self.files = Files()
         self.process_list = ProcessList()
         self.package = None
+
+        self.reboot = []
 
     def prepare(self):
         """Prepare env for analysis."""
@@ -504,8 +507,9 @@ class Analyzer(object):
         @return: operation status.
         """
         self.prepare()
+        self.path = os.getcwd()
 
-        log.debug("Starting analyzer from: %s", os.getcwd())
+        log.debug("Starting analyzer from: %s", self.path)
         log.debug("Pipe server name: %s", self.config.pipe)
         log.debug("Log pipe server name: %s", self.config.logpipe)
 
@@ -559,7 +563,7 @@ class Analyzer(object):
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        self.package = package_class(self.config.options)
+        self.package = package_class(self.config.options, analyzer=self)
 
         # Move the sample to the current working directory as provided by the
         # task - one is able to override the starting path of the sample.

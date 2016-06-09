@@ -38,6 +38,17 @@ NtRenameKey.argtypes = HANDLE, POINTER(UNICODE_STRING)
 RegCloseKey = windll.advapi32.RegCloseKey
 RegCloseKey.argtypes = HANDLE,
 
+_rootkeys = {
+    "HKEY_LOCAL_MACHINE": _winreg.HKEY_LOCAL_MACHINE,
+    "HKEY_CURRENT_USER": _winreg.HKEY_CURRENT_USER,
+}
+
+_regtypes = {
+    "REG_DWORD": _winreg.REG_DWORD,
+    "REG_SZ": _winreg.REG_SZ,
+    "REG_BINARY": _winreg.REG_BINARY,
+}
+
 def rename_regkey(skey, ssubkey, dsubkey):
     """Rename an entire tree of values in the registry.
     Function by Thorsten Sick."""
@@ -82,6 +93,18 @@ def set_regkey(rootkey, subkey, name, type_, value):
     if not res:
         RegSetValueExW(res_handle, name, 0, type_, value, len(value))
         RegCloseKey(res_handle)
+
+def set_regkey_full(regkey, type_, value):
+    components = regkey.split("\\")
+    rootkey, subkey, name = components[0], components[1:-1], components[-1]
+    if rootkey not in _rootkeys:
+        log.warning("Unknown root key for registry key: %s", rootkey)
+        return
+
+    set_regkey(
+        _rootkeys[rootkey], "\\".join(subkey), name,
+        _regtypes.get(type_, type_), value
+    )
 
 def query_value(rootkey, subkey, name):
     res_handle = HANDLE()

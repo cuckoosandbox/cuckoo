@@ -6,6 +6,7 @@
 import datetime
 import logging
 import re
+import shlex
 
 from lib.cuckoo.common.abstracts import BehaviorHandler
 from lib.cuckoo.common.netlog import BsonParser
@@ -212,7 +213,8 @@ class WindowsMonitor(BehaviorHandler):
     def __init__(self, *args, **kwargs):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
         self.processes = []
-        self.reconstructors = {}
+        self.behavior = {}
+        self.reboot = {}
         self.matched = False
 
     def handles_path(self, path):
@@ -231,18 +233,35 @@ class WindowsMonitor(BehaviorHandler):
                 process["calls"] = MonitorProcessLog(parser)
                 self.processes.append(process)
 
-                self.reconstructors[process["pid"]] = BehaviorReconstructor()
+                self.behavior[process["pid"]] = BehaviorReconstructor()
+                self.reboot[process["pid"]] = RebootReconstructor()
 
             # Create generic events out of the windows calls.
             elif event["type"] == "apicall":
-                reconstructor = self.reconstructors[event["pid"]]
+                behavior = self.behavior[event["pid"]]
+                reboot = self.reboot[event["pid"]]
 
-                for category, arg in reconstructor.process_apicall(event):
+                for category, arg in behavior.process_apicall(event):
                     yield {
                         "type": "generic",
                         "pid": event["pid"],
                         "category": category,
                         "value": arg,
+                    }
+
+                # Process the reboot reconstructor.
+                for category, args in reboot.process_apicall(event):
+                    # TODO Improve this where we have to calculate the "real"
+                    # time again even though we already do this in
+                    # MonitorProcessLog.
+                    ts = process["first_seen"] + \
+                        datetime.timedelta(0, 0, event["time"] * 1000)
+
+                    yield {
+                        "type": "reboot",
+                        "category": category,
+                        "args": args,
+                        "time": int(ts.strftime("%d")),
                     }
 
                 # Indicate that the process has API calls. For more
@@ -490,3 +509,72 @@ class BehaviorReconstructor(object):
                 arguments["server_random"],
                 arguments["master_secret"],
             ))
+
+class RebootReconstructor(object):
+    """Reconstructs the behavior as would be seen after a reboot."""
+
+    def process_apicall(self, event):
+        fn = getattr(self, "_api_%s" % event["api"], None)
+        if fn is not None:
+            ret = fn(
+                event["return_value"], event["arguments"], event.get("flags")
+            )
+            return ret or []
+        return []
+
+    def _api_delete_regkey(self, return_value, arguments, flags):
+        return single("regkey_deleted", arguments["regkey"])
+
+    _api_RegDeleteKeyA = _api_delete_regkey
+    _api_RegDeleteKeyW = _api_delete_regkey
+    _api_RegDeleteValueA = _api_delete_regkey
+    _api_RegDeleteValueW = _api_delete_regkey
+    _api_NtDeleteValueKey = _api_delete_regkey
+
+    def parse_cmdline(self, command_line):
+        """Extract the filepath and arguments from the full commandline."""
+        components = shlex.split(command_line, posix=False)
+        return components[0].strip('"'), components[1:]
+
+    def _handle_run(self, arguments, flags):
+        """Handle Run registry keys."""
+        reg_type = flags.get("reg_type", arguments["reg_type"])
+        filepath, args = self.parse_cmdline(arguments["value"])
+        return multiple(
+            ("regkey_written", (
+                arguments["regkey"], reg_type, arguments["value"]
+            )),
+            ("create_process", (
+                filepath, args, "explorer.exe"
+            )),
+        )
+
+    def _handle_runonce(self, arguments, flags):
+        """For RunOnce there is no registry key persistence."""
+        filepath, args = self.parse_cmdline(arguments["value"])
+        return single("create_process", (
+            filepath, args, "explorer.exe",
+        ))
+
+    # TODO In an optimal world we would move this logic to a Signature, but
+    # unfortunately the reboot information is already written away during the
+    # Processing stage and thus the Signature stage is too late in the chain.
+    _reg_regexes = [
+        (_handle_run, ".*\\\\Software\\\\(Wow6432Node\\\\)?Microsoft\\\\Windows\\\\CurrentVersion\\\\Run"),
+        (_handle_runonce, ".*\\\\Software\\\\(Wow6432Node\\\\)?Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce"),
+    ]
+
+    def _api_set_regkey(self, return_value, arguments, flags):
+        # Is this a registry key that directly affects reboot persistence?
+        for fn, regex in self._reg_regexes:
+            if re.match(regex, arguments["regkey"], re.I):
+                return fn(self, arguments, flags)
+
+        reg_type = flags.get("reg_type", arguments["reg_type"])
+        return single("regkey_written", (
+            arguments["regkey"], reg_type, arguments["value"]
+        ))
+
+    _api_RegSetValueExA = _api_set_regkey
+    _api_RegSetValueExW = _api_set_regkey
+    _api_NtSetValueKey = _api_set_regkey

@@ -16,9 +16,10 @@ class Package(object):
     PATHS = []
     REGKEYS = []
 
-    def __init__(self, options={}):
+    def __init__(self, options={}, analyzer=None):
         """@param options: options dict."""
         self.options = options
+        self.analyzer = analyzer
         self.pids = []
 
         # Fetch the current working directory, defaults to $TEMP.
@@ -126,7 +127,8 @@ class Package(object):
 
             CloseKey(key_handle)
 
-    def execute(self, path, args, mode=None, maximize=False, env=None):
+    def execute(self, path, args, mode=None, maximize=False, env=None,
+                source=None):
         """Starts an executable for analysis.
         @param path: executable path
         @param args: executable arguments
@@ -136,18 +138,20 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
-        source = self.options.get("from")
+
+        source = source or self.options.get("from")
+        mode = mode or self.options.get("mode")
 
         # Setup pre-defined registry keys.
         self.init_regkeys(self.REGKEYS)
 
         p = Process()
         if not p.execute(path=path, args=args, dll=dll, free=free,
-                         curdir=self.curdir, source=source,
-                         mode=mode or self.options.get("mode"),
+                         curdir=self.curdir, source=source, mode=mode,
                          maximize=maximize, env=env):
-            raise CuckooPackageError("Unable to execute the initial process, "
-                                     "analysis aborted.")
+            raise CuckooPackageError(
+                "Unable to execute the initial process, analysis aborted."
+            )
 
         return p.pid
 

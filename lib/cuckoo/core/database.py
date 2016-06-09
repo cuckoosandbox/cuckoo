@@ -1072,14 +1072,13 @@ class Database(object):
                         tags=tags, category="service")
 
     def add_reboot(self, task_id, timeout=0, options="", priority=1,
-                   custom="", owner="", machine="", platform="", tags=None,
-                   memory=False, enforce_timeout=False, clock=None):
+                   owner="", machine="", platform="", tags=None, memory=False,
+                   enforce_timeout=False, clock=None):
         """Add a reboot task to database from an existing analysis.
         @param task_id: task id of existing analysis.
         @param timeout: selected timeout.
         @param options: analysis options.
         @param priority: analysis priority.
-        @param custom: custom options.
         @param owner: task owner.
         @param machine: selected machine.
         @param platform: platform.
@@ -1096,9 +1095,21 @@ class Database(object):
         if not priority:
             priority = 1
 
-        return self.add("%s" % task_id, timeout, options, priority, custom,
-                        owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "reboot")
+        task = self.view_task(task_id)
+        if not task or not os.path.exists(task.target):
+            log.error(
+                "Unable to add reboot analysis as the original task or its "
+                "sample has already been deleted."
+            )
+            return
+
+        # TODO Integrate the Reboot screen with the submission portal and
+        # pass the parent task ID through as part of the "options".
+        custom = "%s" % task_id
+
+        return self.add(File(task.target), timeout, "reboot", options,
+                        priority, custom, owner, machine, platform, tags,
+                        memory, enforce_timeout, clock, "reboot")
 
     @classlock
     def reschedule(self, task_id, priority=None):
