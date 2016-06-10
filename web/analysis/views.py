@@ -246,6 +246,54 @@ def search_behavior(request, task_id):
     })
 
 @require_safe
+def summary(request, task_id):
+    report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
+
+    if not report:
+        return render(request, "error.html", {
+            "error": "The specified analysis does not exist",
+        })
+
+    # Creating dns information dicts by domain and ip.
+    if "network" in report and "domains" in report["network"]:
+        domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
+        iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+
+        for i in report["network"]["dns"]:
+            for a in i["answers"]:
+                iplookups[a["data"]] = i["request"]
+    else:
+        domainlookups = dict()
+        iplookups = dict()
+
+    if "http_ex" in report["network"] or "https_ex" in report["network"]:
+        HAVE_HTTPREPLAY = True
+    else:
+        HAVE_HTTPREPLAY = False
+
+    try:
+        import httpreplay
+        httpreplay_version = getattr(httpreplay, "__version__", None)
+    except ImportError:
+        httpreplay_version = None
+
+    # Is this version of httpreplay deprecated?
+    deprecated = httpreplay_version and \
+        versiontuple(httpreplay_version) < versiontuple(LATEST_HTTPREPLAY)
+
+    return render(request, "analysis/pages/summary/index.html", {
+        "analysis": report,
+        "domainlookups": domainlookups,
+        "iplookups": iplookups,
+        "httpreplay": {
+            "have": HAVE_HTTPREPLAY,
+            "deprecated": deprecated,
+            "current_version": httpreplay_version,
+            "latest_version": LATEST_HTTPREPLAY,
+        },
+    })
+
+@require_safe
 def report(request, task_id):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
@@ -258,6 +306,7 @@ def report(request, task_id):
     if "network" in report and "domains" in report["network"]:
         domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
         iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+
         for i in report["network"]["dns"]:
             for a in i["answers"]:
                 iplookups[a["data"]] = i["request"]

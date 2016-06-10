@@ -179,7 +179,15 @@ td {
 }
 .navbar-brand,
 .navbar-nav li a {
-    line-height: 60px;
-    height: 60px;
+    line-height: 40px;
+    height: 40px;
     padding-top: 0;
+}
+
+.navbar-fixed-top{
+    min-height:30px;
+}
+
+.navbar-fixed-top li img{
+    margin: 5px 10px -10px 20px;height: 34px;
 }
