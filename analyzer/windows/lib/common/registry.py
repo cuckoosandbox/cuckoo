@@ -23,6 +23,13 @@ RegOpenKeyExW = windll.advapi32.RegOpenKeyExW
 RegOpenKeyExW.argtypes = HANDLE, LPCWSTR, DWORD, ULONG, POINTER(HANDLE)
 RegOpenKeyExW.restype = LONG
 
+RegCreateKeyExW = windll.advapi32.RegCreateKeyExW
+RegCreateKeyExW.argtypes = (
+    HANDLE, LPCWSTR, DWORD, LPCWSTR, DWORD, DWORD,
+    DWORD, POINTER(HANDLE), POINTER(DWORD),
+)
+RegCreateKeyExW.restype = LONG
+
 RegQueryValueExW = windll.advapi32.RegQueryValueExW
 RegQueryValueExW.argtypes = \
     HANDLE, LPCWSTR, POINTER(DWORD), POINTER(DWORD), c_void_p, POINTER(DWORD)
@@ -87,8 +94,9 @@ def set_regkey(rootkey, subkey, name, type_, value):
         value = u"\u0000".join(value) + u"\u0000\u0000"
 
     res_handle = HANDLE()
-    res = RegOpenKeyExW(
-        rootkey, subkey, 0, _winreg.KEY_SET_VALUE, byref(res_handle)
+    res = RegCreateKeyExW(
+        rootkey, subkey, 0, None, 0, _winreg.KEY_ALL_ACCESS,
+        0, byref(res_handle), None
     )
     if not res:
         RegSetValueExW(res_handle, name, 0, type_, value, len(value))
