@@ -47,23 +47,26 @@ class Files(object):
         """Do we want to inject into a process with this name?"""
         return file_name.lower() in self.PROTECTED_NAMES
 
-    def add_pid(self, filepath, pid):
+    def add_pid(self, filepath, pid, verbose=True):
         """Tracks a process identifier for this file."""
         if not pid or filepath.lower() not in self.files:
             return
 
         if pid not in self.files[filepath.lower()]:
             self.files[filepath.lower()].append(pid)
-            log.info("Added pid %s for %r", pid, filepath)
+            verbose and log.info("Added pid %s for %r", pid, filepath)
 
     def add_file(self, filepath, pid=None):
         """Add filepath to the list of files and track the pid."""
         if filepath.lower() not in self.files:
-            log.info("Added new file to list with path: %s", filepath)
+            log.info(
+                "Added new file to list with pid %s and path %s",
+                pid, filepath
+            )
             self.files[filepath.lower()] = []
             self.files_orig[filepath.lower()] = filepath
 
-        self.add_pid(filepath, pid)
+        self.add_pid(filepath, pid, verbose=False)
 
     def dump_file(self, filepath):
         """Dump a file to the host."""
