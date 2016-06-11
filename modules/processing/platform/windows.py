@@ -109,6 +109,10 @@ class MonitorProcessLog(list):
         self.vbe6_func[class_, funcidx] = funcname
         return False
 
+    def _api_vbe6_CallByName(self, event):
+        """Only used by the monitor for administrative uses."""
+        return False
+
     def _api_vbe6_Invoke(self, event):
         this = event["arguments"]["this"]
         funcidx = event["arguments"]["funcidx"]
