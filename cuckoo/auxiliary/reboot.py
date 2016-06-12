@@ -6,9 +6,9 @@ import json
 import logging
 import os.path
 
-from lib.cuckoo.common.abstracts import Auxiliary
-from lib.cuckoo.common.constants import CUCKOO_ROOT
-from lib.cuckoo.common.exceptions import CuckooDisableModule
+from cuckoo.common.abstracts import Auxiliary
+from cuckoo.common.exceptions import CuckooDisableModule
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -51,9 +51,7 @@ class Reboot(Auxiliary):
     def cb_prepare_guest(self):
         log.info("Preparing task #%d for a reboot analysis..", self.task.id)
 
-        analysis_path = os.path.join(
-            CUCKOO_ROOT, "storage", "analyses", self.task.custom
-        )
+        analysis_path = cwd("storage", "analyses", self.task.custom)
 
         self._push_dropped_files(analysis_path)
 

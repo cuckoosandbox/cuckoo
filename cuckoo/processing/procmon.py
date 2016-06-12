@@ -4,7 +4,7 @@
 
 import os.path
 
-from lib.cuckoo.common.abstracts import Processing
+from cuckoo.common.abstracts import Processing
 
 try:
     import lxml.etree
