@@ -3,9 +3,15 @@
     {% if analysis.shots %}
         <div>
         {% for shot in analysis.shots %}
+            {% if shot.original and shot.small %}
             <a data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot.original "nofetch" %}">
                 <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot.small "nofetch" %}" style="height: 120px;" />
             </a>
+            {% else %}
+            <a data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot %}">
+                <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot %}" style="height: 120px;" />
+            </a>
+            {% endif %}
         {% endfor %}
     {% else %}
         No screenshots available.
