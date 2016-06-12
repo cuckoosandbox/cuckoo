@@ -6,6 +6,7 @@
 import datetime
 import logging
 import re
+import shlex
 
 from cuckoo.common.abstracts import BehaviorHandler
 from cuckoo.common.netlog import BsonParser
@@ -106,6 +107,10 @@ class MonitorProcessLog(list):
 
         class_ = self.vbe6_ptrs.get(this, this)
         self.vbe6_func[class_, funcidx] = funcname
+        return False
+
+    def _api_vbe6_CallByName(self, event):
+        """Only used by the monitor for administrative uses."""
         return False
 
     def _api_vbe6_Invoke(self, event):
@@ -212,7 +217,8 @@ class WindowsMonitor(BehaviorHandler):
     def __init__(self, *args, **kwargs):
         super(WindowsMonitor, self).__init__(*args, **kwargs)
         self.processes = []
-        self.reconstructors = {}
+        self.behavior = {}
+        self.reboot = {}
         self.matched = False
 
     def handles_path(self, path):
@@ -231,24 +237,36 @@ class WindowsMonitor(BehaviorHandler):
                 process["calls"] = MonitorProcessLog(parser)
                 self.processes.append(process)
 
-                self.reconstructors[process["pid"]] = BehaviorReconstructor()
+                self.behavior[process["pid"]] = BehaviorReconstructor()
+                self.reboot[process["pid"]] = RebootReconstructor()
 
             # Create generic events out of the windows calls.
             elif event["type"] == "apicall":
-                reconstructor = self.reconstructors[event["pid"]]
-                res = reconstructor.process_apicall(event)
+                behavior = self.behavior[event["pid"]]
+                reboot = self.reboot[event["pid"]]
 
-                if res and isinstance(res, tuple):
-                    res = [res]
+                for category, arg in behavior.process_apicall(event):
+                    yield {
+                        "type": "generic",
+                        "pid": event["pid"],
+                        "category": category,
+                        "value": arg,
+                    }
 
-                if res:
-                    for category, arg in res:
-                        yield {
-                            "type": "generic",
-                            "pid": event["pid"],
-                            "category": category,
-                            "value": arg,
-                        }
+                # Process the reboot reconstructor.
+                for category, args in reboot.process_apicall(event):
+                    # TODO Improve this where we have to calculate the "real"
+                    # time again even though we already do this in
+                    # MonitorProcessLog.
+                    ts = process["first_seen"] + \
+                        datetime.timedelta(0, 0, event["time"] * 1000)
+
+                    yield {
+                        "type": "reboot",
+                        "category": category,
+                        "args": args,
+                        "time": int(ts.strftime("%d")),
+                    }
 
                 # Indicate that the process has API calls. For more
                 # information on this matter, see also the __nonzero__ above.
@@ -266,6 +284,12 @@ class WindowsMonitor(BehaviorHandler):
 def NT_SUCCESS(value):
     return value % 2**32 < 0x80000000
 
+def single(key, value):
+    return [(key, value)]
+
+def multiple(*l):
+    return l
+
 class BehaviorReconstructor(object):
     """Reconstructs the behavior of behavioral API logs."""
     def __init__(self):
@@ -274,91 +298,96 @@ class BehaviorReconstructor(object):
     def process_apicall(self, event):
         fn = getattr(self, "_api_%s" % event["api"], None)
         if fn is not None:
-            return fn(event["return_value"], event["arguments"],
-                      event.get("flags"))
+            ret = fn(
+                event["return_value"], event["arguments"], event.get("flags")
+            )
+            return ret or []
+        return []
 
     # Generic file & directory stuff.
 
     def _api_CreateDirectoryW(self, return_value, arguments, flags):
-        return ("directory_created", arguments["dirpath"])
+        return single("directory_created", arguments["dirpath"])
 
     _api_CreateDirectoryExW = _api_CreateDirectoryW
 
     def _api_RemoveDirectoryA(self, return_value, arguments, flags):
-        return ("directory_removed", arguments["dirpath"])
+        return single("directory_removed", arguments["dirpath"])
 
     _api_RemoveDirectoryW = _api_RemoveDirectoryA
 
     def _api_MoveFileWithProgressW(self, return_value, arguments, flags):
-        return ("file_moved", (arguments["oldfilepath"],
-                               arguments["newfilepath"]))
+        return single("file_moved", (
+            arguments["oldfilepath"], arguments["newfilepath"]
+        ))
 
     def _api_CopyFileA(self, return_value, arguments, flags):
-        return ("file_copied", (arguments["oldfilepath"],
-                                arguments["newfilepath"]))
+        return single("file_copied", (
+            arguments["oldfilepath"], arguments["newfilepath"]
+        ))
 
     _api_CopyFileW = _api_CopyFileA
     _api_CopyFileExW = _api_CopyFileA
 
     def _api_DeleteFileA(self, return_value, arguments, flags):
-        return ("file_deleted", arguments["filepath"])
+        return single("file_deleted", arguments["filepath"])
 
     _api_DeleteFileW = _api_DeleteFileA
     _api_NtDeleteFile = _api_DeleteFileA
 
     def _api_FindFirstFileExA(self, return_value, arguments, flags):
-        return ("directory_enumerated", arguments["filepath"])
+        return single("directory_enumerated", arguments["filepath"])
 
     _api_FindFirstFileExW = _api_FindFirstFileExA
 
     def _api_LdrLoadDll(self, return_value, arguments, flags):
-        return ("dll_loaded", arguments["module_name"])
+        return single("dll_loaded", arguments["module_name"])
 
     def _api_NtCreateFile(self, return_value, arguments, flags):
         self.files[arguments["file_handle"]] = arguments["filepath"]
         if NT_SUCCESS(return_value):
             status_info = flags.get("status_info", "").lower()
             if status_info in ("file_overwritten", "file_superseded"):
-                return ("file_recreated", arguments["filepath"])
+                return single("file_recreated", arguments["filepath"])
             elif status_info == "file_exists":
-                return ("file_opened", arguments["filepath"])
+                return single("file_opened", arguments["filepath"])
             elif status_info == "file_does_not_exist":
-                return ("file_failed", arguments["filepath"])
+                return single("file_failed", arguments["filepath"])
             elif status_info == "file_created":
-                return ("file_created", arguments["filepath"])
+                return single("file_created", arguments["filepath"])
             else:
-                return ("file_opened", arguments["filepath"])
+                return single("file_opened", arguments["filepath"])
         else:
-            return ("file_failed", arguments["filepath"])
+            return single("file_failed", arguments["filepath"])
 
     _api_NtOpenFile = _api_NtCreateFile
 
     def _api_NtReadFile(self, return_value, arguments, flags):
         h = arguments["file_handle"]
         if NT_SUCCESS(return_value) and h in self.files:
-            return ("file_read", self.files[h])
+            return single("file_read", self.files[h])
 
     def _api_NtWriteFile(self, return_value, arguments, flags):
         h = arguments["file_handle"]
         if NT_SUCCESS(return_value) and h in self.files:
-            return ("file_written", self.files[h])
+            return single("file_written", self.files[h])
 
     def _api_GetFileAttributesW(self, return_value, arguments, flags):
-        return ("file_exists", arguments["filepath"])
+        return single("file_exists", arguments["filepath"])
 
     _api_GetFileAttributesExW = _api_GetFileAttributesW
 
     # Registry stuff.
 
     def _api_RegOpenKeyExA(self, return_value, arguments, flags):
-        return ("regkey_opened", arguments["regkey"])
+        return single("regkey_opened", arguments["regkey"])
 
     _api_RegOpenKeyExW = _api_RegOpenKeyExA
     _api_RegCreateKeyExA = _api_RegOpenKeyExA
     _api_RegCreateKeyExW = _api_RegOpenKeyExA
 
     def _api_RegDeleteKeyA(self, return_value, arguments, flags):
-        return ("regkey_deleted", arguments["regkey"])
+        return single("regkey_deleted", arguments["regkey"])
 
     _api_RegDeleteKeyW = _api_RegDeleteKeyA
     _api_RegDeleteValueA = _api_RegDeleteKeyA
@@ -366,13 +395,13 @@ class BehaviorReconstructor(object):
     _api_NtDeleteValueKey = _api_RegDeleteKeyA
 
     def _api_RegQueryValueExA(self, return_value, arguments, flags):
-        return ("regkey_read", arguments["regkey"])
+        return single("regkey_read", arguments["regkey"])
 
     _api_RegQueryValueExW = _api_RegQueryValueExA
     _api_NtQueryValueKey = _api_RegQueryValueExA
 
     def _api_RegSetValueExA(self, return_value, arguments, flags):
-        return ("regkey_written", arguments["regkey"])
+        return single("regkey_written", arguments["regkey"])
 
     _api_RegSetValueExW = _api_RegSetValueExA
     _api_NtSetValueKey = _api_RegSetValueExA
@@ -383,25 +412,25 @@ class BehaviorReconstructor(object):
     # Network stuff.
 
     def _api_URLDownloadToFileW(self, return_value, arguments, flags):
-        return [
+        return multiple(
             ("downloads_file", arguments["url"]),
             ("file_opened", arguments["filepath"]),
             ("file_written", arguments["filepath"]),
-        ]
+        )
 
     def _api_InternetConnectA(self, return_value, arguments, flags):
-        return ("connects_host", arguments["hostname"])
+        return single("connects_host", arguments["hostname"])
 
     _api_InternetConnectW = _api_InternetConnectA
 
     def _api_InternetOpenUrlA(self, return_value, arguments, flags):
-        return ("fetches_url", arguments["url"])
+        return single("fetches_url", arguments["url"])
 
     _api_InternetOpenUrlW = _api_InternetOpenUrlA
 
     def _api_DnsQuery_A(self, return_value, arguments, flags):
         if arguments["hostname"]:
-            return ("resolves_host", arguments["hostname"])
+            return single("resolves_host", arguments["hostname"])
 
     _api_DnsQuery_W = _api_DnsQuery_A
     _api_DnsQuery_UTF8 = _api_DnsQuery_A
@@ -410,13 +439,13 @@ class BehaviorReconstructor(object):
     _api_gethostbyname = _api_DnsQuery_A
 
     def _api_connect(self, return_value, arguments, flags):
-        return ("connects_ip", arguments["ip_address"])
+        return single("connects_ip", arguments["ip_address"])
 
     # Mutex stuff
 
     def _api_NtCreateMutant(self, return_value, arguments, flags):
         if arguments["mutant_name"]:
-            return ("mutex", arguments["mutant_name"])
+            return single("mutex", arguments["mutant_name"])
 
     _api_ConnectEx = _api_connect
 
@@ -425,33 +454,33 @@ class BehaviorReconstructor(object):
     def _api_CreateProcessInternalW(self, return_value, arguments, flags):
         if arguments.get("track", True):
             cmdline = arguments["command_line"] or arguments["filepath"]
-            return ("command_line", cmdline)
+            return single("command_line", cmdline)
 
     def _api_ShellExecuteExW(self, return_value, arguments, flags):
         if arguments["parameters"]:
             cmdline = "%s %s" % (arguments["filepath"], arguments["parameters"])
         else:
             cmdline = arguments["filepath"]
-        return ("command_line", cmdline)
+        return single("command_line", cmdline)
 
     def _api_system(self, return_value, arguments, flags):
-        return ("command_line", arguments["command"])
+        return single("command_line", arguments["command"])
 
     # WMI stuff.
 
     def _api_IWbemServices_ExecQuery(self, return_value, arguments, flags):
-        return ("wmi_query", arguments["query"])
+        return single("wmi_query", arguments["query"])
 
     def _api_IWbemServices_ExecQueryAsync(self, return_value, arguments, flags):
-        return ("wmi_query", arguments["query"])
+        return single("wmi_query", arguments["query"])
 
     # GUIDs.
 
     def _api_CoCreateInstance(self, return_value, arguments, flags):
-        return [
+        return multiple(
             ("guid", arguments["clsid"]),
             ("guid", arguments["iid"]),
-        ]
+        )
 
     def _api_CoCreateInstanceEx(self, return_value, arguments, flags):
         ret = [
@@ -459,32 +488,97 @@ class BehaviorReconstructor(object):
         ]
         for iid in arguments["iid"]:
             ret.append(("guid", iid))
-        return ret
+        return multiple(*ret)
 
     def _api_CoGetClassObject(self, return_value, arguments, flags):
-        return [
+        return multiple(
             ("guid", arguments["clsid"]),
             ("guid", arguments["iid"]),
-        ]
+        )
 
     # SSLv3 & TLS Master Secrets.
 
     def _api_Ssl3GenerateKeyMaterial(self, return_value, arguments, flags):
         if arguments["client_random"] and arguments["server_random"]:
-            return [
-                ("tls_master", (
-                    arguments["client_random"],
-                    arguments["server_random"],
-                    arguments["master_secret"],
-                ))
-            ]
+            return single("tls_master", (
+                arguments["client_random"],
+                arguments["server_random"],
+                arguments["master_secret"],
+            ))
 
     def _api_PRF(self, return_value, arguments, flags):
         if arguments["type"] == "key expansion":
-            return [
-                ("tls_master", (
-                    arguments["client_random"],
-                    arguments["server_random"],
-                    arguments["master_secret"],
-                )),
-            ]
+            return single("tls_master", (
+                arguments["client_random"],
+                arguments["server_random"],
+                arguments["master_secret"],
+            ))
+
+class RebootReconstructor(object):
+    """Reconstructs the behavior as would be seen after a reboot."""
+
+    def process_apicall(self, event):
+        fn = getattr(self, "_api_%s" % event["api"], None)
+        if fn is not None:
+            ret = fn(
+                event["return_value"], event["arguments"], event.get("flags")
+            )
+            return ret or []
+        return []
+
+    def _api_delete_regkey(self, return_value, arguments, flags):
+        return single("regkey_deleted", arguments["regkey"])
+
+    _api_RegDeleteKeyA = _api_delete_regkey
+    _api_RegDeleteKeyW = _api_delete_regkey
+    _api_RegDeleteValueA = _api_delete_regkey
+    _api_RegDeleteValueW = _api_delete_regkey
+    _api_NtDeleteValueKey = _api_delete_regkey
+
+    def parse_cmdline(self, command_line):
+        """Extract the filepath and arguments from the full commandline."""
+        components = shlex.split(command_line, posix=False)
+        return components[0].strip('"'), components[1:]
+
+    def _handle_run(self, arguments, flags):
+        """Handle Run registry keys."""
+        reg_type = flags.get("reg_type", arguments["reg_type"])
+        filepath, args = self.parse_cmdline(arguments["value"])
+        return multiple(
+            ("regkey_written", (
+                arguments["regkey"], reg_type, arguments["value"]
+            )),
+            ("create_process", (
+                filepath, args, "explorer.exe"
+            )),
+        )
+
+    def _handle_runonce(self, arguments, flags):
+        """For RunOnce there is no registry key persistence."""
+        filepath, args = self.parse_cmdline(arguments["value"])
+        return single("create_process", (
+            filepath, args, "explorer.exe",
+        ))
+
+    # TODO In an optimal world we would move this logic to a Signature, but
+    # unfortunately the reboot information is already written away during the
+    # Processing stage and thus the Signature stage is too late in the chain.
+    _reg_regexes = [
+        (_handle_run, ".*\\\\Software\\\\(Wow6432Node\\\\)?Microsoft\\\\Windows\\\\CurrentVersion\\\\Run"),
+        (_handle_runonce, ".*\\\\Software\\\\(Wow6432Node\\\\)?Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce"),
+    ]
+
+    def _api_set_regkey(self, return_value, arguments, flags):
+        # Is this a registry key that directly affects reboot persistence?
+        for fn, regex in self._reg_regexes:
+            if re.match(regex, arguments["regkey"], re.I):
+                return fn(self, arguments, flags)
+
+        reg_type = flags.get("reg_type", arguments["reg_type"])
+        return single("regkey_written", (
+            arguments["regkey"], reg_type, arguments["value"]
+        ))
+
+    _api_RegSetValueExA = _api_set_regkey
+    _api_RegSetValueExW = _api_set_regkey
+    _api_NtSetValueKey = _api_set_regkey

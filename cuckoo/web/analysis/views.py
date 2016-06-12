@@ -744,3 +744,11 @@ def import_analysis(request):
             "tasks": task_ids,
             "baseurl": request.build_absolute_uri("/")[:-1],
         })
+
+def reboot_analysis(request, task_id):
+    task_id = Database().add_reboot(task_id=task_id)
+
+    return render(request, "submission/reboot.html", {
+        "task_id": task_id,
+        "baseurl": request.build_absolute_uri("/")[:-1],
+    })

@@ -18,6 +18,7 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.exceptions import CuckooDisableModule
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -63,9 +64,11 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
 class RunAuxiliary(object):
     """Auxiliary modules manager."""
 
-    def __init__(self, task, machine):
+    def __init__(self, task, machine, guest_manager):
         self.task = task
         self.machine = machine
+        self.guest_manager = guest_manager
+
         self.cfg = Config("auxiliary")
         self.enabled = []
 
@@ -94,12 +97,15 @@ class RunAuxiliary(object):
 
             current.set_task(self.task)
             current.set_machine(self.machine)
+            current.set_guest_manager(self.guest_manager)
             current.set_options(options)
 
             try:
                 current.start()
             except NotImplementedError:
                 pass
+            except CuckooDisableModule:
+                continue
             except Exception as e:
                 log.warning("Unable to start auxiliary module %s: %s",
                             module_name, e)
@@ -107,6 +113,27 @@ class RunAuxiliary(object):
                 log.debug("Started auxiliary module: %s",
                           current.__class__.__name__)
                 self.enabled.append(current)
+
+    def callback(self, name, *args, **kwargs):
+        def default(*args, **kwargs):
+            pass
+
+        enabled = []
+        for module in self.enabled:
+            try:
+                getattr(module, "cb_%s" % name, default)(*args, **kwargs)
+            except NotImplementedError:
+                pass
+            except CuckooDisableModule:
+                continue
+            except Exception as e:
+                log.warning(
+                    "Error performing callback %r on auxiliary module %r: %s",
+                    name, module.__class__.__name__, e
+                )
+
+            enabled.append(module)
+        self.enabled = enabled
 
     def stop(self):
         for module in self.enabled:

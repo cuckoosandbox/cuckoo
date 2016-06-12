@@ -35,6 +35,7 @@ class Auxiliary(object):
     def __init__(self):
         self.task = None
         self.machine = None
+        self.guest_manager = None
         self.options = None
 
     def set_task(self, task):
@@ -42,6 +43,9 @@ class Auxiliary(object):
 
     def set_machine(self, machine):
         self.machine = machine
+
+    def set_guest_manager(self, guest_manager):
+        self.guest_manager = guest_manager
 
     def set_options(self, options):
         self.options = options

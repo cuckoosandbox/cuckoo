@@ -7,7 +7,6 @@ import os
 import logging
 import random
 import subprocess
-import struct
 import tempfile
 
 from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
@@ -16,11 +15,9 @@ from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.defines import MEMORY_BASIC_INFORMATION
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
-from lib.common.results import NetlogFile
 
 log = logging.getLogger(__name__)
 
@@ -168,6 +165,11 @@ class Process(object):
         @param args: list of arguments
         @return: the command-line equivalent
         """
+        # Subprocess features a more complete and accurate conversion method
+        # already, so use that if available (should be in all cases).
+        if hasattr(subprocess, "list2cmdline"):
+            return subprocess.list2cmdline(args)
+
         ret = []
         for line in args:
             if " " in line or '"' in line:
@@ -248,21 +250,27 @@ class Process(object):
                         "injection aborted.")
             return False
 
-        if is32bit:
+        if source:
+            if isinstance(source, (int, long)) or source.isdigit():
+                inject_is32bit = self.is32bit(pid=int(source))
+            else:
+                inject_is32bit = self.is32bit(process_name=source)
+        else:
+            inject_is32bit = is32bit
+
+        if inject_is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")
         else:
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
-        argv = [inject_exe, "--app", self.shortpath(path)]
+        argv = [
+            inject_exe,
+            "--app", self.shortpath(path),
+            "--only-start",
+        ]
 
         if args:
             argv += ["--args", self._encode_args(args)]
-
-        if free:
-            argv += ["--free"]
-        else:
-            argv += ["--apc", "--dll", dllpath,
-                     "--config", self.drop_config(mode=mode)]
 
         if curdir:
             argv += ["--curdir", self.shortpath(curdir)]
@@ -277,7 +285,35 @@ class Process(object):
             argv += ["--maximize"]
 
         try:
-            self.pid = int(subprocess_checkoutput(argv, env))
+            output = subprocess_checkoutput(argv, env)
+            self.pid, self.tid = map(int, output.split())
+        except Exception:
+            log.error("Failed to execute process from path %r with "
+                      "arguments %r (Error: %s)", path, argv,
+                      get_error_string(KERNEL32.GetLastError()))
+            return False
+
+        if is32bit:
+            inject_exe = os.path.join("bin", "inject-x86.exe")
+        else:
+            inject_exe = os.path.join("bin", "inject-x64.exe")
+
+        argv = [
+            inject_exe,
+            "--resume-thread",
+            "--pid", "%s" % self.pid,
+            "--tid", "%s" % self.tid,
+        ]
+
+        if not free:
+            argv += [
+                "--apc",
+                "--dll", dllpath,
+                "--config", self.drop_config(mode=mode),
+            ]
+
+        try:
+            subprocess_checkoutput(argv, env)
         except Exception:
             log.error("Failed to execute process from path %r with "
                       "arguments %r (Error: %s)", path, argv,
@@ -347,7 +383,8 @@ class Process(object):
             inject_exe = os.path.join("bin", "inject-x64.exe")
 
         args = [
-            inject_exe, "--dll", dllpath,
+            inject_exe,
+            "--dll", dllpath,
             "--config", self.drop_config(track=track, mode=mode),
         ]
 
@@ -403,8 +440,8 @@ class Process(object):
         Process.first_process = False
         return config_path
 
-    def dump_memory(self):
-        """Dump process memory.
+    def dump_memory(self, addr=None, length=None):
+        """Dump process memory, optionally target only a certain memory range.
         @return: operation status.
         """
         if not self.pid:
@@ -430,6 +467,15 @@ class Process(object):
                 "--pid", "%s" % self.pid,
                 "--dump", dump_path,
             ]
+
+            # Restrict to a certain memory block.
+            if addr and length:
+                args += [
+                    "--dump-block",
+                    "0x%x" % addr,
+                    "%s" % length,
+                ]
+
             subprocess_checkcall(args)
         except subprocess.CalledProcessError:
             log.error("Failed to dump memory of %d-bit process with pid %d.",
@@ -440,66 +486,20 @@ class Process(object):
         # the host. Keep in mind that one process may have multiple process
         # memory dumps in the future.
         idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
-        file_name = os.path.join("memory", "%s-%s.dmp" % (self.pid, idx))
+
+        if addr and length:
+            file_name = os.path.join(
+                "memory", "block-%s-0x%x-%s.dmp" % (self.pid, addr, idx)
+            )
+        else:
+            file_name = os.path.join("memory", "%s-%s.dmp" % (self.pid, idx))
+
         upload_to_host(dump_path, file_name)
         os.unlink(dump_path)
 
         log.info("Memory dump of process with pid %d completed", self.pid)
         return True
 
-    def dump_memory_block(self, addr, length):
-        """Dump process memory.
-        @return: operation status.
-        """
-        if not self.pid:
-            log.warning("No valid pid specified, memory dump aborted")
-            return False
-
-        if not self.is_alive():
-            log.warning("The process with pid %d is not alive, memory "
-                        "dump aborted", self.pid)
-            return False
-
-        self.get_system_info()
-
-        page_size = self.system_info.dwPageSize
-        if length < page_size:
-            length = page_size
-
-        # Now upload to host from the StringIO.
-        idx = self.dumpmem[self.pid] = self.dumpmem.get(self.pid, 0) + 1
-        file_name = os.path.join("memory", "block-%s-%s-%s.dmp" % (self.pid, hex(addr), idx))
-
-        process_handle = self.open_process()
-        mbi = MEMORY_BASIC_INFORMATION()
-
-        if KERNEL32.VirtualQueryEx(process_handle,
-                                   addr,
-                                   byref(mbi),
-                                   sizeof(mbi)) == 0:
-            log.warning("Couldn't obtain MEM_BASIC_INFO for pid %d address %s", self.pid, hex(addr))
-            return False
-
-        # override request with the full mem region attributes
-        addr = mbi.BaseAddress
-        length = mbi.RegionSize
-
-        count = c_ulong(0)
-        try:
-            buf = create_string_buffer(length)
-            if KERNEL32.ReadProcessMemory(process_handle, addr, buf, length, byref(count)):
-                header = struct.pack("QIIII", addr, length, mbi.State, mbi.Type, mbi.Protect)
-                nf = NetlogFile()
-                nf.init(file_name)
-                nf.sock.sendall(header)
-                nf.sock.sendall(buf.raw)
-                nf.close()
-            else:
-                log.warning("ReadProcessMemory failed on process_handle %r addr %s length %s", process_handle, hex(addr), hex(length))
-        except:
-            log.exception("ReadProcessMemory exception on process_handle %r addr %s length %s", process_handle, hex(addr), hex(length))
-
-        KERNEL32.CloseHandle(process_handle)
-
-        log.info("Memory block dump of process with pid %d, addr %s, length %s completed", self.pid, hex(addr), hex(length))
-        return True
+    # The dump_memory_block functionality has been integrated with the
+    # dump_memory function, this alias is just for backwards compatibility.
+    dump_memory_block = dump_memory

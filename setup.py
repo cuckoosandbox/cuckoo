@@ -32,6 +32,7 @@ setup(
         "Flask==0.10.1",
         "HTTPReplay==0.1.15",
         "jsbeautifier==1.5.10",
+        "lxml==3.6.0",
         "oletools==0.42",
         "pefile==2016.3.28",
         "pymisp==2.4.36",
