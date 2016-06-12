@@ -40,9 +40,7 @@ def extract_archive(data):
     archive.extractall(temp_dir)
     archive.close()
     os.unlink(filepath)
-    final_dir = os.path.join(temp_dir, os.listdir(temp_dir)[0])
-
-    return temp_dir, final_dir
+    return temp_dir
 
 def installdir(src, dst, force, rewrite, origin=[]):
     for file_name in os.listdir(src):
@@ -108,7 +106,7 @@ def install(enabled, force, rewrite, archive):
     else:
         data = download_archive()
 
-    temp, source = extract_archive(data)
+    source = extract_archive(data)
 
     folders = {
         "signatures": os.path.join("modules", "signatures"),
@@ -132,7 +130,7 @@ def install(enabled, force, rewrite, archive):
 
         installdir(origin, os.path.join(CUCKOO_ROOT, folder), force, rewrite)
 
-    shutil.rmtree(temp)
+    shutil.rmtree(source)
 
 def main():
     global URL
