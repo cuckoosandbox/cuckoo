@@ -9,7 +9,7 @@ import sys
 
 # Cuckoo path.
 CUCKOO_PATH = os.path.join(os.getcwd(), "..")
-sys.path.append(CUCKOO_PATH)
+sys.path.insert(0, CUCKOO_PATH)
 
 from lib.cuckoo.common.config import Config
 

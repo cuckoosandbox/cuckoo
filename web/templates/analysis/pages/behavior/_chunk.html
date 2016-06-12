@@ -11,7 +11,7 @@
     <tbody>
     {% for call in chunk.calls %}
         <tr class="{{call.category}}" id="call_{{call.id}}">
-            {% include "analysis/behavior/_api_call.html" %}
+            {% include "analysis/pages/behavior/_api_call.html" %}
         </tr>
     {% endfor %}
     </tbody>
