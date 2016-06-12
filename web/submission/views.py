@@ -240,7 +240,7 @@ def status(request, task_id):
         })
 
     if task.status == "reported":
-        return redirect("analysis.views.report", task_id=task_id)
+        return redirect("analysis.views.summary", task_id=task_id)
 
     return render(request, "submission/status.html", {
         "status": task.status,

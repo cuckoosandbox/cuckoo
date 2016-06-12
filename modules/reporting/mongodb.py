@@ -4,6 +4,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from PIL import Image
+from StringIO import StringIO
 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooDependencyError
@@ -185,12 +187,38 @@ class MongoDB(Report):
                     continue
 
                 shot_path = os.path.join(self.shots_path, shot_file)
+                shot_path_dir = os.path.dirname(shot_path) + '/'
+                shot_file_name, shot_file_ext = os.path.splitext(shot_file)
+
                 shot = File(shot_path)
                 # If the screenshot path is a valid file, store it and
                 # reference it back in the report.
                 if shot.valid():
+                    shot_blob = {}
+
+                    # Generate several sizes for the current screenshot
+                    sizes = {
+                        'small': (320, 320),
+                        'medium': (640, 640),
+                        'large': (900, 900)
+                    }
+
+                    for size_name, size in sizes.iteritems():
+                        im = Image.open(StringIO(shot.file_data))
+                        im.thumbnail(size, Image.ANTIALIAS)
+
+                        shot_file_name_resize = '%s_%s' % (shot_file_name, size_name)
+                        shot_path_resize = shot_path_dir + shot_file_name_resize + shot_file_ext
+                        
+                        im.save(shot_path_resize, "JPEG")
+
+                        resize_id = self.store_file(File(shot_path_resize))
+                        shot_blob[size_name] = resize_id
+
                     shot_id = self.store_file(shot)
-                    report["shots"].append(shot_id)
+                    shot_blob['original'] = shot_id
+
+                    report['shots'].append(shot_blob)
 
         paginate = self.options.get("paginate", 100)
 

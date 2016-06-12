@@ -16,7 +16,7 @@
             <tbody>
             {% for analysis in analyses %}
                 <tr>
-                    <td><a href="{% url "analysis.views.report" analysis.task_id %}">Analysis #{{ analysis.task_id }}</a></td>
+                    <td><a href="{% url "analysis.views.summary" analysis.task_id %}">Analysis #{{ analysis.task_id }}</a></td>
                     <td style="word-wrap: break-word;">
                         <table>
                         {% for key, value in analysis.matches %}
