@@ -7,7 +7,7 @@ import subprocess
 import time
 
 from lib.common.abstracts import Auxiliary
-from lib.common.exceptions import CuckooDisableModule
+from lib.common.exceptions import CuckooDisableModule, CuckooPackageError
 from lib.common.results import upload_to_host
 
 class Procmon(Auxiliary):
@@ -22,6 +22,15 @@ class Procmon(Auxiliary):
         self.procmon_pmc = os.path.join(bin_path, "procmon.pmc")
         self.procmon_pml = os.path.join(bin_path, "procmon.pml")
         self.procmon_xml = os.path.join(bin_path, "procmon.xml")
+
+        if not os.path.exists(self.procmon_exe) or \
+                not os.path.exists(self.procmon_pmc):
+            raise CuckooPackageError(
+                "In order to use the Process Monitor functionality it is "
+                "required to have Procmon setup with Cuckoo. Please run the "
+                "Cuckoo Community script which will automatically fetch all "
+                "related files to get you up-and-running."
+            )
 
         # Start process monitor in the background.
         subprocess.Popen([
