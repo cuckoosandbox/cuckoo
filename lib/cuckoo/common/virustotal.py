@@ -289,6 +289,7 @@ class VirusTotalAPI(object):
         self.timeout = timeout
         self.scan = scan
 
+
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
         if not HAVE_REQUESTS:
@@ -353,11 +354,13 @@ class VirusTotalAPI(object):
 
         return results
 
+
     def url_report(self, url, summary=False):
         """Get the report of an existing URL scan.
         @param url: URL
         @param summary: if you want a summary report"""
         return self._get_report(self.URL_REPORT, url, summary)
+
 
     def file_report(self, filepath, summary=False):
         """Get the report of an existing file scan.
@@ -366,6 +369,7 @@ class VirusTotalAPI(object):
         resource = File(filepath).get_md5()
         return self._get_report(self.FILE_REPORT, resource, summary)
 
+
     def url_scan(self, url):
         """Submit a URL to be scanned.
         @param url: URL
@@ -373,6 +377,7 @@ class VirusTotalAPI(object):
         data = dict(apikey=self.apikey, url=url)
         r = self._request_json(self.URL_SCAN, data=data)
         return dict(summary=dict(permalink=r.get("permalink")))
+
 
     def file_scan(self, filepath):
         """Submit a file to be scanned.
@@ -453,9 +458,6 @@ class VirusTotalAPI(object):
 
             # If none of the above apply transfer the token
             remaining_tokens.append(token)
-
-        if not platform:
-            platform = ["unknown"]
 
         # Remove empty strings tokens
         tokens = [t.strip() for t in remaining_tokens if t.strip()]
