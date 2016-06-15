@@ -16,6 +16,7 @@ class Cuckooml(object):
         self.report = None
         self.total = None
         self.positives = None
+        self.scans = None
         self.label = None
 
 
@@ -30,36 +31,33 @@ class Cuckooml(object):
                 print >> sys.stderr, "Exception: %s" % str(error)
                 sys.exit(1)
 
-
-    def label_sample(self, label_type="family"):
-        """Generate label for the loaded sample.
-        You can use platform, cve, metatype, type, and family (default)."""
         # Get total and positives
         self.total = self.report.get("virustotal").get("total")
         self.positives = self.report.get("virustotal").get("positives")
-
         # Pull all VT normalised results
-        vendors = self.report.get("virustotal").get("scans")
+        self.scans = self.report.get("virustotal").get("scans")
 
-        if not vendors:
-            self.label = "none"
-            return
 
-        aggregated_labels = []
-        for vendor in vendors:
-            aggregated_labels += self.report["virustotal"]["scans"][vendor]\
-                ["normalized"][label_type]
+    def label_sample(self, external_labels=None, label_type="family"):
+        """Generate label for the loaded sample.
+        You can use platform, cve, metatype, type, and family (default)."""
+        merged_labels = []
 
-        if not aggregated_labels:
+        if external_labels is None and self.scans is not None:
+            for vendor in self.scans:
+                merged_labels += self.scans[vendor]["normalized"][label_type]
+        elif external_labels is not None and self.scans is None:
+            merged_labels = external_labels
+
+        if not merged_labels:
             self.label = "none"
             return
 
         # Get most common label if it has more hits than set threshold
-        print aggregated_labels
-        labels_frequency = collections.Counter(aggregated_labels)
+        labels_frequency = collections.Counter(merged_labels)
         top_label, top_label_count = labels_frequency.most_common(1)[0]
         if top_label_count >= self.LABEL_SIGNIFICANCE_COUNT:
                 # self.positives >= self.POSITIVE_RATE:
             self.label = top_label.encode("ascii", "ignore")
         else:
-            self.lobel = "none"
+            self.label = "none"
