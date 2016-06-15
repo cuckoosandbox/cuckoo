@@ -18,6 +18,7 @@ except ImportError:
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.objects import File
+from modules.cuckooml.cuckooml import Cuckooml
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
@@ -336,7 +337,13 @@ class VirusTotalAPI(object):
 
         if not summary:
             results["scans"] = {}
-            results["normalized"] = []
+            results["normalized"] = {
+                "cve":"",
+                "platform":"",
+                "metatype":"",
+                "type":"",
+                "family":""
+            }
 
             # Embed all VirusTotal results into the report.
             for engine, signature in r.get("scans", {}).items():
@@ -345,12 +352,20 @@ class VirusTotalAPI(object):
 
             # Normalize each detected variant in order to try to find the
             # exact malware family.
-            norm_lower = []
+            norm_lower = {
+                "cve":[],
+                "platform":[],
+                "metatype":[],
+                "type":[],
+                "family":[]
+            }
             for signature in results["scans"].values():
-                for normalized in signature["normalized"]:
-                    if normalized.lower() not in norm_lower:
-                        results["normalized"].append(normalized)
-                        norm_lower.append(normalized.lower())
+                for label_type in signature["normalized"]:
+                    norm_lower[label_type] += signature[label_type]
+            labeller = Cuckooml()
+            for label_type in norm_lower:
+                labeller.label_sample(norm_lower[label_type])
+                results["normalized"][label_type] = labeller.label
 
         return results
 
