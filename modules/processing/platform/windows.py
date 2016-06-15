@@ -23,6 +23,9 @@ class MonitorProcessLog(list):
         self.first_seen = None
         self.has_apicalls = False
 
+        # Will be overridden.
+        self.modules = []
+
     def init(self):
         self.services = {}
         self.vbe6_ptrs = {}
@@ -152,6 +155,17 @@ class MonitorProcessLog(list):
             event["arguments"]["unescaped"]
         )
 
+    def _api___exception__(self, event):
+        addr = int(event["arguments"]["exception"]["address"], 16)
+        for module in self.modules:
+            if "imgsize" not in module:
+                continue
+
+            baseaddr = int(module["baseaddr"], 16)
+            if addr >= baseaddr and addr < baseaddr + module["imgsize"]:
+                event["arguments"]["exception"]["module"] = module["basename"]
+                event["arguments"]["exception"]["offset"] = addr - baseaddr
+
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
         clsid = guid_name(event["arguments"].get("clsid"))
@@ -235,6 +249,7 @@ class WindowsMonitor(BehaviorHandler):
             if event["type"] == "process":
                 process = dict(event)
                 process["calls"] = MonitorProcessLog(parser)
+                process["calls"].modules = process["modules"]
                 self.processes.append(process)
 
                 self.behavior[process["pid"]] = BehaviorReconstructor()
