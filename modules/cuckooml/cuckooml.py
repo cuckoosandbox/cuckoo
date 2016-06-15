@@ -24,10 +24,10 @@ class Cuckooml(object):
         with open(json_path, "r") as malware_report:
             try:
                 self.report = json.load(malware_report)
-            except ValueError, e:
+            except ValueError, error:
                 print >> sys.stderr, "Could not load file;", \
                     malware_report, "is not a valid JSON file."
-                print >> sys.stderr, "Exception: %s" % str(e)
+                print >> sys.stderr, "Exception: %s" % str(error)
                 sys.exit(1)
 
 
