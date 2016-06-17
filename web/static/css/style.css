@@ -73,7 +73,7 @@ span.block-title {
     font-weight: bold;
 }
 img.opaque {
-    opacity: 0.3;
+    opacity: 0.6;
     filter: alpha(opacity=30);
 }
 img.opaque:hover {
@@ -190,4 +190,72 @@ td {
 
 .navbar-fixed-top li img{
     margin: 5px 10px -10px 20px;height: 34px;
+}
+
+
+/* datatables override */
+.dataTables_paginate .pagination>li>a{
+    margin-top: 20px;
+    padding: 3px 10px;
+}
+
+.dataTables_info {
+    margin-top: 20px;
+    color: #cecece;
+}
+
+.dataTables_filter label{
+    color: #d1d1d1;
+}
+
+.dataTables_filter input{
+    border: 1px solid #dddddd;
+}
+
+.dataTables_length select {
+    width: inherit !important;
+}
+
+table>tbody>tr>td{
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+table#network_dns>tbody>tr>td:nth-child(2)>a{
+    display: inline;
+}
+
+.dns_badge_container{
+    min-width: 60px;
+    float: left;
+}
+
+.dns_badge {
+    background-color: #ebebeb;
+    color: #7a7a7a;
+    font-weight: bold;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.panel-heading .glyphicon {
+    color: #646464;
+}
+
+.panel-heading > .btn-group > button > .glyphicon{
+    line-height: 1.6;
+}
+
+section#screenshots .minified{
+    overflow: hidden;
+    max-height: 278px;
+}
+
+.dataTables_paginate .pagination>.active>a {
+    z-index: 2;
+    color: #fff;
+    cursor: default;
+    background-color: #6d99be;
+    border-color: #7b93a7;
 }

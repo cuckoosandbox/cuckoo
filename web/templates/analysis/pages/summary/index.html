@@ -53,10 +53,28 @@
 
     <div style="margin-top: 30px;"></div>
 
-    <h4><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Network</h4>
     <div class="row">
         <div class="col-xs-6">{% include "analysis/network/_dns.html" %}</div>
         <div class="col-xs-6">{% include "analysis/network/_hosts.html" %}</div>
+
+        <script>
+            $(document).ready(function(){
+                setTimeout(function(){
+                ["network_hosts", "network_dns"].forEach(function(x){
+                    $('#'+x).DataTable({
+                        responsive: true,
+                        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                        "pageLength": 10,
+                        "language": {
+                            "lengthMenu": "Show _MENU_ results",
+                            "zeroRecords": "No results",
+                            "info": "_PAGE_/_PAGES_"
+                        }
+                    });
+                });
+                    }, 200);
+            });
+        </script>
     </div>
 
     {% include "analysis/pages/summary/_summary.html" %}
