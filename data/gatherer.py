@@ -8,10 +8,10 @@ Adobe PDF Reader 9, and Internet Explorer 8 - with the feedback from our users
 we may be able to add special support for different versions of the same
 software (think Office 2016, Internet Explorer Edge, etc).
 
-This command should be ran with the "pipe=cuckoo" option. You will then find
-yourself with an analysis with all of the related dropped files. This analysis
-should be "exported" (a feature from the Cuckoo Web Interface) and shared with
-the Cuckoo Developers team in order to process the new files.
+This command should be ran with the "pipe=cuckoo,free=yes" option. You will
+then find yourself with an analysis with all of the related dropped files.
+This analysis should be "exported" (a feature from the Cuckoo Web Interface)
+and shared with the Cuckoo Developers team in order to process the new files.
 
 """
 
