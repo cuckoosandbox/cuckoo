@@ -1,3 +1,20 @@
-{% include "analysis/behavior/_tree.html" %}
-<hr />
-{% include "analysis/behavior/_processes.html" %}
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-10">
+            <div class="row">
+
+                {% include "analysis/pages/behavior/_tree.html" %}
+                <hr />
+                {% include "analysis/pages/behavior/_processes.html" %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

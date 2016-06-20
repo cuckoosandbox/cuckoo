@@ -4,7 +4,7 @@
     {% if process.children %}
         <ul>
             {% for child in process.children %}
-                {% with process=child template_name="analysis/behavior/_tree_process.html" %}
+                {% with process=child template_name="analysis/pages/behavior/_tree_process.html" %}
                     {% include template_name %}
                 {% endwith %}
             {% endfor %}

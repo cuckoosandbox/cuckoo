@@ -57,7 +57,7 @@ class AnalysisController:
     def analysis(request, task_id, page):
         report = AnalysisController.get_report(task_id)
 
-        if page in ['summary', 'static']:
+        if page in ['summary', 'static', 'behavior']:
             return render(request, "analysis/pages/%s/index.html" % page, {'report': report,
                                                                            'page': page})
 

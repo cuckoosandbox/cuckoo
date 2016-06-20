@@ -122,7 +122,7 @@ def chunk(request, task_id, pid, pagenum):
     else:
         chunk = dict(calls=[])
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": chunk,
     })
 
@@ -173,7 +173,7 @@ def filtered_chunk(request, task_id, pid, category):
             if call["category"] == category:
                 filtered_process["calls"].append(call)
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": filtered_process,
     })
 
@@ -241,7 +241,7 @@ def search_behavior(request, task_id):
                 "signs": process_results
             })
 
-    return render(request, "analysis/behavior/_search_results.html", {
+    return render(request, "analysis/pages/behavior/_search_results.html", {
         "results": results,
     })
 

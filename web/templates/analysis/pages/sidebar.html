@@ -76,15 +76,15 @@
         <div class="analysis_menu-usermenu">
             <ul class="nav">
                 <li>
-                    <a href="{% url "analysis/summary" report.analysis.info.id "summary" %}">
+                    <a href="{% url "analysis" report.analysis.info.id "summary" %}">
                     <i class="glyphicon glyphicon-home"></i>Summary </a>
                 </li>
                 <li>
-                    <a href="{% url "analysis/summary" report.analysis.info.id "static" %}">
+                    <a href="{% url "analysis" report.analysis.info.id "static" %}">
                     <i class="glyphicon glyphicon-user"></i>Static Analysis </a>
                 </li>
                 <li>
-                    <a href="#" target="_blank">
+                    <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
                         <i class="glyphicon glyphicon-ok"></i>Behavioral Analysis
                         ({{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }})
                     </a>
