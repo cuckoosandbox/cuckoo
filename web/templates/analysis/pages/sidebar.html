@@ -1,0 +1,120 @@
+<style>
+.analysis_menu-sidebar {
+
+}
+
+.analysis_menu-userpic img {
+  float: none;
+  margin: 0 auto;
+  width: 50%;
+  height: 50%;
+  -webkit-border-radius: 50% !important;
+  -moz-border-radius: 50% !important;
+  border-radius: 50% !important;
+}
+
+.analysis_menu-userbuttons .btn {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 15px;
+  margin-right: 5px;
+}
+
+.analysis_menu-userbuttons .btn:last-child {
+  margin-right: 0px;
+}
+
+.analysis_menu-usermenu {
+
+}
+
+.analysis_menu-usermenu ul li {
+  border-bottom: 1px solid #f0f4f7;
+}
+
+.analysis_menu-usermenu ul li:last-child {
+  border-bottom: none;
+}
+
+.analysis_menu-usermenu ul li a {
+  color: #93a3b5;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.analysis_menu-usermenu ul li a i {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.analysis_menu-usermenu ul li a:hover {
+  background-color: #fafcfd;
+  color: #5b9bd1;
+}
+
+.analysis_menu-usermenu ul li.active {
+  border-bottom: none;
+}
+
+.analysis_menu-usermenu ul li.active a {
+  color: #5b9bd1;
+  background-color: #f6f9fb;
+  border-left: 2px solid #5b9bd1;
+  margin-left: -2px;
+}
+
+.analysis_menu-content {
+  padding: 20px;
+  background: #fff;
+  min-height: 460px;
+}
+</style>
+
+<div class="col-md-2" style="min-width:230px;">
+    <div class="analysis_menu-sidebar">
+        <div class="analysis_menu-usermenu">
+            <ul class="nav">
+                <li>
+                    <a href="{% url "analysis/summary" report.analysis.info.id "summary" %}">
+                    <i class="glyphicon glyphicon-home"></i>Summary </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis/summary" report.analysis.info.id "static" %}">
+                    <i class="glyphicon glyphicon-user"></i>Static Analysis </a>
+                </li>
+                <li>
+                    <a href="#" target="_blank">
+                        <i class="glyphicon glyphicon-ok"></i>Behavioral Analysis
+                        ({{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }})
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                    <i class="glyphicon glyphicon-flag"></i>Network Analysis </a>
+                </li>
+                <li>
+                    <a href="#" target="_blank">
+                    <i class="glyphicon glyphicon-ok"></i>Dropped Files </a>
+                </li>
+                <li>
+                    <a href="#">
+                    <i class="glyphicon glyphicon-flag"></i>Dropped Buffers </a>
+                </li>
+                <li>
+                    <a href="#">
+                    <i class="glyphicon glyphicon-flag"></i>Admin </a>
+                </li>
+            </ul>
+        </div>
+        <!-- END MENU -->
+    </div>
+</div>
+
+<script>
+    $( document ).ready(function() {
+        $(".analysis_menu-sidebar li").each(function(i, obj){
+            if(window.location.pathname.startsWith($(obj).find('a').attr('href'))) $(obj).addClass('active');
+        });
+    });
+</script>
