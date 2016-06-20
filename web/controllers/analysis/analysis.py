@@ -17,7 +17,8 @@ results_db = settings.MONGO
 
 
 class AnalysisController:
-    def recent(self, request):
+    @staticmethod
+    def recent(request):
         db = Database()
         tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
         tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
@@ -52,8 +53,9 @@ class AnalysisController:
             "urls": analyses_urls,
         })
 
-    def analysis(self, request, task_id, page):
-        report = self.get_report(task_id)
+    @staticmethod
+    def analysis(request, task_id, page):
+        report = AnalysisController.get_report(task_id)
 
         if page in ['summary', 'static']:
             return render(request, "analysis/pages/%s/index.html" % page, {'report': report,
@@ -61,16 +63,17 @@ class AnalysisController:
 
         return 'not found'
 
-    def get_report(self, task_id):
-        report = self._get_report(task_id)
+    @staticmethod
+    def get_report(task_id):
+        report = AnalysisController._get_report(task_id)
         data = {
             'analysis': report
         }
 
-        dnsinfo = self._get_dnsinfo(report)
+        dnsinfo = AnalysisController._get_dnsinfo(report)
         data.update(dnsinfo)
 
-        httpreplay = self._get_httpreplay(report)
+        httpreplay = AnalysisController._get_httpreplay(report)
         data.update(httpreplay)
 
         return data
