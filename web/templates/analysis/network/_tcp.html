@@ -3,7 +3,7 @@
 <script src="{% static "js/hexdump.js" %}"></script>
 <section id="tcp" class="tcpudp">
     <h4>TCP</h4>
-    {% if analysis.network.tcp %}
+    {% if report.analysis.network.tcp %}
         <div class="row">
             <div class="col-md-6">
                 <table class="table table-bordered">
@@ -13,11 +13,11 @@
                         <th>Destination</th>
                         <th>Destination Port</th>
                     </tr>
-                    {% for p in analysis.network.tcp %}
+                    {% for p in report.analysis.network.tcp %}
                         <tr class="connrow" data="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},tcp">
                             <td>{{p.src}}</td>
                             <td>{{p.sport}}</td>
-                            <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
+                            <td>{{p.dst}} {{ report.iplookups|get_item:p.dst }}</td>
                             <td>{{p.dport}}</td>
                         </tr>
                     {% endfor %}
@@ -39,7 +39,7 @@ $(function () {
 
         var choice = $(this).closest('tr').attr('data');
 
-        $.get("/analysis/{{analysis.info.id}}/pcapstream/"+choice+"/", function(data, status, xhr) {
+        $.get("/analysis/{{report.analysis.info.id}}/pcapstream/"+choice+"/", function(data, status, xhr) {
             if (status == "error") {
                 $section.find("div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
             } else {

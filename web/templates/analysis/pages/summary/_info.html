@@ -7,10 +7,10 @@
                 <div class="panel-heading">
                     <h4 class="panel-title">Analysis
                         <div class="pull-right">
-                            <a class="btn btn-info btn-xs" href="{% url "compare.views.left" analysis.info.id %}">
+                            <a class="btn btn-default btn-xs" href="{% url "compare.views.left" report.analysis.info.id %}">
                                 <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Compare analysis to ...
                             </a>
-                            <a class="btn btn-info btn-xs" href="{% url "analysis.views.export_analysis" analysis.info.id %}">
+                            <a class="btn btn-default btn-xs" href="{% url "analysis.views.export_analysis" report.analysis.info.id %}">
                                 <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export analysis
                             </a>
                         </div>
@@ -28,10 +28,10 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{{analysis.info.category|upper}}</td>
-                            <td>{{analysis.info.started}}</td>
-                            <td>{{analysis.info.ended}}</td>
-                            <td>{{analysis.info.duration}} seconds</td>
+                            <td>{{report.analysis.info.category|upper}}</td>
+                            <td>{{report.analysis.info.started}}</td>
+                            <td>{{report.analysis.info.ended}}</td>
+                            <td>{{report.analysis.info.duration}} seconds</td>
                             <td>
                                 <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#info-log">Show Analyzer Log</a><br />
                                 <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#info-cuckoo">Show Cuckoo Log</a>
@@ -41,9 +41,9 @@
                 </table>
             </div>
 
-            {% if analysis.debug.errors %}
+            {% if report.analysis.debug.errors %}
                 <ul style="font-size: 16px;">
-                {% for error in analysis.debug.errors %}
+                {% for error in report.analysis.debug.errors %}
                     <li class="text-danger"><b>Error:</b> {{error}}</li>
                 {% endfor %}
                 </ul>
@@ -52,7 +52,7 @@
         </section>
     </div>
     <div class="col-md-6">
-        {% if analysis.info.machine and analysis.info.machine.name %}
+        {% if report.analysis.info.machine and report.analysis.info.machine.name %}
             <section id="machine">
                 <div class="panel panel-info">
                     <div class="panel-heading">
@@ -69,10 +69,10 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>{{analysis.info.machine.name}}</td>
-                                <td>{{analysis.info.machine.label}}</td>
-                                <td>{{analysis.info.machine.started_on}}</td>
-                                <td>{{analysis.info.machine.shutdown_on}}</td>
+                                <td>{{report.analysis.info.machine.name}}</td>
+                                <td>{{report.analysis.info.machine.label}}</td>
+                                <td>{{report.analysis.info.machine.started_on}}</td>
+                                <td>{{report.analysis.info.machine.shutdown_on}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -87,11 +87,12 @@
     <div class="col-md-12">
         <div id="info-log" class="collapse">
             <h4><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Analyzer Log</h4>
-            <pre>{{analysis.debug.log|join:""}}</pre>
+            <pre>{{report.analysis.debug.log|join:""}}</pre>
         </div>
+
         <div id="info-cuckoo" class="collapse">
             <h4><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Cuckoo Log</h4>
-            <pre>{{analysis.debug.cuckoo|join:""}}</pre>
+            <pre>{{report.analysis.debug.cuckoo|join:""}}</pre>
         </div>
     </div>
 </div>

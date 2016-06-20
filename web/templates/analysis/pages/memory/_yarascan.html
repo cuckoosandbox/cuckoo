@@ -7,7 +7,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for row in analysis.memory.yarascan.data|volsort %}
+    {% for row in report.analysis.memory.yarascan.data|volsort %}
         <tr>
             <td class="{{ row.class_ }}">{{row.owner}}</td>
             <td class="{{ row.class_ }}">{{row.rule}}</td>

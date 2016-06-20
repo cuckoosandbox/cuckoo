@@ -1,5 +1,5 @@
 {% if analysis.procmemory %}
-    {% for proc in analysis.procmemory %}
+    {% for proc in report.analysis.procmemory %}
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">Process memory dump for <b>{{ proc.pid|process_name:analysis }}</b> (PID {{ proc.pid }}, dump {{ proc.num }})</h3></div>
             <div class="panel-body">

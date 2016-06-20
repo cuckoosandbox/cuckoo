@@ -223,6 +223,7 @@ table>tbody>tr>td{
 
 table#network_dns>tbody>tr>td:nth-child(2)>a{
     display: inline;
+    word-break: break-all;
 }
 
 .dns_badge_container{
@@ -258,4 +259,51 @@ section#screenshots .minified{
     cursor: default;
     background-color: #6d99be;
     border-color: #7b93a7;
+}
+
+div.dataTables_wrapper div.dataTables_filter {
+    float: right;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+    float: right;
+    width:60%;
+    max-width:170px;
+    margin-top: -4px;
+}
+
+div.dataTables_wrapper div.dataTables_filter label {
+    text-align: right;
+    padding-top: 4px;
+}
+
+table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child, table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child {
+
+}
+
+table#network_dns, table#network_hosts{
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+#network_dns tbody, #network_hosts tbody{
+    font-size: 13px;
+}
+
+#network_dns tr>td:first-child{
+    word-break: break-all;
+}
+
+section#domains .panel-body, section#hosts .panel-body{
+    padding:0;
+}
+
+section#domains .dataTables_length, section#hosts .dataTables_length {
+    padding-left: 14px;
+    padding-top: 18px;
+}
+
+section#domains .dataTables_filter, section#hosts .dataTables_filter{
+    padding-right: 14px;
+    padding-top: 18px;
 }

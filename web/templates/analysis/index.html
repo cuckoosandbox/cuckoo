@@ -37,7 +37,7 @@
                         </td>
                         <td style="word-wrap: break-word;">
                             {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
-                                <a href="{% url "analysis.views.summary" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
+                                <a href="{% url "analysis/summary" analysis.id "summary" %}"><span class="mono">{{analysis.sample.md5}}</span></a>
                             {% else %}
                                 <span class="mono">{{analysis.sample.md5}}</span>
                             {% endif %}

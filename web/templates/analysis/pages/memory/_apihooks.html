@@ -9,7 +9,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for row in analysis.memory.apihooks.data|volsort %}
+    {% for row in report.analysis.memory.apihooks.data|volsort %}
         <tr>
             <td class="{{ row.class_ }}">{{row.process_id}}</td>
             <td class="{{ row.class_ }}">{{row.process_name}}</td>

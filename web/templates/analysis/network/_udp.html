@@ -3,7 +3,7 @@
 <script src="{% static "js/hexdump.js" %}"></script>
 <section id="udp" class="tcpudp">
     <h4>UDP</h4>
-    {% if analysis.network.udp %}
+    {% if report.analysis.network.udp %}
         <div class="row">
             <div class="col-md-6">
                 <table class="table table-bordered">
@@ -13,11 +13,11 @@
                         <th>Destination</th>
                         <th>Destination Port</th>
                     </tr>
-                    {% for p in analysis.network.udp %}
+                    {% for p in report.analysis.network.udp %}
                         <tr class="connrow" data="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp">
                             <td>{{p.src}}</td>
                             <td>{{p.sport}}</td>
-                            <td>{{p.dst}} {{ iplookups|get_item:p.dst }}</td>
+                            <td>{{p.dst}} {{ report.iplookups|get_item:p.dst }}</td>
                             <td>{{p.dport}}</td>
                         </tr>
                     {% endfor %}

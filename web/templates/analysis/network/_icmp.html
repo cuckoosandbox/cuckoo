@@ -1,5 +1,5 @@
 <h4>ICMP traffic</h4>
-{% if analysis.network.icmp %}
+{% if report.analysis.network.icmp %}
 <table class="table table-striped table-bordered" style="table-layout: fixed;">
     <tr>
         <th>Source</th>
@@ -7,7 +7,7 @@
         <th>ICMP Type</th>
         <th>Data</th>
     </tr>
-    {% for packet in analysis.network.icmp %}
+    {% for packet in report.analysis.network.icmp %}
     <tr>
         <td style="word-wrap: break-word;">{{packet.src}}</td>
         <td style="word-wrap: break-word;">{{packet.dst}}</td>

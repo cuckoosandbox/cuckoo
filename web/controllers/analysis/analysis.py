@@ -2,12 +2,14 @@
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+import os
 
 from django.conf import settings
 from django.views.decorators.http import require_safe
 from django.shortcuts import render, redirect
 import pymongo
 
+from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 
@@ -15,11 +17,49 @@ results_db = settings.MONGO
 
 
 class AnalysisController:
+    def recent(self, request):
+        db = Database()
+        tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
+        tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
+
+        analyses_files = []
+        analyses_urls = []
+
+        if tasks_files:
+            for task in tasks_files:
+                new = task.to_dict()
+                new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+
+                filename = os.path.basename(new["target"])
+                new.update({"filename": filename})
+
+                if db.view_errors(task.id):
+                    new["errors"] = True
+
+                analyses_files.append(new)
+
+        if tasks_urls:
+            for task in tasks_urls:
+                new = task.to_dict()
+
+                if db.view_errors(task.id):
+                    new["errors"] = True
+
+                analyses_urls.append(new)
+
+        return render(request, "analysis/index.html", {
+            "files": analyses_files,
+            "urls": analyses_urls,
+        })
+
     def analysis(self, request, task_id, page):
         report = self.get_report(task_id)
 
-        if page == "summary":
-            return render(request, "analysis/pages/summary/index.html", report)
+        if page in ['summary', 'static']:
+            return render(request, "analysis/pages/%s/index.html" % page, {'report': report,
+                                                                           'page': page})
+
+        return 'not found'
 
     def get_report(self, task_id):
         report = self._get_report(task_id)

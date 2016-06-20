@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for row in analysis.memory.messagehooks.data|volsort %}
+    {% for row in report.analysis.memory.messagehooks.data|volsort %}
         <tr>
             <td class="{{ row.class_ }}"><span class="mono">{{row.offset}}</span></td>
             <td class="{{ row.class_ }}">{{row.session}}</td>

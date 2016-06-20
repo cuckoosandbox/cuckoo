@@ -23,7 +23,7 @@ function paginationbar(pages, page) {
     return out;
 }
 function load_chunk(pid, pagenum, callback) {
-    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}chunk/{{analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
+    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}chunk/{{report.analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
         }
@@ -71,7 +71,7 @@ function go_to_api_call(pid, call_id) {
     });
 }
 function load_filtered_chunk(pid, category) {
-    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}filtered/{{analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
+    $("#process_"+pid+" div.calltable").load("{% url "analysis.views.index" %}filtered/{{report.analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
         }
@@ -89,13 +89,13 @@ function load_filtered_chunk(pid, category) {
 <div class="processes tabbable">
     <ul class="nav nav-tabs">
         <li><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
-    {% for process in analysis.behavior.processes|filter_key_if_has:"track" %}
+    {% for process in report.analysis.behavior.processes|filter_key_if_has:"track" %}
         <li class="{% if forloop.first %}active{% endif %}"><a class="process" href="#process_{{process.pid}}" data-pid="{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}} ({{process.pid}})</a></li>
     {% endfor %}
     </ul>
     <div class="tab-content">
     {% include "analysis/behavior/_search.html" %}
-    {% for process in analysis.behavior.processes|filter_key_if_has:"track" %}
+    {% for process in report.analysis.behavior.processes|filter_key_if_has:"track" %}
         <div class="tab-pane {% if forloop.first %}active{% endif %}" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
             <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.pid}}</b>, Parent PID: {{process.ppid}}</div>
 

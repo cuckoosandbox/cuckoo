@@ -5,18 +5,19 @@
         </div>
 
         <div class="panel-body" style="min-height: 502px;">
-            {% if analysis.network.hosts %}
+            {% if report.analysis.network.hosts %}
                 <table id="network_hosts" class="table table-striped table-responsive responsive" width="100%">
                     <thead><tr><th>IP Address</th></tr></thead>
                     <tbody>
-                        {% for host in analysis.network.hosts %}
+                        {% for host in report.analysis.network.hosts %}
                             <tr>
+                                <!-- @todo: hardcoded ip... -->
                                 {% if host|slice:":7" != "192.168" and ":" not in host %}
                                 <td>
                                     <a target="_blank" href="{% url "analysis.views.moloch" ip=host %}">
                                         {{ host }}
                                         {% if host|isdeadip:analysis %}
-                                            (dead IP/port - was unable to connect during analysis)
+                                            (dead IP/port)
                                         {% endif %}
                                     </a>
                                 </td>

@@ -10,7 +10,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade in active" id="summary_files">
-                {% for process in analysis.behavior.generic %}
+                {% for process in report.analysis.behavior.generic %}
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
@@ -47,7 +47,7 @@
                 {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_keys">
-                {% for process in analysis.behavior.generic %}
+                {% for process in report.analysis.behavior.generic %}
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
@@ -84,7 +84,7 @@
                 {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_mutexes">
-                {% for process in analysis.behavior.generic %}
+                {% for process in report.analysis.behavior.generic %}
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
@@ -103,7 +103,7 @@
                 {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_directories">
-                {% for process in analysis.behavior.generic %}
+                {% for process in report.analysis.behavior.generic %}
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
@@ -140,7 +140,7 @@
                 {% endfor %}
             </div>
             <div class="tab-pane fade" id="summary_processes">
-                {% for process in analysis.behavior.generic %}
+                {% for process in report.analysis.behavior.generic %}
                     {% if process.summary %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>

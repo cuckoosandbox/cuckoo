@@ -7,7 +7,7 @@
             <td><strong>Description</strong></td>
             <td width=60px><strong>Level</strong></td>
         </tr>
-        {% for event in analysis.misp %}
+        {% for event in report.analysis.misp %}
         <tr>
             <td>
             {% if event.event_id != None %}

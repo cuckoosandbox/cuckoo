@@ -1,5 +1,5 @@
-{% if analysis.dropped|length > 0 %}
-    {% for file in analysis.dropped %}
+{% if report.analysis.dropped|length > 0 %}
+    {% for file in report.analysis.dropped %}
         <div class="panel panel-default">
             <table class="table table-striped table-condensed">
                 <tr>
@@ -11,7 +11,7 @@
                                 <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-xs">
                                 <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
                                 </a>
-                                <a href="{% url "submission.views.submit_dropped" analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
+                                <a href="{% url "submission.views.submit_dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Submit file
                                 </a>
                             </div>
@@ -34,7 +34,7 @@
                     <th class="text-right">Processes</th>
                     <td>
                         {% for pid in file.pids %}
-                        {{ pid }} (<b>{{ pid|process_name:analysis }}</b>)
+                        {{ pid }} (<b>{{ pid|process_name:report.analysis }}</b>)
                         {% endfor %}
                     </td>
                 </tr>

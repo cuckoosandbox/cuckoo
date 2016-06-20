@@ -18,7 +18,7 @@
 </style>
 <section id="signatures">
     <h4><span class="glyphicon glyphicon-qrcode" aria-hidden="true"></span> Signatures</h4>
-    {% for signature in analysis.signatures %}
+    {% for signature in report.analysis.signatures %}
         <a style="text-decoration: none;" href="#signature_{{signature.name}}" data-toggle="collapse">
         <div class="alert {% if signature.severity <= 1 %}alert-info{% elif signature.severity == 2 %}alert-warning{% else %}alert-danger{% endif %} signature">
         {{signature.description}}
@@ -81,7 +81,7 @@
             </table>
         </div>
     {% endfor %}
-    {% if not analysis.signatures %}
+    {% if not report.analysis.signatures %}
         <p>No signatures</p>
     {% endif %}
 </section>
