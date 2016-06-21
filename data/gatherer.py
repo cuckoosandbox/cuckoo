@@ -22,6 +22,8 @@ import os
 progfiles = [
     "Internet Explorer\\iexplore.exe",
     "Common Files\\Microsoft Shared\\VBA\\VBA*\\VBE*.dll",
+    "Adobe\\Reader *\\Reader\\AcroRd32.dll",
+    "Adobe\\Reader *\\Reader\\AcroRd32.exe",
     "Adobe\\Reader *\\Reader\\plug_ins\\escript.api",
 ]
 
