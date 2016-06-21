@@ -4,9 +4,14 @@
 
 from __future__ import absolute_import
 
+from datetime import datetime
+import json
 import logging
+import time
+import os
 
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
 
@@ -17,11 +22,13 @@ try:
     from elasticsearch import (
         Elasticsearch, ConnectionError, ConnectionTimeout
     )
+
     HAVE_ELASTIC = True
 except ImportError:
     HAVE_ELASTIC = False
 
 log = logging.getLogger(__name__)
+
 
 class ElasticSearch(Report):
     """Stores report in Elasticsearch."""
@@ -47,8 +54,35 @@ class ElasticSearch(Report):
         except (ConnectionError, ConnectionTimeout) as e:
             raise CuckooReportError("Cannot connect to Elasticsearch: %s" % e)
 
+    def apply_template(self):
+        template_path = os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json")
+        if not os.path.exists(template_path):
+            return False
+        with open(os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json"), "rw") as f:
+            try:
+                cuckoo_template = json.loads(f.read())
+            except ValueError:
+                CuckooReportError("Unable to read valid JSON from the elasticsearch template JSON file located: %s"
+                                  % template_path)
+
+        self.es.indices.put_template(name="cuckoo_template", body=json.dumps(cuckoo_template))
+
     def do_index(self, obj):
-        index = "%s-%d" % (self.index, self.task["id"])
+        # Set index to cuckoo-YYYY-MM-DD
+        strf_time = "%Y-%m-%d"
+        date_index = datetime.utcnow().strftime(strf_time)
+        index = "%s-%s" % (self.index, date_index)
+
+        # Add task_id to the base of the document
+        obj["task_id"] = self.task["id"]
+
+        # Add report time to the base of the document ES needs epoch time in seconds per the mapping
+        obj["report_time"] = int(time.time())
+
+        # check to see if the template exists apply it if it does not
+        if not self.es.indices.exists_template("cuckoo_template"):
+            if not self.apply_template():
+                raise CuckooReportError("Cannot apply Elasticsearch template")
 
         try:
             self.es.create(index=index, doc_type=self.type_, body=obj)
