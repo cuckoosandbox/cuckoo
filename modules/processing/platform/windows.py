@@ -18,13 +18,11 @@ class MonitorProcessLog(list):
     """Yields each API call event to the parent handler. Optionally it may
     beautify certain API calls."""
 
-    def __init__(self, eventstream):
+    def __init__(self, eventstream, modules):
         self.eventstream = eventstream
+        self.modules = modules
         self.first_seen = None
         self.has_apicalls = False
-
-        # Will be overridden.
-        self.modules = []
 
     def init(self):
         self.services = {}
@@ -248,8 +246,9 @@ class WindowsMonitor(BehaviorHandler):
         for event in parser:
             if event["type"] == "process":
                 process = dict(event)
-                process["calls"] = MonitorProcessLog(parser)
-                process["calls"].modules = process["modules"]
+                process["calls"] = MonitorProcessLog(
+                    parser, process["modules"]
+                )
                 self.processes.append(process)
 
                 self.behavior[process["pid"]] = BehaviorReconstructor()

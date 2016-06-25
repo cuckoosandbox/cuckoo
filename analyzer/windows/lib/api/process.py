@@ -305,7 +305,9 @@ class Process(object):
             "--tid", "%s" % self.tid,
         ]
 
-        if not free:
+        if free:
+            argv.append("--free")
+        else:
             argv += [
                 "--apc",
                 "--dll", dllpath,
