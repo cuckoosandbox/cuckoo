@@ -305,8 +305,7 @@ class Task(Base):
 
     @hybrid_property
     def options(self):
-        if not self._options:
-            return {}
+        if not self._options: return {}
         return parse_options(self._options)
 
     @options.setter
@@ -723,6 +722,27 @@ class Database(object):
             return []
         finally:
             session.close()
+    
+    @classlock
+    def list_platforms(self, locked=False):
+        """Lists available platforms.
+        @return: list of available platforms
+        """
+        session = self.Session()
+        platforms = []
+        try:
+            if locked:
+                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).group_by(Machine.platform).all()
+            else:
+                machines = session.query(Machine).options(joinedload("tags")).group_by(Machine.platform).all()
+            for m in machines:
+                platforms.append(m.platform)
+        except SQLAlchemyError as e:
+            log.debug("Database error listing machines: {0}".format(e))
+            return []
+        finally:
+            session.close()
+        return platforms
 
     @classlock
     def lock_machine(self, label=None, platform=None, tags=None):
