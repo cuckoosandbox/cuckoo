@@ -2,7 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import grp
 import json
 import logging
 import os.path
@@ -11,6 +10,12 @@ import socket
 import stat
 import subprocess
 import sys
+
+try:
+    import grp
+    HAVE_GRP = True
+except ImportError:
+    HAVE_GRP = False
 
 _ifconfig = None
 _service = None
@@ -144,6 +149,12 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     global _ifconfig, _service, _iptables, _ip
 
     log = logging.getLogger("cuckoo-rooter")
+
+    if not HAVE_GRP:
+        sys.exit(
+            "Could not find the `grp` module, the Cuckoo Rooter is only "
+            "supported under Linux operating systems."
+        )
 
     if not service or not os.path.exists(service):
         sys.exit(
