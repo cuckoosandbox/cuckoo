@@ -158,8 +158,39 @@ class Instance(object):
     def feature_static_pef(self):
         """Create features from information derived form portable executable
         format."""
-        print self.report.get("static", {}).get("pe_sections")
-        print self.report.get("static", {}).get("pe_resources")
+        # Get resource languages
+        self.features["languages"] = []
+        for d in self.report.get("static", {}).get("pe_resources", []):
+            lang = d.get("language", False)
+            if lang:
+                if lang.startswith("LANG_"):
+                    lang = lang[5:]
+                else:
+                    lang = lang
+                if lang not in self.features["languages"]:
+                    self.features["languages"].append(lang)
+            sublang = d.get("sublanguage", False)
+            if sublang:
+                if sublang.startswith("SUBLANG_"):
+                    sublang = sublang[8:]
+                else:
+                    sublang = sublang
+                if sublang not in self.features["languages"]:
+                    self.features["languages"].append(sublang)
+
+        # Section and resource attributes
+        self.features["section_attrs"] = {}
+        for d in self.report.get("static", {}).get("pe_sections", []):
+            n = d.get("name")
+            e = d.get("entropy")
+            if n and d:
+                self.features["section_attrs"][n] = e
+        self.features["resource_attrs"] = {}
+        for d in self.report.get("static", {}).get("pe_resources", []):
+            n = d.get("name")
+            f = d.get("filetype")
+            if n and f:
+                self.features["resource_attrs"][n] = f
 
 
     def feature_static_imports(self):
