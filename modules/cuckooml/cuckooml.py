@@ -4,8 +4,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import collections
+import datetime
 import json
 import sys
+import time
 
 class ML(object):
     """Feature formatting and machine learning for Cuckoo analysed binaries."""
@@ -24,6 +26,7 @@ class Instance(object):
         self.positives = None
         self.scans = None
         self.label = None
+        self.features = {}
 
 
     def load_json(self, json_path):
@@ -96,10 +99,30 @@ class Instance(object):
 
     def feature_static_metadata(self):
         """Create features form extracted binary metadata."""
-        print self.report.get("target").get("file").get("size")
-        print self.report.get("target", {}).get("file", {}).get("type")
-        print self.report.get("static", {}).get("pe_timestamp")
-        print self.report.get("static", {}).get("pe_versioninfo")
+        # Get binary size
+        self.features["size"] = \
+            self.report.get("target", {}).get("file", {}).get("size")
+
+        # Get binary timestamp in the UNIX timestamp format
+        str_dt = self.report.get("static", {}).get("pe_timestamp")
+        ts = None
+        if str_dt is not None:
+            dt = datetime.datetime.strptime(str_dt, "%Y-%m-%d %H:%M:%S")
+            ts = int(time.mktime(dt.timetuple()))
+        self.features["timestamp"] = ts
+
+        # ExifTool output
+        et_tokens = ["FileDescription", "OriginalFilename"]
+        for token in et_tokens:
+            self.features[token] = None
+        for attr in self.report.get("static", {}).get("pe_versioninfo", []):
+            attr_name = attr.get("name")
+            if attr_name in et_tokens:
+                self.features[attr_name] = attr.get("value")
+
+        # Magic byte
+        self.features["magic_byte"] = \
+            self.report.get("target", {}).get("file", {}).get("type")
 
 
     def feature_static_signature(self):
