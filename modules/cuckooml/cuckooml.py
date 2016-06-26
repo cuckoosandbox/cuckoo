@@ -235,7 +235,76 @@ class Instance(object):
 
     def feature_dynamic_filesystem(self):
         """Extract features from filesystem operations."""
-        pass
+        def flatten_list(structured):
+            """Flatten nested list."""
+            flat = []
+            for i in structured:
+                flat += i
+            return flat
+
+        # Get file operations and their number
+        self.features["file_read"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_read", [])
+        self.features["files_read"] = len(self.features["file_read"])
+        self.features["file_written"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_written", [])
+        self.features["files_written"] = len(self.features["file_written"])
+        self.features["file_deleted"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_deleted", [])
+        self.features["files_deleted"] = len(self.features["file_deleted"])
+        self.features["file_copied"] = flatten_list(\
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_copied", [])
+                                                   )
+        self.features["files_copied"] = len(\
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_copied", [])
+                                            )
+        self.features["file_renamed"] = flatten_list(\
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_moved", [])
+                                                    )
+        self.features["files_renamed"] = len(self.features["file_renamed"])
+
+        # Get other file operations numbers
+        self.features["files_opened"] = len(
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_opened", [])
+        )
+        self.features["files_exists"] = len(
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_exists", [])
+        )
+        self.features["files_failed"] = len(
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_failed", [])
+        )
+
+        # Get total number of unique touched files
+        file_operations = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_read", []) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_written", []) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_deleted", []) + \
+            flatten_list(self.report.get("behavior", {}).get("summary", {})\
+            .get("file_copied", [])) + \
+            flatten_list(self.report.get("behavior", {}).get("summary", {})\
+            .get("file_moved", [])) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_recreated", []) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_opened", []) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_exists", []) + \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("file_failed", [])
+        # remove duplicates
+        self.features["files_operations"] = len(list(set(file_operations)))
 
 
     def feature_dynamic_network(self):
