@@ -361,7 +361,14 @@ class Instance(object):
 
     def feature_dynamic_registry(self):
         """Extract features from registry operations."""
-        pass
+        # Registry written
+        self.features["regkey_written"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("regkey_written", [])
+        # Registry delete
+        self.features["regkey_deleted"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("regkey_deleted", [])
 
 
     def feature_dynamic_windowsapi(self):
