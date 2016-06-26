@@ -4,24 +4,33 @@
 
 from __future__ import absolute_import
 
+from datetime import datetime
+import binascii
+import json
 import logging
+import time
+import os
 
 from lib.cuckoo.common.abstracts import Report
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.utils import convert_to_printable
 
 logging.getLogger("elasticsearch").setLevel(logging.WARNING)
 logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)
 
 try:
     from elasticsearch import (
-        Elasticsearch, ConnectionError, ConnectionTimeout
+        Elasticsearch, ConnectionError, ConnectionTimeout, helpers
     )
+
     HAVE_ELASTIC = True
 except ImportError:
     HAVE_ELASTIC = False
 
 log = logging.getLogger(__name__)
+
 
 class ElasticSearch(Report):
     """Stores report in Elasticsearch."""
@@ -36,7 +45,23 @@ class ElasticSearch(Report):
                 hosts.append(host.strip())
 
         self.index = self.options.get("index", "cuckoo")
-        self.type_ = self.options.get("type", "cuckoo")
+        self.report_type = "cuckoo"  # do not change these types without changing the elasticsearch template as well
+        self.call_type = "call"
+
+        # Get the index time option and set the dated index accordingly
+        index_type = self.options.get("index_time_pattern", "yearly")
+        if index_type.lower() == "yearly":
+            strf_time = "%Y"
+        elif index_type.lower() == "monthly":
+            strf_time = "%Y-%m"
+        elif index_type.lower() == "daily":
+            strf_time = "%Y-%m-%d"
+        date_index = datetime.utcnow().strftime(strf_time)
+        self.dated_index = "%s-%s" % (self.index, date_index)
+
+        # Gets the time which will be used for indexing the document into ES
+        # ES needs epoch time in seconds per the mapping
+        self.report_time = int(time.time())
 
         try:
             self.es = Elasticsearch(hosts)
@@ -47,46 +72,98 @@ class ElasticSearch(Report):
         except (ConnectionError, ConnectionTimeout) as e:
             raise CuckooReportError("Cannot connect to Elasticsearch: %s" % e)
 
+        # check to see if the template exists apply it if it does not
+        if not self.es.indices.exists_template("cuckoo_template"):
+            if not self.apply_template():
+                raise CuckooReportError("Cannot apply Elasticsearch template")
+
+    def apply_template(self):
+        template_path = os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json")
+        if not os.path.exists(template_path):
+            return False
+        with open(os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json"), "rw") as f:
+            try:
+                cuckoo_template = json.loads(f.read())
+            except ValueError:
+                CuckooReportError("Unable to read valid JSON from the elasticsearch template JSON file located: %s"
+                                  % template_path)
+            # create a index wildcard based off the index name specified in the config file
+            # this overwrites the setting in template.json
+            cuckoo_template["template"] = self.index + "-*"
+
+        self.es.indices.put_template(name="cuckoo_template", body=json.dumps(cuckoo_template))
+        return True
+
+    def get_base_document(self):
+        # gets precached report time and the task_id
+        header = {
+            "task_id": self.task["id"],
+            "report_time": self.report_time,
+            "report_id": self.task["id"]
+        }
+        return header
+
     def do_index(self, obj):
-        index = "%s-%d" % (self.index, self.task["id"])
+        index = self.dated_index
+
+        base_document = self.get_base_document()
+        base_document.update(obj)  # append the base document to the object to index
 
         try:
-            self.es.create(index=index, doc_type=self.type_, body=obj)
+            self.es.create(index=index, doc_type=self.report_type, body=base_document)
         except Exception as e:
             raise CuckooReportError(
                 "Failed to save results in ElasticSearch for "
                 "task #%d: %s" % (self.task["id"], e)
             )
 
-        self.idx += 1
+    def do_bulk_index(self, bulk_reqs):
+        try:
+            helpers.bulk(self.es, bulk_reqs)
+        except Exception as e:
+            raise CuckooReportError(
+                "Failed to save results in ElasticSearch for "
+                "task #%d: %s" % (self.task["id"], e)
+            )
 
-    def process_behavior(self, results, paginate=100):
+    def process_call(self, call):
+        """ This function converts all arguments to strings to allow ES to map them properly"""
+        if "arguments" not in call or type(call["arguments"]) != dict:
+            return call
+
+        new_arguments = {}
+        for key, value in call["arguments"].iteritems():
+            if type(value) is unicode or type(value) is str:
+                new_arguments[key] = convert_to_printable(value)  # mask all arguments as a string
+            else:
+                new_arguments[key] = str(value)
+
+        call["arguments"] = new_arguments
+        return call
+
+    def process_behavior(self, results, bulk_submit_size=1000):
         """Index the behavioral data."""
         for process in results.get("behavior", {}).get("processes", []):
-            page, calls = 0, []
+            bulk_index = []
+
             for call in process["calls"]:
-                calls.append(call)
-
-                if len(calls) == paginate:
-                    self.do_index({
-                        "process": {
-                            "pid": process["pid"],
-                            "page": page,
-                            "calls": calls,
-                        },
-                    })
-
-                    page += 1
-                    calls = []
-
-            if calls:
-                self.do_index({
-                    "process": {
-                        "pid": process["pid"],
-                        "page": page,
-                        "calls": calls,
-                    },
+                base_document = self.get_base_document()
+                call_document = {
+                    "pid": process["pid"],
+                }
+                call_document.update(self.process_call(call))
+                call_document.update(base_document)
+                bulk_index.append({
+                    "_index": self.dated_index,
+                    "_type": self.call_type,
+                    "_source": call_document
                 })
+                if len(bulk_index) == bulk_submit_size:
+                    self.do_bulk_index(bulk_index)
+                    bulk_index = []
+
+            if len(bulk_index) > 0:
+                self.do_bulk_index(bulk_index)
 
     def run(self, results):
         """Index the Cuckoo report into ElasticSearch.
@@ -100,7 +177,6 @@ class ElasticSearch(Report):
             )
 
         self.connect()
-        self.idx = 0
 
         # Index target information, the behavioral summary, and
         # VirusTotal results.
