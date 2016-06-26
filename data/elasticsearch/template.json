@@ -5,7 +5,7 @@
         "index": {
             "number_of_shards": "1",
             "codec": "best_compression",
-            "number_of_replicas": "1"
+            "number_of_replicas": "0"
         }
     },
     "mappings": {
@@ -27,9 +27,27 @@
                 "report_time": {
                     "format": "epoch_second",
                     "type": "date"
-                },
-                "task_id": {
-                    "type": "long"
+                }
+            }
+        },
+        "call": {
+            "dynamic_templates": [
+                {
+                    "notanalyzed": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string",
+                            "doc_values": "True"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ],
+            "properties": {
+                "report_time": {
+                    "format": "epoch_second",
+                    "type": "date"
                 }
             }
         }
