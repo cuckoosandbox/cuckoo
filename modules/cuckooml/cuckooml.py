@@ -373,4 +373,11 @@ class Instance(object):
 
     def feature_dynamic_windowsapi(self):
         """Extract features from Windows API calls sequence."""
-        pass
+        self.features["api_stats"] = {}
+        apistats = self.report.get("behavior", {}).get("apistats", {})
+        for d in apistats:
+            for e in apistats[d]:
+                if e in self.features["api_stats"]:
+                    self.features["api_stats"][e] += apistats[d][e]
+                else:
+                    self.features["api_stats"][e] = apistats[d][e]
