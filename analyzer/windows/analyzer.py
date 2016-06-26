@@ -600,15 +600,15 @@ class Analyzer(object):
                 aux.start()
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented",
-                            aux.__class__.__name__)
+                            module.__name__)
             except CuckooDisableModule:
                 continue
             except Exception as e:
                 log.warning("Cannot execute auxiliary module %s: %s",
-                            aux.__class__.__name__, e)
+                            module.__name__, e)
             else:
                 log.debug("Started auxiliary module %s",
-                          aux.__class__.__name__)
+                          module.__name__)
                 aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the

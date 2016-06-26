@@ -278,12 +278,18 @@ class GuestManager(object):
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        return requests.get(url, *args, **kwargs)
+        session = requests.Session()
+        session.trust_env = False
+        session.proxies = None
+        return session.get(url, *args, **kwargs)
 
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        return requests.post(url, *args, **kwargs)
+        session = requests.Session()
+        session.trust_env = False
+        session.proxies = None
+        return session.post(url, *args, **kwargs)
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
