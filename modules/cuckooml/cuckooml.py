@@ -7,6 +7,12 @@ import collections
 import json
 import sys
 
+class ML(object):
+    """Feature formatting and machine learning for Cuckoo analysed binaries."""
+    def __init__(self):
+        pass
+
+
 class Instance(object):
     """Machine Learning for Cuckoo."""
     LABEL_SIGNIFICANCE_COUNT = 5
