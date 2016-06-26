@@ -151,7 +151,8 @@ class Instance(object):
     def feature_static_packer(self):
         """Create feature from information returned by packer/cryptor
         detectors."""
-        print self.report.get("static", {}).get("peid_signatures")
+        self.features["packer"] = \
+            self.report.get("static", {}).get("peid_signatures", None)
 
 
     def feature_static_pef(self):
