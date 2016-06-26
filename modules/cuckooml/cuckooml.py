@@ -127,8 +127,19 @@ class Instance(object):
 
     def feature_static_signature(self):
         """Create features form binary signature check."""
-        print self.report.get("static", {}).get("signature")
-        print self.report.get("static", {}).get("pe_versioninfo")
+        # Check availability of digital signature
+        self.features["signed"] = \
+            bool(self.report.get("static", {}).get("signature", []))
+
+        # ExifTool output
+        et_tokens = ["Comments", "ProductName", "LegalCopyright", \
+                     "InternalName", "CompanyName"]
+        for token in et_tokens:
+            self.features[token] = None
+        for attr in self.report.get("static", {}).get("pe_versioninfo", []):
+            attr_name = attr.get("name")
+            if attr_name in et_tokens:
+                self.features[attr_name] = attr.get("value")
 
 
     def feature_static_heuristic(self):
