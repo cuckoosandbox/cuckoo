@@ -7,7 +7,7 @@ import collections
 import json
 import sys
 
-class Cuckooml(object):
+class Instance(object):
     """Machine Learning for Cuckoo."""
     LABEL_SIGNIFICANCE_COUNT = 5
     POSITIVE_RATE = 2 * LABEL_SIGNIFICANCE_COUNT

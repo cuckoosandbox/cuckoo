@@ -18,7 +18,7 @@ except ImportError:
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.objects import File
-from modules.cuckooml.cuckooml import Cuckooml
+from modules.cuckooml.cuckooml import Instance
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
@@ -362,7 +362,7 @@ class VirusTotalAPI(object):
             for signature in results["scans"].values():
                 for label_type in signature["normalized"]:
                     norm_lower[label_type] += signature[label_type]
-            labeller = Cuckooml()
+            labeller = Instance()
             for label_type in norm_lower:
                 labeller.label_sample(norm_lower[label_type])
                 results["normalized"][label_type] = labeller.label
