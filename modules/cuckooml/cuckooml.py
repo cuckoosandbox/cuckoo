@@ -309,7 +309,54 @@ class Instance(object):
 
     def feature_dynamic_network(self):
         """Extract features from network operations."""
-        pass
+        # Get TCP IP addresses
+        self.features["tcp"] = []
+        for c in self.report.get("network", {}).get("tcp", []):
+            c_dst = c.get("dst")
+            if c_dst and c_dst not in self.features["tcp"]:
+                self.features["tcp"].append(c_dst)
+
+        # Get UDP IPs
+        self.features["udp"] = []
+        for c in self.report.get("network", {}).get("udp", []):
+            c_dst = c.get("dst")
+            if c_dst and c_dst not in self.features["udp"]:
+                self.features["udp"].append(c_dst)
+
+        # Get DNS queries and responses
+        self.features["dns"] = {}
+        for c in self.report.get("network", {}).get("dns", []):
+            request = c.get("request")
+            if request:
+                self.features["dns"][request] = []
+            else:
+                continue
+
+            answers = c.get("answers", [])
+            for a in answers:
+                a_type = a.get("type")
+                a_data = a.get("data")
+                if a_type == "A" and a_data:
+                    self.features["dns"][request].append(a_data)
+
+        # Get HTTP requests: method, host, port, path
+        self.features["http"] = {}
+        for c in self.report.get("network", {}).get("http", []):
+            c_data = c.get("data")
+            if c_data:
+                self.features["http"][c_data] = {}
+            else:
+                continue
+
+            c_method = c.get("method")
+            if c_method:
+                self.features["http"][c_data]["method"] = c_method
+            c_host = c.get("host")
+            if c_host:
+                self.features["http"][c_data]["host"] = c_host
+            c_port = c.get("port")
+            if c_port:
+                self.features["http"][c_data]["port"] = c_port
 
 
     def feature_dynamic_registry(self):
