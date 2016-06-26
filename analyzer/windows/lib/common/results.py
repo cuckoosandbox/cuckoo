@@ -66,9 +66,9 @@ class NetlogConnection(object):
                 self.connect()
                 self.send(data, retry=False)
             else:
-                print >>sys.stderr, "Unhandled exception in NetlogConnection: %s" % str(e)
+                print >>sys.stderr, "Unhandled exception in NetlogConnection:", str(e)
         except Exception as e:
-            print >>sys.stderr, "Unhandled exception in NetlogConnection: %s" % str(e)
+            print >>sys.stderr, "Unhandled exception in NetlogConnection:", str(e)
             # We really have nowhere to log this, if the netlog connection
             # does not work, we can assume that any logging won't work either.
             # So we just fail silently.

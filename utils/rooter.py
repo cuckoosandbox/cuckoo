@@ -70,7 +70,8 @@ def enable_nat(interface):
 def disable_nat(interface):
     """Disable NAT on this interface."""
     while not run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
-        "-o", interface, "-j", "MASQUERADE")[1]: pass
+                  "-o", interface, "-j", "MASQUERADE")[1]:
+        pass
 
 def init_rttable(rt_table, interface):
     """Initialise routing table for this interface using routes
