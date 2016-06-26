@@ -196,9 +196,22 @@ class Instance(object):
     def feature_static_imports(self):
         """Extract features from static imports like referenced library
         functions."""
-        print self.report.get("static", {}).get("imported_dll_count")
-        print self.report.get("static", {}).get("pe_imports")
-        print self.report.get("static", {}).get("pe_exports")
+        self.features["static_imports"] = {}
+
+        # Static libraries import count
+        self.features["static_imports"]["count"] = \
+            self.report.get("static", {}).get("imported_dll_count", None)
+
+        # Get all imported libraries
+        for d in self.report.get("static", {}).get("pe_imports", []):
+            ddl_name = d.get("dll")
+            if not ddl_name:
+                continue
+            self.features["static_imports"][ddl_name] = []
+            for i in d.get("imports", []):
+                ref = i.get("name")
+                if ref is not None:
+                    self.features["static_imports"][ddl_name].append(ref)
 
 
     def feature_dynamic_imports(self):
