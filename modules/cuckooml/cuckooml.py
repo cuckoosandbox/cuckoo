@@ -216,7 +216,21 @@ class Instance(object):
 
     def feature_dynamic_imports(self):
         """Extract features from dynamic imports, mutexes, and processes."""
-        pass
+        # Get mutexes
+        self.features["mutex"] = \
+            self.report.get("behavior", {}).get("summary", {}).get("mutex")
+
+        # Get processes names
+        self.features["processes"] = []
+        for p in self.report.get("behavior", {}).get("processes", []):
+            p_name = p.get("process_name")
+            if p_name and p_name not in self.features["processes"]:
+                self.features["processes"].append(p_name)
+
+        # Get dynamically loaded library names
+        self.features["dynamic_imports"] = \
+            self.report.get("behavior", {}).get("summary", {})\
+            .get("dll_loaded", [])
 
 
     def feature_dynamic_filesystem(self):
