@@ -18,8 +18,9 @@ class MonitorProcessLog(list):
     """Yields each API call event to the parent handler. Optionally it may
     beautify certain API calls."""
 
-    def __init__(self, eventstream):
+    def __init__(self, eventstream, modules):
         self.eventstream = eventstream
+        self.modules = modules
         self.first_seen = None
         self.has_apicalls = False
 
@@ -152,6 +153,17 @@ class MonitorProcessLog(list):
             event["arguments"]["unescaped"]
         )
 
+    def _api___exception__(self, event):
+        addr = int(event["arguments"]["exception"]["address"], 16)
+        for module in self.modules:
+            if "imgsize" not in module:
+                continue
+
+            baseaddr = int(module["baseaddr"], 16)
+            if addr >= baseaddr and addr < baseaddr + module["imgsize"]:
+                event["arguments"]["exception"]["module"] = module["basename"]
+                event["arguments"]["exception"]["offset"] = addr - baseaddr
+
     def _api_modifier(self, event):
         """Adds flags field to CLSID and IID instances."""
         clsid = guid_name(event["arguments"].get("clsid"))
@@ -234,7 +246,9 @@ class WindowsMonitor(BehaviorHandler):
         for event in parser:
             if event["type"] == "process":
                 process = dict(event)
-                process["calls"] = MonitorProcessLog(parser)
+                process["calls"] = MonitorProcessLog(
+                    parser, process["modules"]
+                )
                 self.processes.append(process)
 
                 self.behavior[process["pid"]] = BehaviorReconstructor()

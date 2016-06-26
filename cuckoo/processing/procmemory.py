@@ -160,7 +160,7 @@ class ProcessMemory(Processing):
 
             self._fixup_pe_header(pe)
 
-            img.append(pe.write())
+            img.append(str(pe.write()))
             for r in regions:
                 img.append(buf[r["offset"]:r["offset"]+r["size"]])
 

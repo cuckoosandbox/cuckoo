@@ -251,7 +251,7 @@ class PortableExecutable(object):
                 debug_data = self.pe.__data__[raw_offset:raw_offset+size_data]
 
                 if debug_data.startswith("RSDS"):
-                    return debug_data[24:].strip("\x00")
+                    return debug_data[24:].strip("\x00").decode("latin-1")
         except:
             log.exception("Exception parsing PDB path")
 

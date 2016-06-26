@@ -168,7 +168,7 @@ class VMware(Machinery):
                                      "Reason: %s" % (vmx_path, e))
         else:
             if output:
-                return vmx_path in output
+                return vmx_path.lower() in output.lower()
             else:
                 raise CuckooMachineError("Unable to check running status "
                                          "for %s. No output from "
