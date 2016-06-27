@@ -5,9 +5,6 @@
 
 from __future__ import with_statement
 
-import os.path
-import sys
-
 from alembic import context
 from sqlalchemy import create_engine, pool
 from logging.config import fileConfig
@@ -20,14 +17,14 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# Get cuckoo root path.
-curdir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(curdir, "..", ".."))
+from cuckoo.core.database import Base, Database
+from cuckoo.misc import set_cwd
 
-from lib.cuckoo.core.database import Base, Database
+set_cwd(context.get_x_argument(as_dictionary=True)["cwd"])
+Database().connect(schema_check=False)
 
 # Get database connection string from cuckoo configuration.
-url = Database(schema_check=False).engine.url.__to_string__(hide_password=False)
+url = Database().engine.url.__to_string__(hide_password=False)
 target_metadata = Base.metadata
 
 def run_migrations_offline():

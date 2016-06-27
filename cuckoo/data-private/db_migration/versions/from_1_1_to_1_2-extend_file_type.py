@@ -17,14 +17,9 @@ revision = "18eee46c6f81"
 down_revision = "263a45963c72"
 
 from alembic import op
-import os.path
 import sqlalchemy as sa
-import sys
 
-curdir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(curdir, "..", "..", ".."))
-
-import lib.cuckoo.core.database as db
+import cuckoo.core.database as db
 
 def _perform(upgrade):
     conn = op.get_bind()

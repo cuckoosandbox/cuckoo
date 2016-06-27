@@ -372,9 +372,12 @@ class Database(object):
         self.schema_check = schema_check
         self.echo = echo
 
-    def connect(self):
+    def connect(self, schema_check=None):
         """Connect to the database backend."""
         cfg = Config()
+
+        if schema_check is not None:
+            self.schema_check = schema_check
 
         if hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
@@ -433,9 +436,11 @@ class Database(object):
             if last.version_num != SCHEMA_VERSION and self.schema_check:
                 raise CuckooDatabaseError(
                     "DB schema version mismatch: found %s, expected %s. "
-                    "Try to apply all migrations (cd utils/db_migration/ && "
-                    "alembic upgrade head)." %
-                    (last.version_num, SCHEMA_VERSION)
+                    "Optionally make a backup and then apply the latest "
+                    "database migration(s) by running "
+                    "`cuckoo --cwd %s migrate`." % (
+                        last.version_num, SCHEMA_VERSION, cwd(raw=True),
+                    )
                 )
 
     def __del__(self):

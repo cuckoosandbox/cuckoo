@@ -14,10 +14,12 @@ log = logging.getLogger(__name__)
 
 # Cuckoo Working Directory base path.
 _root = None
+_raw = None
 
-def set_cwd(path):
-    global _root
+def set_cwd(path, raw=None):
+    global _root, _raw
     _root = path
+    _raw = raw
 
 def cwd(*args, **kwargs):
     """Returns absolute path to this file in the Cuckoo Working Directory or
@@ -25,6 +27,8 @@ def cwd(*args, **kwargs):
     Cuckoo Working Directory which is not configurable."""
     if kwargs.pop("private", False):
         return os.path.join(cuckoo.__path__[0], "data-private", *args)
+    elif kwargs.pop("raw", False):
+        return _raw
     else:
         return os.path.join(_root, *args)
 

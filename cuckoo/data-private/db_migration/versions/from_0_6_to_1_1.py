@@ -35,10 +35,8 @@ except ImportError:
     print "Unable to import alembic (install with `pip install alembic`)"
     sys.exit()
 
-sys.path.append(os.path.join("..", ".."))
-
-import lib.cuckoo.core.database as db
-from lib.cuckoo.common.config import Config
+import cuckoo.core.database as db
+from cuckoo.common.config import Config
 
 def upgrade():
     # BEWARE: be prepared to really spaghetti code. To deal with SQLite limitations in Alembic we coded some workarounds.
@@ -82,14 +80,14 @@ def upgrade():
         # Alembic is so ORMish that it was impossible to write code which works on different DBMS.
         if conn.engine.driver == "psycopg2":
             # We don"t provide a default value and leave the column as nullable because o further data migration.
-            op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False),nullable=True))
+            op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False), nullable=True))
             # NOTE: We added this new column so we force clock time to the added_on for old analyses.
             conn.execute("update tasks set clock=added_on")
             # Add the not null constraint.
             op.alter_column("tasks", "clock", nullable=False, existing_nullable=True)
             # Altering status ENUM.
             # This shit of raw SQL is here because alembic doesn't deal well with alter_colum of ENUM type.
-            op.execute('COMMIT') # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
+            op.execute('COMMIT')  # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
             conn.execute("ALTER TYPE status_type ADD VALUE 'completed'")
             conn.execute("ALTER TYPE status_type ADD VALUE 'reported'")
             conn.execute("ALTER TYPE status_type ADD VALUE 'recovered'")
@@ -98,7 +96,7 @@ def upgrade():
             conn.execute("ALTER TYPE status_type DROP ATTRIBUTE IF EXISTS failure")
         elif conn.engine.driver == "mysqldb":
             # We don"t provide a default value and leave the column as nullable because o further data migration.
-            op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False),nullable=True))
+            op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False), nullable=True))
             # NOTE: We added this new column so we force clock time to the added_on for old analyses.
             conn.execute("update tasks set clock=added_on")
             # Add the not null constraint.

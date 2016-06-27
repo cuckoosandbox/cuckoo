@@ -17,7 +17,6 @@ Create Date: 2015-02-28 19:08:29.284111
 revision = "495d5a6edef3"
 down_revision = "18eee46c6f81"
 
-import os.path
 import sqlalchemy as sa
 import sys
 from datetime import datetime
@@ -35,10 +34,7 @@ except ImportError:
     print "Unable to import alembic (install with `pip install alembic`)"
     sys.exit()
 
-curdir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(curdir, "..", ".."))
-
-import lib.cuckoo.core.database as db
+import cuckoo.core.database as db
 
 def _perform(upgrade):
     conn = op.get_bind()

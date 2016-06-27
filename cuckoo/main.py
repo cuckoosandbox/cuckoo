@@ -7,6 +7,7 @@ import click
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import traceback
 
@@ -117,7 +118,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
     # * Command-line option (--cwd)
     # * Environment option ("CUCKOO")
     # * Default value ("~/.cuckoo")
-    set_cwd(os.path.expanduser(cwd))
+    set_cwd(os.path.expanduser(cwd), raw=cwd)
 
     # Drop privileges.
     user and drop_privileges(user)
@@ -416,3 +417,16 @@ def machine(debug, vmname, ip, add, delete, platform, options, tags,
     Database().connect()
     cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
                    interface, snapshot, resultserver)
+
+@main.command()
+def migrate():
+    args = [
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head",
+    ]
+    try:
+        subprocess.check_call(args, cwd=cwd("db_migration", private=True))
+    except subprocess.CalledProcessError:
+        print red(">>> Error migrating your database..")
+        exit(1)
+
+    print yellow(">>> Your database migration was successful!")
