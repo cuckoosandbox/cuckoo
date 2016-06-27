@@ -4,8 +4,7 @@
 
 from __future__ import absolute_import
 
-from datetime import datetime
-import binascii
+import datetime
 import json
 import logging
 import time
@@ -45,7 +44,10 @@ class ElasticSearch(Report):
                 hosts.append(host.strip())
 
         self.index = self.options.get("index", "cuckoo")
-        self.report_type = "cuckoo"  # do not change these types without changing the elasticsearch template as well
+
+        # Do not change these types without changing the elasticsearch
+        # template as well.
+        self.report_type = "cuckoo"
         self.call_type = "call"
 
         # Get the index time option and set the dated index accordingly
@@ -56,7 +58,8 @@ class ElasticSearch(Report):
             strf_time = "%Y-%m"
         elif index_type.lower() == "daily":
             strf_time = "%Y-%m-%d"
-        date_index = datetime.utcnow().strftime(strf_time)
+
+        date_index = datetime.datetime.utcnow().strftime(strf_time)
         self.dated_index = "%s-%s" % (self.index, date_index)
 
         # Gets the time which will be used for indexing the document into ES
@@ -78,24 +81,33 @@ class ElasticSearch(Report):
                 raise CuckooReportError("Cannot apply Elasticsearch template")
 
     def apply_template(self):
-        template_path = os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json")
+        template_path = os.path.join(
+            CUCKOO_ROOT, "data", "elasticsearch", "template.json"
+        )
         if not os.path.exists(template_path):
             return False
-        with open(os.path.join(CUCKOO_ROOT, "data", "elasticsearch", "template.json"), "rw") as f:
+
+        with open(template_path, "rw") as f:
             try:
                 cuckoo_template = json.loads(f.read())
             except ValueError:
-                CuckooReportError("Unable to read valid JSON from the elasticsearch template JSON file located: %s"
-                                  % template_path)
-            # create a index wildcard based off the index name specified in the config file
-            # this overwrites the setting in template.json
+                raise CuckooReportError(
+                    "Unable to read valid JSON from the ElasticSearch "
+                    "template JSON file located at: %s" % template_path
+                )
+
+            # Create an index wildcard based off of the index name specified
+            # in the config file, this overwrites the settings in
+            # template.json.
             cuckoo_template["template"] = self.index + "-*"
 
-        self.es.indices.put_template(name="cuckoo_template", body=json.dumps(cuckoo_template))
+        self.es.indices.put_template(
+            name="cuckoo_template", body=json.dumps(cuckoo_template)
+        )
         return True
 
     def get_base_document(self):
-        # gets precached report time and the task_id
+        # Gets precached report time and the task_id.
         header = {
             "task_id": self.task["id"],
             "report_time": self.report_time,
@@ -107,10 +119,14 @@ class ElasticSearch(Report):
         index = self.dated_index
 
         base_document = self.get_base_document()
-        base_document.update(obj)  # append the base document to the object to index
+
+        # Append the base document to the object to index.
+        base_document.update(obj)
 
         try:
-            self.es.create(index=index, doc_type=self.report_type, body=base_document)
+            self.es.create(
+                index=index, doc_type=self.report_type, body=base_document
+            )
         except Exception as e:
             raise CuckooReportError(
                 "Failed to save results in ElasticSearch for "
@@ -127,14 +143,15 @@ class ElasticSearch(Report):
             )
 
     def process_call(self, call):
-        """ This function converts all arguments to strings to allow ES to map them properly"""
+        """This function converts all arguments to strings to allow ES to map
+        them properly."""
         if "arguments" not in call or type(call["arguments"]) != dict:
             return call
 
         new_arguments = {}
         for key, value in call["arguments"].iteritems():
             if type(value) is unicode or type(value) is str:
-                new_arguments[key] = convert_to_printable(value)  # mask all arguments as a string
+                new_arguments[key] = convert_to_printable(value)
             else:
                 new_arguments[key] = str(value)
 
