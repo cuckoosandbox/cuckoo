@@ -701,11 +701,10 @@ def import_analysis(request):
             }
 
         category = analysis_info["target"]["category"]
+        info = analysis_info.get("info", {})
 
         if category == "file":
             binary = store_temp_file(zf.read("binary"), "binary")
-
-            info = analysis_info.get("info", {})
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,
