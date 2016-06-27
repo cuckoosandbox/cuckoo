@@ -1,5 +1,5 @@
 <div class="alert alert-info center">
-    <a class="btn btn-primary btn-small" href="{% url "analysis.views.full_memory_dump_file" analysis.info.id %}">Download Full Memory Dump</a>
+    <a class="btn btn-primary btn-small" href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}">Download Full Memory Dump</a>
 </div>
 <div class="tabbable tabs">
     <ul class="nav nav-pills" style="margin-bottom: 0;">
@@ -59,9 +59,9 @@
             {% include "analysis/memory/_callbacks.html" %}
         </div>
         <div class="tab-pane fade in" id="memory_sockets">
-            {% if analysis.memory.sockscan %}
+            {% if report.analysis.memory.sockscan %}
                 {% include "analysis/memory/_sockscan.html" %}
-            {% elif analysis.memory.netscan %}
+            {% elif report.analysis.memory.netscan %}
                 {% include "analysis/memory/_netscan.html" %}
             {% endif %}
         </div>

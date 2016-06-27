@@ -90,19 +90,31 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
-                    <i class="glyphicon glyphicon-flag"></i>Network Analysis </a>
+                    <a href="{% url "analysis" report.analysis.info.id "network" %}">
+                    <i class="glyphicon glyphicon-flag"></i>Network Analysis</a>
                 </li>
                 <li>
-                    <a href="#" target="_blank">
-                    <i class="glyphicon glyphicon-ok"></i>Dropped Files </a>
+                    <a href="{% url "analysis" report.analysis.info.id "dropped_files" %}">
+                    <i class="glyphicon glyphicon-ok"></i>Dropped Files ({{ report.analysis.dropped|length }})</a>
                 </li>
                 <li>
-                    <a href="#">
-                    <i class="glyphicon glyphicon-flag"></i>Dropped Buffers </a>
+                    <a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}">
+                    <i class="glyphicon glyphicon-flag"></i>Dropped Buffers ({{ report.analysis.buffer|length }})</a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{% url "analysis" report.analysis.info.id "procmemory" %}">
+                    <i class="glyphicon glyphicon-flag"></i>Process Memory ({{ report.analysis.procmemory|length }}) </a>
+                </li>
+
+                {% if report.analysis.misp %}
+                    <li>
+                        <a href="{% url "analysis" report.analysis.info.id "misp" %}">
+                        <i class="glyphicon glyphicon-flag"></i>MISP ({{ report.analysis.misp|length }})</a>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "w" %}">
                     <i class="glyphicon glyphicon-flag"></i>Admin </a>
                 </li>
             </ul>

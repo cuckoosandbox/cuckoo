@@ -2,6 +2,7 @@
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+
 import os
 
 from django.conf import settings
@@ -57,9 +58,20 @@ class AnalysisController:
     def analysis(request, task_id, page):
         report = AnalysisController.get_report(task_id)
 
-        if page in ['summary', 'static', 'behavior']:
-            return render(request, "analysis/pages/%s/index.html" % page, {'report': report,
-                                                                           'page': page})
+        pages = {
+            "summary": "summary/index",
+            "static": "static/index",
+            "behavior": "behavior/index",
+            "network": "behavior/index",
+            "misp": "misp/index",
+            "dropped_files": "dropped/dropped_files",
+            "dropped_buffers": "dropped/dropped_buffers",
+            "procmemory": "procmemory/index"
+        }
+
+        if page in pages.keys():
+            return render(request, "analysis/pages/%s.html" % pages[page], {'report': report,
+                                                                            'page': page})
 
         return 'not found'
 
