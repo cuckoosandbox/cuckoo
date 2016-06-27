@@ -62,11 +62,12 @@ class AnalysisController:
             "summary": "summary/index",
             "static": "static/index",
             "behavior": "behavior/index",
-            "network": "behavior/index",
+            "network": "network/index",
             "misp": "misp/index",
             "dropped_files": "dropped/dropped_files",
             "dropped_buffers": "dropped/dropped_buffers",
-            "procmemory": "procmemory/index"
+            "procmemory": "procmemory/index",
+            "admin": "admin/index"
         }
 
         if page in pages.keys():

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-7">
+            <div class="row">
+
+            {% load analysis_tags %}
+            <div class="panel panel-default">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Task ID</th>
+                        <td>{{report.analysis.info.id}}</td>
+                    </tr>
+                    <tr>
+                        <th>Mongo ID</th>
+                        <td>{{report.analysis|mongo_id}}</td>
+                    </tr>
+                    <tr>
+                        <th>Cuckoo release</th>
+                        <td>{{report.analysis.info.version}}</td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td><a href="{% url "analysis.views.remove" report.analysis.info.id %}" class="btn btn-primary btn-small">Delete</a></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

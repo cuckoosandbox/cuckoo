@@ -17,16 +17,18 @@
                                     <th class="col-md-1 text-right">Name</th>
                                     <td>
                                         <b>{{file.name}}</b>
-                                        {% if file.object_id %}
-                                            <div class="pull-right">
-                                                <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-xs">
-                                                <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
-                                                </a>
-                                                <a href="{% url "submission.views.submit_dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
-                                                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Submit file
-                                                </a>
-                                            </div>
-                                        {% endif %}
+                                        <div class="pull-right">
+                                            {% if file.object_id %}
+                                                    <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-xs">
+                                                    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
+                                                    </a>
+                                                    <a href="{% url "submission.views.submit_dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
+                                                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Submit file
+                                                    </a>
+                                            {% else %}
+                                                <div class="btn btn-default btn-xs"> Empty file or file not found</div>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                             </h4>
