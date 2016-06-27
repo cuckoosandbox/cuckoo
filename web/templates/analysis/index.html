@@ -38,6 +38,8 @@
                             <td>
                                 {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
                                 <a href="{% url "analysis" analysis.id "summary" %}">{{analysis.filename}}</a>
+                                {% else %}
+                                {{ analysis.filename }}
                                 {% endif %}
                             </td>
 
