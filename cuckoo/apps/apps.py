@@ -36,6 +36,7 @@ def fetch_community(branch="master", force=False, filepath=None):
         os.path.join("modules", "signatures"): "signatures",
         os.path.join("data", "monitor"): "monitor",
         os.path.join("agent"): "agent",
+        os.path.join("analyzer"): "analyzer",
     }
 
     members = t.getmembers()
