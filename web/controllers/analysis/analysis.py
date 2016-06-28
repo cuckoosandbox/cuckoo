@@ -4,11 +4,15 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import zipfile
+import json
+from StringIO import StringIO
 
+import pymongo
 from django.conf import settings
 from django.views.decorators.http import require_safe
 from django.shortcuts import render, redirect
-import pymongo
+from django.http import Http404
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from lib.cuckoo.common.utils import versiontuple
@@ -19,66 +23,50 @@ results_db = settings.MONGO
 
 class AnalysisController:
     @staticmethod
-    def recent(request):
-        db = Database()
-        tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
-        tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
+    def get_export(request, task_id):
+        taken_dirs = request.POST.getlist("dirs")
+        taken_files = request.POST.getlist("files")
 
-        analyses_files = []
-        analyses_urls = []
+        if not taken_dirs and not taken_files:
+            return render(request, "error.html", {
+                "error": "Please select at least one directory or file to be exported."
+            })
 
-        if tasks_files:
-            for task in tasks_files:
-                new = task.to_dict()
-                new["sample"] = db.view_sample(new["sample_id"]).to_dict()
-
-                filename = os.path.basename(new["target"])
-                new.update({"filename": filename})
-
-                if db.view_errors(task.id):
-                    new["errors"] = True
-
-                analyses_files.append(new)
-
-        if tasks_urls:
-            for task in tasks_urls:
-                new = task.to_dict()
-
-                if db.view_errors(task.id):
-                    new["errors"] = True
-
-                analyses_urls.append(new)
-
-        return render(request, "analysis/index.html", {
-            "files": analyses_files,
-            "urls": analyses_urls,
-        })
-
-    @staticmethod
-    def analysis(request, task_id, page):
         report = AnalysisController.get_report(task_id)
+        path = report["info"]["analysis_path"]
 
-        pages = {
-            "summary": "summary/index",
-            "static": "static/index",
-            "behavior": "behavior/index",
-            "network": "network/index",
-            "misp": "misp/index",
-            "dropped_files": "dropped/dropped_files",
-            "dropped_buffers": "dropped/dropped_buffers",
-            "procmemory": "procmemory/index",
-            "admin": "admin/index"
-        }
+        # Creating an analysis.json file with basic information about this
+        # analysis. This information serves as metadata when importing a task.
+        analysis_path = os.path.join(path, "analysis.json")
+        with open(analysis_path, "w") as outfile:
+            report["target"].pop("file_id", None)
+            json.dump({"target": report["target"]}, outfile, indent=4)
 
-        if page in pages.keys():
-            return render(request, "analysis/pages/%s.html" % pages[page], {'report': report,
-                                                                            'page': page})
+        f = StringIO()
 
-        return 'not found'
+        # Creates a zip file with the selected files and directories of the task.
+        zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED)
+
+        for dirname, subdirs, files in os.walk(path):
+            if os.path.basename(dirname) == task_id:
+                for filename in files:
+                    if filename in taken_files:
+                        zf.write(os.path.join(dirname, filename), filename)
+            if os.path.basename(dirname) in taken_dirs:
+                for filename in files:
+                    zf.write(os.path.join(dirname, filename),
+                             os.path.join(os.path.basename(dirname), filename))
+
+        zf.close()
+
+        return f
 
     @staticmethod
     def get_report(task_id):
         report = AnalysisController._get_report(task_id)
+        if not report:
+            raise Http404("The specified analysis does not exist")
+
         data = {
             'analysis': report
         }

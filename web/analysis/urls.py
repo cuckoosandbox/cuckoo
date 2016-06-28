@@ -5,11 +5,12 @@
 
 from . import views
 from django.conf.urls import url
-from controllers.analysis.analysis import AnalysisController
+from controllers.analysis.routes import AnalysisRoutes
 
 urlpatterns = [
-    url(r"^$", AnalysisController.recent, name='analysis/recent'),
-    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisController.analysis, name='analysis'),
+    url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
+    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export_analysis, name='analysis/export'),
+    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.analysis, name='analysis'),
     #url(r"^(?P<task_id>\d+)/behavioral$", views.behavioral),
     url(r"^latest/$", views.latest_report),
     url(r"^remove/(?P<task_id>\d+)/$", views.remove),
