@@ -3,49 +3,102 @@
 {% load analysis_tags %}
 {% block content %}
 
-        <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-            <div class="tabbable">
-                <div class="tab-content">
-                    <div class="tab-pane fade in active" id="file">
-                        <label style="display: flex; color: #337ab7;">Chosen analysis nr.{{report.analysis.info.id}} to export </label>
-                        <div class="input-group col-md-6">
-                            {% if report.analysis.info.category == "file" %}
-                            <input type="text" class="form-control" value="{{report.analysis.target.file.name}}" disabled>
-                            {% elif report.analysis.info.category == "url" %}
-                            <input type="text" class="form-control" value="{{report.analysis.target.url}}" disabled>
-                            <!-- This else is made only for testing purposes. Will be deleted when testing is done. -->
-                            {% else %}
-                            <input type="text" class="form-control" value="Unknown" disabled>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel" id="accordion" style="margin-top: 20px;">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <label class=accordion-toggle" style="color: #337ab7;">Select which files you want to include in the export</label>
-                    </div>
-                    <div id="options" class="panel-collapse collapse in" style="text-align: left;">
-                        <div class="panel-body">
-                            {% for dirname, count in dirs %}
-                            <div class="form-group">
-                                <input type="checkbox" name="dirs" value="{{ dirname }}" checked="checked"> {{ dirname }} ({{ count }} files)
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-10">
+            <div class="row">
+                <style>
+                .btn-file {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .btn-file input[type=file] {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    min-width: 100%;
+                    min-height: 100%;
+                    font-size: 999px;
+                    text-align: right;
+                    filter: alpha(opacity=0);
+                    opacity: 0;
+                    background: red;
+                    cursor: inherit;
+                    display: block;
+                }
+                input[readonly] {
+                    background-color: white !important;
+                    cursor: text !important;
+                }
+                </style>
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                    <div class="col-md-8">
+                        <h4><span class="glyphicon glyphicon-save-file" aria-hidden-"true"=""></span> Export analysis</h4>
+                        <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+                            <div class="panel" id="accordion" style="margin-top: 20px;">
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        <label class=accordion-toggle">Select which files you want to include in the export</label>
+                                    </div>
+
+                                    <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                                        <div class="panel-body">
+                                            <div class="col-md-6">
+                                                <div class="cuckoo-box">
+                                                    {% for dirname, count in dirs %}
+                                                        <div class="cuckoo-box-primary">
+                                                            <input type="checkbox" id="{{ dirname }}" name="dirs" value="{{ dirname }}" checked="checked">
+                                                            <label for="{{ dirname }}">{{ dirname }} ({{ count }} files)</label>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="cuckoo-box">
+                                                    {% for filename in files %}
+                                                        <div class="cuckoo-box-primary">
+                                                            <input type="checkbox" name="files" id="{{ filename }}" value="{{ filename }}" checked="checked">
+                                                            <label for="{{ filename }}">{{ filename }}</label>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            {% endfor %}
-                            {% for filename in files %}
-                            <div class="form-group">
-                                <input type="checkbox" name="files" value="{{ filename }}" checked="checked"> {{ filename }}
+
+                            <div class="tabbable">
+                                <div class="tab-content" style="margin-top:0px;">
+                                    <div class="tab-pane fade in active" id="file">
+                                        <label style="display: flex; color: #337ab7;">Chosen analysis nr.{{report.analysis.info.id}} to export </label>
+                                        <div class="input-group col-md-6">
+                                            {% if report.analysis.info.category == "file" %}
+                                            <input type="text" class="form-control" value="{{report.analysis.target.file.name}}" disabled>
+                                            {% elif report.analysis.info.category == "url" %}
+                                            <input type="text" class="form-control" value="{{report.analysis.target.url}}" disabled>
+                                            <!-- This else is made only for testing purposes. Will be deleted when testing is done. -->
+                                            {% else %}
+                                            <input type="text" class="form-control" value="Unknown" disabled>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            {% endfor %}
-                        </div>
+
+                            <div style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary btn-lg">Export</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 </div>
             </div>
-            <div style="margin-top: 20px;">
-                <button type="submit" class="btn btn-primary btn-lg">Export</button>
-            </div>
-        </form>
+        </div>
     </div>
 {% endblock %}
