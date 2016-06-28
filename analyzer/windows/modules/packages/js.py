@@ -25,4 +25,4 @@ class Javascript(Package):
             path += ".js"
             log.info("Submitted file is missing extension, added .js")
 
-        return self.execute(wscript, args=[path])
+        return self.execute(wscript, args=[path], trigger="file:%s" % path)
