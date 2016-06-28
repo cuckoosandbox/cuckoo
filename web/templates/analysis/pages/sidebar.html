@@ -69,6 +69,12 @@
   background: #fff;
   min-height: 460px;
 }
+
+.analysis_menu-usermenu ul li span.label{
+    margin-top:4px;
+    background-color: #eaeaea;
+    color: #676767;
+}
 </style>
 
 <div class="col-md-2" style="min-width:230px;">
@@ -77,45 +83,57 @@
             <ul class="nav">
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "summary" %}">
-                    <i class="glyphicon glyphicon-home"></i>Summary </a>
+                        <i class="glyphicon glyphicon-home"></i>Summary
+                    </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "static" %}">
-                    <i class="glyphicon glyphicon-user"></i>Static Analysis </a>
+                        <i class="glyphicon glyphicon-user"></i>Static Analysis
+                    </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
                         <i class="glyphicon glyphicon-ok"></i>Behavioral Analysis
-                        ({{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }})
+                        <span class="label label-primary pull-right">{{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }}</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "network" %}">
-                    <i class="glyphicon glyphicon-flag"></i>Network Analysis</a>
+                        <i class="glyphicon glyphicon-flag"></i>Network Analysis
+                    </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "dropped_files" %}">
-                    <i class="glyphicon glyphicon-ok"></i>Dropped Files ({{ report.analysis.dropped|length }})</a>
+                        <i class="glyphicon glyphicon-ok"></i> Dropped Files
+                        <span class="label label-primary pull-right">{{ report.analysis.dropped|length }}</span>
+                    </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}">
-                    <i class="glyphicon glyphicon-flag"></i>Dropped Buffers ({{ report.analysis.buffer|length }})</a>
+                        <i class="glyphicon glyphicon-flag"></i>Dropped Buffers
+                        <span class="label label-primary pull-right">{{ report.analysis.buffer|length }}</span>
+                    </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "procmemory" %}">
-                    <i class="glyphicon glyphicon-flag"></i>Process Memory ({{ report.analysis.procmemory|length }}) </a>
+                        <i class="glyphicon glyphicon-flag"></i>Process Memory
+                        <span class="label label-primary pull-right">{{ report.analysis.procmemory|length }}</span>
+                    </a>
                 </li>
 
                 {% if report.analysis.misp %}
                     <li>
                         <a href="{% url "analysis" report.analysis.info.id "misp" %}">
-                        <i class="glyphicon glyphicon-flag"></i>MISP ({{ report.analysis.misp|length }})</a>
+                            <i class="glyphicon glyphicon-flag"></i>MISP
+                            <span class="label label-primary pull-right">{{ report.analysis.misp|length }}</span>
+                        </a>
                     </li>
                 {% endif %}
 
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "admin" %}">
-                    <i class="glyphicon glyphicon-flag"></i>Admin </a>
+                        <i class="glyphicon glyphicon-flag"></i>Admin
+                    </a>
                 </li>
             </ul>
         </div>
