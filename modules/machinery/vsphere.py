@@ -46,7 +46,7 @@ class vSphere(Machinery):
         @param module_name: module name.
         """
         super(vSphere, self)._initialize(module_name)
-
+        
         # Initialize random number generator
         random.seed()
 
@@ -63,7 +63,7 @@ class vSphere(Machinery):
         else:
             raise CuckooCriticalError("vSphere host address setting not found, "
                                       "please add it to the config file.")
-
+        
         if self.options.vsphere.port:
             self.connect_opts["port"] = self.options.vsphere.port
         else:
@@ -82,35 +82,48 @@ class vSphere(Machinery):
             raise CuckooCriticalError("vSphere password setting not found, "
                                       "please add it to the config file.")
 
-        # Verify that connect options are valid
-        try:
-            with SmartConnection(**self.connect_opts):
-                pass
-        except Exception as e:
-            raise CuckooCriticalError("Couldn't connect to vSphere host: {0}"
-                                      .format(e))
+        # Workaround for PEP-0476 issues in recent Python versions
+        if self.options.vsphere.unverified_ssl:
+            import ssl
+            sslContext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            sslContext.verify_mode = ssl.CERT_NONE
+            self.connect_opts["sslContext"] = sslContext
+            log.warn("Turning off SSL certificate verification!")
 
         # Check that a snapshot is configured for each machine
         # and that it was taken in a powered-on state
-        with SmartConnection(**self.connect_opts) as conn:
-            for machine in self.machines():
-                if not machine.snapshot:
-                    raise CuckooCriticalError("Snapshot name not specified "
-                                              "for machine {0}, please add "
-                                              "it to the config file."
-                                              .format(machine.label))
-                vm = self._get_virtual_machine_by_label(conn, machine.label)
-                if not vm:
-                    raise CuckooCriticalError("Unable to find machine {0} "
-                                              "on vSphere host, please "
-                                              "update your configuration."
-                                              .format(machine.label))
-                state = self._get_snapshot_power_state(vm, machine.snapshot)
-                if state != self.RUNNING:
-                    raise CuckooCriticalError("Snapshot for machine {0} not "
-                                              "in powered-on state, please "
-                                              "create one."
-                                              .format(machine.label))
+        try:
+            with SmartConnection(**self.connect_opts) as conn:
+                for machine in self.machines():
+                    if not machine.snapshot:
+                        raise CuckooCriticalError("Snapshot name not specified "
+                                                  "for machine {0}, please add "
+                                                  "it to the config file."
+                                                  .format(machine.label))
+                    vm = self._get_virtual_machine_by_label(conn, machine.label)
+                    if not vm:
+                        raise CuckooCriticalError("Unable to find machine {0} "
+                                                  "on vSphere host, please "
+                                                  "update your configuration."
+                                                  .format(machine.label))
+                    state = self._get_snapshot_power_state(vm, machine.snapshot)
+                    if not state:
+                        raise CuckooCriticalError("Unable to find snapshot {0} "
+                                                  "for machine {1}, please "
+                                                  "update your configuration."
+                                                  .format(machine.snapshot,
+                                                          machine.label))
+                    if state != self.RUNNING:
+                        raise CuckooCriticalError("Snapshot for machine {0} not "
+                                                  "in powered-on state, please "
+                                                  "create one."
+                                                  .format(machine.label))
+
+        except CuckooCriticalError:
+            raise
+
+        except Exception as e:
+            raise CuckooCriticalError("Couldn't connect to vSphere host")
 
         super(vSphere, self)._initialize_check()
 
@@ -263,7 +276,7 @@ class vSphere(Machinery):
 
     def _download_snapshot(self, conn, vm, name, path):
         """Download snapshot file from host to local path"""
-
+        
         # Get filespec to .vmsn file of named snapshot
         snapshot = self._get_snapshot_by_name(vm, name)
         if not snapshot:
@@ -281,8 +294,8 @@ class vSphere(Machinery):
         datastore, filepath = re.match(r"\[([^\]]*)\] (.*)", filespec).groups()
 
         # Construct URL request
-        params = {"dsName": datastore}
-        headers = {"Cookie": conn._stub.cookie}
+        params = { "dsName" : datastore }
+        headers = { "Cookie" : conn._stub.cookie }
         url = "https://{0}:{1}/folder/{2}".format(self.connect_opts["host"],
                                                   self.connect_opts["port"],
                                                   filepath)
@@ -332,3 +345,4 @@ class vSphere(Machinery):
                 for child in self._traverseSnapshots(node.childSnapshotList):
                     yield child
             yield node
+
