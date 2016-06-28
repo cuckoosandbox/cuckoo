@@ -17,10 +17,10 @@
                 <table class="table table-striped" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th>Timestamp</th>
-                        <th>Filename</th>
-                        <th>MD5</th>
-                        <th>Status</th>
+                        <th width="20%">Timestamp</th>
+                        <th width="45%">Filename</th>
+                        <th width="25%">MD5</th>
+                        <th width="10%">Status</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -29,13 +29,18 @@
                         <tr>
                             <td style="word-wrap: break-word;">
                                 {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
-                                    <a href="{% url "analysis" analysis.id "summary" %}"><span class="mono">{{analysis.sample.md5}}</span></a>
+                                    <a href="{% url "analysis" analysis.id "summary" %}"><span class="mono">{{analysis.completed_on}}</span></a>
                                 {% else %}
                                     <span class="muted">{{analysis.added_on}} (added on)</span>
                                 {% endif %}
                             </td>
+
                             <td>
-                                {{analysis.filename}}
+                                {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
+                                <a href="{% url "analysis" analysis.id "summary" %}">{{analysis.filename}}</a>
+                                {% else %}
+                                {{ analysis.filename }}
+                                {% endif %}
                             </td>
 
                             <td style="word-wrap: break-word;">
@@ -84,40 +89,28 @@
                 <table class="table table-striped" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th>Timestamp</th>
-                        <th>URL</th>
-                        <th>Status</th>
+                        <th width="20%">Timestamp</th>
+                        <th width="60%">URL</th>
+                        <th width="20%">Status</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for analysis in urls %}
                         <tr>
                             <td>
-                            {% if analysis.status == "reported" %}
-                                {{analysis.completed_on}}
-                                <a href="{% url "analysis" analysis.id "summary" %}"><span class="mono">{{analysis.target}}</span></a></td>
+                            {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
+                                <a href="{% url "analysis" analysis.id "summary" %}"><span class="mono">{{analysis.completed_on}}</span></a>
                             {% else %}
-                                <span class="mono">{{analysis.target}}</span>
-                            {% endif %}
-                        <td>
-                            {% if analysis.status == "pending" %}
-                                <span class="text-muted">pending</span>
-                            {% elif analysis.status == "running" %}
-                                <span class="text-warning">running</span>
-                            {% elif analysis.status == "completed" %}
-                                <span class="text-info">completed</span>
-                            {% elif analysis.status == "reported" %}
-                                <span class="text-success">reported</span>
-                            {% else %}
-                                <span class="muted">{{analysis.added_on}} (added on)</span>
+                                <span class="mono">{{analysis.added_on}} (added on)</span>
                             {% endif %}
                             </td>
                             <td style="word-wrap: break-word;">
                                 {% if analysis.status == "reported" %}
-                                    <a href="{% url "analysis.views.summary" analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
+                                    <a href="{% url "analysis" analysis.id "summary" %}"><span class="mono">{{analysis.target}}</span></a>
                                 {% else %}
                                     <span class="mono">{{analysis.target}}</span>
                                 {% endif %}
+                            </td>
                             <td>
                                 {% if analysis.status == "pending" %}
                                     <span class="text-muted">pending</span>
