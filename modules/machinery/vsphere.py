@@ -214,6 +214,14 @@ class vSphere(Machinery):
 
     def _get_virtual_machines(self, conn):
         """Iterate over all VirtualMachine managed objects on vSphere host"""
+        def traverseDCFolders(conn, nodes, path=""):
+            for node in nodes:
+                if hasattr(node, "childEntity"):
+                    for child, childpath in traverseFolders(conn, node.childEntity, path + node.name + "/"):
+                        yield child, childpath
+                else:
+                    yield node, path + node.name
+
         def traverseVMFolders(conn, nodes):
             for node in nodes:
                 if hasattr(node, "childEntity"):
@@ -222,13 +230,17 @@ class vSphere(Machinery):
                 else:
                     yield node
 
-        folders = []
-        for ce in conn.content.rootFolder.childEntity:
-            if hasattr(ce, "vmFolder"):
-                folders.append(ce.vmFolder)
+        self.VMtoDC = {}
+        datacenters = []
+        
+        for node in traverseDCFolders(conn, conn.content.rootFolder.childEntity):
+            if hasattr(node, "vmFolder"):
+                datacenters.append(node)
 
-        for vm in traverseVMFolders(conn, folders):
-            yield vm
+        for dc, dcpath in traverseDCFolders(conn, conn.content.rootFolder.childEntity):
+            for vm in traverseVMFolders(conn, dc.vmFolder.childEntity):
+                self.VMtoDC[vm.summary.config.name] = dcpath
+                yield vm
 
     def _get_virtual_machine_by_label(self, conn, label):
         """Return the named VirtualMachine managed object"""
@@ -335,6 +347,7 @@ class vSphere(Machinery):
         # Construct URL request
         params = {
             "dsName": datastore,
+            "dcPath": self.VMtoDC.get(vm.summary.config.name, "ha-datacenter")
         }
         headers = {
             "Cookie": conn._stub.cookie,
