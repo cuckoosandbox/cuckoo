@@ -183,41 +183,33 @@ class MongoDB(Report):
         if os.path.exists(self.shots_path):
             # Walk through the files and select the JPGs.
             for shot_file in sorted(os.listdir(self.shots_path)):
-                if not shot_file.endswith(".jpg"):
+                if not shot_file.endswith(".jpg") or "_" in shot_file:
                     continue
 
                 shot_path = os.path.join(self.shots_path, shot_file)
                 shot_path_dir = os.path.dirname(shot_path) + '/'
                 shot_file_name, shot_file_ext = os.path.splitext(shot_file)
+                shot_path_resized = '%s%s_small%s' % (shot_path_dir, shot_file_name, shot_file_ext)
 
-                shot = File(shot_path)
+                shot_blob = {}
+
                 # If the screenshot path is a valid file, store it and
                 # reference it back in the report.
-                if shot.valid():
-                    shot_blob = {}
+                if os.path.isfile(shot_path):
+                    shot = File(shot_path)
+                    if shot.valid():
+                        shot_id = self.store_file(shot)
+                        shot_blob['original'] = shot_id
 
-                    # Generate several sizes for the current screenshot
-                    sizes = {
-                        'small': (320, 320),
-                        'medium': (640, 640),
-                        'large': (900, 900)
-                    }
+                # try to get the alternative (small) size for this image,
+                # store it and reference it back in the report.
+                if os.path.isfile(shot_path_resized):
+                    shot_small = File(shot_path_resized)
+                    if shot_small.valid():
+                        shot_id = self.store_file(shot_small)
+                        shot_blob['small'] = shot_id
 
-                    for size_name, size in sizes.iteritems():
-                        im = Image.open(StringIO(shot.file_data))
-                        im.thumbnail(size, Image.ANTIALIAS)
-
-                        shot_file_name_resize = '%s_%s' % (shot_file_name, size_name)
-                        shot_path_resize = shot_path_dir + shot_file_name_resize + shot_file_ext
-                        
-                        im.save(shot_path_resize, "JPEG")
-
-                        resize_id = self.store_file(File(shot_path_resize))
-                        shot_blob[size_name] = resize_id
-
-                    shot_id = self.store_file(shot)
-                    shot_blob['original'] = shot_id
-
+                if shot_blob:
                     report['shots'].append(shot_blob)
 
         paginate = self.options.get("paginate", 100)
