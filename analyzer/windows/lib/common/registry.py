@@ -124,7 +124,9 @@ def query_value(rootkey, subkey, name):
         rootkey, subkey, 0, _winreg.KEY_QUERY_VALUE, byref(res_handle)
     )
     if not res:
-        res = RegQueryValueExW(res_handle, name, None, byref(type_), value, byref(length))
+        res = RegQueryValueExW(
+            res_handle, name, None, byref(type_), value, byref(length)
+        )
         RegCloseKey(res_handle)
 
     if not res:
