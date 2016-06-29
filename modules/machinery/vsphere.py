@@ -217,7 +217,7 @@ class vSphere(Machinery):
         def traverseDCFolders(conn, nodes, path=""):
             for node in nodes:
                 if hasattr(node, "childEntity"):
-                    for child, childpath in traverseFolders(conn, node.childEntity, path + node.name + "/"):
+                    for child, childpath in traverseDCFolders(conn, node.childEntity, path + node.name + "/"):
                         yield child, childpath
                 else:
                     yield node, path + node.name
