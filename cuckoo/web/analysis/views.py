@@ -403,13 +403,16 @@ def search(request):
 
     match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
 
-    r = settings.ELASTIC.search(body={
-        "query": {
-            "query_string": {
-                "query": '"%s"*' % value,
+    r = settings.ELASTIC.search(
+        index=settings.ELASTIC_INDEX + "-*",
+        body={
+            "query": {
+                "query_string": {
+                    "query": '"%s"*' % value,
+                },
             },
-        },
-    })
+        }
+    )
 
     analyses = []
     for hit in r["hits"]["hits"]:
@@ -419,7 +422,7 @@ def search(request):
             continue
 
         analyses.append({
-            "task_id": hit["_index"].split("-")[-1],
+            "task_id": hit["_source"]["report_id"],
             "matches": matches[:16],
             "total": max(len(matches)-16, 0),
         })
@@ -697,11 +700,10 @@ def import_analysis(request):
             }
 
         category = analysis_info["target"]["category"]
+        info = analysis_info.get("info", {})
 
         if category == "file":
             binary = store_temp_file(zf.read("binary"), "binary")
-
-            info = analysis_info.get("info", {})
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,

@@ -57,6 +57,13 @@ def analyzer_zipfile(platform, monitor):
     # Include the chosen monitoring component.
     if platform == "windows":
         dirpath = cwd("monitor", monitor)
+
+        # Sometimes we might get a file instead of a symbolic link, in that
+        # case we follow the semi-"symbolic link" manually.
+        if os.path.isfile(dirpath):
+            monitor = os.path.basename(open(dirpath, "rb").read().strip())
+            dirpath = cwd("monitor", monitor)
+
         for name in os.listdir(dirpath):
             path = os.path.join(dirpath, name)
             archive_name = os.path.join("/bin", name)

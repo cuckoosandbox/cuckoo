@@ -255,11 +255,29 @@ def init_yara():
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
-    monitor = cwd("monitor", "latest")
+    dirpath = cwd("monitor", "latest")
 
     # Checks whether the "latest" symlink is available as well as whether
     # it points to an existing directory.
-    if not os.path.exists(monitor):
+    if not os.path.exists(dirpath):
+        raise CuckooStartupError(
+            "The binaries used for Windows analysis are updated regularly, "
+            "independently from the release line. It appears that you're "
+            "not up-to-date. This may happen when you've just installed the "
+            "latest development version of Cuckoo or when you've updated "
+            "to the latest Cuckoo. In order to get up-to-date, please run "
+            "the following command: `cuckoo community`."
+        )
+
+    # If "latest" is a file and not a symbolic link, check if it's destination
+    # directory is available.
+    if os.path.isfile(dirpath):
+        monitor = os.path.basename(open(dirpath, "rb").read().strip())
+        dirpath = cwd("monitor", monitor)
+    else:
+        dirpath = None
+
+    if dirpath and not os.path.isdir(dirpath):
         raise CuckooStartupError(
             "The binaries used for Windows analysis are updated regularly, "
             "independently from the release line. It appears that you're "

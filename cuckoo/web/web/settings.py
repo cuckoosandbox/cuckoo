@@ -37,6 +37,7 @@ if cfg.elasticsearch.get("enabled"):
             hosts.append(host.strip())
 
     ELASTIC = elasticsearch.Elasticsearch(hosts)
+    ELASTIC_INDEX = cfg.elasticsearch.get("index", "cuckoo")
 else:
     ELASTIC = None
 
