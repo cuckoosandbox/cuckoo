@@ -167,7 +167,7 @@ class Process(object):
         """
         ret = []
         for line in args:
-            if " " in line or '"' in line:
+            if " " in line:
                 ret.append('"%s"' % line)
             else:
                 ret.append(line)
