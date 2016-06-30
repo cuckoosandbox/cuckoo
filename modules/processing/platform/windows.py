@@ -78,15 +78,15 @@ class MonitorProcessLog(list):
 
     # VBA Macro analysis stuff.
 
-    def _vbe6_newobject(self, event):
-        """Keep track which instance pointers belong to which classes."""
-        this = event["arguments"]["this"]
-        object_name = event["arguments"]["object_name"]
-
-        self.vbe6_ptrs[this] = object_name
-
-    _api_vbe6_CreateObject = _vbe6_newobject
-    _api_vbe6_GetObject = _vbe6_newobject
+    # def _vbe6_newobject(self, event):
+    #     """Keep track which instance pointers belong to which classes."""
+    #     this = event["arguments"]["this"]
+    #     object_name = event["arguments"]["object_name"]
+    #
+    #     self.vbe6_ptrs[this] = object_name
+    #
+    # _api_vbe6_CreateObject = _vbe6_newobject
+    # _api_vbe6_GetObject = _vbe6_newobject
 
     def _api_vbe6_StringConcat(self, event):
         pass

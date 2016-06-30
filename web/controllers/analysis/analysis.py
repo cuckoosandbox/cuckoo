@@ -23,6 +23,46 @@ results_db = settings.MONGO
 
 class AnalysisController:
     @staticmethod
+    def get_recent(limit=50, offset=0):
+        db = Database()
+        tasks_files = db.list_tasks(
+            limit=limit,
+            offset=offset,
+            category="file",
+            not_status=TASK_PENDING)
+
+        tasks_urls = db.list_tasks(
+            limit=limit,
+            offset=offset,
+            category="url",
+            not_status=TASK_PENDING)
+
+        data = []
+        if tasks_files:
+            for task in tasks_files:
+                new = task.to_dict()
+                new["sample"] = db.view_sample(new["sample_id"]).to_dict()
+
+                filename = os.path.basename(new["target"])
+                new.update({"filename": filename})
+
+                if db.view_errors(task.id):
+                    new["errors"] = True
+
+                data.append(new)
+
+        if tasks_urls:
+            for task in tasks_urls:
+                new = task.to_dict()
+
+                if db.view_errors(task.id):
+                    new["errors"] = True
+
+                data.append(new)
+
+        return data
+
+    @staticmethod
     def get_export(request, task_id):
         taken_dirs = request.POST.getlist("dirs")
         taken_files = request.POST.getlist("files")
