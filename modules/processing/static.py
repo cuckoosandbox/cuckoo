@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import struct
+import zipfile
 
 try:
     import bs4
@@ -473,11 +474,21 @@ class OfficeDocument(object):
         ],
     ]
 
+    eps_comments = "\\(([\\w\\s]+)\\)"
+
     def __init__(self, filepath):
         self.filepath = filepath
+        self.files = {}
 
     def get_macros(self):
         """Get embedded Macros if this is an Office document."""
+        if not HAVE_OLETOOLS:
+            log.warning(
+                "In order to do static analysis of Microsoft Word documents "
+                "we're going to require oletools (`pip install oletools`)"
+            )
+            return
+
         try:
             p = oletools.olevba.VBA_Parser(self.filepath)
         except TypeError:
@@ -493,6 +504,7 @@ class OfficeDocument(object):
                     "stream": s,
                     "filename": v.decode("latin-1"),
                     "orig_code": c.decode("latin-1"),
+                    "deobf": self.deobfuscate(c.decode("latin-1")),
                 }
         except ValueError as e:
             log.warning(
@@ -514,19 +526,30 @@ class OfficeDocument(object):
 
         return code
 
-    def run(self):
-        if not HAVE_OLETOOLS:
-            log.warning(
-                "In order to do static analysis of Microsoft Word documents "
-                "we're going to require oletools (`pip install oletools`)"
-            )
+    def unpack_docx(self):
+        """Unpacks .docx-based zip files."""
+        try:
+            z = zipfile.ZipFile(self.filepath)
+            for name in z.namelist():
+                self.files[name] = z.read(name)
+        except:
             return
 
+    def extract_eps(self):
+        """Extract some information from Encapsulated Post Script files."""
         ret = []
-        for macro in self.get_macros():
-            macro["deobf"] = self.deobfuscate(macro["orig_code"])
-            ret.append(macro)
+        for filename, content in self.files.items():
+            if filename.lower().endswith(".eps"):
+                ret.extend(re.findall(self.eps_comments, content))
         return ret
+
+    def run(self):
+        self.unpack_docx()
+
+        return {
+            "macros": list(self.get_macros()),
+            "eps": self.extract_eps(),
+        }
 
 class Static(Processing):
     """Static analysis."""
