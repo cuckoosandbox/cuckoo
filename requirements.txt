@@ -20,6 +20,7 @@ Mako==1.0.1
 MarkupSafe==0.23
 ndg-httpsclient==0.4.0
 oletools==0.42
+peepdf==0.3.1
 pefile2==1.2.11
 pyasn1==0.1.8
 pycparser==2.14

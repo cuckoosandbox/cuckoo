@@ -41,6 +41,21 @@ try:
 except ImportError:
     HAVE_OLETOOLS = False
 
+try:
+    import peepdf.PDFCore
+    import peepdf.JSAnalysis
+    HAVE_PEEPDF = True
+except ImportError:
+    HAVE_PEEPDF = False
+
+try:
+    import PyV8
+    HAVE_PYV8 = True
+
+    PyV8  # Fake usage.
+except:
+    HAVE_PYV8 = False
+
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
@@ -551,6 +566,85 @@ class OfficeDocument(object):
             "eps": self.extract_eps(),
         }
 
+class PdfDocument(object):
+    """Static analysis of PDF documents."""
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+
+    def _parse_string(self, s):
+        # Big endian.
+        if s.startswith(u"\xfe\xff"):
+            return s[2:].encode("latin-1").decode("utf-16be")
+
+        # Little endian.
+        if s.startswith(u"\xff\xfe"):
+            return s[2:].encode("latin-1").decode("utf-16le")
+
+        return s
+
+    def _sanitize(self, d, key):
+        return self._parse_string(d.get(key, "").decode("latin-1"))
+
+    def run(self):
+        if not HAVE_PEEPDF:
+            log.warning(
+                "Unable to perform static PDF analysis as PeePDF is missing "
+                "(install with `pip install peepdf`)"
+            )
+            return
+
+        p = peepdf.PDFCore.PDFParser()
+        r, f = p.parse(
+            self.filepath, forceMode=True,
+            looseMode=True, manualAnalysis=False
+        )
+        if r:
+            log.warning("Error parsing PDF file, error code %s", r)
+            return
+
+        ret = []
+
+        for version in xrange(f.updates + 1):
+            md = f.getBasicMetadata(version)
+            row = {
+                "version": version,
+                "creator": self._sanitize(md, "creator"),
+                "creation": self._sanitize(md, "creation"),
+                "title": self._sanitize(md, "title"),
+                "subject": self._sanitize(md, "subject"),
+                "producer": self._sanitize(md, "producer"),
+                "author": self._sanitize(md, "author"),
+                "modification": self._sanitize(md, "modification"),
+                "javascript": [],
+                "urls": [],
+            }
+
+            for obj in f.body[version].objects.values():
+                if obj.object.type == "stream":
+                    stream = obj.object.decodedStream
+
+                    # Is this actually Javascript code?
+                    if not peepdf.JSAnalysis.isJavascript(stream):
+                        continue
+
+                    row["javascript"].append({
+                        "orig_code": stream.decode("latin-1"),
+                        "urls": [],
+                    })
+                    continue
+
+                if obj.object.type == "dictionary":
+                    for url in obj.object.urlsFound:
+                        row["urls"].append(self._parse_string(url))
+
+                    for url in obj.object.uriList:
+                        row["urls"].append(self._parse_string(url))
+
+            ret.append(row)
+
+        return ret
+
 class Static(Processing):
     """Static analysis."""
     PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
@@ -590,6 +684,9 @@ class Static(Processing):
 
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
             static["office"] = OfficeDocument(self.file_path).run()
+
+        if package == "pdf" or ext == "pdf":
+            static["pdf"] = PdfDocument(self.file_path).run()
 
         return static
 
