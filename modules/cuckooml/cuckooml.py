@@ -27,18 +27,27 @@ class Instance(object):
         self.scans = None
         self.label = None
         self.features = {}
+        self.basic_features = {}
 
 
-    def load_json(self, json_path):
-        """Load JSON formatted malware report."""
-        with open(json_path, "r") as malware_report:
-            try:
-                self.report = json.load(malware_report)
-            except ValueError, error:
-                print >> sys.stderr, "Could not load file;", \
-                    malware_report, "is not a valid JSON file."
-                print >> sys.stderr, "Exception: %s" % str(error)
-                sys.exit(1)
+    def load_json(self, json_file):
+        """Load JSON formatted malware report. It can handle both a path to
+        JSON file and a dictionary object."""
+        if isinstance(json_file, str):
+            with open(json_file, "r") as malware_report:
+                try:
+                    self.report = json.load(malware_report)
+                except ValueError, error:
+                    print >> sys.stderr, "Could not load file;", \
+                        malware_report, "is not a valid JSON file."
+                    print >> sys.stderr, "Exception: %s" % str(error)
+                    sys.exit(1)
+        elif isinstance(json_file, dict):
+            self.report = json_file
+        else:
+            # Unknown binary format
+            print >> sys.stderr, "Could not load the data *", json, "* is of " \
+                "unknown type: ", type(json), "."
 
         # Get total and positives
         self.total = self.report.get("virustotal").get("total")
