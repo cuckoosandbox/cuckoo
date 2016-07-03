@@ -6,6 +6,7 @@
 import collections
 import datetime
 import json
+import os
 import sys
 import time
 
@@ -13,6 +14,45 @@ class ML(object):
     """Feature formatting and machine learning for Cuckoo analysed binaries."""
     def __init__(self):
         pass
+class Loader(object):
+    """Loads instances for analysis and give possibility to extract properties
+    of interest."""
+    def __init__(self):
+        self.binaries = {}
+
+
+    def load_binaries(self, directory):
+        """Load all binaries' reports from given directory."""
+        for f in os.listdir(directory):
+            self.binaries[f] = Instance()
+            self.binaries[f].load_json(directory+"/"+f)
+            self.binaries[f].label_sample()
+            self.binaries[f].extract_features()
+            self.binaries[f].extract_basic_features()
+
+
+    def get_labels(self):
+        """Return binary labels as a labelled dictionary."""
+        labels = {}
+        for i in self.binaries:
+            labels[i] = self.binaries[i].label
+        return labels
+
+
+    def get_features(self):
+        """Return complex binary features as a labelled dictionary."""
+        features = {}
+        for i in self.binaries:
+            features[i] = self.binaries[i].features
+        return features
+
+
+    def get_simple_features(self):
+        """Return simplified binary features as a labelled dictionary."""
+        simple_features = {}
+        for i in self.binaries:
+            simple_features[i] = self.binaries[i].basic_features
+        return simple_features
 
 
 class Instance(object):
