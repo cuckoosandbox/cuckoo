@@ -9,11 +9,161 @@ import json
 import os
 import sys
 import time
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from sklearn.manifold import TSNE
 
 class ML(object):
     """Feature formatting and machine learning for Cuckoo analysed binaries."""
+    SIMPLE_CATEGORIES = {
+        "properties":[
+            "has_authenticode",
+            "has_pdb",
+            "pe_features",
+            "packer_upx",
+            "has_wmi"
+        ],
+        "behaviour":[
+            "dumped_buffer2",
+            "suspicious_process",
+            "persistence_autorun",
+            "raises_exception",
+            "sniffer_winpcap",
+            "injection_runpe",
+            "dumped_buffer",
+            "exec_crash",
+            "creates_service",
+            "allocates_rwx"
+        ],
+        "exploration":[
+            "recon_fingerprint",
+            "antidbg_windows",
+            "locates_sniffer"
+        ],
+        "mutex":[
+            "ardamax_mutexes",
+            "rat_xtreme_mutexes",
+            "bladabindi_mutexes"
+        ],
+        "networking":[
+            "network_bind",
+            "networkdyndns_checkip",
+            "network_http",
+            "network_icmp",
+            "recon_checkip",
+            "dns_freehosting_domain",
+            "dns_tld_pw",
+            "dns_tld_ru"
+        ],
+        "filesystem":[
+            "modifies_files",
+            "packer_polymorphic",
+            "creates_exe",
+            "creates_doc"
+        ],
+        "security":[
+            "rat_xtreme",
+            "disables_security",
+            "trojan_redosru",
+            "worm_renocide",
+            "antivirus_virustotal"
+        ],
+        "virtualisation":[
+            "antivm_vbox_files",
+            "antivm_generic_bios",
+            "antivm_vmware_keys",
+            "antivm_generic_services",
+            "antivm_vmware_files",
+            "antivm_sandboxie",
+            "antivm_vbox_keys",
+            "antivm_generic_scsi",
+            "antivm_vmware_in_instruction",
+            "antivm_generic_disk",
+            "antivm_virtualpc"
+        ],
+        "sanbox":[
+            "antisandbox_unhook",
+            "antisandbox_mouse_hook",
+            "antisandbox_foregroundwindows",
+            "antisandbox_productid",
+            "antisandbox_idletime",
+            "antisandbox_sleep"
+        ],
+        "infostealer":[
+            "infostealer_browser",
+            "infostealer_mail",
+            "infostealer_keylogger",
+            "infostealer_ftp",
+        ],
+        "ransomware":[
+            "ransomware_files",
+            "ransomware_bcdedit"
+        ]
+    }
+
     def __init__(self):
+        self.labels = None
+        self.simple_features = None
+        self.simple_features_description = {}
+        self.features = None
+
+
+    def load_labels(self, labels):
+        """Load labels into pandas data frame."""
+        self.labels = pd.DataFrame(labels, index=["label"]).T
+
+
+    def load_simple_features(self, simple_features):
+        """Load simple features form an external object into pandas data
+        frame."""
+        self.simple_features = pd.DataFrame(simple_features).T
+        self.simple_features.fillna(False, inplace=True)
+        self.simple_features = self.simple_features.astype(bool)
+
+        # Aggregate features descriptions
+        self.simple_features_description = {}
+        for binary in simple_features:
+            for token in simple_features[binary]:
+                if token not in self.simple_features_description:
+                    self.simple_features_description[token] = \
+                        simple_features[binary][token]
+
+
+    def simple_feature_category(self, category="properties"):
+        """Get simple feature data frame containing only features form selected
+        category."""
+        return self.simple_features.loc[:, self.SIMPLE_CATEGORIES[category]]
+
+
+    def load_features(self, features):
+        """Load features form an external object into pandas data frame."""
         pass
+        # self.features = features
+
+
+    def visualise_data(self, data=None, labels=None, learning_rate=200,
+                       fig_name="custom"):
+        """Create t-Distributed Stochastic Neighbor Embedding for features and
+        labels to help inspect the data."""
+        if data is None:
+            data = self.features
+        if labels is None:
+            labels = self.labels
+
+        tsne = TSNE(learning_rate=learning_rate)
+        tsne_fit = tsne.fit_transform(data)
+        tsne_df = pd.DataFrame(tsne_fit, index=data.index, columns=['0', '1'])
+        tsne_dfl = pd.concat([tsne_df, labels], axis=1)
+
+        sns.lmplot('0', '1', data=tsne_dfl, fit_reg=False, hue='label',
+                   scatter_kws={"marker":"D", "s":50}, legend_out=True)
+        plt.title(fig_name + " (lr:" + str(learning_rate) + ")")
+        plt.savefig(fig_name + "_" + str(learning_rate) + ".png",
+                    bbox_inches='tight', pad_inches=1.)
+        plt.close()
+
+
 class Loader(object):
     """Loads instances for analysis and give possibility to extract properties
     of interest."""
