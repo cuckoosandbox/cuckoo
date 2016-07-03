@@ -359,7 +359,8 @@ class VirusTotalAPI(object):
             }
             for signature in results["scans"].values():
                 for label_type in signature["normalized"]:
-                    norm_lower[label_type] += signature[label_type]
+                    norm_lower[label_type] += signature["normalized"][label_type]
+
             labeller = Instance()
             for label_type in norm_lower:
                 labeller.label_sample(norm_lower[label_type])
