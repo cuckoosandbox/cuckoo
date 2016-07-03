@@ -47,9 +47,9 @@ class VirusTotalAPI(object):
         "obfuscator", "stealer", "suspectcrc"
     ]
 
-    FIX_BLACKLIST = [ # prefixes&suffixes
+    FIX_BLACKLIST = [  # prefixes&suffixes
         "apt", "ms",
-        "vb", "mal", "pack", "exe", "enz" # "doc"
+        "vb", "mal", "pack", "exe", "enz"  # "doc"
     ]
 
     PLATFORMS = {
@@ -134,14 +134,14 @@ class VirusTotalAPI(object):
     }
 
     ALTERNATIVE_PLATFORMS = {
-        "multi":"multi",
-        "macro":"o97m",
-        "office":"o97m",
-        "excel":"x97m",
-        "word":"w97m",
-        "powerpoint":"pp97m",
-        "access":"a97m",
-        "msil":"msil"
+        "multi": "multi",
+        "macro": "o97m",
+        "office": "o97m",
+        "excel": "x97m",
+        "word": "w97m",
+        "powerpoint": "pp97m",
+        "access": "a97m",
+        "msil": "msil"
     }
 
     TYPES = [
@@ -200,82 +200,82 @@ class VirusTotalAPI(object):
     ]
 
     MAPPING = {
-        "click":"clicker",
-        "spy":"spyware",
-        "adware":"adware",
-        "ad":"adware",
-        "bundler":"softwarebundler",
-        "hack":"hacktool",
-        "hackkms":"hacktool",
-        "kms":"hacktool",
-        "hacktool":"hacktool",
-        "rogue":"rogue",
-        "rogueware":"rogue",
-        "riskware":"riskware",
-        "risk":"riskware",
-        "grayware":"riskware",
-        "hktl":"riskware",
-        "keygen":"riskware",
-        "onlinegames":"riskware",
-        "scareware":"riskware",
-        "startpage":"riskware",
-        "suspicious":"riskware",
-        "unwanted":"riskware",
-        "backdoor":"backdoor",
-        "bkdr":"backdoor",
-        "genericbackdoor":"backdoor",
-        "trojbackdoor":"backdoor",
-        "trojan":"trojan",
-        "banker":"trojan",
-        "injector":"trojan",
-        "inject":"trojan",
-        "inj":"trojan",
-        "tr":"trojan",
-        "trj":"trojan",
-        "trjn":"trojan",
-        "troj":"trojan",
-        "trojware":"trojan",
-        "downloader":"downloader",
-        "loader":"downloader",
-        "exedown":"downloader",
-        "dldr":"downloader",
-        "dloader":"downloader",
-        "dloadr":"downloader",
-        "downldexe":"downloader",
-        "downldr":"downloader",
-        "down":"downloader",
-        "dload":"downloader",
-        "dloade":"downloader",
-        "dl":"downloader",
-        "download":"downloader",
-        "downagent":"downloader",
-        "downware":"downloader",
-        "dwnldr":"downloader",
-        "dwnlder":"downloader",
-        "load":"downloader",
-        "muldown":"downloader",
-        "ransom":"ransom",
-        "crypt":"ransom",
-        "crypter":"ransom",
-        "cryptor":"ransom",
-        "krypt":"ransom",
-        "kryptik":"ransom",
-        "lock":"ransom",
-        "ransom":"ransom",
-        "ransomcrypt":"ransom",
-        "ransomlock":"ransom",
-        "rootkit":"rootkit",
-        "rkit":"rootkit",
-        "rtk":"rootkit",
-        "sys":"rootkit",
+        "click": "clicker",
+        "spy": "spyware",
+        "adware": "adware",
+        "ad": "adware",
+        "bundler": "softwarebundler",
+        "hack": "hacktool",
+        "hackkms": "hacktool",
+        "kms": "hacktool",
+        "hacktool": "hacktool",
+        "rogue": "rogue",
+        "rogueware": "rogue",
+        "riskware": "riskware",
+        "risk": "riskware",
+        "grayware": "riskware",
+        "hktl": "riskware",
+        "keygen": "riskware",
+        "onlinegames": "riskware",
+        "scareware": "riskware",
+        "startpage": "riskware",
+        "suspicious": "riskware",
+        "unwanted": "riskware",
+        "backdoor": "backdoor",
+        "bkdr": "backdoor",
+        "genericbackdoor": "backdoor",
+        "trojbackdoor": "backdoor",
+        "trojan": "trojan",
+        "banker": "trojan",
+        "injector": "trojan",
+        "inject": "trojan",
+        "inj": "trojan",
+        "tr": "trojan",
+        "trj": "trojan",
+        "trjn": "trojan",
+        "troj": "trojan",
+        "trojware": "trojan",
+        "downloader": "downloader",
+        "loader": "downloader",
+        "exedown": "downloader",
+        "dldr": "downloader",
+        "dloader": "downloader",
+        "dloadr": "downloader",
+        "downldexe": "downloader",
+        "downldr": "downloader",
+        "down": "downloader",
+        "dload": "downloader",
+        "dloade": "downloader",
+        "dl": "downloader",
+        "download": "downloader",
+        "downagent": "downloader",
+        "downware": "downloader",
+        "dwnldr": "downloader",
+        "dwnlder": "downloader",
+        "load": "downloader",
+        "muldown": "downloader",
+        "ransom": "ransom",
+        "crypt": "ransom",
+        "crypter": "ransom",
+        "cryptor": "ransom",
+        "krypt": "ransom",
+        "kryptik": "ransom",
+        "lock": "ransom",
+        "ransom": "ransom",
+        "ransomcrypt": "ransom",
+        "ransomlock": "ransom",
+        "rootkit": "rootkit",
+        "rkit": "rootkit",
+        "rtk": "rootkit",
+        "sys": "rootkit",
         # extension
-        "expl":"exploit",
-        "dropper":"dropper",
-        "mdropper":"dropper",
-        "dropped":"dropper",
-        "drop":"dropper",
-        "drp":"dropper",
-        "mailer":"mailer"
+        "expl": "exploit",
+        "dropper": "dropper",
+        "mdropper": "dropper",
+        "dropped": "dropper",
+        "drop": "dropper",
+        "drp": "dropper",
+        "mailer": "mailer"
     }
 
     TEMPLATE = "{type}:{platform}/{family}.{variant}!{information}"
@@ -290,7 +290,6 @@ class VirusTotalAPI(object):
         self.timeout = timeout
         self.scan = scan
 
-
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
         if not HAVE_REQUESTS:
@@ -304,7 +303,6 @@ class VirusTotalAPI(object):
         except (requests.ConnectionError, ValueError) as e:
             raise CuckooOperationalError("Unable to fetch VirusTotal "
                                          "results: %r" % e.message)
-
 
     def _get_report(self, url, resource, summary=False):
         """Fetch the report of a file or URL."""
@@ -338,11 +336,11 @@ class VirusTotalAPI(object):
         if not summary:
             results["scans"] = {}
             results["normalized"] = {
-                "cve":"",
-                "platform":"",
-                "metatype":"",
-                "type":"",
-                "family":""
+                "cve": "",
+                "platform": "",
+                "metatype": "",
+                "type": "",
+                "family": ""
             }
 
             # Embed all VirusTotal results into the report.
@@ -353,11 +351,11 @@ class VirusTotalAPI(object):
             # Normalize each detected variant in order to try to find the
             # exact malware family.
             norm_lower = {
-                "cve":[],
-                "platform":[],
-                "metatype":[],
-                "type":[],
-                "family":[]
+                "cve": [],
+                "platform": [],
+                "metatype": [],
+                "type": [],
+                "family": [],
             }
             for signature in results["scans"].values():
                 for label_type in signature["normalized"]:
@@ -369,13 +367,11 @@ class VirusTotalAPI(object):
 
         return results
 
-
     def url_report(self, url, summary=False):
         """Get the report of an existing URL scan.
         @param url: URL
         @param summary: if you want a summary report"""
         return self._get_report(self.URL_REPORT, url, summary)
-
 
     def file_report(self, filepath, summary=False):
         """Get the report of an existing file scan.
@@ -384,7 +380,6 @@ class VirusTotalAPI(object):
         resource = File(filepath).get_md5()
         return self._get_report(self.FILE_REPORT, resource, summary)
 
-
     def url_scan(self, url):
         """Submit a URL to be scanned.
         @param url: URL
@@ -392,7 +387,6 @@ class VirusTotalAPI(object):
         data = dict(apikey=self.apikey, url=url)
         r = self._request_json(self.URL_SCAN, data=data)
         return dict(summary=dict(permalink=r.get("permalink")))
-
 
     def file_scan(self, filepath):
         """Submit a file to be scanned.
@@ -403,7 +397,6 @@ class VirusTotalAPI(object):
         r = self._request_json(self.FILE_SCAN, data=data, files=files)
         return dict(summary=dict(permalink=r.get("permalink")))
 
-
     def detect_platform(self, tokens):
         """Guess platform affected by malware based on tokenised VT name."""
 
@@ -412,7 +405,7 @@ class VirusTotalAPI(object):
             platform = ""
             for os in platform_list:
                 if token.startswith(os):
-                    return  os
+                    return os
                 if os.startswith(token):
                     return os
             for os in platform_list:
@@ -479,7 +472,6 @@ class VirusTotalAPI(object):
 
         return platform, tokens
 
-
     def clean_tokens(self, tokens):
         """Cleans tokenised malware name based on VARIANT_BLACKLIST.
         The conditions for removing a substring are: exact match, prefix, and
@@ -510,7 +502,7 @@ class VirusTotalAPI(object):
                     old_tokens = token.split(key)
                     break
 
-            #clean old_tokens from empty strings
+            # clean old_tokens from empty strings
             old_tokens = [t.strip() for t in old_tokens if t.strip()]
 
             return new_token, old_tokens
@@ -527,17 +519,17 @@ class VirusTotalAPI(object):
         tokens_iter1 = []
         for token in tokens_iter0:
             if token not in self.VARIANT_BLACKLIST and \
-                token not in self.FIX_BLACKLIST and\
-                not token.isdigit() and \
-                not re.match("[a-fA-F0-9]+$", token) and\
-                len(token) > 2:
-                    tokens_iter1.append(token)
+                    token not in self.FIX_BLACKLIST and \
+                    not token.isdigit() and \
+                    not re.match("[a-fA-F0-9]+$", token) and \
+                    len(token) > 2:
+                tokens_iter1.append(token)
 
         tokens_iter2 = []
         for token in tokens_iter1:
             for variant in self.FIX_BLACKLIST:
                 new_token = ""
-                if  token.startswith(variant):
+                if token.startswith(variant):
                     new_token = token.split(variant)[-1]
                     tokens_iter2.append(new_token)
                     break
@@ -569,22 +561,21 @@ class VirusTotalAPI(object):
                 tokens_iter3.append(token)
 
         # Remove tokens up to 2 letters and the blacklisted ones
-        tokens_iter4 = [t for t in tokens_iter3 if len(t) > 2 and \
+        tokens_iter4 = [t for t in tokens_iter3 if len(t) > 2 and
                         t not in self.VARIANT_BLACKLIST]
 
         return tokens_iter4
-
 
     def normalize(self, variant):
         """Normalize the variant name provided by an Anti Virus engine. This
         attempts to extract the useful parts of a variant name by stripping
         all the boilerplate stuff from it."""
         ret = {
-            "cve":[],
-            "platform":[],
-            "metatype":[],
-            "type":[],
-            "family":[]
+            "cve": [],
+            "platform": [],
+            "metatype": [],
+            "type": [],
+            "family": []
         }
 
         if not variant:
