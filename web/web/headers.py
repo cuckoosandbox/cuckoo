@@ -7,7 +7,7 @@ import sys
 
 from django.conf import settings
 
-sys.path.append(settings.CUCKOO_PATH)
+sys.path.insert(0, settings.CUCKOO_PATH)
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION
 
