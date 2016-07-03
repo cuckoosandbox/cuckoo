@@ -381,3 +381,19 @@ class Instance(object):
                     self.features["api_stats"][e] += apistats[d][e]
                 else:
                     self.features["api_stats"][e] = apistats[d][e]
+
+
+    def extract_basic_features(self):
+        """Extract very basic set of features from *signatures* JSON field.
+        These are extracted characteristics of the binary by cuckoo sandbox."""
+        if self.basic_features:
+            self.basic_features = {}
+
+        for s in self.report.get("signatures", []):
+            name = s.get("name", "")
+            description = s.get("description", "")
+            if name:
+                self.basic_features[name] = description
+                continue
+            if description:
+                self.basic_features[hash(description)] = description
