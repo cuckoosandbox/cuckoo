@@ -45,7 +45,7 @@ Cuckoo Sandbox 2.0-rc1 (2016-01-21)
 * Added mitmproxy support to intercept SSL/TLS traffic
 * Added new Flask based distributed utility
 * Added Javascript analyzer package
-* Added Mozilla FireFox analyzer packege
+* Added Mozilla FireFox analyzer package
 * Added auxiliary module to install a custom certificate in analysis' machine
 * Added auxiliary module to dump TLS master secrets as used by Windows libraries
 * Added analyzer for Linux
