@@ -357,6 +357,14 @@ def rereport(task_id):
     else:
         return json_error(404, "Task not found")
 
+@app.route("/tasks/reboot/<int:task_id>")
+def reboot(task_id):
+    reboot_id = Database().add_reboot(task_id=task_id)
+    if not reboot_id:
+        return json_error(404, "Error creating reboot task")
+
+    return jsonify(task_id=task_id, reboot_id=reboot_id)
+
 @app.route("/files/view/md5/<md5>")
 @app.route("/v1/files/view/md5/<md5>")
 @app.route("/files/view/sha256/<sha256>")
