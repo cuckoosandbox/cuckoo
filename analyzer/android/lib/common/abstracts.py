@@ -18,7 +18,7 @@ class Package(object):
         self.pids = pids
 
     def start(self):
-        """Run analysis packege.
+        """Run analysis package.
         @param path: sample path.
         @raise NotImplementedError: this method is abstract.
         """
