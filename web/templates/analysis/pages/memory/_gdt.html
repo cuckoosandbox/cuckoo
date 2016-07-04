@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>CPU</th>
+            <th>Selector</th>
+            <th>Base</th>
+            <th>Limit</th>
+            <th>Type</th>
+            <th>Dpl</th>
+            <th>Granularity</th>
+            <th>Present</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.gdt.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.cpu_number}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.selector}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.base}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.limit}}</span></td>
+            <td class="{{ row.class_ }}">{{row.type}}</td>
+            <td class="{{ row.class_ }}">{{row.dpl}}</td>
+            <td class="{{ row.class_ }}">{{row.granularity}}</td>
+            <td class="{{ row.class_ }}">{{row.present}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

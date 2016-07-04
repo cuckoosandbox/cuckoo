@@ -1,0 +1,18 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th width="15%">Time &amp; API</th>
+            <th width="65%">Arguments</th>
+            <th width="5%">Status</th>
+            <th width="10%">Return</th>
+            <th width="5%">Repeated</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for call in chunk.calls %}
+        <tr class="{{call.category}}" id="call_{{call.id}}">
+            {% include "analysis/pages/behavior/_api_call.html" %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,127 +1,142 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-<ul class="nav nav-tabs">
-    <li class="active"><a href="#files" data-toggle="tab">Files</a></li>
-    <li><a href="#urls" data-toggle="tab">URLs</a></li>
-</ul>
+    <style>
+        #recent table tr td:first-child, #recent table tr td:nth-child(2){
+            word-wrap: break-word;
+        }
+    </style>
 
-<div class="tab-content">
-    <div class="tab-pane fade in active" id="files">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">Recent Files</h3>
-            </div>
-            {% if files %}
-            <table class="table table-striped" style="table-layout: fixed;">
-                <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Filename</th>
-                    <th>MD5</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for analysis in files %}
-                    <tr>
-                        <td>
-                        {% if analysis.status == "reported" %}
-                            {{analysis.completed_on}}
-                        {% else %}
-                            <span class="muted">{{analysis.added_on}} (added on)</span>
-                        {% endif %}
-                        </td>
-                        <td>
-                            {{analysis.filename}}
-                        </td>
-                        <td style="word-wrap: break-word;">
-                            {% if analysis.status == "reported" or analysis.status == "failed_analysis" %}
-                                <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.sample.md5}}</span></a>
-                            {% else %}
-                                <span class="mono">{{analysis.sample.md5}}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if analysis.status == "pending" %}
-                                <span class="text-muted">pending</span>
-                            {% elif analysis.status == "running" %}
-                                <span class="text-warning">running</span>
-                            {% elif analysis.status == "completed" %}
-                                <span class="text-info">completed</span>
-                            {% elif analysis.status == "reported" %}
-                                {% if analysis.errors %}
-                                    <span class="text-danger">
-                                {% else %}
-                                    <span class="text-success">
-                                {% endif%}
+    <script src="/static/js/recent.js"></script>
 
-                                reported</span>
-                            {% else %}
-                                <span class="text-danger">{{analysis.status}}</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="panel-body">No files analyzed yet.</div>
-            {% endif %}
-        </div>
+    <style>
+        div.nav_container {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+
+            padding-left: 0 !important;
+            margin-bottom: 0;
+            list-style: none;
+
+            margin-top: 0;
+            margin-bottom: 10px;
+
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+
+            display: block;
+            list-style-type: disc;
+            -webkit-margin-before: 1em;
+            -webkit-margin-after: 1em;
+            -webkit-margin-start: 0px;
+            -webkit-margin-end: 0px;
+            -webkit-padding-start: 40px;
+        }
+
+        div.nav_container:before{
+            display: table;
+            content: " ";
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        div.nav_container:after{
+            clear: both;
+            display: table;
+            content: " ";
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        div.nav_container > div#item {
+            float: left;
+            margin-bottom: -1px;
+            position: relative;
+            display: block;
+        }
+
+        div.nav_container >div#item >a {
+            margin-right: 2px;
+            line-height: 1.42857143;
+            border: 1px solid transparent;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            display: block;
+            padding: 10px 15px;
+
+        }
+
+        div.nav_container > div#item.active {
+            color: #555;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            border-bottom-color: transparent;
+        }
+
+        div.nav_container > div#item >a:hover {
+            background-color: #f3f3f3;
+            border-bottom-color: transparent;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        div.nav_container > div.active>a:hover, div.nav_container > div.active>a:focus{
+            cursor: default;
+            background-color: white !important;
+            text-decoration: none !important;
+        }
+
+        div.nav_container a:focus, div.nav_container a:hover{
+            text-decoration: none;
+        }
+    </style>
+    <script>
+        var recent;
+
+        var filters = {
+            'limit': 200,
+            'offset': 0
+        };
+
+        $( document ).ready(function() {
+            $('body').on('click', 'div.nav_container>div', function() {
+                var btn_active = $(this).attr('class');
+
+                if(!btn_active){
+                    $(this).addClass('active');
+                    var filter = $(this).attr('data-filter');
+
+                } else {
+                    $(this).removeClass('active');
+                }
+            });
+
+            recent = new Recent();
+            recent.recent(filters);
+        });
+    </script>
+
+    <div class="nav_container" style="margin-bottom:30px;">
+        <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
+        <div id="item"><a href="#" data-filter="cat_urls">URLs</a></div>
+        <div id="item"><a href="#" data-filter="score_0-4">Score 0 - 4</a></div>
+        <div id="item"><a href="#" data-filter="score_4-7">Score 4 - 7</a></div>
+        <div id="item"><a href="#" data-filter="score_7-10">Score 7 - 10</a></div>
+        <div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
+        <div id="item"><a href="#" data-filter="pack_office">Office</a></div>
     </div>
 
-    <div class="tab-pane fade" id="urls">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">Recent URLs</h3>
-            </div>
-            {% if urls %}
-            <table class="table table-striped" style="table-layout: fixed;">
-                <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>URL</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="recent" class="table table-striped" style="table-layout: fixed;">
                 <tbody>
-                {% for analysis in urls %}
-                    <tr>
-                        <td>
-                        {% if analysis.status == "reported" %}
-                            {{analysis.completed_on}}
-                        {% else %}
-                            <span class="muted">{{analysis.added_on}} (added on)</span>
-                        {% endif %}
-                        </td>
-                        <td style="word-wrap: break-word;">
-                            {% if analysis.status == "reported" %}
-                                <a href="{% url "analysis.views.report" analysis.id %}"><span class="mono">{{analysis.target}}</span></a></td>
-                            {% else %}
-                                <span class="mono">{{analysis.target}}</span>
-                            {% endif %}
-                        <td>
-                            {% if analysis.status == "pending" %}
-                                <span class="text-muted">pending</span>
-                            {% elif analysis.status == "running" %}
-                                <span class="text-warning">running</span>
-                            {% elif analysis.status == "completed" %}
-                                <span class="text-info">completed</span>
-                            {% elif analysis.status == "reported" %}
-                                <span class="text-success">reported</span>
-                            {% else %}
-                                <span class="text-danger">{{analysis.status}}</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
+
                 </tbody>
             </table>
-            {% else %}
-            <div class="panel-body">No URLs analyzed yet.</div>
-            {% endif %}
         </div>
     </div>
-</div>
 {% endblock %}

@@ -1,0 +1,22 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Base Address</th>
+            <th>Offset</th>
+            <th>Name</th>
+            <th>File</th>
+            <th>Size</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.modscan.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.kernel_module_base}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.kernel_module_offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.kernel_module_name}}</td>
+            <td class="{{ row.class_ }}">{{row.kernel_module_file}}</td>
+            <td class="{{ row.class_ }}">{{row.kernel_module_size}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

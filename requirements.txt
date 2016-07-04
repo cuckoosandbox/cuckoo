@@ -36,3 +36,5 @@ SQLAlchemy==1.0.8
 tlslite-ng==0.6.0-alpha3
 wakeonlan==0.2.2
 Werkzeug==0.10.4
+Pillow==3.2
+django_extensions==1.6.7

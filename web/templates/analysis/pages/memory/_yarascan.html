@@ -1,0 +1,18 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Owner</th>
+            <th>Rule</th>
+            <th>Hexdump</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.yarascan.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.owner}}</td>
+            <td class="{{ row.class_ }}">{{row.rule}}</td>
+            <td class="{{ row.class_ }}"><span class="mono"><pre>{{row.hexdump}}</pre></span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

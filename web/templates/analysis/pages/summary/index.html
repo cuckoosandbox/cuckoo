@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-8">
+                    {% if report.analysis.info.category == "file" and report.analysis.target %}
+                        {% include "analysis/pages/summary/_file.html" %}
+                    {% elif report.analysis.info.category == "url" %}
+                        {% include "analysis/pages/summary/_url.html" %}
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <h4><span class="glyphicon glyphicon-fire" aria-hidden="true"></span> Score</h4>
+                    {% if analysis.info.score < 1 %}
+                    <div class="alert alert-success">
+                        This {{ report.analysis.info.category }} appears fairly benign with a score of <strong>{{ report.analysis.info.score }} out of 10.</strong>
+                    </div>
+                    {% elif analysis.info.score < 2 %}
+                    <div class="alert alert-info">
+                        <p>This {{ report.analysis.info.category }} shows some signs of potential malicious behavior.</p>
+                        <p>The score of this {{ report.analysis.info.category}} is <strong>{{ report.analysis.info.score }} out of 10.</strong></p>
+                    </div>
+                    {% elif analysis.info.score < 5 %}
+                    <div class="alert alert-warning">
+                        This {{ report.analysis.info.category }} shows numerous signs of malicious behavior.
+                        <br/><br/>
+                        The score of this {{ report.analysis.info.category}} is <strong>{{ report.analysis.info.score }} out of 10.</strong>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <p>This {{ report.analysis.info.category }} is <b>very suspicious</b>, with a score of <strong>{{ report.analysis.info.score }} out of 10!</strong></p>
+                    </div>
+                    {% endif %}
+
+                    <p style="font-size: 11px;">
+                        <b>Please notice</b>: The scoring system is currently still in development and should be considered an <b><i>alpha</i></b> feature.
+                    </p>
+                </div>
+            </div>
+
+            {% include "analysis/pages/summary/_info.html" %}
+
+        <div class="row">
+            <div class="col-md-12">
+            {% include "analysis/pages/summary/_signatures.html" %}
+            </div>
+            <div class="col-md-12">
+            {% include "analysis/pages/summary/_screenshots.html" %}
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;"></div>
+
+        <div class="row">
+            <div class="col-xs-8">{% include "analysis/pages/network/_dns.html" %}</div>
+            <div class="col-xs-4">{% include "analysis/pages/network/_hosts.html" %}</div>
+
+            <script>
+                $(document).ready(function(){
+                    setTimeout(function(){
+                    ["network_hosts", "network_dns"].forEach(function(x){
+                        $('#'+x).DataTable({
+                            responsive: true,
+                            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                            "pageLength": 10,
+                            "language": {
+                                "lengthMenu": "Show _MENU_ results",
+                                "zeroRecords": "No results",
+                                "info": "_PAGE_/_PAGES_"
+                            }
+                        });
+                    });
+                        }, 200);
+                });
+            </script>
+        </div>
+
+    {% include "analysis/pages/summary/_summary.html" %}
+        </div>
+    </div>
+{% endblock %}

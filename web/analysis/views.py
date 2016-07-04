@@ -21,8 +21,8 @@ from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
-from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from bson.objectid import ObjectId
 from gridfs import GridFS
 
 sys.path.insert(0, settings.CUCKOO_PATH)
@@ -124,7 +124,7 @@ def chunk(request, task_id, pid, pagenum):
     else:
         chunk = dict(calls=[])
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": chunk,
     })
 
@@ -175,7 +175,7 @@ def filtered_chunk(request, task_id, pid, category):
             if call["category"] == category:
                 filtered_process["calls"].append(call)
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": filtered_process,
     })
 
@@ -243,12 +243,12 @@ def search_behavior(request, task_id):
                 "signs": process_results
             })
 
-    return render(request, "analysis/behavior/_search_results.html", {
+    return render(request, "analysis/pages/behavior/_search_results.html", {
         "results": results,
     })
 
 @require_safe
-def report(request, task_id):
+def summary(request, task_id):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
@@ -260,6 +260,7 @@ def report(request, task_id):
     if "network" in report and "domains" in report["network"]:
         domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
         iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+
         for i in report["network"]["dns"]:
             for a in i["answers"]:
                 iplookups[a["data"]] = i["request"]
@@ -282,7 +283,7 @@ def report(request, task_id):
     deprecated = httpreplay_version and \
         versiontuple(httpreplay_version) < versiontuple(LATEST_HTTPREPLAY)
 
-    return render(request, "analysis/report.html", {
+    return render(request, "analysis/pages/summary/index.html", {
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
@@ -295,12 +296,16 @@ def report(request, task_id):
     })
 
 @require_safe
+def behavioral(request):
+    return
+
+@require_safe
 def latest_report(request):
     rep = results_db.analysis.find_one({}, sort=[("_id", pymongo.DESCENDING)])
     return report(request, rep["info"]["id"] if rep else 0)
 
 @require_safe
-def file(request, category, object_id):
+def file(request, category, object_id, fetch="fetch"):
     file_item = fs.get(ObjectId(object_id))
 
     if file_item:
@@ -314,7 +319,9 @@ def file(request, category, object_id):
             content_type = "application/octet-stream"
 
         response = HttpResponse(file_item.read(), content_type=content_type)
-        response["Content-Disposition"] = "attachment; filename=%s" % file_name
+
+        if fetch is not "nofetch":
+            response["Content-Disposition"] = "attachment; filename=%s" % file_name
 
         return response
     else:

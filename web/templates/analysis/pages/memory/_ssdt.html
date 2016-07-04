@@ -1,0 +1,26 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Table</th>
+            <th>Entry</th>
+            <th>Syscall Name</th>
+            <th>Syscall Addr</th>
+            <th>Syscall Modname</th>
+            <th>Hook?</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.ssdt.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.index}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.table}}</span></td>
+            <td class="{{ row.class_ }}">{{row.entry}}</td>
+            <td class="{{ row.class_ }}">{{row.syscall_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.syscall_addr}}</span></td>
+            <td class="{{ row.class_ }}">{{row.syscall_modname}}</span></td>
+            <td class="{{ row.class_ }}">{{row.hook_dest_addr}}: {{row.hook_name}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
