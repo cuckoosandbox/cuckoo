@@ -142,7 +142,7 @@ def srcroute_disable(rt_table, ipaddr):
 
 def inetsim_enable(ipaddr, inetsim_ip, resultserver_port, interface):
    """Enable hijacking of all traffic and send it to InetSIM."""
-   run(settings.iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
+   run(settings.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
        "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
        "--to-destination", "{}".format(inetsim_ip))
    run(settings.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
@@ -164,12 +164,12 @@ def inetsim_disable(ipaddr, inetsim_ip, resultserver_port):
 
 def tor_enable(ipaddr, resultserver_port, dns_port, proxy_port):
    """Enable hijacking of all traffic and send it to TOR."""
-   run(settings.iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
+   run(settings.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
        "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "REDIRECT",
        "--to-ports", proxy_port)
-   run(settings.iptables, "-I", "OUTPUT", "-m", "conntrack", "--ctstate",
+   run(settings.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
        "INVALID", "-j", "DROP")
-   run(settings.iptables, "-I", "OUTPUT", "-m", "state", "--state",
+   run(settings.iptables, "-A", "OUTPUT", "-m", "state", "--state",
        "INVALID", "-j", "DROP")
    local_dns_forward(ipaddr, dns_port, "-A")
 
