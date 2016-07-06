@@ -126,6 +126,11 @@ class AnalysisController:
         }, sort=[("_id", pymongo.DESCENDING)])
 
     @staticmethod
+    def get_reports(filters):
+        cursor = results_db.analysis.find(filters, sort=[("_id", pymongo.DESCENDING)])
+        return [report for report in cursor]
+
+    @staticmethod
     def _get_dnsinfo(report):
         # Creating dns information dicts by domain and ip.
         if "network" in report and "domains" in report["network"]:

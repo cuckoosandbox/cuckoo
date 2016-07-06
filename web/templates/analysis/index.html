@@ -97,11 +97,6 @@
     <script>
         var recent;
 
-        var filters = {
-            'limit': 200,
-            'offset': 0
-        };
-
         $( document ).ready(function() {
             $('body').on('click', 'div.nav_container>div', function() {
                 var btn_active = $(this).attr('class');
@@ -109,14 +104,20 @@
                 if(!btn_active){
                     $(this).addClass('active');
                     var filter = $(this).attr('data-filter');
-
+                    recent.get_tasks();
                 } else {
                     $(this).removeClass('active');
+                    recent.get_tasks();
                 }
             });
 
+            $('.btn').click(function(){
+                recent.offset += recent.limit;
+                recent.get_tasks();
+            });
+
             recent = new Recent();
-            recent.recent(filters);
+            recent.get_tasks();
         });
     </script>
 
@@ -137,6 +138,7 @@
 
                 </tbody>
             </table>
+            <div class="btn">click me</div>
         </div>
     </div>
 {% endblock %}
