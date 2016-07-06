@@ -207,11 +207,12 @@ open the ``web/analysis/urls.py`` file and modify the 21st line by adding an
 underscore as follows::
 
      -        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-\.]+)?"
-     +        "/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
+     +        "/(?P<ip>[\d\.]+)?/(?P<host>[ a-zA-Z0-9-_\.]+)?"
 
-The official commit fixing this issue can be found in `the following commit`_.
+The official fixes for this issue can be found in the `following`_ `commits`_.
 
-.. _`the following commit`: https://github.com/cuckoosandbox/cuckoo/commit/9c704f50e70227ed21ae1b79ba90540c3087fc57
+.. _`following`: https://github.com/cuckoosandbox/cuckoo/commit/9c704f50e70227ed21ae1b79ba90540c3087fc57
+.. _`commits`: https://github.com/cuckoosandbox/cuckoo/commit/558ded1787bc3377c404ac14a0b3fdce37b49bf4
 
 .. image:: ../_images/screenshots/error_template_rendering.png
 

@@ -1,0 +1,56 @@
+{
+    "order": 0,
+    "template": "cuckoo-*",
+    "settings": {
+        "index": {
+            "number_of_shards": "1",
+            "codec": "best_compression",
+            "number_of_replicas": "0"
+        }
+    },
+    "mappings": {
+        "cuckoo": {
+            "dynamic_templates": [
+                {
+                    "notanalyzed": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string",
+                            "doc_values": "True"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ],
+            "properties": {
+                "report_time": {
+                    "format": "epoch_second",
+                    "type": "date"
+                }
+            }
+        },
+        "call": {
+            "dynamic_templates": [
+                {
+                    "notanalyzed": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string",
+                            "doc_values": "True"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ],
+            "properties": {
+                "report_time": {
+                    "format": "epoch_second",
+                    "type": "date"
+                }
+            }
+        }
+    },
+    "aliases": {}
+}

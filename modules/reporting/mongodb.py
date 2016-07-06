@@ -111,7 +111,8 @@ class MongoDB(Report):
 
         # This will likely hardcode the cuckoo.log to this point, but that
         # should be fine.
-        report["debug"]["cuckoo"] = list(report["debug"]["cuckoo"])
+        if report.get("debug"):
+            report["debug"]["cuckoo"] = list(report["debug"]["cuckoo"])
 
         # Store path of the analysis path.
         report["info"]["analysis_path"] = self.analysis_path
@@ -232,6 +233,21 @@ class MongoDB(Report):
             # Store the results in the report.
             report["behavior"] = dict(report["behavior"])
             report["behavior"]["processes"] = new_processes
+
+        if report.get("procmon"):
+            procmon, chunk = [], []
+
+            for entry in report["procmon"]:
+                if len(chunk) == paginate:
+                    procmon.append(self.db.procmon.insert(chunk))
+                    chunk = []
+
+                chunk.append(entry)
+
+            if chunk:
+                procmon.append(self.db.procmon.insert(chunk))
+
+            report["procmon"] = procmon
 
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)

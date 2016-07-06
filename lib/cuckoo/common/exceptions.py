@@ -35,3 +35,6 @@ class CuckooGuestError(CuckooOperationalError):
 
 class CuckooResultError(CuckooOperationalError):
     """Cuckoo result server error."""
+
+class CuckooDisableModule(CuckooOperationalError):
+    """Exception for disabling a module dynamically."""

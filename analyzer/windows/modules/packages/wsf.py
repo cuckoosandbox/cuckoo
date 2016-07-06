@@ -24,4 +24,4 @@ class WSF(Package):
             path += ".wsf"
             log.info("Submitted file is missing extension, added .wsf")
 
-        return self.execute(wscript, args=[path])
+        return self.execute(wscript, args=[path], trigger="file:%s" % path)

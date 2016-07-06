@@ -13,4 +13,4 @@ class VBS(Package):
 
     def start(self, path):
         wscript = self.get_path("WScript")
-        return self.execute(wscript, args=[path])
+        return self.execute(wscript, args=[path], trigger="file:%s" % path)

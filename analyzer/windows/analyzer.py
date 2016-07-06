@@ -22,6 +22,7 @@ from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooPackageError
+from lib.common.exceptions import CuckooDisableModule
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
@@ -46,23 +47,26 @@ class Files(object):
         """Do we want to inject into a process with this name?"""
         return file_name.lower() in self.PROTECTED_NAMES
 
-    def add_pid(self, filepath, pid):
+    def add_pid(self, filepath, pid, verbose=True):
         """Tracks a process identifier for this file."""
         if not pid or filepath.lower() not in self.files:
             return
 
         if pid not in self.files[filepath.lower()]:
             self.files[filepath.lower()].append(pid)
-            log.info("Added pid %s for %r", pid, filepath)
+            verbose and log.info("Added pid %s for %r", pid, filepath)
 
     def add_file(self, filepath, pid=None):
         """Add filepath to the list of files and track the pid."""
         if filepath.lower() not in self.files:
-            log.info("Added new file to list with path: %s", filepath)
+            log.info(
+                "Added new file to list with pid %s and path %s",
+                pid, filepath
+            )
             self.files[filepath.lower()] = []
             self.files_orig[filepath.lower()] = filepath
 
-        self.add_pid(filepath, pid)
+        self.add_pid(filepath, pid, verbose=False)
 
     def dump_file(self, filepath):
         """Dump a file to the host."""
@@ -356,6 +360,7 @@ class CommandPipeHandler(object):
 
             if not addr or not length:
                 continue
+
             Process(pid=pid).dump_memory_block(int(addr), int(length))
 
     def _handle_track(self, data):
@@ -424,6 +429,8 @@ class Analyzer(object):
         self.files = Files()
         self.process_list = ProcessList()
         self.package = None
+
+        self.reboot = []
 
     def prepare(self):
         """Prepare env for analysis."""
@@ -504,8 +511,9 @@ class Analyzer(object):
         @return: operation status.
         """
         self.prepare()
+        self.path = os.getcwd()
 
-        log.debug("Starting analyzer from: %s", os.getcwd())
+        log.debug("Starting analyzer from: %s", self.path)
         log.debug("Pipe server name: %s", self.config.pipe)
         log.debug("Log pipe server name: %s", self.config.logpipe)
 
@@ -559,7 +567,7 @@ class Analyzer(object):
                               "(package={0}): {1}".format(package_name, e))
 
         # Initialize the analysis package.
-        self.package = package_class(self.config.options)
+        self.package = package_class(self.config.options, analyzer=self)
 
         # Move the sample to the current working directory as provided by the
         # task - one is able to override the starting path of the sample.
@@ -592,13 +600,15 @@ class Analyzer(object):
                 aux.start()
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented",
-                            aux.__class__.__name__)
+                            module.__name__)
+            except CuckooDisableModule:
+                continue
             except Exception as e:
                 log.warning("Cannot execute auxiliary module %s: %s",
-                            aux.__class__.__name__, e)
+                            module.__name__, e)
             else:
                 log.debug("Started auxiliary module %s",
-                          aux.__class__.__name__)
+                          module.__name__)
                 aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the
@@ -606,15 +616,20 @@ class Analyzer(object):
         try:
             pids = self.package.start(self.target)
         except NotImplementedError:
-            raise CuckooError("The package \"{0}\" doesn't contain a run "
-                              "function.".format(package_name))
+            raise CuckooError(
+                "The package \"%s\" doesn't contain a run function." %
+                package_name
+            )
         except CuckooPackageError as e:
-            raise CuckooError("The package \"{0}\" start function raised an "
-                              "error: {1}".format(package_name, e))
+            raise CuckooError(
+                "The package \"%s\" start function raised an error: %s" %
+                (package_name, e)
+            )
         except Exception as e:
-            raise CuckooError("The package \"{0}\" start function encountered "
-                              "an unhandled exception: "
-                              "{1}".format(package_name, e))
+            raise CuckooError(
+                "The package \"%s\" start function encountered an unhandled "
+                "exception: %s" % (package_name, e)
+            )
 
         # If the analysis package returned a list of process identifiers, we
         # add them to the list of monitored processes and enable the process monitor.
