@@ -8,13 +8,19 @@ import os
 import json
 import subprocess
 from PIL import Image
+import pymongo
 
 from lib.cuckoo.common.abstracts import Processing
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from lib.cuckoo.core.database import Database, Task
 from controllers.analysis.analysis import AnalysisController
+
+
+results_db = settings.MONGO
 
 
 class AnalysisApi:
@@ -28,10 +34,58 @@ class AnalysisApi:
         body = json.loads(request.body)
         limit = body.get('limit', 50)
         offset = body.get('offset', 0)
-        score_range = body.get('score_range', "0-10")
 
-        data = AnalysisController().get_recent(
-            limit=limit,
-            offset=offset)
+        # filters
+        cats = body.get('cats')
+        packs = body.get('packs')
+        score_range = body.get('score', None)
 
-        return JsonResponse(data, safe=False)
+        filters = {
+            "info.category": {"$in": cats}
+        }
+
+        if isinstance(score_range, (str, unicode)) and score_range != '':
+            if not '-' in score_range:
+                raise Exception('faulty score')
+
+            score_min, score_max = score_range.split('-', 1)
+
+            try:
+                score_min = int(score_min)
+                score_max = int(score_max)
+
+                if score_min < 0 or score_min > 10 or score_max < 0 or score_max > 10:
+                    raise Exception('faulty score')
+            except:
+                raise Exception('faulty score')
+
+            filters["info.score"] = {"$gte": score_min, "$lte": score_max}
+
+        cursor = results_db.analysis.find(filters, sort=[("_id", pymongo.DESCENDING)]).limit(limit).skip(offset)
+
+        tasks = []
+        for row in cursor:
+            tasks.append({
+                'ended': row['info']['ended'],
+                'score': row['info']['score'],
+                'id': row['info']['id']
+            })
+
+        if tasks:
+            db = Database()
+            q = db.Session().query(Task)
+
+            q = q.filter(Task.id.in_([z['id'] for z in tasks]))
+
+            for task_sql in q.all():
+                for task_mongo in [z for z in tasks if z['id'] == task_sql.id]:
+                    task_mongo['sample'] = task_sql.sample.to_dict()
+
+                    if task_sql.category == 'file':
+                        task_mongo['filename_url'] = os.path.basename(task_sql.target)
+                    elif task_sql.category == 'url':
+                        task_mongo['filename_url'] = task_sql.target
+
+                    task_mongo.update(task_sql.to_dict())
+
+        return JsonResponse(tasks, safe=False)

@@ -93,32 +93,77 @@
         div.nav_container a:focus, div.nav_container a:hover{
             text-decoration: none;
         }
+
+        div.nav_container > div#item.active:not(:first-child) {
+            border-left:0;
+        }
+
+        div.loading{
+            background-color: white;
+            width:100px;
+            height: 40px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-left: -50px;
+            margin-top: -200px;
+            display: none;
+            border: 1px solid #dedede;
+            z-index: 666;
+            border-radius: 4px;
+        }
+
+        div.loading>img{
+            margin-left: 30%;
+            margin-top: 4px;
+        }
+
+        div#no_more_results{
+            display: none;
+        }
     </style>
     <script>
         var recent;
-
-        var filters = {
-            'limit': 200,
-            'offset': 0
-        };
 
         $( document ).ready(function() {
             $('body').on('click', 'div.nav_container>div', function() {
                 var btn_active = $(this).attr('class');
 
+                if($('a[data-filter^="score"]', this).length) {
+                    let score_choice = $(this).find('a').attr('data-filter');
+
+                    $('.nav_container>div#item>a[data-filter^="score"]').each(function(i, obj){
+                        obj = $(obj);
+                        let wow = obj.attr('data-filter');
+
+                        if(wow != score_choice){
+                            obj.parent().removeClass('active');
+                        }
+                    });
+                }
+
                 if(!btn_active){
                     $(this).addClass('active');
                     var filter = $(this).attr('data-filter');
-
+                    recent.load();
                 } else {
                     $(this).removeClass('active');
+                    recent.load();
                 }
             });
 
             recent = new Recent();
-            recent.recent(filters);
+
+            // Detect end of page scroll
+            $(window).scroll(function() {
+               if($(window).scrollTop() + $(window).height() == $(document).height()) {
+                    if(!recent.empty_results) recent.lazy_load();
+               }
+            });
         });
     </script>
+
+    <div class="loading"><img src="/static/img/loading.gif"/></div>
 
     <div class="nav_container" style="margin-bottom:30px;">
         <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
@@ -126,8 +171,8 @@
         <div id="item"><a href="#" data-filter="score_0-4">Score 0 - 4</a></div>
         <div id="item"><a href="#" data-filter="score_4-7">Score 4 - 7</a></div>
         <div id="item"><a href="#" data-filter="score_7-10">Score 7 - 10</a></div>
-        <div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
-        <div id="item"><a href="#" data-filter="pack_office">Office</a></div>
+        <!--<div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
+        <div id="item"><a href="#" data-filter="pack_office">Office</a></div>-->
     </div>
 
     <div class="row">
@@ -137,6 +182,11 @@
 
                 </tbody>
             </table>
+
+            <div id="no_more_results" class="container-fluid center">
+                <span style="color: #a5a5a5;"></span>
+            </div>
+
         </div>
     </div>
 {% endblock %}
