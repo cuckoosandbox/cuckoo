@@ -281,11 +281,32 @@ def init_yara():
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
-    monitor = os.path.join(CUCKOO_ROOT, "data", "monitor", "latest")
+    dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", "latest")
 
     # Checks whether the "latest" symlink is available as well as whether
     # it points to an existing directory.
-    if not os.path.exists(monitor):
+    if not os.path.exists(dirpath):
+        raise CuckooStartupError(
+            "The binaries used for Windows analysis are updated regularly, "
+            "independently from the release line. It appears that you're "
+            "not up-to-date. This can happen when you've just installed "
+            "Cuckoo or when you've updated your Cuckoo version by pulling "
+            "the latest changes from our Git repository. In order to get "
+            "up-to-date, please run the following "
+            "command: `./utils/community.py -wafb monitor` or "
+            "`./utils/community.py -waf` if you'd also like to download "
+            "over 300 Cuckoo signatures."
+        )
+
+    # If "latest" is a file and not a symbolic link, check if it's destination
+    # directory is available.
+    if os.path.isfile(dirpath):
+        monitor = os.path.basename(open(dirpath, "rb").read().strip())
+        dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+    else:
+        dirpath = None
+
+    if dirpath and not os.path.isdir(dirpath):
         raise CuckooStartupError(
             "The binaries used for Windows analysis are updated regularly, "
             "independently from the release line. It appears that you're "

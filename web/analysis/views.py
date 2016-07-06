@@ -3,6 +3,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import calendar
+import datetime
 import sys
 import re
 import os
@@ -402,13 +404,16 @@ def search(request):
 
     match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
 
-    r = settings.ELASTIC.search(body={
-        "query": {
-            "query_string": {
-                "query": '"%s"*' % value,
+    r = settings.ELASTIC.search(
+        index=settings.ELASTIC_INDEX + "-*",
+        body={
+            "query": {
+                "query_string": {
+                    "query": '"%s"*' % value,
+                },
             },
-        },
-    })
+        }
+    )
 
     analyses = []
     for hit in r["hits"]["hits"]:
@@ -418,7 +423,7 @@ def search(request):
             continue
 
         analyses.append({
-            "task_id": hit["_index"].split("-")[-1],
+            "task_id": hit["_source"]["report_id"],
             "matches": matches[:16],
             "total": max(len(matches)-16, 0),
         })
@@ -588,6 +593,13 @@ def export_analysis(request, task_id):
         "files": files,
     })
 
+def json_default(obj):
+    if isinstance(obj, datetime.datetime):
+        if obj.utcoffset() is not None:
+            obj = obj - obj.utcoffset()
+        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
+    raise TypeError("%r is not JSON serializable" % obj)
+
 def export(request, task_id):
     taken_dirs = request.POST.getlist("dirs")
     taken_files = request.POST.getlist("files")
@@ -611,7 +623,11 @@ def export(request, task_id):
     analysis_path = os.path.join(path, "analysis.json")
     with open(analysis_path, "w") as outfile:
         report["target"].pop("file_id", None)
-        json.dump({"target": report["target"]}, outfile, indent=4)
+        metadata = {
+            "info": report["info"],
+            "target": report["target"],
+        }
+        json.dump(metadata, outfile, indent=4, default=json_default)
 
     f = StringIO()
 
@@ -640,9 +656,8 @@ def import_analysis(request):
 
     db = Database()
     task_ids = []
-    analyses = request.FILES.getlist("sample")
 
-    for analysis in analyses:
+    for analysis in request.FILES.getlist("analyses"):
         if not analysis.size:
             return render(request, "error.html", {
                 "error": "You uploaded an empty analysis.",
@@ -686,21 +701,22 @@ def import_analysis(request):
             }
 
         category = analysis_info["target"]["category"]
+        info = analysis_info.get("info", {})
 
         if category == "file":
             binary = store_temp_file(zf.read("binary"), "binary")
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,
-                                      package="",
+                                      package=info.get("package"),
                                       timeout=0,
-                                      options="",
+                                      options=info.get("options"),
                                       priority=0,
                                       machine="",
-                                      custom="",
+                                      custom=info.get("custom"),
                                       memory=False,
                                       enforce_timeout=False,
-                                      tags=None)
+                                      tags=info.get("tags"))
                 if task_id:
                     task_ids.append(task_id)
 
@@ -712,15 +728,15 @@ def import_analysis(request):
                 })
 
             task_id = db.add_url(url=url,
-                                 package="",
+                                 package=info.get("package"),
                                  timeout=0,
-                                 options="",
+                                 options=info.get("options"),
                                  priority=0,
                                  machine="",
-                                 custom="",
+                                 custom=info.get("custom"),
                                  memory=False,
                                  enforce_timeout=False,
-                                 tags=None)
+                                 tags=info.get("tags"))
             if task_id:
                 task_ids.append(task_id)
 
@@ -748,3 +764,11 @@ def import_analysis(request):
             "tasks": task_ids,
             "baseurl": request.build_absolute_uri("/")[:-1],
         })
+
+def reboot_analysis(request, task_id):
+    task_id = Database().add_reboot(task_id=task_id)
+
+    return render(request, "submission/reboot.html", {
+        "task_id": task_id,
+        "baseurl": request.build_absolute_uri("/")[:-1],
+    })

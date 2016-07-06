@@ -18,11 +18,12 @@ urlpatterns = [
     url(r"^pending/$", views.pending),
     url(r"^(?P<task_id>\d+)/pcapstream/(?P<conntuple>[.,\w]+)/$", views.pcapstream),
     url(r"^moloch"
-        r"/(?P<ip>[\d\.]+)?/(?P<host>[a-zA-Z0-9-_\.]+)?"
+        r"/(?P<ip>[\d\.]+)?/(?P<host>[ a-zA-Z0-9-_\.]+)?"
         r"/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
         r"/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         r"/(?P<sid>\d+)?",
         views.moloch),
     url(r"^(?P<task_id>\d+)/export/$", views.export_analysis),
     url(r"^import/$", views.import_analysis),
+    url(r"^(?P<task_id>\d+)/reboot/$", views.reboot_analysis),
 ]

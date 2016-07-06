@@ -58,4 +58,4 @@ class DOC(Package):
 
     def start(self, path):
         word = self.get_path("Microsoft Office Word")
-        return self.execute(word, args=[path])
+        return self.execute(word, args=[path], trigger="file:%s" % path)

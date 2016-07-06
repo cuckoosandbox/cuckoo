@@ -298,7 +298,7 @@ class Pcap(object):
             query["request"] = q_name
             if q_type == dpkt.dns.DNS_A:
                 query["type"] = "A"
-            if q_type == dpkt.dns.DNS_AAAA:
+            elif q_type == dpkt.dns.DNS_AAAA:
                 query["type"] = "AAAA"
             elif q_type == dpkt.dns.DNS_CNAME:
                 query["type"] = "CNAME"

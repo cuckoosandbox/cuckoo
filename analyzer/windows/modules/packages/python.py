@@ -25,4 +25,4 @@ class Python(Package):
         arguments = self.options.get("arguments", "")
 
         args = [path] + shlex.split(arguments)
-        return self.execute(python, args=args)
+        return self.execute(python, args=args, trigger="file:%s" % path)

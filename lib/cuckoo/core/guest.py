@@ -57,6 +57,13 @@ def analyzer_zipfile(platform, monitor):
     # Include the chosen monitoring component.
     if platform == "windows":
         dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+
+        # Sometimes we might get a file instead of a symbolic link, in that
+        # case we follow the semi-"symbolic link" manually.
+        if os.path.isfile(dirpath):
+            monitor = os.path.basename(open(dirpath, "rb").read().strip())
+            dirpath = os.path.join(CUCKOO_ROOT, "data", "monitor", monitor)
+
         for name in os.listdir(dirpath):
             path = os.path.join(dirpath, name)
             archive_name = os.path.join("/bin", name)
@@ -249,12 +256,13 @@ class GuestManager(object):
     """This class represents the new Guest Manager. It operates on the new
     Cuckoo Agent which features a more abstract but more feature-rich API."""
 
-    def __init__(self, vmid, ipaddr, platform, task_id):
+    def __init__(self, vmid, ipaddr, platform, task_id, analysis_manager):
         self.vmid = vmid
         self.ipaddr = ipaddr
         self.port = CUCKOO_GUEST_PORT
         self.platform = platform
         self.task_id = task_id
+        self.analysis_manager = analysis_manager
 
         self.cfg = Config()
         self.timeout = None
@@ -270,15 +278,25 @@ class GuestManager(object):
 
         self.options = {}
 
+    @property
+    def aux(self):
+        return self.analysis_manager.aux
+
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        return requests.get(url, *args, **kwargs)
+        session = requests.Session()
+        session.trust_env = False
+        session.proxies = None
+        return session.get(url, *args, **kwargs)
 
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
-        return requests.post(url, *args, **kwargs)
+        session = requests.Session()
+        session.trust_env = False
+        session.proxies = None
+        return session.post(url, *args, **kwargs)
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
@@ -371,6 +389,7 @@ class GuestManager(object):
             #          "Machines with the new Agent, but for now falling back "
             #          "to backwards compatibility with the old agent.")
             self.is_old = True
+            self.aux.callback("legacy_agent")
             self.old.start_analysis(options, monitor)
             return
 
@@ -410,6 +429,9 @@ class GuestManager(object):
 
         # Pass along the analysis.conf file.
         self.add_config(options)
+
+        # Allow Auxiliary modules to prepare the Guest.
+        self.aux.callback("prepare_guest")
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file":
