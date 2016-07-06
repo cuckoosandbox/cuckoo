@@ -791,7 +791,7 @@ if __name__ == "__main__":
     except Exception as e:
         # Store the error.
         error_exc = traceback.format_exc()
-        error = str(e)
+        error = "%s\n%s" % (e, error_exc)
 
         # Just to be paranoid.
         if len(log.handlers):
