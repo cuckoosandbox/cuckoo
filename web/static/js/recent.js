@@ -1,8 +1,9 @@
 class Recent {
     constructor() {
         this.loading = false;
-        this.limit = 2;
+        this.limit = 50;
         this.offset = 0;
+        this.empty_results = false;
 
         this.params = {
             'cats': [],
@@ -13,21 +14,24 @@ class Recent {
 
     toggle_loading(){
         if(this.loading){
-            console.log("loading");
-            this.loading = true;
-        } else {
-            console.log("loadingg");
+            $('.loading').hide();
             this.loading = false;
+        } else {
+            $('.loading').show();
+            this.loading = true;
         }
     }
 
     gather_params(){
-        function is_active(data_filter) {
+        // reset everything to default values
+        $('div#no_more_results').hide();
+
+        function is_active(data_filter){
             return $(`div.nav_container>div a[data-filter=${data_filter}]`).parent().hasClass('active');
         }
 
-        if(is_active('cat_files')) this.params['cats'].push('files');
-        if(is_active('cat_urls')) this.params['cats'].push('urls');
+        if(is_active('cat_files')) this.params['cats'].push('file');
+        if(is_active('cat_urls')) this.params['cats'].push('url');
 
         if(is_active('score_0-4')) {
             this.params['score'] = '0-4';
@@ -37,8 +41,8 @@ class Recent {
             this.params['score'] = '7-10';
         }
 
-        if(is_active('pack_pdf')) this.params['packs'].push('pdf');
-        if(is_active('pack_office')) this.params['packs'].push('office');
+        //if(is_active('pack_pdf')) this.params['packs'].push('pdf');
+        //if(is_active('pack_office')) this.params['packs'].push('office');
 
         return this.params
     }
@@ -67,60 +71,108 @@ class Recent {
                 self.toggle_loading(self);
             },
             success: function(data){
-                self.cb(data);
+                self.results_callback(data);
+                self.toggle_loading(self);
             }
         }).fail(err => console.log(err))
     }
 
-    cb(data) {
-        data.forEach(function(analysis, i){
-            let html = '<tr><td>';
+    load(){
+        $('#recent>tbody').html('');
+        this.empty_results = false;
+        this.offset = 0;
+        this.params = {
+            'cats': [],
+            'packs': [],
+            'score': ''
+        };
+        this.get_tasks();
+    }
 
-            if(analysis.status == "reported" || analysis.status == "failed_analysis") {
-                html += `<a href="${analysis.id}/summary"><span class="mono">${analysis.completed_on}</span></a>`;
-            } else {
-                html += `<span class="muted">${analysis.added_on} (added on)</span>`;
-            }
+    lazy_load(){
+        this.offset += this.limit;
+        this.get_tasks();
+    }
 
-            html += '</td><td>';
+    results_callback(data){
+        if(Object.keys(data).length == 0){
+            $('div#no_more_results').show();
+            $('div#no_more_results>span').html('no more results');
+            this.empty_results = true;
+        } else {
+            data.forEach(function (analysis, i){
+                let html = '<tr><td>';
 
-            if(analysis.status == "reported" || analysis.status == "failed_analysis") {
-                html += `<a href="${analysis.id}/summary">${analysis.filename}</a>`;
-            } else {
-                html += analysis.filename;
-            }
+                let date_completed_on = '-';
+                let date_added_on = '-';
 
-            html += '</td><td>';
+                if (analysis.hasOwnProperty('completed_on')) date_completed_on = Recent.getFormattedDate(analysis.completed_on);
+                if (analysis.hasOwnProperty('added_on')) date_added_on = Recent.getFormattedDate(analysis.added_on);
 
-            if(analysis.status == "reported" || analysis.status == "failed_analysis") {
-                html += `<a href="${analysis.id}/summary"><span class="mono">${analysis.sample.md5}</span></a>`;
-            } else {
-                html += `<span class="mono">${analysis.sample.md5}</span>`;
-            }
-
-            html += '</td><td>';
-
-            if (analysis.status == "pending"){
-                html += '<span class="text-muted">pending</span>';
-            } else if(analysis.status == "running") {
-                html += '<span class="text-warning">running</span>';
-            } else if(analysis.status == "completed") {
-                html += '<span class="text-info">completed</span>';
-            } else if(analysis.status == "reported") {
-                if(analysis.errors) {
-                    html += '<span class="text-danger">';
+                if (analysis.status == "reported" || analysis.status == "failed_analysis") {
+                    html += `<a href="${analysis.id}/summary"><span class="mono">${date_completed_on}</span></a>`;
                 } else {
-                    html += '<span class="text-success">';
+                    html += `<span class="muted">${date_added_on} (added on)</span>`;
                 }
 
-                html += 'reported</span>';
-            } else {
-                html += `<span class="text-danger">${analysis.status}</span>`;
-            }
+                html += '</td><td>';
 
-            html += '</td></tr>';
+                if (analysis.status == "reported" || analysis.status == "failed_analysis") {
+                    html += `<a href="${analysis.id}/summary">${analysis.filename_url}</a>`;
+                } else {
+                    html += analysis.filename;
+                }
 
-            $('table#recent tbody').append(html);
-        });
+                html += '</td><td>';
+
+                if (analysis.status == "reported" || analysis.status == "failed_analysis") {
+                    html += `<a href="${analysis.id}/summary"><span class="mono">${analysis.sample.md5}</span></a>`;
+                } else {
+                    html += `<span class="mono">${analysis.sample.md5}</span>`;
+                }
+
+                html += '</td><td>';
+
+                if (analysis.status == "pending") {
+                    html += '<span class="text-muted">pending</span>';
+                } else if (analysis.status == "running") {
+                    html += '<span class="text-warning">running</span>';
+                } else if (analysis.status == "completed") {
+                    html += '<span class="text-info">completed</span>';
+                } else if (analysis.status == "reported") {
+                    if (analysis.errors) {
+                        html += '<span class="text-danger">';
+                    } else {
+                        html += '<span class="text-success">';
+                    }
+
+                    html += 'reported</span>';
+                } else {
+                    html += `<span class="text-danger">${analysis.status}</span>`;
+                }
+
+                html += '</td></tr>';
+
+                $('table#recent tbody').append(html);
+            });
+        }
+    }
+
+    static getFormattedDate(jsondate) {
+        var date = new Date(jsondate);
+
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        var sec = date.getSeconds();
+
+        month = (month < 10 ? "0" : "") + month;
+        day = (day < 10 ? "0" : "") + day;
+        hour = (hour < 10 ? "0" : "") + hour;
+        min = (min < 10 ? "0" : "") + min;
+        sec = (sec < 10 ? "0" : "") + sec;
+
+        return date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min + ":" + sec;
     }
 }

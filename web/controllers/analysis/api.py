@@ -40,11 +40,13 @@ class AnalysisApi:
         packs = body.get('packs')
         score_range = body.get('score', None)
 
-        filters = {}
+        filters = {
+            "info.category": {"$in": cats}
+        }
 
-        if isinstance(score_range, (str, unicode)):
+        if isinstance(score_range, (str, unicode)) and score_range != '':
             if not '-' in score_range:
-                raise Exception('')
+                raise Exception('faulty score')
 
             score_min, score_max = score_range.split('-', 1)
 
@@ -53,29 +55,37 @@ class AnalysisApi:
                 score_max = int(score_max)
 
                 if score_min < 0 or score_min > 10 or score_max < 0 or score_max > 10:
-                    raise Exception()
+                    raise Exception('faulty score')
             except:
-                raise Exception('Faulty score(s)')
+                raise Exception('faulty score')
 
-            filters["info.score"] = [{"info.score": {"$gte": score_min}}, {"info.score": {"$lte": score_max}}]
+            filters["info.score"] = {"$gte": score_min, "$lte": score_max}
 
         cursor = results_db.analysis.find(filters, sort=[("_id", pymongo.DESCENDING)]).limit(limit).skip(offset)
 
-        data = {}
+        tasks = []
         for row in cursor:
-            data[row['info']['id']] = {
+            tasks.append({
                 'ended': row['info']['ended'],
                 'score': row['info']['score'],
-            }
+                'id': row['info']['id']
+            })
 
-        if data:
+        if tasks:
             db = Database()
             q = db.Session().query(Task)
 
-            q = q.filter(Task.id.in_(data.keys()))
+            q = q.filter(Task.id.in_([z['id'] for z in tasks]))
 
-            for task in q.all():
-                data[task.id].update(task.to_dict())
-                data[task.id]['sample'] = task.sample.to_dict()
+            for task_sql in q.all():
+                for task_mongo in [z for z in tasks if z['id'] == task_sql.id]:
+                    task_mongo['sample'] = task_sql.sample.to_dict()
 
-        return JsonResponse(data, safe=False)
+                    if task_sql.category == 'file':
+                        task_mongo['filename_url'] = os.path.basename(task_sql.target)
+                    elif task_sql.category == 'url':
+                        task_mongo['filename_url'] = task_sql.target
+
+                    task_mongo.update(task_sql.to_dict())
+
+        return JsonResponse(tasks, safe=False)
