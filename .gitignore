@@ -35,3 +35,7 @@ data/yara/index_*.yar
 
 # Ignore venv
 venv
+
+# Python package stuff
+lib/python2.7/
+build/
