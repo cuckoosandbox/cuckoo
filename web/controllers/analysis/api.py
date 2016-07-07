@@ -35,9 +35,13 @@ class AnalysisApi:
         packs = body.get('packs')
         score_range = body.get('score', None)
 
-        filters = {
-            "info.category": {"$in": cats}
-        }
+        filters = {}
+
+        if cats:
+            filters["info.category"] = {"$in": cats}
+
+        if packs:
+            filters["info.package"] = {"$in": packs}
 
         if isinstance(score_range, (str, unicode)) and score_range != '':
             if "-" not in score_range:
@@ -76,7 +80,10 @@ class AnalysisApi:
 
             for task_sql in q.all():
                 for task_mongo in [z for z in tasks if z['id'] == task_sql.id]:
-                    task_mongo['sample'] = task_sql.sample.to_dict()
+                    if task_sql.sample:
+                        task_mongo['sample'] = task_sql.sample.to_dict()
+                    else:
+                        task_mongo['sample'] = {}
 
                     if task_sql.category == 'file':
                         task_mongo['filename_url'] = os.path.basename(task_sql.target)
