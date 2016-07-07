@@ -3,21 +3,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
 import os
 import json
-import subprocess
-from PIL import Image
 import pymongo
 
-from lib.cuckoo.common.abstracts import Processing
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from lib.cuckoo.core.database import Database, Task
-from controllers.analysis.analysis import AnalysisController
 
 
 results_db = settings.MONGO
@@ -45,8 +40,8 @@ class AnalysisApi:
         }
 
         if isinstance(score_range, (str, unicode)) and score_range != '':
-            if not '-' in score_range:
-                raise Exception('faulty score')
+            if "-" not in score_range:
+                raise Exception("faulty score")
 
             score_min, score_max = score_range.split('-', 1)
 
@@ -61,7 +56,9 @@ class AnalysisApi:
 
             filters["info.score"] = {"$gte": score_min, "$lte": score_max}
 
-        cursor = results_db.analysis.find(filters, sort=[("_id", pymongo.DESCENDING)]).limit(limit).skip(offset)
+        cursor = results_db.analysis.find(
+            filters, sort=[("_id", pymongo.DESCENDING)]
+        ).limit(limit).skip(offset)
 
         tasks = []
         for row in cursor:
