@@ -51,6 +51,7 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
     file = utils/api.py
     uid = cuckoo
     gid = cuckoo
+    callable = app
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
