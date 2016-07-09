@@ -55,6 +55,7 @@ class AnalysisManager(threading.Thread):
 
         self.db = Database()
         self.task = self.db.view_task(task_id)
+        self.guest_manager = None
 
         self.interface = None
         self.rt_table = None
@@ -282,21 +283,17 @@ class AnalysisManager(threading.Thread):
         if self.task.category == "baseline":
             time.sleep(options["timeout"])
         else:
-            # Initialize the guest manager.
-            guest = GuestManager(self.machine.name, self.machine.ip,
-                                 self.machine.platform, self.task.id)
-
             # Start the analysis.
             self.db.guest_set_status(self.task.id, "starting")
             monitor = self.task.options.get("monitor", "latest")
-            guest.start_analysis(options, monitor)
+            self.guest_manager.start_analysis(options, monitor)
 
             # In case the Agent didn't respond and we force-quit the analysis
             # at some point while it was still starting the analysis the state
             # will be "stop" (or anything but "running", really).
             if self.db.guest_get_status(self.task.id) == "starting":
                 self.db.guest_set_status(self.task.id, "running")
-                guest.wait_for_completion()
+                self.guest_manager.wait_for_completion()
 
             self.db.guest_set_status(self.task.id, "stopping")
 
@@ -346,8 +343,14 @@ class AnalysisManager(threading.Thread):
             machinery.release(self.machine.label)
             self.errors.put(e)
 
-        aux = RunAuxiliary(task=self.task, machine=self.machine)
-        aux.start()
+        # Initialize the guest manager.
+        self.guest_manager = GuestManager(
+            self.machine.name, self.machine.ip,
+            self.machine.platform, self.task.id, self
+        )
+
+        self.aux = RunAuxiliary(self.task, self.machine, self.guest_manager)
+        self.aux.start()
 
         # Generate the analysis configuration file.
         options = self.build_options()
@@ -401,7 +404,7 @@ class AnalysisManager(threading.Thread):
             log.error(str(e), extra={"task_id": self.task.id})
         finally:
             # Stop Auxiliary modules.
-            aux.stop()
+            self.aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:

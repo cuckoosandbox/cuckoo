@@ -10,7 +10,7 @@ import socket
 import struct
 import sys
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.core.rooter import rooter, vpns
 from lib.cuckoo.core.startup import init_rooter, init_routing

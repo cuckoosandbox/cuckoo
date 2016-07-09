@@ -12,7 +12,7 @@ import argparse
 import tempfile
 from tarfile import TarFile
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 import lib.cuckoo.common.colors as colors
 from lib.cuckoo.common.constants import CUCKOO_ROOT

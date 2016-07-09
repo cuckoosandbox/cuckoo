@@ -20,4 +20,4 @@ class Jar(Package):
         else:
             args = ["-jar", path]
 
-        return self.execute(java, args=args)
+        return self.execute(java, args=args, trigger="file:%s" % path)

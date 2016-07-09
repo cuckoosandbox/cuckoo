@@ -10,7 +10,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
-sys.path.append(settings.CUCKOO_PATH)
+sys.path.insert(0, settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_COMPLETED, TASK_RECOVERED, TASK_REPORTED

@@ -91,6 +91,16 @@ QEMU_ARGS = {
             "memory": "1024M",
         }
     },
+    "x86": {
+        "cmdline": [
+            "qemu-system-i386", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+        ],
+        "params": {
+            "memory": "1024M",
+        }
+    },
 }
 
 class QEMU(Machinery):

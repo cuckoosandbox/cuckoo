@@ -13,6 +13,9 @@
                             <a class="btn btn-default btn-xs" href="{% url "analysis.views.export_analysis" report.analysis.info.id %}">
                                 <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export analysis
                             </a>
+                            <a class="btn btn-info btn-xs" href="{% url "analysis.views.reboot_analysis" analysis.info.id %}">
+                                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot analysis
+                            </a>
                         </div>
                     </h4>
                 </div>

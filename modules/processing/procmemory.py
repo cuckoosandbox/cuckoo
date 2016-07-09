@@ -141,7 +141,10 @@ class ProcessMemory(Processing):
             if buf[off:off+2] != "MZ":
                 continue
 
-            pe = pefile.PE(data=buf[off:off+size], fast_load=True)
+            try:
+                pe = pefile.PE(data=buf[off:off+size], fast_load=True)
+            except pefile.PEFormatError:
+                continue
 
             # Enable the capture of memory regions.
             capture, regions = True, [r]
@@ -160,7 +163,7 @@ class ProcessMemory(Processing):
 
             self._fixup_pe_header(pe)
 
-            img.append(pe.write())
+            img.append(str(pe.write()))
             for r in regions:
                 img.append(buf[r["offset"]:r["offset"]+r["size"]])
 
