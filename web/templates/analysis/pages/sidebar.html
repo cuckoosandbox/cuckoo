@@ -88,35 +88,35 @@
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "static" %}">
-                        <i class="glyphicon glyphicon-user"></i>Static Analysis
+                        <i class="glyphicon glyphicon-search"></i>Static Analysis
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
-                        <i class="glyphicon glyphicon-ok"></i>Behavioral Analysis
+                        <i class="glyphicon glyphicon-search"></i>Behavioral Analysis
                         <span class="label label-primary pull-right">{{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }}</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "network" %}">
-                        <i class="glyphicon glyphicon-flag"></i>Network Analysis
+                        <i class="glyphicon glyphicon-search"></i>Network Analysis
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "dropped_files" %}">
-                        <i class="glyphicon glyphicon-ok"></i> Dropped Files
+                        <i class="glyphicon glyphicon-download-alt"></i> Dropped Files
                         <span class="label label-primary pull-right">{{ report.analysis.dropped|length }}</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}">
-                        <i class="glyphicon glyphicon-flag"></i>Dropped Buffers
+                        <i class="glyphicon glyphicon-download-alt"></i>Dropped Buffers
                         <span class="label label-primary pull-right">{{ report.analysis.buffer|length }}</span>
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "procmemory" %}">
-                        <i class="glyphicon glyphicon-flag"></i>Process Memory
+                        <i class="glyphicon glyphicon-barcode"></i>Process Memory
                         <span class="label label-primary pull-right">{{ report.analysis.procmemory|length }}</span>
                     </a>
                 </li>
