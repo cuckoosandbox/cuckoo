@@ -1,7 +1,7 @@
 class Recent {
     constructor() {
         this.loading = false;
-        this.limit = 50;
+        this.limit = 100;
         this.offset = 0;
         this.empty_results = false;
 
@@ -125,10 +125,15 @@ class Recent {
 
                 html += '</td><td>';
 
+                var identifier = analysis.filename_url;
+                if(analysis.sample) {
+                    identifier = analysis.sample.md5;
+                }
+
                 if (analysis.status == "reported" || analysis.status == "failed_analysis") {
-                    html += `<a href="${analysis.id}/summary"><span class="mono">${analysis.sample.md5}</span></a>`;
+                    html += `<a href="${analysis.id}/summary"><span class="mono">${identifier}</span></a>`;
                 } else {
-                    html += `<span class="mono">${analysis.sample.md5}</span>`;
+                    html += `<span class="mono">${identifier}</span>`;
                 }
 
                 html += '</td><td>';

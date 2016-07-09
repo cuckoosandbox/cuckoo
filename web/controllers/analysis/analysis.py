@@ -10,11 +10,10 @@ from StringIO import StringIO
 
 import pymongo
 from django.conf import settings
-from django.views.decorators.http import require_safe
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import Http404
 
-from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
+from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 
