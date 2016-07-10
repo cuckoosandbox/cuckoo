@@ -31,7 +31,7 @@ setup(
         "dpkt==1.8.7",
         "Flask==0.10.1",
         "HTTPReplay==0.1.15",
-        "jsbeautifier==1.5.10",
+        "jsbeautifier==1.6.2",
         "lxml==3.6.0",
         "oletools==0.42",
         "peepdf==0.3.2",
