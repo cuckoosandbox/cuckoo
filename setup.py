@@ -35,7 +35,7 @@ for line in open("MANIFEST.in", "rb"):
 
 manifest.extend(excl)
 
-open("MANIFEST.in", "wb").write("\n".join(manifest))
+open("MANIFEST.in", "wb").write("\n".join(manifest) + "\n")
 
 setuptools.setup(
     name="Cuckoo",
