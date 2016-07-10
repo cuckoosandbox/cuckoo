@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
-# See the file 'docs/LICENSE.txt' for copying permission.
+# See the file 'docs/LICENSE' for copying permission.
 
 from setuptools import setup
 
