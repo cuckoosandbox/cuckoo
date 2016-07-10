@@ -2,10 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os.path
 import sys
-
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from cuckoo.common.config import Config
 from cuckoo.core.database import Database
