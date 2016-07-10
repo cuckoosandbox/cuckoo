@@ -786,6 +786,8 @@ class Database(object):
                 return None
             finally:
                 session.close()
+        else:
+            session.close()
 
         return machine
 

@@ -386,7 +386,10 @@ class AnalysisManager(threading.Thread):
         except CuckooMachineError as e:
             if not unlocked:
                 machine_lock.release()
-            log.error(str(e), extra={"task_id": self.task.id})
+            log.error(
+                "Machinery error: %s",
+                e, extra={"task_id": self.task.id}
+            )
             log.critical(
                 "A critical error has occurred trying to use the machine "
                 "with name %s during an analysis due to which it is no "
@@ -400,7 +403,10 @@ class AnalysisManager(threading.Thread):
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
-            log.error(str(e), extra={"task_id": self.task.id})
+            log.error(
+                "Error from the Cuckoo Guest: %s",
+                e, extra={"task_id": self.task.id}
+            )
         finally:
             # Stop Auxiliary modules.
             self.aux.stop()
@@ -414,7 +420,7 @@ class AnalysisManager(threading.Thread):
                     log.error("The memory dump functionality is not available "
                               "for the current machine manager.")
                 except CuckooMachineError as e:
-                    log.error(e)
+                    log.error("Machinery error: %s", e)
 
             try:
                 # Stop the analysis machine.

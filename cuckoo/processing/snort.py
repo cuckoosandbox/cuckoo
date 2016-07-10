@@ -38,7 +38,7 @@ class Snort(Processing):
 
         if not os.path.isfile(self.pcap_path):
             log.warning("Unable to run Snort as no pcap is available")
-            return self.results
+            return results
 
         if not os.path.isfile(self.snort):
             raise CuckooProcessingError("Unable to locate Snort binary")

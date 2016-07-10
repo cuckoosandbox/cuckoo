@@ -17,7 +17,7 @@ try:
 except ImportError:
     HAVE_REQUESTS = False
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from cuckoo.common.colors import bold, green, red, yellow
 from cuckoo.common.objects import File

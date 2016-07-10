@@ -165,15 +165,10 @@ class Process(object):
         @param args: list of arguments
         @return: the command-line equivalent
         """
-        # Subprocess features a more complete and accurate conversion method
-        # already, so use that if available (should be in all cases).
-        if hasattr(subprocess, "list2cmdline"):
-            return subprocess.list2cmdline(args)
-
         ret = []
         for line in args:
-            if " " in line or '"' in line:
-                ret.append("\"%s\"" % line.replace('"', '\\"'))
+            if " " in line:
+                ret.append('"%s"' % line)
             else:
                 ret.append(line)
         return " ".join(ret)
