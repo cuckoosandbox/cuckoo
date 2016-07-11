@@ -1,0 +1,86 @@
+<script src="/static/js/analysis_export.js"></script>
+
+<!-- Feedback Modal -->
+<div id="modal_feedback" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Feedback Form</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    Expecting different results? Send us this report and we will inspect it. Include a message
+                    describing what you'd hope the analysis report should've included but did not - as well as other improvements.
+                    <hr>
+
+                    <small><b>The Cuckoo team</b></small>
+                </div>
+
+                <form method="post">
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label class="control-label requiredField" for="email">
+                                Email
+                                <span class="asteriskField">*</span>
+                            </label>
+                            <input class="form-control" id="email" name="email" type="text"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-lg-12">
+                            <label class="control-label requiredField" for="message">
+                                Message
+                                <span class="asteriskField">*</span>
+                            </label>
+                            <textarea class="form-control" cols="40" id="message" name="message"
+                                      rows="10"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <div class="cuckoo-box">
+                                <div class="cuckoo-box-primary">
+                                    <input type="checkbox" id="test" name="dirs" value="test" checked="checked">
+                                    <label for="test">Include analysis</label>
+                                </div>
+                                <div class="cuckoo-box-primary">
+                                    <input type="checkbox" id="test2" name="dirs" value="test2">
+                                    <label for="test2">Include memory dump</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div>
+                            <button class="btn btn-primary " name="submit" type="submit">
+                                Submit
+                            </button>
+                            <small id="export_estimate_size" style="margin-left: 10px;color: #adadad;">size: </small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var task_id = {{report.analysis.info.id}};
+
+    $( document ).ready(function() {
+        // @TO-DO: enable later
+
+        export_estimate_size(task_id, 'small#export_estimate_size');
+    });
+</script>
