@@ -4,9 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import zipfile
 import json
-from StringIO import StringIO
 
 import pymongo
 from django.conf import settings
@@ -18,7 +16,6 @@ from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 
 results_db = settings.MONGO
-
 
 class AnalysisController:
     @staticmethod
@@ -62,49 +59,10 @@ class AnalysisController:
         return data
 
     @staticmethod
-    def get_export(request, task_id):
-        taken_dirs = request.POST.getlist("dirs")
-        taken_files = request.POST.getlist("files")
-
-        if not taken_dirs and not taken_files:
-            return render(request, "error.html", {
-                "error": "Please select at least one directory or file to be exported."
-            })
-
-        report = AnalysisController.get_report(task_id)
-        path = report["info"]["analysis_path"]
-
-        # Creating an analysis.json file with basic information about this
-        # analysis. This information serves as metadata when importing a task.
-        analysis_path = os.path.join(path, "analysis.json")
-        with open(analysis_path, "w") as outfile:
-            report["target"].pop("file_id", None)
-            json.dump({"target": report["target"]}, outfile, indent=4)
-
-        f = StringIO()
-
-        # Creates a zip file with the selected files and directories of the task.
-        zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED)
-
-        for dirname, subdirs, files in os.walk(path):
-            if os.path.basename(dirname) == task_id:
-                for filename in files:
-                    if filename in taken_files:
-                        zf.write(os.path.join(dirname, filename), filename)
-            if os.path.basename(dirname) in taken_dirs:
-                for filename in files:
-                    zf.write(os.path.join(dirname, filename),
-                             os.path.join(os.path.basename(dirname), filename))
-
-        zf.close()
-
-        return f
-
-    @staticmethod
     def get_report(task_id):
         report = AnalysisController._get_report(task_id)
         if not report:
-            raise Http404("The specified analysis does not exist")
+            raise Exception("the specified analysis does not exist")
 
         data = {
             'analysis': report
@@ -131,7 +89,8 @@ class AnalysisController:
 
     @staticmethod
     def _get_dnsinfo(report):
-        # Creating dns information dicts by domain and ip.
+        """Create DNS information dicts by domain and ip"""
+
         if "network" in report and "domains" in report["network"]:
             domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
             iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])

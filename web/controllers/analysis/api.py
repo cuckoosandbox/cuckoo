@@ -14,6 +14,8 @@ from django.views.decorators.http import require_http_methods
 
 from lib.cuckoo.core.database import Database, Task
 
+from controllers.analysis.export.export import ExportController
+from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 
@@ -60,6 +62,7 @@ class AnalysisApi:
 
             filters["info.score"] = {"$gte": score_min, "$lte": score_max}
 
+        # @TO-DO: Use mongodb abstraction class thing if there is one
         cursor = results_db.analysis.find(
             filters, sort=[("_id", pymongo.DESCENDING)]
         ).limit(limit).skip(offset)

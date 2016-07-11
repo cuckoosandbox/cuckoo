@@ -131,6 +131,12 @@
                 {% endif %}
 
                 <li>
+                    <a href="{% url "analysis" report.analysis.info.id "feedback" %}">
+                        <i class="glyphicon glyphicon-barcode"></i>Feedback
+                    </a>
+                </li>
+
+                <li>
                     <a href="{% url "analysis" report.analysis.info.id "admin" %}">
                         <i class="glyphicon glyphicon-flag"></i>Admin
                     </a>

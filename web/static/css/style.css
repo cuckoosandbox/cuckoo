@@ -329,8 +329,8 @@ section#domains .dataTables_filter, section#hosts .dataTables_filter{
 .cuckoo-box input[type="radio"]:empty ~ label,
 .cuckoo-box input[type="checkbox"]:empty ~ label {
     position: relative;
-    line-height: 2em;
-    margin-top: 16px;
+    line-height: 1.8em;
+    margin-top: 8px;
     text-indent: 3.25em;
     cursor: pointer;
     -webkit-user-select: none;

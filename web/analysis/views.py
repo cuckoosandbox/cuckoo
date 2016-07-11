@@ -3,8 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import calendar
-import datetime
 import sys
 import re
 import os
@@ -599,13 +597,6 @@ def export_analysis(request, task_id):
         "dirs": dirs,
         "files": files,
     })
-
-def json_default(obj):
-    if isinstance(obj, datetime.datetime):
-        if obj.utcoffset() is not None:
-            obj = obj - obj.utcoffset()
-        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
-    raise TypeError("%r is not JSON serializable" % obj)
 
 def export(request, task_id):
     taken_dirs = request.POST.getlist("dirs")

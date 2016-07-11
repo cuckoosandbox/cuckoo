@@ -7,12 +7,13 @@ from . import views
 from django.conf.urls import url
 from controllers.analysis.routes import AnalysisRoutes
 from controllers.analysis.api import AnalysisApi
+from controllers.analysis.export.api import ExportApi
 
 urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
-    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export_analysis, name='analysis/export'),
-    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.analysis, name='analysis'),
-    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.analysis, name='api'),
+    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
+    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='analysis'),
+    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='api'),
     url(r"^latest/$", views.latest_report),
     url(r"^remove/(?P<task_id>\d+)/$", views.remove),
     url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", views.chunk),
@@ -31,4 +32,5 @@ urlpatterns = [
     url(r"^import/$", views.import_analysis),
     url(r"^(?P<task_id>\d+)/reboot/$", views.reboot_analysis),
     url(r"^api/recent/$", AnalysisApi.recent),
+    url(r"^api/export_estimate_size/$", ExportApi.export_estimate_size),
 ]
