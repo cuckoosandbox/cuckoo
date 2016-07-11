@@ -6,14 +6,10 @@
 import os
 
 from django.conf import settings
-from django.views.decorators.http import require_safe
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
-import pymongo
+from django.shortcuts import render
 
-from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from lib.cuckoo.common.utils import versiontuple
-from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
+from lib.cuckoo.core.database import Database, TASK_PENDING
 
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
@@ -78,6 +74,7 @@ class AnalysisRoutes:
         if page in pages.keys():
             return render(request, "analysis/pages/%s.html" % pages[page], {'report': report,
                                                                             'page': page})
+
     @staticmethod
     def export(request, task_id):
         if request.method == "POST":
