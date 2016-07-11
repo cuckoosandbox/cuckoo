@@ -103,6 +103,8 @@ class Recent {
             data.forEach(function (analysis, i){
                 let html = '<tr><td>';
 
+                html += `<strong>${analysis['id']}</strong></td><td>`;
+
                 let date_completed_on = '-';
                 let date_added_on = '-';
 
@@ -156,6 +158,13 @@ class Recent {
                     html += `<span class="text-danger">${analysis.status}</span>`;
                 }
 
+                html += '</td><td>';
+
+                let badge_color = 'default';
+                if(analysis.score >= 4 && analysis.score <= 7) badge_color = 'warning';
+                else if(analysis.score > 7) badge_color = 'danger';
+
+                html += `<span class="badge badge-${badge_color}">score: ${analysis.score}</span>`;
                 html += '</td></tr>';
 
                 $('table#recent tbody').append(html);
@@ -178,6 +187,6 @@ class Recent {
         min = (min < 10 ? "0" : "") + min;
         sec = (sec < 10 ? "0" : "") + sec;
 
-        return date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min + ":" + sec;
+        return date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min;
     }
 }
