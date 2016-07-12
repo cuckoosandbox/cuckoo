@@ -420,6 +420,11 @@ class GuestManager(object):
         log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
                  version, self.vmid, self.ipaddr)
 
+        # Pin the Agent to our IP address so that it is not accessible by
+        # other Virtual Machines etc.
+        if "pinning" in features:
+            self.get("/pinning")
+
         # Obtain the environment variables.
         self.query_environ()
 
