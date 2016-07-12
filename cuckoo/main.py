@@ -54,13 +54,20 @@ def cuckoo_create():
     if not os.path.isdir(cwd()):
         os.mkdir(cwd())
 
+    def _ignore_pyc(src, names):
+        """Don't copy .pyc files."""
+        return [name for name in names if name.endswith(".pyc")]
+
     dirpath = os.path.join(cuckoo.__path__[0], "data")
     for filename in os.listdir(dirpath):
         filepath = os.path.join(dirpath, filename)
         if os.path.isfile(filepath):
-            shutil.copy(filepath, cwd(filename))
+            if not filepath.endswith(".pyc"):
+                shutil.copy(filepath, cwd(filename))
         else:
-            shutil.copytree(filepath, cwd(filename), symlinks=True)
+            shutil.copytree(
+                filepath, cwd(filename), symlinks=True, ignore=_ignore_pyc
+            )
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
