@@ -10,9 +10,9 @@ try:
 except ImportError:
     sys.exit("Error: you need to install flask (`pip install flask`)")
 
-from distributed.db import db, AlembicVersion
-from distributed.misc import settings, init_settings
-from distributed.views import blueprints
+from cuckoo.distributed.db import db, AlembicVersion
+from cuckoo.distributed.misc import settings, init_settings
+from cuckoo.distributed.views import blueprints
 
 def create_app():
     app = Flask("Distributed Cuckoo")

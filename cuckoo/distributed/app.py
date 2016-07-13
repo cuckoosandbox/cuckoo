@@ -5,13 +5,8 @@
 
 import argparse
 import logging
-import os.path
-import sys
 
-from distributed.app import create_app
-
-sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-
+from cuckoo.distributed.app import create_app
 from cuckoo.core.startup import drop_privileges
 
 logging.basicConfig(level=logging.INFO)

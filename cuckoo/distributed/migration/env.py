@@ -1,16 +1,8 @@
-from __future__ import with_statement
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-import os.path
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from distributed.db import db
-target_metadata = db.metadata
-
-from distributed.misc import settings
+from cuckoo.distributed.db import db
+from cuckoo.distributed.misc import settings
 
 config = context.config
 
@@ -19,7 +11,7 @@ def run_migrations():
                            poolclass=pool.NullPool)
 
     connection = engine.connect()
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=db.metadata)
 
     try:
         with context.begin_transaction():

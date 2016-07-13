@@ -8,9 +8,9 @@ import time
 
 from flask import Blueprint, jsonify, request, send_file
 
-from distributed.api import list_machines
-from distributed.db import db, Node, Task, Machine, NodeStatus
-from distributed.misc import settings
+from cuckoo.distributed.api import list_machines
+from cuckoo.distributed.db import db, Node, Task, Machine, NodeStatus
+from cuckoo.distributed.misc import settings
 
 blueprint = Blueprint("api", __name__)
 routes = ["/api", "/api/v1"]
