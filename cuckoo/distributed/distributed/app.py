@@ -11,12 +11,13 @@ except ImportError:
     sys.exit("Error: you need to install flask (`pip install flask`)")
 
 from distributed.db import db, AlembicVersion
+from distributed.misc import settings, init_settings
 from distributed.views import blueprints
-
-import settings
 
 def create_app():
     app = Flask("Distributed Cuckoo")
+
+    init_settings()
     app.config.from_object(settings)
 
     for blueprint, routes in blueprints:

@@ -8,10 +8,9 @@ import time
 
 from flask import Blueprint, jsonify, request, send_file
 
-import settings
-
-from distributed.db import db, Node, Task, Machine, NodeStatus
 from distributed.api import list_machines
+from distributed.db import db, Node, Task, Machine, NodeStatus
+from distributed.misc import settings
 
 blueprint = Blueprint("api", __name__)
 routes = ["/api", "/api/v1"]

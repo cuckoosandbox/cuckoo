@@ -7,10 +7,10 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import settings
-
 from distributed.db import db
 target_metadata = db.metadata
+
+from distributed.misc import settings
 
 config = context.config
 

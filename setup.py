@@ -77,4 +77,10 @@ setuptools.setup(
         "SQLAlchemy==1.0.8",
         "wakeonlan==0.2.2",
     ],
+    extras_require={
+        "distributed": [
+            "flask-sqlalchemy==2.1",
+            "psycopg2==2.6.2",
+        ],
+    },
 )

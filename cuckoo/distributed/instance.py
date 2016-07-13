@@ -9,13 +9,12 @@ import logging
 import os.path
 import time
 
-import settings
-
 from distributed.api import node_status, fetch_tasks, delete_task
 from distributed.api import store_report, submit_task, fetch_pcap
 from distributed.app import create_app
 from distributed.db import db, Task, Node, NodeStatus
 from distributed.exception import InvalidReport
+from distributed.misc import settings
 
 def scheduler():
     while True:
