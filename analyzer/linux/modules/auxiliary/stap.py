@@ -68,9 +68,14 @@ class STAP(Auxiliary):
         try: os.mkdir("strace")
         except: pass # don't worry, it exists
 
+        strace_start = time.time()
         stderrfd = open("strace/strace.stderr", "wb")
         self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
         self.fallback_strace = True
+
+        time.sleep(10)
+        strace_end = time.time()
+        log.info("STAP aux module startup took %.2f seconds" % (strace_end - strace_start))
         return True
 
     def get_pids(self):
