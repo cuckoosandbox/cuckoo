@@ -35,8 +35,8 @@ def create_app():
             db.session.add(AlembicVersion(AlembicVersion.VERSION))
             db.session.commit()
         elif row.version_num != AlembicVersion.VERSION:
-            sys.exit("Your database is not up-to-date. Please upgrade it "
-                     "using alembic (run `alembic upgrade head`).")
+            sys.exit("Your database is not up-to-date, please upgrade it "
+                     "(run `cuckoo distributed migrate`).")
 
     # Further check the configuration.
     if not settings.SQLALCHEMY_DATABASE_URI:

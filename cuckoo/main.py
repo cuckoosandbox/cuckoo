@@ -437,3 +437,22 @@ def migrate():
         exit(1)
 
     print yellow(">>> Your database migration was successful!")
+
+@main.group()
+def distributed():
+    pass
+
+@distributed.command("migrate")
+def dist_migrate():
+    args = [
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head",
+    ]
+    try:
+        subprocess.check_call(
+            args, cwd=cwd("distributed", "migration", private=True)
+        )
+    except subprocess.CalledProcessError:
+        print red(">>> Error migrating your database..")
+        exit(1)
+
+    print yellow(">>> Your database migration was successful!")

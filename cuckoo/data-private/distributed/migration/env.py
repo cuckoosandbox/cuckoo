@@ -2,7 +2,12 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from cuckoo.distributed.db import db
-from cuckoo.distributed.misc import settings
+from cuckoo.distributed.misc import init_settings, settings
+
+from cuckoo.misc import set_cwd
+
+set_cwd(context.get_x_argument(as_dictionary=True)["cwd"])
+init_settings()
 
 config = context.config
 
