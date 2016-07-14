@@ -35,7 +35,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(context):
+def cuckoo_create(context, debug):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -84,22 +84,22 @@ def cuckoo_create(context):
         username = context.user or os.getlogin()
 
         print "[supervisord]"
-        print "logfile =", cwd("supervisord/log.log")
-        print "pidfile =", cwd("supervisord/pidfile")
+        print "logfile =", cwd("supervisord", "log.log")
+        print "pidfile =", cwd("supervisord", "pidfile")
         print "user =", username
         print
         print "[supervisorctl]"
-        print "serverurl = unix://%s" % cwd("supervisord/unix.sock")
+        print "serverurl = unix://%s" % cwd("supervisord", "unix.sock")
         print
         print "[rpcinterface:supervisor]"
         print "supervisor.rpcinterface_factory =",
         print "supervisor.rpcinterface:make_main_rpcinterface"
         print
         print "[unix_http_server]"
-        print "file =", cwd("supervisord/unix.sock")
+        print "file =", cwd("supervisord", "unix.sock")
         print
         print "[program:cuckoo]"
-        print "command =", cuckoo_path
+        print "command = %s -d" % cuckoo_path
         print "user =", username
         print "startsecs = 30"
         print "autorestart = true"
@@ -117,7 +117,7 @@ def cuckoo_create(context):
     print "Please modify the default settings where required and"
     print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
 
-def cuckoo_init(level, context):
+def cuckoo_init(level, context, debug):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
     @param debug: enable debug mode.
@@ -127,7 +127,7 @@ def cuckoo_init(level, context):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(context)
+        cuckoo_create(context, debug)
         sys.exit(0)
 
     check_configs()
@@ -197,7 +197,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
         level = logging.INFO
 
     try:
-        cuckoo_init(level, ctx)
+        cuckoo_init(level, ctx, debug)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
