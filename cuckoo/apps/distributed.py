@@ -4,8 +4,8 @@
 
 import os
 
+from cuckoo.distributed.app import create_app
 from cuckoo.misc import cwd, set_cwd
-from cuckoo.distributed.distributed.app import create_app
 
 app = None
 
