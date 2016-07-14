@@ -15,7 +15,8 @@ import cuckoo
 
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_distributed, cuckoo_dnsserve, cuckoo_machine
+    cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
+    cuckoo_dnsserve, cuckoo_machine
 )
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
@@ -486,6 +487,20 @@ def server(ctx, host, port, debug, uwsgi, nginx):
         logging.basicConfig(level=logging.INFO)
 
     cuckoo_distributed(host, port, debug)
+
+@distributed.command("instance")
+@click.argument("name")
+@click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
+def dist_instance(name, debug):
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    cuckoo_distributed_instance(name)
 
 @distributed.command("migrate")
 def dist_migrate():

@@ -5,6 +5,7 @@
 import os
 
 from cuckoo.distributed.app import create_app
+from cuckoo.distributed.instance import scheduler, status_caching, handle_node
 from cuckoo.misc import cwd, set_cwd
 
 app = None
@@ -16,4 +17,16 @@ if not cwd() and os.environ.get("CUCKOO_FORCE"):
     app = create_app()
 
 def cuckoo_distributed(hostname, port, debug):
-    (app or create_app()).run(host=hostname, port=port, debug=debug)
+    app = create_app()
+    app.run(host=hostname, port=port, debug=debug)
+
+def cuckoo_distributed_instance(name):
+    app = create_app()
+
+    with app.app_context():
+        if name == "dist.scheduler":
+            scheduler()
+        elif name == "dist.status":
+            status_caching()
+        else:
+            handle_node(name)

@@ -3,7 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import argparse
 import datetime
 import logging
 import os.path
@@ -11,10 +10,11 @@ import time
 
 from cuckoo.distributed.api import node_status, fetch_tasks, delete_task
 from cuckoo.distributed.api import store_report, submit_task, fetch_pcap
-from cuckoo.distributed.app import create_app
 from cuckoo.distributed.db import db, Task, Node, NodeStatus
 from cuckoo.distributed.exception import InvalidReport
 from cuckoo.distributed.misc import settings
+
+log = logging.getLogger(__name__)
 
 def scheduler():
     while True:
@@ -155,28 +155,3 @@ def handle_node(instance):
 
         db.session.commit()
         time.sleep(settings.interval)
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("instance", type=str, help="Name of this node instance.")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbosity for debug information.")
-    args = parser.parse_args()
-
-    app = create_app()
-
-    if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    log = logging.getLogger("dist-%s" % args.instance)
-
-    with app.app_context():
-        if args.instance == "dist.scheduler":
-            scheduler()
-        elif args.instance == "dist.status":
-            status_caching()
-        else:
-            handle_node(args.instance)
