@@ -126,7 +126,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
     # * Command-line option (--cwd)
     # * Environment option ("CUCKOO")
     # * Default value ("~/.cuckoo")
-    set_cwd(os.path.expanduser(cwd), raw=cwd)
+    set_cwd(os.path.abspath(os.path.expanduser(cwd)), raw=cwd)
 
     # Drop privileges.
     user and drop_privileges(user)
