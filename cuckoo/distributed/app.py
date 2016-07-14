@@ -49,4 +49,16 @@ def create_app():
             not os.path.isdir(settings.reports_directory):
         sys.exit("Please configure a reports directory path.")
 
+    @app.after_request
+    def custom_headers(response):
+        """Set some custom headers across all HTTP responses."""
+        response.headers["Server"] = "Distributed Machete Server"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Cache-Control"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
     return app
