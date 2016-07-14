@@ -119,13 +119,20 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.option("--user", help="Drop privileges to this user")
-@click.option("--cwd", envvar="CUCKOO", default="~/.cuckoo", help="Cuckoo Working Directory")
+@click.option("--cwd", envvar="CUCKOO", help="Cuckoo Working Directory")
 @click.pass_context
 def main(ctx, debug, quiet, maxcount, user, cwd):
     # Cuckoo Working Directory precedence:
     # * Command-line option (--cwd)
     # * Environment option ("CUCKOO")
+    # * Current directory (if the ".cwd" file exists)
     # * Default value ("~/.cuckoo")
+    if not cwd and os.path.exists(".cwd"):
+        cwd = "."
+
+    if not cwd:
+        cwd = "~/.cuckoo"
+
     set_cwd(os.path.abspath(os.path.expanduser(cwd)), raw=cwd)
 
     # Drop privileges.
