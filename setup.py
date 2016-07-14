@@ -82,5 +82,8 @@ setuptools.setup(
             "flask-sqlalchemy==2.1",
             "psycopg2==2.6.2",
         ],
+        "postgresql": [
+            "psycopg2==2.6.2",
+        ],
     },
 )
