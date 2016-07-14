@@ -35,7 +35,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create():
+def cuckoo_create(context):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -70,11 +70,54 @@ def cuckoo_create():
                 filepath, cwd(filename), symlinks=True, ignore=_ignore_pyc
             )
 
+    with open(cwd("supervisord.conf"), "wb") as f:
+        # Temporarily redirect stdout to our file.
+        f, sys.stdout = sys.stdout, f
+
+        if os.environ.get("VIRTUAL_ENV"):
+            cuckoo_path = "%s/bin/python %s/bin/cuckoo" % (
+                os.environ["VIRTUAL_ENV"], os.environ["VIRTUAL_ENV"]
+            )
+        else:
+            cuckoo_path = "cuckoo"
+
+        username = context.user or os.getlogin()
+
+        print "[supervisord]"
+        print "logfile =", cwd("supervisord/log.log")
+        print "pidfile =", cwd("supervisord/pidfile")
+        print "user =", username
+        print
+        print "[supervisorctl]"
+        print "serverurl = unix://%s" % cwd("supervisord/unix.sock")
+        print
+        print "[rpcinterface:supervisor]"
+        print "supervisor.rpcinterface_factory =",
+        print "supervisor.rpcinterface:make_main_rpcinterface"
+        print
+        print "[unix_http_server]"
+        print "file =", cwd("supervisord/unix.sock")
+        print
+        print "[program:cuckoo]"
+        print "command =", cuckoo_path
+        print "user =", username
+        print "startsecs = 30"
+        print "autorestart = true"
+        print
+        print "[program:cuckoo-process]"
+        print "command = %s process p%%(process_num)d" % cuckoo_path
+        print "process_name = cuckoo-process %(process_num)d"
+        print "numprocs = 4"
+        print "user =", username
+        print "autorestart = true"
+
+        f, sys.stdout = sys.stdout, f
+
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
     print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
 
-def cuckoo_init(level):
+def cuckoo_init(level, context):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
     @param debug: enable debug mode.
@@ -84,7 +127,7 @@ def cuckoo_init(level):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create()
+        cuckoo_create(context)
         sys.exit(0)
 
     check_configs()
@@ -154,7 +197,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
         level = logging.INFO
 
     try:
-        cuckoo_init(level)
+        cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
