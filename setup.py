@@ -56,6 +56,7 @@ setuptools.setup(
     },
     install_requires=[
         "alembic==0.8.0",
+        "androguard==3.0",
         "beautifulsoup4==4.4.1",
         "chardet==2.3.0",
         "click==6.6",
