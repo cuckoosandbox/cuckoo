@@ -6,17 +6,12 @@
 import hashlib
 import logging
 import os
+import pefile
 import re
 import struct
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
-
-try:
-    import pefile
-    HAVE_PEFILE = True
-except ImportError:
-    HAVE_PEFILE = False
 
 log = logging.getLogger(__name__)
 
@@ -191,7 +186,7 @@ class ProcessMemory(Processing):
         self.key = "procmemory"
         results = []
 
-        if self.options.get("extract_img") and not HAVE_PEFILE:
+        if self.options.get("extract_img"):
             log.warning(
                 "In order to extract PE files from memory dumps it is "
                 "required to have pefile installed (`pip install pefile`)."
@@ -217,7 +212,7 @@ class ProcessMemory(Processing):
                 if self.options.get("idapro"):
                     self.create_idapy(proc)
 
-                if self.options.get("extract_img") and HAVE_PEFILE:
+                if self.options.get("extract_img"):
                     proc["extracted"] = list(self.dump_images(proc))
 
                 if self.options.get("dump_delete"):

@@ -5,7 +5,6 @@
 
 import calendar
 import datetime
-import sys
 import re
 import os
 import json
@@ -26,8 +25,7 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from gridfs import GridFS
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from cuckoo.common.utils import store_temp_file, versiontuple
-from cuckoo.common.constants import LATEST_HTTPREPLAY
+from cuckoo.common.utils import store_temp_file
 from cuckoo.misc import cwd
 from cuckoo.processing import network
 
@@ -266,31 +264,10 @@ def report(request, task_id):
         domainlookups = dict()
         iplookups = dict()
 
-    if "http_ex" in report["network"] or "https_ex" in report["network"]:
-        HAVE_HTTPREPLAY = True
-    else:
-        HAVE_HTTPREPLAY = False
-
-    try:
-        import httpreplay
-        httpreplay_version = getattr(httpreplay, "__version__", None)
-    except ImportError:
-        httpreplay_version = None
-
-    # Is this version of httpreplay deprecated?
-    deprecated = httpreplay_version and \
-        versiontuple(httpreplay_version) < versiontuple(LATEST_HTTPREPLAY)
-
     return render(request, "analysis/report.html", {
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
-        "httpreplay": {
-            "have": HAVE_HTTPREPLAY,
-            "deprecated": deprecated,
-            "current_version": httpreplay_version,
-            "latest_version": LATEST_HTTPREPLAY,
-        },
     })
 
 @require_safe

@@ -2,20 +2,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import flask
 import os.path
 import sys
-
-try:
-    from flask import Flask
-except ImportError:
-    sys.exit("Error: you need to install flask (`pip install flask`)")
 
 from cuckoo.distributed.db import db, AlembicVersion
 from cuckoo.distributed.misc import settings, init_settings
 from cuckoo.distributed.views import blueprints
 
 def create_app():
-    app = Flask("Distributed Cuckoo")
+    app = flask.Flask("Distributed Cuckoo")
 
     init_settings()
     app.config.from_object(settings)

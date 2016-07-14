@@ -18,21 +18,10 @@ revision = "495d5a6edef3"
 down_revision = "18eee46c6f81"
 
 import sqlalchemy as sa
-import sys
 from datetime import datetime
 
-try:
-    from dateutil.parser import parse
-except ImportError:
-    print "Unable to import dateutil.parser",
-    print "(install with `pip install python-dateutil`)"
-    sys.exit()
-
-try:
-    from alembic import op
-except ImportError:
-    print "Unable to import alembic (install with `pip install alembic`)"
-    sys.exit()
+from alembic import op
+from dateutil.parser import parse
 
 import cuckoo.core.database as db
 

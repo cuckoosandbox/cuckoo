@@ -8,15 +8,11 @@ import logging
 import os
 from zipfile import BadZipfile
 
+from androguard.core.bytecodes.apk import APK
+
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
-
-try:
-    from androguard.core.bytecodes.apk import APK
-    HAVE_ANDROGUARD = True
-except ImportError:
-    HAVE_ANDROGUARD = False
 
 try:
     from lib.api.googleplay.googleplay import GooglePlayAPI
@@ -41,11 +37,7 @@ class GooglePlay(Processing):
                       "installed properly?")
             return
 
-        if not HAVE_ANDROGUARD:
-            log.error("Could not find the Androguard library, please install "
-                      "it. (`pip install androguard`)")
-
-        if ("file" not in self.task["category"]):
+        if "file" not in self.task["category"]:
             return
 
         f = File(self.task["target"])

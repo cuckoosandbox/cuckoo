@@ -3,7 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import dpkt
 import hashlib
+import httpreplay
+import httpreplay.cut
 import logging
 import json
 import os
@@ -15,29 +18,14 @@ import urlparse
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import Config
-from cuckoo.common.constants import LATEST_HTTPREPLAY
 from cuckoo.common.dns import resolve
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
-from cuckoo.common.utils import convert_to_printable, versiontuple
+from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.exceptions import CuckooProcessingError
 
-try:
-    import dpkt
-    HAVE_DPKT = True
-except ImportError:
-    HAVE_DPKT = False
-
-try:
-    import httpreplay
-    import httpreplay.cut
-
-    # Be less verbose about httpreplay logging messages.
-    logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
-
-    HAVE_HTTPREPLAY = True
-except ImportError:
-    HAVE_HTTPREPLAY = False
+# Be less verbose about httpreplay logging messages.
+logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
 
 # Imports for the batch sort.
 # http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
@@ -51,24 +39,9 @@ Packet = namedtuple("Packet", ["raw", "ts"])
 
 log = logging.getLogger(__name__)
 
-# Urge users to upgrade to the latest version.
-_v = getattr(httpreplay, "__version__", None) if HAVE_HTTPREPLAY else None
-if _v and versiontuple(_v) < versiontuple(LATEST_HTTPREPLAY):
-    log.warning(
-        "You are using version %s of HTTPReplay, rather than the latest "
-        "version %s, which may not handle various corner cases and/or TLS "
-        "cipher suites correctly. This could result in not getting all the "
-        "HTTP/HTTPS streams that are available or corrupt some streams that "
-        "were not handled correctly before. Please upgrade it to the latest "
-        "version (`pip install --upgrade httpreplay`).",
-        _v, LATEST_HTTPREPLAY,
-    )
-
 class Pcap(object):
     """Reads network data from PCAP file."""
     ssl_ports = 443,
-
-    notified_dpkt = False
 
     def __init__(self, filepath):
         """Creates a new instance.
@@ -472,14 +445,6 @@ class Pcap(object):
     def _https_identify(self, conn, data):
         """Extract a combination of the Session ID, Client Random, and Server
         Random in order to identify the accompanying master secret later."""
-        if not hasattr(dpkt.ssl, "TLSRecord"):
-            if not Pcap.notified_dpkt:
-                Pcap.notified_dpkt = True
-                log.warning("Using an old version of dpkt that does not "
-                            "support TLS streams (install the latest with "
-                            "`pip install dpkt`)")
-            return
-
         try:
             record = dpkt.ssl.TLSRecord(data)
         except dpkt.NeedData:
@@ -789,11 +754,6 @@ class NetworkAnalysis(Processing):
         if os.path.exists(self.pcap_path):
             results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
-        if not HAVE_DPKT and not HAVE_HTTPREPLAY:
-            log.error("Both Python HTTPReplay and Python DPKT are not "
-                      "installed, no PCAP analysis possible.")
-            return results
-
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if Config().processing.sort_pcap:
             sort_pcap(self.pcap_path, sorted_path)
@@ -805,10 +765,9 @@ class NetworkAnalysis(Processing):
         else:
             pcap_path = self.pcap_path
 
-        if HAVE_DPKT:
-            results.update(Pcap(pcap_path).run())
+        results.update(Pcap(pcap_path).run())
 
-        if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
+        if os.path.exists(pcap_path):
             try:
                 p2 = Pcap2(pcap_path, self.get_tlsmaster(), self.network_path)
                 results.update(p2.run())

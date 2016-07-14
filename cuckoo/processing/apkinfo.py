@@ -14,14 +14,10 @@ from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
 
-try:
-    from androguard.core.bytecodes.apk import APK
-    from androguard.core.bytecodes.dvm import DalvikVMFormat
-    from androguard.core.analysis.analysis import uVMAnalysis
-    from androguard.core.analysis import analysis
-    HAVE_ANDROGUARD = True
-except ImportError:
-    HAVE_ANDROGUARD = False
+from androguard.core.bytecodes.apk import APK
+from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.analysis.analysis import uVMAnalysis
+from androguard.core.analysis import analysis
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +56,7 @@ class ApkInfo(Processing):
         self.key = "apkinfo"
         apkinfo = {}
 
-        if "file" not in self.task["category"] or not HAVE_ANDROGUARD:
+        if "file" not in self.task["category"]:
             return
 
         f = File(self.task["target"])

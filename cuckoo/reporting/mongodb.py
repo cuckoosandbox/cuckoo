@@ -6,18 +6,13 @@
 import os
 
 from cuckoo.common.abstracts import Report
-from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.objects import File
 
-try:
-    from pymongo import MongoClient
-    from pymongo.errors import ConnectionFailure
-    from gridfs import GridFS
-    from gridfs.errors import FileExists
-    HAVE_MONGO = True
-except ImportError:
-    HAVE_MONGO = False
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
+from gridfs import GridFS
+from gridfs.errors import FileExists
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -76,12 +71,6 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
-        if not HAVE_MONGO:
-            raise CuckooDependencyError(
-                "Unable to import pymongo (install with "
-                "`pip install pymongo`)"
-            )
-
         self.connect()
 
         # Set mongo schema version.

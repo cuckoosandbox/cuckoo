@@ -3,18 +3,18 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import bs4
 import datetime
 import logging
+import oletools.olevba
 import os
+import peepdf.JSAnalysis
+import peepdf.PDFCore
+import pefile
+import peutils
 import re
 import struct
 import zipfile
-
-try:
-    import bs4
-    HAVE_BS4 = True
-except ImportError:
-    HAVE_BS4 = False
 
 try:
     import magic
@@ -23,30 +23,10 @@ except ImportError:
     HAVE_MAGIC = False
 
 try:
-    import pefile
-    import peutils
-    HAVE_PEFILE = True
-except ImportError:
-    HAVE_PEFILE = False
-
-try:
     import M2Crypto
     HAVE_MCRYPTO = True
 except ImportError:
     HAVE_MCRYPTO = False
-
-try:
-    import oletools.olevba
-    HAVE_OLETOOLS = True
-except ImportError:
-    HAVE_OLETOOLS = False
-
-try:
-    import peepdf.PDFCore
-    import peepdf.JSAnalysis
-    HAVE_PEEPDF = True
-except ImportError:
-    HAVE_PEEPDF = False
 
 try:
     import PyV8
@@ -496,13 +476,6 @@ class OfficeDocument(object):
 
     def get_macros(self):
         """Get embedded Macros if this is an Office document."""
-        if not HAVE_OLETOOLS:
-            log.warning(
-                "In order to do static analysis of Microsoft Word documents "
-                "we're going to require oletools (`pip install oletools`)"
-            )
-            return
-
         try:
             p = oletools.olevba.VBA_Parser(self.filepath)
         except TypeError:
@@ -586,13 +559,6 @@ class PdfDocument(object):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
     def run(self):
-        if not HAVE_PEEPDF:
-            log.warning(
-                "Unable to perform static PDF analysis as PeePDF is missing "
-                "(install with `pip install peepdf`)"
-            )
-            return
-
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
             self.filepath, forceMode=True,
@@ -674,8 +640,7 @@ class Static(Processing):
             ext = None
 
         if ext == "exe" or "PE32" in File(self.file_path).get_type():
-            if HAVE_PEFILE:
-                static.update(PortableExecutable(self.file_path).run())
+            static.update(PortableExecutable(self.file_path).run())
             static["keys"] = self._get_keys()
 
         if package == "wsf" or ext == "wsf":

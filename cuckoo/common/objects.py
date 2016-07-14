@@ -3,11 +3,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import androguard
 import binascii
 import hashlib
 import logging
 import mmap
 import os
+import pefile
 import re
 import subprocess
 
@@ -31,18 +33,6 @@ try:
     HAVE_YARA = True
 except ImportError:
     HAVE_YARA = False
-
-try:
-    import pefile
-    HAVE_PEFILE = True
-except ImportError:
-    HAVE_PEFILE = False
-
-try:
-    import androguard
-    HAVE_ANDROGUARD = True
-except ImportError:
-    HAVE_ANDROGUARD = False
 
 log = logging.getLogger(__name__)
 
@@ -90,8 +80,6 @@ class File(object):
     # static fields which indicate whether the user has been
     # notified about missing dependencies already
     notified_yara = False
-    notified_pefile = False
-    notified_androguard = False
 
     # Given that ssdeep hashes are not really used much in practice we're just
     # going to disable its warning by default for now.
@@ -305,12 +293,6 @@ class File(object):
         if "MS-DOS" not in filetype and "PE32" not in self.get_type():
             return
 
-        if not HAVE_PEFILE:
-            if not File.notified_pefile:
-                File.notified_pefile = True
-                log.warning("Unable to import pefile (`pip install pefile`)")
-            return
-
         try:
             pe = pefile.PE(self.file_path)
             if not hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
@@ -326,12 +308,6 @@ class File(object):
         """Get the imported functions of this PE file."""
         filetype = self.get_type()
         if "MS-DOS" not in filetype and "PE32" not in self.get_type():
-            return
-
-        if not HAVE_PEFILE:
-            if not File.notified_pefile:
-                File.notified_pefile = True
-                log.warning("Unable to import pefile (`pip install pefile`)")
             return
 
         try:
@@ -354,12 +330,6 @@ class File(object):
         package and main activity name."""
         filetype = self.get_type()
         if "Zip archive data" not in filetype and "Java archive data" not in filetype:
-            return "", ""
-
-        if not HAVE_ANDROGUARD:
-            if not File.notified_androguard:
-                File.notified_androguard = True
-                log.warning("Unable to import androguard (`pip install androguard`)")
             return "", ""
 
         try:

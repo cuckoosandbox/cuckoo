@@ -2,31 +2,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import socket
+import bs4
 import logging
-import xmlrpclib
+import requests
+import socket
 import subprocess
-
-log = logging.getLogger(__name__)
-
-try:
-    import bs4
-    import requests
-    import wakeonlan.wol
-    HAVE_FOG = True
-except ImportError:
-    HAVE_FOG = False
-    log.critical(
-        "The bs4, requests, and wakeonlan Python libraries are required for "
-        "proper FOG integration with Cuckoo (please install them through "
-        "`pip install bs4 requests wakeonlan`)."
-    )
+import wakeonlan.wol
+import xmlrpclib
 
 from cuckoo.common.abstracts import Machinery
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.utils import TimeoutServer
+
+log = logging.getLogger(__name__)
 
 class Physical(Machinery):
     """Manage physical sandboxes."""
@@ -190,7 +180,7 @@ class Physical(Machinery):
     def fog_init(self):
         """Initiate by indexing FOG regarding all available machines."""
         self.fog_machines = {}
-        if not HAVE_FOG or self.options.fog.hostname == "none":
+        if self.options.fog.hostname == "none":
             return
 
         # TODO Handle exceptions such as not being able to connect.

@@ -5,16 +5,11 @@
 
 import logging
 import re
+import requests
 
-try:
-    import requests
-    HAVE_REQUESTS = True
-
-    # Disable requests/urllib3 debug & info messages.
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-except ImportError:
-    HAVE_REQUESTS = False
+# Disable requests/urllib3 debug & info messages.
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
@@ -77,11 +72,6 @@ class VirusTotalAPI(object):
 
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
-        if not HAVE_REQUESTS:
-            raise CuckooOperationalError(
-                "The VirusTotal processing module requires the requests "
-                "library (install with `pip install requests`)")
-
         try:
             r = requests.post(url, timeout=self.timeout, **kwargs)
             return r.json() if r.status_code == 200 else {}

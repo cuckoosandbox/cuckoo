@@ -20,20 +20,9 @@ import os
 import sys
 import sqlalchemy as sa
 
+from alembic import op
 from datetime import datetime
-
-try:
-    from dateutil.parser import parse
-except ImportError:
-    print "Unable to import dateutil.parser",
-    print "(install with `pip install python-dateutil`)"
-    sys.exit()
-
-try:
-    from alembic import op
-except ImportError:
-    print "Unable to import alembic (install with `pip install alembic`)"
-    sys.exit()
+from dateutil.parser import parse
 
 import cuckoo.core.database as db
 from cuckoo.common.config import Config
@@ -270,15 +259,13 @@ def mongo_upgrade():
 
         # Support old Mongo.
         try:
+            done = False
             from pymongo.connection import Connection
             from pymongo.errors import ConnectionFailure
 
             conn = Connection(host, port)
             db = conn.cuckoo
             done = True
-        except ImportError:
-            print "Unable to import pymongo (install with `pip install pymongo`)"
-            done = False
         except ConnectionFailure:
             print "Cannot connect to MongoDB"
             sys.exit()

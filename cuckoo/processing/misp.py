@@ -5,16 +5,10 @@
 import datetime
 import logging
 import os.path
+import pymisp
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooProcessingError
-
-try:
-    from pymisp import PyMISP
-    HAVE_MISP = True
-except ImportError:
-    HAVE_MISP = False
 
 log = logging.getLogger(__name__)
 
@@ -60,12 +54,6 @@ class MISP(Processing):
         """Run analysis.
         @return: MISP results dict.
         """
-
-        if not HAVE_MISP:
-            raise CuckooDependencyError(
-                "Unable to import PyMISP (install with `pip install pymisp`)"
-            )
-
         self.url = self.options.get("url", "")
         self.apikey = self.options.get("apikey", "")
         maxioc = int(self.options.get("maxioc", 100))
@@ -82,7 +70,7 @@ class MISP(Processing):
         self.key = "misp"
         self.iocs = {}
 
-        self.misp = PyMISP(self.url, self.apikey, False, "json")
+        self.misp = pymisp.PyMISP(self.url, self.apikey, False, "json")
         iocs = set()
 
         iocs.add(self.results.get("target", {}).get("file", {}).get("md5"))

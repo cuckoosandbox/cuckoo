@@ -13,22 +13,19 @@ from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
-from cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
+from cuckoo.common.utils import create_folder, Singleton, classlock
+from cuckoo.common.utils import SuperLock, json_encode
 from cuckoo.misc import cwd
 
-try:
-    from sqlalchemy import create_engine, Column, not_
-    from sqlalchemy import Integer, String, Boolean, DateTime, Enum
-    from sqlalchemy import ForeignKey, Text, Index, Table
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-    from sqlalchemy.orm import sessionmaker, relationship, joinedload
-    from sqlalchemy.ext.hybrid import hybrid_property
-    Base = declarative_base()
-except ImportError:
-    raise CuckooDependencyError(
-        "Unable to import sqlalchemy (install with `pip install sqlalchemy`)"
-    )
+from sqlalchemy import create_engine, Column, not_
+from sqlalchemy import Integer, String, Boolean, DateTime, Enum
+from sqlalchemy import ForeignKey, Text, Index, Table
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.orm import sessionmaker, relationship, joinedload
+from sqlalchemy.ext.hybrid import hybrid_property
+
+Base = declarative_base()
 
 log = logging.getLogger(__name__)
 

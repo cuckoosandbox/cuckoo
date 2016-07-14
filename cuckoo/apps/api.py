@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 import socket
 import tarfile
 
@@ -12,10 +11,7 @@ from datetime import datetime
 from StringIO import StringIO
 from zipfile import ZipFile, ZIP_STORED
 
-try:
-    from flask import Flask, request, jsonify, make_response
-except ImportError:
-    sys.exit("ERROR: Flask library is missing (`pip install flask`)")
+from flask import Flask, request, jsonify, make_response
 
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.utils import store_temp_file, delete_folder

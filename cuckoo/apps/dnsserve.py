@@ -4,12 +4,8 @@
 
 import logging
 import socket
-import sys
 
-try:
-    from scapy.layers.dns import DNS, DNSQR, DNSRR
-except ImportError:
-    sys.exit("ERROR: Scapy library is missing (`pip install scapy`)")
+from scapy.layers.dns import DNS, DNSQR, DNSRR
 
 log = logging.getLogger("dnsserve")
 

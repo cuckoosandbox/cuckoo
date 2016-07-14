@@ -2,15 +2,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import lxml.etree
 import os.path
 
 from cuckoo.common.abstracts import Processing
-
-try:
-    import lxml.etree
-    HAVE_LXML = True
-except ImportError:
-    HAVE_LXML = False
 
 class ProcmonLog(list):
     """Yields each API call event to the parent handler."""

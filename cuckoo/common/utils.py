@@ -3,7 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import bs4
+import chardet
 import hashlib
+import jsbeautifier
 import logging
 import os
 import sys
@@ -28,24 +31,6 @@ from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd
-
-try:
-    import bs4
-    HAVE_BS4 = True
-except ImportError:
-    HAVE_BS4 = False
-
-try:
-    import chardet
-    HAVE_CHARDET = True
-except ImportError:
-    HAVE_CHARDET = False
-
-try:
-    import jsbeautifier
-    HAVE_JSBEAUTIFIER = True
-except ImportError:
-    HAVE_JSBEAUTIFIER = False
 
 log = logging.getLogger(__name__)
 
@@ -250,7 +235,7 @@ def to_unicode(s):
     result = brute_enc(s)
 
     # Try via chardet.
-    if not result and HAVE_CHARDET:
+    if not result:
         result = chardet_enc(s)
 
     # If not possible to convert the input string, try again with
@@ -389,9 +374,6 @@ _jsbeautify_lock = threading.Lock()
 
 def jsbeautify(javascript):
     """Beautifies Javascript through jsbeautifier and ignore some messages."""
-    if not HAVE_JSBEAUTIFIER:
-        return javascript
-
     with _jsbeautify_lock:
         origout, sys.stdout = sys.stdout, StringIO()
         javascript = jsbeautifier.beautify(javascript)
@@ -404,9 +386,6 @@ def jsbeautify(javascript):
 
 def htmlprettify(html):
     """Beautifies HTML through BeautifulSoup4."""
-    if not HAVE_BS4:
-        return html
-
     # The following ignores the following bs4 warning:
     # UserWarning: "." looks like a filename, not markup.
     with warnings.catch_warnings():
