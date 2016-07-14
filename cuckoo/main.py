@@ -15,7 +15,7 @@ import cuckoo
 
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_dnsserve, cuckoo_machine
+    cuckoo_api, cuckoo_distributed, cuckoo_dnsserve, cuckoo_machine
 )
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
@@ -439,8 +439,49 @@ def migrate():
     print yellow(">>> Your database migration was successful!")
 
 @main.group()
-def distributed():
-    pass
+@click.option("-H", "--host", default="0.0.0.0", help="Host to bind the Distributed Cuckoo server on")
+@click.option("-p", "--port", default=9003, help="Port to bind the Distributed Cuckoo server on")
+@click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
+@click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
+@click.option("--nginx", is_flag=True, help="Dump nginx configuration")
+@click.pass_context
+def distributed(ctx, host, port, debug, uwsgi, nginx):
+    username = ctx.parent.user or os.getlogin()
+    if uwsgi:
+        print "[uwsgi]"
+        print "plugins = python"
+        if os.environ.get("VIRTUAL_ENV"):
+            print "virtualenv =", os.environ["VIRTUAL_ENV"]
+        print "module = cuckoo.apps.distributed"
+        print "callable = app"
+        print "uid =", username
+        print "gid =", username
+        print "env = CUCKOO_FORCE=%s" % cwd()
+        return
+
+    if nginx:
+        print "upstream _uwsgi_cuckoo_distributed {"
+        print "    server unix:/run/uwsgi/app/cuckoo-distributed/socket;"
+        print "}"
+        print
+        print "server {"
+        print "    listen %d;" % port
+        print "    listen [::]:%d ipv6only=on;" % port
+        print
+        print "    # REST Distributed app"
+        print "    location / {"
+        print "        uwsgi_pass  _uwsgi_cuckoo_distributed;"
+        print "        include     uwsgi_params;"
+        print "    }"
+        print "}"
+        return
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    cuckoo_distributed(host, port, debug)
 
 @distributed.command("migrate")
 def dist_migrate():

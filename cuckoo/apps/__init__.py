@@ -7,6 +7,7 @@ from .apps import (
 )
 
 from .api import cuckoo_api
+from .distributed import cuckoo_distributed
 from .dnsserve import cuckoo_dnsserve
 from .machine import cuckoo_machine
 from .rooter import cuckoo_rooter

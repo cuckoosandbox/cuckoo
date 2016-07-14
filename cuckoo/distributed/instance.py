@@ -11,8 +11,8 @@ import time
 
 from cuckoo.distributed.api import node_status, fetch_tasks, delete_task
 from cuckoo.distributed.api import store_report, submit_task, fetch_pcap
-from cuckoo.distributed.app import create_app
 from cuckoo.distributed.db import db, Task, Node, NodeStatus
+from cuckoo.distributed.distributed.app import create_app
 from cuckoo.distributed.exception import InvalidReport
 from cuckoo.distributed.misc import settings
 
