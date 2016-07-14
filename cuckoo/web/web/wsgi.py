@@ -23,24 +23,26 @@ import sys
 
 import cuckoo
 
-# When run under uWSGI the Cuckoo Working Directory will not have been set
-# yet and we'll have to do so ourselves.
-if not cuckoo.misc.cwd() and os.environ.get("CUCKOO_FORCE"):
-    cuckoo.misc.set_cwd(os.environ["CUCKOO_FORCE"])
+from cuckoo.misc import set_cwd
 
-os.chdir(os.path.join(cuckoo.__path__[0], "web"))
-sys.path.insert(0, ".")
+if os.environ.get("CUCKOO_APP") == "web":
+    # When run under uWSGI the Cuckoo Working Directory will not have been set
+    # yet and we'll have to do so ourselves.
+    set_cwd(os.environ["CUCKOO_FORCE"])
 
-cuckoo.core.database.Database().connect()
+    os.chdir(os.path.join(cuckoo.__path__[0], "web"))
+    sys.path.insert(0, ".")
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
+    cuckoo.core.database.Database().connect()
 
-# This application object is used by any WSGI server configured to use this
-# file. This includes Django's development server, if the WSGI_APPLICATION
-# setting points here.
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)
+    # This application object is used by any WSGI server configured to use
+    # this file. This includes Django's development server, if the
+    # WSGI_APPLICATION setting points here.
+    from django.core.wsgi import get_wsgi_application
+    application = get_wsgi_application()
+
+    # Apply WSGI middleware here.
+    # from helloworld.wsgi import HelloWorldApplication
+    # application = HelloWorldApplication(application)

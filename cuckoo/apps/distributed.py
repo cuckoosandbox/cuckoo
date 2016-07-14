@@ -5,7 +5,7 @@
 import os
 import sys
 
-from cuckoo.misc import cwd, set_cwd
+from cuckoo.misc import set_cwd
 
 try:
     from cuckoo.distributed.app import create_app
@@ -18,9 +18,9 @@ except ImportError:
 
 app = None
 
-# When run under uWSGI the Cuckoo Working Directory will not have been set
-# yet and we'll have to do so ourselves.
-if not cwd() and os.environ.get("CUCKOO_FORCE"):
+if os.environ.get("CUCKOO_APP") == "dist":
+    # When run under uWSGI the Cuckoo Working Directory will not have been set
+    # yet and we'll have to do so ourselves.
     set_cwd(os.environ["CUCKOO_FORCE"])
 
     if not HAVE_FLASKSQLA:

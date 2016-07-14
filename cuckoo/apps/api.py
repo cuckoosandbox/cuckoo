@@ -552,8 +552,8 @@ def vpn_status():
 def cuckoo_api(hostname, port, debug):
     app.run(host=hostname, port=port, debug=debug)
 
-# When run under uWSGI the Cuckoo Working Directory will not have been set
-# yet and we'll have to do so ourselves.
-if not cwd() and os.environ.get("CUCKOO_FORCE"):
+if os.environ.get("CUCKOO_APP") == "api":
+    # When run under uWSGI the Cuckoo Working Directory will not have been set
+    # yet and we'll have to do so ourselves.
     set_cwd(os.environ["CUCKOO_FORCE"])
     Database().connect()
