@@ -321,6 +321,7 @@ def api(ctx, host, port, debug, uwsgi, nginx):
         print
         print "    # REST API app"
         print "    location / {"
+        print "        client_max_body_size 1G;"
         print "        uwsgi_pass  _uwsgi_cuckoo_api;"
         print "        include     uwsgi_params;"
         print "    }"
@@ -381,6 +382,7 @@ def web(ctx, args, port, uwsgi, nginx):
         print
         print "    # Cuckoo Web Interface"
         print "    location / {"
+        print "        client_max_body_size 1G;"
         print "        uwsgi_pass  _uwsgi_cuckoo_web;"
         print "        include     uwsgi_params;"
         print "    }"
@@ -475,6 +477,7 @@ def server(ctx, host, port, debug, uwsgi, nginx):
         print
         print "    # REST Distributed app"
         print "    location / {"
+        print "        client_max_body_size 1G;"
         print "        uwsgi_pass  _uwsgi_cuckoo_distributed;"
         print "        include     uwsgi_params;"
         print "    }"
