@@ -439,14 +439,18 @@ def migrate():
     print yellow(">>> Your database migration was successful!")
 
 @main.group()
+def distributed():
+    pass
+
+@distributed.command()
 @click.option("-H", "--host", default="0.0.0.0", help="Host to bind the Distributed Cuckoo server on")
 @click.option("-p", "--port", default=9003, help="Port to bind the Distributed Cuckoo server on")
 @click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
-def distributed(ctx, host, port, debug, uwsgi, nginx):
-    username = ctx.parent.user or os.getlogin()
+def server(ctx, host, port, debug, uwsgi, nginx):
+    username = ctx.parent.parent.user or os.getlogin()
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
