@@ -27,9 +27,16 @@ except ImportError:
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("cuckoo.distributed.worker")
 
-def with_app(fn, *args, **kwargs):
-    with app.app_context():
-        fn(*args, **kwargs)
+def with_app(name, fn, *args, **kwargs):
+    while True:
+        try:
+            log.debug("Starting out with instance: %s", name)
+            with app.app_context():
+                fn(*args, **kwargs)
+        except Exception as e:
+            log.info("An exception occurred in instance %s: %s", name, e)
+
+        time.sleep(15)
 
 def spawner():
     while True:
@@ -45,7 +52,7 @@ def spawner():
                 if node.enabled:
                     log.debug("Started new worker: %s", node.name)
                     workers[tn] = gevent.spawn(
-                        with_app, handle_node, node.name
+                        with_app, node.name, handle_node, node.name
                     )
                 else:
                     log.debug("Registered disabled worker: %s", node.name)
@@ -56,7 +63,7 @@ def spawner():
             if node.enabled:
                 log.debug("Resumed worker: %s", node.name)
                 workers[tn] = gevent.spawn(
-                    with_app, handle_node, node.name
+                    with_app, node.name, handle_node, node.name
                 )
                 workers.pop(tr)
             else:
@@ -80,7 +87,9 @@ if os.environ.get("CUCKOO_APP") == "worker":
     app = create_app()
 
     workers = {
-        ("dist.scheduler", True): gevent.spawn(with_app, scheduler),
+        ("dist.scheduler", True): gevent.spawn(
+            with_app, "dist.scheduler", scheduler
+        ),
     }
 
-    with_app(spawner)
+    with_app("dist.spawner", spawner)
