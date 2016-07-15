@@ -18,7 +18,7 @@ try:
 except ImportError:
     sys.exit("ERROR: Flask library is missing (`pip install flask`)")
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
@@ -356,6 +356,14 @@ def rereport(task_id):
         return jsonify(success=False)
     else:
         return json_error(404, "Task not found")
+
+@app.route("/tasks/reboot/<int:task_id>")
+def reboot(task_id):
+    reboot_id = Database().add_reboot(task_id=task_id)
+    if not reboot_id:
+        return json_error(404, "Error creating reboot task")
+
+    return jsonify(task_id=task_id, reboot_id=reboot_id)
 
 @app.route("/files/view/md5/<md5>")
 @app.route("/v1/files/view/md5/<md5>")

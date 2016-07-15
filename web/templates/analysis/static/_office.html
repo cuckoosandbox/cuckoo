@@ -1,0 +1,37 @@
+<section id="static_analysis">
+    {% for office in analysis.static.office %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <label class=accordion-toggle">{{ office.filename }} <small>({{ office.stream }})</small></label>
+                        </div>
+
+                        <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                            <div class="panel-body">
+                                <div class="col-md-6">
+                                    <h4>Original</h4>
+                                    <hr>
+                                    <pre>
+                                        <code class="vbscript">{{ office.orig_code.strip }}</code>
+                                    </pre>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <h4>Deobfuscated</h4>
+                                    <hr>
+                                    <pre>
+                                        <code class="vbscript">{{ office.deobf.strip }}</code>
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>

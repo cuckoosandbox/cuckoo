@@ -9,7 +9,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
-sys.path.append(settings.CUCKOO_PATH)
+sys.path.insert(0, settings.CUCKOO_PATH)
 
 import lib.cuckoo.common.compare as compare
 

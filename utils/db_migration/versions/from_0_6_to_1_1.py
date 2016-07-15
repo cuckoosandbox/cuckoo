@@ -35,7 +35,7 @@ except ImportError:
     print "Unable to import alembic (install with `pip install alembic`)"
     sys.exit()
 
-sys.path.append(os.path.join("..", ".."))
+sys.path.insert(0, os.path.join("..", ".."))
 
 import lib.cuckoo.core.database as db
 from lib.cuckoo.common.config import Config

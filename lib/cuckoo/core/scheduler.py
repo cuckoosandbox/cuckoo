@@ -84,6 +84,18 @@ class AnalysisManager(threading.Thread):
 
         return True
 
+    def check_permissions(self):
+        """Checks if we have permissions to access the file to be analyzed."""
+        if os.access(self.task.target, os.R_OK):
+            return True
+
+        log.error(
+            "Unable to access target file, please check if we have "
+            "permissions to access the file: \"%s\"",
+            self.task.target
+        )
+        return False
+
     def check_file(self):
         """Checks the integrity of the file to be analyzed."""
         sample = self.db.view_sample(self.task.sample_id)
@@ -319,6 +331,11 @@ class AnalysisManager(threading.Thread):
         self.store_task_info()
 
         if self.task.category == "file":
+            # Check if we have permissions to access the file.
+            # And fail this analysis if we don't have access to the file.
+            if not self.check_permissions():
+                return False
+
             # Check whether the file has been changed for some unknown reason.
             # And fail this analysis if it has been modified.
             if not self.check_file():
@@ -387,7 +404,10 @@ class AnalysisManager(threading.Thread):
         except CuckooMachineError as e:
             if not unlocked:
                 machine_lock.release()
-            log.error(str(e), extra={"task_id": self.task.id})
+            log.error(
+                "Machinery error: %s",
+                e, extra={"task_id": self.task.id}
+            )
             log.critical(
                 "A critical error has occurred trying to use the machine "
                 "with name %s during an analysis due to which it is no "
@@ -401,7 +421,10 @@ class AnalysisManager(threading.Thread):
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
-            log.error(str(e), extra={"task_id": self.task.id})
+            log.error(
+                "Error from the Cuckoo Guest: %s",
+                e, extra={"task_id": self.task.id}
+            )
         finally:
             # Stop Auxiliary modules.
             self.aux.stop()
@@ -415,7 +438,7 @@ class AnalysisManager(threading.Thread):
                     log.error("The memory dump functionality is not available "
                               "for the current machine manager.")
                 except CuckooMachineError as e:
-                    log.error(e)
+                    log.error("Machinery error: %s", e)
 
             try:
                 # Stop the analysis machine.

@@ -10,7 +10,7 @@ from django.conf import settings
 from django.shortcuts import redirect, render
 from django.core.exceptions import ObjectDoesNotExist
 
-sys.path.append(settings.CUCKOO_PATH)
+sys.path.insert(0, settings.CUCKOO_PATH)
 
 from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.utils import store_temp_file

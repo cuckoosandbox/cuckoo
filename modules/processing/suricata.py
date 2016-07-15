@@ -143,13 +143,13 @@ class Suricata(Processing):
 
                 self.results["alerts"].append({
                     "sid": alert["signature_id"],
-                    "src_ip": event["src_ip"],
-                    "src_port": event["src_port"],
+                    "src_ip": event.get("src_ip"),
+                    "src_port": event.get("src_port"),
                     "dst_ip": event["dest_ip"],
-                    "dst_port": event["dest_port"],
-                    "protocol": event["proto"],
-                    "timestamp": event["timestamp"],
-                    "category": alert["category"] or "undefined",
+                    "dst_port": event.get("dest_port"),
+                    "protocol": event.get("proto"),
+                    "timestamp": event.get("timestamp"),
+                    "category": alert.get("category") or "undefined",
                     "signature": alert["signature"],
                 })
 
@@ -165,11 +165,11 @@ class Suricata(Processing):
                     user_agent = None
 
                 self.results["http"].append({
-                    "src_ip": event["src_ip"],
-                    "src_port": event["src_port"],
-                    "dst_ip": event["dest_ip"],
-                    "dst_port": event["dest_port"],
-                    "timestamp": event["timestamp"],
+                    "src_ip": event.get("src_ip"),
+                    "src_port": event.get("src_port"),
+                    "dst_ip": event.get("dest_ip"),
+                    "dst_port": event.get("dest_port"),
+                    "timestamp": event.get("timestamp"),
                     "method": http.get("http_method"),
                     "hostname": http.get("hostname"),
                     "url": http.get("url"),
@@ -184,15 +184,15 @@ class Suricata(Processing):
                 tls = event["tls"]
 
                 self.results["tls"].append({
-                    "src_ip": event["src_ip"],
-                    "src_port": event["src_port"],
-                    "dst_ip": event["dest_ip"],
-                    "dst_port": event["dest_port"],
-                    "timestamp": event["timestamp"],
-                    "fingerprint": tls["fingerprint"],
-                    "issuer": tls["issuerdn"],
-                    "version": tls["version"],
-                    "subject": tls["subject"],
+                    "src_ip": event.get("src_ip"),
+                    "src_port": event.get("src_port"),
+                    "dst_ip": event.get("dest_ip"),
+                    "dst_port": event.get("dest_port"),
+                    "timestamp": event.get("timestamp"),
+                    "fingerprint": tls.get("fingerprint"),
+                    "issuer": tls.get("issuerdn"),
+                    "version": tls.get("version"),
+                    "subject": tls.get("subject"),
                 })
 
     def parse_files(self):

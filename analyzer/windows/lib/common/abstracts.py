@@ -145,6 +145,10 @@ class Package(object):
         source = source or self.options.get("from")
         mode = mode or self.options.get("mode")
 
+        if not trigger and self.options.get("trigger"):
+            if self.options["trigger"] == "exefile":
+                trigger = "file:%s" % path
+
         # Setup pre-defined registry keys.
         self.init_regkeys(self.REGKEYS)
 
