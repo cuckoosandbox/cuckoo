@@ -273,3 +273,41 @@ solutions are welcome of course)::
 
     sudo apt-get install apparmor-utils
     sudo aa-disable /usr/sbin/tcpdump
+
+DistributionNotFound / No distribution matching the version..
+-------------------------------------------------------------
+
+.. versionchanged:: 2.0-rc3
+
+Installing Cuckoo through the Python package brings its own set of problems,
+namely that of outdated Python package management software. This FAQ entry
+targets the following issue..::
+
+    $ cuckoo
+    Traceback (most recent call last):
+    File "/usr/local/bin/cuckoo", line 5, in <module>
+        from pkg_resources import load_entry_point
+    File "/usr/lib/python2.7/dist-packages/pkg_resources.py", line 2749, in <module>
+        working_set = WorkingSet._build_master()
+    File "/usr/lib/python2.7/dist-packages/pkg_resources.py", line 446, in _build_master
+        return cls._build_from_requirements(__requires__)
+    File "/usr/lib/python2.7/dist-packages/pkg_resources.py", line 459, in _build_from_requirements
+        dists = ws.resolve(reqs, Environment())
+    File "/usr/lib/python2.7/dist-packages/pkg_resources.py", line 628, in resolve
+        raise DistributionNotFound(req)
+    pkg_resources.DistributionNotFound: tlslite-ng==0.6.0a3
+
+.. as well as the following..::
+
+    $ pip install cuckoo
+    [ ... ]
+    Could not find a version that satisfies the requirement tlslite-ng==0.6.0a3 (from HTTPReplay==0.1.15->Cuckoo==2.0) (from versions: 0.6.0-alpha5, 0.5.0-beta5, 0.5.0, 0.6.0-alpha4, 0.5.2, 0.5.1, 0.5.0-beta1, 0.5.0-beta2, 0.5.0-beta4, 0.5.0-beta3, 0.6.0-alpha2, 0.5.0-beta6, 0.6.0-alpha1, 0.6.0-alpha3)
+    Cleaning up...
+    No distributions matching the version for tlslite-ng==0.6.0a3 (from HTTPReplay==0.1.15->Cuckoo==2.0)
+    Storing debug log for failure in /home/cuckoo/.pip/pip.log
+
+Those issues - and related ones - are caused by outdated Python package
+management software. Fortunately their fix is fairly trivial and therefore
+the following command should do the trick::
+
+    pip install -U pip setuptools
