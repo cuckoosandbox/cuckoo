@@ -150,7 +150,7 @@ def tasks_list(limit=None, offset=None):
     for row in db.list_tasks(limit=limit, details=True, offset=offset,
                              completed_after=completed_after, owner=owner,
                              status=status, order_by=Task.completed_on.asc()):
-        task = row.to_dict()
+        task = row.to_dict(dt=True)
 
         # Sanitize the target in case it contains non-ASCII characters as we
         # can't pass along an encoding to flask's jsonify().

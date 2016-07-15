@@ -310,14 +310,18 @@ class Task(Base):
     def options(self, value):
         self._options = value
 
-    def to_dict(self):
+    def to_dict(self, dt=False):
         """Converts object to dict.
+        @param dt: encode datetime objects
         @return: dict
         """
         d = Dictionary()
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            d[column.name] = value
+            if dt and isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]
