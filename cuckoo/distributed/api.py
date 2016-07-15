@@ -45,10 +45,12 @@ def submit_task(url, task):
     r = requests.post(url, data=data, files=files)
     return r.json()["task_id"]
 
-def fetch_tasks(url, status):
-    url = os.path.join(url, "tasks", "list")
+def fetch_tasks(url, status, limit):
+    url = os.path.join(url, "tasks", "list", "%s" % limit)
     r = requests.get(url, params=dict(status=status))
-    return r.json()["tasks"]
+    if r.status_code == 200:
+        return r.json().get("tasks", [])
+    return []
 
 def store_report(url, task_id, report_format, dirpath):
     url = os.path.join(url, "tasks", "report", "%d" % task_id, report_format)

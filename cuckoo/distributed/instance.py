@@ -108,8 +108,8 @@ def handle_node(instance):
             db.session.commit()
 
         # Fetching of reports.
-        tasks = fetch_tasks(node.url, status="reported")
-        for task in tasks[:settings.threshold]:
+        tasks = fetch_tasks(node.url, "reported", settings.threshold)
+        for task in tasks:
             # In the case that a Cuckoo node has been reset over time it's
             # possible that there are multiple combinations of
             # node-id/task-id, in this case we take the last one available.
