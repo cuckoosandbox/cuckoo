@@ -75,8 +75,9 @@ def cuckoo_create(context, debug):
         f, sys.stdout = sys.stdout, f
 
         if os.environ.get("VIRTUAL_ENV"):
-            cuckoo_path = "%s/bin/python %s/bin/cuckoo" % (
-                os.environ["VIRTUAL_ENV"], os.environ["VIRTUAL_ENV"]
+            python_path = "%s/bin/python" % os.environ["VIRTUAL_ENV"]
+            cuckoo_path = "%s %s/bin/cuckoo" % (
+                python_path, os.environ["VIRTUAL_ENV"],
             )
         else:
             cuckoo_path = "cuckoo"
@@ -110,6 +111,13 @@ def cuckoo_create(context, debug):
         print "numprocs = 4"
         print "user =", username
         print "autorestart = true"
+        print
+        print "[program:distributed]"
+        print "command = %s -m cuckoo.distributed.worker" % python_path
+        print "user =", username
+        print "autostart = false"
+        print "autorestart = true"
+        print 'environment = CUCKOO_APP="worker",CUCKOO_CWD="%s"' % cwd()
 
         f, sys.stdout = sys.stdout, f
 
