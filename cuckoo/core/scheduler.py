@@ -83,6 +83,18 @@ class AnalysisManager(threading.Thread):
 
         return True
 
+    def check_permissions(self):
+        """Checks if we have permissions to access the file to be analyzed."""
+        if os.access(self.task.target, os.R_OK):
+            return True
+
+        log.error(
+            "Unable to access target file, please check if we have "
+            "permissions to access the file: \"%s\"",
+            self.task.target
+        )
+        return False
+
     def check_file(self):
         """Checks the integrity of the file to be analyzed."""
         sample = self.db.view_sample(self.task.sample_id)
@@ -318,6 +330,11 @@ class AnalysisManager(threading.Thread):
         self.store_task_info()
 
         if self.task.category == "file":
+            # Check if we have permissions to access the file.
+            # And fail this analysis if we don't have access to the file.
+            if not self.check_permissions():
+                return False
+
             # Check whether the file has been changed for some unknown reason.
             # And fail this analysis if it has been modified.
             if not self.check_file():

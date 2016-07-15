@@ -40,8 +40,14 @@ class AnalysisInfo(Processing):
                 emptytask.id = self.task["id"]
                 task = emptytask.to_dict()
 
+        git_head = git_fetch_head = None
+
         return dict(
             version=CUCKOO_VERSION,
+            git={
+                "head": git_head,
+                "fetch_head": git_fetch_head,
+            },
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),
