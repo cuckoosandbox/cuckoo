@@ -100,13 +100,6 @@ def convert_to_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
 
-def datetime_to_iso(timestamp):
-    """Parse a datatime string and returns a datetime in iso format.
-    @param timestamp: timestamp string
-    @return: ISO datetime
-    """
-    return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").isoformat()
-
 def get_filename_from_path(path):
     """Cross-platform filename extraction from path.
     @param path: file path.
@@ -403,8 +396,7 @@ def json_default(obj):
 def json_hook(obj):
     """JSON object hook, deserializing datetimes ($date)"""
     if "$dt" in obj:
-        x = obj["$dt"]
-        return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f")
+        return datetime.strptime(obj["$dt"], "%Y-%m-%dT%H:%M:%S.%f")
     return obj
 
 def json_encode(obj, **kwargs):
