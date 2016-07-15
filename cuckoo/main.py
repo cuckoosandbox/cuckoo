@@ -70,6 +70,10 @@ def cuckoo_create(context, debug):
                 filepath, cwd(filename), symlinks=True, ignore=_ignore_pyc
             )
 
+    # Drop our version of the CWD.
+    our_version = open(cwd(".cwd", private=True), "rb").read()
+    open(cwd(".cwd"), "wb").write(our_version)
+
     with open(cwd("supervisord.conf"), "wb") as f:
         # Temporarily redirect stdout to our file.
         f, sys.stdout = sys.stdout, f
@@ -137,6 +141,19 @@ def cuckoo_init(level, context, debug):
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
         cuckoo_create(context, debug)
         sys.exit(0)
+
+    # Determine if this is a proper CWD.
+    if not os.path.exists(cwd(".cwd")):
+        sys.exit(
+            "No proper Cuckoo Working Directory was identified, did you pass "
+            "along the correct directory?"
+        )
+
+    # Determine if any CWD updates are required.
+    current = open(cwd(".cwd"), "rb").read()
+    latest = open(cwd(".cwd", private=True), "rb").read()
+    if current != latest:
+        pass
 
     check_configs()
     check_version()
@@ -214,8 +231,8 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
         else:
             sys.stderr.write("{0}\n".format(message))
         sys.exit(1)
-    except SystemExit:
-        pass
+    except SystemExit as e:
+        print e
     except:
         # Deal with an unhandled exception.
         message = exception_message()

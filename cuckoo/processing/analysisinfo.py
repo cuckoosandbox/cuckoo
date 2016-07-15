@@ -12,6 +12,7 @@ from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.objects import File
 from cuckoo.common.utils import json_decode
 from cuckoo.core.database import Database, Task
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class AnalysisInfo(Processing):
                 emptytask.id = self.task["id"]
                 task = emptytask.to_dict()
 
-        git_head = git_fetch_head = None
+        git_head = git_fetch_head = open(cwd(".cwd"), "rb").read()
 
         return dict(
             version=CUCKOO_VERSION,
