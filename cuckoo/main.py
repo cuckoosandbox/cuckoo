@@ -392,8 +392,7 @@ def api(ctx, host, port, debug, uwsgi, nginx):
         print "}"
         print
         print "server {"
-        print "    listen %d;" % port
-        print "    listen [::]:%d ipv6only=on;" % port
+        print "    listen %s:%d;" % (host, port)
         print
         print "    # REST API app"
         print "    location / {"
@@ -424,11 +423,12 @@ def dnsserve(host, port, nxdomain, hardcode, verbose):
 
 @main.command()
 @click.argument("args", nargs=-1)
-@click.option("-p", "--port", default=8000, help="Port to bind the API server on")
+@click.option("-H", "--host", default="localhost", help="Host to bind the Web Interface server on")
+@click.option("-p", "--port", default=8000, help="Port to bind the Web Interface server on")
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
-def web(ctx, args, port, uwsgi, nginx):
+def web(ctx, args, host, port, uwsgi, nginx):
     username = ctx.parent.user or os.getlogin()
     if uwsgi:
         print "[uwsgi]"
@@ -454,8 +454,7 @@ def web(ctx, args, port, uwsgi, nginx):
         print "}"
         print
         print "server {"
-        print "    listen %d;" % port
-        print "    listen [::]:%d ipv6only=on;" % port
+        print "    listen %s:%d;" % (host, port)
         print
         print "    # Cuckoo Web Interface"
         print "    location / {"
@@ -523,7 +522,7 @@ def distributed():
     pass
 
 @distributed.command()
-@click.option("-H", "--host", default="0.0.0.0", help="Host to bind the Distributed Cuckoo server on")
+@click.option("-H", "--host", default="localhost", help="Host to bind the Distributed Cuckoo server on")
 @click.option("-p", "--port", default=9003, help="Port to bind the Distributed Cuckoo server on")
 @click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
@@ -550,8 +549,7 @@ def server(ctx, host, port, debug, uwsgi, nginx):
         print "}"
         print
         print "server {"
-        print "    listen %d;" % port
-        print "    listen [::]:%d ipv6only=on;" % port
+        print "    listen %s:%d;" % (host, port)
         print
         print "    # REST Distributed app"
         print "    location / {"
