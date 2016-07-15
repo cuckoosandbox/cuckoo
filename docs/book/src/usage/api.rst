@@ -51,7 +51,8 @@ configuration as reported by the ``cuckoo api --uwsgi`` command::
     callable = app
     uid = cuckoo
     gid = cuckoo
-    env = CUCKOO_FORCE=/home/..somepath..
+    env = CUCKOO_APP=api
+    env = CUCKOO_CWD=/home/..somepath..
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration and imports ``cuckoo.apps.api`` from the Cuckoo

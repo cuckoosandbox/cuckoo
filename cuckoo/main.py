@@ -357,8 +357,8 @@ def api(ctx, host, port, debug, uwsgi, nginx):
         print "callable = app"
         print "uid =", username
         print "gid =", username
-        print "env = CUCKOO_FORCE=%s" % cwd()
         print "env = CUCKOO_APP=api"
+        print "env = CUCKOO_CWD=%s" % cwd()
         return
 
     if nginx:
@@ -419,8 +419,8 @@ def web(ctx, args, port, uwsgi, nginx):
         print "# uncomment the following line and add some path that is"
         print "# writable from the defined user."
         print "# env = PYTHON_EGG_CACHE="
-        print "env = CUCKOO_FORCE=%s" % cwd()
         print "env = CUCKOO_APP=web"
+        print "env = CUCKOO_CWD=%s" % cwd()
         return
 
     if nginx:
@@ -515,8 +515,8 @@ def server(ctx, host, port, debug, uwsgi, nginx):
         print "callable = app"
         print "uid =", username
         print "gid =", username
-        print "env = CUCKOO_FORCE=%s" % cwd()
         print "env = CUCKOO_APP=dist"
+        print "env = CUCKOO_CWD=%s" % cwd()
         return
 
     if nginx:

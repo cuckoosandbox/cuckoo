@@ -108,7 +108,8 @@ configuration as reported by the ``cuckoo web --uwsgi`` command::
     # uncomment the following line and add some path that is
     # writable from the defined user.
     # env = PYTHON_EGG_CACHE=
-    env = CUCKOO_FORCE=/home/..somepath..
+    env = CUCKOO_APP=web
+    env = CUCKOO_CWD=/home/..somepath..
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration and imports ``cuckoo.web.web.wsgi`` from the

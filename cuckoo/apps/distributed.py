@@ -21,7 +21,7 @@ app = None
 if os.environ.get("CUCKOO_APP") == "dist":
     # When run under uWSGI the Cuckoo Working Directory will not have been set
     # yet and we'll have to do so ourselves.
-    set_cwd(os.environ["CUCKOO_FORCE"])
+    set_cwd(os.environ["CUCKOO_CWD"])
 
     if not HAVE_FLASKSQLA:
         sys.exit(
