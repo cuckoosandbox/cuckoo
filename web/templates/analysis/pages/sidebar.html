@@ -39,7 +39,7 @@
 
 .analysis_menu-usermenu ul li a {
   color: #93a3b5;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -75,9 +75,14 @@
     background-color: #eaeaea;
     color: #676767;
 }
+@media (min-width: 992px) {
+    #analysis_menu-sidebar {
+        max-width: 260px;
+    }
+}
 </style>
 
-<div class="col-md-2" style="min-width:230px;">
+<div id="analysis_menu-sidebar" class="col-md-2">
     <div class="analysis_menu-sidebar">
         <div class="analysis_menu-usermenu">
             <ul class="nav">
