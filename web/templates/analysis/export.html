@@ -45,7 +45,7 @@
                             <div class="panel" id="accordion" style="margin-top: 20px;">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
-                                        <label class=accordion-toggle">Options</label>
+                                        <label class="accordion-toggle">Options</label>
                                     </div>
 
                                     <div id="options" class="panel-collapse collapse in" style="text-align: left;">
@@ -55,8 +55,8 @@
                                                 <div class="cuckoo-box">
                                                     {% for dirname, count in dirs %}
                                                         <div class="cuckoo-box-primary">
-                                                            <input type="checkbox" id="{{ dirname }}" name="dirs" value="{{ dirname }}" checked="checked">
-                                                            <label for="{{ dirname }}">{{ dirname }} ({{ count }} files)</label>
+                                                            <input type="checkbox" id="export_{{ dirname }}" name="dirs" value="{{ dirname }}" checked="checked">
+                                                            <label for="export_{{ dirname }}">{{ dirname }} ({{ count }} files)</label>
                                                         </div>
                                                     {% endfor %}
                                                 </div>
@@ -66,8 +66,8 @@
                                                 <div class="cuckoo-box">
                                                     {% for filename in files %}
                                                         <div class="cuckoo-box-primary">
-                                                            <input type="checkbox" name="files" id="{{ filename }}" value="{{ filename }}" checked="checked">
-                                                            <label for="{{ filename }}">{{ filename }}</label>
+                                                            <input type="checkbox" name="files" id="export_{{ filename }}" value="{{ filename }}" checked="checked">
+                                                            <label for="export_{{ filename }}">{{ filename }}</label>
                                                         </div>
                                                     {% endfor %}
                                                 </div>
@@ -98,7 +98,7 @@
                                                 <hr>
 
                                                 <div class="col-md-12 center-block">
-                                                    <button type="submit" class="btn btn-primary center-block">
+                                                    <button type="submit" class="btn btn-primary center-block" style="min-width: 170px;text-align: left;">
                                                         <span style="margin-right: 4px;" class="glyphicon glyphicon-download"></span>
                                                         Download
                                                         <small id="export_estimate_size"></small>
@@ -122,9 +122,31 @@
     <script>
         var task_id = {{report.analysis.info.id}};
 
-        $( document ).ready(function() {
-            // @TO-DO: enable later
-            export_estimate_size(task_id, 'button.btn small#export_estimate_size');
+        $( document ).ready(function(){
+            $(".cuckoo-box input").change(function(){
+                estimate_size();
+            });
+
+            function estimate_size() {
+                let taken_dirs = [];
+                let taken_files = [];
+
+                $(".cuckoo-box input[id^=export_]").each(function (i, obj) {
+                    var name = $(this).attr("value");
+                    var type = $(this).attr("name");
+                    var checked = $(this).is(":checked");
+
+                    if (type == "dirs") {
+                        if (checked) taken_dirs.push(name)
+                    } else if (type == "files") {
+                        if (checked) taken_files.push(name);
+                    }
+                });
+
+                export_estimate_size(task_id, taken_dirs, taken_files, "button.btn small#export_estimate_size", "");
+            }
+
+            estimate_size();
         });
     </script>
 {% endblock %}

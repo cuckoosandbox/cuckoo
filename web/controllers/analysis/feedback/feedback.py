@@ -5,9 +5,14 @@
 
 import json
 import requests
+from datetime import datetime
+
+from django.conf import settings
 
 from controllers.analysis.analysis import AnalysisController
 from controllers.analysis.export.export import ExportController
+
+results_db = settings.MONGO
 
 class AnalysisFeedBackController(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
@@ -22,21 +27,31 @@ class AnalysisFeedBackController(object):
         self.include_memdump = False
 
     def send(self):
-        data = {}
+        data = {
+            "info": {
+                "analysis_id": self.task_id
+            }
+        }
 
         report = AnalysisController.get_report(self.task_id)
-        analysis_path = report["analysis"]["info"]["analysis_path"]
-        taken_dirs, taken_files = ExportController.get_files(analysis_path)
+        if 'feedback' in report['analysis'] and isinstance(report['analysis']['feedback'], dict):
+            raise Exception('Feedback previously sent')
 
-        export = ExportController.create(task_id=self.task_id,
-                                         taken_dirs=taken_dirs,
-                                         taken_files=taken_files)
+        if self.include_analysis:
+            analysis_path = report["analysis"]["info"]["analysis_path"]
+            taken_dirs, taken_files = ExportController.get_files(analysis_path)
 
-        # attach the zip file
-        data["export"] = export
+            if not self.include_memdump:
+                taken_dirs = [z for z in taken_dirs if z[0] != "memory"]
+
+            export = ExportController.create(task_id=self.task_id,
+                                             taken_dirs=taken_dirs,
+                                             taken_files=taken_files)
+
+            # attach the zip file
+            data["export"] = export
 
         # attach additional analysis information
-        data["info"]["analysis_id"] = self.task_id
         if "file" in report["analysis"]["target"]:
             data["info"] = {k: v for k, v in report["analysis"]["target"]["file"].items() if
                             isinstance(v, (str, unicode, int, float))}
@@ -56,6 +71,23 @@ class AnalysisFeedBackController(object):
             raise Exception("the remote server did not respond correctly")
 
         try:
-            return json.loads(resp.content)
-        except Exception as e:
+            resp = json.loads(resp.content)
+            self._register()
+
+            return resp['identifier']
+        except ValueError as e:
             raise Exception("could not parse server response as JSON: %s" % str(e))
+
+    def _register(self):
+        return results_db.analysis.update_one(
+            {"info.id": int(self.task_id)},
+            {"$set": {"feedback": self.to_dict()}})
+
+    def to_dict(self):
+        return {
+            "email": self.email,
+            "message": self.message,
+            "include_memdump": self.include_memdump,
+            "include_analysis": self.include_analysis,
+            "date": datetime.now()
+        }

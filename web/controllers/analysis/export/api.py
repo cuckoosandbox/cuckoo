@@ -23,20 +23,35 @@ class ExportApi:
         body = json.loads(request.body)
 
         task_id = body.get('task_id', None)
-        taken_dirs = request.POST.getlist("dirs")
-        taken_files = request.POST.getlist("files")
+        taken_dirs = body.get("dirs", [])
+        taken_files = body.get("files", [])
+
+        if not taken_dirs and not taken_files:
+            return JsonResponse({"size": 0, "size_human": "-"}, safe=False)
 
         if not task_id:
             raise Exception('invalid task_id')
-
-        report = AnalysisController.get_report(task_id)
-
-        if not taken_dirs and not taken_files:
-            analysis_path = report["analysis"]["info"]["analysis_path"]
-            taken_dirs, taken_files = ExportController.get_files(analysis_path)
 
         size = ExportController.estimate_size(task_id=task_id,
                                               taken_dirs=taken_dirs,
                                               taken_files=taken_files)
 
         return JsonResponse(size, safe=False)
+
+    @staticmethod
+    @csrf_exempt
+    @require_http_methods(["POST"])
+    def get_files(request):
+        body = json.loads(request.body)
+
+        task_id = body.get('task_id', None)
+
+        if not task_id:
+            raise Exception('invalid task_id')
+
+        report = AnalysisController.get_report(task_id)
+        analysis_path = report["analysis"]["info"]["analysis_path"]
+
+        dirs, files = ExportController.get_files(analysis_path)
+
+        return JsonResponse({"dirs": dirs, "files": files}, safe=False)

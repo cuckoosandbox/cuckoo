@@ -54,7 +54,11 @@
                     <h4><span class="glyphicon glyphicon-send" aria-hidden="true"></span> Feedback</h4>
 
                     <p style="font-size: 11px;">
+                    {% if report.analysis.feedback %}
+                        Feedback sent on <b>{{ report.analysis.feedback.date }}</b> Thanks!
+                    {% else %}
                         Expecting different results? Send us this analysis and we will inspect it. <a data-toggle="modal" data-target="#modal_feedback" href="#">Click here</a>
+                    {% endif %}
                     </p>
                 </div>
             </div>

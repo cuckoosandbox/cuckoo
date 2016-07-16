@@ -13,6 +13,7 @@ from lib.cuckoo.core.database import Database, TASK_PENDING
 
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
+from bin.utils import view_error
 
 results_db = settings.MONGO
 
@@ -96,19 +97,13 @@ class AnalysisRoutes:
         report = AnalysisController.get_report(task_id)
 
         if "analysis_path" not in report.get("analysis", {}).get("info", {}):
-            return render(request, "error.html", {
-                "error": "The analysis was created before the export "
-                         "functionality was integrated with Cuckoo and is "
-                         "therefore not available for this task (in order to "
-                         "export this analysis, please reprocess its report)."
-            })
+            return view_error(request, "The analysis was created before the export "
+                                       "functionality was integrated with Cuckoo and is "
+                                       "therefore not available for this task (in order to "
+                                       "export this analysis, please reprocess its report).")
 
         analysis_path = report["analysis"]["info"]["analysis_path"]
         dirs, files = ExportController.get_files(analysis_path)
-
-        ExportController.estimate_size(task_id=task_id,
-                                       taken_dirs=dirs,
-                                       taken_files=files)
 
         return render(request, "analysis/export.html", {
             "report": report,

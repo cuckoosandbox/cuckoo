@@ -8,6 +8,7 @@ from django.conf.urls import url
 from controllers.analysis.routes import AnalysisRoutes
 from controllers.analysis.api import AnalysisApi
 from controllers.analysis.export.api import ExportApi
+from controllers.analysis.feedback.api import FeedbackApi
 
 urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
@@ -33,4 +34,6 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/reboot/$", views.reboot_analysis),
     url(r"^api/recent/$", AnalysisApi.recent),
     url(r"^api/export_estimate_size/$", ExportApi.export_estimate_size),
+    url(r"^api/export_get_files/$", ExportApi.get_files),
+    url(r"^api/feedback_send/$", FeedbackApi.send),
 ]

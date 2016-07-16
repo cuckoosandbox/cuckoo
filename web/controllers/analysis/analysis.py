@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import json
 
 import pymongo
 from django.conf import settings
@@ -14,6 +13,7 @@ from django.http import Http404
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
+
 
 results_db = settings.MONGO
 
