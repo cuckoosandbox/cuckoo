@@ -75,8 +75,8 @@ class AnalysisFeedBackController(object):
             self._register()
 
             return resp['identifier']
-        except ValueError as e:
-            raise Exception("could not parse server response as JSON: %s" % str(e))
+        except ValueError:
+            raise Exception("could not parse server response as JSON")
 
     def _register(self):
         return results_db.analysis.update_one(
