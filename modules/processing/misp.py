@@ -7,7 +7,6 @@ import logging
 import os.path
 import threading
 from collections import deque
-from datetime import datetime
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -150,7 +149,7 @@ class MISP(Processing):
 
         if iocs:
           
-            event = self.misp.new_event(distribution, threat_level_id, analysis, comment, date=datetime.now().strftime('%Y-%m-%d'), published=True)
+            event = self.misp.new_event(distribution, threat_level_id, analysis, comment, date=datatime.datetime.now().strftime('%Y-%m-%d'), published=True)
 
             if results.get("target", {}).get("file", ""):
                 # Add Payload delivery hash about the details of the analyzed file
