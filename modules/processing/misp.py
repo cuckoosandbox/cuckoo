@@ -235,7 +235,7 @@ class MISP(Processing):
             self.cuckoo2misp(self.results, whitelist)
 
         # Sort IOC information by date and return all information.
-        if self.iocs.values():
+        if self.iocs:
             return sorted(
                 self.iocs.values(), key=self._parse_date, reverse=True
             )
