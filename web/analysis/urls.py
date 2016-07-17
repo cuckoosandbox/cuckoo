@@ -14,8 +14,8 @@ from controllers.analysis.feedback.api import FeedbackApi
 
 urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
-    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name='analysis/redirect_default'),
+    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='analysis'),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='api'),
     url(r"^latest/$", views.latest_report),

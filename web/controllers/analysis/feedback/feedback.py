@@ -23,15 +23,14 @@ class AnalysisFeedBackController(object):
         self.task_id = task_id
         self.email = None
         self.message = None
+        self.company = None
+        self.name = None
         self.include_analysis = False
         self.include_memdump = False
 
     def send(self):
-        data = {
-            "info": {
-                "analysis_id": self.task_id
-            }
-        }
+        data = {"analysis_id": self.task_id}
+        files = {}
 
         report = AnalysisController.get_report(self.task_id)
         if 'feedback' in report['analysis'] and isinstance(report['analysis']['feedback'], dict):
@@ -49,24 +48,25 @@ class AnalysisFeedBackController(object):
                                              taken_files=taken_files)
 
             # attach the zip file
-            data["export"] = export
+            files = {'export': export}
 
         # attach additional analysis information
         if "file" in report["analysis"]["target"]:
-            data["info"] = {k: v for k, v in report["analysis"]["target"]["file"].items() if
-                            isinstance(v, (str, unicode, int, float))}
+            data.update({k: v for k, v in report["analysis"]["target"]["file"].items() if
+                         isinstance(v, (str, unicode, int, float))})
         else:
-            data["info"] = {
-                "url": report["analysis"]["target"]["url"]  # @TO-DO: test this
-            }
+            data.update({"url": report["analysis"]["target"]["url"]})
 
-        # attach feedback message & contact email
-        data["contact"] = {
+        data.update({
             "email": self.email,
-            "message": self.message
-        }
+            "message": self.message,
+            "company": self.company,
+            "firstname": self.name
+        })
 
-        resp = requests.post(url=self._url_feedback, data=data)
+        data.update({"submit": ""})
+
+        resp = requests.post(url=self._url_feedback, files=files, data=data)
         if not resp.status_code == 200:
             raise Exception("the remote server did not respond correctly")
 

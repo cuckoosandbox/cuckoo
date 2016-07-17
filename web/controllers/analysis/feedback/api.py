@@ -22,6 +22,7 @@ class FeedbackApi:
         body = json.loads(request.body)
 
         task_id = body.get("task_id", None)
+        firstname = body.get("firstname", "")
         email = body.get("email", "")
         message = body.get("message", "")
         company = body.get("company", "")
@@ -40,6 +41,7 @@ class FeedbackApi:
         feedback.email = email
         feedback.message = message
         feedback.company = company
+        feedback.name = firstname
         feedback.include_analysis = include_analysis
         feedback.include_memdump = include_memdump
 
