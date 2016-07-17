@@ -3,24 +3,26 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os.path
-import shutil
 import requests
+import shutil
+import urlparse
 
 from cuckoo.distributed.exception import InvalidReport
 
+def _get(base, uri, *args, **kwargs):
+    return requests.get(urlparse.urljoin(base, uri % args), **kwargs)
+
 def list_machines(url):
-    r = requests.get(os.path.join(url, "machines", "list"))
-    return r.json()["machines"]
+    return _get(url, "/machines/list").json()["machines"]
 
 def node_status(url):
     try:
-        r = requests.get(os.path.join(url, "cuckoo", "status"), timeout=120)
+        r = _get(url, "/cuckoo/status", timeout=120)
         return r.json()
     except:
         pass
 
 def submit_task(url, task):
-    url = os.path.join(url, "tasks", "create", "file")
     data = dict(
         package=task["package"],
         timeout=task["timeout"],
@@ -42,19 +44,22 @@ def submit_task(url, task):
         return task["id"], None
 
     files = {"file": (task["filename"], open(task["path"], "rb"))}
-    r = requests.post(url, data=data, files=files)
+    r = requests.post(
+        urlparse.urljoin(url, "/tasks/create/file"),
+        data=data, files=files
+    )
     return r.json()["task_id"]
 
 def fetch_tasks(url, status, limit):
-    url = os.path.join(url, "tasks", "list", "%s" % limit)
-    r = requests.get(url, params=dict(status=status))
+    r = _get(url, "/tasks/list/%s", limit, params=dict(status=status))
     if r.status_code == 200:
         return r.json().get("tasks", [])
     return []
 
 def store_report(url, task_id, report_format, dirpath):
-    url = os.path.join(url, "tasks", "report", "%d" % task_id, report_format)
-    report = requests.get(url, stream=True)
+    report = _get(
+        url, "/tasks/report/%d/%s", task_id, report_format, stream=True
+    )
     if report is None:
         raise InvalidReport("Report is none..")
 
@@ -69,17 +74,15 @@ def store_report(url, task_id, report_format, dirpath):
     return task_id, report_format
 
 def delete_task(url, task_id):
-    url = os.path.join(url, "tasks", "delete", "%d" % task_id)
-    return requests.get(url).status_code == 200
+    return _get(url, "/tasks/delete/%d", task_id).status_code == 200
 
 def fetch_pcap(url, task_id, filepath):
-    url = os.path.join(url, "pcap", "get", "%s" % task_id)
     # Explicitly disable any compression as otherwise we'd end up with a
     # compressed file as shutil.copyfileobj() wouldn't decompress it
     # transparently.
     headers = {
         "accept-encoding": "gzip;q=0,deflate,sdch",
     }
-    r = requests.get(url, headers=headers, stream=True)
+    r = _get(url, "/pcap/get/%s", task_id, headers=headers, stream=True)
     with open(filepath, "wb") as f:
         shutil.copyfileobj(r.raw, f)
