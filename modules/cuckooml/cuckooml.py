@@ -149,6 +149,11 @@ class ML(object):
     def simple_feature_category(self, category="properties"):
         """Get simple feature data frame containing only features form selected
         category."""
+        if self.simple_features is None:
+            print "Simple features are not loaded. Please load them before \
+                   extracting categories."
+            return None
+
         return self.simple_features.loc[:, self.SIMPLE_CATEGORIES[category]]
 
 
