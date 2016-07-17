@@ -7,15 +7,20 @@ import collections
 import datetime
 import json
 import os
+import re
 import sys
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from math import log
 from sklearn.manifold import TSNE
 
 class ML(object):
-    """Feature formatting and machine learning for Cuckoo analysed binaries."""
+    """Feature formatting and machine learning for Cuckoo analysed binaries.
+    All functions marked with asterisk (*) were inspired by code distributed
+    with "Back to the Future: Malware Detection with Temporally Consistent
+    Labels" by Brad Miller at al."""
     SIMPLE_CATEGORIES = {
         "properties":[
             "has_authenticode",
@@ -107,6 +112,86 @@ class ML(object):
         self.simple_features = None
         self.simple_features_description = {}
         self.features = None
+
+
+    def __log_bin(self, value, base=3):
+        """Return a logarithmic bin of given value. * """
+        if value is None:
+            return None
+
+        # Add base -1 to count so that 0 is in its own bin
+        return int(log(value + base - 1, base))
+
+
+    def __normalise_string(self, string):
+        """Get lower case string representation. * """
+        if string is None:
+            return None
+
+        return string.lower()
+
+
+    def __simplify_string(self, string, distinguish_voyels=False):
+        """Returns a simplified representation of the string where characters
+        are mapped to their representatives. * """
+        if string is None:
+            return None
+
+        nums = re.compile(r"[0-9]")
+        caps = re.compile(r"[A-Z]")
+        smal = re.compile(r"[a-z]")
+        caps_c = re.compile(r"[QWRTPSDFGHJKLZXCVBNM]")
+        caps_v = re.compile(r"[EYUIOA]")
+        smal_c = re.compile(r"[qwrtpsdfghjklzxcvbnm]")
+        smal_v = re.compile(r"[eyuioa]")
+
+        string = nums.sub('0', string)
+
+        if distinguish_voyels:
+            string = caps_c.sub('B', string)
+            string = caps_v.sub('A', string)
+            string = smal_c.sub('b', string)
+            string = smal_v.sub('a', string)
+            return string
+
+        string = caps.sub('A', string)
+        string = smal.sub('a', string)
+        return string
+
+
+    def __n_grams(self, string, n=3, reorder=False):
+        """Returns a *set* of n-grams. If the iterable is smaller than n, it is
+        returned itself. * """
+        if string is None:
+            return None
+
+        if len(string) <= n:
+            if reorder:
+                return set(["".join(sorted(string))])
+            return set([string])
+
+        ngrams = set()
+        for i in range(0, len(string) - n + 1):
+            if reorder:
+                ngrams.add("".join(sorted(string[i:i+n])))
+            else:
+                ngrams.add(string[i:i+n])
+
+        return ngrams
+
+
+    def __handle_string(self, string):
+        """Apply normalisation, simplification and n-gram extraction to a
+        string."""
+        handled = self.__n_grams(
+                   self.__simplify_string(
+                       self.__normalise_string(string)
+                   )
+               )
+        if handled is None:
+            return []
+        else:
+            return handled
 
 
     def load_labels(self, labels):
