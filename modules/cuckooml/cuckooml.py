@@ -130,6 +130,22 @@ class ML(object):
                         simple_features[binary][token]
 
 
+    def export_simple_dataset(self, filename="simple_dataset.csv"):
+        """Export a dataset consisting of malware labels and *simple* features
+        to CSV formatted file."""
+        # Check if data and labels are loaded
+        if self.simple_features is None:
+            print "Please load simple features first."
+            return
+
+        if self.labels is None:
+            print "Please load labels first."
+            return
+
+        simple_dataset = pd.concat([self.simple_features, self.labels], axis=1)
+        simple_dataset.to_csv(filename)
+
+
     def simple_feature_category(self, category="properties"):
         """Get simple feature data frame containing only features form selected
         category."""
