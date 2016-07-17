@@ -163,6 +163,22 @@ class ML(object):
         # self.features = features
 
 
+    def export_dataset(self, filename="dataset.csv"):
+        """Export a dataset consisting of malware labels and features to CSV
+        formatted file."""
+        # Check if data and labels are loaded
+        if self.features is None:
+            print "Please load features first."
+            return
+
+        if self.labels is None:
+            print "Please load labels first."
+            return
+
+        dataset = pd.concat([self.features, self.labels], axis=1)
+        dataset.to_csv(filename)
+
+
     def visualise_data(self, data=None, labels=None, learning_rate=200,
                        fig_name="custom"):
         """Create t-Distributed Stochastic Neighbor Embedding for features and
