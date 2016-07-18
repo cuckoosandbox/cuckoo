@@ -327,7 +327,7 @@ class ML(object):
                 self.features[i][":meta:" + j] = 1
 
             # Is the binary signed?
-            self.features[i][":sign:signed"] = features[i]["signed"]
+            self.features[i][":sign:signed"] = int(features[i]["signed"])
             # And other signature features
             for j in self.__handle_string(features[i]["Comments"]):
                 self.features[i][":sign:" + j] = 1
@@ -473,7 +473,8 @@ class ML(object):
 
         # Make Pandas DataFrame from the dictionary
         features_pd = pd.DataFrame(self.features).T
-        #features_pd.fillna(False, inplace=True)
+        # TODO: the operation below cannot tell apart missing vales and None
+        features_pd.fillna(0, inplace=True)
         self.features = features_pd
 
 
