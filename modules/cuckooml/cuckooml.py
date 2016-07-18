@@ -245,7 +245,7 @@ class ML(object):
         return self.simple_features.loc[:, self.SIMPLE_CATEGORIES[category]]
 
 
-    def load_features(self, features):
+    def load_features(self, features, include_API_calls = False):
         """Load features form an external object into pandas data frame."""
         self.features = {}
         for i in features:
@@ -328,12 +328,11 @@ class ML(object):
             # TODO: use binning for this count
             self.features[i]["static_imports_count"] = \
                 features[i]["static_imports"]["count"]
-            # TODO: include API calls?
-            include_API_calls = False
             static_imports_dlls = features[i]["static_imports"].keys()
             static_imports_dlls.remove("count")
             for j in static_imports_dlls:
                 self.features[i][j] = 1
+                # TODO: include API calls?
                 if include_API_calls:
                     for k in features[i]["static_imports"][j]:
                         self.features[i][j + "_" + k] = 1
