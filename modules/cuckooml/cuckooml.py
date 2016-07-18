@@ -244,8 +244,170 @@ class ML(object):
 
     def load_features(self, features):
         """Load features form an external object into pandas data frame."""
-        pass
-        # self.features = features
+        self.features = {}
+        for i in features:
+            self.features[i] = {}
+
+            # Exponentially bin the binary size and timestamp
+            self.features[i]["size"] = self.__log_bin(features[i]["size"])
+            self.features[i]["timestamp"] = \
+                self.__log_bin(features[i]["timestamp"])
+
+            # Handle ExifTool output
+            for j in self.__handle_string(features[i]["FileDescription"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["OriginalFilename"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["magic_byte"]):
+                self.features[i][j] = True
+
+            # Is the binary signed?
+            self.features[i]["signed"] = features[i]["signed"]
+            # And other signature features
+            for j in self.__handle_string(features[i]["Comments"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["ProductName"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["LegalCopyright"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["InternalName"]):
+                self.features[i][j] = True
+            for j in self.__handle_string(features[i]["CompanyName"]):
+                self.features[i][j] = True
+
+            # Extract packer
+            patterns = [r"Armadillo", r"PECompact", r"ASPack", r"ASProtect",
+            r"Upack", r"U(PX|px)", r"FSG", r"BobSoft Mini Delphi",
+            r"InstallShield 2000", r"InstallShield Custom",
+            r"Xtreme\-Protector", r"Crypto\-Lock", r"MoleBox", r"Dev\-C\+\+",
+            r"StarForce", r"Wise Installer Stub", r"SVK Protector",
+            r"eXPressor", r"EXECryptor", r"N(s|S)Pac(k|K)", r"KByS",
+            r"themida", r"Packman", r"EXE Shield", r"WinRAR 32-bit SFX",
+            r"WinZip 32-bit SFX", r"Install Stub 32-bit", r"P(E|e)tite",
+            r"PKLITE32", r"y(o|0)da's (Protector|Crypter)", r"Ste@lth PE",
+            r"PE\-Armor", r"KGB SFX", r"tElock", r"PEBundle", r"Crunch\/PE",
+            r"Obsidium", r"nPack", r"PEX", r"PE Diminisher",
+            r"North Star PE Shrinker", r"PC Guard for Win32", r"W32\.Jeefo",
+            r"MEW [0-9]+", r"InstallAnywhere", r"Anskya Binder",
+            r"BeRoEXEPacker", r"NeoLite", r"SVK\-Protector",
+            r"Ding Boy's PE\-lock Phantasm", r"hying's PEArmor", r"E language",
+            r"NSIS Installer", r"Video\-Lan\-Client", r"EncryptPE",
+            r"HASP HL Protection", r"PESpin", r"CExe", r"UG2002 Cruncher",
+            r"ACProtect", r"Thinstall", r"DBPE", r"XCR", r"PC Shrinker",
+            r"AH(p|P)ack", r"ExeShield Protector",
+            r"\* \[MSLRH\]", r"XJ \/ XPAL", r"Krypton", r"Stealth PE",
+            r"Goats Mutilator", r"PE\-PACK", r"RCryptor", r"\* PseudoSigner",
+            r"Shrinker", r"PC-Guard", r"PELOCKnt", r"WinZip \(32\-bit\)",
+            r"EZIP", r"PeX", r"PE( |\-)Crypt", r"E(XE|xe)()?Stealth",
+            r"ShellModify", r"Macromedia Windows Flash Projector\/Player",
+            r"WARNING ->", r"PE Protector", r"Software Compress",
+            r"PE( )?Ninja", r"Feokt", r"RLPack",
+            r"Nullsoft( PIMP)? Install System", r"SDProtector Pro Edition",
+            r"VProtector", r"WWPack32", r"CreateInstall Stub", r"ORiEN",
+            r"dePACK", r"ENIGMA Protector", r"MicroJoiner", r"Virogen Crypt",
+            r"SecureEXE", r"PCShrink", r"WinZip Self\-Extractor",
+            r"PEiD\-Bundle", r"DxPack", r"Freshbind", r"kkrunchy"]
+            regexps = [re.compile(pattern) for pattern in patterns]
+            if features[i]["packer"] is not None:
+                for packer in features[i]["packer"]:
+                    for regexp in regexps:
+                        if regexp.search(packer):
+                            self.features[i][regexp.pattern] = True
+                            break
+
+            # Vectorise PEFs
+            for j in features[i]["languages"]:
+                j_norm = self.__normalise_string(j)
+                self.features[i]["lang_" + j_norm] = True
+            # TODO: handle *section_attrs* and *resource_attrs*
+
+            # Categorise static imports
+            # TODO: use binning for this count
+            self.features[i]["static_imports_count"] = \
+                features[i]["static_imports"]["count"]
+            # TODO: include API calls?
+            include_API_calls = False
+            static_imports_dlls = features[i]["static_imports"].keys()
+            static_imports_dlls.remove("count")
+            for j in static_imports_dlls:
+                self.features[i][j] = True
+                if include_API_calls:
+                    for k in features[i]["static_imports"][j]:
+                        self.features[i][j + "_" + k] = True
+
+            # Categorise dynamic imports
+            if features[i]["mutex"] is not None:
+              for mutex in features[i]["mutex"]:
+                for j in self.__handle_string(mutex):
+                    self.features[i]["mutex_" + j] = True
+            for process in features[i]["processes"]:
+                self.features[i]["proc_" + process] = True
+            for di in features[i]["dynamic_imports"]:
+                self.features[i]["di_" + di] = True
+
+            # File operations
+            # TODO: tell apart different file operations
+            # Files touched
+            for f in features[i]["file_read"]:
+                self.features[i]["f_" + f] = True
+            for f in features[i]["file_written"]:
+                self.features[i]["f_" + f] = True
+            for f in features[i]["file_deleted"]:
+                self.features[i]["f_" + f] = True
+            for f in features[i]["file_copied"]:
+                self.features[i]["f_" + f] = True
+            for f in features[i]["file_renamed"]:
+                self.features[i]["f_" + f] = True
+            # TODO: better binning (linear not logarithmic)
+            # File numbers
+            self.features[i]["files_count_all"] = \
+                self.__log_bin(features[i]["files_operations"])
+            self.features[i]["files_count_read"] = \
+                self.__log_bin(features[i]["files_read"])
+            self.features[i]["files_count_written"] = \
+                self.__log_bin(features[i]["files_written"])
+            self.features[i]["files_count_deleted"] = \
+                self.__log_bin(features[i]["files_deleted"])
+            self.features[i]["files_count_copied"] = \
+                self.__log_bin(features[i]["files_copied"])
+            self.features[i]["files_count_renamed"] = \
+                self.__log_bin(features[i]["files_renamed"])
+            self.features[i]["files_count_opened"] = \
+                self.__log_bin(features[i]["files_opened"])
+            self.features[i]["files_count_exists"] = \
+                self.__log_bin(features[i]["files_exists"])
+            self.features[i]["files_count_failed"] = \
+                self.__log_bin(features[i]["files_failed"])
+
+            # Networking
+            # TODO: include subnets
+            for tcp in features[i]["tcp"]:
+                self.features[i][tcp] = True
+            for udp in features[i]["udp"]:
+                self.features[i][udp] = True
+            for dns in features[i]["dns"]:
+                self.features[i][dns] = True
+                for j in features[i]["dns"][dns]:
+                    self.features[i][j] = True
+            for http in features[i]["http"]:
+                self.features[i][features[i]["http"][http]["host"]] = True
+
+            # Register operations
+            for rw in features[i]["regkey_written"]:
+                self.features[i]["regwrite_" + rw] = True
+            for rd in features[i]["regkey_deleted"]:
+                self.features[i]["regdel_" + rd] = True
+
+            # Windows API
+            # TODO: better binning (linear not logarithmic)
+            for wapi in features[i]["api_stats"]:
+                self.features[i]["wapi_" + wapi] = \
+                    self.__log_bin(features[i]["api_stats"][wapi])
+
+        # Make Pandas DataFrame from the dictionary
+        features_pd = pd.DataFrame(self.features).T
+        #features_pd.fillna(False, inplace=True)
+        self.features = features_pd
 
 
     def export_dataset(self, filename="dataset.csv"):
