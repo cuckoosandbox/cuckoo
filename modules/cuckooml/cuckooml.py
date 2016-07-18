@@ -252,31 +252,31 @@ class ML(object):
             self.features[i] = {}
 
             # Exponentially bin the binary size and timestamp
-            self.features[i]["size"] = self.__log_bin(features[i]["size"])
-            self.features[i]["timestamp"] = \
+            self.features[i][":meta:size"] = self.__log_bin(features[i]["size"])
+            self.features[i][":meta:timestamp"] = \
                 self.__log_bin(features[i]["timestamp"])
 
             # Handle ExifTool output
             for j in self.__handle_string(features[i]["FileDescription"]):
-                self.features[i][j] = 1
+                self.features[i][":meta:" + j] = 1
             for j in self.__handle_string(features[i]["OriginalFilename"]):
-                self.features[i][j] = 1
+                self.features[i][":meta:" + j] = 1
             for j in self.__handle_string(features[i]["magic_byte"]):
-                self.features[i][j] = 1
+                self.features[i][":meta:" + j] = 1
 
             # Is the binary signed?
-            self.features[i]["signed"] = features[i]["signed"]
+            self.features[i][":sign:signed"] = features[i]["signed"]
             # And other signature features
             for j in self.__handle_string(features[i]["Comments"]):
-                self.features[i][j] = 1
+                self.features[i][":sign:" + j] = 1
             for j in self.__handle_string(features[i]["ProductName"]):
-                self.features[i][j] = 1
+                self.features[i][":sign:" + j] = 1
             for j in self.__handle_string(features[i]["LegalCopyright"]):
-                self.features[i][j] = 1
+                self.features[i][":sign:" + j] = 1
             for j in self.__handle_string(features[i]["InternalName"]):
-                self.features[i][j] = 1
+                self.features[i][":sign:" + j] = 1
             for j in self.__handle_string(features[i]["CompanyName"]):
-                self.features[i][j] = 1
+                self.features[i][":sign:" + j] = 1
 
             # Extract packer
             patterns = [r"Armadillo", r"PECompact", r"ASPack", r"ASProtect",
@@ -315,95 +315,98 @@ class ML(object):
                 for packer in features[i]["packer"]:
                     for regexp in regexps:
                         if regexp.search(packer):
-                            self.features[i][regexp.pattern] = 1
+                            self.features[i][":pack:" + regexp.pattern] = 1
                             break
 
             # Vectorise PEFs
             for j in features[i]["languages"]:
                 j_norm = self.__normalise_string(j)
-                self.features[i]["lang_" + j_norm] = 1
+                self.features[i][":pef:lang:" + j_norm] = 1
             # TODO: handle *section_attrs* and *resource_attrs*
 
             # Categorise static imports
             # TODO: use binning for this count
-            self.features[i]["static_imports_count"] = \
+            self.features[i][":simp:count"] = \
                 features[i]["static_imports"]["count"]
             static_imports_dlls = features[i]["static_imports"].keys()
             static_imports_dlls.remove("count")
             for j in static_imports_dlls:
-                self.features[i][j] = 1
+                self.features[i][":simp:" + j] = 1
                 # TODO: include API calls?
                 if include_API_calls:
                     for k in features[i]["static_imports"][j]:
-                        self.features[i][j + "_" + k] = 1
+                        self.features[i][":simp:" + j + ":" + k] = 1
 
             # Categorise dynamic imports
             if features[i]["mutex"] is not None:
               for mutex in features[i]["mutex"]:
                 for j in self.__handle_string(mutex):
-                    self.features[i]["mutex_" + j] = 1
+                    self.features[i][":dimp:mutex:" + j] = 1
             for process in features[i]["processes"]:
-                self.features[i]["proc_" + process] = 1
+                self.features[i][":dimp:proc:" + process] = 1
             for di in features[i]["dynamic_imports"]:
-                self.features[i]["di_" + di] = 1
+                self.features[i][":dimp:" + di] = 1
 
             # File operations
-            # TODO: tell apart different file operations
+            # TODO: tell apart different file operations by prefixing
             # Files touched
             for f in features[i]["file_read"]:
-                self.features[i]["f_" + f] = 1
+                self.features[i][":file:touch:" + f] = 1
             for f in features[i]["file_written"]:
-                self.features[i]["f_" + f] = 1
+                self.features[i][":file:touch:" + f] = 1
             for f in features[i]["file_deleted"]:
-                self.features[i]["f_" + f] = 1
+                self.features[i][":file:touch:" + f] = 1
             for f in features[i]["file_copied"]:
-                self.features[i]["f_" + f] = 1
+                self.features[i][":file:touch:" + f] = 1
             for f in features[i]["file_renamed"]:
-                self.features[i]["f_" + f] = 1
+                self.features[i][":file:touch:" + f] = 1
             # TODO: better binning (linear not logarithmic)
             # File numbers
-            self.features[i]["files_count_all"] = \
+            self.features[i][":file:count:all:"] = \
                 self.__log_bin(features[i]["files_operations"])
-            self.features[i]["files_count_read"] = \
+            self.features[i][":file:count:read:"] = \
                 self.__log_bin(features[i]["files_read"])
-            self.features[i]["files_count_written"] = \
+            self.features[i][":file:count:written:"] = \
                 self.__log_bin(features[i]["files_written"])
-            self.features[i]["files_count_deleted"] = \
+            self.features[i][":file:count:deleted:"] = \
                 self.__log_bin(features[i]["files_deleted"])
-            self.features[i]["files_count_copied"] = \
+            self.features[i][":file:count:copied:"] = \
                 self.__log_bin(features[i]["files_copied"])
-            self.features[i]["files_count_renamed"] = \
+            self.features[i][":file:count:renamed:"] = \
                 self.__log_bin(features[i]["files_renamed"])
-            self.features[i]["files_count_opened"] = \
+            self.features[i][":file:count:opened:"] = \
                 self.__log_bin(features[i]["files_opened"])
-            self.features[i]["files_count_exists"] = \
+            self.features[i][":file:count:exists:"] = \
                 self.__log_bin(features[i]["files_exists"])
-            self.features[i]["files_count_failed"] = \
+            self.features[i][":file:count:failed:"] = \
                 self.__log_bin(features[i]["files_failed"])
 
             # Networking
             # TODO: include subnets
+            # TODO: tell apart type of connection: prefix features with "tcp",
+            #       "udp", "dns"
             for tcp in features[i]["tcp"]:
-                self.features[i][tcp] = 1
+                self.features[i][":net:" + tcp] = 1
             for udp in features[i]["udp"]:
-                self.features[i][udp] = 1
+                self.features[i][":net:" + udp] = 1
             for dns in features[i]["dns"]:
-                self.features[i][dns] = 1
+                self.features[i][":net:" + dns] = 1
                 for j in features[i]["dns"][dns]:
-                    self.features[i][j] = 1
+                    self.features[i][":net:" + j] = 1
             for http in features[i]["http"]:
-                self.features[i][features[i]["http"][http]["host"]] = 1
+                self.features[i][":net:" + features[i]["http"][http]["host"]] \
+                    = 1
 
             # Register operations
             for rw in features[i]["regkey_written"]:
-                self.features[i]["regwrite_" + rw] = 1
+                self.features[i][":reg:write:" + rw] = 1
             for rd in features[i]["regkey_deleted"]:
-                self.features[i]["regdel_" + rd] = 1
+                self.features[i][":reg:del:" + rd] = 1
 
             # Windows API
             # TODO: better binning (linear not logarithmic)
             for wapi in features[i]["api_stats"]:
-                self.features[i]["wapi_" + wapi] = \
+                self.features[i][":win:" + wapi] = \
                     self.__log_bin(features[i]["api_stats"][wapi])
 
         # Make Pandas DataFrame from the dictionary
