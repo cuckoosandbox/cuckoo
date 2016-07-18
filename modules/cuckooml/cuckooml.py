@@ -561,6 +561,14 @@ class ML(object):
         return dataset
 
 
+    def detect_abnormal_behaviour(self):
+        """Detect samples that behave significantly (3xSD) different than
+        others (median behaviour)."""
+        # TODO: introduce numeric features that count given type of actions
+        # #processes, #ips, #names resolved, etc.
+        pass
+
+
     def visualise_data(self, data=None, labels=None, learning_rate=200,
                        fig_name="custom"):
         """Create t-Distributed Stochastic Neighbor Embedding for features and
