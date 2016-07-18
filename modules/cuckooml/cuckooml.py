@@ -204,7 +204,10 @@ class ML(object):
         frame."""
         self.simple_features = pd.DataFrame(simple_features).T
         self.simple_features.fillna(False, inplace=True)
+        # Convert to bool: True/False
         self.simple_features = self.simple_features.astype(bool)
+        # Change to int: 1/0
+        self.simple_features = self.simple_features.astype(int)
 
         # Aggregate features descriptions
         self.simple_features_description = {}
@@ -255,25 +258,25 @@ class ML(object):
 
             # Handle ExifTool output
             for j in self.__handle_string(features[i]["FileDescription"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["OriginalFilename"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["magic_byte"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
 
             # Is the binary signed?
             self.features[i]["signed"] = features[i]["signed"]
             # And other signature features
             for j in self.__handle_string(features[i]["Comments"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["ProductName"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["LegalCopyright"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["InternalName"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
             for j in self.__handle_string(features[i]["CompanyName"]):
-                self.features[i][j] = True
+                self.features[i][j] = 1
 
             # Extract packer
             patterns = [r"Armadillo", r"PECompact", r"ASPack", r"ASProtect",
@@ -312,13 +315,13 @@ class ML(object):
                 for packer in features[i]["packer"]:
                     for regexp in regexps:
                         if regexp.search(packer):
-                            self.features[i][regexp.pattern] = True
+                            self.features[i][regexp.pattern] = 1
                             break
 
             # Vectorise PEFs
             for j in features[i]["languages"]:
                 j_norm = self.__normalise_string(j)
-                self.features[i]["lang_" + j_norm] = True
+                self.features[i]["lang_" + j_norm] = 1
             # TODO: handle *section_attrs* and *resource_attrs*
 
             # Categorise static imports
@@ -330,34 +333,34 @@ class ML(object):
             static_imports_dlls = features[i]["static_imports"].keys()
             static_imports_dlls.remove("count")
             for j in static_imports_dlls:
-                self.features[i][j] = True
+                self.features[i][j] = 1
                 if include_API_calls:
                     for k in features[i]["static_imports"][j]:
-                        self.features[i][j + "_" + k] = True
+                        self.features[i][j + "_" + k] = 1
 
             # Categorise dynamic imports
             if features[i]["mutex"] is not None:
               for mutex in features[i]["mutex"]:
                 for j in self.__handle_string(mutex):
-                    self.features[i]["mutex_" + j] = True
+                    self.features[i]["mutex_" + j] = 1
             for process in features[i]["processes"]:
-                self.features[i]["proc_" + process] = True
+                self.features[i]["proc_" + process] = 1
             for di in features[i]["dynamic_imports"]:
-                self.features[i]["di_" + di] = True
+                self.features[i]["di_" + di] = 1
 
             # File operations
             # TODO: tell apart different file operations
             # Files touched
             for f in features[i]["file_read"]:
-                self.features[i]["f_" + f] = True
+                self.features[i]["f_" + f] = 1
             for f in features[i]["file_written"]:
-                self.features[i]["f_" + f] = True
+                self.features[i]["f_" + f] = 1
             for f in features[i]["file_deleted"]:
-                self.features[i]["f_" + f] = True
+                self.features[i]["f_" + f] = 1
             for f in features[i]["file_copied"]:
-                self.features[i]["f_" + f] = True
+                self.features[i]["f_" + f] = 1
             for f in features[i]["file_renamed"]:
-                self.features[i]["f_" + f] = True
+                self.features[i]["f_" + f] = 1
             # TODO: better binning (linear not logarithmic)
             # File numbers
             self.features[i]["files_count_all"] = \
@@ -382,21 +385,21 @@ class ML(object):
             # Networking
             # TODO: include subnets
             for tcp in features[i]["tcp"]:
-                self.features[i][tcp] = True
+                self.features[i][tcp] = 1
             for udp in features[i]["udp"]:
-                self.features[i][udp] = True
+                self.features[i][udp] = 1
             for dns in features[i]["dns"]:
-                self.features[i][dns] = True
+                self.features[i][dns] = 1
                 for j in features[i]["dns"][dns]:
-                    self.features[i][j] = True
+                    self.features[i][j] = 1
             for http in features[i]["http"]:
-                self.features[i][features[i]["http"][http]["host"]] = True
+                self.features[i][features[i]["http"][http]["host"]] = 1
 
             # Register operations
             for rw in features[i]["regkey_written"]:
-                self.features[i]["regwrite_" + rw] = True
+                self.features[i]["regwrite_" + rw] = 1
             for rd in features[i]["regkey_deleted"]:
-                self.features[i]["regdel_" + rd] = True
+                self.features[i]["regdel_" + rd] = 1
 
             # Windows API
             # TODO: better binning (linear not logarithmic)
