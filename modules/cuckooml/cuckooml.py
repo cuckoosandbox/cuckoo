@@ -129,7 +129,7 @@ class ML(object):
             ],
             ":simp:":[
                 "",
-                "count:"
+                "count"
             ]
         },
         "dynamic":{
@@ -144,15 +144,15 @@ class ML(object):
               ],
                 "count:":[
                     "",
-                    "all:",
-                    "read:",
-                    "written:",
-                    "deleted:",
-                    "copied:",
-                    "renamed:",
-                    "opened:",
-                    "exists:",
-                    "failed:"
+                    "all",
+                    "read",
+                    "written",
+                    "deleted",
+                    "copied",
+                    "renamed",
+                    "opened",
+                    "exists",
+                    "failed"
                 ]
             },
             ":net:":[
@@ -424,23 +424,23 @@ class ML(object):
                 self.features[i][":file:touch:" + f] = 1
             # TODO: better binning (linear not logarithmic)
             # File numbers
-            self.features[i][":file:count:all:"] = \
+            self.features[i][":file:count:all"] = \
                 self.__log_bin(features[i]["files_operations"])
-            self.features[i][":file:count:read:"] = \
+            self.features[i][":file:count:read"] = \
                 self.__log_bin(features[i]["files_read"])
-            self.features[i][":file:count:written:"] = \
+            self.features[i][":file:count:written"] = \
                 self.__log_bin(features[i]["files_written"])
-            self.features[i][":file:count:deleted:"] = \
+            self.features[i][":file:count:deleted"] = \
                 self.__log_bin(features[i]["files_deleted"])
-            self.features[i][":file:count:copied:"] = \
+            self.features[i][":file:count:copied"] = \
                 self.__log_bin(features[i]["files_copied"])
-            self.features[i][":file:count:renamed:"] = \
+            self.features[i][":file:count:renamed"] = \
                 self.__log_bin(features[i]["files_renamed"])
-            self.features[i][":file:count:opened:"] = \
+            self.features[i][":file:count:opened"] = \
                 self.__log_bin(features[i]["files_opened"])
-            self.features[i][":file:count:exists:"] = \
+            self.features[i][":file:count:exists"] = \
                 self.__log_bin(features[i]["files_exists"])
-            self.features[i][":file:count:failed:"] = \
+            self.features[i][":file:count:failed"] = \
                 self.__log_bin(features[i]["files_failed"])
 
             # Networking
