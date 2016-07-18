@@ -563,6 +563,27 @@ class ML(object):
         plt.close()
 
 
+    def save_dataset(self, filename="custom_dataset.csv", features=None, \
+                     labels=None):
+        """Export a dataset to CSV formatted file."""
+        # Check if data and labels are loaded
+        if features is None:
+            print "You must indicate data to be saved."
+            return
+
+        if labels is None:
+            print "You didn't indicate labels to be used. Internal labels will \
+                   be used."
+            if self.labels is None:
+                print "Internal labels not available."
+                return
+            else:
+                labels = self.labels
+
+        dataset = pd.concat([features, labels], axis=1)
+        dataset.to_csv(filename, encoding='utf-8')
+
+
 class Loader(object):
     """Loads instances for analysis and give possibility to extract properties
     of interest."""
