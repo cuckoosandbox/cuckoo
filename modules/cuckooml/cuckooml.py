@@ -541,6 +541,26 @@ class ML(object):
         return self.features.loc[:, extract]
 
 
+    def filter_dataset(self, dataset=None, feature_coverage=0.1):
+        """Prune features that are useless."""
+        if dataset is None:
+            dataset = self.features.copy()
+
+        # Remove sparse features
+        row_count = dataset.shape[0]
+        remove_features = []
+        for col in dataset:
+            zero_count = 0.0
+            for row in dataset[col]:
+                if not row:
+                    zero_count += 1
+            if (row_count-zero_count)/row_count < feature_coverage:
+                remove_features.append(col)
+        dataset.drop(remove_features, axis=1, inplace=True)
+
+        return dataset
+
+
     def visualise_data(self, data=None, labels=None, learning_rate=200,
                        fig_name="custom"):
         """Create t-Distributed Stochastic Neighbor Embedding for features and
