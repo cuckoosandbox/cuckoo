@@ -111,11 +111,12 @@ class ML(object):
         "static":{
             ":meta:":[
                 "",
-                "size:",
+                "size",
                 "timestamp"
             ],
             ":sign:":[
-                ""
+                "",
+                "signed"
             ],
             ":heur:":[
                 ""
