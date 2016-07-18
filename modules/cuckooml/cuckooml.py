@@ -182,7 +182,7 @@ class ML(object):
 
     def __handle_string(self, string):
         """Apply normalisation, simplification and n-gram extraction to a
-        string."""
+        string. If the string is missing (None) return empty list."""
         handled = self.__n_grams(
                    self.__simplify_string(
                        self.__normalise_string(string)
