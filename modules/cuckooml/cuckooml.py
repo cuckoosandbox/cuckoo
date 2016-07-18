@@ -107,6 +107,67 @@ class ML(object):
         ]
     }
 
+    CATEGORIES = {
+        "static":{
+            ":meta:":[
+                "",
+                "size:",
+                "timestamp"
+            ],
+            ":sign:":[
+                ""
+            ],
+            ":heur:":[
+                ""
+            ],
+            ":pack:":[
+                ""
+            ],
+            ":pef:":[
+                "lang:"
+            ],
+            ":simp:":[
+                "",
+                "count:"
+            ]
+        },
+        "dynamic":{
+            ":dimp:":[
+                "",
+                "proc:",
+                "mutex:"
+            ],
+            ":file:":{
+              "touch:":[
+                  ""
+              ],
+                "count:":[
+                    "",
+                    "all:",
+                    "read:",
+                    "written:",
+                    "deleted:",
+                    "copied:",
+                    "renamed:",
+                    "opened:",
+                    "exists:",
+                    "failed:"
+                ]
+            },
+            ":net:":[
+                ""
+            ],
+            ":reg:":[
+                "",
+                "write:",
+                "del:"
+            ],
+            ":win:":[
+                ""
+            ]
+        }
+    }
+
     def __init__(self):
         self.labels = None
         self.simple_features = None
@@ -429,6 +490,53 @@ class ML(object):
 
         dataset = pd.concat([self.features, self.labels], axis=1)
         dataset.to_csv(filename, encoding='utf-8')
+
+
+    def feature_category(self, category="static"):
+        """Get feature data frame containing only features form selected
+        category."""
+        def pull_names(obj, prefix=""):
+            ret = []
+            if isinstance(obj, dict):
+                if prefix: ret.append(prefix)
+                for key in obj:
+                    ret += pull_names(obj[key], prefix + key)
+                return ret
+            elif isinstance(obj, list):
+                for i in obj:
+                    ret.append(prefix + i)
+                return ret
+
+        if self.features is None:
+            print "Features are not loaded. Please load them before extracting \
+                   categories."
+            return None
+
+        # Pull all possible categories
+        categories = self.CATEGORIES.keys()
+        for cat in self.CATEGORIES:
+            categories += pull_names(self.CATEGORIES[cat])
+
+        # Check if chosen category is available
+        if category not in categories:
+            print "Chosen category:", category, "is not available.\n\
+                   please choose one of the following:"
+            print ", ".join(categories)
+            return None
+
+        # Get a list of specified prefixes
+        if category == "static" or category == "dynamic":
+            category = pull_names(category)
+        else:
+            category = [category]
+
+        extract = []
+        for col in self.features:
+            for c in category:
+                if col.startswith(c):
+                    extract.append(col)
+
+        return self.features.loc[:, extract]
 
 
     def visualise_data(self, data=None, labels=None, learning_rate=200,
