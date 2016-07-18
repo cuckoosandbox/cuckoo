@@ -423,7 +423,7 @@ class ML(object):
             return
 
         dataset = pd.concat([self.features, self.labels], axis=1)
-        dataset.to_csv(filename)
+        dataset.to_csv(filename, encoding='utf-8')
 
 
     def visualise_data(self, data=None, labels=None, learning_rate=200,
