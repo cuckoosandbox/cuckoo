@@ -191,10 +191,14 @@ def cuckoo_main(max_analysis_count=0):
 @click.pass_context
 def main(ctx, debug, quiet, maxcount, user, cwd):
     # Cuckoo Working Directory precedence:
+    # * Cuckoo Working Directory override ("CUCKOO_CWD" environment variable)
     # * Command-line option (--cwd)
     # * Environment option ("CUCKOO")
     # * Current directory (if the ".cwd" file exists)
     # * Default value ("~/.cuckoo")
+    if not cwd:
+        cwd = os.environ.get("CUCKOO_CWD")
+
     if not cwd and os.path.exists(".cwd"):
         cwd = "."
 
