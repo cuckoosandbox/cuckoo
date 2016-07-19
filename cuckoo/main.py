@@ -473,6 +473,11 @@ def web(ctx, args, host, port, uwsgi, nginx):
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 
+    # The Django HTTP server also imports the WSGI module for some reason, so
+    # ensure that WSGI is able to load.
+    os.environ["CUCKOO_APP"] = "web"
+    os.environ["CUCKOO_CWD"] = cwd()
+
     from django.core.management import execute_from_command_line
 
     Database().connect()
