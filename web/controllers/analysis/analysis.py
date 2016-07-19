@@ -7,8 +7,6 @@ import os
 
 import pymongo
 from django.conf import settings
-from django.shortcuts import render
-from django.http import Http404
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.utils import versiontuple

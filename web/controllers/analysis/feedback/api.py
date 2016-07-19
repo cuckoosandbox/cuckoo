@@ -34,7 +34,7 @@ class FeedbackApi:
             return JsonResponse({"status": False, "message": "invalid task_id"}, status=200)
 
         for required in ["email", "message"]:
-            if not required in body or len(body[required]) <= 5:
+            if required not in body or len(body[required]) <= 5:
                 return JsonResponse({"status": False, "message": "%s is required" % required}, status=200)
 
         feedback = AnalysisFeedBackController(task_id)
