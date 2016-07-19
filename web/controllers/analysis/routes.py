@@ -68,8 +68,7 @@ class AnalysisRoutes:
             "dropped_buffers": "dropped/dropped_buffers",
             "procmemory": "procmemory/index",
             "options": "options/index",
-            "feedback": "feedback/index",
-            "compare": "compare/"
+            "feedback": "feedback/index"
         }
 
         if page in pages.keys():
