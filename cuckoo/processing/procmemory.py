@@ -186,12 +186,6 @@ class ProcessMemory(Processing):
         self.key = "procmemory"
         results = []
 
-        if self.options.get("extract_img"):
-            log.warning(
-                "In order to extract PE files from memory dumps it is "
-                "required to have pefile installed (`pip install pefile`)."
-            )
-
         if os.path.exists(self.pmemory_path):
             for dmp in os.listdir(self.pmemory_path):
                 if not dmp.endswith(".dmp"):
