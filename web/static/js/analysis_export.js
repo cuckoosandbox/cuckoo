@@ -1,6 +1,4 @@
 function export_estimate_size(task_id, taken_dirs, taken_files, target_div, prefix){
-    $(target_div).html("");
-
     var params = {
         'task_id': task_id,
         'dirs': taken_dirs,
@@ -17,7 +15,6 @@ function export_estimate_size(task_id, taken_dirs, taken_files, target_div, pref
         success: function (data) {
             var size = data["size"];
             var size_human = data["size_human"];
-
             $(target_div).html(prefix + size_human);
         }
     }).fail(function(err){console.log(err)});
