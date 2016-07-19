@@ -3,25 +3,20 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import bson
 import datetime
 import hashlib
 import logging
 import os.path
 import struct
 
-try:
-    import bson
-    HAVE_BSON = True
-except ImportError:
-    HAVE_BSON = False
-else:
-    # The BSON module provided by pymongo works through its "BSON" class.
-    if hasattr(bson, "BSON"):
-        bson_decode = lambda d: bson.BSON(d).decode()
-    # The BSON module provided by "pip install bson" works through the
-    # "loads" function (just like pickle etc.)
-    elif hasattr(bson, "loads"):
-        bson_decode = lambda d: bson.loads(d)
+# The BSON module provided by pymongo works through its "BSON" class.
+if hasattr(bson, "BSON"):
+    bson_decode = lambda d: bson.BSON(d).decode()
+# The BSON module provided by "pip install bson" works through the
+# "loads" function (just like pickle etc.)
+elif hasattr(bson, "loads"):
+    bson_decode = lambda d: bson.loads(d)
 
 from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.utils import get_filename_from_path
@@ -90,12 +85,6 @@ class BsonParser(ProtocolHandler):
         self.pid = None
         self.is_64bit = False
         self.buffer_sha1 = None
-
-        if not HAVE_BSON:
-            log.critical(
-                "Starting BsonParser, but bson is not available! "
-                "(install with `pip install bson`)"
-            )
 
     def resolve_flags(self, apiname, argdict, flags):
         # Resolve 1:1 values.

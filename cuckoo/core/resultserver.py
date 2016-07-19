@@ -20,8 +20,8 @@ from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooResultError
 from cuckoo.common.netlog import BsonParser
 from cuckoo.common.utils import create_folder, Singleton
-from cuckoo.misc import cwd
 from cuckoo.core.log import task_log_start, task_log_stop
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -238,7 +238,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         ip, port = self.client_address
-        self.connect_time = datetime.datetime.now()
 
         self.storagepath = self.server.build_storage_path(ip)
         if not self.storagepath:
@@ -257,7 +256,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             for event in self.protocol:
                 if isinstance(self.protocol, BsonParser) and event["type"] == "process":
                     self.open_process_log(event)
-
         except CuckooResultError as e:
             log.warning(
                 "ResultServer connection stopping because of "

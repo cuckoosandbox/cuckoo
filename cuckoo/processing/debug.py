@@ -36,18 +36,24 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {"log": [], "cuckoo": [], "errors": []}
+        debug = {
+            "log": [],
+            "cuckoo": [],
+            "errors": [],
+        }
 
         if os.path.exists(self.log_path):
             try:
                 f = codecs.open(self.log_path, "rb", "utf-8")
                 debug["log"] = f.readlines()
             except ValueError as e:
-                raise CuckooProcessingError("Error decoding %s: %s" %
-                                            (self.log_path, e))
+                raise CuckooProcessingError(
+                    "Error decoding %s: %s" % (self.log_path, e)
+                )
             except (IOError, OSError) as e:
-                raise CuckooProcessingError("Error opening %s: %s" %
-                                            (self.log_path, e))
+                raise CuckooProcessingError(
+                    "Error opening %s: %s" % (self.log_path, e)
+                )
 
         if os.path.exists(self.cuckoolog_path):
             debug["cuckoo"] = Logfile(self.cuckoolog_path)
