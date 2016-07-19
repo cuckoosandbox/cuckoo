@@ -99,7 +99,7 @@
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
                         <i class="glyphicon glyphicon-search"></i>Behavioral Analysis
-                        <span class="label label-primary pull-right">{{ report.analysis.report.behavior.processes|filter_key_if_has:"track"|length }}</span>
+                        <span class="label label-primary pull-right">{{ report.analysis.behavior.processes|filter_key_if_has:"track"|length }}</span>
                     </a>
                 </li>
                 <li>

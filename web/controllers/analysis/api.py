@@ -14,9 +14,6 @@ from django.views.decorators.http import require_http_methods
 
 from lib.cuckoo.core.database import Database, Task
 
-from controllers.analysis.export.export import ExportController
-from controllers.analysis.analysis import AnalysisController
-
 results_db = settings.MONGO
 
 
