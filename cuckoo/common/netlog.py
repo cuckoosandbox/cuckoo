@@ -312,7 +312,9 @@ class BsonParser(ProtocolHandler):
                     # msg = argdict["Message"]
                     # self.handler.log_anomaly(subcategory, tid, msg)
                     # return True
-
+                elif apiname == "__action__":
+                    parsed["type"] = "action"
+                    parsed["action"] = argdict["action"]
                 else:
                     parsed["type"] = "apicall"
                     parsed["pid"] = self.pid

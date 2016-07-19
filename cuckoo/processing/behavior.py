@@ -197,6 +197,24 @@ class RebootInformation(BehaviorHandler):
             for ts, event in sorted(self.events):
                 f.write("%s\n" % json.dumps(event))
 
+class ActionInformation(BehaviorHandler):
+    """Dumps feedback to the user to improve the sandboxing experience."""
+
+    event_types = ["action"]
+
+    def __init__(self, *args, **kwargs):
+        super(ActionInformation, self).__init__(*args, **kwargs)
+        self.actions = []
+
+    def handle_event(self, event):
+        self.actions.append(tuple(event.items()))
+
+    def run(self):
+        action_path = os.path.join(self.analysis.analysis_path, "action.json")
+        with open(action_path, "wb") as f:
+            for action in sorted(set(self.actions)):
+                f.write("%s\n" % json.dumps(dict(action)))
+
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
 
@@ -302,6 +320,9 @@ class BehaviorAnalysis(Processing):
 
             # Reboot information.
             RebootInformation(self),
+
+            # User feedback action information.
+            ActionInformation(self),
         ]
 
         # doesn't really work if there's no task, let's rely on the file name for now

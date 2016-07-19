@@ -651,6 +651,7 @@ class Processing(object):
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
         self.cuckoolog_path = os.path.join(self.analysis_path, "cuckoo.log")
+        self.action_path = os.path.join(self.analysis_path, "action.json")
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")

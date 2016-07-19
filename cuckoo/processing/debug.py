@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import codecs
+import json
 import logging
 import os
 
@@ -14,14 +15,15 @@ from cuckoo.core.database import Database
 log = logging.getLogger(__name__)
 
 class Logfile(list):
-    def __init__(self, filepath):
+    def __init__(self, filepath, is_json=False):
         list.__init__(self)
         self.filepath = filepath
+        self.is_json = is_json
 
     def __iter__(self):
         try:
             for line in codecs.open(self.filepath, "rb", "utf-8"):
-                yield line
+                yield json.loads(line) if self.is_json else line
         except Exception as e:
             log.info("Error decoding %s: %s", self.filepath, e)
 
@@ -30,6 +32,7 @@ class Logfile(list):
 
 class Debug(Processing):
     """Analysis debug information."""
+    order = 2
 
     def run(self):
         """Run debug analysis.
@@ -40,6 +43,7 @@ class Debug(Processing):
             "log": [],
             "cuckoo": [],
             "errors": [],
+            "action": [],
         }
 
         if os.path.exists(self.log_path):
@@ -57,6 +61,9 @@ class Debug(Processing):
 
         if os.path.exists(self.cuckoolog_path):
             debug["cuckoo"] = Logfile(self.cuckoolog_path)
+
+        if os.path.exists(self.action_path):
+            debug["action"] = Logfile(self.action_path, is_json=True)
 
         for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
