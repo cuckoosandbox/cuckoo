@@ -1163,7 +1163,6 @@ class Report(object):
         @param analysis_path: analysis folder path.
         """
         self.analysis_path = analysis_path
-        self.conf_path = self._get_analysis_path("analysis.conf")
         self.file_path = os.path.realpath(self._get_analysis_path("binary"))
         self.reports_path = self._get_analysis_path("reports")
         self.shots_path = self._get_analysis_path("shots")

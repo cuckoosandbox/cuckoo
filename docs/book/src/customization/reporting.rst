@@ -66,5 +66,4 @@ All reporting modules have access to some attributes:
 
     * ``self.analysis_path``: path to the folder containing the raw analysis results (e.g. *storage/analyses/1/*)
     * ``self.reports_path``: path to the folder where the reports should be written (e.g. *storage/analyses/1/reports/*)
-    * ``self.conf_path``: path to the *analysis.conf* file of the current analysis (e.g. *storage/analyses/1/analysis.conf*)
     * ``self.options``: a dictionary containing all the options specified in the report's configuration section in *conf/reporting.conf*.

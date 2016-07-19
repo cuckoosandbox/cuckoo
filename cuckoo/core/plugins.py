@@ -493,8 +493,6 @@ class RunReporting(object):
         current.set_task(self.task)
         # Give it the the relevant reporting.conf section.
         current.set_options(options)
-        # Load the content of the analysis.conf file.
-        current.cfg = Config(cfg=current.conf_path)
 
         try:
             current.run(self.results)
