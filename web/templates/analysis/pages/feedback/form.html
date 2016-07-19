@@ -127,7 +127,7 @@
 
                 var memory = sel.find("input#memory").is(":checked");
 
-                export_estimate_size(task_id, dirs, files, "small#export_estimate_size", "Estimated size: ");
+                export_estimate_size(task_id, dirs, files, "#modal_feedback small#export_estimate_size", "Estimated size: ");
             }
 
             sel.find("input#analysis").change("click", function(){
