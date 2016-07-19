@@ -1,3 +1,9 @@
+<style>
+    table td#file_url{
+        word-break: break-all;
+    }
+</style>
+
 <table class="table table-striped table-bordered">
     <thead>
         <tr>
@@ -19,10 +25,10 @@
             <td>{{record.info.id}}</td>
             <td>{{record.info.category|upper}}</td>
             {% if record.target.category == "url" %}
-            <td><a href="{% url "analysis.views.summary" record.info.id %}">{{record.target.url}}</a></td>
+            <td id="file_url"><a href="{% url "analysis" record.info.id "summary" %}">{{record.target.url}}</a></td>
             {% else %}
             <td>{{record.target.file.name}}</td>
-            <td><a href="{% url "analysis.views.summary" record.info.id %}">{{record.target.file.md5}}</a></td>
+            <td id="file_url"><a href="{% url "analysis" record.info.id "summary" %}">{{record.target.file.md5}}</a></td>
             {% endif %}
             <td>{{record.info.machine.name}}</td>
             <td>{{record.info.ended}}</td>

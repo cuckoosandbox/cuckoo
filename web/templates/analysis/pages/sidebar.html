@@ -142,10 +142,17 @@
                 </li>
 
                 <li>
-                    <a href="{% url "analysis" report.analysis.info.id "admin" %}">
-                        <i class="glyphicon glyphicon-flag"></i>Admin
+                    <a href="{% url "analysis/compare/left" report.analysis.info.id %}">
+                        <i class="glyphicon glyphicon-transfer"></i>Compare Analysis
                     </a>
                 </li>
+
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "options" %}">
+                        <i class="glyphicon glyphicon-flag"></i>Options
+                    </a>
+                </li>
+
             </ul>
         </div>
         <!-- END MENU -->

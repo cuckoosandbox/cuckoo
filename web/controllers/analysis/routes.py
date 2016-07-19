@@ -17,7 +17,6 @@ from bin.utils import view_error
 
 results_db = settings.MONGO
 
-
 class AnalysisRoutes:
     @staticmethod
     def recent(request):
@@ -68,8 +67,9 @@ class AnalysisRoutes:
             "dropped_files": "dropped/dropped_files",
             "dropped_buffers": "dropped/dropped_buffers",
             "procmemory": "procmemory/index",
-            "admin": "admin/index",
-            "feedback": "feedback/index"
+            "options": "options/index",
+            "feedback": "feedback/index",
+            "compare": "compare/"
         }
 
         if page in pages.keys():

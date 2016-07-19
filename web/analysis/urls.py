@@ -8,6 +8,7 @@ from django.conf.urls import url
 from django.views.generic import RedirectView
 
 from controllers.analysis.routes import AnalysisRoutes
+from controllers.analysis.compare.routes import AnalysisCompareRoutes
 from controllers.analysis.api import AnalysisApi
 from controllers.analysis.export.api import ExportApi
 from controllers.analysis.feedback.api import FeedbackApi
@@ -16,6 +17,9 @@ urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name='analysis/redirect_default'),
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
+    url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name='analysis/compare/left'),
+    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name='analysis/compare/both'),
+    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name='analysis/compare/hash'),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='analysis'),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='api'),
     url(r"^latest/$", views.latest_report),
