@@ -166,6 +166,39 @@ class ML(object):
             ":win:":[
                 ""
             ]
+        },
+        "counts":{
+            ":count:":{
+                "lang":[""],
+                "simp":[
+                    "",
+                    ":"
+                ],
+                "proc":[""],
+                "dimp":[""],
+                "file:":[
+                    "",
+                    "all",
+                    "read",
+                    "written",
+                    "deleted",
+                    "copied",
+                    "renamed",
+                    "opened",
+                    "exists",
+                    "failed"
+                ],
+                "tcp":[""],
+                "udp":[""],
+                "dns":[""],
+                "http":[""],
+                "reg:":[
+                    "",
+                    "write",
+                    "del"
+                ],
+                "wapi":[""]
+            }
         }
     }
 
@@ -307,7 +340,8 @@ class ML(object):
         return self.simple_features.loc[:, self.SIMPLE_CATEGORIES[category]]
 
 
-    def load_features(self, features, include_API_calls = False):
+    def load_features(self, features, include_API_calls=False, \
+                      include_API_calls_count=False):
         """Load features form an external object into pandas data frame."""
         self.features = {}
         for i in features:
@@ -384,6 +418,8 @@ class ML(object):
             for j in features[i]["languages"]:
                 j_norm = self.__normalise_string(j)
                 self.features[i][":pef:lang:" + j_norm] = 1
+            # Get number of languages
+            self.features[i][":count:lang"] = len(features[i]["languages"])
             # TODO: handle *section_attrs* and *resource_attrs*
 
             # Categorise static imports
@@ -392,22 +428,35 @@ class ML(object):
                 features[i]["static_imports"]["count"]
             static_imports_dlls = features[i]["static_imports"].keys()
             static_imports_dlls.remove("count")
+            # Count static imports
+            self.features[i][":count:simp"] = len(static_imports_dlls)
             for j in static_imports_dlls:
                 self.features[i][":simp:" + j] = 1
                 # TODO: include API calls?
                 if include_API_calls:
                     for k in features[i]["static_imports"][j]:
                         self.features[i][":simp:" + j + ":" + k] = 1
+                # Count static imports API calls
+                if include_API_calls_count:
+                    self.features[i][":count:simp:" + j] = \
+                        len(features[i]["static_imports"][j])
 
             # Categorise dynamic imports
             if features[i]["mutex"] is not None:
-              for mutex in features[i]["mutex"]:
-                for j in self.__handle_string(mutex):
-                    self.features[i][":dimp:mutex:" + j] = 1
+                for mutex in features[i]["mutex"]:
+                    for j in self.__handle_string(mutex):
+                        self.features[i][":dimp:mutex:" + j] = 1
+                # Count mutexes
+                self.features[i][":count:mutex"] = len(features[i]["mutex"])
             for process in features[i]["processes"]:
                 self.features[i][":dimp:proc:" + process] = 1
+            # Count processes
+            self.features[i][":count:proc"] = len(features[i]["processes"])
             for di in features[i]["dynamic_imports"]:
                 self.features[i][":dimp:" + di] = 1
+            # Count dynamic imports
+            self.features[i][":count:dimp"] = \
+                len(features[i]["dynamic_imports"])
 
             # File operations
             # TODO: tell apart different file operations by prefixing
@@ -426,22 +475,40 @@ class ML(object):
             # File numbers
             self.features[i][":file:count:all"] = \
                 self.__log_bin(features[i]["files_operations"])
+            self.features[i][":count:file:all"] = \
+                features[i]["files_operations"]
             self.features[i][":file:count:read"] = \
                 self.__log_bin(features[i]["files_read"])
+            self.features[i][":count:file:read"] = \
+                features[i]["files_read"]
             self.features[i][":file:count:written"] = \
                 self.__log_bin(features[i]["files_written"])
+            self.features[i][":count:file:written"] = \
+                features[i]["files_written"]
             self.features[i][":file:count:deleted"] = \
                 self.__log_bin(features[i]["files_deleted"])
+            self.features[i][":count:file:deleted"] = \
+                features[i]["files_deleted"]
             self.features[i][":file:count:copied"] = \
                 self.__log_bin(features[i]["files_copied"])
+            self.features[i][":count:file:copied"] = \
+                features[i]["files_copied"]
             self.features[i][":file:count:renamed"] = \
                 self.__log_bin(features[i]["files_renamed"])
+            self.features[i][":count:file:renamed"] = \
+                features[i]["files_renamed"]
             self.features[i][":file:count:opened"] = \
                 self.__log_bin(features[i]["files_opened"])
+            self.features[i][":count:file:opened"] = \
+                features[i]["files_opened"]
             self.features[i][":file:count:exists"] = \
                 self.__log_bin(features[i]["files_exists"])
+            self.features[i][":count:file:exists"] = \
+                features[i]["files_exists"]
             self.features[i][":file:count:failed"] = \
                 self.__log_bin(features[i]["files_failed"])
+            self.features[i][":count:file:failed"] = \
+                features[i]["files_failed"]
 
             # Networking
             # TODO: include subnets
@@ -449,27 +516,43 @@ class ML(object):
             #       "udp", "dns"
             for tcp in features[i]["tcp"]:
                 self.features[i][":net:" + tcp] = 1
+            # Count tcp addresses
+            self.features[i][":count:tcp"] = len(features[i]["tcp"])
             for udp in features[i]["udp"]:
                 self.features[i][":net:" + udp] = 1
+            # Count udp addresses
+            self.features[i][":count:udp"] = len(features[i]["udp"])
             for dns in features[i]["dns"]:
                 self.features[i][":net:" + dns] = 1
                 for j in features[i]["dns"][dns]:
                     self.features[i][":net:" + j] = 1
+            # Count dns addresses
+            self.features[i][":count:dns"] = len(features[i]["dns"])
             for http in features[i]["http"]:
                 self.features[i][":net:" + features[i]["http"][http]["host"]] \
                     = 1
+            # Count dns addresses
+            self.features[i][":count:http"] = len(features[i]["http"])
 
             # Register operations
             for rw in features[i]["regkey_written"]:
                 self.features[i][":reg:write:" + rw] = 1
+            # Count register keys written
+            self.features[i][":count:reg:write"] = \
+                len(features[i]["regkey_written"])
             for rd in features[i]["regkey_deleted"]:
                 self.features[i][":reg:del:" + rd] = 1
+            # Count register keys written
+            self.features[i][":count:reg:del"] = \
+                len(features[i]["regkey_deleted"])
 
             # Windows API
             # TODO: better binning (linear not logarithmic)
             for wapi in features[i]["api_stats"]:
                 self.features[i][":win:" + wapi] = \
                     self.__log_bin(features[i]["api_stats"][wapi])
+            # Count Windows API calls
+            self.features[i][":count:wapi"] = len(features[i]["api_stats"])
 
         # Make Pandas DataFrame from the dictionary
         features_pd = pd.DataFrame(self.features).T
@@ -527,12 +610,13 @@ class ML(object):
             return None
 
         # Get a list of specified prefixes
-        if category == "static" or category == "dynamic":
+        if category == "static" or category == "dynamic" or category == "count":
             category = pull_names(category)
         else:
             category = [category]
 
         extract = []
+        # TODO: what if we want exact match but most starts with word
         for col in self.features:
             for c in category:
                 if col.startswith(c):
