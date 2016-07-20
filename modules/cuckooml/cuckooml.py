@@ -667,7 +667,7 @@ class ML(object):
         tsne_df = pd.DataFrame(tsne_fit, index=data.index, columns=['0', '1'])
         tsne_dfl = pd.concat([tsne_df, labels], axis=1)
 
-        sns.lmplot('0', '1', data=tsne_dfl, fit_reg=False, hue='label',
+        sns.lmplot("0", "1", data=tsne_dfl, fit_reg=False, hue="label",
                    scatter_kws={"marker":"D", "s":50}, legend_out=True)
         plt.title(fig_name + " (lr:" + str(learning_rate) + ")")
         plt.savefig(fig_name + "_" + str(learning_rate) + ".png",
