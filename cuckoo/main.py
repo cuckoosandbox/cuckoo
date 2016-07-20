@@ -190,12 +190,20 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("--cwd", envvar="CUCKOO", help="Cuckoo Working Directory")
 @click.pass_context
 def main(ctx, debug, quiet, maxcount, user, cwd):
-    # Cuckoo Working Directory precedence:
-    # * Command-line option (--cwd)
-    # * Environment option ("CUCKOO")
-    # * Environment option ("CUCKOO_CWD")
-    # * Current directory (if the ".cwd" file exists)
-    # * Default value ("~/.cuckoo")
+    """Invokes the Cuckoo daemon or one of its subcommands.
+
+    To be able to use different Cuckoo configurations on the same machine with
+    the same Cuckoo installation, we use the so-called Cuckoo Working
+    Directory (aka "CWD"). A default CWD is available, but may be overridden
+    through the following options - listed in order of precedence.
+
+    \b
+    * Command-line option (--cwd)
+    * Environment option ("CUCKOO")
+    * Environment option ("CUCKOO_CWD")
+    * Current directory (if the ".cwd" file exists)
+    * Default value ("~/.cuckoo")
+    """
     if not cwd:
         cwd = os.environ.get("CUCKOO_CWD")
 
