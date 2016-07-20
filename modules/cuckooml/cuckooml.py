@@ -645,12 +645,44 @@ class ML(object):
         return dataset
 
 
-    def detect_abnormal_behaviour(self):
-        """Detect samples that behave significantly (3xSD) different than
-        others (median behaviour)."""
-        # TODO: introduce numeric features that count given type of actions
-        # #processes, #ips, #names resolved, etc.
-        pass
+    def detect_abnormal_behaviour(self, feature=None):
+        """Detect samples that behave significantly different than others."""
+        if feature is None:
+            # Pull all count features
+            count_features = self.feature_category(":count:")
+            meta_size = self.feature_category(":meta:size")
+            simp_count = self.feature_category(":simp:count")
+            count_dataset = pd.concat([count_features, meta_size, \
+                                      simp_count], axis=1)
+        else:
+            count_dataset = self.feature_category(feature)
+
+        for f in count_dataset:
+            # Produce boxplots
+            sns.boxplot(count_dataset[f])
+            sns.swarmplot(count_dataset[f], color=".25")
+            plt.title("Abnormal behaviour detection for " + f)
+            plt.savefig("abnormal_behaviour_" + f.replace(":", "_") + ".png")
+            plt.close()
+
+            # Get list of local outliers
+            f_1_quartile = count_dataset[f].quantile(0.25)
+            f_3_quartile = count_dataset[f].quantile(0.75)
+            f_IQR = f_3_quartile - f_1_quartile
+            f_outliers = []
+            f_suspected_outliers = []
+            for s in count_dataset[f].index:
+                if count_dataset[f][s] > f_3_quartile+3*f_IQR or \
+                        count_dataset[f][s] < f_1_quartile-3*f_IQR:
+                    f_outliers.append(s)
+                    continue
+                if count_dataset[f][s] > f_3_quartile+1.5*f_IQR or \
+                        count_dataset[f][s] < f_1_quartile-1.5*f_IQR:
+                    f_suspected_outliers.append(s)
+            print f
+            print "Outliers: ", ", ".join(f_outliers)
+            print "Suspected outliers: ", ", ".join(f_suspected_outliers)
+            print "------------------------------------------------------------"
 
 
     def visualise_data(self, data=None, labels=None, learning_rate=200,
