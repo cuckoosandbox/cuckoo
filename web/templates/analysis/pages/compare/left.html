@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+<style>
+    table td#file_url {
+        word-break: break-all;
+    }
+</style>
+
+<script type='text/javascript'>
+$(function () {
+    $("#hash").submit(function(e) {
+        e.preventDefault();
+        var $choice = $(this).find("input[name='hash']");
+        if ($choice.length) {
+            window.location = $choice.val();
+        }
+    });
+})
+</script>
+
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-5" style="border-right: 1px dashed #ddd;">
+            <h2 style="text-align: center;">Analysis 1</h2>
+            <hr>
+            <p>&nbsp;</p>
+            {% include "analysis/pages/compare/_info.html" with record=left %}
+        </div>
+
+        <div class="col-md-5">
+            <h2 style="text-align: center;">Analysis 2</h2>
+            <hr>
+            <p>You need to select the second analysis.
+            {% if records.count > 0 %}
+                Following are all the other analyses of the same file or URL:</p>
+                {% include "analysis/pages/compare/_summary_table.html" %}
+            {% else %}
+                <b>There is no other analysis for the same file or URL.</b></p>
+            {% endif %}
+
+            <p>If you want to compare to a different analysis, please provide an MD5 hash or a URL:</p>
+            <form class="form-inline" action="#" id="hash">
+                <input class="form-control" type="text" name="hash" /> <button type="submit" class="btn btn-primary btn-small">Search</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

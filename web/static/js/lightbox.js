@@ -13,9 +13,9 @@
 
   var LightboxOptions = (function() {
     function LightboxOptions() {
-      this.fadeDuration                = 500;
+      this.fadeDuration                = 300;
       this.fitImagesInViewport         = true;
-      this.resizeDuration              = 700;
+      this.resizeDuration              = 300;
       this.positionFromTop             = 50;
       this.showImageNumberLabel        = true;
       this.alwaysShowNavOnTouchDevices = false;

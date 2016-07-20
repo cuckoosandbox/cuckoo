@@ -1,0 +1,28 @@
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Target</th>
+            <th>Machine</th>
+            <th>Completed On</th>
+            <th>Duration</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+            <tr>
+                <td>{{record.info.id}}</td>
+                {% if record.target.category == "url" %}
+                <td>{{record.target.url}}</td>
+                {% else %}
+                <td>{{record.target.file.name}}</td>
+                {% endif %}
+                <td>{{record.info.machine.name}}</td>
+                <td>{{record.info.ended}}</td>
+                <td>{{record.info.duration}} seconds</td>
+                <td><a class="btn btn-primary btn-small" href="{% url "analysis/compare/both" left.info.id record.info.id %}">Select</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

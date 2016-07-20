@@ -23,7 +23,7 @@ def get_item(dictionary, key):
 @register.filter
 def filter_key_if_has(l, key):
     ret = []
-    for x in l:
+    for x in l or []:
         if key not in x or x[key]:
             ret.append(x)
     return ret

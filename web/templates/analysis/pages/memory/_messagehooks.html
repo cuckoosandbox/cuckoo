@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Offset</th>
+            <th>Session</th>
+            <th>Desktop</th>
+            <th>Thread</th>
+            <th>Filter</th>
+            <th>Flags</th>
+            <th>Function</th>
+            <th>Module</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.messagehooks.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.offset}}</span></td>
+            <td class="{{ row.class_ }}">{{row.session}}</td>
+            <td class="{{ row.class_ }}">{{row.desktop}}</td>
+            <td class="{{ row.class_ }}">{{row.thread}}</td>
+            <td class="{{ row.class_ }}">{{row.filter}}</td>
+            <td class="{{ row.class_ }}">{{row.flags}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.function}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
