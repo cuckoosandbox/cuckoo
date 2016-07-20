@@ -433,6 +433,11 @@ def dnsserve(host, port, nxdomain, hardcode, verbose):
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def web(ctx, args, host, port, uwsgi, nginx):
+    """Starts the Cuckoo Web Interface or dumps its uwsgi/nginx configuration.
+
+    Use "--help" to get this help message and "help" to find Django's
+    manage.py potential subcommands.
+    """
     username = ctx.parent.user or os.getlogin()
     if uwsgi:
         print "[uwsgi]"
@@ -485,7 +490,13 @@ def web(ctx, args, host, port, uwsgi, nginx):
     from django.core.management import execute_from_command_line
 
     Database().connect()
-    execute_from_command_line(("cuckoo",) + args)
+
+    if not args:
+        execute_from_command_line(
+            ("cuckoo", "runserver", "%s:%d" % (host, port))
+        )
+    else:
+        execute_from_command_line(("cuckoo",) + args)
 
 @main.command()
 @click.argument("vmname")
