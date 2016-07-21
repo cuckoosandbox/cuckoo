@@ -175,9 +175,9 @@
 
                     $('.nav_container>div#item>a[data-filter^="score"]').each(function(i, obj){
                         obj = $(obj);
-                        let wow = obj.attr('data-filter');
+                        let uid = obj.attr('data-filter');
 
-                        if(wow != score_choice){
+                        if(uid != score_choice){
                             obj.parent().removeClass('active');
                         }
                     });
