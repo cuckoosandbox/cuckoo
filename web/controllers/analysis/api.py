@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from lib.cuckoo.core.database import Database, Task
+from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 
@@ -72,8 +73,9 @@ class AnalysisApi:
                 'id': row['info']['id']
             })
 
+        db = Database()
+
         if tasks:
-            db = Database()
             q = db.Session().query(Task)
 
             q = q.filter(Task.id.in_([z['id'] for z in tasks]))
@@ -91,5 +93,19 @@ class AnalysisApi:
                         task_mongo['filename_url'] = task_sql.target
 
                     task_mongo.update(task_sql.to_dict())
+
+        q = db.Session().query(Task)
+        q = q.filter(Task.status != "reported")
+
+        if offset == 0:
+            for task_sql in q.all():
+                tasks.insert(0, {
+                    "id": task_sql.id,
+                    "filename_url": "-",
+                    "added_on": task_sql.added_on,
+                    "status": task_sql.status,
+                    "score": 0,
+                    "category": task_sql.category
+                })
 
         return JsonResponse(tasks, safe=False)

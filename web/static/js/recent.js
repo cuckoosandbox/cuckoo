@@ -6,39 +6,39 @@ class Recent {
         this.empty_results = false;
 
         this.params = {
-            'cats': [],
-            'packs': [],
-            'score': ''
+            "cats": [],
+            "packs": [],
+            "score": ""
         };
     }
 
     toggle_loading(){
         if(this.loading){
-            $('.loading').hide();
+            $(".loading").hide();
             this.loading = false;
         } else {
-            $('.loading').show();
+            $(".loading").show();
             this.loading = true;
         }
     }
 
     gather_params(){
         // reset everything to default values
-        $('div#no_more_results').hide();
+        $("div#no_more_results").hide();
 
         function is_active(data_filter){
-            return $(`div.nav_container>div a[data-filter=${data_filter}]`).parent().hasClass('active');
+            return $(`div.nav_container>div a[data-filter=${data_filter}]`).parent().hasClass("active");
         }
 
-        if(is_active('cat_files')) this.params['cats'].push('file');
-        if(is_active('cat_urls')) this.params['cats'].push('url');
+        if(is_active("cat_files")) this.params["cats"].push("file");
+        if(is_active("cat_urls")) this.params["cats"].push("url");
 
-        if(is_active('score_0-4')) {
-            this.params['score'] = '0-4';
-        } else if (is_active('score_4-7')) {
-            this.params['score'] = '4-7';
-        } else if (is_active('score_7-10')) {
-            this.params['score'] = '7-10';
+        if(is_active("score_0-4")) {
+            this.params["score"] = "0-4";
+        } else if (is_active("score_4-7")) {
+            this.params["score"] = "4-7";
+        } else if (is_active("score_7-10")) {
+            this.params["score"] = "7-10";
         }
 
         //if(is_active('pack_pdf')) this.params['packs'].push('pdf');
@@ -55,16 +55,16 @@ class Recent {
      */
     get_tasks(){
         let params = this.gather_params();
-        params['offset'] = this.offset;
-        params['limit'] = this.limit;
+        params["offset"] = this.offset;
+        params["limit"] = this.limit;
 
         let self = this;
 
         $.ajax({
-            type: 'post',
-            contentType: 'application/json',
+            type: "post",
+            contentType: "application/json",
             url: `api/recent/`,
-            dataType: 'json',
+            dataType: "json",
             data: JSON.stringify(params),
             timeout: 40000,
             beforeSend: function(){
@@ -78,13 +78,13 @@ class Recent {
     }
 
     load(){
-        $('#recent>tbody').html('');
+        $("#recent>tbody").html("");
         this.empty_results = false;
         this.offset = 0;
         this.params = {
-            'cats': [],
-            'packs': [],
-            'score': ''
+            "cats": [],
+            "packs": [],
+            "score": ""
         };
         this.get_tasks();
     }
@@ -96,38 +96,30 @@ class Recent {
 
     results_callback(data){
         if(Object.keys(data).length == 0){
-            $('div#no_more_results').show();
-            $('div#no_more_results>span').html('no more results');
+            $("div#no_more_results").show();
+            $("div#no_more_results>span").html("no more results");
             this.empty_results = true;
         } else {
             data.forEach(function (analysis, i){
-                let html = '<tr><td>';
+                let html = "<tr><td>";
 
-                html += `<strong>${analysis['id']}</strong></td><td>`;
+                html += `<strong>${analysis["id"]}</strong></td><td>`;
 
-                let date_completed_on = '-';
-                let date_added_on = '-';
+                let date_completed_on = "-";
+                let date_added_on = "-";
 
-                if (analysis.hasOwnProperty('completed_on')) date_completed_on = Recent.getFormattedDate(analysis.completed_on);
-                if (analysis.hasOwnProperty('added_on')) date_added_on = Recent.getFormattedDate(analysis.added_on);
+                if (analysis.hasOwnProperty("completed_on")) date_completed_on = Recent.getFormattedDate(analysis.completed_on);
+                if (analysis.hasOwnProperty("added_on")) date_added_on = Recent.getFormattedDate(analysis.added_on);
 
                 if (analysis.status == "reported" || analysis.status == "failed_analysis") {
                     html += `<a href="${analysis.id}/summary"><span class="mono">${date_completed_on}</span></a>`;
                 } else {
-                    html += `<span class="muted">${date_added_on} (added on)</span>`;
+                    html += `<span class="muted">${date_added_on}</span>`;
                 }
 
-                html += '</td><td>';
+                html += "</td><td>";
 
-                if (analysis.status == "reported" || analysis.status == "failed_analysis") {
-                    html += `<a href="${analysis.id}/summary">${analysis.filename_url}</a>`;
-                } else {
-                    html += analysis.filename;
-                }
-
-                html += '</td><td>';
-
-                var identifier = analysis.filename_url;
+                var identifier = "-";
                 if(analysis.sample) {
                     identifier = analysis.sample.md5;
                 }
@@ -138,7 +130,15 @@ class Recent {
                     html += `<span class="mono">${identifier}</span>`;
                 }
 
-                html += '</td><td>';
+                html += "</td><td>";
+
+                if (analysis.status == "reported" || analysis.status == "failed_analysis") {
+                    html += `<a href="${analysis.id}/summary">${analysis.filename_url}</a>`;
+                } else {
+                    html += analysis.category;
+                }
+
+                html += "</td><td>";
 
                 if (analysis.status == "pending") {
                     html += '<span class="text-muted">pending</span>';
@@ -153,21 +153,23 @@ class Recent {
                         html += '<span class="text-success">';
                     }
 
-                    html += 'reported</span>';
+                    html += "reported</span>";
                 } else {
                     html += `<span class="text-danger">${analysis.status}</span>`;
                 }
 
-                html += '</td><td>';
+                html += "</td><td>";
 
-                let badge_color = 'default';
-                if(analysis.score >= 4 && analysis.score <= 7) badge_color = 'warning';
-                else if(analysis.score > 7) badge_color = 'danger';
+                let badge_color = "default";
+                if(analysis.hasOwnProperty("score")) {
+                    if (analysis.score >= 4 && analysis.score <= 7) badge_color = "warning";
+                    else if (analysis.score > 7) badge_color = "danger";
+                }
 
                 html += `<span class="badge badge-${badge_color}">score: ${analysis.score}</span>`;
-                html += '</td></tr>';
+                html += "</td></tr>";
 
-                $('table#recent tbody').append(html);
+                $("table#recent tbody").append(html);
             });
         }
     }
