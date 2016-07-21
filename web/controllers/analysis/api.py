@@ -69,7 +69,7 @@ class AnalysisApi:
         for row in cursor:
             tasks.append({
                 "ended": row["info"]["ended"],
-                "score": row["info"]["score"],
+                "score": row["info"].get("score"),
                 "id": row["info"]["id"]
             })
 
@@ -131,7 +131,7 @@ class AnalysisApi:
             "status": True
         }
 
-        for process in report["analysis"]["behavior"]["generic"]:
+        for process in report["analysis"].get("behavior", {}).get("generic", []):
             plist["data"].append({
                 "process_name": process["process_name"],
                 "pid": process["pid"]
@@ -154,7 +154,7 @@ class AnalysisApi:
             "directories":
                 ["directory_created", "directory_removed", "directory_enumerated"],
             "processes":
-               ["command_line", "dll_loaded"]
+                ["command_line", "dll_loaded"],
         }
 
     @staticmethod
@@ -185,7 +185,7 @@ class AnalysisApi:
         for category, watchers in AnalysisApi.behavior_get_watcherlist().iteritems():
             for watcher in watchers:
                 if watcher in process["summary"]:
-                    if not category in data:
+                    if category not in data:
                         data[category] = [watcher]
                     else:
                         data[category].append(watcher)
@@ -221,7 +221,7 @@ class AnalysisApi:
 
         summary = process["summary"]
 
-        if not watcher in summary:
+        if watcher not in summary:
             return JsonResponse({"status": False, "message": "supplied watcher not found"}, status=200)
 
         if offset:
