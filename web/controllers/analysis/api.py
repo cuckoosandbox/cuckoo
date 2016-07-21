@@ -109,6 +109,8 @@ class AnalysisApi:
                     "category": task_sql.category
                 })
 
+        tasks = sorted(tasks, key=lambda k: k["id"], reverse=True)
+
         return JsonResponse(tasks, safe=False)
 
     @staticmethod
