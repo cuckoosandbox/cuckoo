@@ -74,9 +74,6 @@ class ExportController:
         report = AnalysisController.get_report(task_id)
         report = report['analysis']
 
-        if not report:
-            raise Exception("The specified analysis does not exist")
-
         path = report["info"]["analysis_path"]
 
         # Creating an analysis.json file with basic information about this
