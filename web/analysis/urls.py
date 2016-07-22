@@ -43,4 +43,7 @@ urlpatterns = [
     url(r"^api/export_estimate_size/$", ExportApi.export_estimate_size),
     url(r"^api/export_get_files/$", ExportApi.get_files),
     url(r"^api/feedback_send/$", FeedbackApi.send),
+    url(r"^api/behavior_get_processes/$", AnalysisApi.behavior_get_processes),
+    url(r"^api/behavior_get_watcher/$", AnalysisApi.behavior_get_watcher),
+    url(r"^api/behavior_get_watchers/$", AnalysisApi.behavior_get_watchers)
 ]
