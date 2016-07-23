@@ -1,20 +1,11 @@
 <h4><span class="glyphicon glyphicon-off" aria-hidden-"true"></span> Information on Execution</h4>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-7">
         <section id="information">
             <div class="panel panel-primary">
                 <div class="panel-heading">
-                    <h4 class="panel-title">Analysis
-                        <div class="pull-right">
-                            <a class="btn btn-default btn-xs" href="{% url "analysis.views.export_analysis" report.analysis.info.id %}">
-                                <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export analysis
-                            </a>
-                            <a class="btn btn-info btn-xs" href="{% url "analysis.views.reboot_analysis" report.analysis.info.id %}">
-                                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot analysis
-                            </a>
-                        </div>
-                    </h4>
+                    <h4 class="panel-title">Analysis</h4>
                 </div>
                 <table class="table table-striped">
                     <thead>

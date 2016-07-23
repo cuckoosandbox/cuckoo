@@ -9,6 +9,7 @@ import sys
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
 
 sys.path.insert(0, settings.CUCKOO_PATH)
 
@@ -16,6 +17,8 @@ from lib.cuckoo.common.config import Config, parse_options, emit_options
 from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
+
+from controllers.analysis.routes import AnalysisRoutes
 
 results_db = settings.MONGO
 cfg = Config()
@@ -240,7 +243,7 @@ def status(request, task_id):
         })
 
     if task.status == "reported":
-        return redirect("analysis.views.summary", task_id=task_id)
+        return AnalysisRoutes.redirect_default(request, task_id)
 
     return render(request, "submission/status.html", {
         "status": task.status,
