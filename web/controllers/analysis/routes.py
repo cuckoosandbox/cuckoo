@@ -82,7 +82,7 @@ class AnalysisRoutes:
         if not isinstance(task_id, (unicode, str)):
             task_id = str(task_id)
 
-        return redirect(reverse("analysis", args=(re.sub(r"\^d+", "", task_id), "summary",)), permanent=False)
+        return redirect(reverse("analysis", args=(re.sub(r"\^d+", "", task_id), "summary")), permanent=False)
 
     @staticmethod
     def export(request, task_id):
