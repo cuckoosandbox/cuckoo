@@ -4,25 +4,25 @@
 }
 
 .analysis_menu-userpic img {
-  float: none;
-  margin: 0 auto;
-  width: 50%;
-  height: 50%;
-  -webkit-border-radius: 50% !important;
-  -moz-border-radius: 50% !important;
-  border-radius: 50% !important;
+    float: none;
+    margin: 0 auto;
+    width: 50%;
+    height: 50%;
+    -webkit-border-radius: 50% !important;
+    -moz-border-radius: 50% !important;
+    border-radius: 50% !important;
 }
 
 .analysis_menu-userbuttons .btn {
-  text-transform: uppercase;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 6px 15px;
-  margin-right: 5px;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 15px;
+    margin-right: 5px;
 }
 
 .analysis_menu-userbuttons .btn:last-child {
-  margin-right: 0px;
+    margin-right: 0px;
 }
 
 .analysis_menu-usermenu {
@@ -30,44 +30,45 @@
 }
 
 .analysis_menu-usermenu ul li {
-  border-bottom: 1px solid #f0f4f7;
+    border-bottom: 1px solid #f0f4f7;
+    line-height: 0.7;
 }
 
 .analysis_menu-usermenu ul li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .analysis_menu-usermenu ul li a {
-  color: #93a3b5;
-  font-size: 12px;
-  font-weight: 400;
+    color: #93a3b5;
+    font-size: 12px;
+    font-weight: 400;
 }
 
 .analysis_menu-usermenu ul li a i {
-  margin-right: 8px;
-  font-size: 14px;
+    margin-right: 8px;
+    font-size: 14px;
 }
 
 .analysis_menu-usermenu ul li a:hover {
-  background-color: #fafcfd;
-  color: #5b9bd1;
+    background-color: #fafcfd;
+    color: #5b9bd1;
 }
 
 .analysis_menu-usermenu ul li.active {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .analysis_menu-usermenu ul li.active a {
-  color: #5b9bd1;
-  background-color: #f6f9fb;
-  border-left: 2px solid #5b9bd1;
-  margin-left: -2px;
+    color: #5b9bd1;
+    background-color: #f6f9fb;
+    border-left: 2px solid #5b9bd1;
+    margin-left: -2px;
 }
 
 .analysis_menu-content {
-  padding: 20px;
-  background: #fff;
-  min-height: 460px;
+    padding: 20px;
+    background: #fff;
+    min-height: 460px;
 }
 
 .analysis_menu-usermenu ul li span.label{
@@ -136,14 +137,20 @@
                 {% endif %}
 
                 <li>
-                    <a href="#" data-toggle="modal" data-target="#modal_feedback">
-                        <i class="glyphicon glyphicon-barcode"></i>Feedback
+                    <a href="{% url "analysis/compare/left" report.analysis.info.id %}">
+                        <i class="glyphicon glyphicon-transfer"></i>Compare Analysis
                     </a>
                 </li>
 
                 <li>
-                    <a href="{% url "analysis/compare/left" report.analysis.info.id %}">
-                        <i class="glyphicon glyphicon-transfer"></i>Compare Analysis
+                    <a href="{% url "analysis" report.analysis.info.id "export" %}">
+                        <i class="glyphicon glyphicon-export"></i>Export Analysis
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url "analysis/reboot" report.analysis.info.id%}">
+                        <i class="glyphicon glyphicon-repeat"></i>Reboot Analysis
                     </a>
                 </li>
 
@@ -153,6 +160,11 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#modal_feedback">
+                        <i class="glyphicon glyphicon-barcode"></i>Feedback
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- END MENU -->

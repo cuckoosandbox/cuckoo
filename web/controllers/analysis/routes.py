@@ -9,6 +9,7 @@ import re
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.core.urlresolvers import reverse
 
 from lib.cuckoo.core.database import Database, TASK_PENDING
 
@@ -78,7 +79,10 @@ class AnalysisRoutes:
 
     @staticmethod
     def redirect_default(request, task_id):
-        return redirect('/analysis/%s/summary' % re.sub(r'\^d+', '', task_id), permanent=False)
+        if not isinstance(task_id, (unicode, str)):
+            task_id = str(task_id)
+
+        return redirect(reverse('analysis', args=(re.sub(r'\^d+', '', task_id), "summary",)), permanent=False)
 
     @staticmethod
     def export(request, task_id):
@@ -113,4 +117,15 @@ class AnalysisRoutes:
             "report": report,
             "dirs": dirs,
             "files": files,
+        })
+
+
+    @staticmethod
+    def reboot(request, task_id):
+        task_obj = Database().add_reboot(task_id=task_id)
+
+        return render(request, "submission/reboot.html", {
+            "task_id": task_id,
+            "task_obj": task_obj,
+            "baseurl": request.build_absolute_uri("/")[:-1],
         })

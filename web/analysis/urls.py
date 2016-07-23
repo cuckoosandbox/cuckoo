@@ -17,6 +17,7 @@ urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name='analysis/redirect_default'),
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
+    url(r"^(?P<task_id>\d+)/reboot/$", AnalysisRoutes.reboot, name='analysis/reboot'),
     url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name='analysis/compare/left'),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name='analysis/compare/both'),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name='analysis/compare/hash'),
@@ -36,9 +37,7 @@ urlpatterns = [
         r"/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
         r"/(?P<sid>\d+)?",
         views.moloch),
-    url(r"^(?P<task_id>\d+)/export/$", views.export_analysis),
     url(r"^import/$", views.import_analysis),
-    url(r"^(?P<task_id>\d+)/reboot/$", views.reboot_analysis),
     url(r"^api/recent/$", AnalysisApi.recent),
     url(r"^api/export_estimate_size/$", ExportApi.export_estimate_size),
     url(r"^api/export_get_files/$", ExportApi.get_files),
