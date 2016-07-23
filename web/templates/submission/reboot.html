@@ -3,6 +3,6 @@
 {% block content %}
 <div class="alert alert-success"><h4>Reboot analysis successful!</h4>
     The following reboot analysis was added successfully:
-    <a href="{% url "submission.views.status" task_id %}">{{ baseurl }}{% url "submission.views.status" task_id %}</a><br />
+    <a href="{% url "submission/status" task_id %}">{{ baseurl }}{% url "submission/status" task_id %}</a><br />
 </div>
 {% endblock %}
