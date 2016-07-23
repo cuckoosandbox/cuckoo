@@ -18,6 +18,7 @@ from lib.cuckoo.common.utils import store_temp_file
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.core.rooter import vpns
 
+from bin.utils import view_error
 from controllers.analysis.routes import AnalysisRoutes
 
 results_db = settings.MONGO
@@ -157,13 +158,10 @@ def index(request, task_id=None, sha1=None):
                 if len(samples) != 1:
                     continue
 
-                return render(request, "error.html", {
-                    "error": "You uploaded an empty file.",
-                })
+                return view_error(request, "You uploaded an empty file.")
             elif sample.size > settings.MAX_UPLOAD_SIZE:
-                return render(request, "error.html", {
-                    "error": "You uploaded a file that exceeds that maximum allowed upload size.",
-                })
+                return view_error(request,
+                                  "You uploaded a file that exceeds that maximum allowed upload size.")
 
             # Moving sample from django temporary file to Cuckoo temporary
             # storage to let it persist between reboot (if user like to
@@ -205,9 +203,7 @@ def index(request, task_id=None, sha1=None):
     else:
         url = request.POST.get("url").strip()
         if not url:
-            return render(request, "error.html", {
-                "error": "You specified an invalid URL!",
-            })
+            return view_error(request, "You specified an invalid URL!")
 
         for entry in task_machines:
             task_id = db.add_url(url=url,
@@ -231,16 +227,12 @@ def index(request, task_id=None, sha1=None):
             "baseurl": request.build_absolute_uri('/')[:-1],
         })
     else:
-        return render(request, "error.html", {
-            "error": "Error adding task to Cuckoo's database.",
-        })
+        return view_error(request, "Error adding task to Cuckoo's database.")
 
 def status(request, task_id):
     task = Database().view_task(task_id)
     if not task:
-        return render(request, "error.html", {
-            "error": "The specified task doesn't seem to exist.",
-        })
+        return view_error(request, "The specified task doesn't seem to exist.")
 
     if task.status == "reported":
         return AnalysisRoutes.redirect_default(request, task_id)
@@ -257,9 +249,7 @@ def resubmit(request, task_id):
         return index(request, task_id)
 
     if not task:
-        return render(request, "error.html", {
-            "error": "No Task found with this ID",
-        })
+        return view_error(request, "No Task found with this ID")
 
     if task.category == "file":
         return render_index(request, {
@@ -281,9 +271,7 @@ def submit_dropped(request, task_id, sha1):
 
     task = Database().view_task(task_id)
     if not task:
-        return render(request, "error.html", {
-            "error": "No Task found with this ID",
-        })
+        return view_error(request, "No Task found with this ID")
 
     filepath = dropped_filepath(task_id, sha1)
     return render_index(request, {

@@ -100,7 +100,7 @@ class AnalysisRoutes:
                 return response
 
             except Exception as e:
-                return render(request, "error.html", {"error": str(e)})
+                return view_error(request, str(e))
 
         report = AnalysisController.get_report(task_id)
 
