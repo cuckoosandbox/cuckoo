@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from math import log
+from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 
 class ML(object):
@@ -726,6 +727,22 @@ class ML(object):
 
         dataset = pd.concat([features, labels], axis=1)
         dataset.to_csv(filename, encoding='utf-8')
+
+
+    def cluster_dbscan(self, features=None, eps=20.0, min_samples=5):
+        """Do *dbscan* clustering and return """
+        if features is None:
+            print "You didn't indicate features to be used. Internal features \
+                will be used."
+            if self.features is None:
+                print "Internal features not available."
+                return
+            else:
+                features = self.features
+
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(features)
+        return pd.DataFrame(dbscan.labels_, index=features.index,
+                            columns=["label"])
 
 
 class Loader(object):
