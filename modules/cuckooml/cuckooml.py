@@ -11,10 +11,12 @@ import re
 import sys
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from hdbscan import HDBSCAN
 from math import log
+from sklearn import metrics
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 
@@ -762,6 +764,36 @@ class ML(object):
                           min_cluster_size=min_cluster_size)
         hdbl = hdbscan.fit_predict(features)
         return pd.DataFrame(hdbl, index=features.index, columns=["label"])
+
+
+    def assess_clustering(self, clustering, labels, data=None):
+        """Assess clusters fit according to variety of metrics."""
+        clustering = clustering["label"].tolist()
+        labels = labels["label"].tolist()
+        performance_metrics = {}
+
+        performance_metrics["Adjusted Random Index"] = \
+            metrics.adjusted_rand_score(labels, clustering)
+
+        performance_metrics["Adjusted Mutual Information Score"] = \
+            metrics.adjusted_mutual_info_score(labels, clustering)
+
+        performance_metrics["Homogeneity"] = \
+            metrics.homogeneity_score(labels, clustering)
+
+        performance_metrics["Completeness"] = \
+            metrics.completeness_score(labels, clustering)
+
+        performance_metrics["V-measure"] = \
+            metrics.v_measure_score(labels, clustering)
+
+        if data is None:
+            return performance_metrics
+
+        performance_metrics["Silhouette Coefficient"] = \
+            metrics.silhouette_score(data, np.array(clustering))
+
+        return performance_metrics
 
 
 class Loader(object):
