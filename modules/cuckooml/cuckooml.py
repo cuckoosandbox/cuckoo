@@ -13,6 +13,7 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from hdbscan import HDBSCAN
 from math import log
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
@@ -743,6 +744,24 @@ class ML(object):
         dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(features)
         return pd.DataFrame(dbscan.labels_, index=features.index,
                             columns=["label"])
+
+
+    def cluster_hdbscan(self, features=None, min_samples=None, \
+                        min_cluster_size=10):
+        """Do *hdbscan* clustering and return """
+        if features is None:
+            print "You didn't indicate features to be used. Internal features \
+                will be used."
+            if self.features is None:
+                print "Internal features not available."
+                return
+            else:
+                features = self.features
+
+        hdbscan = HDBSCAN(min_samples=min_samples, \
+                          min_cluster_size=min_cluster_size)
+        hdbl = hdbscan.fit_predict(features)
+        return pd.DataFrame(hdbl, index=features.index, columns=["label"])
 
 
 class Loader(object):
