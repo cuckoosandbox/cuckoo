@@ -658,7 +658,6 @@ def import_analysis(request):
                 return view_error(request, "The zip file contains incorrect filenames, "
                                            "please provide a legitimate .zip file.")
 
-
         if "analysis.json" in zf.namelist():
             analysis_info = json.loads(zf.read("analysis.json"))
         elif "binary" in zf.namelist():

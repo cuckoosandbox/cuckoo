@@ -12,7 +12,6 @@ from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 
-
 results_db = settings.MONGO
 
 class AnalysisController:
