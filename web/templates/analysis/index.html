@@ -9,160 +9,6 @@
 
     <script src="/static/js/recent.js"></script>
 
-    <style>
-        div.nav_container {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #ddd;
-
-            padding-left: 0 !important;
-            margin-bottom: 0;
-            list-style: none;
-
-            margin-top: 0;
-            margin-bottom: 10px;
-
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-
-            display: block;
-            list-style-type: disc;
-            -webkit-margin-before: 1em;
-            -webkit-margin-after: 1em;
-            -webkit-margin-start: 0px;
-            -webkit-margin-end: 0px;
-            -webkit-padding-start: 40px;
-        }
-
-        div.nav_container:before{
-            display: table;
-            content: " ";
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
-        div.nav_container:after{
-            clear: both;
-            display: table;
-            content: " ";
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
-        div.nav_container > div#item {
-            float: left;
-            margin-bottom: -1px;
-            position: relative;
-            display: block;
-        }
-
-        div.nav_container >div#item >a {
-            margin-right: 2px;
-            line-height: 1.42857143;
-            border: 1px solid transparent;
-            border-radius: 4px 4px 0 0;
-            position: relative;
-            display: block;
-            padding: 10px 15px;
-        }
-
-        div.nav_container > div#item.active {
-            color: #555;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            border-bottom-color: transparent;
-        }
-
-        div.nav_container > div#item >a:hover {
-            background-color: #f3f3f3;
-            border-bottom-color: transparent;
-            border-radius: 4px;
-            text-decoration: none;
-        }
-
-        div.nav_container > div.active>a:hover, div.nav_container > div.active>a:focus{
-            cursor: default;
-            background-color: white !important;
-            text-decoration: none !important;
-        }
-
-        div.nav_container a:focus, div.nav_container a:hover{
-            text-decoration: none;
-        }
-
-        div.nav_container > div#item.active:not(:first-child) {
-            border-left:0;
-        }
-
-        div.loading{
-            background-color: white;
-            width:100px;
-            height: 40px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            margin-left: -50px;
-            margin-top: -200px;
-            display: none;
-            border: 1px solid #dedede;
-            z-index: 666;
-            border-radius: 4px;
-        }
-
-        div.loading>img{
-            margin-left: 30%;
-            margin-top: 4px;
-        }
-
-        div#no_more_results{
-            display: none;
-        }
-
-        table#recent td:first-child{
-            width: 84px;
-        }
-
-        table#recent td:last-child{
-            text-align: right;
-            width:100px;
-        }
-
-        table#recent td:nth-child(2){
-            width: 180px;
-        }
-
-        table#recent td:nth-child(5){
-            width:130px;
-            text-align: right;
-        }
-
-        table#recent .badge{
-            padding: 4px 8px;
-            font-weight: normal;
-        }
-
-        table#recent .badge-default{
-            background-color: #8aa392;
-        }
-
-        table#recent .badge-warning{
-            background-color: #edd851;
-            color: #484848;
-        }
-
-        table#recent .badge-danger{
-            background-color: #ed5151;
-            color: #ffffff;
-        }
-
-        .table-responsive
-        {
-            overflow-x: auto;
-        }
-    </style>
     <script>
         var recent;
 
@@ -207,28 +53,30 @@
 
     <div class="loading"><img src="/static/img/loading.gif"/></div>
 
-    <div class="nav_container" style="margin-bottom:30px;">
-        <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
-        <div id="item"><a href="#" data-filter="cat_urls">URLs</a></div>
-        <div id="item"><a href="#" data-filter="score_0-4">Score 0 - 4</a></div>
-        <div id="item"><a href="#" data-filter="score_4-7">Score 4 - 7</a></div>
-        <div id="item"><a href="#" data-filter="score_7-10">Score 7 - 10</a></div>
-        <!--<div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
-        <div id="item"><a href="#" data-filter="pack_office">Office</a></div>-->
-    </div>
+    <div id="recent_analysis">
+        <div class="nav_container" style="margin-bottom:30px;">
+            <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
+            <div id="item"><a href="#" data-filter="cat_urls">URLs</a></div>
+            <div id="item"><a href="#" data-filter="score_0-4">Score 0 - 4</a></div>
+            <div id="item"><a href="#" data-filter="score_4-7">Score 4 - 7</a></div>
+            <div id="item"><a href="#" data-filter="score_7-10">Score 7 - 10</a></div>
+            <!--<div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
+            <div id="item"><a href="#" data-filter="pack_office">Office</a></div>-->
+        </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
-                <tbody>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
+                    <tbody>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
 
-            <div id="no_more_results" class="container-fluid center">
-                <span style="color: #a5a5a5;"></span>
+                <div id="no_more_results" class="container-fluid center">
+                    <span style="color: #a5a5a5;"></span>
+                </div>
+
             </div>
-
         </div>
     </div>
 {% endblock %}

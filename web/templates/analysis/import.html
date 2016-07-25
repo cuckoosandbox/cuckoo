@@ -20,10 +20,6 @@
     cursor: inherit;
     display: block;
 }
-input[readonly] {
-    background-color: white !important;
-    cursor: text !important;
-}
 </style>
 <script type='text/javascript'>
 $(document)
@@ -51,14 +47,12 @@ $(document).ready( function() {
 </script>
 <div class="row">
     <div class="col-md-6 col-md-offset-3 center">
-        <p style="margin-bottom: 10px;"><img src="{% static "graphic/cuckoo.png" %}" /></p>
-
         <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
             <div class="tabbable">
                 <div class="tab-content">
                     <div class="tab-pane fade in active" id="file">
                         
-                        <label style="display: flex; color: #337ab7;">Choose analysis to import (Only .zip)</label>
+                        <label style="display: flex;">Choose analysis to import (Only .zip)</label>
                         <input name="category" type="text" class="form-control hidden" value="file">
                         <div class="input-group col-md-6">
                             <span class="input-group-btn">
