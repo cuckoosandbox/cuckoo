@@ -24,6 +24,10 @@ pre {
     color: #919191;
 }
 
+.jumbotron {
+    background-color: #555;
+}
+
 .text-danger {
     color: #d34845;
 }
