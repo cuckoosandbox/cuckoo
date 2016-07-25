@@ -11,6 +11,7 @@
 <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
 <link href="{% static "css/lightbox.css" %}" rel="stylesheet">
 <script src="{% static "js/jquery.js" %}"></script>
+<script src="{% static "js/js.cookie.js" %}"></script>
 
 <!-- DataTables -->
 <link href="{% static "css/dataTables.bootstrap.min.css"%}" rel="stylesheet">
@@ -23,7 +24,11 @@
 <!-- Custom style -->
 <link href="{% static "css/style.css" %}" rel="stylesheet">
 <link href="{% static "css/analysis_sidebar.css" %}" rel="stylesheet">
-<link href="{% static "css/dark.css" %}" rel="stylesheet">
+
+{% if request.COOKIES.theme == "night" %}
+    <link href="{% static "css/night.css" %}" rel="stylesheet">
+{% endif %}
+
 </head>
 <body>
 <header>
@@ -36,6 +41,7 @@
                 <span class="icon-bar"></span>
             </button>
         </div>
+
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav">
                 <li><img src="{% static "graphic/cuckoo_inverse.png" %}" /></li>
@@ -46,6 +52,34 @@
                 <li><a href="{% url "submission.views.index" %}"><span class="glyphicon glyphicon-upload"></span> Submit</a></li>
                 <li><a href="{% url "analysis.views.import_analysis" %}"><span class="glyphicon glyphicon-import"></span> Import</a></li>
             </ul>
+
+            <ul class="nav navbar-nav pull-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Options <span class="caret"></span></a>
+                    <ul class="dropdown-menu pull-right">
+                        <li><a href="http://cuckoosandbox.org" target="_blank">About</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">Appearance</li>
+                        <li><a id="theme_default" href="#">Default Theme</a></li>
+                        <li><a id="theme_night" href="#">Night Theme</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <script>
+                $(document).ready(function(){
+                    function theme_switch(theme) {
+                        Cookies("theme", theme, {expires: 365 * 10});
+
+                        location.reload();
+                    }
+
+                    $(".nav .dropdown-menu li a[id^=theme_]").click(function(){
+                        var theme = $(this).attr("id").substr(6);
+                        theme_switch(theme);
+                    });
+                });
+            </script>
         </nav>
     </nav>
 </header>
