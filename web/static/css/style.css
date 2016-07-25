@@ -84,12 +84,19 @@ img.screenshot {
     border: 1px solid #000000;
     margin: 0px 1px 2px 1px;
 }
+input[readonly] {
+    background-color: white !important;
+    cursor: text !important;
+}
 .gray {
     color: #666;
 }
 .table-centered {
     margin: 0 auto !important;
     float: none !important;
+}
+.table-hover{
+    cursor:pointer;
 }
 a.tag-label {
     color: white;
@@ -299,7 +306,6 @@ section#domains .panel-body, section#hosts .panel-body{
 }
 
 section#domains .dataTables_length, section#hosts .dataTables_length {
-    padding-left: 14px;
     padding-top: 18px;
 }
 
@@ -416,4 +422,163 @@ section#domains .dataTables_filter, section#hosts .dataTables_filter{
 .cuckoo-box-info input[type="checkbox"]:checked ~ label:before {
   color: #fff;
   background-color: #5bc0de;
+}
+
+.dataTables_wrapper .row{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* recent analysis page */
+#recent_analysis div.nav_container {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ddd;
+
+    padding-left: 0 !important;
+    margin-bottom: 0;
+    list-style: none;
+
+    margin-top: 0;
+    margin-bottom: 10px;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    display: block;
+    list-style-type: disc;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 40px;
+}
+
+#recent_analysis div.nav_container:before{
+    display: table;
+    content: " ";
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#recent_analysis div.nav_container:after{
+    clear: both;
+    display: table;
+    content: " ";
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#recent_analysis div.nav_container > div#item {
+    float: left;
+    margin-bottom: -1px;
+    position: relative;
+    display: block;
+}
+
+#recent_analysis div.nav_container >div#item >a {
+    margin-right: 2px;
+    line-height: 1.42857143;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+}
+
+#recent_analysis div.nav_container > div#item.active {
+    color: #555;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    border-bottom-color: transparent;
+}
+
+#recent_analysis div.nav_container > div#item >a:hover {
+    background-color: #f3f3f3;
+    border-bottom-color: transparent;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+#recent_analysis div.nav_container > div.active>a:hover, div.nav_container > div.active>a:focus{
+    cursor: default;
+    background-color: white !important;
+    text-decoration: none !important;
+}
+
+#recent_analysis div.nav_container a:focus, div.nav_container a:hover{
+    text-decoration: none;
+}
+
+#recent_analysis div.nav_container > div#item.active:not(:first-child) {
+    border-left:0;
+}
+
+div.loading{
+    background-color: white;
+    width:100px;
+    height: 40px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -50px;
+    margin-top: -200px;
+    display: none;
+    border: 1px solid #dedede;
+    z-index: 666;
+    border-radius: 4px;
+}
+
+div.loading>img{
+    margin-left: 30%;
+    margin-top: 4px;
+}
+
+#recent_analysis div#no_more_results{
+    display: none;
+}
+
+#recent_analysis table#recent td:first-child{
+    width: 84px;
+}
+
+#recent_analysis table#recent td:last-child{
+    text-align: right;
+    width:100px;
+}
+
+#recent_analysis table#recent td:nth-child(2){
+    width: 180px;
+}
+
+#recent_analysis table#recent td:nth-child(5){
+    width:130px;
+    text-align: right;
+}
+
+#recent_analysis table#recent .badge{
+    padding: 4px 8px;
+    font-weight: normal;
+}
+
+#recent_analysis table#recent .badge-default{
+    background-color: #8aa392;
+}
+
+#recent_analysis table#recent .badge-warning{
+    background-color: #edd851;
+    color: #484848;
+}
+
+#recent_analysis table#recent .badge-danger{
+    background-color: #ed5151;
+    color: #ffffff;
+}
+
+.table-responsive
+{
+    overflow-x: auto;
 }
