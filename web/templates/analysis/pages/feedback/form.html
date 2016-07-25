@@ -18,10 +18,10 @@
 
             <div class="modal-body" style="padding: 18px;">
                 <p>
-                    Expecting different results? Send us this report and we will inspect it. Include a message
-                    describing what you hoped the analysis report would've included but did not - as well as other improvements.
+                    Expecting different results? Share this analysis report with us and we will investigate it.
+                    Please include a brief message of what you had expected to see and what you got instead.
 
-                    <br><br><small><b>The Cuckoo team</b></small>
+                    <br><br><small><b>The Cuckoo Sandbox team</b></small>
                 </p>
 
                 <hr>
@@ -29,7 +29,7 @@
                 <form method="post">
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="firstname" name="firstname" placeholder="Firstname" type="text" required autofocus />
+                            <input class="form-control" id="firstname" name="firstname" placeholder="Your name" type="text" required autofocus />
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
                             <input class="form-control" id="company" name="company" placeholder="Company" type="text" required />
@@ -77,13 +77,17 @@
 </div>
 
 <script>
-    var task_id = {{report.analysis.info.id}};
+    var task_id = {{ report.analysis.info.id }};
     var taken_files = [];
     var taken_dirs = [];
     var cb_analysis = true;
 
     $(document).ready(function() {
         var sel = $('#modal_feedback');
+
+        sel.on("shown.bs.modal", function() {
+            $("input:text:visible:first").focus()
+        })
 
         function send_feedback_callback(data){
             if(data['status'] == true){
