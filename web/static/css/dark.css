@@ -377,8 +377,12 @@ table.dataTable thead th:after {
     color: #0ce3ac;
 }
 
-.table-hover > tbody > tr:hover {
+.table-hover > tbody > tr:hover{
     background-color: #545454;
+}
+
+.table-hover > tbody > tr:hover:not(.row-active) {
+    background-color: #404040;
 }
 
 /* text */
