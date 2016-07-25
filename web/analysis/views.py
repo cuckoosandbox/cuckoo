@@ -13,6 +13,7 @@ import zipfile
 from cStringIO import StringIO
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_safe
@@ -299,8 +300,14 @@ def behavioral(request):
 
 @require_safe
 def latest_report(request):
-    rep = results_db.analysis.find_one({}, sort=[("_id", pymongo.DESCENDING)])
-    return report(request, rep["info"]["id"] if rep else 0)
+    report = results_db.analysis.find_one({
+    }, sort=[("_id", pymongo.DESCENDING)])
+    if not report:
+        return view_error(request, "No analysis has been found")
+
+    return redirect(reverse(
+        "analysis", args=(report["info"]["id"], "summary")
+    ), permanent=False)
 
 @require_safe
 def file(request, category, object_id, fetch="fetch"):
