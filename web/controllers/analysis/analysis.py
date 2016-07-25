@@ -12,7 +12,6 @@ from lib.cuckoo.core.database import Database, TASK_PENDING
 from lib.cuckoo.common.utils import versiontuple
 from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
 
-
 results_db = settings.MONGO
 
 class AnalysisController:
@@ -63,7 +62,7 @@ class AnalysisController:
             raise Exception("the specified analysis does not exist")
 
         data = {
-            'analysis': report
+            "analysis": report
         }
 
         dnsinfo = AnalysisController._get_dnsinfo(report)
@@ -101,8 +100,8 @@ class AnalysisController:
             iplookups = dict()
 
         return {
-            'domainlookups': domainlookups,
-            'iplookups': iplookups
+            "domainlookups": domainlookups,
+            "iplookups": iplookups
         }
 
     @staticmethod
