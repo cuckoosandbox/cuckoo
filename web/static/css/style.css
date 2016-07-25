@@ -582,3 +582,11 @@ div.loading>img{
 {
     overflow-x: auto;
 }
+
+.dropdown-menu li a{
+    padding: 3px 10px;
+    line-height: 30px;
+    height: 30px;
+    font-size: 13px;
+    padding-left: 20px;
+}
