@@ -20,10 +20,6 @@
     cursor: inherit;
     display: block;
 }
-input[readonly] {
-    background-color: white !important;
-    cursor: text !important;
-}
 </style>
 <script type='text/javascript'>
 $(document)
@@ -63,7 +59,7 @@ $(document).ready( function() {
                 <div class="tab-content">
                     <div class="tab-pane fade {% if not resubmit or resubmit == "file" %}in active{% endif %}" id="file">
                         {% if resubmit == "file" %}
-                        <label style="display: flex; color: #337ab7;">Chosen file to resubmit</label>
+                        <label style="display: flex;">Chosen file to resubmit</label>
                         <input name="category" type="text" class="form-control hidden" value="file">
                         {% if dropped_file %}
                         <input name="category" type="text" class="form-control hidden" value="dropped_file">
@@ -85,7 +81,7 @@ $(document).ready( function() {
                     </div>
                     <div class="tab-pane fade {% if resubmit == "URL" %}in active{% endif %}" id="url">
                         {% if resubmit == "URL" %}
-                        <label style="display: flex; color: #337ab7;">Chosen URL to resubmit</label>
+                        <label style="display: flex;">Chosen URL to resubmit</label>
                         <input name="category" type="text" class="form-control hidden" value="URL">
                         {% endif %}
                         <div style="width: 100%;" class="input-group">
