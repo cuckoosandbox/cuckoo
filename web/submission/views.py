@@ -7,9 +7,8 @@ import os
 import sys
 
 from django.conf import settings
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
 
 sys.path.insert(0, settings.CUCKOO_PATH)
 
