@@ -119,7 +119,7 @@ class Files(object):
 
     def dump_files(self):
         """Dump all pending files."""
-        for filepath in self.files:
+        for filepath in list(self.files):
             self.dump_file(filepath)
 
 class ProcessList(object):

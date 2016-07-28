@@ -320,7 +320,10 @@ class Task(Base):
         d = Dictionary()
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            d[column.name] = value
+            if isinstance(value, datetime):
+                d[column.name] = value.strftime("%Y%m%dT%H:%M:%S")
+            else:
+                d[column.name] = value
 
         # Tags are a relation so no column to iterate.
         d["tags"] = [tag.name for tag in self.tags]

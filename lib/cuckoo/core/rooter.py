@@ -14,7 +14,8 @@ from lib.cuckoo.common.config import Config
 
 cfg = Config()
 log = logging.getLogger(__name__)
-unixpath = tempfile.mktemp()
+unixpath = tempfile.mktemp(dir=cfg.cuckoo.rooter_tmp
+                               if cfg.cuckoo.rooter_tmp else None)
 lock = threading.Lock()
 
 vpns = {}
@@ -39,6 +40,7 @@ def rooter(command, *args, **kwargs):
     except socket.error as e:
         log.critical("Unable to passthrough root command as we're unable to "
                      "connect to the rooter unix socket: %s.", e)
+        lock.release()
         return
 
     s.send(json.dumps({

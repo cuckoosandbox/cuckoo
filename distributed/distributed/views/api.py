@@ -106,8 +106,27 @@ def node_put(name):
         node.url = \
             node_url(ip=request.form.get("ip"), url=request.form.get("url"))
 
+    was_enabled = node.enabled
     if "enabled" in request.form:
         node.enabled = bool(int(request.form["enabled"]))
+
+    # When node is re-enabled, sync the list of machines
+    if not was_enabled and node.enabled:
+        # First remove all existing machines
+        previous_machines = [m for m in node.machines]
+        for m in previous_machines:
+            node.machines.remove(m)
+            db.session.delete(m)
+        # Then retrieve new list of machines
+        try:
+            machines = list_machines(node.url)
+        except Exception as e:
+            return json_error(404, "Error connecting to Cuckoo node: %s", e)
+        for machine in machines:
+            m = Machine(name=machine["name"], platform=machine["platform"],
+                        tags=machine["tags"])
+            node.machines.append(m)
+            db.session.add(m)
 
     db.session.commit()
     return jsonify(success=True)
