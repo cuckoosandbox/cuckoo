@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-<div class="alert alert-info" style="text-align: center;font-size: 22px;">
-    Estimating ~<b>{{report.estimate_hour}}</b> analysis per hour, <b>{{report.estimate_day}}</b> per day.
-</div>
+{% if report.estimate_hour and report.estimate_day %}
+    <div class="alert alert-info" style="text-align: center;font-size: 22px;">
+        Estimating ~<b>{{report.estimate_hour}}</b> analysis per hour, <b>{{report.estimate_day}}</b> per day.
+    </div>
+{% endif %}
 
 <div class="row">
     <div class="col-xs-6">
