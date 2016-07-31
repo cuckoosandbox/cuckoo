@@ -77,11 +77,10 @@ class AnalysisApi:
 
         if tasks:
             q = db.Session().query(Task)
-
-            q = q.filter(Task.id.in_([z["id"] for z in tasks]))
+            q = q.filter(Task.id.in_([t["id"] for t in tasks]))
 
             for task_sql in q.all():
-                for task_mongo in [z for z in tasks if z["id"] == task_sql.id]:
+                for task_mongo in [t for t in tasks if t["id"] == task_sql.id]:
                     if task_sql.sample:
                         task_mongo["sample"] = task_sql.sample.to_dict()
                     else:
@@ -94,13 +93,12 @@ class AnalysisApi:
 
                     task_mongo.update(task_sql.to_dict())
 
-        # Fetch the remaining tasks that were not completed and
-        # insert them at the beginning of the returning list
+        # Fetch remaining tasks that were not completed
         q = db.Session().query(Task)
         q = q.filter(Task.status != "reported")
         if offset == 0:
             for task_sql in q.all():
-                tasks.insert(0, {
+                tasks.append({
                     "id": task_sql.id,
                     "filename_url": "-",
                     "added_on": task_sql.added_on,
