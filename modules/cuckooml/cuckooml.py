@@ -766,6 +766,35 @@ class ML(object):
         return pd.DataFrame(hdbl, index=features.index, columns=["label"])
 
 
+    def save_clustering_results(self, loader, save_location=""):
+        """Update JSONs report files with clustering results"""
+        # TODO: Allow storing multiple clustering results based on parameters
+        hdbscan_root = ["info", "clustering", "hdbscan"]
+        hdbscan_paths = {"label":"clusterID",
+                         "probability":"clusterProbability",
+                         "outlier_score":"outlierScore"}
+        if "hdbscan" in self.clustering:
+            loader.update_binaries(self.clustering["hdbscan"]["clustering"],
+                                   hdbscan_root, hdbscan_paths)
+            loader.update_binaries(self.clustering["hdbscan"]["min_samples"],
+                                   hdbscan_root, "min_samples")
+            loader.update_binaries(
+                self.clustering["hdbscan"]["min_cluster_size"], hdbscan_root,
+                "min_cluster_size")
+
+        dbscan_root = ["info", "clustering", "dbscan"]
+        dbscan_paths = {"label":"clusterID"}
+        if "dbscan" in self.clustering:
+            loader.update_binaries(self.clustering["dbscan"]["clustering"],
+                                   dbscan_root, dbscan_paths)
+            loader.update_binaries(self.clustering["dbscan"]["eps"],
+                                   dbscan_root, "eps")
+            loader.update_binaries(self.clustering["dbscan"]["min_samples"],
+                                   dbscan_root, "min_samples")
+
+        loader.save_binaries(save_location)
+
+
     def assess_clustering(self, clustering, labels, data=None):
         """Assess clusters fit according to variety of metrics."""
         clustering = clustering["label"].tolist()
@@ -801,16 +830,52 @@ class Loader(object):
     of interest."""
     def __init__(self):
         self.binaries = {}
+        self.binaries_location = ""
+        self.binaries_updated = False
 
 
     def load_binaries(self, directory):
         """Load all binaries' reports from given directory."""
+        self.binaries_location = directory + "/"
         for f in os.listdir(directory):
             self.binaries[f] = Instance()
-            self.binaries[f].load_json(directory+"/"+f)
+            self.binaries[f].load_json(directory+"/"+f, f)
             self.binaries[f].label_sample()
             self.binaries[f].extract_features()
             self.binaries[f].extract_basic_features()
+
+
+    def update_binaries(self, elements, root, locations):
+        """Append `elements` to the loaded JSONs at given `locations`."""
+        if isinstance(elements, pd.DataFrame) and isinstance(locations, dict):
+            self.binaries_updated = True
+            for i in elements.index:
+                for j in elements.columns:
+                    self.binaries[i].update(elements[j][i], root+[locations[j]])
+        elif isinstance(locations, str):
+            self.binaries_updated = True
+            for i in self.binaries:
+                self.binaries[i].update(elements, root+[locations])
+
+
+    def save_binaries(self, alternative_location=""):
+        """Save the binaries to given location if they have been updated."""
+        if self.binaries_updated:
+            save_location = self.binaries_location
+            if alternative_location:
+                save_location = alternative_location
+                if save_location[-1] != "/":
+                    save_location += "/"
+
+            # Create directory if it does not exist
+            if not os.path.exists(save_location):
+                os.makedirs(save_location)
+
+            for f in self.binaries:
+                self.binaries[f].save_json(save_location)
+            self.binaries_updated = False
+        else:
+            print "The binaries haven't been updated. No need to save them."
 
 
     def get_labels(self):
@@ -843,6 +908,8 @@ class Instance(object):
     POSITIVE_RATE = 2 * LABEL_SIGNIFICANCE_COUNT
 
     def __init__(self):
+        self.json_path = ""
+        self.name = ""
         self.report = None
         self.total = None
         self.positives = None
@@ -852,10 +919,11 @@ class Instance(object):
         self.basic_features = {}
 
 
-    def load_json(self, json_file):
+    def load_json(self, json_file, name="unknown"):
         """Load JSON formatted malware report. It can handle both a path to
         JSON file and a dictionary object."""
         if isinstance(json_file, str):
+            self.json_path = json_file
             with open(json_file, "r") as malware_report:
                 try:
                     self.report = json.load(malware_report)
@@ -870,6 +938,8 @@ class Instance(object):
             # Unknown binary format
             print >> sys.stderr, "Could not load the data *", json, "* is of " \
                 "unknown type: ", type(json), "."
+
+        self.name = name
 
         # Get total and positives
         self.total = self.report.get("virustotal").get("total")
@@ -901,6 +971,25 @@ class Instance(object):
             self.label = top_label.encode("ascii", "ignore")
         else:
             self.label = "none"
+
+
+    def update(self, element, location):
+        """Insert `element` at given `location`."""
+        element_to_update = self.report
+        for l in location[:-1]:
+            etu = element_to_update.get(l)
+            if etu is None:
+                element_to_update[l] = {}
+                element_to_update = element_to_update.get(l)
+            else:
+                element_to_update = etu
+        element_to_update[location[-1]] = element
+
+
+    def save_json(self, root_dir):
+        """Save JSON stored in the class to a file."""
+        with open(root_dir+self.name, "w") as j_file:
+            json.dump(self.report, j_file)
 
 
     def extract_features(self):
