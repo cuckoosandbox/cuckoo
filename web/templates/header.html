@@ -27,6 +27,8 @@
 
 {% if request.COOKIES.theme == "night" %}
     <link href="{% static "css/night.css" %}" rel="stylesheet">
+{% elif request.COOKIES.theme == "cyborg" %}
+    <link href="{% static "css/cyborg.css" %}" rel="stylesheet">
 {% endif %}
 
 </head>
@@ -62,6 +64,7 @@
                         <li class="dropdown-header">Appearance</li>
                         <li><a id="theme_default" href="#">Default Theme</a></li>
                         <li><a id="theme_night" href="#">Night Theme</a></li>
+                        <li><a id="theme_cyborg" href="#">Cyborg Theme</a></li>
                     </ul>
                 </li>
             </ul>
