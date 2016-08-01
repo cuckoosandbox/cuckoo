@@ -211,6 +211,7 @@ class ML(object):
         self.simple_features = None
         self.simple_features_description = {}
         self.features = None
+        self.clustering = {}
 
 
     def __log_bin(self, value, base=3):
@@ -732,7 +733,7 @@ class ML(object):
         dataset.to_csv(filename, encoding='utf-8')
 
 
-    def cluster_dbscan(self, features=None, eps=20.0, min_samples=5):
+    def cluster_dbscan(self, features=None, eps=20.0, min_samples=5, dry=False):
         """Do *dbscan* clustering and return """
         if features is None:
             print "You didn't indicate features to be used. Internal features \
@@ -744,12 +745,30 @@ class ML(object):
                 features = self.features
 
         dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(features)
-        return pd.DataFrame(dbscan.labels_, index=features.index,
-                            columns=["label"])
+
+        # TODO: Allow storing multiple clustering results based on parameters
+        if dry:
+            return {
+                "eps":eps,
+                "min_samples":min_samples,
+                "clustering":pd.DataFrame(dbscan.labels_, index=features.index,
+                                        columns=["label"])
+            }
+        else:
+            # if "dbscan" not in self.clustering:
+                # self.clustering["dbscan"] = {}
+            # clustering_hash = "eps:%f&min_samples:%d" % (eps, min_samples)
+            self.clustering["dbscan"] = {
+            # self.clustering["dbscan"][clustering_hash] = {
+                "eps":eps,
+                "min_samples":min_samples,
+                "clustering":pd.DataFrame(dbscan.labels_, index=features.index,
+                                        columns=["label"])
+            }
 
 
-    def cluster_hdbscan(self, features=None, min_samples=None, \
-                        min_cluster_size=10):
+    def cluster_hdbscan(self, features=None, min_samples=1, \
+                        min_cluster_size=6, dry=False):
         """Do *hdbscan* clustering and return """
         if features is None:
             print "You didn't indicate features to be used. Internal features \
@@ -762,8 +781,33 @@ class ML(object):
 
         hdbscan = HDBSCAN(min_samples=min_samples, \
                           min_cluster_size=min_cluster_size)
-        hdbl = hdbscan.fit_predict(features)
-        return pd.DataFrame(hdbl, index=features.index, columns=["label"])
+        hdbscan_fit = hdbscan.fit(features)
+        hdbscan_stats = np.column_stack([hdbscan_fit.labels_,
+                                         hdbscan_fit.probabilities_,
+                                         hdbscan_fit.outlier_scores_])
+
+        # TODO: Allow storing multiple clustering results based on parameters
+        if dry:
+            return {
+                "min_samples":min_samples,
+                "min_cluster_size":min_cluster_size,
+                "clustering":pd.DataFrame(hdbscan_stats, index=features.index,
+                                        columns=["label", "probability",
+                                                "outlier_score"])
+            }
+        else:
+            # if "hdbscan" not in self.clustering:
+                # self.clustering["hdbscan"] = {}
+            # clustering_hash = "min_samples:%s&min_cluster_size:%d" % \
+                # (min_samples, min_cluster_size)
+            self.clustering["hdbscan"] = {
+            # self.clustering["hdbscan"][clustering_hash] = {
+                "min_samples":min_samples,
+                "min_cluster_size":min_cluster_size,
+                "clustering":pd.DataFrame(hdbscan_stats, index=features.index,
+                                        columns=["label", "probability",
+                                                "outlier_score"])
+            }
 
 
     def save_clustering_results(self, loader, save_location=""):
