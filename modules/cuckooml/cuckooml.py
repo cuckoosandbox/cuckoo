@@ -860,6 +860,56 @@ class ML(object):
         loader.save_binaries(save_location)
 
 
+    def anomaly_detection(self, samples=None, labels=None,
+                          probability_threshold=0.9, outlier_threshold=0.5,
+                          homogeneity_threshold=0.2):
+        """Detect anomalies in clustering using samples classified as noise and
+        low probability cluster membership."""
+        if "hdbscan" not in self.clustering:
+            print "Soft clustering is needed for *anomaly detection*.", \
+                "Currently only *HDBSCAN* is supported."
+            return
+
+        if labels is None:
+            labels = self.labels
+        if samples is None:
+            samples = self.clustering["hdbscan"]["clustering"]
+        sample = samples.copy()
+        sample.rename(columns={"label": "cluster"}, inplace=True)
+        sample = pd.concat([sample, labels], axis=1)
+
+        anomalies = {}
+
+        anomalies["outliers"] = sample[sample.cluster == -1].index.tolist()
+        # TODO: cluster ID and samples most similar to given outlier
+
+        # Clustered as X but below threshold
+        anomalies["low_probability"] = \
+            sample[sample.probability < probability_threshold] \
+                  [sample.cluster != -1].index.tolist()
+
+        # High outlier score
+        anomalies["high_outlier_score"] = \
+            sample[sample.outlier_score > outlier_threshold] \
+                  [sample.cluster != -1].index.tolist()
+
+        # Within cluster inconsistencies - detect non-homogeneous clusters
+        anomalies["homogeneity_suspects"] = {}
+        for i in set(sample["cluster"].tolist()):
+            c = collections.Counter(
+                sample[sample.cluster == i]["label"].tolist())
+            total = float(sum(c.values()))
+            suspicious = [j for j in c if c[j]/total < homogeneity_threshold]
+
+            anomalies["homogeneity_suspects"][i] = []
+            for j in suspicious:
+                anomalies["homogeneity_suspects"][i] += \
+                    sample[sample.cluster == i][sample.label == j] \
+                    .index.tolist()
+
+        return anomalies
+
+
     def compare_sample(self, sample, amend=False):
         """Compare new sample with current clustering."""
         # Retrieve cluster ID
