@@ -890,6 +890,43 @@ class ML(object):
         return performance_metrics
 
 
+    def clustering_label_distribution(self, clustering, labels, plot=False):
+        """Get statistics about number of ground truth labels per cluster."""
+        cluster_ids = set(clustering["label"].tolist())
+        labels_ids = set(labels["label"].tolist())
+        cluster_distribution = {}
+        for i in cluster_ids:
+            cluster_distribution[i] = {}
+            for j in labels_ids:
+                cluster_distribution[i][j] = 0
+
+        for i in clustering.index:
+            cluster_distribution[clustering["label"][i]][labels["label"][i]] \
+                += 1
+
+        if plot:
+            for i in cluster_distribution:
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+                yticks = []
+                counter = 0
+                for j in cluster_distribution[i]:
+                    if cluster_distribution[i][j]:
+                        ax.barh(counter, cluster_distribution[i][j])
+                        counter += 1
+                        yticks.append(j)
+                yticks_range = [l+.4 for l in range(len(yticks))]
+                plt.yticks(yticks_range, yticks)
+                ax.set_ylim([0, yticks_range[-1]+.4])
+                plt.title("Cluster: %d" % i)
+                plt.savefig("cluster_%d%s" % (i, ".png"), bbox_inches="tight")
+                plt.close()
+        else:
+            cluster_distribution = pd.DataFrame(cluster_distribution).T
+            cluster_distribution.index.name = "cluster_id"
+            return cluster_distribution
+
+
 class Loader(object):
     """Loads instances for analysis and give possibility to extract properties
     of interest."""
