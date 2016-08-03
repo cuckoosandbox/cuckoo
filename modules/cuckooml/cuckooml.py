@@ -206,7 +206,11 @@ class ML(object):
         }
     }
 
-    def __init__(self):
+    def __init__(self, context="standalone"):
+        """The context variable defines type of operation for the functions
+        using visualisations. *standalone* saves figures as files, *notebook*
+        displays them."""
+        self.context = context
         self.labels = None
         self.simple_features = None
         self.simple_features_description = {}
@@ -688,8 +692,11 @@ class ML(object):
             sns.boxplot(count_dataset[f])
             sns.swarmplot(count_dataset[f], color=".25")
             plt.title("Abnormal behaviour detection for " + f)
-            plt.savefig("abnormal_behaviour_" + f.replace(":", "_") + ".png")
-            plt.close()
+            if self.context == "notebook":
+                plt.show()
+            else:
+                plt.savefig("abnormal_behaviour_" + f.replace(":", "_") + ".png")
+                plt.close()
 
             # Get list of local outliers
             f_1_quartile = count_dataset[f].quantile(0.25)
@@ -728,9 +735,12 @@ class ML(object):
         sns.lmplot("0", "1", data=tsne_dfl, fit_reg=False, hue="label",
                    scatter_kws={"marker":"D", "s":50}, legend_out=True)
         plt.title(fig_name + " (lr:" + str(learning_rate) + ")")
-        plt.savefig(fig_name + "_" + str(learning_rate) + ".png",
-                    bbox_inches='tight', pad_inches=1.)
-        plt.close()
+        if self.context == "notebook":
+            plt.show()
+        else:
+            plt.savefig(fig_name + "_" + str(learning_rate) + ".png",
+                        bbox_inches='tight', pad_inches=1.)
+            plt.close()
 
 
     def save_dataset(self, filename="custom_dataset.csv", features=None, \
@@ -999,8 +1009,11 @@ class ML(object):
                 plt.yticks(yticks_range, yticks)
                 ax.set_ylim([0, yticks_range[-1]+.4])
                 plt.title("Cluster: %d" % i)
-                plt.savefig("cluster_%d%s" % (i, ".png"), bbox_inches="tight")
-                plt.close()
+                if self.context == "notebook":
+                    plt.show()
+                else:
+                    plt.savefig("cluster_%d%s" % (i, ".png"), bbox_inches="tight")
+                    plt.close()
         else:
             cluster_distribution = pd.DataFrame(cluster_distribution).T
             cluster_distribution.index.name = "cluster_id"
