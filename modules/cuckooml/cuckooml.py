@@ -607,9 +607,9 @@ class ML(object):
         dataset.to_csv(filename, encoding='utf-8')
 
 
-    def feature_category(self, category="static"):
+    def feature_category(self, category="static", complement=False):
         """Get feature data frame containing only features form selected
-        category."""
+        category (or their complement)."""
         def pull_names(obj, prefix=""):
             ret = []
             if isinstance(obj, dict):
@@ -649,7 +649,9 @@ class ML(object):
         # TODO: what if we want exact match but most starts with word
         for col in self.features:
             for c in category:
-                if col.startswith(c):
+                if complement and not col.startswith(c):
+                    extract.append(col)
+                elif not complement and col.startswith(c):
                     extract.append(col)
 
         return self.features.loc[:, extract]
