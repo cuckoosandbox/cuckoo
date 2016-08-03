@@ -677,17 +677,15 @@ class ML(object):
         return dataset
 
 
-    def detect_abnormal_behaviour(self, feature=None):
+    def detect_abnormal_behaviour(self, count_dataset=None):
         """Detect samples that behave significantly different than others."""
-        if feature is None:
+        if count_dataset is None:
             # Pull all count features
             count_features = self.feature_category(":count:")
             meta_size = self.feature_category(":meta:size")
             simp_count = self.feature_category(":simp:count")
             count_dataset = pd.concat([count_features, meta_size, \
                                       simp_count], axis=1)
-        else:
-            count_dataset = self.feature_category(feature)
 
         for f in count_dataset:
             # Produce boxplots
