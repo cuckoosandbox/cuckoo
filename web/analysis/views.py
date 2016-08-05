@@ -486,7 +486,7 @@ def remove(request, task_id):
             fs.delete(ObjectId(analysis["network"]["mitmproxy_id"]))
 
         # Delete dropped.
-        for drop in analysis["dropped"]:
+        for drop in analysis.get("dropped", []):
             if "object_id" in drop and results_db.analysis.find({"dropped.object_id": ObjectId(drop["object_id"])}).count() == 1:
                 fs.delete(ObjectId(drop["object_id"]))
 
