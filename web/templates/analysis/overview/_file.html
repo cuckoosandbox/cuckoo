@@ -6,8 +6,9 @@
         <table class="table table-striped">
             <tr>
                 <th class="text-right">Size</th>
+                <td>
                 {% if analysis.target.file_id %}
-                    <td>{{ analysis.target.file.size | sizeof_fmt }}</td>
+                    {{ analysis.target.file.size | sizeof_fmt }}
                     <span class="pull-right">
                     <a class="btn btn-primary btn-xs" href="{% url "analysis.views.file" "sample" analysis.target.file_id %}">
                         <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download

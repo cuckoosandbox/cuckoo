@@ -1,0 +1,30 @@
+<section id="static_analysis">
+    {% for js in analysis.static.pdf %}
+        {% if js.javascript %}
+            {% for code in js.javascript %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel" id="accordion">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <label class=accordion-toggle">Javascript</label>
+                                </div>
+
+                                <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                                    <div class="panel-body">
+                                        <div class="col-md-12">
+                                            <pre>
+                                                <code class="js">{{ code.orig_code }}</code>
+                                            </pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</section>
