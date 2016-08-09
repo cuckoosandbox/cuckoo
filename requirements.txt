@@ -33,8 +33,9 @@ python-magic==0.4.6
 requests==2.7.0
 six==1.9.0
 SQLAlchemy==1.0.8
-tlslite-ng==0.6.0-alpha3
+tlslite-ng
 wakeonlan==0.2.2
 Werkzeug==0.10.4
 Pillow==3.2
 django_extensions==1.6.7
+sflock
