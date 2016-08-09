@@ -101,12 +101,15 @@ class ProcessTree(BehaviorHandler):
         }
 
     def run(self):
-        root = {"children": []}
+        root = {
+            "children": [],
+        }
+        first_seen = lambda x: x["first_seen"]
 
-        for p in self.processes.values():
+        for p in sorted(self.processes.values(), key=first_seen):
             self.processes.get(p["ppid"], root)["children"].append(p)
 
-        return root["children"]
+        return sorted(root["children"], key=first_seen)
 
 class GenericBehavior(BehaviorHandler):
     """Generates summary information."""
