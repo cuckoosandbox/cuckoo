@@ -653,3 +653,14 @@ div.loading>img{
 .dndupload progress::-webkit-progress-value { /*background: #0063a6;*/ }
 .dndupload .fail { background: #c00; padding: 2px; color: #fff; }
 .dndupload .hidden { display: none !important;}
+
+/* filetree.js */
+.jstree-default .jstree-node { min-height: 20px !important; line-height: 20px !important; }
+.jstree-anchor { line-height: 20px !important; height: 20px !important; }
+.jstree-default .jstree-icon:empty { width: 20px !important; height: 20px !important; line-height: 20px !important; }
+.jstree-default .jstree-wholerow { height: 20px; }
+.jstree-children, .jstree-grid-cell { font-size: 12px; }
+.jstree-grid-wrapper .jstree-grid-midwrapper .jstree-grid-column:last-child { width: 100% !important; }
+.jstree-default .jstree-icon { background-position-y: -6px !important; }
+.jstree-default .jstree-wholerow-clicked, .jstree-default .jstree-hovered,
+.jstree-default .jstree-clicked, .jstree-default .jstree-wholerow-hovered { background: transparent !important; box-shadow: none; }
