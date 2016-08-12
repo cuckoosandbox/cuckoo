@@ -590,3 +590,66 @@ div.loading>img{
     font-size: 13px;
     padding-left: 20px;
 }
+
+/* dndupload.js */
+.dndupload {
+    width: 300px;
+    min-height: 240px;
+    margin: 20px auto;
+    background-color: #c8dadf;
+    position: relative;
+    padding: 10px;
+}
+
+.dndupload #uploader {
+    padding: 50px 20px;
+    outline-offset: -10px;
+    outline: 2px dashed #92b0b3;
+    -webkit-transition: outline-offset .1s ease-in-out, background-color .1s linear;
+    transition: outline-offset .1s ease-in-out, background-color .1s linear;
+}
+
+.dndupload svg{
+    width: 100%;
+    fill: #92b0b3;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.dndupload .holder_input{
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.dndupload .holder_button{
+    font-weight: 700;
+    color: #e5edf1;
+    background-color: #39bfd3;
+    display: none;
+    padding: 8px 16px;
+    margin: 40px auto 0;
+}
+
+.dndupload label{
+    width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    text-align: center;
+    color: #6e8e91;
+}
+.dndupload label strong { color: #4e6658; text-decoration: underline; }
+.dndupload #uploader.hover { outline-offset: 2px; }
+.dndupload img { display: block; margin: 10px auto; }
+.dndupload p { margin: 10px; font-size: 14px; }
+.dndupload progress { width: 100%; height: 20px; display: inline-block; }
+.dndupload progress::-webkit-progress-bar { /*background: #f3f3f3;*/ /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
+.dndupload progress::-webkit-progress-value { /*background: #0063a6;*/ }
+.dndupload .fail { background: #c00; padding: 2px; color: #fff; }
+.dndupload .hidden { display: none !important;}
