@@ -14,6 +14,7 @@ except ImportError:
  
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
+from lib.cuckoo.common.exceptions import CuckooOperationalError
 
 class Mattermost(Report):
     """Notifies about finished analysis via Mattermost webhook."""
