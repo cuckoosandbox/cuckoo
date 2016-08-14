@@ -44,6 +44,7 @@ class Mattermost(Report):
             post += "**URLS**\n`{0}`".format('\n'.join(urls).replace(".", "[.]"))
 
         data = {
+            "username": self.options.get("username"),
             "text": post
         }
 
