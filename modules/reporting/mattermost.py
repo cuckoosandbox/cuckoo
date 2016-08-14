@@ -4,8 +4,14 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import json
-import requests
 
+try:
+    import requests
+    HAVE_REQUESTS = True
+
+except ImportError:
+     HAVE_REQUESTS = False
+ 
 from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.exceptions import CuckooReportError
 
@@ -13,6 +19,11 @@ class Mattermost(Report):
     """Notifies about finished analysis via Mattermost webhook."""
 
     def run(self, results):
+
+        if not HAVE_REQUESTS:
+            raise CuckooOperationalError(
+                "The IRMA processing module requires the requests "
+                "library (install with `pip install requests`)")
 
         sigs = []
         urls = []
@@ -50,4 +61,8 @@ class Mattermost(Report):
         }
 
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(self.options.get("url"), headers=headers, data=json.dumps(data))
+        
+        try:
+            requests.post(self.options.get("url"), headers=headers, data=json.dumps(data))
+        except Exception as e:
+            raise CuckooReportError("Failed posting message to Mattermost: %s" % e)
