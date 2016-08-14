@@ -22,19 +22,29 @@ class Mattermost(Report):
                 for http in sig.get("marks"):
                     urls.append(http.get("ioc"))
 
+        post = "Finished analyze ::: [{0}]({1}{0}) ::: ".format(
+                            results.get("info").get("id"),
+                            self.options.get("myurl")
+                            )
+
+        post += "File : {0} ::: ".format(
+                            results.get("target").get("file").get("name")
+                            )
+
+        if self.options.get("show-virustotal"):
+            post += "**VT : {0} / {1}**\n".format(
+                            results.get("virustotal").get("total"),
+                            results.get("virustotal").get("positives"),
+                            )
+
+        if self.options.get("show-signatures"):
+            post += "**Signatures** ::: {0} \n".format(' : '.join(sigs),)
+
+        if self.options.get("show-urls"):
+            post += "**URLS**\n`{0}`".format('\n'.join(urls).replace(".", "[.]"))
+
         data = {
-            "text": "Finished analyze ::: [{0}]({4}{0}) ::: "
-                    "File : {1} ::: "
-                    "VT : {2} / {3} \n "
-                    "SIGS ::: {5} \n "
-                    "**URLS**\n `{6}`".format(
-                        results.get("info").get("id"), 
-                        results.get("target").get("file").get("name"), 
-                        results.get("virustotal").get("total"), 
-                        results.get("virustotal").get("positives"), 
-                        self.options.get("myurl"), 
-                        ' : '.join(sigs), '\n'.join(urls).replace(".", "[.]")
-                    ) 
+            "text": post
         }
 
         headers = {'Content-Type': 'application/json'}
