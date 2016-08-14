@@ -27,8 +27,9 @@ class Mattermost(Report):
                             self.options.get("myurl")
                             )
 
-        post += "File : {0} ::: ".format(
-                            results.get("target").get("file").get("name")
+        post += "File : {0} ::: Score : **{1}** ::: ".format(
+                            results.get("target").get("file").get("name"),
+                            results.get("info").get("score")
                             )
 
         if self.options.get("show-virustotal"):
