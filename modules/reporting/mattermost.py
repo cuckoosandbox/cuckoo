@@ -22,7 +22,7 @@ class Mattermost(Report):
 
         if not HAVE_REQUESTS:
             raise CuckooOperationalError(
-                "The IRMA processing module requires the requests "
+                "The Mattermost processing module requires the requests "
                 "library (install with `pip install requests`)")
 
         sigs = []
