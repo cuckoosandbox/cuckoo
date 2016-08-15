@@ -4,3 +4,6 @@
 
 class InvalidReport(Exception):
     pass
+
+class InvalidPcap(Exception):
+    pass

@@ -4,10 +4,9 @@
 
 import os.path
 import requests
-import shutil
 import urlparse
 
-from cuckoo.distributed.exception import InvalidReport
+from cuckoo.distributed.exception import InvalidReport, InvalidPcap
 
 def _get(base, uri, *args, **kwargs):
     return requests.get(urlparse.urljoin(base, uri % args), **kwargs)
@@ -77,12 +76,10 @@ def delete_task(url, task_id):
     return _get(url, "/tasks/delete/%d", task_id).status_code == 200
 
 def fetch_pcap(url, task_id, filepath):
-    # Explicitly disable any compression as otherwise we'd end up with a
-    # compressed file as shutil.copyfileobj() wouldn't decompress it
-    # transparently.
-    headers = {
-        "accept-encoding": "gzip;q=0,deflate,sdch",
-    }
-    r = _get(url, "/pcap/get/%s", task_id, headers=headers, stream=True)
+    r = _get(url, "/pcap/get/%s", task_id, stream=True)
+    if r is None or r.status_code != 200:
+        raise InvalidPcap("No PCAP file found")
+
     with open(filepath, "wb") as f:
-        shutil.copyfileobj(r.raw, f)
+        for chunk in r.iter_content(chunk_size=1024*1024):
+            f.write(chunk)

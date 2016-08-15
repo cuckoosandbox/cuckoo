@@ -11,7 +11,7 @@ import time
 from cuckoo.distributed.api import node_status, fetch_tasks, delete_task
 from cuckoo.distributed.api import store_report, submit_task, fetch_pcap
 from cuckoo.distributed.db import db, Task, Node, NodeStatus
-from cuckoo.distributed.exception import InvalidReport
+from cuckoo.distributed.exception import InvalidReport, InvalidPcap
 from cuckoo.distributed.misc import settings
 
 log = logging.getLogger(__name__)
@@ -140,7 +140,10 @@ def handle_node(instance):
             # Fetch the pcap file.
             if settings.pcap:
                 pcap_path = os.path.join(dirpath, "dump.pcap")
-                fetch_pcap(node.url, t.task_id, pcap_path)
+                try:
+                    fetch_pcap(node.url, t.task_id, pcap_path)
+                except InvalidPcap as e:
+                    log.critical("Error fetching pcap: %s", e)
 
             # Delete the task and all its associated files from the
             # Cuckoo node.
