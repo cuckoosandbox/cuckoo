@@ -3,26 +3,75 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+
+from lib.cuckoo.core.database import Database
+from lib.cuckoo.common.utils import get_filename_from_path
+
 from sflock.abstracts import File
+from sflock.unpack.zip import Zipfile
+from sflock.unpack.rar import Rarfile
+from sflock.unpack.tar import Tarfile
 
 class SubmissionController:
-    def __init__(self):
-        pass
+    def __init__(self, submit_id):
+        self.submit_id = submit_id
 
-    def presubmit(self, filename, buffer, password=None):
+        self._path_root = ""
+        self._files = []
+
+        self.get_submit()
+
+    def get_submit(self):
+        db = Database()
+
+        submit = db.view_submit(self.submit_id)
+        tmp_path = submit.path
+
+        self._files = os.listdir(tmp_path)
+        self._path_root = submit.path
+
+    def get_filetree(self):
+        data = {}
+
+        for f in self._files:
+            filename = get_filename_from_path(f)
+
+            file_data = open("%s/%s" % (self._path_root, f), "rb")
+            extracted = self.analyze_file(filename, file_data.read())
+
+            if isinstance(extracted, dict):
+                data[extracted["file"].hash] = extracted
+            else:
+                data[extracted.hash] = {"file": extracted}
+
+        return data
+
+    @staticmethod
+    def analyze_file(filename, data, password=None):
         if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2")):
-            f = File(contents=buffer)
+            f = File(filepath=filename, contents=data)
             signature = f.get_signature()
             data = {"file": f, "unpacked": []}
 
-            container = signature["unpacker"](f=f)
+            container = None
+            if signature["family"] == "rar":
+                container = Rarfile
+            elif signature["family"] == "zip":
+                container = Zipfile
+            elif signature["family"] == "tar":
+                container = Tarfile
+            else:
+                return f
+
+            container = container(f=f)
 
             for entry in container.unpack(mode=signature["mode"]):
                 data["unpacked"].append(entry)
 
             return data
-        else:
-            return File(contents=buffer)
+
+        return File(filepath=filename, contents=data)
 
     def submit(self):
         pass
