@@ -182,6 +182,17 @@ class Guest(Base):
         self.label = label
         self.manager = manager
 
+class Submit(Base):
+    """Submitted files details."""
+    __tablename__ = "submit"
+
+    id = Column(Integer(), primary_key=True)
+    path = Column(String(256), nullable=False)
+    added = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, path):
+        self.path = path
+
 class Sample(Base):
     """Submitted files details."""
     __tablename__ = "samples"
@@ -1112,6 +1123,32 @@ class Database(object):
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
                         memory, enforce_timeout, clock, "file")
+
+    @classlock
+    def add_submit(self, path):
+        session = self.Session()
+        submit = Submit(path=path)
+        submit_id = None
+        session.add(submit)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error adding error log: {0}".format(e))
+            session.rollback()
+        finally:
+            submit_id = submit.id
+            session.close()
+
+        return submit_id
+
+    def view_submit(self, submit_id):
+        session = self.Session()
+        submit = session.query(Submit).get(submit_id)
+
+        session.close()
+
+        return submit
 
     @classlock
     def reschedule(self, task_id, priority=None):

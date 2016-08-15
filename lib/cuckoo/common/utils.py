@@ -129,6 +129,40 @@ def get_filename_from_path(path):
     dirpath, filename = ntpath.split(path)
     return filename if filename else ntpath.basename(dirpath)
 
+def store_temp_files(files, path=None):
+    """Store a list of temporary files.
+    @TO-DO: Make abstract tmp. storage class
+    @param files: a list of dicts containing 'name' and 'data'
+    @param path: optional path for temp directory.
+    @return: path to the temporary file.
+    """
+    options = Config()
+
+    # Create temporary directory path.
+    if path:
+        target_path = path
+    else:
+        tmp_path = options.cuckoo.get("tmppath", "/tmp")
+        target_path = os.path.join(tmp_path, "cuckoo-tmp")
+    if not os.path.exists(target_path):
+        os.mkdir(target_path)
+
+    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
+    for f in files:
+        filename = get_filename_from_path(f["name"])
+        tmp_file_path = os.path.join(tmp_dir, filename)
+        with open(tmp_file_path, "wb") as tmp_file:
+            # If filedata is file object, do chunked copy.
+            if hasattr(f["data"], "read"):
+                chunk = f["data"].read(1024)
+                while chunk:
+                    tmp_file.write(chunk)
+                    chunk = f["data"].read(1024)
+            else:
+                tmp_file.write(f["data"])
+
+    return tmp_dir
+
 def store_temp_file(filedata, filename, path=None):
     """Store a temporary file.
     @param filedata: content of the original file.

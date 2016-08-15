@@ -14,6 +14,7 @@ from django.views.decorators.http import require_http_methods
 from lib.cuckoo.core.rooter import vpns
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database
+
 from controllers.submission.submission import SubmissionController
 from bin.utils import json_default_response
 
@@ -60,20 +61,11 @@ class SubmissionRoutes:
         }
 
         values.update(kwargs)
-        return render(request, "submission/index.html", values)
+        return render(request, "submission/test.html", values)
 
     @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def presubmit(request):
-        data = {}
+    def presubmit(request, submit_id):
+        file_data = SubmissionController(submit_id=submit_id).get_submit()
 
-        for file in request.FILES.getlist("sample"):
-            extracted = SubmissionController().presubmit(file.name, file.file.read())
-
-            if isinstance(extracted, dict):
-                data[extracted["file"].hash] = extracted
-            else:
-                data[extracted.hash] = {"file": extracted}
-
-        return JsonResponse({"data": data}, encoder=json_default_response)
+        return render(request, "submission/index.html", {"file_data": file_data, "submit_id": submit_id})
+        #return JsonResponse({"data": file_list}, encoder=json_default_response)
