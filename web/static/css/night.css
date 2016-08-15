@@ -1755,3 +1755,7 @@ li[aria-expanded]>a.jstree-anchor{
     color: #e8e8e8 !important;
 }
 
+.jstree-grid-midwrapper {
+    background: url("/static/img/theme_night/table_bg_22px.png");
+    background-position-y: 16px;
+}
