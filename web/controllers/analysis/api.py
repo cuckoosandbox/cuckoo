@@ -17,7 +17,6 @@ from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 
-
 class AnalysisApi:
     @staticmethod
     @csrf_exempt

@@ -39,7 +39,6 @@ $(document).ready( function() {
         } else {
             if( log ) alert(log);
         }
-
     });
 });
 
@@ -180,40 +179,13 @@ $(document).ready( function() {
 
             <div class="col-md-8">
                 <div class="col-md-12">
-                    <div class="tabbable">
-                        <ul class="nav nav-tabs">
-                            <li class="active"><a href="#file" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> File</a></li>
-                            <li><a href="#url" data-toggle="tab"><span class="glyphicon glyphicon-globe"></span> URL</a></li>
-                        </ul>
-
-                        <div class="tab-content">
-                            <div class="tab-pane fade active in" id="file">
-                                <div class="input-group col-md-6">
-                                    <span class="input-group-btn">
-                                        <input type="text" class="form-control" readonly>
-                                        <span class="btn btn-primary btn-file">
-                                            Select <input id="file_select" type="file" name="sample" multiple="multiple">
-                                        </span>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade {% if resubmit == "URL" %}in active{% endif %}" id="url">
-                                <div style="width: 100%;" class="input-group">
-                                    <label class="sr-only" form="form_url">URL</label>
-                                    <input type="text" class="form-control" id="form_url" name="url" placeholder="URL" {% if url %} value="{{url}}" {% endif %} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12">
                     <div class="panel" id="f" style="margin-top: 20px;">
-                        <div class="panel panel-default">
+                        <div class="panel panel-primary">
                             <div class="panel-heading">
                                 <strong>Files</strong>
                             </div>
-                            <div class="panel-body">
-                                eyy
+                            <div class="panel-body" style="padding: 0px;">
+                                <div id="filetree_target"></div>
                             </div>
                         </div>
                     </div>
@@ -225,4 +197,24 @@ $(document).ready( function() {
         </form>
     </div>
 </div>
+    <script src="/static/js/filetree.js"></script>
+    <script>
+        var submit_id = {{ submit_id }};
+        var f = new FileTree("div#filetree_target", true);
+
+        $(document).ready(function(){
+            $.ajax({
+                type: "post",
+                contentType: "application/json",
+                url: `/submit/api/filetree/`,
+                dataType: "json",
+                data: JSON.stringify({"submit_id": submit_id}),
+                timeout: 40000,
+                success: function(data){
+                    f.draw(data["data"]);
+                }
+            }).fail(function(err) { console.log(err)});
+        });
+
+    </script>
 {% endblock %}

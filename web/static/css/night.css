@@ -192,7 +192,7 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .panel-primary {
-    border-color: #000000;
+    border-color: #232323;
 }
 
 .panel-primary > .panel-heading {
@@ -1697,3 +1697,61 @@ div.loading {
     color: #fff;
     background-color: inherit;
 }
+
+
+.dndupload {
+    background: #393939;
+}
+
+.dndupload label {
+    color: #cccccc;
+}
+
+.dndupload label strong {
+    color: white;
+}
+
+.dndupload #uploader {
+    outline: 1px dashed #b1b1b1;
+}
+
+.dndupload progress::-webkit-progress-bar { background: #4b4b4b; /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
+.dndupload progress::-webkit-progress-value { /*background: #0063a6;*/ }
+
+/* jstree */
+.jstree-grid-header-regular {
+    background-color: #393939 !important;
+}
+
+.jstree-grid-separator-regular {
+    border-color: #313131 !important;
+}
+
+.jstree-default .jstree-hovered {
+    box-shadow: none !important;
+}
+
+.jstree-grid-cell {
+    padding-right: 20px !important;
+}
+
+.jstree-default-dark {
+    background: transparent !important;
+}
+
+.jstree-default-dark .jstree-clicked, .jstree-default-dark .jstree-checked {
+    color: #e0e0e0 !important;
+}
+
+.jstree-anchor {
+    color: #737373 !important;
+}
+
+li[aria-expanded]>a.jstree-anchor{
+    color: white !important;
+}
+
+.jstree-default-dark .jstree-clicked, .jstree-default-dark .jstree-checked {
+    color: #e8e8e8 !important;
+}
+
