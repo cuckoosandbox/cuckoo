@@ -46,9 +46,9 @@ def custom_headers(response):
     return response
 
 def parse_bool(value):
-    if value in ("true", "True", "1"):
+    if value in ("true", "True", "yes", "1"):
         return True
-    if value in ("false", "False", "None", "0"):
+    if value in ("false", "False", "None", "no", "0"):
         return False
     return int(value)
 
