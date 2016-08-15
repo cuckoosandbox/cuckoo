@@ -43,12 +43,27 @@ class AnalysisInfo(Processing):
 
         git_head = git_fetch_head = open(cwd(".cwd"), "rb").read()
 
+        monitor = os.path.join(
+            CUCKOO_ROOT, "data", "monitor",
+            task["options"].get("monitor", "latest")
+        )
+
+        if os.path.islink(monitor):
+            monitor = os.readlink(monitor)
+        elif os.path.isfile(monitor):
+            monitor = open(monitor, "rb").read().strip()
+        elif os.path.isdir(monitor):
+            monitor = os.path.basename(monitor)
+        else:
+            monitor = None
+
         return dict(
             version=CUCKOO_VERSION,
             git={
                 "head": git_head,
                 "fetch_head": git_fetch_head,
             },
+            monitor=monitor,
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),

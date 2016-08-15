@@ -10,6 +10,8 @@
                 {% include "analysis/static/_pe32.html" %}
             {% elif "office" in analysis.static %}
                 {% include "analysis/static/_office.html" %}
+            {% elif "pdf" in analysis.static %}
+                {% include "analysis/static/_pdf.html" %}
             {% else %}
                 No static analysis available.
             {% endif %}

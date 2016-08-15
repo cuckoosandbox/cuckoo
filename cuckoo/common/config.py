@@ -18,7 +18,12 @@ class Config:
         @param file_name: file name without extension.
         @param cfg: configuration file path.
         """
-        config = ConfigParser.ConfigParser(os.environ)
+        env = {}
+        for key, value in os.environ.items():
+            if key.startswith("CUCKOO_"):
+                env[key] = value
+
+        config = ConfigParser.ConfigParser(env)
 
         if cfg:
             config.read(cfg)

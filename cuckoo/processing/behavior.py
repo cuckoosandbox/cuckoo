@@ -101,12 +101,15 @@ class ProcessTree(BehaviorHandler):
         }
 
     def run(self):
-        root = {"children": []}
+        root = {
+            "children": [],
+        }
+        first_seen = lambda x: x["first_seen"]
 
-        for p in self.processes.values():
+        for p in sorted(self.processes.values(), key=first_seen):
             self.processes.get(p["ppid"], root)["children"].append(p)
 
-        return root["children"]
+        return sorted(root["children"], key=first_seen)
 
 class GenericBehavior(BehaviorHandler):
     """Generates summary information."""
@@ -161,19 +164,6 @@ class ApiStats(BehaviorHandler):
     def run(self):
         return self.processes
 
-class PlatformInfo(BehaviorHandler):
-    """Provides information about the platform for the collected behavior.
-
-    Not sure if this is really needed, as probably all the info is in the results["info"] area.
-    """
-    key = "platform"
-
-    # self.results = {
-    #     "name": "windows",
-    #     "architecture": "unknown", # look this up in the task / vm info?
-    #     "source": ["monitor", "windows"],
-    # }
-
 class RebootInformation(BehaviorHandler):
     """Provides specific information useful for reboot analysis.
 
@@ -218,57 +208,27 @@ class ActionInformation(BehaviorHandler):
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
 
-    The behavior key in the results dict will contain both default content keys
-    that contain generic / abstracted analysis info, available on any platform,
-    as well as platform / analyzer specific output.
+    The behavior key in the results dict will contain both default content
+    keys that contain generic / abstracted analysis info, available on any
+    platform, as well as platform / analyzer specific output.
 
-    Typically the analyzer behavior contains some sort of "process" separation as
-    we're tracking different processes in most cases.
+    Typically the analyzer behavior contains some sort of "process" separation
+    as we're tracking different processes in most cases.
 
-    So this looks roughly like this:
-    "behavior": {
-        "generic": {
-            "processes": [
-                {
-                    "pid": x,
-                    "ppid": y,
-                    "calls": [
-                        {
-                            "function": "foo",
-                            "arguments": {
-                                "a": 1,
-                                "b": 2,
-                            },
-                        },
-                        ...
-                    ]
-                },
-                ...
-            ]
-        }
-        "summary": {
-            "
-        }
-        "platform": {
-            "name": "windows",
-            "architecture": "x86",
-            "source": ["monitor", "windows"],
-            ...
-        }
-    }
+    There are several handlers that produce the respective keys / subkeys.
+    Overall the platform / analyzer specific ones parse / process the captured
+    data and yield both their own output, but also a standard structure that
+    is then captured by the "generic" handlers so they can generate the
+    standard result structures.
 
-    There are several handlers that produce the respective keys / subkeys. Overall
-    the platform / analyzer specific ones parse / process the captured data and yield
-    both their own output, but also a standard structure that is then captured by the
-    "generic" handlers so they can generate the standard result structures.
+    The resulting structure contains some iterator onions for the monitored
+    function calls that stream the content when some sink (reporting,
+    signatures) needs it, thereby reducing memory footprint.
 
-    The resulting structure contains some iterator onions for the monitored function calls
-    that stream the content when some sink (reporting, signatures) needs it, thereby
-    reducing memory footprint.
-
-    So hopefully in the end each analysis should be fine with 2 passes over the results,
-    once during processing (creating the generic output, summaries, etc) and once
-    during reporting (well once for each report type if multiple are enabled).
+    So hopefully in the end each analysis should be fine with 2 passes over
+    the results, once during processing (creating the generic output,
+    summaries, etc) and once during reporting (well once for each report type
+    if multiple are enabled).
     """
 
     key = "behavior"

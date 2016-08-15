@@ -119,8 +119,8 @@ class Files(object):
 
     def dump_files(self):
         """Dump all pending files."""
-        for filepath in self.files:
-            self.dump_file(filepath)
+        while self.files:
+            self.delete_file(self.files.keys()[0])
 
 class ProcessList(object):
     def __init__(self):
