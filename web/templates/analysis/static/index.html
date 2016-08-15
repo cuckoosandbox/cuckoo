@@ -3,6 +3,7 @@
         <li class="active"><a href="#static_analysis_tab" data-toggle="tab">Static Analysis</a></li>
         <li><a href="#static_strings_tab" data-toggle="tab">Strings</a></li>
         <li><a href="#static_antivirus_tab" data-toggle="tab">Antivirus</a></li>
+        <li><a href="#static_irma_tab" data-toggle="tab">Irma</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade in active" id="static_analysis_tab">
@@ -19,6 +20,9 @@
         </div>
         <div class="tab-pane fade" id="static_antivirus_tab">
             {% include "analysis/static/_antivirus.html" %}
+        </div>
+        <div class="tab-pane fade" id="static_irma_tab">
+            {% include "analysis/static/_irma.html" %}
         </div>
     </div>
 </div>
