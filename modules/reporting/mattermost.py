@@ -46,8 +46,8 @@ class Mattermost(Report):
 
         if self.options.get("show-virustotal"):
             post += "**VT : {0} / {1}**\n".format(
-                            results.get("virustotal").get("total"),
                             results.get("virustotal").get("positives"),
+                            results.get("virustotal").get("total"),
                             )
 
         if self.options.get("show-signatures"):
