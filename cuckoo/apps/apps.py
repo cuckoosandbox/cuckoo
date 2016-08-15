@@ -99,11 +99,12 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
         priority=priority,
         machine=machine,
         platform=platform,
-        memory=memory,
-        enforce_timeout=enforce_timeout,
         custom=custom,
         owner=owner,
         tags=tags,
+        memory="1" if memory else "0",
+        enforce_timeout="1" if enforce_timeout else "0",
+        unique="1" if is_unique else "0",
     )
 
     if is_baseline:
@@ -117,10 +118,6 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
 
     if is_url and is_unique:
         print "URL doesn't have --unique support yet."
-        return
-
-    if is_unique and remote:
-        print "Remote --unique support is not present"
         return
 
     if is_url:

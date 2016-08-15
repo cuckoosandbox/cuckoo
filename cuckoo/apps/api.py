@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import os
 import socket
 import tarfile
@@ -44,6 +45,13 @@ def custom_headers(response):
     response.headers["Expires"] = "0"
     return response
 
+def parse_bool(value):
+    if value in ("true", "True", "1"):
+        return True
+    if value in ("false", "False", "None", "0"):
+        return False
+    return int(value)
+
 @app.route("/tasks/create/file", methods=["POST"])
 @app.route("/v1/tasks/create/file", methods=["POST"])
 def tasks_create_file():
@@ -57,17 +65,17 @@ def tasks_create_file():
     tags = request.form.get("tags", None)
     custom = request.form.get("custom", "")
     owner = request.form.get("owner", "")
-    memory = request.form.get("memory", False)
     clock = request.form.get("clock", None)
 
-    if memory:
-        memory = True
-    enforce_timeout = request.form.get("enforce_timeout", False)
+    memory = parse_bool(request.form.get("memory", 0))
+    unique = parse_bool(request.form.get("unique", 0))
+    enforce_timeout = parse_bool(request.form.get("enforce_timeout", 0))
 
-    if enforce_timeout:
-        enforce_timeout = True
+    content = data.read()
+    if unique and db.find_sample(sha256=hashlib.sha256(content).hexdigest()):
+        return json_error(400, "This file has already been submitted")
 
-    temp_file_path = store_temp_file(data.read(), data.filename)
+    temp_file_path = store_temp_file(content, data.filename)
 
     task_id = db.add_path(
         file_path=temp_file_path,
