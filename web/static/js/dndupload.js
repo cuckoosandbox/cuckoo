@@ -202,7 +202,9 @@ class DndUpload {
 
                 if(xhr.status === 200 && response.status === "OK") {
                     _self.display_text("Done");
-                    setTimeout(_self._success_callback(response), 1200);
+                    setTimeout(function() {
+                        _self._success_callback(response)
+                    }, 600);
                 } else {
                     _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
                 }
