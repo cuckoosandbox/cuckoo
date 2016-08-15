@@ -51,5 +51,6 @@ class PDF(Package):
             log.info("Submitted file is missing extension, added .pdf")
 
         return self.execute(
-            reader, args=[path], maximize=True, trigger="file:%s" % path
+            reader, args=[path], maximize=True, mode="pdf",
+            trigger="file:%s" % path
         )
