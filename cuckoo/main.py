@@ -111,7 +111,7 @@ def cuckoo_create(context, debug):
         print
         print "[program:cuckoo-process]"
         print "command = %s process p%%(process_num)d" % cuckoo_path
-        print "process_name = cuckoo-process %(process_num)d"
+        print "process_name = cuckoo-process_%(process_num)d"
         print "numprocs = 4"
         print "user =", username
         print "autorestart = true"
