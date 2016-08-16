@@ -63,10 +63,6 @@ class MISP(Processing):
                 "Please configure the URL and API key for your MISP instance."
             )
 
-        # Ensure the URL ends with a trailing slash.
-        if not self.url.endswith("/"):
-            self.url += "/"
-
         self.key = "misp"
         self.iocs = {}
 

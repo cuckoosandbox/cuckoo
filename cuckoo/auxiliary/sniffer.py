@@ -10,6 +10,7 @@ import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -86,7 +87,9 @@ class Sniffer(Auxiliary):
                 pargs.extend(["and", "(", bpf, ")"])
 
         try:
-            self.proc = subprocess.Popen(pargs)
+            self.proc = subprocess.Popen(
+                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
         except (OSError, ValueError):
             log.exception(
                 "Failed to start sniffer (interface=%s, host=%s, pcap=%s)",
@@ -103,17 +106,31 @@ class Sniffer(Auxiliary):
         """Stop sniffing.
         @return: operation status.
         """
-        if self.proc and not self.proc.poll():
+        # The tcpdump process was never started in the first place.
+        if not self.proc:
+            return
+
+        # The tcpdump process has already quit, generally speaking this
+        # indicates an error such as "permission denied".
+        if self.proc.poll():
+            out, err = self.proc.communicate()
+            raise CuckooOperationalError(
+                "Error running tcpdump to sniff the network traffic during "
+                "the analysis; stdout = %r and stderr = %r. Did you enable "
+                "the extra capabilities to allow running tcpdump as non-root "
+                "user and disable AppArmor properly (only applies to Ubuntu)?"
+                % (out, err)
+            )
+
+        try:
+            self.proc.terminate()
+        except:
             try:
-                self.proc.terminate()
-            except:
-                try:
-                    if not self.proc.poll():
-                        log.debug("Killing sniffer")
-                        self.proc.kill()
-                except OSError as e:
-                    log.debug("Error killing sniffer: %s. Continue", e)
-                    pass
-                except Exception as e:
-                    log.exception("Unable to stop the sniffer with pid %d: %s",
-                                  self.proc.pid, e)
+                if not self.proc.poll():
+                    log.debug("Killing sniffer")
+                    self.proc.kill()
+            except OSError as e:
+                log.debug("Error killing sniffer: %s. Continue", e)
+            except Exception as e:
+                log.exception("Unable to stop the sniffer with pid %d: %s",
+                              self.proc.pid, e)
