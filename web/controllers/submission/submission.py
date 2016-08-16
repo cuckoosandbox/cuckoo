@@ -45,7 +45,7 @@ class SubmissionController:
 
     @staticmethod
     def analyze_file(filename, data, password=None):
-        if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2")):
+        if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2", ".tgz")):
             f = File(filepath=filename, contents=data)
             signature = f.get_signature()
 
