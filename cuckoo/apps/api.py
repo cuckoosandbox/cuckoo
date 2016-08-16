@@ -59,7 +59,7 @@ def parse_bool(value):
         return True
     if value in ("false", "False", "None", "no", "0"):
         return False
-    return int(value)
+    return bool(int(value))
 
 @app.route("/tasks/create/file", methods=["POST"])
 @app.route("/v1/tasks/create/file", methods=["POST"])
