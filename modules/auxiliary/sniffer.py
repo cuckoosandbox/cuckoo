@@ -102,6 +102,31 @@ class Sniffer(Auxiliary):
             self.proc.pid, self.machine.interface, self.machine.ip, file_path,
         )
 
+    def _check_output(self, out, err):
+        if out:
+            raise CuckooOperationalError(
+                "Potential error while running tcpdump, did not expect "
+                "standard output, got: %r." % out
+            )
+
+        err_whitelist = (
+            "packets captured",
+            "packets received by filter",
+            "packets dropped by kernel",
+        )
+
+        for line in err.split("\n"):
+            if not line or line.startswith("tcpdump: listening on "):
+                continue
+
+            if line.endswith(err_whitelist):
+                continue
+
+            raise CuckooOperationalError(
+                "Potential error while running tcpdump, did not expect "
+                "the following standard error output: %r." % line
+            )
+
     def stop(self):
         """Stop sniffing.
         @return: operation status.
@@ -134,3 +159,7 @@ class Sniffer(Auxiliary):
             except Exception as e:
                 log.exception("Unable to stop the sniffer with pid %d: %s",
                               self.proc.pid, e)
+
+        # Ensure expected output was received from tcpdump.
+        out, err = self.proc.communicate()
+        self._check_output(out, err)
