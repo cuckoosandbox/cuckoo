@@ -18,50 +18,64 @@ class FileTree {
     }
 
     _convert_entry(entry){
-        if (!entry.hasOwnProperty("file")) { return; }
         let _self = this;
-        
-        let file_obj = entry["file"];
 
-        let filename = file_obj["filepath"];
-        let type = "file";
-        let selected_state = false;
+        // container
+        let obj = {
+            filepath: entry.filepath,
+            filename: entry.filename,
+            type: entry.type,
+            state: false, // pre-selected tree item
+            magic: entry.magic,
+            size: entry.size,
+            mime: entry.mime
+        };
 
-        // perhaps move the 'type' checking to back-end - endswith is not reliable, use libmagic
-        [".zip", ".rar", ".tar", ".tar.gz", "bz2"].forEach(function (x) {
-            if (filename.endsWith(x)) type = "archive"
-        });
+        // sanatize object properties
+        if(obj.magic){
+            if(obj.magic.length >= 170){ obj.magic = `${obj.magic.substring(0, 170)}...`; }
+        } else {
+            obj.magic = "empty";
+        }
 
         [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb"].forEach(function (x) {
-            if (filename.endsWith(x)) {
-                type = "exec";
-                selected_state = true;
+            if (obj.filepath.endsWith(x)) {
+                obj.type = "exec";
+                obj.state = true;
             }
         });
 
         [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
-            if (filename.endsWith(x)) {
-                type = "office";
-                selected_state = true;
+            if (obj.filepath.endsWith(x)) {
+                obj.type = "office";
+                obj.state = true;
             }
         });
 
+        // build jstree JSON object
         let data = {
-            "text": filename,
-            "type": type,
-            "state": {"selected": selected_state},
-            "data": {
-                "mime": file_obj["mime"],
-                "size": file_obj["size"],
-                "magic": `${file_obj["magic"].substring(0, 70)}...`
+            text: obj.filename,
+            type: obj.type,
+            state: {
+                "selected": obj.state
             }
         };
 
-        if(entry.hasOwnProperty("unpacked")) {
-            entry["unpacked"].forEach(function(e){
-                if(!data.hasOwnProperty("children")) { data["children"] = []; }
+        if(obj.type != "directory") {
+            data["data"] = {
+                "mime": obj.mime,
+                "size": obj.size,
+                "magic": obj.magic
+            };
 
-                data["children"].push(_self._convert_entry(e));
+            if(entry.children.length >= 1) { data.type = "archive"; }
+        }
+
+        // recurse for child entries (make jstree leafs)
+        if(entry.children.length >= 1){
+            entry.children.forEach(function(e){
+                if(!data.hasOwnProperty("children")) { data.children = []; }
+                data.children.push(_self._convert_entry(e));
             })
         }
 
@@ -116,9 +130,9 @@ class FileTree {
                     {width: 'auto', header: 'File'},
                     {width: 'auto', header: 'Mime', value: 'mime'},
                     {width: 'auto', header: 'Size', value: 'size'},
-                    {width: 'auto', header: 'Magic', value: 'magic'},
+                    {width: '10px', header: 'Magic', value: 'magic'}
                 ],
-                resizable: false
+                resizable: true
             },
             plugins: ["themes", "types", "checkbox", "grid", "wholerow"]
         })
