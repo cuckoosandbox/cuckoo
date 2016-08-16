@@ -87,7 +87,9 @@ class Sniffer(Auxiliary):
                 pargs.extend(["and", "(", bpf, ")"])
 
         try:
-            self.proc = subprocess.Popen(pargs)
+            self.proc = subprocess.Popen(
+                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
         except (OSError, ValueError):
             log.exception(
                 "Failed to start sniffer (interface=%s, host=%s, pcap=%s)",
@@ -116,7 +118,7 @@ class Sniffer(Auxiliary):
                 "Error running tcpdump to sniff the network traffic during "
                 "the analysis; stdout = %r and stderr = %r. Did you enable "
                 "the extra capabilities to allow running tcpdump as non-root "
-                "user and disable AppArmor properly (only applies to Ubuntu)"
+                "user and disable AppArmor properly (only applies to Ubuntu)?"
                 % (out, err)
             )
 
