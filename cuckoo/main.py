@@ -417,6 +417,11 @@ def api(ctx, host, port, debug, uwsgi, nginx):
 
     Database().connect()
 
+    if debug:
+        init_console_logging(level=logging.DEBUG)
+    else:
+        init_console_logging(level=logging.INFO)
+
     cuckoo_api(host, port, debug)
 
 @main.command()
