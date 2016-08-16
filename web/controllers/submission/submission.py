@@ -39,11 +39,7 @@ class SubmissionController:
 
             file_data = open("%s/%s" % (self._path_root, f), "rb")
             extracted = self.analyze_file(filename, file_data.read())
-
-            if isinstance(extracted, dict):
-                data[extracted["file"].hash] = extracted
-            else:
-                data[extracted.hash] = {"file": extracted}
+            data[extracted.sha256] = extracted
 
         return data
 
@@ -52,7 +48,6 @@ class SubmissionController:
         if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2")):
             f = File(filepath=filename, contents=data)
             signature = f.get_signature()
-            data = {"file": f, "unpacked": []}
 
             container = None
             if signature["family"] == "rar":
@@ -65,11 +60,8 @@ class SubmissionController:
                 return f
 
             container = container(f=f)
-
-            for entry in container.unpack(mode=signature["mode"]):
-                data["unpacked"].append(entry)
-
-            return data
+            f.children = container.unpack(mode=signature["mode"])
+            return f
 
         return File(filepath=filename, contents=data)
 
