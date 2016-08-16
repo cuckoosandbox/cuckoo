@@ -53,7 +53,7 @@ var FileTree = function () {
                 obj.magic = "empty";
             }
 
-            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb"].forEach(function (x) {
+            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "exec";
                     obj.state = true;
