@@ -6,14 +6,14 @@
 import os
 import sys
 import time
+import json
 import socket
 import string
 import random
 import platform
 import subprocess
-import ConfigParser
-from StringIO import StringIO
 from zipfile import ZipFile
+from StringIO import StringIO
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 BIND_IP = "0.0.0.0"
@@ -103,15 +103,14 @@ class Agent(object):
         return True
 
     def add_config(self, options):
-        """Creates analysis.conf file from current analysis options.
+        """Creates analysis.json file from current analysis options.
         @param options: current configuration options, dict format.
         @return: operation status.
         """
         if not isinstance(options, dict):
             return False
 
-        config = ConfigParser.RawConfigParser()
-        config.add_section("analysis")
+        config = {"analysis" : {}}
 
         try:
             for key, value in options.items():
@@ -122,12 +121,20 @@ class Agent(object):
                     except UnicodeEncodeError:
                         pass
 
-                config.set("analysis", key, value)
+                # Json can only serialize these types
+                if type(value) in [dict, list, str, int, float, bool]:
+                    config["analysis"][key] = value
+                else:
+                    try:
+                        value = value.__str__()
+                    except AttributeError:
+                        value = ""
+                    config["analysis"][key] = value
 
-            config_path = os.path.join(self.analyzer_folder, "analysis.conf")
+            config_path = os.path.join(self.analyzer_folder, "analysis.json")
 
             with open(config_path, "wb") as config_file:
-                config.write(config_file)
+                json.dump(config, config_file)
         except Exception as e:
             self.error_message = e
             return False
