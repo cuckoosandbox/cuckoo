@@ -6,7 +6,7 @@
 import os
 
 from lib.cuckoo.core.database import Database
-from lib.cuckoo.common.utils import get_filename_from_path
+from lib.cuckoo.common.files import Storage
 
 from sflock.abstracts import File
 from sflock.unpack.zip import Zipfile
@@ -35,7 +35,7 @@ class SubmissionController:
         data = {}
 
         for f in self._files:
-            filename = get_filename_from_path(f)
+            filename = Storage.get_filename_from_path(f)
 
             file_data = open("%s/%s" % (self._path_root, f), "rb")
             extracted = self.analyze_file(filename, file_data.read())

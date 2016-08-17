@@ -14,7 +14,8 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL, Dictionary
-from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
+from lib.cuckoo.common.files import Folders
+from lib.cuckoo.common.utils import Singleton, classlock, SuperLock, json_encode
 
 try:
     from sqlalchemy import create_engine, Column, not_
@@ -392,7 +393,7 @@ class Database(object):
                 db_dir = os.path.dirname(db_file)
                 if not os.path.exists(db_dir):
                     try:
-                        create_folder(folder=db_dir)
+                        Folders.create(folder=db_dir)
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
 

@@ -3,14 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import hashlib
 import logging
 import os
 import sys
-import shutil
-import ntpath
 import string
-import tempfile
 import xmlrpclib
 import inspect
 import platform
@@ -21,9 +17,6 @@ import warnings
 
 from cStringIO import StringIO
 from datetime import datetime
-
-from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.config import Config
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
@@ -47,41 +40,6 @@ except ImportError:
     HAVE_JSBEAUTIFIER = False
 
 log = logging.getLogger(__name__)
-
-def create_folders(root=".", folders=[]):
-    """Create directories.
-    @param root: root path.
-    @param folders: folders list to be created.
-    @raise CuckooOperationalError: if fails to create folder.
-    """
-    for folder in folders:
-        create_folder(root, folder)
-
-def create_folder(root=".", folder=None):
-    """Create directory.
-    @param root: root path.
-    @param folder: folder name to be created.
-    @raise CuckooOperationalError: if fails to create folder.
-    """
-    folder_path = os.path.join(root, folder)
-    if folder and not os.path.isdir(folder_path):
-        try:
-            os.makedirs(folder_path)
-        except OSError:
-            raise CuckooOperationalError("Unable to create folder: %s" %
-                                         folder_path)
-
-def delete_folder(folder):
-    """Delete a folder and all its subdirectories.
-    @param folder: path to delete.
-    @raise CuckooOperationalError: if fails to delete folder.
-    """
-    if os.path.exists(folder):
-        try:
-            shutil.rmtree(folder)
-        except OSError:
-            raise CuckooOperationalError("Unable to delete folder: "
-                                         "{0}".format(folder))
 
 # Don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports.
@@ -120,84 +78,6 @@ def datetime_to_iso(timestamp):
     @return: ISO datetime
     """
     return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").isoformat()
-
-def get_filename_from_path(path):
-    """Cross-platform filename extraction from path.
-    @param path: file path.
-    @return: filename.
-    """
-    dirpath, filename = ntpath.split(path)
-    return filename if filename else ntpath.basename(dirpath)
-
-def store_temp_files(files, path=None):
-    """Store a list of temporary files.
-    @TO-DO: Make abstract tmp. storage class
-    @param files: a list of dicts containing 'name' and 'data'
-    @param path: optional path for temp directory.
-    @return: path to the temporary file.
-    """
-    options = Config()
-
-    # Create temporary directory path.
-    if path:
-        target_path = path
-    else:
-        tmp_path = options.cuckoo.get("tmppath", "/tmp")
-        target_path = os.path.join(tmp_path, "cuckoo-tmp")
-    if not os.path.exists(target_path):
-        os.mkdir(target_path)
-
-    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
-    for f in files:
-        filename = get_filename_from_path(f["name"])
-        tmp_file_path = os.path.join(tmp_dir, filename)
-        with open(tmp_file_path, "wb") as tmp_file:
-            # If filedata is file object, do chunked copy.
-            if hasattr(f["data"], "read"):
-                chunk = f["data"].read(1024)
-                while chunk:
-                    tmp_file.write(chunk)
-                    chunk = f["data"].read(1024)
-            else:
-                tmp_file.write(f["data"])
-
-    return tmp_dir
-
-def store_temp_file(filedata, filename, path=None):
-    """Store a temporary file.
-    @param filedata: content of the original file.
-    @param filename: name of the original file.
-    @param path: optional path for temp directory.
-    @return: path to the temporary file.
-    """
-    filename = get_filename_from_path(filename)
-
-    # Reduce length (100 is arbitrary).
-    filename = filename[:100]
-
-    options = Config()
-    # Create temporary directory path.
-    if path:
-        target_path = path
-    else:
-        tmp_path = options.cuckoo.get("tmppath", "/tmp")
-        target_path = os.path.join(tmp_path, "cuckoo-tmp")
-    if not os.path.exists(target_path):
-        os.mkdir(target_path)
-
-    tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
-    tmp_file_path = os.path.join(tmp_dir, filename)
-    with open(tmp_file_path, "wb") as tmp_file:
-        # If filedata is file object, do chunked copy.
-        if hasattr(filedata, "read"):
-            chunk = filedata.read(1024)
-            while chunk:
-                tmp_file.write(chunk)
-                chunk = filedata.read(1024)
-        else:
-            tmp_file.write(filedata)
-
-    return tmp_file_path
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.
@@ -329,27 +209,6 @@ class SuperLock(object):
         self.mlock.release()
         self.tlock.release()
 
-def hash_file(method, filepath):
-    """Calculates an hash on a file by path.
-    @param method: callable hashing method
-    @param path: file path
-    @return: computed hash string
-    """
-    f = open(filepath, "rb")
-    h = method()
-    while True:
-        buf = f.read(1024 * 1024)
-        if not buf:
-            break
-        h.update(buf)
-    return h.hexdigest()
-
-def md5_file(filepath):
-    return hash_file(hashlib.md5, filepath)
-
-def sha1_file(filepath):
-    return hash_file(hashlib.sha1, filepath)
-
 GUIDS = {}
 
 def guid_name(guid):
@@ -446,6 +305,9 @@ def htmlprettify(html):
 
 def json_default(obj):
     """JSON serializer for objects not serializable by default json code"""
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+
     if isinstance(obj, datetime):
         if obj.utcoffset() is not None:
             obj = obj - obj.utcoffset()

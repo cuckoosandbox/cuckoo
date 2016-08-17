@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from lib.cuckoo.common.utils import store_temp_files
+from lib.cuckoo.common.files import Files
 from lib.cuckoo.core.database import Database, Task
 from controllers.submission.submission import SubmissionController
 
@@ -30,7 +30,7 @@ class SubmissionApi:
         for file in request.FILES.getlist("files[]"):
             data.append({"data": file.file, "name": file.name})
 
-        tmp_path = store_temp_files(data)
+        tmp_path = Files.tmp_put(files=data)
 
         db = Database()
         submit_id = db.add_submit(tmp_path)
