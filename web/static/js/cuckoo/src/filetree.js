@@ -25,10 +25,11 @@ class FileTree {
             filepath: entry.filepath,
             filename: entry.filename,
             type: entry.type,
-            state: false, // pre-selected tree item
+            state: false, // pre-selected
             magic: entry.magic,
             size: entry.size,
-            mime: entry.mime
+            mime: entry.mime,
+            opened: false // pre-opened
         };
 
         // sanatize object properties
@@ -38,7 +39,7 @@ class FileTree {
             obj.magic = "empty";
         }
 
-        [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
+        [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse", ".jar"].forEach(function (x) {
             if (obj.filepath.endsWith(x)) {
                 obj.type = "exec";
                 obj.state = true;
@@ -57,7 +58,8 @@ class FileTree {
             text: obj.filename,
             type: obj.type,
             state: {
-                "selected": obj.state
+                "selected": obj.state,
+                "opened": obj.opened
             }
         };
 
@@ -68,7 +70,10 @@ class FileTree {
                 "magic": obj.magic
             };
 
-            if(entry.children.length >= 1) { data.type = "archive"; }
+            if(entry.children.length >= 1) {
+                data.type = "archive";
+                data.state.opened = true;
+            }
         }
 
         // recurse for child entries (make jstree leafs)
