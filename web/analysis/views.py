@@ -27,11 +27,12 @@ from gridfs import GridFS
 sys.path.insert(0, settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from lib.cuckoo.common.utils import store_temp_file, versiontuple
+from lib.cuckoo.common.utils import json_default, versiontuple
+from lib.cuckoo.common.files import Files
 from lib.cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
 import modules.processing.network as network
 
-from bin.utils import view_error, json_default
+from bin.utils import view_error
 
 results_db = settings.MONGO
 fs = GridFS(results_db)
@@ -685,7 +686,8 @@ def import_analysis(request):
         info = analysis_info.get("info", {})
 
         if category == "file":
-            binary = store_temp_file(zf.read("binary"), "binary")
+            binary = Files.tmp_put(file=zf.read("binary"),
+                                   path="binary")
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,

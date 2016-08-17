@@ -7,6 +7,7 @@ import os
 import tempfile
 from nose.tools import assert_equal, raises, assert_not_equal
 from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.files import Folders
 
 import lib.cuckoo.common.utils as utils
 from lib.cuckoo.common.exceptions import CuckooOperationalError
@@ -18,13 +19,13 @@ class TestCreateFolders:
 
     def test_single_folder(self):
         """Tests a single folder creation."""
-        utils.create_folders(self.tmp_dir, ["foo"])
+        Folders.create(root=self.tmp_dir, folder="foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
  
     def test_multiple_folders(self):
         """Tests multiple folders creation."""
-        utils.create_folders(self.tmp_dir, ["foo", "bar"])
+        Folders.create(root=self.tmp_dir, folders=["foo", "bar"])
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         assert os.path.exists(os.path.join(self.tmp_dir, "bar"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
@@ -36,9 +37,9 @@ class TestCreateFolder:
 
     def test_single_folder(self):
         """Tests a single folder creation."""
-        utils.create_folder(self.tmp_dir, "foo")
+        Folders.create(root=self.tmp_dir, folder="foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
-        utils.create_folder(self.tmp_dir, "foo")
+        Folders.create(root=self.tmp_dir, folder="foo")
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
 
 class TestConvertChar:
