@@ -345,6 +345,49 @@ class File(object):
         except Exception as e:
             log.warning("Error enumerating imported functions: %s", e)
 
+    def get_apk_possible_broadcasts(self):
+        """
+        Get all possible broadcasts of an APK
+        """
+        possible_broadcasts = set()
+        filetype = self.get_type()
+        if "Zip archive data" not in filetype and "Java archive data" not in filetype:
+            return list(possible_broadcasts)
+
+        if not HAVE_ANDROGUARD:
+            if not File.notified_androguard:
+                File.notified_androguard = True
+                log.warning("Unable to import androguard (`pip install androguard`)")
+            return list(possible_broadcasts)
+
+        try:
+            a = androguard.core.bytecodes.apk.APK(self.file_path)
+            if not a.is_valid_APK():
+                return list(possible_broadcasts)
+
+            receivers = a.get_receivers()
+
+            for receiver in receivers:
+                intent_filters = a.get_intent_filters("receiver", receiver)
+                if intent_filters.has_key("action"):
+                    actions = intent_filters["action"]
+                else:
+                    actions = []
+                if intent_filters.has_key("category"):
+                    categories = intent_filters["category"]
+                else:
+                    categories = []
+                categories.append(None)
+                for action in actions:
+                    for category in categories:
+                        #intent = Intent(prefix = "broadcast", action = action, category = category)
+                        #The analyzer will reconstruct the intent class later
+                        intent = ("broadcast", action, category)
+                        possible_broadcasts.add(intent)
+        except Exception as e:
+            log.warning("Error extracting possible broadcasts: %s.", e)
+        return list(possible_broadcasts)
+
     def get_apk_entry(self):
         """Get the entry point for this APK. The entry point is denoted by a
         package and main activity name."""

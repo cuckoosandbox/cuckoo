@@ -196,6 +196,7 @@ class AnalysisManager(threading.Thread):
             options["file_type"] = File(self.task.target).get_type()
             options["pe_exports"] = \
                 ",".join(File(self.task.target).get_exported_functions())
+            options["apk_possible_broadcasts"] = File(self.task.target).get_apk_possible_broadcasts()
 
             package, activity = File(self.task.target).get_apk_entry()
             self.task.options["apk_entry"] = "%s:%s" % (package, activity)
@@ -206,7 +207,7 @@ class AnalysisManager(threading.Thread):
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
-        options["options"] = emit_options(self.task.options)
+        options["options"] = self.task.options
         options["enforce_timeout"] = self.task.enforce_timeout
         options["clock"] = self.task.clock
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
