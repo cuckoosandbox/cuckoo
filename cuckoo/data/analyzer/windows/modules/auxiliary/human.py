@@ -29,13 +29,13 @@ def foreach_child(hwnd, lparam):
     buttons = [
         "yes", "oui",
         "ok",
-        "accept", "accepter",
+        "i accept",
         "next", "suivant",
         "new", "nouveau",
         "install", "installer",
         "file", "fichier",
         "run", "start", "marrer", "cuter",
-        "agree", "accepte",
+        "i agree", "accepte",
         "enable", "activer", "accord", "valider",
         "don't send", "ne pas envoyer",
         "continue", "continuer",
@@ -53,6 +53,7 @@ def foreach_child(hwnd, lparam):
     # List of buttons labels to not click.
     dontclick = [
         "don't run",
+        "i do not accept"
     ]
 
     classname = create_unicode_buffer(50)
