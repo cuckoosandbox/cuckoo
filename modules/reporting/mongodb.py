@@ -188,9 +188,9 @@ class MongoDB(Report):
                     continue
 
                 shot_path = os.path.join(self.shots_path, shot_file)
-                shot_path_dir = os.path.dirname(shot_path) + "/"
+                shot_path_dir = os.path.dirname(shot_path)
                 shot_file_name, shot_file_ext = os.path.splitext(shot_file)
-                shot_path_resized = "%s%s_small%s" % (shot_path_dir, shot_file_name, shot_file_ext)
+                shot_path_resized = os.path.join(shot_path_dir, "%s_small%s" % (shot_file_name, shot_file_ext))
 
                 shot_blob = {}
 
@@ -202,7 +202,7 @@ class MongoDB(Report):
                         shot_id = self.store_file(shot)
                         shot_blob["original"] = shot_id
 
-                # try to get the alternative (small) size for this image,
+                # Try to get the alternative (small) size for this image,
                 # store it and reference it back in the report.
                 if os.path.isfile(shot_path_resized):
                     shot_small = File(shot_path_resized)
