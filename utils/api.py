@@ -21,7 +21,7 @@ except ImportError:
 sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
-from lib.cuckoo.common.utils import store_temp_file, delete_folder
+from lib.cuckoo.common.files import Files, Folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
@@ -74,7 +74,8 @@ def tasks_create_file():
     if enforce_timeout:
         enforce_timeout = True
 
-    temp_file_path = store_temp_file(data.read(), data.filename)
+    temp_file_path = Files.tmp_put(file=data.read(),
+                                   path=data.filename)
 
     task_id = db.add_path(
         file_path=temp_file_path,
@@ -241,8 +242,8 @@ def tasks_delete(task_id):
                               "processed, cannot delete")
 
         if db.delete_task(task_id):
-            delete_folder(os.path.join(CUCKOO_ROOT, "storage",
-                                       "analyses", "%d" % task_id))
+            Folders.delete(os.path.join(CUCKOO_ROOT, "storage",
+                                        "analyses", "%d" % task_id))
             response["status"] = "OK"
         else:
             return json_error(500, "An error occurred while trying to "

@@ -9,8 +9,9 @@ import zipfile
 from StringIO import StringIO
 
 from django.conf import settings
-from django.template.defaultfilters import filesizeformat
-from bin.utils import json_default, get_directory_size
+
+from lib.cuckoo.common.utils import json_default
+from bin.utils import get_directory_size
 from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
