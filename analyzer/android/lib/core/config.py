@@ -3,22 +3,19 @@
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
-import ConfigParser
+import json
 
 class Config:
     def __init__(self, cfg):
         """@param cfg: configuration file."""
-        config = ConfigParser.ConfigParser(allow_no_value=True)
-        config.read(cfg)
-
-        for section in config.sections():
-            for name, raw_value in config.items(section):
-                try:
-                    value = config.getboolean(section, name)
-                except ValueError:
+        config = json.load(open(cfg))
+        for section in config:
+            for name in config[section]:
+                value = config[section][name]
+                # Options can be UTF encoded.
+                if isinstance(value, basestring):
                     try:
-                        value = config.getint(section, name)
-                    except ValueError:
-                        value = config.get(section, name)
-
+                        value = value.encode("utf-8")
+                    except UnicodeEncodeError:
+                        pass
                 setattr(self, name, value)

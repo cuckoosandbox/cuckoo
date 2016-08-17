@@ -33,7 +33,7 @@ def upload_to_host(file_path, dump_path):
 
 class NetlogConnection(object):
     def __init__(self, proto=""):
-        config = Config(cfg="analysis.conf")
+        config = Config(cfg="analysis.json")
         self.hostip, self.hostport = config.ip, config.port
         self.sock = None
         self.proto = proto

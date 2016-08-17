@@ -65,15 +65,28 @@ class Config:
 
 def parse_options(options):
     """Parse the analysis options field to a dictionary."""
-    ret = {}
-    for field in options.split(","):
-        if "=" not in field:
-            continue
+    try:
+        options = options.encode("utf-8")
+    except UnicodeEncodeError:
+        pass
+    try:
+        ret = json.loads(options)
+        ret["_json"] = True
+        return ret
+    except ValueError:
+        ret = {}
+        for field in options.split(","):
+            if "=" not in field:
+                continue
 
-        key, value = field.split("=", 1)
-        ret[key.strip()] = value.strip()
-    return ret
+            key, value = field.split("=", 1)
+            ret[key.strip()] = value.strip()
+        return ret
 
 def emit_options(options):
-    """Emit the analysis options from a dictionary to a string."""
-    return ",".join("%s=%s" % (k, v) for k, v in options.items())
+    """Emit the analysis options from a dictionary to a JSON string."""
+    if options.has_key("_json"):
+        del options["_json"]
+        return json.dumps(options)
+    else:
+        return ",".join("%s=%s" % (k, v) for k, v in options.items())
