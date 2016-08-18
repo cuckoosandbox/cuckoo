@@ -33,8 +33,8 @@ class AnalysisFeedBackController(object):
         files = {}
 
         report = AnalysisController.get_report(self.task_id)
-        if 'feedback' in report['analysis'] and isinstance(report['analysis']['feedback'], dict):
-            raise Exception('Feedback previously sent')
+        if "feedback" in report["analysis"] and isinstance(report["analysis"]["feedback"], dict):
+            raise Exception("Feedback previously sent")
 
         if self.include_analysis:
             analysis_path = report["analysis"]["info"]["analysis_path"]
@@ -48,7 +48,7 @@ class AnalysisFeedBackController(object):
                                              taken_files=taken_files)
 
             # attach the zip file
-            files = {'export': export}
+            files = {"export": export}
 
         # attach additional analysis information
         if "file" in report["analysis"]["target"]:
@@ -74,7 +74,7 @@ class AnalysisFeedBackController(object):
             resp = json.loads(resp.content)
             self._register()
 
-            return resp['identifier']
+            return resp["identifier"]
         except ValueError:
             raise Exception("could not parse server response as JSON")
 

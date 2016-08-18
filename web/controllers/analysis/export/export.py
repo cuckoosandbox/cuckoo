@@ -25,7 +25,7 @@ class ExportController:
     @staticmethod
     def estimate_size(task_id, taken_dirs, taken_files):
         report = AnalysisController.get_report(task_id)
-        report = report['analysis']
+        report = report["analysis"]
         path = report["info"]["analysis_path"]
 
         size_total = 0
@@ -72,7 +72,7 @@ class ExportController:
         taken_dirs = taken_dirs_tmp
 
         report = AnalysisController.get_report(task_id)
-        report = report['analysis']
+        report = report["analysis"]
 
         path = report["info"]["analysis_path"]
 
