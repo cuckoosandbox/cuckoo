@@ -344,7 +344,7 @@ def init_rooter():
 def init_routing():
     """Initialize and check whether the routing information is correct."""
     cfg = Config("routing")
-    interfaces = []
+    interfaces = set()
 
     # Check whether all VPNs exist if configured and make their configuration
     # available through the vpns variable. Also enable NAT on each interface.
@@ -374,7 +374,7 @@ def init_routing():
                 )
 
             vpns[entry.name] = entry
-            interfaces.append((entry.rt_table, entry.interface))
+            interfaces.add((entry.rt_table, entry.interface))
 
     standard_routes = "none", "drop", "internet", "inetsim", "tor"
 
@@ -407,28 +407,28 @@ def init_routing():
                 "line interface is not available."
             )
 
-        interfaces.append((cfg.routing.rt_table, cfg.routing.internet))
+        interfaces.add((cfg.routing.rt_table, cfg.routing.internet))
 
     # Check if Tor interface exists, if yes then enable NAT.
     if cfg.tor.enabled:
         if not rooter("nic_available", cfg.tor.interface):
             raise CuckooStartupError(
-                "The network interface that has been configured as tor "
+                "The network interface that has been configured as Tor "
                 "line is not available."
             )
 
-        interfaces.append((cfg.routing.rt_table, cfg.tor.interface))
+        interfaces.add((cfg.routing.rt_table, cfg.tor.interface))
 
     # Check if the InetSim interface exists, if so, enable NAT if the
     # interface is not the same as the one we use for Tor.
-    if cfg.inetsim.enabled and cfg.inetsim.interface != cfg.tor.interface:
+    if cfg.inetsim.enabled:
         if not rooter("nic_available", cfg.tor.interface):
             raise CuckooStartupError(
-                "The network interface that has been configured as tor "
+                "The network interface that has been configured as InetSim "
                 "line is not available."
             )
 
-        interfaces.append((cfg.routing.rt_table, cfg.tor.interface))
+        interfaces.add((cfg.routing.rt_table, cfg.tor.interface))
 
     for rt_table, interface in interfaces:
         # Disable & enable NAT on this network interface. Disable it just
