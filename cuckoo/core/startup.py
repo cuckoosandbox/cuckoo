@@ -416,6 +416,46 @@ def init_routing():
             rooter("init_rttable", cfg.routing.rt_table,
                    cfg.routing.internet)
 
+    # Check if tor interface exists, if yes then enable nat
+    if cfg.routing.tor_interface:
+        if not rooter("nic_available", cfg.routing.tor_interface):
+            raise CuckooStartupError(
+                "The network interface that has been configured as tor "
+                "line is not available."
+            )
+
+        # Disable & enable NAT on this network interface. Disable it just
+        # in case we still had the same rule from a previous run.
+        rooter("disable_nat", cfg.routing.tor_interface)
+        rooter("enable_nat", cfg.routing.tor_interface)
+
+        # Populate routing table with entries from main routing table.
+        if cfg.routing.auto_rt:
+            rooter("flush_rttable", cfg.routing.rt_table)
+            rooter("init_rttable", cfg.routing.rt_table,
+                   cfg.routing.internet)
+
+    # Check if the inetsim interface exists, if so, enable nat if the
+    # interface is not the same as the one we use for tor.
+    if cfg.routing.inetsim_interface and \
+            cfg.routing.inetsim_interface != cfg.routing.tor_interface:
+        if not rooter("nic_available", cfg.routing.tor_interface):
+            raise CuckooStartupError(
+                "The network interface that has been configured as tor "
+                "line is not available."
+            )
+
+        # Disable & enable NAT on this network interface. Disable it just
+        # in case we still had the same rule from a previous run.
+        rooter("disable_nat", cfg.routing.tor_interface)
+        rooter("enable_nat", cfg.routing.tor_interface)
+
+        # Populate routing table with entries from main routing table.
+        if cfg.routing.auto_rt:
+            rooter("flush_rttable", cfg.routing.rt_table)
+            rooter("init_rttable", cfg.routing.rt_table,
+                   cfg.routing.internet)
+
 def cuckoo_clean():
     """Clean up cuckoo setup.
     It deletes logs, all stored data from file system and configured
