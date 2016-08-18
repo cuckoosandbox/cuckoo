@@ -111,7 +111,7 @@ class MISP(Report):
                       ssdeep=dropped.get("ssdeep", ""))
 
         if results.get("target", {}).get("url", "") and results["target"]["url"] not in whitelist:                      
-            uri.append(results["target"]["url"])
+            uris.append(results["target"]["url"])
 
         if self.options.get("network", False) and results.get("network", []).get("hosts", []):
             self.send_to_misp(event, misper["ips"], whitelist, results.get("network", []).get("hosts", []))
@@ -119,10 +119,10 @@ class MISP(Report):
             self.send_to_misp(event, misper["domains"], whitelist, domains)
  
             for req in results["network"].get("http", []):
-                if req.get("user-agent", "") and req.get("user-agent", "") not in whitelist:
+                if req.get("user-agent", ""):
                     uas.append(req["user-agent"])
                 
-                if req.get("uri", "") and req.get("uri", "") not in whitelist:
+                if req.get("uri", ""):
                     uris.append(req["uri"])
             
             self.send_to_misp(event, misper["uas"], whitelist, uas)
