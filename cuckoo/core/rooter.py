@@ -43,6 +43,7 @@ def rooter(command, *args, **kwargs):
     except socket.error as e:
         log.critical("Unable to passthrough root command as we're unable to "
                      "connect to the rooter unix socket: %s.", e)
+        lock.release()
         return
 
     s.send(json.dumps({

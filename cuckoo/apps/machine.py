@@ -19,8 +19,10 @@ def update_conf(machinery, vmname, ip, platform, options, tags, interface,
 
         if "=" in line and line.split("=")[0].strip() == "machines":
             # Parse all existing labels.
-            labels = line.split("=", 1)[1]
-            labels = [label.strip() for label in labels.split(",")]
+            labels = []
+            for label in line.split("=", 1)[1].split(","):
+                if label.strip():
+                    labels.append(label.strip())
 
             if action == "add":
                 labels.append(vmname)
