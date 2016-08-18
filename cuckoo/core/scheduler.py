@@ -228,7 +228,7 @@ class AnalysisManager(threading.Thread):
         # Determine the desired routing strategy (none, internet, VPN).
         self.route = self.task.options.get("route", self.cfg.routing.route)
 
-        if self.route == "none":
+        if self.route == "none" or self.route == "drop":
             self.interface = None
             self.rt_table = None
         elif self.route == "inetsim":
@@ -260,6 +260,10 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
+        if self.route == "drop":
+            rooter("drop_enable", self.machine.ip,
+                   str(self.cfg.resultserver.port))
+
         if self.route == "inetsim":
             rooter("inetsim_enable", self.machine.ip,
                    self.cfg.routing.inetsim_server,
@@ -288,6 +292,10 @@ class AnalysisManager(threading.Thread):
 
         if self.rt_table:
             rooter("srcroute_disable", self.rt_table, self.machine.ip)
+
+        if self.route == "drop":
+            rooter("drop_disable", self.machine.ip,
+                   str(self.cfg.resultserver.port))
 
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,

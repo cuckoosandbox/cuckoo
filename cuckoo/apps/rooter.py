@@ -204,6 +204,44 @@ def tor_disable(ipaddr, resultserver_port, dns_port, proxy_port):
 
     local_dns_forward(ipaddr, dns_port, "-D")
 
+def drop_enable(ipaddr, resultserver_port):
+    """Enable completely dropping all non-Cuckoo traffic."""
+    run(_iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
+        "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp",
+        "--dport", "8000", "-j", "ACCEPT")
+
+    run(_iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp",
+        "--sport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
+        "--dport", "8000", "-j", "ACCEPT")
+
+    run(_iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
+        "--sport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-A", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
+
+def drop_disable(ipaddr, resultserver_port):
+    """Disable completely dropping all non-Cuckoo traffic."""
+    run(_iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+        "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp",
+        "--dport", "8000", "-j", "ACCEPT")
+
+    run(_iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp",
+        "--sport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-D", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
+        "--dport", "8000", "-j", "ACCEPT")
+
+    run(_iptables, "-d", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
+        "--sport", resultserver_port, "-j", "ACCEPT")
+
+    run(_iptables, "-D", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
+
 handlers = {
     "nic_available": nic_available,
     "rt_available": rt_available,
@@ -223,6 +261,8 @@ handlers = {
     "inetsim_disable": inetsim_disable,
     "tor_enable": tor_enable,
     "tor_disable": tor_disable,
+    "drop_enable": drop_enable,
+    "drop_disable": drop_disable,
 }
 
 def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
