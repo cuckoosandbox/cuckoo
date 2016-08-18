@@ -73,12 +73,12 @@ class AnalysisRoutes:
         }
 
         if page in pages.keys():
-            return render(request, "analysis/pages/%s.html" % pages[page], {'report': report,
-                                                                            'page': page})
+            return render(request, "analysis/pages/%s.html" % pages[page], {"report": report,
+                                                                            "page": page})
 
     @staticmethod
     def redirect_default(request, task_id):
-        return redirect('/analysis/%s/summary' % re.sub(r'\^d+', '', task_id), permanent=False)
+        return redirect("/analysis/%s/summary" % re.sub(r"\^d+", "", task_id), permanent=False)
 
     @staticmethod
     def export(request, task_id):

@@ -63,7 +63,7 @@ class AnalysisController:
             raise Exception("the specified analysis does not exist")
 
         data = {
-            'analysis': report
+            "analysis": report
         }
 
         dnsinfo = AnalysisController._get_dnsinfo(report)
@@ -101,8 +101,8 @@ class AnalysisController:
             iplookups = dict()
 
         return {
-            'domainlookups': domainlookups,
-            'iplookups': iplookups
+            "domainlookups": domainlookups,
+            "iplookups": iplookups
         }
 
     @staticmethod

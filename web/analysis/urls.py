@@ -13,14 +13,14 @@ from controllers.analysis.export.api import ExportApi
 from controllers.analysis.feedback.api import FeedbackApi
 
 urlpatterns = [
-    url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
-    url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name='analysis/redirect_default'),
-    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name='analysis/export'),
-    url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name='analysis/compare/left'),
-    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name='analysis/compare/both'),
-    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name='analysis/compare/hash'),
-    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='analysis'),
-    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name='api'),
+    url(r"^$", AnalysisRoutes.recent, name="analysis/recent"),
+    url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name="analysis/redirect_default"),
+    url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name="analysis/export"),
+    url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
+    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name="analysis/compare/both"),
+    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),
+    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name="analysis"),
+    url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name="api"),
     url(r"^latest/$", views.latest_report),
     url(r"^remove/(?P<task_id>\d+)/$", views.remove),
     url(r"^chunk/(?P<task_id>\d+)/(?P<pid>\d+)/(?P<pagenum>\d+)/$", views.chunk),
