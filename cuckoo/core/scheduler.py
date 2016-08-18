@@ -50,6 +50,7 @@ class AnalysisManager(threading.Thread):
 
         self.errors = error_queue
         self.cfg = Config()
+        self.routing_cfg = Config("routing")
         self.storage = ""
         self.binary = ""
         self.storage_binary = ""
@@ -225,19 +226,21 @@ class AnalysisManager(threading.Thread):
 
     def route_network(self):
         """Enable network routing if desired."""
+        cfg = self.routing_cfg
+
         # Determine the desired routing strategy (none, internet, VPN).
-        self.route = self.task.options.get("route", self.cfg.routing.route)
+        self.route = self.task.options.get("route", cfg.routing.route)
 
         if self.route == "none" or self.route == "drop":
             self.interface = None
             self.rt_table = None
         elif self.route == "inetsim":
-            self.interface = self.cfg.routing.inetsim_interface
+            self.interface = cfg.inetsim.interface
         elif self.route == "tor":
-            self.interface = self.cfg.routing.tor_interface
-        elif self.route == "internet" and self.cfg.routing.internet != "none":
-            self.interface = self.cfg.routing.internet
-            self.rt_table = self.cfg.routing.rt_table
+            self.interface = cfg.tor.interface
+        elif self.route == "internet" and cfg.routing.internet != "none":
+            self.interface = cfg.routing.internet
+            self.rt_table = cfg.routing.rt_table
         elif self.route in vpns:
             self.interface = vpns[self.route].interface
             self.rt_table = vpns[self.route].rt_table
@@ -261,19 +264,18 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
 
         if self.route == "drop":
-            rooter("drop_enable", self.machine.ip,
-                   str(self.cfg.resultserver.port))
+            rooter("drop_enable", self.machine.ip, str(cfg.resultserver.port))
 
         if self.route == "inetsim":
             rooter("inetsim_enable", self.machine.ip,
-                   self.cfg.routing.inetsim_server,
-                   str(self.cfg.resultserver.port))
+                   cfg.inetsim.server,
+                   str(cfg.resultserver.port))
 
         if self.route == "tor":
             rooter("tor_enable", self.machine.ip,
-                   str(self.cfg.resultserver.port),
-                   str(self.cfg.routing.tor_dnsport),
-                   str(self.cfg.routing.tor_proxyport))
+                   str(cfg.resultserver.port),
+                   str(cfg.tor.dnsport),
+                   str(cfg.tor.proxyport))
 
         if self.interface:
             rooter("forward_enable", self.machine.interface,
@@ -286,6 +288,9 @@ class AnalysisManager(threading.Thread):
         self.db.set_route(self.task.id, self.route)
 
     def unroute_network(self):
+        """Disable any enabled network routing."""
+        cfg = self.routing_cfg
+
         if self.interface:
             rooter("forward_disable", self.machine.interface,
                    self.interface, self.machine.ip)
@@ -295,18 +300,18 @@ class AnalysisManager(threading.Thread):
 
         if self.route == "drop":
             rooter("drop_disable", self.machine.ip,
-                   str(self.cfg.resultserver.port))
+                   str(cfg.resultserver.port))
 
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,
-                   self.cfg.routing.inetsim_server,
-                   str(self.cfg.resultserver.port))
+                   cfg.inetsim.server,
+                   str(cfg.resultserver.port))
 
         if self.route == "tor":
             rooter("tor_disable", self.machine.ip,
-                   str(self.cfg.resultserver.port),
-                   str(self.cfg.routing.tor_dnsport),
-                   str(self.cfg.routing.tor_proxyport))
+                   str(cfg.resultserver.port),
+                   str(cfg.tor.dnsport),
+                   str(cfg.tor.proxyport))
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
