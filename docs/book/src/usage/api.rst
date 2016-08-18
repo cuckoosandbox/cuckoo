@@ -51,6 +51,7 @@ To begin, create a uWSGI configuration file at ``/etc/uwsgi/apps-available/cucko
     file = utils/api.py
     uid = cuckoo
     gid = cuckoo
+    callable = app
 
 This configuration inherits a number of settings from the distribution's
 default uWSGI configuration, loading ``api.py`` from the Cuckoo installation
@@ -211,7 +212,7 @@ each one. For details click on the resource name.
             * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
             * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
             * ``options`` *(optional)* - options to pass to the analysis package
-            * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
+            * ``machine`` *(optional)* - label of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
@@ -266,7 +267,7 @@ each one. For details click on the resource name.
             * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
             * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
             * ``options`` *(optional)* - options to pass to the analysis package
-            * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
+            * ``machine`` *(optional)* - label of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
             * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules

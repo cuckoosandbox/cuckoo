@@ -9,6 +9,7 @@ import logging
 from lib.cuckoo.core.database import Database, Task
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.constants import CUCKOO_VERSION
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import emit_options
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import json_decode
@@ -40,8 +41,47 @@ class AnalysisInfo(Processing):
                 emptytask.id = self.task["id"]
                 task = emptytask.to_dict()
 
+        filepath = os.path.join(
+            CUCKOO_ROOT, ".git", "refs", "heads", "master"
+        )
+
+        if os.path.exists(filepath) and os.access(filepath, os.R_OK):
+            git_head = open(filepath, "rb").read().strip()
+        else:
+            git_head = None
+
+        filepath = os.path.join(CUCKOO_ROOT, ".git", "FETCH_HEAD")
+
+        if os.path.exists(filepath) and os.access(filepath, os.R_OK):
+            git_fetch_head = open(filepath, "rb").read().strip()
+
+            # Only obtain the hash.
+            if git_fetch_head:
+                git_fetch_head = git_fetch_head.split()[0]
+        else:
+            git_fetch_head = None
+
+        monitor = os.path.join(
+            CUCKOO_ROOT, "data", "monitor",
+            task["options"].get("monitor", "latest")
+        )
+
+        if os.path.islink(monitor):
+            monitor = os.readlink(monitor)
+        elif os.path.isfile(monitor):
+            monitor = open(monitor, "rb").read().strip()
+        elif os.path.isdir(monitor):
+            monitor = os.path.basename(monitor)
+        else:
+            monitor = None
+
         return dict(
             version=CUCKOO_VERSION,
+            git={
+                "head": git_head,
+                "fetch_head": git_fetch_head,
+            },
+            monitor=monitor,
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),

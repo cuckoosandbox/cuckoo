@@ -9,6 +9,7 @@ from hashlib import sha256
 from xmlrpclib import Server
 from traceback import format_exc
 from os import path, getcwd, makedirs
+import pkgutil
 
 from lib.common.config import Config
 from lib.common.hashing import hash_file
@@ -17,6 +18,11 @@ from lib.core.constants import PATHS
 from lib.core.packages import choose_package_class
 from lib.core.osx import set_wallclock
 from lib.core.host import CuckooHost
+from lib.common.abstracts import Auxiliary
+from modules import auxiliary
+from lib.common.exceptions import CuckooDisableModule
+
+log = logging.getLogger("analyzer")
 
 class Macalyzer(object):
     """Cuckoo OS X analyser.
@@ -49,6 +55,42 @@ class Macalyzer(object):
 
         if self.config.clock:
             set_wallclock(self.config.clock)
+
+        # Initialize Auxiliary modules
+        Auxiliary()
+        prefix = auxiliary.__name__ + "."
+        for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
+            if ispkg:
+                continue
+
+            # Import the auxiliary module.
+            try:
+                __import__(name, globals(), locals(), ["dummy"], -1)
+            except ImportError as e:
+                log.warning("Unable to import the auxiliary module "
+                            "\"%s\": %s", name, e)
+
+        # Walk through the available auxiliary modules.
+        aux_enabled, aux_avail = [], []
+        for module in Auxiliary.__subclasses__():
+            # Try to start the auxiliary module.
+            try:
+                aux = module(options=self.config.options, analyzer=self)
+                aux_avail.append(aux)
+                aux.start()
+            except (NotImplementedError, AttributeError):
+                log.warning("Auxiliary module %s was not implemented",
+                            module.__name__)
+            except CuckooDisableModule:
+                continue
+            except Exception as e:
+                log.warning("Cannot execute auxiliary module %s: %s",
+                            module.__name__, e)
+            else:
+                log.debug("Started auxiliary module %s",
+                          module.__name__)
+                aux_enabled.append(aux)
+
         self._analysis(package)
 
         return self._complete()

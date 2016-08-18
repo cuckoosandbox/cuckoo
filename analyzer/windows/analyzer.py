@@ -119,8 +119,8 @@ class Files(object):
 
     def dump_files(self):
         """Dump all pending files."""
-        for filepath in self.files:
-            self.dump_file(filepath)
+        while self.files:
+            self.delete_file(self.files.keys()[0])
 
 class ProcessList(object):
     def __init__(self):
@@ -791,7 +791,7 @@ if __name__ == "__main__":
     except Exception as e:
         # Store the error.
         error_exc = traceback.format_exc()
-        error = str(e)
+        error = "%s\n%s" % (e, error_exc)
 
         # Just to be paranoid.
         if len(log.handlers):

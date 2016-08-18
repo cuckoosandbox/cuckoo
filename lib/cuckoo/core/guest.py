@@ -242,10 +242,9 @@ class OldGuestManager(object):
                 break
             elif status == CUCKOO_GUEST_FAILED:
                 error = self.server.get_error()
-                if not error:
-                    error = "unknown error"
-
-                raise CuckooGuestError("Analysis failed: {0}".format(error))
+                raise CuckooGuestError(
+                    "Analysis failed: %s" % (error or "unknown error")
+                )
             else:
                 log.debug("%s: analysis not completed yet (status=%s)",
                           self.id, status)
@@ -420,6 +419,11 @@ class GuestManager(object):
 
         log.info("Guest is running Cuckoo Agent %s (id=%s, ip=%s)",
                  version, self.vmid, self.ipaddr)
+
+        # Pin the Agent to our IP address so that it is not accessible by
+        # other Virtual Machines etc.
+        if "pinning" in features:
+            self.get("/pinning")
 
         # Obtain the environment variables.
         self.query_environ()
