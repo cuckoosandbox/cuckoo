@@ -25,11 +25,11 @@ class FileTree {
             filepath: entry.filepath,
             filename: entry.filename,
             type: entry.type,
-            state: false, // pre-selected
+            state: false, // pre-selected tree item
             magic: entry.magic,
             size: entry.size,
             mime: entry.mime,
-            opened: false // pre-opened
+            duplicate: entry.duplicate
         };
 
         // sanatize object properties
@@ -39,7 +39,7 @@ class FileTree {
             obj.magic = "empty";
         }
 
-        [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse", ".jar"].forEach(function (x) {
+        [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
             if (obj.filepath.endsWith(x)) {
                 obj.type = "exec";
                 obj.state = true;
@@ -56,25 +56,27 @@ class FileTree {
         // build jstree JSON object
         let data = {
             text: obj.filename,
-            type: obj.type,
-            state: {
-                "selected": obj.state,
-                "opened": obj.opened
-            }
+            data: {}
         };
 
-        if(obj.type != "directory") {
-            data["data"] = {
-                "mime": obj.mime,
-                "size": obj.size,
-                "magic": obj.magic
-            };
-
-            if(entry.children.length >= 1) {
-                data.type = "archive";
-                data.state.opened = true;
-            }
+        if(obj.duplicate) {
+            obj.type = "duplicate";
+            obj.state = false;
+            data.a_attr = { "filetree-duplicate": "true" }
         }
+
+        // build jstree JSON object
+        data.state = { "selected": obj.state };
+
+        if(obj.type != "directory") {
+            data.data.mime = obj.mime;
+            data.data.size = obj.size;
+            data.data.magic = obj.magic;
+
+            if(entry.children.length >= 1) { obj.type = "archive"; }
+        }
+
+        data.type = obj.type;
 
         // recurse for child entries (make jstree leafs)
         if(entry.children.length >= 1){
@@ -128,6 +130,9 @@ class FileTree {
                 },
                 "office": {
                     "icon": "fa fa-file-word-o"
+                },
+                "duplicate": {
+                    "icon": "fa fa-ban"
                 }
             },
             grid: {
