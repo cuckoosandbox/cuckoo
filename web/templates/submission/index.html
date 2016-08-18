@@ -112,6 +112,7 @@ $(document).ready( function() {
                             {% if internet != "none" %}
                                 <option value="internet"{% if route == "internet" %} selected{% endif %}>Internet (dirty line, {{ internet }})</option>
                             {% endif %}
+                            <option value="drop">Drop all VM traffic</option>
                             {% for vpn in vpns %}
                                 <option value="{{ vpn.name }}"{% if route == vpn.name %} selected{% endif %}>{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
                             {% endfor %}

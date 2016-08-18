@@ -185,6 +185,26 @@ def tor_disable(ipaddr, resultserver_port, dns_port, proxy_port):
        "INVALID", "-j", "DROP")
    local_dns_forward(ipaddr, dns_port, "-D")
 
+def drop_enable(ipaddr, resultserver_port):
+  run(settings.iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
+      "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp", "--dport", "8000", "-j", "ACCEPT")
+  run(settings.iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp", "--sport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",  "--dport", "8000", "-j", "ACCEPT")
+  run(settings.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",  "--sport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-j", "LOG")
+  run(settings.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
+
+def drop_disable(ipaddr, resultserver_port):
+  run(settings.iptables , "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+      "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp", "--dport", "8000", "-j", "ACCEPT")
+  run(settings.iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp", "--sport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-D", "OUTPUT", "--destination", ipaddr, "-p", "tcp", "--dport", "8000", "-j", "ACCEPT")
+  run(settings.iptables, "-d", "OUTPUT", "--destination", ipaddr, "-p", "tcp",  "--sport", resultserver_port, "-j", "ACCEPT")
+  run(settings.iptables, "-D", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
+
+
 handlers = {
     "nic_available": nic_available,
     "rt_available": rt_available,
@@ -204,6 +224,8 @@ handlers = {
     "inetsim_disable": inetsim_disable,
     "tor_enable": tor_enable,
     "tor_disable": tor_disable,
+    "drop_enable": drop_enable,
+    "drop_disable": drop_disable,
 }
 
 if __name__ == "__main__":
