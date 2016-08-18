@@ -449,6 +449,45 @@ def init_routing():
             rooter("init_rttable", cuckoo.routing.rt_table,
                    cuckoo.routing.internet)
 
+    # Check if tor interface exists, if yes then enable nat
+    if cuckoo.routing.tor_interface:
+        if not rooter("nic_available", cuckoo.routing.tor_interface):
+            raise CuckooStartupError(
+                "The network interface that has been configured as tor "
+                "line is not available."
+            )
+
+        # Disable & enable NAT on this network interface. Disable it just
+        # in case we still had the same rule from a previous run.
+        rooter("disable_nat", cuckoo.routing.tor_interface)
+        rooter("enable_nat", cuckoo.routing.tor_interface)
+
+        # Populate routing table with entries from main routing table.
+        if cuckoo.routing.auto_rt:
+            rooter("flush_rttable", cuckoo.routing.rt_table)
+            rooter("init_rttable", cuckoo.routing.rt_table,
+                   cuckoo.routing.internet)
+
+
+    # Check if inetsim interface exists, if yes then enable nat, if interface is not the same as tor
+    if cuckoo.routing.inetsim_interface and cuckoo.routing.inetsim_interface !=  cuckoo.routing.tor_interface:
+        if not rooter("nic_available", cuckoo.routing.tor_interface):
+            raise CuckooStartupError(
+                "The network interface that has been configured as tor "
+                "line is not available."
+            )
+
+        # Disable & enable NAT on this network interface. Disable it just
+        # in case we still had the same rule from a previous run.
+        rooter("disable_nat", cuckoo.routing.tor_interface)
+        rooter("enable_nat", cuckoo.routing.tor_interface)
+
+        # Populate routing table with entries from main routing table.
+        if cuckoo.routing.auto_rt:
+            rooter("flush_rttable", cuckoo.routing.rt_table)
+            rooter("init_rttable", cuckoo.routing.rt_table,
+                   cuckoo.routing.internet)
+
 def cuckoo_clean():
     """Clean up cuckoo setup.
     It deletes logs, all stored data from file system and configured
