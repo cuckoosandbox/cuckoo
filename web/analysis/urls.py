@@ -5,7 +5,6 @@
 
 from . import views
 from django.conf.urls import url
-from django.views.generic import RedirectView
 
 from controllers.analysis.routes import AnalysisRoutes
 from controllers.analysis.compare.routes import AnalysisCompareRoutes
