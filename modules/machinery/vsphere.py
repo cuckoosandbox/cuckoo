@@ -328,6 +328,7 @@ class vSphere(Machinery):
             if s.key == snapshot:
                 memorykey = s.memoryKey
                 datakey = s.dataKey
+                break
 
         for f in vm.layoutEx.file:
             if f.key == memorykey and (f.type == "snapshotMemory" or
