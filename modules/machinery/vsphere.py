@@ -330,7 +330,8 @@ class vSphere(Machinery):
                 datakey = s.dataKey
 
         for f in vm.layoutEx.file:
-            if f.key == memorykey and f.type == "snapshotMemory":
+            if f.key == memorykey and (f.type == "snapshotMemory" or
+                                       f.type == "suspendMemory"):
                 filespec = f.name
                 break
 
