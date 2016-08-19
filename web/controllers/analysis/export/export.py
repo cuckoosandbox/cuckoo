@@ -9,9 +9,8 @@ import zipfile
 from StringIO import StringIO
 
 from django.conf import settings
-
+from django.template.defaultfilters import filesizeformat
 from bin.utils import json_default, get_directory_size
-from bin.bytes2human import bytes2human
 from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
@@ -45,7 +44,7 @@ class ExportController:
 
         return {
             "size": int(size_estimated),
-            "size_human": bytes2human(size_estimated)
+            "size_human": filesizeformat(size_estimated)
         }
 
     @staticmethod
