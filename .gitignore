@@ -22,7 +22,7 @@ Icon?
 Thumbs.db
 
 # Ignore development files
-docs/book/src/_build/
+docs/book/_build/
 .idea/
 .project
 .pydevproject
