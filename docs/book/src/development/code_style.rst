@@ -27,7 +27,7 @@ All existing source code files start with the following copyright header::
 
 Newly created files should start with the following copyright header::
 
-    # Copyright (C) Cuckoo Foundation.
+    # Copyright (C) 2016 Cuckoo Foundation.
     # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
     # See the file 'docs/LICENSE' for copying permission.
 

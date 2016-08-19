@@ -66,13 +66,13 @@ Active Developers
     +------------------------------+--------------------+-------------------------------------+
     | Name                         | Role               | Contact                             |
     +==============================+====================+=====================================+
-    | Claudio `nex`_ Guarnieri     | Lead Developer     | ``nex at nex dot sx``               |
+    | Claudio `nex`_ Guarnieri     | Project Leader     | ``nex at nex dot sx``               |
     +------------------------------+--------------------+-------------------------------------+
-    | Alessandro `jekil`_ Tanasi   | Developer          | ``alessandro at tanasi dot it``     |
+    | Alessandro `jekil`_ Tanasi   | Core Developer     | ``alessandro at tanasi dot it``     |
     +------------------------------+--------------------+-------------------------------------+
-    | Jurriaan `skier`_ Bremer     | Developer          | ``jbr at cuckoo dot sh``            |
+    | Jurriaan `skier`_ Bremer     | Core Developer     | ``jbr at cuckoo dot sh``            |
     +------------------------------+--------------------+-------------------------------------+
-    | Mark `rep`_ Schloesser       | Developer          | ``ms at mwcollect dot org``         |
+    | Mark `rep`_ Schloesser       | Core Developer     | ``ms at mwcollect dot org``         |
     +------------------------------+--------------------+-------------------------------------+
 
 Contributors
@@ -82,11 +82,11 @@ It's hard at this point to keep track of all individual contributions.
 Following is the list of people who contributed code to our GitHub repository::
 
     $ git shortlog -s -n
-        1426  Jurriaan Bremer
-        1143  Nex
+        1738  Jurriaan Bremer
+        1147  Nex
         1136  jekil
          372  Dmitry Rodionov
-         328  rep
+         329  rep
          185  nex
          117  Thorsten Sick
           85  Ivan Kirillov
@@ -95,6 +95,7 @@ Following is the list of people who contributed code to our GitHub repository::
           24  Mark Schloesser
           24  Pietro Delsante
           22  David Maciejak
+          17  doomedraven
           16  Johannes Gilger
           15  Adam Meily
           14  Justin Roberts
@@ -102,6 +103,7 @@ Following is the list of people who contributed code to our GitHub repository::
           11  Nicky
           11  lehmz
           11  r3comp1le
+          10  Jacob Gajek
           10  Thibault Marquand
            9  Christopher Schmitt
            9  Script Kiddie
@@ -110,21 +112,24 @@ Following is the list of people who contributed code to our GitHub repository::
            6  KillerInstinct
            6  Tal Jerome
            6  init99
+           6  swackhamer
            5  David Francos
            5  Rajiv Subrahmanyam
            5  jamu
+           5  razu
            4  Adam Pridgen
+           4  Allen Swackhamer
            4  Ben Small
            4  Chris Boettcher
            4  Darren Spruell
-           3  Allen Swackhamer
            3  Espen Fjellvær Olsen
            3  Jerome Marty
            3  Nagy Ferenc László
+           3  RuneTM
            3  Stephen DiCato
+           3  justaguy
            3  mak
            3  nsmfoo
-           3  razu
            3  robertsjw
            3  wzr
            3  z0mbiehunt3r
@@ -132,7 +137,7 @@ Following is the list of people who contributed code to our GitHub repository::
            2  Cory Kennedy
            2  Gael Muller
            2  Henrique Menezes
-           2  Jacob Gajek
+           2  KS
            2  Marcin Wielgoszewski
            2  Mario Vilas
            2  Mark Woan
@@ -146,13 +151,16 @@ Following is the list of people who contributed code to our GitHub repository::
            2  Shane-Carr
            2  Thomas Penteker
            2  Will Metcalf
+           2  amaloteaux
            2  athend
            2  bcyrill
+           2  dewiestr
            2  kcn
            2  kholbrook1303
            2  mcpacosy
            2  mt00at
            2  n3sfox
+           2  rvargasbarranco
            2  upsidedwn
            1  =
            1  Aitor Gómez
@@ -160,33 +168,43 @@ Following is the list of people who contributed code to our GitHub repository::
            1  Andrea De Pasquale
            1  Ben Lyon
            1  Benjamin Vanheuverzwijn
+           1  Bernd Aufrecht
            1  Crashman1983
            1  Dave Reindel
            1  Edouard Chamillard
            1  Fedele Mantuano
+           1  HarryR
            1  Jesús Hernández Gormaz
            1  John Davison
-           1  KS
+           1  Jonathan Echavarria
            1  Maxim Muzafarov
            1  Micha Lenk
            1  Michael George
            1  Michal Marek
+           1  RicoVZ
            1  RiddleLei
+           1  Ruikai Liu
            1  Ryan Peck
+           1  Sandor Nemes
            1  SnakeByte Lab
            1  Valter Santos
+           1  __ckim__
+           1  alonla
+           1  aspel
            1  bladeswords
            1  chimerhapsody
            1  chort
            1  chrestme
            1  consen
-           1  dewiestr
+           1  copeland3300
+           1  dimi
            1  dspruell
            1  flo-vienna
+           1  ianepanda
            1  jvoisin
            1  l0ngestever
+           1  mkmanwich
            1  peteyb1313
-           1  rvargasbarranco
            1  sabri
            1  sharvilkatariya
            1  shendo
