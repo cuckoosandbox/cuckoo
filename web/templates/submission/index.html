@@ -180,12 +180,44 @@ $(document).ready( function() {
             <div class="col-md-8">
                 <div class="col-md-12">
                     <div class="panel" id="f" style="margin-top: 20px;">
-                        <div class="panel panel-primary">
+                        <div id="filetree_container" class="panel panel-primary">
                             <div class="panel-heading">
                                 <strong>Files</strong>
                             </div>
                             <div class="panel-body" style="padding: 0px;">
                                 <div id="filetree_target"></div>
+
+                                <hr>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="cuckoo-box" style="padding: 16px; padding-top: 0px; padding-bottom: 0px;">
+                                            <div class="cuckoo-box-primary">
+                                                <input type="checkbox" id="memory" name="memory" value="memory" checked="checked">
+                                                <label for="memory" style="margin-top: 0px;">Simplify results</label>
+                                            </div>
+                                            <div class="cuckoo-box-primary">
+                                                <input type="checkbox" id="analysis" name="analysis" value="analysis" checked="checked">
+                                                <label for="analysis">Deselect duplicates</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <style>
+                                            #filetree_container .alert{
+                                                padding: 4px;
+                                                padding-left: 10px;
+                                                margin-bottom: 12px;
+                                                font-size: 12px;
+                                                cursor: pointer;
+                                            }
+                                        </style>
+
+                                        <div id="filetree_messages" style="padding-right: 20px;"></div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -200,7 +232,52 @@ $(document).ready( function() {
     <script src="/static/js/cuckoo/filetree.js"></script>
     <script>
         var submit_id = {{ submit_id }};
-        var f = new FileTree("div#filetree_target", true);
+        var filetree = new FileTree("div#filetree_target", true);
+
+        function cb(){
+            var sel_target = $("#filetree_messages");
+            var msgs = [];
+
+            if(filetree.info.files >= 0){
+                msgs.push(alertbox("File count: " + filetree.info.files,
+                        "info",
+                        "filetree_messages-files"))
+            }
+
+            if(filetree.info.files >= 0){
+                msgs.push(alertbox("Executables: " + filetree.info.executables,
+                        "info",
+                        "filetree_messages-exec"))
+            }
+
+            if(filetree.info.containers >= 0){
+                msgs.push(alertbox("Container formats: " + filetree.info.containers,
+                        "info",
+                        "filetree_messages-containers"));
+            }
+
+            if(filetree.info.duplicates >= 0){
+                msgs.push(alertbox("Duplicate files: " + filetree.info.duplicates,
+                        "danger",
+                        "filetree_messages-duplicates"));
+            }
+
+            msgs.forEach(function(msg){
+                sel_target.append(msg);
+            });
+        }
+
+        $(document.body).on("mouseover mouseout", "#filetree_messages .alert", function(e) {
+            var file_category = $(this).attr("id").split("-")[1];
+            var items = $("#filetree_target a.jstree-grid-col-0");
+            let highlight = e.type == "mouseover";
+
+            // First deselect all for speed
+            items.each(function(i, obj){ $(obj).removeClass("highlight"); });
+
+            // Loop all and try to highlight item
+            items.each(function(i, obj){ FileTree.highlight($(obj), file_category, highlight); });
+        });
 
         $(document).ready(function(){
             $.ajax({
@@ -211,7 +288,7 @@ $(document).ready( function() {
                 data: JSON.stringify({"submit_id": submit_id}),
                 timeout: 40000,
                 success: function(data){
-                    f.draw(data["data"]);
+                    filetree.draw(data.data, cb);
                 }
             }).fail(function(err) { console.log(err)});
         });
