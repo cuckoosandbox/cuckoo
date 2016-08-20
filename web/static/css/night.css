@@ -1748,7 +1748,7 @@ div.loading {
 }
 
 li[aria-expanded]>a.jstree-anchor{
-    color: white !important;
+    color: white;
 }
 
 .jstree-default-dark .jstree-clicked, .jstree-default-dark .jstree-checked {
@@ -1758,4 +1758,16 @@ li[aria-expanded]>a.jstree-anchor{
 .jstree-grid-midwrapper {
     background: url("/static/img/theme_night/table_bg_22px.png");
     background-position-y: 17px;
+}
+
+a[filetree_duplicate=true] {
+    color: red !important;
+}
+
+a.jstree-anchor[filetree_type=container] {
+    color: white !important;
+}
+
+a.jstree-grid-col-0.highlight{
+    text-decoration: underline !important;
 }
