@@ -32,19 +32,24 @@ class SubmissionController:
         self._path_root = submit.path
 
     def get_filetree(self):
-        data = {}
+        data = []
+        duplicates = []
 
         for f in self._files:
             filename = Storage.get_filename_from_path(f)
 
             file_data = open("%s/%s" % (self._path_root, f), "rb")
-            extracted = self.analyze_file(filename, file_data.read())
-            data[extracted.sha256] = extracted
+            extracted = self.analyze_file(filename=filename,
+                                          data=file_data.read(),
+                                          duplicates=duplicates)
+
+            duplicates.append(extracted.sha256)
+            data.append(extracted)
 
         return data
 
     @staticmethod
-    def analyze_file(filename, data, password=None):
+    def analyze_file(filename, data, password=None, duplicates=None):
         if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2", ".tgz")):
             f = File(filepath=filename, contents=data)
             signature = f.get_signature()
@@ -60,7 +65,8 @@ class SubmissionController:
                 return f
 
             container = container(f=f)
-            f.children = container.unpack(mode=signature["mode"])
+            f.children = container.unpack(mode=signature["mode"],
+                                          duplicates=duplicates)
             return f
 
         return File(filepath=filename, contents=data)
