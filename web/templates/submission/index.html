@@ -193,12 +193,12 @@ $(document).ready( function() {
                                     <div class="col-md-6">
                                         <div class="cuckoo-box" style="padding: 16px; padding-top: 0px; padding-bottom: 0px;">
                                             <div class="cuckoo-box-primary">
-                                                <input type="checkbox" id="memory" name="memory" value="memory" checked="checked">
-                                                <label for="memory" style="margin-top: 0px;">Simplify results</label>
+                                                <input type="checkbox" id="cb_simplify" name="cb_simplify" value="cb_simplify" checked="checked">
+                                                <label for="cb_simplify" style="margin-top: 0px;">Simplify results</label>
                                             </div>
                                             <div class="cuckoo-box-primary">
-                                                <input type="checkbox" id="analysis" name="analysis" value="analysis" checked="checked">
-                                                <label for="analysis">Deselect duplicates</label>
+                                                <input type="checkbox" id="cb_duplicates" name="cb_duplicates" value="cb_duplicates" checked="checked">
+                                                <label for="cb_duplicates">Deselect duplicates</label>
                                             </div>
                                         </div>
                                     </div>
@@ -232,32 +232,35 @@ $(document).ready( function() {
     <script src="/static/js/cuckoo/filetree.js"></script>
     <script>
         var submit_id = {{ submit_id }};
-        var filetree = new FileTree("div#filetree_target", true);
+        var filetree = null;
 
-        function cb(){
+        function filetree_drawcallback(){
             var sel_target = $("#filetree_messages");
             var msgs = [];
 
-            if(filetree.info.files >= 0){
-                msgs.push(alertbox("File count: " + filetree.info.files,
+            // Cleanup
+            sel_target.empty();
+
+            if(filetree.stats.files >= 0){
+                msgs.push(alertbox("File count: " + filetree.stats.files,
                         "info",
                         "filetree_messages-files"))
             }
 
-            if(filetree.info.files >= 0){
-                msgs.push(alertbox("Executables: " + filetree.info.executables,
+            if(filetree.stats.files >= 0){
+                msgs.push(alertbox("Executables: " + filetree.stats.executables,
                         "info",
                         "filetree_messages-exec"))
             }
 
-            if(filetree.info.containers >= 0){
-                msgs.push(alertbox("Container formats: " + filetree.info.containers,
+            if(filetree.stats.containers >= 0){
+                msgs.push(alertbox("Container formats: " + filetree.stats.containers,
                         "info",
                         "filetree_messages-containers"));
             }
 
-            if(filetree.info.duplicates >= 0){
-                msgs.push(alertbox("Duplicate files: " + filetree.info.duplicates,
+            if(filetree.stats.duplicates >= 0){
+                msgs.push(alertbox("Duplicate files: " + filetree.stats.duplicates,
                         "danger",
                         "filetree_messages-duplicates"));
             }
@@ -267,30 +270,43 @@ $(document).ready( function() {
             });
         }
 
-        $(document.body).on("mouseover mouseout", "#filetree_messages .alert", function(e) {
-            var file_category = $(this).attr("id").split("-")[1];
-            var items = $("#filetree_target a.jstree-grid-col-0");
-            let highlight = e.type == "mouseover";
-
-            // First deselect all for speed
-            items.each(function(i, obj){ $(obj).removeClass("highlight"); });
-
-            // Loop all and try to highlight item
-            items.each(function(i, obj){ FileTree.highlight($(obj), file_category, highlight); });
-        });
-
         $(document).ready(function(){
-            $.ajax({
-                type: "post",
-                contentType: "application/json",
-                url: `/submit/api/filetree/`,
-                dataType: "json",
-                data: JSON.stringify({"submit_id": submit_id}),
-                timeout: 40000,
-                success: function(data){
-                    filetree.draw(data.data, cb);
-                }
-            }).fail(function(err) { console.log(err)});
+            $("#filetree_container input#cb_simplify").on("click", function(e){
+                var state = $(this).is(':checked');
+                filetree.simplify(state);
+            });
+
+            $("#filetree_container input#cb_duplicates").on("click", function(e){
+                var state = $(this).is(':checked');
+                filetree.duplicates(state);
+            });
+
+            $(document.body).on("mouseover mouseout", "#filetree_messages .alert", function(e) {
+                var file_category = $(this).attr("id").split("-")[1];
+                var items = $("#filetree_target a.jstree-grid-col-0");
+                let highlight = e.type == "mouseover";
+
+                // First un-highlight all items for speed
+                items.each(function(i, obj){ $(obj).removeClass("highlight"); });
+
+                // Loop all items and attempt to highlight
+                items.each(function(i, obj){ FileTree.highlight($(obj), file_category, highlight); });
+            });
+
+            $(document).ready(function(){
+                $.ajax({
+                    type: "post",
+                    contentType: "application/json",
+                    url: `/submit/api/filetree/`,
+                    dataType: "json",
+                    data: JSON.stringify({"submit_id": submit_id}),
+                    timeout: 40000,
+                    success: function(data){
+                        filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
+                        filetree.draw();
+                    }
+                }).fail(function(err) { console.log(err)});
+            });
         });
 
     </script>
