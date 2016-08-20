@@ -1744,7 +1744,7 @@ div.loading {
 }
 
 .jstree-anchor {
-    color: #737373 !important;
+    color: #9c9c9c !important;
 }
 
 li[aria-expanded]>a.jstree-anchor{
@@ -1770,4 +1770,9 @@ a.jstree-anchor[filetree_type=container] {
 
 a.jstree-grid-col-0.highlight{
     text-decoration: underline !important;
+}
+
+.jstree-grid-cell {
+    color: #9c9c9c !important;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.5) !important;
 }
