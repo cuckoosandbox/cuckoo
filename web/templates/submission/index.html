@@ -289,7 +289,7 @@ $(document).ready( function() {
                 // First un-highlight all items for speed
                 items.each(function(i, obj){ $(obj).removeClass("highlight"); });
 
-                // Loop all items and attempt to highlight
+                // Loop items, attempt to highlight
                 items.each(function(i, obj){ FileTree.highlight($(obj), file_category, highlight); });
             });
 
