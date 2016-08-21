@@ -5,6 +5,7 @@
 
 import collections
 import datetime
+import itertools
 import json
 import os
 import re
@@ -952,34 +953,51 @@ class ML(object):
         return clustering_result
 
 
-    def assess_clustering(self, clustering, labels, data=None):
+    def assess_clustering(self, clustering, labels, data=None,
+                          discard_noise=False):
         """Assess clusters fit according to variety of metrics."""
-        clustering = clustering["label"].tolist()
-        labels = labels["label"].tolist()
-        performance_metrics = {}
+        def performance_metric(clustering, labels, data, noise):
+            performance_metrics = {}
+            performance_metrics["Adjusted Random Index"] = \
+                metrics.adjusted_rand_score(labels, clustering)
+            performance_metrics["Adjusted Mutual Information Score"] = \
+                metrics.adjusted_mutual_info_score(labels, clustering)
+            performance_metrics["Homogeneity"] = \
+                metrics.homogeneity_score(labels, clustering)
+            performance_metrics["Completeness"] = \
+                metrics.completeness_score(labels, clustering)
+            performance_metrics["V-measure"] = \
+                metrics.v_measure_score(labels, clustering)
 
-        performance_metrics["Adjusted Random Index"] = \
-            metrics.adjusted_rand_score(labels, clustering)
+            if data is None or noise:
+                return performance_metrics
+            performance_metrics["Silhouette Coefficient"] = \
+                metrics.silhouette_score(data, np.array(clustering))
 
-        performance_metrics["Adjusted Mutual Information Score"] = \
-            metrics.adjusted_mutual_info_score(labels, clustering)
-
-        performance_metrics["Homogeneity"] = \
-            metrics.homogeneity_score(labels, clustering)
-
-        performance_metrics["Completeness"] = \
-            metrics.completeness_score(labels, clustering)
-
-        performance_metrics["V-measure"] = \
-            metrics.v_measure_score(labels, clustering)
-
-        if data is None:
             return performance_metrics
 
-        performance_metrics["Silhouette Coefficient"] = \
-            metrics.silhouette_score(data, np.array(clustering))
+        cluster_label = clustering["label"].tolist()
+        ground_label = labels["label"].tolist()
 
-        return performance_metrics
+        if discard_noise:
+            clustering= []
+            labels = []
+            noise_clustering = []
+            noise_labels = []
+            for c, g in itertools.izip(cluster_label, ground_label):
+                if c == -1:
+                    noise_clustering.append(c)
+                    noise_labels.append(g)
+                else:
+                    clustering.append(c)
+                    labels.append(g)
+            # print performance_metric(noise_clustering, noise_labels, \
+            #                          data, True)
+        else:
+            clustering = cluster_label
+            labels = ground_label
+
+        return performance_metric(clustering, labels, data, False)
 
 
     def clustering_label_distribution(self, clustering, labels, plot=False):
