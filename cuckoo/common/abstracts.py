@@ -109,6 +109,9 @@ class Machinery(object):
         mmanager_opts = self.options.get(module_name)
 
         for machine_id in mmanager_opts["machines"].strip().split(","):
+            if not machine_id.strip():
+                continue
+
             try:
                 machine_opts = self.options.get(machine_id.strip())
                 machine = Dictionary()
