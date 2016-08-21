@@ -825,21 +825,21 @@ class ML(object):
                 "min_samples":min_samples,
                 "min_cluster_size":min_cluster_size,
                 "clustering":pd.DataFrame(hdbscan_stats, index=features.index,
-                                        columns=["label", "probability",
-                                                "outlier_score"])
+                                          columns=["label", "probability",
+                                                   "outlier_score"])
             }
         else:
             # if "hdbscan" not in self.clustering:
                 # self.clustering["hdbscan"] = {}
             # clustering_hash = "min_samples:%s&min_cluster_size:%d" % \
                 # (min_samples, min_cluster_size)
-            self.clustering["hdbscan"] = {
             # self.clustering["hdbscan"][clustering_hash] = {
+            self.clustering["hdbscan"] = {
                 "min_samples":min_samples,
                 "min_cluster_size":min_cluster_size,
                 "clustering":pd.DataFrame(hdbscan_stats, index=features.index,
-                                        columns=["label", "probability",
-                                                "outlier_score"])
+                                          columns=["label", "probability",
+                                                   "outlier_score"])
             }
 
 
