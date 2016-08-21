@@ -368,13 +368,29 @@ def process(ctx, instance, report, maxcount, debug, quiet):
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
 @click.option("-v", "--verbose", is_flag=True)
-def rooter(socket, group, ifconfig, service, iptables, ip, verbose):
+@click.option("--sudo", is_flag=True)
+def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
 
-    cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+    if sudo:
+        args = [
+            "sudo", sys.argv[0], "rooter", socket,
+            "--group", group,
+            "--ifconfig", ifconfig,
+            "--service", service,
+            "--iptables", iptables,
+            "--ip", ip,
+        ]
+
+        if verbose:
+            args.append("--verbose")
+
+        subprocess.call(args)
+    else:
+        cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
 
 @main.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")

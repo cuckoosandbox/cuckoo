@@ -55,6 +55,13 @@ To resolve this one simply has to execute the ``cuckoo`` binary from the
 
     $ sudo ~/venv/bin/cuckoo rooter
 
+Alternatively one may use the ``--sudo`` flag which will call ``sudo`` on the
+correct ``cuckoo`` binary with all the provided flags. In turn the user will
+have to enter his or her password and, assuming the user is in sudoers, the
+Cuckoo Rooter will be started properly, e.g.::
+
+    (venv)$ cuckoo rooter -v --sudo
+
 .. _cuckoo_rooter_usage:
 
 Cuckoo Rooter Usage
