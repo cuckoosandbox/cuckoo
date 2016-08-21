@@ -7,8 +7,8 @@ They consist in structured Python classes which, when executed in the guest mach
 describe how Cuckoo's analyzer component should conduct the analysis.
 
 Cuckoo provides some default analysis packages that you can use, but you are
-able to create your own or modify the existing ones.
-You can find them at *analyzer/windows/modules/packages/*.
+able to create your own or modify the existing ones. You can find them at
+``analyzer/windows/modules/packages/``.
 
 As described in :doc:`../usage/submit`, you can specify some options to the
 analysis packages in the form of ``key1=value1,key2=value2``. The existing analysis
@@ -17,70 +17,75 @@ packages already include some default options that can be enabled.
 Following is a list of the options that work for all analysis packages unless
 explicitly stated otherwise:
 
-    * ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
-    * ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
-    * ``human`` *0*: if disabled, human-like interaction (i.e., mouse movements) will not be enabled
+* ``free`` *[yes/no]*: if enabled, no behavioral logs will be produced and the malware will be executed freely.
+* ``procmemdump`` *[yes/no]*: if enabled, take memory dumps of all actively monitored processes.
+* ``human`` *0*: if disabled, human-like interaction (i.e., mouse movements) will not be enabled
 
 Following is the list of existing packages in alphabetical order:
 
-    * ``applet``: used to analyze **Java applets**.
+* ``applet``: used to analyze **Java applets**.
 
-        **Options**:
-            * ``class``: specify the name of the class to be executed. This option is mandatory for a correct execution.
+    **Options**:
 
-    * ``bin``: used to analyze generic binary data, such as **shellcodes**.
+    * ``class``: specify the name of the class to be executed. This option is mandatory for a correct execution.
 
-    * ``cpl``: used to analyze **Control Panel Applets**.
+* ``bin``: used to analyze generic binary data, such as **shellcodes**.
 
-    * ``dll``: used to run and analyze **Dynamically Linked Libraries**.
+* ``cpl``: used to analyze **Control Panel Applets**.
 
-        **Options**:
-            * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
-            * ``arguments``: specify arguments to pass to the DLL through commandline.
-            * ``loader``: specify a process name to use to fake the DLL launcher name instead of rundll32.exe (this is used to fool possible anti-sandboxing tricks of certain malware)
+* ``dll``: used to run and analyze **Dynamically Linked Libraries**.
 
-    * ``doc``: used to run and analyze **Microsoft Word documents**.
+    **Options**:
 
-    * ``exe``: default analysis package used to analyze generic **Windows executables**.
+    * ``function``: specify the function to be executed. If none is specified, Cuckoo will try to run ``DllMain``.
+    * ``arguments``: specify arguments to pass to the DLL through commandline.
+    * ``loader``: specify a process name to use to fake the DLL launcher name instead of rundll32.exe (this is used to fool possible anti-sandboxing tricks of certain malware)
 
-        **Options**:
-            * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+* ``doc``: used to run and analyze **Microsoft Word documents**.
 
-    * ``generic``: used to run and analyze **generic samples** via cmd.exe.
+* ``exe``: default analysis package used to analyze generic **Windows executables**.
 
-    * ``html``: used to analyze **Internet Explorer**'s behavior when opening the given HTML file.
+    **Options**:
 
-    * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL.
+    * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
 
-    * ``js``: used to run and analyze **Javascript** files (e.g., those found in attachments of emails).
+* ``generic``: used to run and analyze **generic samples** via cmd.exe.
 
-    * ``jar``: used to analyze **Java JAR** containers.
+* ``html``: used to analyze **Internet Explorer**'s behavior when opening the given HTML file.
 
-        **Options**:
-            * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
+* ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL.
 
-    * ``msi``: used to run and analyze **MSI windows installer**.
+* ``js``: used to run and analyze **Javascript** files (e.g., those found in attachments of emails).
 
-    * ``pdf``: used to run and analyze **PDF documents**.
+* ``jar``: used to analyze **Java JAR** containers.
 
-    * ``ppt``: used to run and analyze **Microsoft PowerPoint documents**.
+    **Options**:
 
-    * ``ps1``: used to run and analyze **PowerShell scripts**.
+    * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
 
-    * ``python``: used to run and analyze **Python scripts**.
+* ``msi``: used to run and analyze **MSI windows installer**.
 
-    * ``vbs``: used to run and analyze **VBScript files**.
+* ``pdf``: used to run and analyze **PDF documents**.
 
-    * ``wsf``: used to run and analyze **Windows Script Host files**.
+* ``ppt``: used to run and analyze **Microsoft PowerPoint documents**.
 
-    * ``xls``: used to run and analyze **Microsoft Excel documents**.
+* ``ps1``: used to run and analyze **PowerShell scripts**.
 
-    * ``zip``: used to run and analyze **Zip archives**.
+* ``python``: used to run and analyze **Python scripts**.
 
-        **Options**:
-            * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
-            * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
-            * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
+* ``vbs``: used to run and analyze **VBScript files**.
+
+* ``wsf``: used to run and analyze **Windows Script Host files**.
+
+* ``xls``: used to run and analyze **Microsoft Excel documents**.
+
+* ``zip``: used to run and analyze **Zip archives**.
+
+    **Options**:
+
+    * ``file``: specify the name of the file contained in the archive to execute. If none is specified, Cuckoo will try to execute *sample.exe*.
+    * ``arguments``: specify any command line argument to pass to the initial process of the submitted malware.
+    * ``password``: specify the password of the archive. If none is specified, Cuckoo will try to extract the archive without password or use the password "*infected*".
 
 You can find more details on how to start creating new analysis packages in the
 :doc:`../customization/packages` customization chapter.

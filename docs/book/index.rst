@@ -1,4 +1,3 @@
-
 .. _index:
 
 ===================
@@ -10,6 +9,11 @@ To do so it makes use of custom components that monitor the behavior of the mali
 processes while running in an isolated environment.
 
 This guide will explain how to set up Cuckoo, use it and customize it.
+
+Installing the new Cuckoo Package?
+==================================
+
+Please read the :doc:`installation/host/cwd` and :doc:`usage/cwd` documents!
 
 Having troubles?
 ================

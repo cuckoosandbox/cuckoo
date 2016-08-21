@@ -1,3 +1,5 @@
+.. _installing:
+
 =================
 Installing Cuckoo
 =================
@@ -5,8 +7,8 @@ Installing Cuckoo
 Create a user
 =============
 
-You either can run Cuckoo from your own user or create a new one dedicated
-just to your sandbox setup. Make sure that the user that runs Cuckoo is the
+You can either run Cuckoo from your own user or create a new one dedicated
+just for your sandbox setup. Make sure that the user that runs Cuckoo is the
 same user that you will use to create and run the virtual machines (at least
 in the case of VirtualBox), otherwise Cuckoo won't be able to identify and
 launch these Virtual Machines.
@@ -33,5 +35,9 @@ Installing the latest version of Cuckoo is as simple as follows::
 
     $ sudo pip install -U cuckoo
 
-Please refer to :doc:`cwd` to learn more about the
+Or, when using ``virtualenv``, something similar to the following::
+
+    (venv) $ pip install -U cuckoo
+
+Please refer to :doc:`cwd` and :doc:`../../usage/cwd` to learn more about the
 ``Cuckoo Working Directory`` and how to operate it.

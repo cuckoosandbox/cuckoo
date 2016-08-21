@@ -417,8 +417,6 @@ def init_routing():
                 "line is not available."
             )
 
-        interfaces.add((cfg.routing.rt_table, cfg.tor.interface))
-
     # Check if the InetSim interface exists, if so, enable NAT if the
     # interface is not the same as the one we use for Tor.
     if cfg.inetsim.enabled:
@@ -427,8 +425,6 @@ def init_routing():
                 "The network interface that has been configured as InetSim "
                 "line is not available."
             )
-
-        interfaces.add((cfg.routing.rt_table, cfg.tor.interface))
 
     for rt_table, interface in interfaces:
         # Disable & enable NAT on this network interface. Disable it just

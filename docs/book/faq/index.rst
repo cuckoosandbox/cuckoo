@@ -255,6 +255,8 @@ trying to determine to which version of the ``Cuckoo Agent`` it is talking.
 .. _`new, REST API-based, Cuckoo Agent`: https://github.com/jbremer/agent/blob/master/agent.py
 .. _`VMCloak`: https://github.com/jbremer/vmcloak
 
+.. _tcpdump_permission_denied:
+
 Permission denied for tcpdump
 -----------------------------
 

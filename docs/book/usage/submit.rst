@@ -2,10 +2,10 @@
 Submit an Analysis
 ==================
 
-    * :ref:`submitpy`
-    * :ref:`apipy`
-    * :ref:`distpy`
-    * :ref:`python`
+* :ref:`submitpy`
+* :ref:`apipy`
+* :ref:`distpy`
+* :ref:`python`
 
 .. _submitpy:
 
@@ -18,31 +18,33 @@ It currently has the following options available::
     $ cuckoo submit --help
     Usage: cuckoo submit [OPTIONS] [TARGET]...
 
-    Submit one or more files or URLs to Cuckoo.
+      Submit one or more files or URLs to Cuckoo.
 
     Options:
-    -u, --url           Submitting URLs instead of samples
-    -o, --options TEXT  Options for these tasks
-    --package TEXT      Analysis package to use
-    --custom TEXT       Custom information to pass along this task
-    --owner TEXT        Owner of this task
-    --timeout INTEGER   Analysis time in seconds
-    --priority INTEGER  Priority of this task
-    --machine TEXT      Machine to analyze these tasks on
-    --platform TEXT     Analysis platform
-    --memory            Enable memory dumping
-    --enforce-timeout   Don't terminate the analysis early
-    --clock TEXT        Set the system clock
-    --tags TEXT         Analysis tags
-    --baseline          Create baseline task
-    --remote TEXT       Submit to a remote Cuckoo instance
-    --shuffle           Shuffle the submitted tasks
-    --pattern TEXT      Provide a glob-pattern when submitting a directory
-    --max INTEGER       Submit up to X tasks at once
-    --unique            Only submit samples that have not been analyzed before
-    -d, --debug         Enable verbose logging
-    -q, --quiet         Only log warnings and critical messages
-    --help              Show this message and exit.
+      -u, --url           Submitting URLs instead of samples
+      -o, --options TEXT  Options for these tasks
+      --package TEXT      Analysis package to use
+      --custom TEXT       Custom information to pass along this task
+      --owner TEXT        Owner of this task
+      --timeout INTEGER   Analysis time in seconds
+      --priority INTEGER  Priority of this task
+      --machine TEXT      Machine to analyze these tasks on
+      --platform TEXT     Analysis platform
+      --memory            Enable memory dumping
+      --enforce-timeout   Don't terminate the analysis early
+      --clock TEXT        Set the system clock
+      --tags TEXT         Analysis tags
+      --baseline          Create baseline task
+      --remote TEXT       Submit to a remote Cuckoo instance
+      --shuffle           Shuffle the submitted tasks
+      --pattern TEXT      Provide a glob-pattern when submitting a
+                          directory
+      --max INTEGER       Submit up to X tasks at once
+      --unique            Only submit samples that have not been
+                          analyzed before
+      -d, --debug         Enable verbose logging
+      -q, --quiet         Only log warnings and critical messages
+      --help              Show this message and exit.
 
 You may specify multiple files or directories at once. For directories
 ``cuckoo submit`` will enumerate all its files and submit them one by one.

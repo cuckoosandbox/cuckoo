@@ -8,6 +8,7 @@ This chapter explains how to use Cuckoo.
 .. toctree::
 
     start
+    cwd
     submit
     web
     api
@@ -16,3 +17,4 @@ This chapter explains how to use Cuckoo.
     results
     clean
     utilities
+    rooter

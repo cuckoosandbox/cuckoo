@@ -2,6 +2,10 @@
 Distributed Cuckoo
 ==================
 
+.. versionchanged:: 2.0-rc3
+    The documenation on Distributed Cuckoo is outdated due to the switch to
+    the Cuckoo Package.
+
 As mentioned in :doc:`submit`, Cuckoo provides a REST API for Distributed
 Cuckoo usage. The distributed script allows one to setup a single REST API
 point to which samples and URLs can be submitted which will then, in turn, be

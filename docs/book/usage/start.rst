@@ -25,7 +25,7 @@ You will get an output similar to this::
     2013-04-07 15:57:17,861 [lib.cuckoo.core.scheduler] INFO: Loaded 1 machine/s
     2013-04-07 15:57:17,862 [lib.cuckoo.core.scheduler] INFO: Waiting for analysis tasks...
 
-Note that Cuckoo checks for updates on a remote API located at *api.cuckoosandbox.org*.
+Note that Cuckoo checks for updates on a remote API located at ``api.cuckoosandbox.org``.
 You can avoid this by disabling the ``version_check`` option in the configuration file.
 
 Now Cuckoo is ready to run and it's waiting for submissions.
@@ -35,23 +35,40 @@ Now Cuckoo is ready to run and it's waiting for submissions.
     $ cuckoo --help
     Usage: cuckoo [OPTIONS] COMMAND [ARGS]...
 
+    Invokes the Cuckoo daemon or one of its subcommands.
+
+    To be able to use different Cuckoo configurations on the same
+    machine with the same Cuckoo installation, we use the so-called
+    Cuckoo Working Directory (aka "CWD"). A default CWD is
+    available, but may be overridden through the following options -
+    listed in order of precedence.
+
+    * Command-line option (--cwd)
+    * Environment option ("CUCKOO")
+    * Environment option ("CUCKOO_CWD")
+    * Current directory (if the ".cwd" file exists)
+    * Default value ("~/.cuckoo")
+
     Options:
-    -d, --debug             Enable verbose logging
-    -q, --quiet             Only log warnings and critical messages
-    -m, --maxcount INTEGER  Maximum number of analyses to process
-    --user TEXT             Drop privileges to this user
-    --root TEXT             Cuckoo Working Directory
-    --help                  Show this message and exit.
+      -d, --debug             Enable verbose logging
+      -q, --quiet             Only log warnings and critical messages
+      -m, --maxcount INTEGER  Maximum number of analyses to process
+      --user TEXT             Drop privileges to this user
+      --cwd TEXT              Cuckoo Working Directory
+      --help                  Show this message and exit.
 
     Commands:
-    api
-    clean      Utility to clean the Cuckoo Working Directory...
-    community  Utility to fetch supplies from the Cuckoo...
-    dnsserve
-    process    Process raw task data into reports.
-    rooter
-    submit     Submit one or more files or URLs to Cuckoo.
-    web
+      api
+      clean        Utility to clean the Cuckoo Working Directory...
+      community    Utility to fetch supplies from the Cuckoo...
+      distributed
+      dnsserve
+      machine
+      migrate
+      process      Process raw task data into reports.
+      rooter
+      submit       Submit one or more files or URLs to Cuckoo.
+      web          Starts the Cuckoo Web Interface or dumps its...
 
 The ``--debug`` and ``--quiet`` flags increase and decrease the logging
 verbosity for the ``cuckoo`` command or any of its subcommands.

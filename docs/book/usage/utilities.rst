@@ -6,6 +6,8 @@ Cuckoo comes with a set of pre-built utilities to automate several common
 tasks. Before these utilities could be found in the ``utils/`` directory but
 since then we have moved to ``Cuckoo Apps``.
 
+.. _cuckoo_apps:
+
 Cuckoo Apps
 ===========
 
@@ -38,7 +40,7 @@ Processing Utility
     We used to have longstanding issues with ``./utils/process.py`` randomly
     freezing up and ``./utils/process2.py`` only being able to handle
     PostgreSQL-based databases. These two commands have now been merged into
-    one Cuckoo App and no longer shows signs of said issues or limitations.
+    one Cuckoo App and no longer show signs of said issues or limitations.
 
 For bigger Cuckoo setups it is recommended to separate the results processing
 from the Cuckoo analyses. It is also possible to re-generate a Cuckoo report,
@@ -112,8 +114,8 @@ Database migration utility
 .. deprecated:: 2.0-rc2
     This will be ported into a Cuckoo App in an upcoming update.
 
-This utility is developed to migrate your data between Cuckoo's release.
-It's developed on top of the `Alembic`_ framework and it should provide data
+This utility is developed to migrate your data between Cuckoo's release. It's
+developed on top of the `Alembic`_ framework and it should provide data
 migration for both SQL database and Mongo database.
 This tool is already described in :doc:`../installation/upgrade`.
 
@@ -168,18 +170,14 @@ Following are the available options::
     --resultserver TEXT  IP:Port of the Result Server
     --help               Show this message and exit.
 
+As an example, a machine may be added to Cuckoo's configuration as follows::
+
+    $ cuckoo machine --add cuckoo1 192.168.56.101 --platform windows --snapshot vmcloak
+
 Distributed scripts
 ===================
 
-.. deprecated:: 2.0-rc2
-    Distributed Cuckoo has not been properly integrated yet in the Cuckoo
-    Package. When that happens functionality from these scripts will likely
-    be moved elsewhere.
-
-There are a couple of shell scripts used to automate distributed utility:
-
- * "start-distributed" is used to start distributed Cuckoo
- * "stop-distributed" is used to stop distributed Cuckoo
+This tool is described in :doc:`dist`.
 
 Mac OS X Bootstrap scripts
 ==========================

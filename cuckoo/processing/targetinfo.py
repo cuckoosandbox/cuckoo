@@ -25,7 +25,7 @@ class TargetInfo(Processing):
         if self.task["category"] == "file":
             target_info["file"] = {}
 
-            # et's try to get as much information as possible, i.e., the
+            # Let's try to get as much information as possible, i.e., the
             # filename if the file is not available anymore.
             if os.path.exists(self.file_path):
                 target_info["file"] = File(self.file_path).get_all()
