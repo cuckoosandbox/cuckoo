@@ -35,3 +35,9 @@ data/yara/index_*.yar
 
 # Ignore venv
 venv
+
+# Ignore CuckooML sample data
+sample_data/
+
+# Ignore Jupyter Notebook examples' checkpoints
+examples/.ipynb_checkpoints
