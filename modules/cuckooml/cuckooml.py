@@ -657,7 +657,8 @@ class ML(object):
         return self.features.loc[:, extract]
 
 
-    def filter_dataset(self, dataset=None, feature_coverage=0.1):
+    def filter_dataset(self, dataset=None, feature_coverage=0.1,
+                       complement=False):
         """Prune features that are useless."""
         if dataset is None:
             dataset = self.features.copy()
@@ -670,7 +671,8 @@ class ML(object):
             for row in dataset[col]:
                 if not row:
                     zero_count += 1
-            if (row_count-zero_count)/row_count < feature_coverage:
+            # XOR
+            if complement != (row_count-zero_count)/row_count<feature_coverage:
                 remove_features.append(col)
         dataset.drop(remove_features, axis=1, inplace=True)
 
