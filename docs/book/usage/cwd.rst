@@ -45,12 +45,14 @@ After having installed the ``Cuckoo Package`` (:ref:`installing`) and setup
 the initial ``Cuckoo Working Directory`` (:doc:`../installation/host/cwd`) it
 is time to actually get started with Cuckoo. Just to reiterate, installing the
 latest version of Cuckoo in a ``virtualenv`` environment may look roughly as
-follows.
+follows (note the ``pip install -U pip setuptools``, for more information see
+also :ref:`pip_install_issue`).
 
 .. code-block:: bash
 
     $ virtualenv venv
     $ . venv/bin/activate
+    (venv)$ pip install -U pip setuptools
     (venv)$ pip install -U cuckoo
     (venv)$ cuckoo --cwd ~/.cuckoo
 

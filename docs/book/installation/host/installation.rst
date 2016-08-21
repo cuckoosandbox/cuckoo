@@ -31,13 +31,20 @@ run libvirt)::
 Install Cuckoo
 ==============
 
-Installing the latest version of Cuckoo is as simple as follows::
+Installing the latest version of Cuckoo is as simple as follows. Note that it
+is recommended to first upgrade the ``pip`` and ``setuptools`` libraries as
+they're often outdated, leading to issues when trying to install Cuckoo (see
+also :ref:`pip_install_issue`).
 
+.. code-block:: bash
+
+    $ sudo pip install -U pip setuptools
     $ sudo pip install -U cuckoo
 
 Or, when using ``virtualenv``, something similar to the following::
 
-    (venv) $ pip install -U cuckoo
+    (venv)$ pip install -U pip setuptools
+    (venv)$ pip install -U cuckoo
 
 Please refer to :doc:`cwd` and :doc:`../../usage/cwd` to learn more about the
 ``Cuckoo Working Directory`` and how to operate it.

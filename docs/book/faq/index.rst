@@ -276,6 +276,8 @@ solutions are welcome of course)::
     sudo apt-get install apparmor-utils
     sudo aa-disable /usr/sbin/tcpdump
 
+.. _pip_install_issue:
+
 DistributionNotFound / No distribution matching the version..
 -------------------------------------------------------------
 
