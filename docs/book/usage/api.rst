@@ -173,8 +173,6 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
-.. highlight:: javascript
-
 .. _tasks_create_file:
 
 /tasks/create/file
