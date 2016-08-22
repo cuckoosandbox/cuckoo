@@ -174,7 +174,7 @@ var FileTree = function () {
                 obj.magic = "empty";
             }
 
-            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
+            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "exec";
                     obj.state = true;
@@ -217,14 +217,15 @@ var FileTree = function () {
             if (obj.type == "directory") {
                 obj.opened = true;
                 _self.stats.directories += 1;
-            } else if (obj.type == "file") {
-                _self.stats.files += 1;
             }
 
             if (obj.type != "directory") {
                 data.data.mime = obj.mime;
                 data.data.size = obj.size;
                 data.data.magic = obj.magic;
+
+                console.log("lal");
+                _self.stats.files += 1;
 
                 if (entry.children.length >= 1) {
                     obj.type = "container";

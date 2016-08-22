@@ -27,7 +27,6 @@
 <script src="{% static "js/jstree/jstreegrid.js"%}"></script>
 {#<link href="{% static "css/jstree.style.min.css" %}" rel="stylesheet"> @TO-DO: fix local import #}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default-dark/style.min.css"/>
 
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
@@ -36,6 +35,7 @@
 <link href="{% static "css/analysis_sidebar.css" %}" rel="stylesheet">
 
 {% if request.COOKIES.theme == "night" %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default-dark/style.min.css"/>
     <link href="{% static "css/night.css" %}" rel="stylesheet">
 {% endif %}
 

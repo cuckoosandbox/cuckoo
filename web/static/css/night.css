@@ -52,6 +52,10 @@ section#summary .list-group li ul {
     list-style-type: initial;
 }
 
+section#static_strings > .well{
+    background-color: #434343;
+}
+
 input, textarea, select {
     background-color: #383838 !important;
     border-color: #545454 !important;
