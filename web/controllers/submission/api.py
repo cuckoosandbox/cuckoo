@@ -9,6 +9,7 @@ import pymongo
 
 from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -35,7 +36,7 @@ class SubmissionApi:
         db = Database()
         submit_id = db.add_submit(tmp_path)
 
-        return JsonResponse({"status": "OK", "submit_id": submit_id}, encoder=json_default_response)
+        return redirect('submission/pre', submit_id=submit_id)
 
     @staticmethod
     @csrf_exempt
