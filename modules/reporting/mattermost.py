@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import json
+import hashlib
 
 try:
     import requests
@@ -39,8 +40,13 @@ class Mattermost(Report):
                             self.options.get("myurl")
                             )
 
+        filename = results.get("target").get("file").get("name")
+        if self.options.get("hash-filename"):
+            filename = hashlib.sha256(filename).hexdigest()
+            
+
         post += "File : {0} ::: Score : **{1}** ::: ".format(
-                            results.get("target").get("file").get("name"),
+                            filename,
                             results.get("info").get("score")
                             )
 
