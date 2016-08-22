@@ -199,14 +199,15 @@ class FileTree {
         if(obj.type == "directory"){
             obj.opened = true;
             _self.stats.directories += 1;
-        } else if (obj.type == "file"){
-            _self.stats.files += 1;
         }
 
         if(obj.type != "directory") {
             data.data.mime = obj.mime;
             data.data.size = obj.size;
             data.data.magic = obj.magic;
+
+            console.log("lal");
+            _self.stats.files += 1;
 
             if(entry.children.length >= 1) {
                 obj.type = "container";
