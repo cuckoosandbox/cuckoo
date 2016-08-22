@@ -11,7 +11,7 @@ class SummaryBehaviorDetail {
         this.offset = 0;
 
         this._setup = false;
-        this._sel = $(`ssection#summary div#summary_${this.category}`);
+        this._sel = $(`section#summary div#summary_${this.category}`);
     }
 
     start(offset, limit){
