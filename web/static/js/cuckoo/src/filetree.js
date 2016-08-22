@@ -59,15 +59,20 @@ class FileTree {
         } else {
             data = this.data;
         }
+        
+        let theme_active = Cookies.get("theme");
+        let themes = {"name": "default"};
+
+        if(theme_active == "night"){
+            themes["name"] = "default-dark"
+        }
 
         $(this.sel_target).jstree({
             core: {
                 data: data,
                 "multiple" : true,
                 "animation" : 0,
-                "themes": {
-                    "name": "default-dark"
-                }
+                "themes": themes
             },
             types: {
                 "container": {
@@ -206,7 +211,6 @@ class FileTree {
             data.data.size = obj.size;
             data.data.magic = obj.magic;
 
-            console.log("lal");
             _self.stats.files += 1;
 
             if(entry.children.length >= 1) {
