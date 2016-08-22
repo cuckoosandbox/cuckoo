@@ -202,9 +202,14 @@ def init_modules():
     """Initializes plugins."""
     log.debug("Imported modules...")
 
-    for category, entries in cuckoo.plugins.items():
+    categories = (
+        "auxiliary", "processing", "signatures", "reporting",
+    )
+
+    for category in categories:
         log.debug("Imported \"%s\" modules:", category)
 
+        entries = cuckoo.plugins[category]
         for entry in entries:
             if entry == entries[-1]:
                 log.debug("\t `-- %s", entry.__name__)
