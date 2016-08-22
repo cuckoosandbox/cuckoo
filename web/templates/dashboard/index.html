@@ -69,12 +69,12 @@
 
                 <script>
                     $(document).ready(function(){
+                        $(document).on("submit", "#uploader", function(e){
+                            e.preventDefault();
+                        });
+
                         function dndsuccess(data){
-                            if(data.hasOwnProperty("status")){
-                                if(data["status"] == "OK"){
-                                    document.location.href = "/submit/pre/" + data["submit_id"];
-                                }
-                            }
+                            window.location.href = data.responseURL;
                         }
 
                         var dndupload = new DndUpload(

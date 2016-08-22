@@ -179,7 +179,7 @@ $(document).ready( function() {
 
             <div class="col-md-8">
                 <div class="col-md-12">
-                    <div class="panel" id="f" style="margin-top: 20px;">
+                    <div class="panel" style="margin-top: 20px;">
                         <div id="filetree_container" class="panel-primary">
                             <div class="panel-heading">
                                 Files
@@ -226,9 +226,11 @@ $(document).ready( function() {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-12">
-                <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary btn-lg">Analyze</button></div>
+                <div class="col-md-12">
+                    <div style="float:right;">
+                        <button type="submit" class="btn btn-primary">Analyze</button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -288,7 +290,7 @@ $(document).ready( function() {
             $(document.body).on("mouseover mouseout", "#filetree_messages .alert", function(e) {
                 var file_category = $(this).attr("id").split("-")[1];
                 var items = $("#filetree_target a.jstree-grid-col-0");
-                let highlight = e.type == "mouseover";
+                var highlight = e.type == "mouseover";
 
                 // First un-highlight all items for speed
                 items.each(function(i, obj){ $(obj).removeClass("highlight"); });
