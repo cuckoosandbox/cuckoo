@@ -247,6 +247,10 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
     font-size: 12px;
 }
 
+.panel {
+    border: 1px solid #d0d0d0;
+}
+
 .panel-heading {
     padding: 5px 15px;
     font-weight: bold;
