@@ -670,6 +670,8 @@ class Scheduler(object):
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
 
+        routing_cfg = Config("routing")
+
         # Drop all existing packet forwarding rules for each VM. Just in case
         # Cuckoo was terminated for some reason and various forwarding rules
         # have thus not been dropped yet.
@@ -689,9 +691,9 @@ class Scheduler(object):
                        vpn.interface, machine.ip)
 
             # Drop forwarding rule to the internet / dirty line.
-            if self.cfg.routing.internet != "none":
+            if routing_cfg.routing.internet != "none":
                 rooter("forward_disable", machine.interface,
-                       self.cfg.routing.internet, machine.ip)
+                       routing_cfg.routing.internet, machine.ip)
 
     def stop(self):
         """Stop scheduler."""
