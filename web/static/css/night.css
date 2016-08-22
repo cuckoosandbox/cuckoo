@@ -2,7 +2,7 @@
 
 body {
     color: #d7d7d7;
-    background-color: #313131;
+    background: linear-gradient(#313131, #3c3c3c);
 }
 
 hr {
@@ -124,6 +124,10 @@ section#summary .panel-default .list-group > li > p > b {
     background: inherit;
 }
 
+.analysis_menu-usermenu ul li a {
+    color: #cad7e6;
+}
+
 /* navbar */
 .navbar-inverse {
     background-color: #375a7f;
@@ -151,6 +155,7 @@ section#summary .panel-default .list-group > li > p > b {
     background-color: #303030;
     -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
     box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    border-color: #434343;
 }
 
 .panel-default > .panel-heading {
@@ -1694,7 +1699,8 @@ div.loading {
 
 .nav-pills > li.active > a, .nav-pills > li.active > a:focus, .nav-pills > li.active > a:hover {
     color: inherit;
-    background-color: #375a7f;
+    background-color: #585858;
+    border-radius: 0px;
 }
 
 .navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:focus, .navbar-inverse .navbar-nav>.open>a:hover {
@@ -1702,6 +1708,9 @@ div.loading {
     background-color: inherit;
 }
 
+#panel_create-analysis > .panel-body{
+    background-color: #393939;
+}
 
 .dndupload {
     background: #393939;
@@ -1725,6 +1734,7 @@ div.loading {
 /* jstree */
 .jstree-grid-header-regular {
     background-color: #393939 !important;
+    margin-bottom: 21px !important;
 }
 
 .jstree-grid-separator-regular {
@@ -1761,7 +1771,7 @@ li[aria-expanded]>a.jstree-anchor{
 
 .jstree-grid-midwrapper {
     background: url("/static/img/theme_night/table_bg_22px.png");
-    background-position-y: 17px;
+    background-position-y: 3px;
 }
 
 a[filetree_duplicate=true] {
@@ -1770,10 +1780,6 @@ a[filetree_duplicate=true] {
 
 a.jstree-anchor[filetree_type=container] {
     color: white !important;
-}
-
-a.jstree-grid-col-0.highlight{
-    text-decoration: underline !important;
 }
 
 .jstree-grid-cell {

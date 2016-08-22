@@ -83,7 +83,7 @@ $(document).ready( function() {
         <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
             <div class="col-md-4">
                 <div class="panel" id="accordion" style="margin-top: 20px;">
-                    <div class="panel panel-primary">
+                    <div class="panel-primary">
                         <div class="panel-heading">Advanced Options</div>
                         <div id="options" class="panel-collapse collapse in" style="text-align: left;">
                             <div class="panel-body">
@@ -180,17 +180,19 @@ $(document).ready( function() {
             <div class="col-md-8">
                 <div class="col-md-12">
                     <div class="panel" id="f" style="margin-top: 20px;">
-                        <div id="filetree_container" class="panel panel-primary">
+                        <div id="filetree_container" class="panel-primary">
                             <div class="panel-heading">
-                                <strong>Files</strong>
+                                Files
                             </div>
                             <div class="panel-body" style="padding: 0px;">
-                                <div id="filetree_target"></div>
+                                <div class="row-fluid" id="filetree_target">
+                                    <h3 style="opacity:0.5" class="text-center">Loading files...</h3>
+                                </div>
 
                                 <hr>
 
-                                <div class="row">
-                                    <div class="col-md-6">
+                                <div class="row" style="margin-bottom:20px;">
+                                    <div class="col-md-4">
                                         <div class="cuckoo-box" style="padding: 16px; padding-top: 0px; padding-bottom: 0px;">
                                             <div class="cuckoo-box-primary">
                                                 <input type="checkbox" id="cb_simplify" name="cb_simplify" value="cb_simplify" checked="checked">
@@ -202,15 +204,17 @@ $(document).ready( function() {
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class="col-md-6">
+                                    <div class="col-md-4"></div>
+                                    <div class="col-md-4">
                                         <style>
                                             #filetree_container .alert{
                                                 padding: 4px;
                                                 padding-left: 10px;
-                                                margin-bottom: 12px;
+                                                margin-bottom: 0px;
                                                 font-size: 12px;
                                                 cursor: pointer;
+                                                border-color: transparent;
+                                                border-radius:0px;
                                             }
                                         </style>
 
