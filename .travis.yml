@@ -13,7 +13,7 @@ before_install:
     - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev
 
 install:
-    - python setup.py install
+    - ONLYINSTALL=yes python setup.py install
 
 script:
     # Create the Cuckoo Working Directory.
