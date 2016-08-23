@@ -23,8 +23,7 @@ script:
     - cuckoo community
 
     # Check the code integrity of the Signatures by running Cuckoo.
-    - cuckoo machine --delete cuckoo1
-    - cuckoo -d 2>&1|grep "No machines available"
+    - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
 
     # Run tests from the "tests" directory.
     - py.test
