@@ -680,7 +680,7 @@ class ML(object):
         return dataset
 
 
-    def detect_abnormal_behaviour(self, count_dataset=None):
+    def detect_abnormal_behaviour(self, count_dataset=None, figures=True):
         """Detect samples that behave significantly different than others."""
         if count_dataset is None:
             # Pull all count features
@@ -690,16 +690,20 @@ class ML(object):
             count_dataset = pd.concat([count_features, meta_size, \
                                       simp_count], axis=1)
 
+        if not figures:
+            ret = {}
         for f in count_dataset:
             # Produce boxplots
-            sns.boxplot(count_dataset[f])
-            sns.swarmplot(count_dataset[f], color=".25")
-            plt.title("Abnormal behaviour detection for " + f)
-            if self.context == "notebook":
-                plt.show()
-            else:
-                plt.savefig("abnormal_behaviour_" + f.replace(":", "_") + ".png")
-                plt.close()
+            if figures:
+                sns.boxplot(count_dataset[f])
+                sns.swarmplot(count_dataset[f], color=".25")
+                plt.title("Abnormal behaviour detection for " + f)
+                if self.context == "notebook":
+                    plt.show()
+                else:
+                    plt.savefig("abnormal_behaviour_" + f.replace(":", "_") + \
+                                ".png")
+                    plt.close()
 
             # Get list of local outliers
             f_1_quartile = count_dataset[f].quantile(0.25)
@@ -715,10 +719,16 @@ class ML(object):
                 if count_dataset[f][s] > f_3_quartile+1.5*f_IQR or \
                         count_dataset[f][s] < f_1_quartile-1.5*f_IQR:
                     f_suspected_outliers.append(s)
-            print f
-            print "Outliers: ", ", ".join(f_outliers)
-            print "Suspected outliers: ", ", ".join(f_suspected_outliers)
-            print "------------------------------------------------------------"
+            if figures:
+                print f
+                print "Outliers: ", ", ".join(f_outliers)
+                print "Suspected outliers: ", ", ".join(f_suspected_outliers)
+                print "------------------------------------------------------------"
+            else:
+                ret[f] = {"outliers": f_outliers,
+                          "suspect_outliers": f_suspected_outliers}
+        if not figures:
+            return pd.DataFrame(ret).T
 
 
     def visualise_data(self, data=None, labels=None, learning_rate=200,
