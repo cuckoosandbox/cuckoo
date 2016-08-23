@@ -1,21 +1,30 @@
 branches:
   only:
-    - master
+    - package
+
 language: python
+
 python:
     - 2.7
+
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev libxml2-dev libxslt1-dev
-    - wget http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.12/ssdeep-2.12.tar.gz
-    - tar -zxvf ssdeep-2.12.tar.gz
-    - cd ssdeep-2.12
-    - ./configure && make
-    - sudo make install
-    - cd ..
+    - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
+    - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev
+
 install:
-    - pip install -r requirements.txt
+    - python setup.py install
+
 script:
-    - python utils/community.py -wafb monitor
-    - python cuckoo.py --debug --test
-    #- nosetests
+    # Create the Cuckoo Working Directory.
+    - cuckoo -d
+
+    # Download Cuckoo Signatures.
+    - cuckoo community
+
+    # Check the code integrity of the Signatures by running Cuckoo.
+    - cuckoo machine --delete cuckoo1
+    - cuckoo -d 2>&1|grep "No machines available"
+
+    # Run tests from the "tests" directory.
+    - py.test
