@@ -16,10 +16,137 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from hdbscan import HDBSCAN
+from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from math import log
 from sklearn import metrics
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
+
+def init_cuckooml():
+    """Initialise CuckooML analysis with default parameters."""
+    cfg = Config("cuckooml")
+
+    # Load reports for clustering
+    loader = Loader()
+    loader.load_binaries(CUCKOO_ROOT + "/" + cfg.cuckooml.data_directory)
+
+    # Get features dictionaries
+    simple_features_dict = loader.get_simple_features()
+    features_dict = loader.get_features()
+    labels_dict = loader.get_labels()
+
+    # Transform them into proper features
+    ml = ML()
+    ml.load_simple_features(simple_features_dict)
+    ml.load_features(features_dict)
+    ml.load_labels(labels_dict)
+
+    simple_features = ml.simple_features
+    features_nominal = ml.feature_category(":count:", complement=True)
+    features_numerical = ml.feature_category(":count:")
+
+    if cfg.cuckooml.clustering:
+        # Select features
+        selected_features = []
+        sf = [i.strip() for i in cfg.cuckooml.features.split(",")]
+        if "simple" in sf:
+            selected_features.append(simple_features)
+        elif "nominal" in sf:
+            selected_features.append(features_nominal)
+        elif "numerical" in sf:
+            selected_features.append(features_numerical)
+
+        # Apply filters to selected datasets
+        filters = [i.strip() for i in cfg.cuckooml.features_filter.split(",")]
+        data = []
+        for f, d in itertools.izip(filters, selected_features):
+            if f == "log_bin":
+                data.append(d.applymap(ml.__log_bin))
+            elif f == "filter_dataset":
+                data.append(ml.filter_dataset(d))
+
+        data = pd.concat(data, axis=1)
+
+        # Parse clustering parameters
+        cl_args = \
+            [i for i in cfg.cuckooml.clustering_parameters.split(",")]
+
+        # Select clustering algorithm
+        cls_alg = cfg.cuckooml.clustering_algorithm.lower()
+        if cls_alg == "hdbscan":
+            cl_args= [int(i) for i in cl_args]
+            ml.cluster_hdbscan(data, *cl_args)
+        elif cls_alg == "dbscan":
+            cl_args= [int(i) for i in cl_args]
+            ml.cluster_dbscan(data, *cl_args)
+
+        # Save clustering fit
+        clf = {}
+        clf["clustering+noise"] = ml.assess_clustering( \
+                                      ml.clustering[cls_alg]["clustering"], \
+                                      ml.labels, data, discard_noise=False)
+        print "Clustering fit:"
+        clf["clustering"] = ml.assess_clustering( \
+                                ml.clustering[cls_alg]["clustering"], \
+                                ml.labels, data, discard_noise=True)
+        pd.DataFrame(clf).to_csv("clustering_fit.csv", encoding="utf-8")
+
+        # Save clustering results to csv
+        print "Clustering results saved to `clustering_results.csv`"
+        ml.clustering[cls_alg]["clustering"].to_csv("clustering_results.csv", \
+                                                    encoding="utf-8")
+        print "Cluster label distribution saved to \
+               `cluster_label_distribution.csv`"
+        ml.clustering_label_distribution(ml.clustering[cls_alg]["clustering"], \
+                                         ml.labels, plot=False)\
+            .to_csv("cluster_label_distribution.csv", encoding="utf-8")
+
+    # Save abnormal behaviour stats?
+    if cfg.cuckooml.abnormal_behaviour:
+        print "Abnormal behaviour will be saved to `abnormal_behaviour.csv`"
+        ml.detect_abnormal_behaviour(features_numerical, figures=False).to_csv(\
+            "abnormal_behaviour.csv", encoding="utf-8")
+
+    if cfg.cuckooml.anomalies_detection:
+        ad = pd.DataFrame(ml.clustering[cls_alg]["clustering"]["label"])
+        ad.columns = ["cluster"]
+        ad_dict = ml.anomaly_detection()
+        for i in ad_dict:
+            if isinstance(ad_dict[i], list):
+                ad[i] = pd.Series([1]*len(ad_dict[i]), index=ad_dict[i])
+            elif isinstance(ad_dict[i], dict):
+                in_list = []
+                for j in ad_dict[i]:
+                    in_list += ad_dict[i][j]
+                ad[i] = pd.Series([1]*len(in_list), index=in_list)
+        print "Saving anomaly detection results as `anomalies.csv`"
+        ad.to_csv("anomalies.csv", encoding="utf-8")
+
+
+    if cfg.cuckooml.compare_new_samples:
+        test_location = CUCKOO_ROOT + "/" + cfg.cuckooml.test_directory
+
+        if os.path.isdir(test_location):
+            new_sample = Loader()
+            new_sample.load_binaries(test_location)
+        elif os.path.isfile(test_location):
+            new_sample = Instance()
+            new_sample.load_json(test_location)
+            new_sample.label_sample()
+            new_sample.extract_features()
+            new_sample.extract_basic_features()
+        # Compare new sample(s)
+        ml.compare_sample(new_sample).to_csv("test_samples.csv", \
+                                             encoding="utf-8")
+
+    if cfg.cuckooml.clustering and cfg.cuckooml.save_clustering_results:
+        if cfg.cuckooml.clustering_results_directory:
+            ml.save_clustering_results(loader, CUCKOO_ROOT+"/"+cfg.cuckooml.\
+                                       clustering_results_directory)
+        else:
+            ml.save_clustering_results(loader)
+
 
 class ML(object):
     """Feature formatting and machine learning for Cuckoo analysed binaries.
