@@ -6,7 +6,7 @@
 import pytest
 import tempfile
 
-from cuckoo.common.config import Config
+from cuckoo.common.config import Config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import set_cwd
 
@@ -48,3 +48,14 @@ class TestConfig:
         self.c = Config("bar")
         with pytest.raises(CuckooOperationalError):
             self.c.get("foo")
+
+    def test_options(self):
+        assert parse_options("a=b") == {"a": "b"}
+        assert parse_options("a=b,b=c") == {"a": "b", "b": "c"}
+
+        assert emit_options({"a": "b"}) == "a=b"
+        assert emit_options({"a": "b", "b": "c"}).count(",") == 1
+        assert "a=b" in emit_options({"a": "b", "b": "c"})
+        assert "b=c" in emit_options({"a": "b", "b": "c"})
+
+        assert parse_options(emit_options({"x": "y"})) == {"x": "y"}

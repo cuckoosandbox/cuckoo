@@ -5,9 +5,10 @@
 
 import os
 import pytest
+import re
 import tempfile
 
-from cuckoo.common.objects import Dictionary, File
+from cuckoo.common.objects import Dictionary, File, URL_REGEX
 
 class TestDictionary:
     def setup_method(self, method):
@@ -75,3 +76,8 @@ class TestFile:
 
     def teardown(self):
         os.remove(self.path)
+
+def test_regex():
+    r = re.findall(URL_REGEX, "foo http://google.com/search bar")
+    assert len(r) == 1
+    assert "".join(r[0]) == "http://google.com/search"
