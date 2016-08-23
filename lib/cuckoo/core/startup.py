@@ -62,10 +62,10 @@ def check_configs():
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
-        "auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf", "kvm.conf",
-        "memory.conf", "physical.conf", "processing.conf", "qemu.conf",
-        "reporting.conf", "virtualbox.conf", "vmware.conf", "vpn.conf",
-        "vsphere.conf", "xenserver.conf",
+        "auxiliary.conf", "avd.conf", "cuckoo.conf", "cuckooml.conf",
+        "esx.conf", "kvm.conf", "memory.conf", "physical.conf",
+        "processing.conf", "qemu.conf", "reporting.conf", "virtualbox.conf",
+        "vmware.conf", "vpn.conf", "vsphere.conf", "xenserver.conf",
     )
 
     for config in [os.path.join(CUCKOO_ROOT, "conf", f) for f in configs]:
