@@ -935,30 +935,36 @@ class ML(object):
 
     def compare_sample(self, sample, amend=False):
         """Compare new sample with current clustering."""
-        # Retrieve cluster ID
-        # TODO: this alters cluster structure - retraining needs to be removed
-        features = self.extract_features({"?"+sample.name: sample.features})
-        # simple_features = self.extract_simple_features(
-            # {"?"+sample.name: sample.basic_features})
-        # label = self.extract_labels({"?"+sample.name: sample.label})
-        extended_features = pd.concat([self.features, features])
-        extended_features.fillna(0, inplace=True)
-        clustering = self.cluster_hdbscan(features=extended_features, dry=True)
-        clustering_result = clustering["clustering"].loc["?"+sample.name]
+        if isinstance(sample, Instance):
+            # Retrieve cluster ID
+            # TODO: this alters cluster structure-retraining needs to be removed
+            features = self.extract_features({"?"+sample.name: sample.features})
+            # simple_features = self.extract_simple_features(
+                # {"?"+sample.name: sample.basic_features})
+            # label = self.extract_labels({"?"+sample.name: sample.label})
+            extended_features = pd.concat([self.features, features])
+            extended_features.fillna(0, inplace=True)
+            clustering = self.cluster_hdbscan(features=extended_features, \
+                                              dry=True)
+            clustering_result = clustering["clustering"].loc["?"+sample.name]
 
-        # TODO: return samples that are the most similar to the analysed one
+            # TODO: return samples that are the most similar to the analysed one
 
-        # Save clustering information to the sample's JSON
-        if amend:
-            root = ["info", "clustering", "hdbscan"]
-            sample.update(clustering_result["label"], root+["clusterID"])
-            sample.update(clustering_result["probability"],
-                          root+["clusterProbability"])
-            sample.update(clustering_result["outlier_score"],
-                          root+["outlierScore"])
-            sample.update(clustering["min_samples"], "min_samples")
-            sample.update(clustering["min_cluster_size"], "min_cluster_size")
-            sample.save_json(os.path.dirname(sample.json_path)+"/")
+            # Save clustering information to the sample's JSON
+            if amend:
+                root = ["info", "clustering", "hdbscan"]
+                sample.update(clustering_result["label"], root+["clusterID"])
+                sample.update(clustering_result["probability"],
+                            root+["clusterProbability"])
+                sample.update(clustering_result["outlier_score"],
+                            root+["outlierScore"])
+                sample.update(clustering["min_samples"], "min_samples")
+                sample.update(clustering["min_cluster_size"], \
+                              "min_cluster_size")
+                sample.save_json(os.path.dirname(sample.json_path)+"/")
+        # TODO: handle more than one test sample
+        elif isinstance(sample, Loader):
+            clustering_result = pd.DataFrame()
 
         return clustering_result
 
