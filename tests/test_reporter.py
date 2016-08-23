@@ -3,13 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import tempfile
-from nose.tools import assert_equals
-
-from lib.cuckoo.common.abstracts import Report
-from lib.cuckoo.common.config import Config
-
+from cuckoo.common.abstracts import Report
 
 class ReportMock(Report):
     def run(self, data):

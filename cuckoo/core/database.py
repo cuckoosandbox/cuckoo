@@ -373,14 +373,16 @@ class Database(object):
         self.schema_check = schema_check
         self.echo = echo
 
-    def connect(self, schema_check=None):
+    def connect(self, schema_check=None, dsn=None):
         """Connect to the database backend."""
         cfg = Config()
 
         if schema_check is not None:
             self.schema_check = schema_check
 
-        if hasattr(cfg, "database") and cfg.database.connection:
+        if dsn:
+            self._connect_database(dsn)
+        elif hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
         else:
             db_file = cwd("cuckoo.db")
