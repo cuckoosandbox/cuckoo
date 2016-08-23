@@ -62,7 +62,7 @@ class TestFile:
             assert self.file.get_ssdeep() is None
 
     def test_get_type(self):
-        assert "empty " == self.file.get_type()
+        assert "empty" in self.file.get_type()
 
     def test_get_content_type(self):
         assert self.file.get_content_type() in ["inode/x-empty", "application/x-empty"]
