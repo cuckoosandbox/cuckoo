@@ -3,10 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-
-_current_dir = os.path.abspath(os.path.dirname(__file__))
-
 CUCKOO_VERSION = "2.0-dev"
 CUCKOO_GUEST_PORT = 8000
 CUCKOO_GUEST_INIT = 0x001

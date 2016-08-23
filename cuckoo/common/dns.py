@@ -13,10 +13,10 @@ try:
 except:
     HAVE_CARES = False
 
-#try:
+# try:
 #    import gevent, gevent.socket
 #    HAVE_GEVENT = True
-#except:
+# except:
 HAVE_GEVENT = False
 
 
@@ -42,9 +42,11 @@ def with_timeout(func, args=(), kwargs={}):
     """
     class ResultThread(threading.Thread):
         daemon = True
+
         def __init__(self):
             threading.Thread.__init__(self)
             self.result, self.error = None, None
+
         def run(self):
             try:
                 self.result = func(*args, **kwargs)
@@ -131,7 +133,7 @@ def resolve_gevent_real(name):
 def resolve(name):
     if HAVE_CARES:
         return resolve_cares(name)
-    #elif HAVE_GEVENT:
+    # elif HAVE_GEVENT:
     #    return resolve_gevent(name)
     else:
         return resolve_thread(name)
