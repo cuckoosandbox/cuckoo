@@ -123,7 +123,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
     if is_url:
         for url in target:
             if not remote:
-                data.pop("unique")
+                data.pop("unique", None)
                 task_id = db.add_url(to_unicode(url), **data)
                 yield "URL", url, task_id
                 continue
@@ -165,7 +165,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
                         yield "File", filepath, None
                         continue
 
-                data.pop("unique")
+                data.pop("unique", None)
                 task_id = db.add_path(file_path=filepath, **data)
                 yield "File", filepath, task_id
                 continue
