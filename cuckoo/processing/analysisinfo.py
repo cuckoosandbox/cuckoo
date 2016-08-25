@@ -41,7 +41,14 @@ class AnalysisInfo(Processing):
                 emptytask.id = self.task["id"]
                 task = emptytask.to_dict()
 
-        git_head = git_fetch_head = open(cwd(".cwd"), "rb").read()
+        if os.path.exists(cwd(".cwd")):
+            git_head = git_fetch_head = open(cwd(".cwd"), "rb").read()
+        else:
+            log.warning(
+                "No .cwd file was found in the Cuckoo Working Directory. Did "
+                "you correctly setup the CWD?"
+            )
+            git_head = git_fetch_head = None
 
         monitor = cwd("monitor", task["options"].get("monitor", "latest"))
         if os.path.islink(monitor):
