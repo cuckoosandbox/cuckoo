@@ -77,8 +77,10 @@ class RunAuxiliary(object):
             try:
                 current = module()
             except:
-                log.exception("Failed to load the auxiliary module "
-                              "\"{0}\":".format(module))
+                log.exception(
+                    "Failed to load the auxiliary module: %s",
+                    module, extra={"task_id": self.task["id"]}
+                )
                 return
 
             module_name = inspect.getmodule(current).__name__
@@ -106,9 +108,11 @@ class RunAuxiliary(object):
                 pass
             except CuckooDisableModule:
                 continue
-            except Exception as e:
-                log.warning("Unable to start auxiliary module %s: %s",
-                            module_name, e)
+            except:
+                log.exception(
+                    "Unable to start auxiliary module %s",
+                    module_name, extra={"task_id": self.task["id"]}
+                )
             else:
                 log.debug("Started auxiliary module: %s",
                           current.__class__.__name__)
@@ -126,10 +130,11 @@ class RunAuxiliary(object):
                 pass
             except CuckooDisableModule:
                 continue
-            except Exception as e:
-                log.warning(
-                    "Error performing callback %r on auxiliary module %r: %s",
-                    name, module.__class__.__name__, e
+            except:
+                log.exception(
+                    "Error performing callback %r on auxiliary module %r",
+                    name, module.__class__.__name__,
+                    extra={"task_id": self.task["id"]}
                 )
 
             enabled.append(module)
@@ -141,8 +146,12 @@ class RunAuxiliary(object):
                 module.stop()
             except NotImplementedError:
                 pass
-            except Exception as e:
-                log.warning("Unable to stop auxiliary module: %s", e)
+            except:
+                log.exception(
+                    "Unable to stop auxiliary module: %s",
+                    module.__class__.__name__,
+                    extra={"task_id": self.task["id"]}
+                )
             else:
                 log.debug("Stopped auxiliary module: %s",
                           module.__class__.__name__)
@@ -172,8 +181,10 @@ class RunProcessing(object):
         try:
             current = module()
         except:
-            log.exception("Failed to load the processing module "
-                          "\"{0}\":".format(module))
+            log.exception(
+                "Failed to load the processing module: %s",
+                module, extra={"task_id": self.task["id"]}
+            )
             return None, None
 
         # Extract the module name.
@@ -214,13 +225,22 @@ class RunProcessing(object):
             # If succeeded, return they module's key name and the data.
             return current.key, data
         except CuckooDependencyError as e:
-            log.warning("The processing module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
+            log.warning(
+                "The processing module \"%s\" has missing dependencies: %s",
+                current.__class__.__name__, e
+            )
         except CuckooProcessingError as e:
-            log.warning("The processing module \"%s\" returned the following "
-                        "error: %s", current.__class__.__name__, e)
+            log.warning(
+                "The processing module \"%s\" returned the following "
+                "error: %s",
+                current.__class__.__name__, e
+            )
         except:
-            log.exception("Failed to run the processing module \"%s\" for task #%d:",
-                          current.__class__.__name__, self.task["id"])
+            log.exception(
+                "Failed to run the processing module \"%s\" for task #%d:",
+                current.__class__.__name__, self.task["id"],
+                extra={"task_id": self.task["id"]}
+            )
 
         return None, None
 
@@ -341,7 +361,6 @@ class RunSignatures(object):
                              "an old-style signature. Please upgrade this "
                              "signature: %s.", signature.name)
                     return False
-
             except ValueError:
                 log.debug("Wrong minor version number in signature %s",
                           signature.name)
@@ -376,8 +395,12 @@ class RunSignatures(object):
         except NotImplementedError:
             return False
         except:
-            log.exception("Failed to run '%s' of the %s signature",
-                          handler.__name__, signature.name)
+            task_id = self.results.get("info", {}).get("id")
+            log.exception(
+                "Failed to run '%s' of the %s signature",
+                handler.__name__, signature.name,
+                extra={"task_id": task_id}
+            )
         return True
 
     def init_api_sigs(self, apiname, category):
@@ -469,7 +492,10 @@ class RunReporting(object):
         try:
             current = module()
         except:
-            log.exception("Failed to load the reporting module \"{0}\":".format(module))
+            log.exception(
+                "Failed to load the reporting module: %s", module,
+                extra={"task_id": self.task["id"]}
+            )
             return
 
         # Extract the module name.
@@ -498,11 +524,21 @@ class RunReporting(object):
             current.run(self.results)
             log.debug("Executed reporting module \"%s\"", current.__class__.__name__)
         except CuckooDependencyError as e:
-            log.warning("The reporting module \"%s\" has missing dependencies: %s", current.__class__.__name__, e)
+            log.warning(
+                "The reporting module \"%s\" has missing dependencies: %s",
+                current.__class__.__name__, e
+            )
         except CuckooReportError as e:
-            log.warning("The reporting module \"%s\" returned the following error: %s", current.__class__.__name__, e)
+            log.warning(
+                "The reporting module \"%s\" returned the following "
+                "error: %s", current.__class__.__name__, e
+            )
         except:
-            log.exception("Failed to run the reporting module \"%s\":", current.__class__.__name__)
+            log.exception(
+                "Failed to run the reporting module: %s",
+                current.__class__.__name__,
+                extra={"task_id": self.task["id"]}
+            )
 
     def run(self):
         """Generates all reports.

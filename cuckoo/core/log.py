@@ -32,9 +32,7 @@ class TaskHandler(logging.Handler):
         if not task_id:
             return
 
-        # Don't bother, this will be improved with #863 anyway.
         logpath = cwd("storage", "analyses", "%s" % task_id, "cuckoo.log")
-
         with open(logpath, "a+b") as f:
             f.write("%s\n" % self.format(record))
 

@@ -161,6 +161,10 @@ def init_console_logging(level=logging.INFO):
     ch.setFormatter(formatter)
     log.addHandler(ch)
 
+    dh = DatabaseHandler()
+    dh.setLevel(logging.ERROR)
+    log.addHandler(dh)
+
     log.setLevel(level)
 
 def init_tasks():
