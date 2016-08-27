@@ -54,6 +54,23 @@ setuptools.setup(
     packages=[
         "cuckoo",
     ],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        # TODO: should become stable.
+        # "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "Environment :: Web Environment",
+        "Framework :: Django",
+        "Framework :: Flask",
+        "Framework :: Pytest",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Science/Research",
+        "Natural Language :: English",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Security",
+    ],
     url="https://cuckoosandbox.org/",
     license="GPLv3",
     description="Automated Malware Analysis System",
