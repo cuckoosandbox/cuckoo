@@ -62,6 +62,9 @@ want to run both commands::
     $ sudo echo 1 > /proc/sys/net/ipv4/ip_forward
     $ sudo sysctl -w net.ipv4.ip_forward=1
 
+Iptables rules are not persistent between reboots, so if want to keep
+them you should use a script or just install ``iptables-persistant``.
+
 Per-Analysis Network Routing Options
 ====================================
 
