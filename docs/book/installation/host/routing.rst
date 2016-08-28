@@ -231,9 +231,9 @@ require its own static IP address which should then be configured in the
 Tor Routing
 ^^^^^^^^^^^
 
-Although we **highly discourage** the use of Tor for malware analysis - the
-maintainers of ``Tor exit nodes`` already have a hard enough time keeping up
-their servers - it is in fact a well-supported feature.
+.. note:: Although we **highly discourage** the use of Tor for malware analysis
+    - the maintainers of ``Tor exit nodes`` already have a hard enough time
+    keeping up their servers - it is in fact a well-supported feature.
 
 First of all Tor will have to be installed. Please find instructions on
 installing the `latest stable version of Tor here`_.
