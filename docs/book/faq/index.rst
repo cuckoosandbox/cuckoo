@@ -4,11 +4,8 @@ FAQ
 
 Frequently Asked Questions:
 
-    * :ref:`analyze_urls`
-    * :ref:`general_volatility`
-    * :ref:`esxi_reqs`
-    * :ref:`troubles_upgrade`
-    * :ref:`troubles_problem`
+.. contents::
+   :local:
 
 
 General Questions
