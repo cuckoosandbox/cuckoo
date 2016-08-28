@@ -27,7 +27,7 @@ class Folders(Storage):
         super(Folders, self).__init__()
 
     @staticmethod
-    def create(root=".", folder=None, folders=[]):
+    def create(root=".", folder="", folders=[]):
         """Creates a directory or multiple directories.
         @param root: root path.
         @param folder: folder name to be created.
