@@ -59,7 +59,7 @@ that survives until a shutdown or reboot, and a permanent method that is taken
 into account when booting the machine. Simply put, generally speaking you'll
 want to run both commands::
 
-    $ sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+    $ echo 1 | sudo tee -a /proc/sys/net/ipv4/ip_forward
     $ sudo sysctl -w net.ipv4.ip_forward=1
 
 Iptables rules are not persistent between reboots, so if want to keep

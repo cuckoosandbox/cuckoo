@@ -69,7 +69,7 @@ your distribution at the `official download page`_. Please find following the
 commands to install the latest version of VirtualBox on your Ubuntu LTS
 machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, and 5.1::
 
-    $ echo deb http://download.virtualbox.org/virtualbox/debian xenial contrib >> /etc/apt/sources.list.d/virtualbox.list
+    $ echo deb http://download.virtualbox.org/virtualbox/debian xenial contrib | sudo tee -a /etc/apt/sources.list.d/virtualbox.list
     $ wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     $ sudo apt-get update
     $ sudo apt-get install virtualbox-5.1
