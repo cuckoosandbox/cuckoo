@@ -205,23 +205,26 @@ samples to connect to the internet through the same uplink.
 InetSim Routing
 ^^^^^^^^^^^^^^^
 
-For those that have not heard of ``InetSim``, it's a project that provides
-fake services for malware to talk to. In order to use ``inetsim routing`` one
+For those that have not heard of `InetSim`_, it's a project that provides
+fake services for malware to talk to. In order to use ``InetSim routing`` one
 will have to setup InetSim on the host machine (or in a separate VM) and
-configure Cuckoo so that it knows where to find the ``inetsim`` server.
+configure Cuckoo so that it knows where to find the InetSim server.
 
-The configuration for ``InetSim`` is self-explanatory and can be found as part
+The configuration for InetSim is self-explanatory and can be found as part
 of the ``$CWD/conf/routing.conf`` configuration file::
 
     [inetsim]
     enabled = yes
     server = 192.168.56.1
 
-In order to quickly get started with ``InetSim`` it is possible to download
-the latest version of the ``remnux`` distribution which features - among many
-other tools - the latest version of ``InetSim``. Naturally this VM will
+In order to quickly get started with InetSim it is possible to download
+the latest version of the `REMnux`_ distribution which features - among many
+other tools - the latest version of InetSim. Naturally this VM will
 require its own static IP address which should then be configured in the
 ``routing.conf`` configuration file.
+
+.. _InetSim: http://www.inetsim.org/
+.. _REMnux: https://remnux.org/
 
 .. _routing_tor:
 
