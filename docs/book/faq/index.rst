@@ -2,7 +2,7 @@
 FAQ
 ===
 
-Frequently Asked Questions:
+Here you can found an answer for some Frequently Asked Questions:
 
 .. contents::
    :local:
