@@ -35,22 +35,22 @@ connecting to the internet.
 
 .. code-block:: bash
 
-    $ iptables -t nat -A POSTROUTING -o eth0 -s 192.168.56.0/24 -j MASQUERADE
+    $ sudo iptables -t nat -A POSTROUTING -o eth0 -s 192.168.56.0/24 -j MASQUERADE
 
     # Default drop.
-    $ iptables -P FORWARD DROP
+    $ sudo iptables -P FORWARD DROP
 
     # Existing connections.
-    $ iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+    $ sudo iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
 
     # Accept connections from vboxnet to the whole internet.
-    $ iptables -A FORWARD -s 192.168.56.0/24 -j ACCEPT
+    $ sudo iptables -A FORWARD -s 192.168.56.0/24 -j ACCEPT
 
     # Internal traffic.
-    $ iptables -A FORWARD -s 192.168.56.0/24 -d 192.168.56.0/24 -j ACCEPT
+    $ sudo iptables -A FORWARD -s 192.168.56.0/24 -d 192.168.56.0/24 -j ACCEPT
 
     # Log stuff that reaches this point (could be noisy).
-    $ iptables -A FORWARD -j LOG
+    $ sudo iptables -A FORWARD -j LOG
 
 And that's pretty much it, with these rules set we're almost good to go.
 However, these rules won't be doing any packet forwarding unless IP forwarding
@@ -59,8 +59,8 @@ that survives until a shutdown or reboot, and a permanent method that is taken
 into account when booting the machine. Simply put, generally speaking you'll
 want to run both commands::
 
-    $ echo 1 > /proc/sys/net/ipv4/ip_forward
-    $ sysctl -w net.ipv4.ip_forward=1
+    $ sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+    $ sudo sysctl -w net.ipv4.ip_forward=1
 
 Per-Analysis Network Routing Options
 ====================================
