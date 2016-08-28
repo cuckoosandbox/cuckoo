@@ -91,7 +91,7 @@ Following is the list of available routing options.
 +-------------------------+--------------------------------------------------+
 | :ref:`routing_internet` | Full internet access as provided by the given    |
 |                         | network interface (similar to the                |
-|                         | ``simple global routing`` setup).                |
+|                         | :ref:`simple_global_routing` setup).             |
 +-------------------------+--------------------------------------------------+
 | :ref:`routing_inetsim`  | Routes all traffic to an InetSim instance -      |
 |                         | which provides fake services - running on the    |
