@@ -126,7 +126,7 @@ necessary.
 As an example we'll be configuring :ref:`routing_internet` (aka the
 ``dirty line``) for which we'll be using the ``eth0`` network interface -
 reverting back to Ubuntu 14.04 and older terminology here for a second (Ubuntu
-16.04 uses network interface names based on the hardware manifacturer, as you
+16.04 uses network interface names based on the hardware manufacturer, as you
 will likely have seen happen on BSD-based systems since forever).
 
 To configure ``iproute2`` with ``eth0`` we're going to open the
