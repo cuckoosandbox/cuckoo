@@ -23,9 +23,6 @@ class Storage(object):
         return filename if filename else ntpath.basename(dirpath)
 
 class Folders(Storage):
-    def __init__(self):
-        super(Folders, self).__init__()
-
     @staticmethod
     def create(root=".", folder="", folders=[]):
         """Creates a directory or multiple directories.
@@ -60,9 +57,6 @@ class Folders(Storage):
                                              "{0}".format(folder))
 
 class Files(Storage):
-    def __init__(self):
-        super(Files, self).__init__()
-
     @staticmethod
     def tmp_put(file=None, files=[], path=None):
         """Store a temporary file or files.
