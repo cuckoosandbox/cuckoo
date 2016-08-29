@@ -1035,6 +1035,28 @@ class Database(object):
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock, "file")
 
+    def add_archive(self, file_path, filename, package, timeout=0,
+                    options=None, priority=1, custom="", owner="", machine="",
+                    platform="", tags=None, memory=False,
+                    enforce_timeout=False, clock=None):
+        """Add a task to the database that's packaged in an archive file."""
+        if not file_path or not os.path.exists(file_path):
+            log.warning("File does not exist: %s.", file_path)
+            return None
+
+        options = options or {}
+        options["filename"] = filename
+
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
+
+        return self.add(File(file_path), timeout, package, options, priority,
+                        custom, owner, machine, platform, tags, memory,
+                        enforce_timeout, clock, "archive")
+
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
                 memory=False, enforce_timeout=False, clock=None):
