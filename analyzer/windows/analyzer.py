@@ -16,6 +16,7 @@ import traceback
 import urllib
 import urllib2
 import xmlrpclib
+import zipfile
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
@@ -484,8 +485,17 @@ class Analyzer(object):
         # We update the target according to its category. If it's a file, then
         # we store the target path.
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["TEMP"] + os.sep,
-                                       self.config.file_name)
+            self.target = os.path.join(
+                os.environ["TEMP"], self.config.file_name
+            )
+        elif self.config.category == "archive":
+            zip_path = os.path.join(
+                os.environ["TEMP"], self.config.file_name
+            )
+            zipfile.ZipFile(zip_path).extractall(os.environ["TEMP"])
+            self.target = os.path.join(
+                os.environ["TEMP"], self.config.options["filename"]
+            )
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
