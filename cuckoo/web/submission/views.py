@@ -16,7 +16,7 @@ from cuckoo.core.rooter import vpns
 from cuckoo.misc import cwd
 
 results_db = settings.MONGO
-cfg = Config()
+cfg = Config(file_name="routing")
 
 def force_int(value):
     try:
