@@ -14,7 +14,8 @@ from lib.cuckoo.common.exceptions import CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import File, URL, Dictionary
-from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLock, json_encode
+from lib.cuckoo.common.files import Folders
+from lib.cuckoo.common.utils import Singleton, classlock, SuperLock, json_encode
 
 try:
     from sqlalchemy import create_engine, Column, not_
@@ -181,6 +182,17 @@ class Guest(Base):
         self.name = name
         self.label = label
         self.manager = manager
+
+class Submit(Base):
+    """Submitted files details."""
+    __tablename__ = "submit"
+
+    id = Column(Integer(), primary_key=True)
+    path = Column(String(256), nullable=False)
+    added = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, path):
+        self.path = path
 
 class Sample(Base):
     """Submitted files details."""
@@ -381,7 +393,7 @@ class Database(object):
                 db_dir = os.path.dirname(db_file)
                 if not os.path.exists(db_dir):
                     try:
-                        create_folder(folder=db_dir)
+                        Folders.create(folder=db_dir)
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
 
@@ -1110,6 +1122,32 @@ class Database(object):
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
                         memory, enforce_timeout, clock, "file")
+
+    @classlock
+    def add_submit(self, path):
+        session = self.Session()
+        submit = Submit(path=path)
+        submit_id = None
+        session.add(submit)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error adding error log: {0}".format(e))
+            session.rollback()
+        finally:
+            submit_id = submit.id
+            session.close()
+
+        return submit_id
+
+    def view_submit(self, submit_id):
+        session = self.Session()
+        submit = session.query(Submit).get(submit_id)
+
+        session.close()
+
+        return submit
 
     @classlock
     def reschedule(self, task_id, priority=None):

@@ -24,7 +24,7 @@ else:
         bson_decode = lambda d: bson.loads(d)
 
 from lib.cuckoo.common.abstracts import ProtocolHandler
-from lib.cuckoo.common.utils import get_filename_from_path
+from lib.cuckoo.common.files import Storage
 from lib.cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
@@ -299,7 +299,7 @@ class BsonParser(ProtocolHandler):
                     vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
                     parsed["first_seen"] = vmtime
 
-                    procname = get_filename_from_path(modulepath)
+                    procname = Storage.get_filename_from_path(modulepath)
                     parsed["process_path"] = modulepath
                     parsed["process_name"] = procname
                     parsed["command_line"] = argdict.get("command_line")

@@ -10,7 +10,8 @@ from StringIO import StringIO
 
 from django.conf import settings
 
-from bin.utils import json_default, get_directory_size
+from lib.cuckoo.common.utils import json_default
+from bin.utils import get_directory_size
 from bin.bytes2human import bytes2human
 from controllers.analysis.analysis import AnalysisController
 

@@ -18,7 +18,7 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooReportError
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.objects import Dictionary
-from lib.cuckoo.common.utils import create_folder
+from lib.cuckoo.common.files import Folders
 from lib.cuckoo.core.database import Database
 
 try:
@@ -1170,7 +1170,7 @@ class Report(object):
         self.pcap_path = self._get_analysis_path("dump.pcap")
 
         try:
-            create_folder(folder=self.reports_path)
+            Folders.create(folder=self.reports_path)
         except CuckooOperationalError as e:
             raise CuckooReportError(e)
 

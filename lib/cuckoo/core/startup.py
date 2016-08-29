@@ -20,7 +20,7 @@ from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.utils import create_folders
+from lib.cuckoo.common.files import Folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from lib.cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
@@ -87,7 +87,7 @@ def create_structure():
     ]
 
     try:
-        create_folders(root=CUCKOO_ROOT, folders=folders)
+        Folders.create(root=CUCKOO_ROOT, folders=folders)
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 
