@@ -17,11 +17,11 @@
                 var btn_active = $(this).attr('class');
 
                 if($('a[data-filter^="score"]', this).length) {
-                    let score_choice = $(this).find('a').attr('data-filter');
+                    var score_choice = $(this).find('a').attr('data-filter');
 
                     $('.nav_container>div#item>a[data-filter^="score"]').each(function(i, obj){
                         obj = $(obj);
-                        let uid = obj.attr('data-filter');
+                        var uid = obj.attr('data-filter');
 
                         if(uid != score_choice){
                             obj.parent().removeClass('active');
