@@ -6,8 +6,7 @@ Cuckoo relies on a couple of main configuration files:
 
 * :ref:`cuckoo_conf`: for configuring general behavior and analysis options.
 * :ref:`auxiliary_conf`: for enabling and configuring auxiliary modules.
-* :ref:`machinery_conf`: for defining the options for your virtualization software
-    (the file has the same name of the machinery module you choose in cuckoo.conf).
+* :ref:`machinery_conf`: for defining the options for your virtualization software (the file has the same name of the machinery module you choose in cuckoo.conf).
 * :ref:`memory_conf`: Volatility configuration.
 * :ref:`processing_conf`: for enabling and configuring processing modules.
 * :ref:`reporting_conf`: for enabling or disabling report formats.
