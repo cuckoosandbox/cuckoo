@@ -128,8 +128,8 @@
             });
 
             function estimate_size() {
-                let taken_dirs = [];
-                let taken_files = [];
+                var taken_dirs = [];
+                var taken_files = [];
 
                 $(".cuckoo-box input[id^=export_]").each(function (i, obj) {
                     var name = $(this).attr("value");
