@@ -1041,6 +1041,18 @@ class Signature(object):
                                  regex=regex,
                                  all=all)
 
+    def check_suricata_alerts(self, pattern):
+        """Check for pattern in Suricata alert signature
+        @param pattern: string or expression to check for.
+        @return: True/False
+        """
+        res = False
+        for alert in self.results.get("suricata", {}).get("alerts", []):
+            if re.findall(pattern, alert.get("signature", ""), re.I):
+                res = True
+                break
+        return res
+
     def init(self):
         """Allow signatures to initialize themselves."""
 
