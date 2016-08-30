@@ -88,6 +88,18 @@ input[readonly] {
     background-color: white !important;
     cursor: text !important;
 }
+
+.nav>li>a:hover {
+    text-decoration: none;
+    cursor:pointer;
+    background-color: #eee;
+}
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+    color: #4c4c4c;
+    background-color: #eee;
+}
+
 .gray {
     color: #666;
 }
@@ -252,7 +264,7 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
 }
 
 .panel-heading {
-    padding: 5px 15px;
+    padding: 5px 8px;
     font-weight: bold;
 }
 
