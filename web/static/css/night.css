@@ -1712,6 +1712,10 @@ div.loading {
     background-color: #393939;
 }
 
+.hex_address{
+    color: #f9a55c;
+}
+
 .dndupload {
     background: #393939;
 }
@@ -1730,6 +1734,9 @@ div.loading {
 
 .dndupload progress::-webkit-progress-bar { background: #4b4b4b; /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
 .dndupload progress::-webkit-progress-value { /*background: #0063a6;*/ }
+
+#pe_sections>table td:first-child{ color:#0ce3ac; }
+#pe_resources>table td:first-child{ color:#0ce3ac; }
 
 /* jstree */
 .jstree-grid-header-regular {
