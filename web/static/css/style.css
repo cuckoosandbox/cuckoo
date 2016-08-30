@@ -276,6 +276,10 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
     line-height: 1.6;
 }
 
+.panel-title{
+    margin-top: 6px;
+}
+
 section#screenshots .minified{
     overflow: hidden;
     max-height: 278px;
