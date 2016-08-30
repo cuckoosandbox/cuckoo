@@ -17,14 +17,14 @@ Also in this case Python 2.7 is preferred.
 Some Python libraries are optional and provide some additional features to
 Cuckoo guest component. They include:
 
-    * `Python Image Library`_: it's used for taking screenshots of the Windows desktop during the analysis.
+    * `Python Pillow`_: it's used for taking screenshots of the Windows desktop during the analysis.
 
 They are not strictly required by Cuckoo to work properly, but you are encouraged
 to install them if you want to have access to all available features. Make sure
 to download and install the proper packages according to your Python version.
 
 .. _`official website`: http://www.python.org/getit/
-.. _`Python Image Library`: http://www.pythonware.com/products/pil/
+.. _`Python Pillow`: https://python-pillow.org/
 
 Additional Software
 ===================
