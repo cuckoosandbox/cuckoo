@@ -1047,7 +1047,7 @@ class Signature(object):
         @return: True/False
         """
         res = False
-        for alert in self.results.get("suricata", {}).get("alerts", []):
+        for alert in self._caller.results.get("suricata", {}).get("alerts", []):
             if re.findall(pattern, alert.get("signature", ""), re.I):
                 res = True
                 break
