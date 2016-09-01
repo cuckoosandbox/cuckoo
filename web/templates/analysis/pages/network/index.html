@@ -31,11 +31,11 @@
 
             <div class="tabbable tabs">
                 <ul class="nav nav-pills" style="margin-bottom: 0;">
-                    <li class="active"><a href="#network_hosts_tab" data-toggle="tab">Hosts ({{ report.analysis.network.hosts|length }})</a></li>
+                    <li><a href="#network_hosts_tab" data-toggle="tab">Hosts ({{ report.analysis.network.hosts|length }})</a></li>
                     <li><a href="#network_dns_tab" data-toggle="tab">DNS ({{ report.analysis.network.dns|length }})</a></li>
                     <li><a href="#network_tcp_tab" data-toggle="tab">TCP ({{ report.analysis.network.tcp|length }})</a></li>
                     <li><a href="#network_udp_tab" data-toggle="tab">UDP ({{ report.analysis.network.udp|length }})</a></li>
-                    <li><a href="#network_http_tab" data-toggle="tab">
+                    <li class="active"><a href="#network_http_tab" data-toggle="tab">
                         {% if report.analysis.network.http_ex %}
                             HTTP/HTTPS ({{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }})
                         {% else %}
@@ -65,11 +65,11 @@
 
                 </ul>
                 <div class="tab-content">
-                    <div class="tab-pane fade in active" id="network_hosts_tab">{% include "analysis/pages/network/_hosts.html" %}</div>
+                    <div class="tab-pane fade" id="network_hosts_tab">{% include "analysis/pages/network/_hosts.html" %}</div>
                     <div class="tab-pane fade" id="network_dns_tab">{% include "analysis/pages/network/_dns.html" %}</div>
                     <div class="tab-pane fade" id="network_tcp_tab">{% include "analysis/pages/network/_tcp.html" %}</div>
                     <div class="tab-pane fade" id="network_udp_tab">{% include "analysis/pages/network/_udp.html" %}</div>
-                    <div class="tab-pane fade" id="network_http_tab">{% include "analysis/pages/network/_http.html" %}</div>
+                    <div class="tab-pane fade in active" id="network_http_tab">{% include "analysis/pages/network/_http.html" %}</div>
                     <div class="tab-pane fade" id="network_icmp_tab">{% include "analysis/pages/network/_icmp.html" %}</div>
                     <div class="tab-pane fade" id="network_irc_tab">{% include "analysis/pages/network/_irc.html" %}</div>
                     <div class="tab-pane fade" id="network_suricata_tab">{% include "analysis/pages/network/_suricata.html" %}</div>
