@@ -1793,3 +1793,10 @@ a.jstree-anchor[filetree_type=container] {
     color: #9c9c9c !important;
     text-shadow: 1px 1px 0 rgba(0,0,0,.5) !important;
 }
+
+.network_http_request>.panel>.panel-heading{
+    background: #2d2d2d;
+}
+.network_http_request{
+    border: 1px solid #434343;
+}
