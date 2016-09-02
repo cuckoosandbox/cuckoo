@@ -25,8 +25,9 @@ You will get an output similar to this::
     2013-04-07 15:57:17,861 [lib.cuckoo.core.scheduler] INFO: Loaded 1 machine/s
     2013-04-07 15:57:17,862 [lib.cuckoo.core.scheduler] INFO: Waiting for analysis tasks...
 
-Note that Cuckoo checks for updates on a remote API located at ``api.cuckoosandbox.org``.
-You can avoid this by disabling the ``version_check`` option in the configuration file.
+Note that Cuckoo checks for updates on a remote API located at
+``api.cuckoosandbox.org``. You can avoid this by disabling the
+``version_check`` option in the configuration file.
 
 Now Cuckoo is ready to run and it's waiting for submissions.
 
@@ -72,3 +73,36 @@ Now Cuckoo is ready to run and it's waiting for submissions.
 
 The ``--debug`` and ``--quiet`` flags increase and decrease the logging
 verbosity for the ``cuckoo`` command or any of its subcommands.
+
+Cuckoo in the background
+========================
+
+Running Cuckoo manually is useful the first few times you start using it, but
+if you're running multiple machines with Cuckoo on it, you will want the
+process of running Cuckoo to be automated.
+
+Fortunately Cuckoo will automatically provide one with a ``supervisord.conf``
+file in the :ref:`cwd` which may be started either by running ``supervisord``
+from the ``CWD`` directory, or by providing the configuration directly to
+``supervisord`` as follows::
+
+    $ supervisord -c $CWD/supervisord.conf
+
+It should be noted that, by default, ``supervisord`` will also start four
+:ref:`cuckoo_process` instances, which means that, as per its documentation,
+the ``process_results`` configuration in ``$CWD/conf/cuckoo.conf`` should be
+disabled (i.e., change the value from ``on`` to ``off``).
+
+From there on, one may start and stop the various cuckoo processes (i.e., the
+main cuckoo process and the four processing instances) by running commands
+such as the following (assuming that they're run from the ``CWD``)::
+
+    # Stop all processes.
+    $ supervisorctl stop all
+
+    # Start all processes.
+    $ supervisorctl start all
+
+Note that when running the ``start all`` subcommand, ``supervisord`` will try
+to start the ``distributed`` script as well, which will fail and error, but
+that error is unrelated here (it's use lays within :doc:`dist`).

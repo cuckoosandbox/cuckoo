@@ -33,6 +33,8 @@ Web Utility
 
 Cuckoo's web interface. This tool is described in :doc:`web`.
 
+.. _cuckoo_process:
+
 Processing Utility
 ==================
 
