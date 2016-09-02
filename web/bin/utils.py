@@ -7,7 +7,11 @@ import os
 import calendar
 import json
 from datetime import datetime
+from functools import wraps
 
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
 from django.shortcuts import render
 
 class json_default_response(json.JSONEncoder):
@@ -36,3 +40,17 @@ def get_directory_size(path):
             size += os.path.getsize(fp)
 
     return size
+
+def _api_post(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        request = args[0]
+
+        if not request.is_ajax():
+            return JsonResponse({"status": False}, status=200)
+
+        args += (json.loads(request.body),)
+        return func(*args, **kwargs)
+    return inner
+
+api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))

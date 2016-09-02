@@ -3,25 +3,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import json
 import base64
 
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
+from bin.utils import api_post
 from controllers.analysis.analysis import AnalysisController
 
 class AnalysisNetworkApi:
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def http_response_data(request):
-        if not request.is_ajax():
-            return JsonResponse({'status': False}, status=200)
-
-        body = json.loads(request.body)
-
+    @api_post
+    def http_response_data(request, body):
         task_id = body.get("task_id", None)
         request_body = body.get("request_body", False)
         request_index = body.get("request_index", None)
@@ -34,16 +25,14 @@ class AnalysisNetworkApi:
 
             if request_body:
                 # @TO-DO: parse raw http request data, filter out body
-                body = report["analysis"]["network"]["http"][request_index]["data"]
+                data = report["analysis"]["network"]["http"][request_index]["data"]
             else:
-                body = report["analysis"]["network"]["http_ex"][request_index]["path"]
+                data = report["analysis"]["network"]["http_ex"][request_index]["path"]
 
-
-            body = open(body, "rb").read()
-            body = base64.b64encode(body)
+            data = base64.b64encode(open(data, "rb").read())
 
             return JsonResponse({
-                "body": body
+                "body": data
             }, safe=False)
         except:
             return JsonResponse({"status": False, "message": "error"}, status=200)
