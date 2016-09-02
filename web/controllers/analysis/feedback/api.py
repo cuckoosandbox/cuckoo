@@ -6,15 +6,12 @@
 import json
 
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
+from bin.utils import api_post
 from controllers.analysis.feedback.feedback import AnalysisFeedBackController
 
 class FeedbackApi:
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
+    @api_post
     def send(request):
         if not request.is_ajax():
             return JsonResponse({"status": False, "message": "request not ajax"}, status=200)

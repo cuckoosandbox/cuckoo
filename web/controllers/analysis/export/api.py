@@ -3,25 +3,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import json
-
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
+from bin.utils import api_post
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
 
 class ExportApi:
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def export_estimate_size(request):
-        if not request.is_ajax():
-            return JsonResponse({'status': False}, status=200)
-
-        body = json.loads(request.body)
-
+    @api_post
+    def export_estimate_size(request, body):
         task_id = body.get('task_id', None)
         taken_dirs = body.get("dirs", [])
         taken_files = body.get("files", [])
@@ -38,12 +28,8 @@ class ExportApi:
 
         return JsonResponse(size, safe=False)
 
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def get_files(request):
-        body = json.loads(request.body)
-
+    @api_post
+    def get_files(request, body):
         task_id = body.get('task_id', None)
 
         if not task_id:
