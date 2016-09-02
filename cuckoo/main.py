@@ -80,10 +80,9 @@ def cuckoo_create(context, debug):
 
         if os.environ.get("VIRTUAL_ENV"):
             python_path = "%s/bin/python" % os.environ["VIRTUAL_ENV"]
-            cuckoo_path = "%s %s/bin/cuckoo" % (
-                python_path, os.environ["VIRTUAL_ENV"],
-            )
+            cuckoo_path = "%s/bin/cuckoo" % os.environ["VIRTUAL_ENV"]
         else:
+            python_path = "python"
             cuckoo_path = "cuckoo"
 
         username = context.user or os.getlogin()
