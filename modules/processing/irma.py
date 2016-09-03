@@ -103,7 +103,7 @@ class Irma(Processing):
         return
 
     def _get_results(self,sha256):
-
+        # fetch list of scan ID-s
         fresults = self._request_json(self._get_file_url(self.url, sha256))
 
         if not fresults.get("items"):
