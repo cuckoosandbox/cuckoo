@@ -28,6 +28,9 @@ class Irma(Processing):
     Currently obtains IRMA results for the target sample or URL and the
     dropped files.
     """
+    # IRMA statuses https://github.com/quarkslab/irma-cli/blob/master/irma/apiclient.py
+    IRMA_FINISHED_STATUS = 50
+    
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
         try:
@@ -74,8 +77,7 @@ class Irma(Processing):
 
         result = None
 
-        # Finished status is 50
-        while result is None or result.get("status") != 50:
+        while result is None or result.get("status") != self.IRMA_FINISHED_STATUS:
             log.debug("Polling for results for ID %s", init.get("id"))
             url = urlparse.urljoin(
                 self.url, "/api/v1.1/scans/%s" % init.get("id")
