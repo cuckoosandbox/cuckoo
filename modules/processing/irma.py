@@ -3,9 +3,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-import os
-import json
 import time
+import urlparse
 
 try:
     import requests
@@ -19,7 +18,6 @@ except ImportError:
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooProcessingError
 from lib.cuckoo.common.utils import sha256_file
 
 log = logging.getLogger(__name__)
@@ -30,95 +28,88 @@ class Irma(Processing):
     Currently obtains IRMA results for the target sample or URL and the
     dropped files.
     """
-    IRMA_FILE_RESULT = "{0}/api/v1.1/files/{1}"
-    IRMA_SCAN_RESULT = "{0}/api/v1.1/results/{1}"
-
-    IRMA_SCAN_INIT = "{0}/api/v1.1/scans"
-    IRMA_SCAN_NEW = "{0}/api/v1.1/scans/{1}/files"
-    IRMA_SCAN_LAUNCH = "{0}/api/v1.1/scans/{1}/launch"
-    IRMA_SCAN_STATUS = "{0}/api/v1.1/scans/{1}"
-
-    def _get_file_url(self, url, sha256):
-        return self.IRMA_FILE_RESULT.format(url, sha256)
-
-    def _get_scan_url(self, url, scan_id):
-        return self.IRMA_SCAN_RESULT.format(url, scan_id)
-
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
-        if not HAVE_REQUESTS:
-            raise CuckooOperationalError(
-                "The IRMA processing module requires the requests "
-                "library (install with `pip install requests`)")
-
         try:
             r = requests.get(url, timeout=self.timeout, **kwargs)
-            return json.loads(r.text) if r.status_code == 200 else {}
+            return r.json() if r.status_code == 200 else {}
         except (requests.ConnectionError, ValueError) as e:
-            raise CuckooOperationalError("Unable to fetch IRMA "
-                                         "results: %r" % e.message)
+            raise CuckooOperationalError(
+                "Unable to fetch IRMA results: %r" % e.message
+            )
 
     def _post_json(self, url, **kwargs):
         """Wrapper around doing a post and parsing its JSON output."""
-        if not HAVE_REQUESTS:
-            raise CuckooOperationalError(
-                "The IRMA processing module requires the requests "
-                "library (install with `pip install requests`)")
-
         try:
             r = requests.post(url, timeout=self.timeout, **kwargs)
-            return json.loads(r.text) if r.status_code == 200 else {}
+            return r.json() if r.status_code == 200 else {}
         except (requests.ConnectionError, ValueError) as e:
-            raise CuckooOperationalError("Unable to fetch IRMA "
-                                         "results: %r" % e.message)
-
-    def _scan_file(self, url, filepath, force):
-        # init scan in IRMA
-        init = self._post_json(self.IRMA_SCAN_INIT.format(url))
-
-        # post file for scanning
-        files = { "files": open(filepath, "rb") }
-        log.debug("Scanning file : {0}".format(filepath))
-        r = self._post_json(
-                self.IRMA_SCAN_NEW.format(url, init.get("id")), files=files
+            raise CuckooOperationalError(
+                "Unable to fetch IRMA results: %r" % e.message
             )
 
+    def _scan_file(self, filepath, force):
+        # Initialize scan in IRMA.
+        init = self._post_json(urlparse.urljoin(self.url, "/api/v1.1/scans"))
+
+        log.debug("Scanning file: %s", filepath)
+
+        # Post file for scanning.
+        files = {
+            "files": open(filepath, "rb"),
+        }
+        url = urlparse.urljoin(
+            self.url, "/api/v1.1/scans/%s/files" % init.get("id")
+        )
+        self._post_json(url, files=files,)
+
         # launch posted file scan
-        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        params = { 'force': force }
-        launch = requests.post(
-                    self.IRMA_SCAN_LAUNCH.format(url, init.get("id")),
-                               data=json.dumps(params), headers=headers
-                )
+        params = {
+            "force": force,
+        }
+        url = urlparse.urljoin(
+            self.url, "/api/v1.1/scans/%s/launch" % init.get("id")
+        )
+        requests.post(url, json=params)
 
         result = None
-        # finished status is 50
-        while result is None or result.get('status') != 50:
-            result = self._request_json(
-                        self.IRMA_SCAN_STATUS.format(url, init.get("id"))
-                    )
+
+        # Finished status is 50
+        while result is None or result.get("status") != 50:
+            log.debug("Polling for results for ID %s", init.get("id"))
+            url = urlparse.urljoin(
+                self.url, "/api/v1.1/scans/%s" % init.get("id")
+            )
+            result = self._request_json(url)
             time.sleep(1)
 
         return
 
-    def _get_results(self,sha256):
-        # fetch list of scan ID-s
-        fresults = self._request_json(self._get_file_url(self.url, sha256))
+    def _get_results(self, sha256):
+        # Fetch list of scan IDs.
+        results = self._request_json(
+            urlparse.urljoin(self.url, "/api/v1.1/files/%s" % sha256)
+        )
 
-        if not fresults.get("items"):
-            log.info("File {0} hasn't been scanned before".format(sha256))
-            return None
-        else:
-            results = self._request_json(
-                self._get_scan_url(self.url, fresults["items"][-1]["result_id"])
-            )
+        if not results.get("items"):
+            log.info("File %s hasn't been scanned before", sha256)
+            return
 
-        return results
+        result_id = results["items"][-1]["result_id"]
+        return self._request_json(
+            urlparse.urljoin(self.url, "/api/v1.1/results/%s" % result_id)
+        )
 
     def run(self):
         """Runs IRMA processing
         @return: full IRMA report.
         """
+        if not HAVE_REQUESTS:
+            raise CuckooOperationalError(
+                "The IRMA processing module requires the requests "
+                "library (install with `pip install requests`)"
+            )
+
         self.key = "irma"
 
         self.url = self.options.get("url")
@@ -128,12 +119,11 @@ class Irma(Processing):
 
         sha256 = sha256_file(self.file_path)
 
-        result = self._get_results(sha256)
+        results = self._get_results(sha256)
 
-        if self.force or (not result and self.scan):
-             log.info("File scan requested : {0}".format(sha256))
-             self._scan_file(self.url, self.file_path, self.force)
+        if self.force or (not results and self.scan):
+            log.info("File scan requested: %s", sha256)
+            self._scan_file(self.file_path, self.force)
+            return self._get_results(sha256) or {}
 
-        result = self._get_results(sha256)
-
-        return result or "{}"
+        return results
