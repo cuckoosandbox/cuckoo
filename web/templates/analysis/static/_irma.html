@@ -1,0 +1,30 @@
+<section id="static_antivirus">
+    {% if analysis.irma and analysis.irma.status %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Antivirus</th>
+            {% if analysis.info.category == "file" %}
+                <th>Signature</th>
+            {% else %}
+                <th>Result</th>
+            {% endif %}
+        </tr>
+        {% for probe in analysis.irma.probe_results %}
+        <tr>
+            <td>{{probe.name}}</td>
+            <td>
+                {% if analysis.info.category == "file" %}
+                    {% if not probe.results %}
+                        <span class="text-muted">Clean</span>
+                    {% else %}
+                        <span class="text-danger">{{probe.results}}</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        No antivirus signatures available.
+    {% endif %}
+</section>
