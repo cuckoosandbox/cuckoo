@@ -97,7 +97,6 @@ class Irma(Processing):
             result = self._request_json(
                         self.IRMA_SCAN_STATUS.format(url, init.get("id"))
                     )
-            print "RESULT : {0}".format(result)
             time.sleep(1)
 
         return
