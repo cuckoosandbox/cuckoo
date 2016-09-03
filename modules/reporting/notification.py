@@ -32,19 +32,20 @@ class Notification(Report):
         if not HAVE_REQUESTS:
             raise CuckooOperationalError(
                 "The Notification reporting module requires the requests "
-                "library (install with `pip install requests`)")
+                "library (install with `pip install requests`)"
+            )
         
         post = {
-                "identifier" : self.options.get("identifier"),
-                "data" : json.dumps(results.get("info"), default=default, sort_keys=False)
-                }
+            "identifier" : self.options.get("identifier"),
+            "data" : json.dumps(results.get("info"), default=default, sort_keys=False)
+        }
 
         try:
             requests.post(
-                          self.options.get("url"), 
-                          data=post
-                        )
+                 self.options.get("url"), 
+                 data=post
+            )
         except Exception as e:
             raise CuckooReportError(
-                        "Failed posting message via Notification : %s" % e
-                        )
+                "Failed posting message via Notification : %s" % e
+            )
