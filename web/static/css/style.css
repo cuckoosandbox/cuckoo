@@ -88,6 +88,23 @@ input[readonly] {
     background-color: white !important;
     cursor: text !important;
 }
+
+.nav>li>a:hover {
+    text-decoration: none;
+    cursor:pointer;
+    background-color: #eee;
+}
+
+.nav>li>a.btn-primary:hover {
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+    color: #4c4c4c;
+    background-color: #eee;
+}
+
 .gray {
     color: #666;
 }
@@ -252,7 +269,7 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
 }
 
 .panel-heading {
-    padding: 5px 15px;
+    padding: 5px 8px;
     font-weight: bold;
 }
 
@@ -262,6 +279,10 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
 
 .panel-heading > .btn-group > button > .glyphicon{
     line-height: 1.6;
+}
+
+.panel-title{
+    margin-top: 6px;
 }
 
 section#screenshots .minified{
@@ -692,3 +713,52 @@ a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
 .jstree-grid-header-cell { padding: 3px 10px 2px 10px !important; }
 .jstree-default .jstree-icon:empty { line-height: 21px !important; }
 .jstree-grid-cell span { padding-left: 8px; padding-right: 8px; }
+
+/* analysis/network/http */
+.network_http_request{
+    border: 1px solid #d0d0d0;
+}
+.network_http_request .panel{
+    margin-bottom: 0px;
+    border: 0px;
+    border-radius: 0px;
+}
+.network_http_request .panel:first-child{
+    border-bottom:0px;
+}
+.network_http_request .panel:nth-child(2){
+    border-top:0px;
+}
+.network_http_request>.panel>.panel-heading{
+    background: #eee;
+    display: flex;
+}
+.network_http_request>.panel>.row{
+    padding: 4px 12px;
+}
+.network_http_request>.panel>.panel-heading>.col-md-4{
+    padding-left: 4px;
+}
+.network_http_request>.panel>.row>div[class^="col-md-"]{
+    padding-top:4px;
+}
+.network_http_request>.panel>.row>div.col-md-4>pre{
+    padding:6px;
+}
+.network_http_request>.panel>.row>div.col-md-8{
+    padding-left: 18px;
+}
+.network_http_request>.panel>.panel-heading>.col-md-4>.glyphicon{
+    padding-right: 4px;
+}
+.network_http_request pre{
+    border-radius: 0px;
+}
+/*.network_http_request #body pre{*/
+    /*max-height: 104px;*/
+    /*overflow: hidden;*/
+/*}*/
+.network_http_request #body pre.collapse {
+    max-height: none !important;
+    overflow: visible !important;
+}

@@ -9,23 +9,16 @@ import pymongo
 
 from django.conf import settings
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
 from lib.cuckoo.core.database import Database, Task
+from bin.utils import api_post
 from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 
 class AnalysisApi:
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def recent(request):
-        if not request.is_ajax():
-            return JsonResponse({"status": False}, status=200)
-
-        body = json.loads(request.body)
+    @api_post
+    def recent(request, body):
         limit = body.get("limit", 50)
         offset = body.get("offset", 0)
 
@@ -110,15 +103,8 @@ class AnalysisApi:
 
         return JsonResponse(tasks, safe=False)
 
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def behavior_get_processes(request):
-        if not request.is_ajax():
-            return JsonResponse({"status": False}, status=200)
-
-        body = json.loads(request.body)
-
+    @api_post
+    def behavior_get_processes(request, body):
         task_id = body.get("task_id", None)
         if not task_id:
             return JsonResponse({"status": False, "message": "missing task_id"}, status=200)
@@ -156,15 +142,8 @@ class AnalysisApi:
                 ["command_line", "dll_loaded"],
         }
 
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def behavior_get_watchers(request):
-        if not request.is_ajax():
-            return JsonResponse({"status": False}, status=200)
-
-        body = json.loads(request.body)
-
+    @api_post
+    def behavior_get_watchers(request, body):
         task_id = body.get("task_id", None)
         pid = body.get("pid", None)
 
@@ -191,15 +170,8 @@ class AnalysisApi:
 
         return JsonResponse({"status": True, "data": data}, safe=False)
 
-    @staticmethod
-    @csrf_exempt
-    @require_http_methods(["POST"])
-    def behavior_get_watcher(request):
-        if not request.is_ajax():
-            return JsonResponse({"status": False}, status=200)
-
-        body = json.loads(request.body)
-
+    @api_post
+    def behavior_get_watcher(request, body):
         task_id = body.get("task_id", None)
         pid = body.get("pid", None)
         watcher = body.get("watcher", None)
