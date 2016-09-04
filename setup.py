@@ -49,8 +49,8 @@ if os.path.exists(githash_path):
 setuptools.setup(
     name="Cuckoo",
     version="2.0.0",
-    author="Jurriaan Bremer",
-    author_email="jbr@cuckoo.sh",
+    author="Stichting Cuckoo Foundation",
+    author_email="cuckoo@cuckoofoundation.org",
     packages=[
         "cuckoo",
     ],
