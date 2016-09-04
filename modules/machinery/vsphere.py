@@ -231,7 +231,7 @@ class vSphere(Machinery):
                     yield node
 
         self.VMtoDC = {}
-        
+
         for dc, dcpath in traverseDCFolders(conn, conn.content.rootFolder.childEntity):
             for vm in traverseVMFolders(conn, dc.vmFolder.childEntity):
                 self.VMtoDC[vm.summary.config.name] = dcpath

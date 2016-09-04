@@ -30,7 +30,7 @@ class Irma(Processing):
     """
     # IRMA statuses https://github.com/quarkslab/irma-cli/blob/master/irma/apiclient.py
     IRMA_FINISHED_STATUS = 50
-    
+
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
         try:
