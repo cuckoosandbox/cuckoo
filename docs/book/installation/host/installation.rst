@@ -28,6 +28,14 @@ run libvirt)::
 
     $ sudo usermod -a -G libvirtd cuckoo
 
+Raising file limits
+===================
+
+As outlined in the :doc:`../../faq/index` entry :ref:`openfiles24` one may
+want to bump the file count limits before starting Cuckoo as otherwise some
+samples will fail to properly process the report (due to opening more files
+than allowed by the Operating System).
+
 Install Cuckoo
 ==============
 

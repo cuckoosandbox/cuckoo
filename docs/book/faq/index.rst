@@ -314,3 +314,19 @@ management software. Fortunately their fix is fairly trivial and therefore
 the following command should do the trick::
 
     pip install -U pip setuptools
+
+.. _openfiles24:
+
+IOError: [Errno 24] Too many open files
+---------------------------------------
+
+It is most certainly possible running into this issue when analyzing samples
+that have a lot of dropped files, so many that the :ref:`cuckoo_process` can't
+allocate any new file descriptors anymore.
+
+The easiest workaround for this issue is to bump the soft and hard file
+descriptor limit for the current user. This may be done as documented in the
+`following blogpost <https://easyengine.io/tutorials/linux/increase-open-files-limit/>`_.
+
+Remember that you have to login to a new shell (i.e., usually check out first)
+session in order for the changes to take effect.
