@@ -259,7 +259,7 @@ trying to determine to which version of the ``Cuckoo Agent`` it is talking.
 Permission denied for tcpdump
 -----------------------------
 
-.. versionchanged:: 2.0-rc3
+.. versionchanged:: 2.0.0
 
 With the new Cuckoo structure in-place all storage is now, by default, located
 in ``~/.cuckoo``, including the PCAP file, which will be stored at
@@ -280,7 +280,7 @@ solutions are welcome of course)::
 DistributionNotFound / No distribution matching the version..
 -------------------------------------------------------------
 
-.. versionchanged:: 2.0-rc3
+.. versionchanged:: 2.0.0
 
 Installing Cuckoo through the Python package brings its own set of problems,
 namely that of outdated Python package management software. This FAQ entry

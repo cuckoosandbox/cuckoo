@@ -2,7 +2,7 @@
 Cuckoo Working Directory Installation
 =====================================
 
-.. versionadded:: 2.0-rc3
+.. versionadded:: 2.0.0
 
 A new concept is the ``Cuckoo Working Directory``. From this point forward all
 configurable components, generated data, and results of Cuckoo will be stored

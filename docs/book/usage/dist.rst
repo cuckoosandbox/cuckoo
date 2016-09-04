@@ -2,7 +2,7 @@
 Distributed Cuckoo
 ==================
 
-.. versionchanged:: 2.0-rc3
+.. versionchanged:: 2.0.0
     The documenation on Distributed Cuckoo is outdated due to the switch to
     the Cuckoo Package.
 
