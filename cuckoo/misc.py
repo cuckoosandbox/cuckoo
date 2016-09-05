@@ -8,6 +8,12 @@ import logging
 import os.path
 import sys
 
+try:
+    import pwd
+    HAVE_PWD = True
+except ImportError:
+    HAVE_PWD = False
+
 import cuckoo
 
 log = logging.getLogger(__name__)
@@ -37,6 +43,11 @@ def mkdir(*args):
     dirpath = os.path.join(*args)
     if not os.path.isdir(dirpath):
         os.mkdir(dirpath)
+
+def getuser():
+    if HAVE_PWD:
+        return pwd.getpwuid(os.getuid())[0]
+    return ""
 
 def load_signatures():
     """Loads additional Signatures from the Cuckoo Working Directory.

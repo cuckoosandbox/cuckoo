@@ -99,12 +99,17 @@ setuptools.setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.6",
-        "requests[security]==2.7.0",
-        "scapy==2.3.2",
         "SQLAlchemy==1.0.8",
         "wakeonlan==0.2.2",
     ],
     extras_require={
+        ":sys_platform == 'win32'": [
+            "requests==2.7.0",
+        ],
+        ":sys_platform != 'win32'": [
+            "requests[security]==2.7.0",
+            "scapy==2.3.2",
+        ],
         "distributed": [
             "flask-sqlalchemy==2.1",
             "gevent==1.1.1",

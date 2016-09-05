@@ -4,12 +4,24 @@
 
 import logging
 import socket
+import sys
 
-from scapy.layers.dns import DNS, DNSQR, DNSRR
+try:
+    from scapy.layers.dns import DNS, DNSQR, DNSRR
+    HAVE_SCAPY = True
+except ImportError:
+    HAVE_SCAPY = False
 
 log = logging.getLogger("dnsserve")
 
 def cuckoo_dnsserve(host, port, nxdomain, hardcode):
+    if not HAVE_SCAPY:
+        sys.exit(
+            "Currently the DNS serve script is not available due to issues "
+            "in upstream Scapy for Windows "
+            "(https://github.com/secdev/scapy/issues/111)."
+        )
+
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udps.bind((host, port))

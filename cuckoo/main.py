@@ -10,7 +10,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-import pwd
 
 import cuckoo
 
@@ -32,7 +31,7 @@ from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
-from cuckoo.misc import cwd, set_cwd, load_signatures
+from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
 
@@ -86,7 +85,7 @@ def cuckoo_create(context, debug):
             python_path = "python"
             cuckoo_path = "cuckoo"
 
-        username = context.user or pwd.getpwuid(os.getuid())[0]
+        username = context.user or getuser()
 
         print "[supervisord]"
         print "logfile =", cwd("supervisord", "log.log")
@@ -244,7 +243,8 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
             sys.stderr.write("{0}\n".format(message))
         sys.exit(1)
     except SystemExit as e:
-        print e
+        if e.code:
+            print e
     except:
         # Deal with an unhandled exception.
         message = exception_message()
@@ -400,7 +400,7 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def api(ctx, host, port, debug, uwsgi, nginx):
-    username = ctx.parent.user or pwd.getpwuid(os.getuid())[0]
+    username = ctx.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
@@ -467,7 +467,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
     Use "--help" to get this help message and "help" to find Django's
     manage.py potential subcommands.
     """
-    username = ctx.parent.user or pwd.getpwuid(os.getuid())[0]
+    username = ctx.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
@@ -578,7 +578,7 @@ def distributed():
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def server(ctx, host, port, debug, uwsgi, nginx):
-    username = ctx.parent.parent.user or pwd.getpwuid(os.getuid())[0]
+    username = ctx.parent.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
