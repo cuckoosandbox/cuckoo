@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import traceback
+import pwd
 
 import cuckoo
 
@@ -85,7 +86,7 @@ def cuckoo_create(context, debug):
             python_path = "python"
             cuckoo_path = "cuckoo"
 
-        username = context.user or os.getlogin()
+        username = context.user or pwd.getpwuid(os.getuid())[0]
 
         print "[supervisord]"
         print "logfile =", cwd("supervisord", "log.log")
@@ -399,7 +400,7 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def api(ctx, host, port, debug, uwsgi, nginx):
-    username = ctx.parent.user or os.getlogin()
+    username = ctx.parent.user or pwd.getpwuid(os.getuid())[0]
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
@@ -466,7 +467,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
     Use "--help" to get this help message and "help" to find Django's
     manage.py potential subcommands.
     """
-    username = ctx.parent.user or os.getlogin()
+    username = ctx.parent.user or pwd.getpwuid(os.getuid())[0]
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
@@ -577,7 +578,7 @@ def distributed():
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def server(ctx, host, port, debug, uwsgi, nginx):
-    username = ctx.parent.parent.user or os.getlogin()
+    username = ctx.parent.parent.user or pwd.getpwuid(os.getuid())[0]
     if uwsgi:
         print "[uwsgi]"
         print "plugins = python"
