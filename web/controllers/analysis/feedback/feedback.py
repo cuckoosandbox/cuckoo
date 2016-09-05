@@ -20,7 +20,7 @@ class AnalysisFeedBackController(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
 
     def __init__(self, task_id):
-        self._url_feedback = "http://cuckoo.sh/feedback/api/submit/"
+        self._url_feedback = "https://cuckoo.sh/feedback/api/submit/"
 
         self.task_id = task_id
         self.email = None
@@ -80,9 +80,9 @@ class AnalysisFeedBackController(object):
 
     def _send(self, data):
         headers = {
-            'Content-type': 'application/json',
-            'Accept': 'text/plain',
-            'User-Agent': 'Cuckoo %s' % CUCKOO_VERSION
+            "Content-type": "application/json",
+            "Accept": "text/plain",
+            "User-Agent": "Cuckoo %s" % CUCKOO_VERSION
         }
 
         resp = requests.post(url=self._url_feedback, json=data, headers=headers)
