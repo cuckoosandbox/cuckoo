@@ -8,10 +8,7 @@ import os
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.files import Storage
 
-from sflock.abstracts import File
-from sflock.unpack.zip import Zipfile
-from sflock.unpack.rar import Rarfile
-from sflock.unpack.tar import Tarfile
+from sflock import unpack
 
 class SubmissionController:
     def __init__(self, submit_id):
