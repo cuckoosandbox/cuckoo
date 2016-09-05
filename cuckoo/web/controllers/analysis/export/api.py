@@ -36,6 +36,9 @@ class ExportApi:
             raise Exception('invalid task_id')
 
         report = AnalysisController.get_report(task_id)
+        if not report["analysis"].get("info", {}).get("analysis_path"):
+            raise Exception("old-style analysis")
+
         analysis_path = report["analysis"]["info"]["analysis_path"]
 
         dirs, files = ExportController.get_files(analysis_path)
