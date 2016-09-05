@@ -15,7 +15,7 @@ from zipfile import ZipFile, ZIP_STORED
 from flask import Flask, request, jsonify, make_response
 
 from cuckoo.common.constants import CUCKOO_VERSION
-from cuckoo.common.utils import store_temp_file, delete_folder
+from cuckoo.common.files import Files, Folders
 from cuckoo.core.database import Database, TASK_RUNNING, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from cuckoo.core.rooter import rooter
@@ -84,7 +84,7 @@ def tasks_create_file():
     if unique and db.find_sample(sha256=hashlib.sha256(content).hexdigest()):
         return json_error(400, "This file has already been submitted")
 
-    temp_file_path = store_temp_file(content, data.filename)
+    temp_file_path = Files.tmp_put(file=content, path=data.filename)
 
     task_id = db.add_path(
         file_path=temp_file_path,
@@ -251,7 +251,7 @@ def tasks_delete(task_id):
                               "processed, cannot delete")
 
         if db.delete_task(task_id):
-            delete_folder(cwd("storage", "analyses", "%d" % task_id))
+            Folders.delete(cwd("storage", "analyses", "%d" % task_id))
             response["status"] = "OK"
         else:
             return json_error(500, "An error occurred while trying to "
@@ -458,7 +458,7 @@ def machines_view(name=None):
 def cuckoo_status():
     # In order to keep track of the diskspace statistics of the temporary
     # directory we create a temporary file so we can statvfs() on that.
-    temp_file = store_temp_file("", "status")
+    temp_file = Files.tmp_put(file="", path="status")
 
     paths = dict(
         binaries=cwd("storage", "binaries"),

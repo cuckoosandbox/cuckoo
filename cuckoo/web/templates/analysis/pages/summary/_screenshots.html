@@ -1,0 +1,39 @@
+<section id="screenshots">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="glyphicon glyphicon-camera" aria-hidden="true"></span> Screenshots
+            <div class="btn-group pull-right">
+                <button id="btn_screenshots_toggle" type="button" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="panel-body minified">
+            {% if report.analysis.shots %}
+                <div>
+                {% for shot in report.analysis.shots %}
+                    {% if shot.original and shot.small %}
+                    <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot.original "nofetch" %}">
+                        <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot.small "nofetch" %}" style="height: 120px;" />
+                    </a>
+                    {% else %}
+                    <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot %}">
+                        <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot %}" style="border-radius: 4px;height: 120px;" />
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                No screenshots available.
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $("#btn_screenshots_toggle").click(function(){
+                $(this).parent().parent().parent().find('.panel-body').toggleClass("minified");
+            });
+        });
+    </script>
+</section>

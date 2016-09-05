@@ -3,8 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import calendar
-import datetime
 import re
 import os
 import json
@@ -14,20 +12,24 @@ import zipfile
 from cStringIO import StringIO
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
-from bson.objectid import ObjectId
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from bson.objectid import ObjectId
 from gridfs import GridFS
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from cuckoo.common.utils import store_temp_file
+from cuckoo.common.files import Files
+from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
+
+from bin.utils import view_error
 
 results_db = settings.MONGO
 fs = GridFS(results_db)
@@ -121,7 +123,7 @@ def chunk(request, task_id, pid, pagenum):
     else:
         chunk = dict(calls=[])
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": chunk,
     })
 
@@ -172,7 +174,7 @@ def filtered_chunk(request, task_id, pid, category):
             if call["category"] == category:
                 filtered_process["calls"].append(call)
 
-    return render(request, "analysis/behavior/_chunk.html", {
+    return render(request, "analysis/pages/behavior/_chunk.html", {
         "chunk": filtered_process,
     })
 
@@ -240,23 +242,22 @@ def search_behavior(request, task_id):
                 "signs": process_results
             })
 
-    return render(request, "analysis/behavior/_search_results.html", {
+    return render(request, "analysis/pages/behavior/_search_results.html", {
         "results": results,
     })
 
 @require_safe
-def report(request, task_id):
+def summary(request, task_id):
     report = results_db.analysis.find_one({"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)])
 
     if not report:
-        return render(request, "error.html", {
-            "error": "The specified analysis does not exist",
-        })
+        return view_error(request, "The specified analysis does not exist")
 
     # Creating dns information dicts by domain and ip.
     if "network" in report and "domains" in report["network"]:
         domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])
         iplookups = dict((i["ip"], i["domain"]) for i in report["network"]["domains"])
+
         for i in report["network"]["dns"]:
             for a in i["answers"]:
                 iplookups[a["data"]] = i["request"]
@@ -264,19 +265,29 @@ def report(request, task_id):
         domainlookups = dict()
         iplookups = dict()
 
-    return render(request, "analysis/report.html", {
+    return render(request, "analysis/pages/summary/index.html", {
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
     })
 
 @require_safe
-def latest_report(request):
-    rep = results_db.analysis.find_one({}, sort=[("_id", pymongo.DESCENDING)])
-    return report(request, rep["info"]["id"] if rep else 0)
+def behavioral(request):
+    return
 
 @require_safe
-def file(request, category, object_id):
+def latest_report(request):
+    report = results_db.analysis.find_one({
+    }, sort=[("_id", pymongo.DESCENDING)])
+    if not report:
+        return view_error(request, "No analysis has been found")
+
+    return redirect(reverse(
+        "analysis", args=(report["info"]["id"], "summary")
+    ), permanent=False)
+
+@require_safe
+def file(request, category, object_id, fetch="fetch"):
     file_item = fs.get(ObjectId(object_id))
 
     if file_item:
@@ -290,13 +301,13 @@ def file(request, category, object_id):
             content_type = "application/octet-stream"
 
         response = HttpResponse(file_item.read(), content_type=content_type)
-        response["Content-Disposition"] = "attachment; filename=%s" % file_name
+
+        if fetch is not "nofetch":
+            response["Content-Disposition"] = "attachment; filename=%s" % file_name
 
         return response
     else:
-        return render(request, "error.html", {
-            "error": "File not found",
-        })
+        return view_error(request, "File not found")
 
 moloch_mapper = {
     "ip": "ip == %s",
@@ -311,9 +322,7 @@ moloch_mapper = {
 @require_safe
 def moloch(request, **kwargs):
     if not settings.MOLOCH_ENABLED:
-        return render(request, "error.html", {
-            "error": "Moloch is not enabled!",
-        })
+        return view_error(request, "Moloch is not enabled!")
 
     query = []
     for key, value in kwargs.items():
@@ -343,9 +352,7 @@ def full_memory_dump_file(request, analysis_number):
         response["Content-Disposition"] = "attachment; filename=memory.dmp"
         return response
     else:
-        return render(request, "error.html", {
-            "error": "File not found",
-        })
+        return view_error(request, "File not found")
 
 def _search_helper(obj, k, value):
     r = []
@@ -368,10 +375,8 @@ def _search_helper(obj, k, value):
 def search(request):
     """New Search API using ElasticSearch as backend."""
     if not settings.ELASTIC:
-        return render(request, "error.html", {
-            "error": "ElasticSearch is not enabled and therefore it is "
-                     "not possible to do a global search.",
-        })
+        return view_error(request, "ElasticSearch is not enabled and therefore it "
+                                   "is not possible to do a global search.")
 
     if request.method == "GET":
         return render(request, "analysis/search.html")
@@ -434,9 +439,7 @@ def remove(request, task_id):
         message = "Task deleted, thanks for all the fish."
 
     if not analyses.count():
-        return render(request, "error.html", {
-            "error": "The specified analysis does not exist",
-        })
+        return view_error(request, "The specified analysis does not exist")
 
     for analysis in analyses:
         # Delete sample if not used.
@@ -540,17 +543,13 @@ def export_analysis(request, task_id):
         {"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)]
     )
     if not report:
-        return render(request, "error.html", {
-            "error": "The specified analysis does not exist",
-        })
+        return view_error(request, "The specified analysis does not exist")
 
     if "analysis_path" not in report.get("info", {}):
-        return render(request, "error.html", {
-            "error": "The analysis was created before the export "
-                     "functionality was integrated with Cuckoo and is "
-                     "therefore not available for this task (in order to "
-                     "export this analysis, please reprocess its report)."
-        })
+        return view_error(request, "The analysis was created before the export "
+                                   "functionality was integrated with Cuckoo and is "
+                                   "therefore not available for this task (in order to "
+                                   "export this analysis, please reprocess its report).")
 
     analysis_path = report["info"]["analysis_path"]
 
@@ -569,28 +568,17 @@ def export_analysis(request, task_id):
         "files": files,
     })
 
-def json_default(obj):
-    if isinstance(obj, datetime.datetime):
-        if obj.utcoffset() is not None:
-            obj = obj - obj.utcoffset()
-        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
-    raise TypeError("%r is not JSON serializable" % obj)
-
 def export(request, task_id):
     taken_dirs = request.POST.getlist("dirs")
     taken_files = request.POST.getlist("files")
     if not taken_dirs and not taken_files:
-        return render(request, "error.html", {
-            "error": "Please select at least one directory or file to be exported."
-        })
+        return view_error(request, "Please select at least one directory or file to be exported.")
 
     report = results_db.analysis.find_one(
         {"info.id": int(task_id)}, sort=[("_id", pymongo.DESCENDING)]
     )
     if not report:
-        return render(request, "error.html", {
-            "error": "The specified analysis does not exist",
-        })
+        return view_error(request, "The specified analysis does not exist")
 
     path = report["info"]["analysis_path"]
 
@@ -635,9 +623,7 @@ def import_analysis(request):
 
     for analysis in request.FILES.getlist("analyses"):
         if not analysis.size:
-            return render(request, "error.html", {
-                "error": "You uploaded an empty analysis.",
-            })
+            return view_error(request, "You uploaded an empty analysis.")
 
         # if analysis.size > settings.MAX_UPLOAD_SIZE:
             # return render(request, "error.html", {
@@ -645,9 +631,7 @@ def import_analysis(request):
             # })
 
         if not analysis.name.endswith(".zip"):
-            return render(request, "error.html", {
-                "error": "You uploaded an analysis that wasn't a .zip.",
-            })
+            return view_error(request, "You uploaded an analysis that wasn't a .zip.")
 
         zf = zipfile.ZipFile(analysis)
 
@@ -655,10 +639,8 @@ def import_analysis(request):
         # incorrect filenames.
         for filename in zf.namelist():
             if filename.startswith("/") or ".." in filename or ":" in filename:
-                return render(request, "error.html", {
-                    "error": "The zip file contains incorrect filenames, "
-                             "please provide a legitimate .zip file.",
-                })
+                return view_error(request, "The zip file contains incorrect filenames, "
+                                           "please provide a legitimate .zip file.")
 
         if "analysis.json" in zf.namelist():
             analysis_info = json.loads(zf.read("analysis.json"))
@@ -680,7 +662,8 @@ def import_analysis(request):
         info = analysis_info.get("info", {})
 
         if category == "file":
-            binary = store_temp_file(zf.read("binary"), "binary")
+            binary = Files.tmp_put(file=zf.read("binary"),
+                                   path="binary")
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,
@@ -699,9 +682,7 @@ def import_analysis(request):
         elif category == "url":
             url = analysis_info["target"]["url"]
             if not url:
-                return render(request, "error.html", {
-                    "error": "You specified an invalid URL!",
-                })
+                return view_error(request, "You specified an invalid URL!")
 
             task_id = db.add_url(url=url,
                                  package=info.get("package"),

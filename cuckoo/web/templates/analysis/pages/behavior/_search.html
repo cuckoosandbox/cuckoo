@@ -1,0 +1,28 @@
+<script type="text/javascript">
+$(function () {
+	$('#search button[type=submit]').on('click', function(event) {
+		action = $('form#search').attr('action');
+		data = $('form#search').serialize();
+		
+		$.post(action, data, function (data) {
+			$('#search-results').html(data);
+		});
+
+		event.preventDefault();
+	});
+});
+</script>
+
+<div class="tab-pane" id="search">
+	<form id='search' class="form-inline" role="form" action="{% url "analysis.views.search_behavior" report.analysis.info.id %}">
+		{% csrf_token %}
+    	<div class="form-group">
+        	<label class="sr-only" for="form_search">Search term</label>
+        	<input type="text" class="form-control" id="form_search" name="search" size=50 placeholder="Search term" />
+    	</div>
+		<button type="submit" class="btn btn-primary">Search</button>
+	</form>
+
+	<div id="search-results">
+	</div>
+</div>

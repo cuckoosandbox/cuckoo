@@ -4,6 +4,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+from PIL import Image
+from StringIO import StringIO
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
@@ -172,16 +174,34 @@ class MongoDB(Report):
         if os.path.exists(self.shots_path):
             # Walk through the files and select the JPGs.
             for shot_file in sorted(os.listdir(self.shots_path)):
-                if not shot_file.endswith(".jpg"):
+                if not shot_file.endswith(".jpg") or "_" in shot_file:
                     continue
 
                 shot_path = os.path.join(self.shots_path, shot_file)
-                shot = File(shot_path)
+                shot_path_dir = os.path.dirname(shot_path)
+                shot_file_name, shot_file_ext = os.path.splitext(shot_file)
+                shot_path_resized = os.path.join(shot_path_dir, "%s_small%s" % (shot_file_name, shot_file_ext))
+
+                shot_blob = {}
+
                 # If the screenshot path is a valid file, store it and
                 # reference it back in the report.
-                if shot.valid():
-                    shot_id = self.store_file(shot)
-                    report["shots"].append(shot_id)
+                if os.path.isfile(shot_path):
+                    shot = File(shot_path)
+                    if shot.valid():
+                        shot_id = self.store_file(shot)
+                        shot_blob["original"] = shot_id
+
+                # Try to get the alternative (small) size for this image,
+                # store it and reference it back in the report.
+                if os.path.isfile(shot_path_resized):
+                    shot_small = File(shot_path_resized)
+                    if shot_small.valid():
+                        shot_id = self.store_file(shot_small)
+                        shot_blob["small"] = shot_id
+
+                if shot_blob:
+                    report["shots"].append(shot_blob)
 
         paginate = self.options.get("paginate", 100)
 

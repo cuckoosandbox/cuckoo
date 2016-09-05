@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-<div class="alert alert-info" style="text-align: center;font-size: 22px;">
-    Estimating ~<b>{{report.estimate_hour}}</b> analysis per hour, <b>{{report.estimate_day}}</b> per day.
-</div>
+{% if report.estimate_hour and report.estimate_day %}
+    <div class="alert alert-info" style="text-align: center;font-size: 22px;">
+        Estimating ~<b>{{report.estimate_hour}}</b> analysis per hour, <b>{{report.estimate_day}}</b> per day.
+    </div>
+{% endif %}
 
 <div class="row">
     <div class="col-xs-6">
@@ -20,25 +22,72 @@
     </div>
 </div>
 
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h3 class="panel-title">States</h3>
+
+<div class="row">
+    <div class="col-xs-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">States</h3>
+            </div>
+            <table class="table table-striped" style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <th>State</th>
+                    <th>Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for state, count in report.states_count.items %}
+                    <tr>
+                        <td>{{state}}</td>
+                        <td>{{count}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <table class="table table-striped" style="table-layout: fixed;">
-        <thead>
-        <tr>
-            <th>State</th>
-            <th>Count</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for state, count in report.states_count.items %}
-            <tr>
-                <td>{{state}}</td>
-                <td>{{count}}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="col-xs-6">
+        <div class="panel panel-primary" id="panel_create-analysis">
+            <div class="panel-heading">
+                <h3 class="panel-title">Create Analysis</h3>
+            </div>
+            <div class="panel-body" style="padding:0px;">
+                <script src="{% static "js/cuckoo/dndupload.js"%}"></script>
+
+                <div id="dndsubmit" style="height:292px;"></div>
+
+                <div style="width: 100%; padding: 0px 20px 20px;" class="input-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="form_url" placeholder="URL" style="border-right: 0px;">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary btn-primary" type="button">Create</button>
+                        </span>
+                    </div>
+                </div>
+
+                <script>
+                    $(document).ready(function(){
+                        $(document).on("submit", "#uploader", function(e){
+                            e.preventDefault();
+                        });
+
+                        function dndsuccess(data){
+                            window.location.href = data.responseURL;
+                        }
+
+                        var dndupload = new DndUpload(
+                            "div#dndsubmit",
+                            "/submit/api/submit",
+                            dndsuccess
+                        );
+
+                        dndupload.draw();
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

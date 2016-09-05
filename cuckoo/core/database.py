@@ -12,8 +12,9 @@ from cuckoo.common.config import Config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.files import Folders
 from cuckoo.common.objects import File, URL, Dictionary
-from cuckoo.common.utils import create_folder, Singleton, classlock
+from cuckoo.common.utils import Singleton, classlock
 from cuckoo.common.utils import SuperLock, json_encode
 from cuckoo.misc import cwd
 
@@ -178,6 +179,17 @@ class Guest(Base):
         self.name = name
         self.label = label
         self.manager = manager
+
+class Submit(Base):
+    """Submitted files details."""
+    __tablename__ = "submit"
+
+    id = Column(Integer(), primary_key=True)
+    path = Column(String(256), nullable=False)
+    added = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, path):
+        self.path = path
 
 class Sample(Base):
     """Submitted files details."""
@@ -390,7 +402,7 @@ class Database(object):
                 db_dir = os.path.dirname(db_file)
                 if not os.path.exists(db_dir):
                     try:
-                        create_folder(folder=db_dir)
+                        Folders.create(folder=db_dir)
                     except CuckooOperationalError as e:
                         raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
 
@@ -1034,6 +1046,28 @@ class Database(object):
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock, "file")
 
+    def add_archive(self, file_path, filename, package, timeout=0,
+                    options=None, priority=1, custom="", owner="", machine="",
+                    platform="", tags=None, memory=False,
+                    enforce_timeout=False, clock=None):
+        """Add a task to the database that's packaged in an archive file."""
+        if not file_path or not os.path.exists(file_path):
+            log.warning("File does not exist: %s.", file_path)
+            return None
+
+        options = options or {}
+        options["filename"] = filename
+
+        # Convert empty strings and None values to a valid int
+        if not timeout:
+            timeout = 0
+        if not priority:
+            priority = 1
+
+        return self.add(File(file_path), timeout, package, options, priority,
+                        custom, owner, machine, platform, tags, memory,
+                        enforce_timeout, clock, "archive")
+
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
                 memory=False, enforce_timeout=False, clock=None):
@@ -1123,6 +1157,32 @@ class Database(object):
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
                         memory, enforce_timeout, clock, "file")
+
+    @classlock
+    def add_submit(self, path):
+        session = self.Session()
+        submit = Submit(path=path)
+        submit_id = None
+        session.add(submit)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error adding error log: {0}".format(e))
+            session.rollback()
+        finally:
+            submit_id = submit.id
+            session.close()
+
+        return submit_id
+
+    def view_submit(self, submit_id):
+        session = self.Session()
+        submit = session.query(Submit).get(submit_id)
+
+        session.close()
+
+        return submit
 
     @classlock
     def reschedule(self, task_id, priority=None):

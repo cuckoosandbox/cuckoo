@@ -17,7 +17,7 @@ from cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.objects import File
-from cuckoo.common.utils import create_folder
+from cuckoo.common.files import Folders
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
@@ -77,7 +77,7 @@ class AnalysisManager(threading.Thread):
         # If we're not able to create the analysis storage folder, we have to
         # abort the analysis.
         try:
-            create_folder(folder=self.storage)
+            Folders.create(folder=self.storage)
         except CuckooOperationalError:
             log.error("Unable to create analysis folder %s", self.storage)
             return False

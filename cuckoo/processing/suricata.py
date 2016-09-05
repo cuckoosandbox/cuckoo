@@ -12,7 +12,7 @@ import time
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.utils import md5_file, sha1_file
+from cuckoo.common.files import Files
 
 try:
     import suricatasc
@@ -212,7 +212,7 @@ class Suricata(Processing):
 
         for filename in os.listdir(files_dir):
             filepath = os.path.join(files_dir, filename)
-            files[md5_file(filepath)] = filepath
+            files[Files.md5_file(filepath)] = filepath
 
         for line in open(files_log, "rb"):
             event = json.loads(line)
@@ -244,8 +244,8 @@ class Suricata(Processing):
                 "filename": os.path.basename(event["filename"]),
                 "hostname": event.get("http_host"),
                 "uri": event.get("http_uri"),
-                "md5": md5_file(filepath),
-                "sha1": sha1_file(filepath),
+                "md5": Files.md5_file(filepath),
+                "sha1": Files.sha1_file(filepath),
                 "magic": event.get("magic"),
                 "referer": referer,
             })

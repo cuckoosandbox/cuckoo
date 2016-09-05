@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="row">
+        {% include "analysis/pages/sidebar.html" %}
+
+        <div class="col-md-5" style="border-right: 1px dashed #878787;">
+            <h2 style="text-align: center;">Analysis 1</h2>
+            <hr>
+            <p>&nbsp;</p>
+            {% include "analysis/pages/compare/_info.html" with record=left %}
+        </div>
+        <div class="col-md-5">
+            <h2 style="text-align: center;">Analysis 2</h2>
+            <hr>
+            <p>You need to select the second analysis.
+            {% if records.count > 0 %}
+                Following are all the analyses of the file with provided MD5 or pattern <b><small>{{hash}}</small></b>:</p>
+                {% include "analysis/pages/compare/_summary_table.html" %}
+            {% else %}
+                <b>There is no analysis for the specified file or you selected the same selected analysis.</b></p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

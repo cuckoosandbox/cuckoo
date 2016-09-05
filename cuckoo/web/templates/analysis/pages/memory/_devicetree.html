@@ -1,0 +1,24 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Driver Name</th>
+            <th>Driver Offset</th>
+            <th>Devices</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.devicetree.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.driver_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.driver_offset}}</span></td>
+            <td class="{{ row.class_ }}">
+            {% for device in row.devices %}
+                {% if device.device_name %}
+                    {{device.device_name}},
+                {% endif %}
+            {% endfor %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

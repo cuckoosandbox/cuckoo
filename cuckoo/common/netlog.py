@@ -19,7 +19,7 @@ elif hasattr(bson, "loads"):
     bson_decode = lambda d: bson.loads(d)
 
 from cuckoo.common.abstracts import ProtocolHandler
-from cuckoo.common.utils import get_filename_from_path
+from cuckoo.common.files import Storage
 from cuckoo.common.exceptions import CuckooResultError
 
 log = logging.getLogger(__name__)
@@ -288,7 +288,7 @@ class BsonParser(ProtocolHandler):
                     vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
                     parsed["first_seen"] = vmtime
 
-                    procname = get_filename_from_path(modulepath)
+                    procname = Storage.get_filename_from_path(modulepath)
                     parsed["process_path"] = modulepath
                     parsed["process_name"] = procname
                     parsed["command_line"] = argdict.get("command_line")

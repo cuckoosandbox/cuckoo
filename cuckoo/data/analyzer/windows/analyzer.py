@@ -16,6 +16,7 @@ import traceback
 import urllib
 import urllib2
 import xmlrpclib
+import zipfile
 
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
@@ -484,8 +485,17 @@ class Analyzer(object):
         # We update the target according to its category. If it's a file, then
         # we store the target path.
         if self.config.category == "file":
-            self.target = os.path.join(os.environ["TEMP"] + os.sep,
-                                       self.config.file_name)
+            self.target = os.path.join(
+                os.environ["TEMP"], self.config.file_name
+            )
+        elif self.config.category == "archive":
+            zip_path = os.path.join(
+                os.environ["TEMP"], self.config.file_name
+            )
+            zipfile.ZipFile(zip_path).extractall(os.environ["TEMP"])
+            self.target = os.path.join(
+                os.environ["TEMP"], self.config.options["filename"]
+            )
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
@@ -520,15 +530,18 @@ class Analyzer(object):
         # If no analysis package was specified at submission, we try to select
         # one automatically.
         if not self.config.package:
-            log.debug("No analysis package specified, trying to detect "
-                      "it automagically.")
+            log.debug(
+                "No analysis package specified, trying to detect "
+                "it automagically."
+            )
 
             # If the analysis target is a file, we choose the package according
             # to the file format.
             if self.config.category == "file":
-                package = choose_package(self.config.file_type,
-                                         self.config.file_name,
-                                         self.config.pe_exports.split(","))
+                package = choose_package(
+                    self.config.file_type, self.config.file_name,
+                    self.config.pe_exports.split(",")
+                )
             # If it's an URL, we'll just use the default Internet Explorer
             # package.
             else:

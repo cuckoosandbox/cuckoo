@@ -1,0 +1,47 @@
+
+<style type="text/css">
+.search-process {
+    background-color: #d9edf7;
+    font-weight: bold;
+}
+</style>
+<section id="search-results-section">
+    <h4>Results</h4>
+    <p style="text-align: center;">
+        <span class="badge network" style="color:black;">network</span>
+        <span class="badge filesystem" style="color:black;">filesystem</span>
+        <span class="badge registry" style="color:black;">registry</span>
+        <span class="badge process" style="color:black;">process</span>
+        <span class="badge services" style="color:black;">services</span>
+        <span class="badge synchronization" style="color:black;">synchronization</span>
+    </p>
+    {% if results %}
+        <table class="table table-bordered" style="table-layout: fixed;">
+            <thead>
+                <tr>
+                    <th width="15%">Time &amp; API</th>
+                    <th width="65%">Arguments</th>
+                    <th width="5%">Status</th>
+                    <th width="10%">Return</th>
+                    <th width="5%">Repeated</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for match in results %}
+                <tr>
+                    <td colspan="7" class="search-process">
+                        Process: {{match.process.process_name}} ({{match.process.pid}})
+                    </td>
+                </tr>
+                {% for sign in match.signs %}
+                    <tr class="{{sign.category}}">
+                        {% include "analysis/pages/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
+                    <tr>
+                {% endfor %}
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No results</p>
+    {% endif %}
+</section>

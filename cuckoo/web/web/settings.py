@@ -83,7 +83,7 @@ else:
     SECRET_KEY = open(cwd("web", ".secret_key"), "rb").read()
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
-MEDIA_ROOT = ""
+MEDIA_ROOT = "/static/"
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -127,6 +127,11 @@ TEMPLATES = [
             "templates",
         ],
         "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": {
+                "django.core.context_processors.request"
+            }
+        }
     },
 ]
 
@@ -142,12 +147,12 @@ INSTALLED_APPS = (
     # "django.contrib.sites",
     # "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     # Uncomment the next line to enable the admin:
     "django.contrib.admin",
     # Uncomment the next line to enable admin documentation:
     # "django.contrib.admindocs",
     "analysis",
-    "compare",
 )
 
 LOGIN_REDIRECT_URL = "/"

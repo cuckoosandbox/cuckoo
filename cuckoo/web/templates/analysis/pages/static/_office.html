@@ -1,0 +1,71 @@
+<style>
+    section#static_analysis pre{
+        background-color: transparent;
+        border: 0 solid #ccc;
+        margin: 0 0 0;
+        padding: 0;
+        display: flex;
+        width: 100%;
+    }
+
+    section#static_analysis .panel-body{
+        padding:0;
+    }
+
+    section#static_analysis pre code{
+        padding: 14px;
+        padding-top: 0px;
+        width: 100%;
+        margin: 0;
+        background-color: white;
+        font-size:14px;
+    }
+
+    section#static_analysis .panel-body h4{
+        margin-left:12px;
+        margin-bottom:0px;
+        margin-top:20px;
+    }
+</style>
+
+<section id="static_analysis">
+    {% for office in report.analysis.static.office %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel" id="accordion">
+                    <div class="panel-default">
+                        <div class="panel-heading">
+                            <label class=accordion-toggle">{{ office.filename }} <small>({{ office.stream }})</small></label>
+                        </div>
+
+                        <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                            <div class="panel-body">
+                                <div class="col-md-6">
+                                    <h4>Original</h4>
+                                    <hr>
+                                    <pre>
+                                        <code class="vbscript">{{ office.orig_code }}</code>
+                                    </pre>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <h4>Deobfuscated</h4>
+                                    <hr>
+                                    <pre>
+                                        <code class="vbscript">{{ office.deobf }}</code>
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+<script>
+    $(document).ready(function() {
+        hljs.initHighlightingOnLoad();
+    });</script>
