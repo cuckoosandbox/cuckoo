@@ -3,8 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import json
-
 from django.http import JsonResponse
 
 from bin.utils import api_post
@@ -12,12 +10,7 @@ from controllers.analysis.feedback.feedback import AnalysisFeedBackController
 
 class FeedbackApi:
     @api_post
-    def send(request):
-        if not request.is_ajax():
-            return JsonResponse({"status": False, "message": "request not ajax"}, status=200)
-
-        body = json.loads(request.body)
-
+    def send(request, body):
         task_id = body.get("task_id", None)
         firstname = body.get("firstname", "")
         email = body.get("email", "")
