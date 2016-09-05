@@ -118,3 +118,7 @@ class Files(Storage):
     @staticmethod
     def sha1_file(filepath):
         return Files.hash_file(hashlib.sha1, filepath)
+
+    @staticmethod
+    def sha256_file(filepath):
+        return Files.hash_file(hashlib.sha256, filepath)
