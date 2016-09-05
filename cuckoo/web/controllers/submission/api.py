@@ -6,14 +6,12 @@
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.files import Files
+from cuckoo.core.database import Database
 from controllers.submission.submission import SubmissionController
 
-from bin.utils import json_default_response
-
+from bin.utils import api_post, json_default_response
 
 results_db = settings.MONGO
 

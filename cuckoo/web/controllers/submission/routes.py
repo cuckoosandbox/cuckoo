@@ -6,17 +6,14 @@
 import os
 
 from django.conf import settings
-from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
 from cuckoo.core.rooter import vpns
 from cuckoo.common.config import Config
 from cuckoo.core.database import Database
+from cuckoo.misc import cwd
 
 from controllers.submission.submission import SubmissionController
-from bin.utils import json_default_response
 
 cfg = Config()
 results_db = settings.MONGO
@@ -24,7 +21,7 @@ results_db = settings.MONGO
 class SubmissionRoutes:
     @staticmethod
     def index(request, kwargs={}):
-        files = os.listdir(os.path.join(settings.CUCKOO_PATH, "analyzer", "windows", "modules", "packages"))
+        files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 
         packages = []
         for name in files:
@@ -68,4 +65,4 @@ class SubmissionRoutes:
         file_data = SubmissionController(submit_id=submit_id).get_submit()
 
         return render(request, "submission/index.html", {"file_data": file_data, "submit_id": submit_id})
-        #return JsonResponse({"data": file_list}, encoder=json_default_response)
+        # return JsonResponse({"data": file_list}, encoder=json_default_response)
