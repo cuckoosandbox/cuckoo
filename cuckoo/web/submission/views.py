@@ -165,8 +165,7 @@ def index(request, task_id=None, sha1=None):
             # Moving sample from django temporary file to Cuckoo temporary
             # storage to let it persist between reboot (if user like to
             # configure it in that way).
-            path = Files.tmp_put(file=sample.read(),
-                                 path=sample.name)
+            path = Files.temp_named_put(sample.read(), sample.name)
 
             for entry in task_machines:
                 task_id = db.add_path(file_path=path,

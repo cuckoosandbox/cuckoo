@@ -24,76 +24,117 @@ class Storage(object):
 
 class Folders(Storage):
     @staticmethod
-    def create(root=".", folder="", folders=[]):
+    def create(root=".", folders=None):
         """Creates a directory or multiple directories.
         @param root: root path.
-        @param folder: folder name to be created.
         @param folders: folders list to be created.
         @raise CuckooOperationalError: if fails to create folder.
+        If folders is None, we try to create the folder provided by `root`.
         """
-        if folder and isinstance(folder, (str, unicode)) and folder not in folders:
-            folders.append(folder)
+        if folders is None:
+            folders = [""]
+        elif isinstance(folders, basestring):
+            folders = folders,
 
-        folder_path = os.path.join(root, folder)
         for folder in folders:
-            if folder and not os.path.isdir(folder_path):
+            folder_path = os.path.join(root, folder)
+            if not os.path.isdir(folder_path):
                 try:
                     os.makedirs(folder_path)
                 except OSError:
-                    raise CuckooOperationalError("Unable to create folder: %s" %
-                                                 folder_path)
+                    raise CuckooOperationalError(
+                        "Unable to create folder: %s" % folder_path
+                    )
 
     @staticmethod
-    def delete(folder):
+    def create_temp(path=None):
+        if path:
+            target_path = path
+        else:
+            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
+            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+
+        return tempfile.mkdtemp(dir=target_path)
+
+    @staticmethod
+    def delete(*folder):
         """Delete a folder and all its subdirectories.
-        @param folder: path to delete.
+        @param folder: path or components to path to delete.
         @raise CuckooOperationalError: if fails to delete folder.
         """
+        if len(folder) == 1:
+            folder = folder[0]
+        else:
+            folder = os.path.join(*folder)
+
         if os.path.exists(folder):
             try:
                 shutil.rmtree(folder)
             except OSError:
-                raise CuckooOperationalError("Unable to delete folder: "
-                                             "{0}".format(folder))
+                raise CuckooOperationalError(
+                    "Unable to delete folder: %s" % folder
+                )
 
 class Files(Storage):
     @staticmethod
-    def tmp_put(file=None, files=[], path=None):
+    def temp_put(content, path=None):
         """Store a temporary file or files.
-        @TO-DO: Make abstract tmp. storage class
-        @param files: a list of dicts containing 'name' and 'data'
-        @param path: optional path for temp directory.
-        @return: path to the temporary file.
+        @param content: the content of this file
+        @param path: directory path to store the file
         """
-        if file:
-            files.append(file)
-
-        options = Config()
-
         # Create temporary directory path.
         if path:
             target_path = path
         else:
-            tmp_path = options.cuckoo.get("tmppath", "/tmp")
+            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
             target_path = os.path.join(tmp_path, "cuckoo-tmp")
+
         if not os.path.exists(target_path):
             os.mkdir(target_path)
 
-        tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=target_path)
-        for f in files:
-            filename = Storage.get_filename_from_path(f["name"])
-            tmp_file_path = os.path.join(tmp_dir, filename)
-            with open(tmp_file_path, "wb") as tmp_file:
-                # If filedata is file object, do chunked copy.
-                if hasattr(f["data"], "read"):
-                    chunk = f["data"].read(1024)
-                    while chunk:
-                        tmp_file.write(chunk)
-                        chunk = f["data"].read(1024)
-                else:
-                    tmp_file.write(f["data"])
+        fd, filepath = tempfile.mkstemp(prefix="upload_", dir=target_path)
 
-        return tmp_dir
+        if hasattr(content, "read"):
+            chunk = content.read(1024)
+            while chunk:
+                os.write(fd, chunk)
+                chunk = content.read(1024)
+        else:
+            os.write(fd, content)
+
+        return filepath
+
+    @staticmethod
+    def temp_named_put(content, filename, path=None):
+        """Store a named temporary file.
+        @param content: the content of this file
+        @param filename: filename that the file should have
+        @param path: directory path to store the file
+        """
+        # Create temporary directory path.
+        if path:
+            target_path = path
+        else:
+            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
+            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+
+        if not os.path.exists(target_path):
+            os.mkdir(target_path)
+
+        dirpath = tempfile.mkdtemp(dir=target_path)
+        Files.create(dirpath, filename, content)
+        return os.path.join(dirpath, filename)
+
+    @staticmethod
+    def create(root, filename, content):
+        with open(os.path.join(root, filename), "wb") as f:
+            if hasattr(content, "read"):
+                chunk = content.read(1024)
+                while chunk:
+                    f.write(chunk)
+                    chunk = content.read(1024)
+            else:
+                f.write(content)
 
     @staticmethod
     def hash_file(method, filepath):

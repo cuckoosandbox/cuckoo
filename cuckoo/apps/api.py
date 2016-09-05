@@ -84,7 +84,7 @@ def tasks_create_file():
     if unique and db.find_sample(sha256=hashlib.sha256(content).hexdigest()):
         return json_error(400, "This file has already been submitted")
 
-    temp_file_path = Files.tmp_put(file=content, path=data.filename)
+    temp_file_path = Files.temp_put(content, data.filename)
 
     task_id = db.add_path(
         file_path=temp_file_path,
@@ -458,7 +458,7 @@ def machines_view(name=None):
 def cuckoo_status():
     # In order to keep track of the diskspace statistics of the temporary
     # directory we create a temporary file so we can statvfs() on that.
-    temp_file = Files.tmp_put(file="", path="status")
+    temp_file = Files.temp_put("")
 
     paths = dict(
         binaries=cwd("storage", "binaries"),

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect
 
-from cuckoo.common.files import Files
+from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.core.database import Database
 from controllers.submission.submission import SubmissionController
 
@@ -18,15 +18,13 @@ results_db = settings.MONGO
 class SubmissionApi:
     @api_post
     def submit(request, body):
-        data = []
-        for file in request.FILES.getlist("files[]"):
-            data.append({"data": file.file, "name": file.name})
+        dirpath = Folders.create_temp()
 
-        tmp_path = Files.tmp_put(files=data)
+        for f in request.FILES.getlist("files[]"):
+            filename = Storage.get_filename_from_path(f.name)
+            Files.create(dirpath, filename, f.file)
 
-        db = Database()
-        submit_id = db.add_submit(tmp_path)
-
+        submit_id = Database().add_submit(dirpath)
         return redirect('submission/pre', submit_id=submit_id)
 
     @api_post

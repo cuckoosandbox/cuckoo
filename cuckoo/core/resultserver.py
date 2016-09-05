@@ -304,12 +304,11 @@ class ResultHandler(SocketServer.BaseRequestHandler):
     def create_folders(self):
         folders = "shots", "files", "logs", "buffer"
 
-        for folder in folders:
-            try:
-                Folders.create(root=self.storagepath, folder=folder)
-            except CuckooOperationalError:
-                log.error("Unable to create folder %s" % folder)
-                return False
+        try:
+            Folders.create(self.storagepath, folders)
+        except CuckooOperationalError as e:
+            log.error("Issue creating analyses folders: %s", e)
+            return False
 
 class FileUpload(ProtocolHandler):
     RESTRICTED_DIRECTORIES = "reports/",
@@ -351,7 +350,7 @@ class FileUpload(ProtocolHandler):
                 )
 
         try:
-            Folders.create(root=self.storagepath, folder=dir_part)
+            Folders.create(self.storagepath, dir_part)
         except CuckooOperationalError:
             log.error("Unable to create folder %s", dir_part)
             return

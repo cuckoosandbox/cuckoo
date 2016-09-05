@@ -662,8 +662,7 @@ def import_analysis(request):
         info = analysis_info.get("info", {})
 
         if category == "file":
-            binary = Files.tmp_put(file=zf.read("binary"),
-                                   path="binary")
+            binary = Files.temp_named_put(zf.read("binary"), "binary")
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,
