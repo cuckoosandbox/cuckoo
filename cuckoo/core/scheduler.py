@@ -77,7 +77,7 @@ class AnalysisManager(threading.Thread):
         # If we're not able to create the analysis storage folder, we have to
         # abort the analysis.
         try:
-            Folders.create(folder=self.storage)
+            Folders.create(self.storage)
         except CuckooOperationalError:
             log.error("Unable to create analysis folder %s", self.storage)
             return False

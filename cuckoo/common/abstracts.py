@@ -1172,7 +1172,7 @@ class Report(object):
         self.pcap_path = self._get_analysis_path("dump.pcap")
 
         try:
-            Folders.create(folder=self.reports_path)
+            Folders.create(self.reports_path)
         except CuckooOperationalError as e:
             raise CuckooReportError(e)
 

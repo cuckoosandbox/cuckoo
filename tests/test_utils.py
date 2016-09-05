@@ -4,38 +4,93 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shutil
 import tempfile
 
+from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common import utils
 
 class TestCreateFolders:
     def setup(self):
         self.tmp_dir = tempfile.gettempdir()
 
+    def test_root_folder(self):
+        """Tests a single folder creation based on the root parameter."""
+        Folders.create(os.path.join(self.tmp_dir, "foo"))
+        assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
+        os.rmdir(os.path.join(self.tmp_dir, "foo"))
+
     def test_single_folder(self):
         """Tests a single folder creation."""
-        utils.create_folders(self.tmp_dir, ["foo"])
+        Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
 
     def test_multiple_folders(self):
         """Tests multiple folders creation."""
-        utils.create_folders(self.tmp_dir, ["foo", "bar"])
+        Folders.create(self.tmp_dir, ["foo", "bar"])
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         assert os.path.exists(os.path.join(self.tmp_dir, "bar"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "bar"))
 
-class TestCreateFolder:
-    def setup(self):
-        self.tmp_dir = tempfile.gettempdir()
-
-    def test_single_folder(self):
-        """Tests a single folder creation."""
-        utils.create_folder(self.tmp_dir, "foo")
+    def test_duplicate_folder(self):
+        """Tests a duplicate folder creation."""
+        Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
-        utils.create_folder(self.tmp_dir, "foo")
+        Folders.create(self.tmp_dir, "foo")
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
+
+    def test_delete_folder(self):
+        """Tests folder deletion #1."""
+        Folders.create(self.tmp_dir, "foo")
+        assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
+        Folders.delete(os.path.join(self.tmp_dir, "foo"))
+        assert not os.path.exists(os.path.join(self.tmp_dir, "foo"))
+
+    def test_delete_folder2(self):
+        """Tests folder deletion #2."""
+        Folders.create(self.tmp_dir, "foo")
+        assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
+        Folders.delete(self.tmp_dir, "foo")
+        assert not os.path.exists(os.path.join(self.tmp_dir, "foo"))
+
+    def test_create_temp(self):
+        """Test creation of temporary directory."""
+        dirpath1 = Folders.create_temp("/tmp")
+        dirpath2 = Folders.create_temp("/tmp")
+        assert os.path.exists(dirpath1)
+        assert os.path.exists(dirpath2)
+        assert dirpath1 != dirpath2
+
+class TestCreateFile:
+    def test_temp_file(self):
+        filepath1 = Files.temp_put("hello", "/tmp")
+        filepath2 = Files.temp_put("hello", "/tmp")
+        assert open(filepath1, "rb").read() == "hello"
+        assert open(filepath2, "rb").read() == "hello"
+        assert filepath1 != filepath2
+        os.unlink(filepath1)
+        os.unlink(filepath2)
+
+    def test_create(self):
+        dirpath = tempfile.mkdtemp()
+        Files.create(dirpath, "a.txt", "foo")
+        assert open(os.path.join(dirpath, "a.txt"), "rb").read() == "foo"
+        shutil.rmtree(dirpath)
+
+    def test_named_temp(self):
+        filepath = Files.temp_named_put("test", "hello.txt", "/tmp")
+        assert open(filepath, "rb").read() == "test"
+        assert os.path.basename(filepath) == "hello.txt"
+        os.unlink(filepath)
+
+class TestStorage:
+    def test_basename(self):
+        assert Storage.get_filename_from_path("C:\\a.txt") == "a.txt"
+        assert Storage.get_filename_from_path("C:/a.txt") == "a.txt"
+        # ???
+        assert Storage.get_filename_from_path("C:\\\x00a.txt") == "\x00a.txt"
 
 class TestConvertChar:
     def test_utf(self):

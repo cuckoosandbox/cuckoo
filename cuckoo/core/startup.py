@@ -77,7 +77,7 @@ def create_structure():
     ]
 
     try:
-        Folders.create(root=cwd(), folders=folders)
+        Folders.create(cwd(), folders)
     except CuckooOperationalError as e:
         raise CuckooStartupError(e)
 

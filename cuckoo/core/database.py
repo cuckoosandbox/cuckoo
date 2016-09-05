@@ -12,7 +12,6 @@ from cuckoo.common.config import Config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
-from cuckoo.common.files import Folders
 from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import Singleton, classlock
 from cuckoo.common.utils import SuperLock, json_encode
@@ -397,16 +396,7 @@ class Database(object):
         elif hasattr(cfg, "database") and cfg.database.connection:
             self._connect_database(cfg.database.connection)
         else:
-            db_file = cwd("cuckoo.db")
-            if not os.path.exists(db_file):
-                db_dir = os.path.dirname(db_file)
-                if not os.path.exists(db_dir):
-                    try:
-                        Folders.create(folder=db_dir)
-                    except CuckooOperationalError as e:
-                        raise CuckooDatabaseError("Unable to create database directory: {0}".format(e))
-
-            self._connect_database("sqlite:///%s" % db_file)
+            self._connect_database("sqlite:///%s" % cwd("cuckoo.db"))
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = self.echo
