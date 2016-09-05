@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from lib.cuckoo.common.files import Files
+from cuckoo.common.files import Files
 from controllers.submission.submission import SubmissionController
 
 from bin.utils import json_default_response

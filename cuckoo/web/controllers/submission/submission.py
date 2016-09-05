@@ -6,7 +6,7 @@
 import os
 
 from cuckoo.core.database import Database
-from lib.cuckoo.common.files import Storage
+from cuckoo.common.files import Storage
 
 from sflock.abstracts import File
 from sflock.unpack.zip import Zipfile

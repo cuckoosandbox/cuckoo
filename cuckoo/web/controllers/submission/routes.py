@@ -11,9 +11,9 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from lib.cuckoo.core.rooter import vpns
-from lib.cuckoo.common.config import Config
-from lib.cuckoo.core.database import Database
+from cuckoo.core.rooter import vpns
+from cuckoo.common.config import Config
+from cuckoo.core.database import Database
 
 from controllers.submission.submission import SubmissionController
 from bin.utils import json_default_response
