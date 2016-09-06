@@ -4,6 +4,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
 var FileTree = function () {
     function FileTree(target, data, sflock, draw_callback) {
         _classCallCheck(this, FileTree);

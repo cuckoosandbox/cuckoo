@@ -1,5 +1,13 @@
 "use strict";
 
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
 function export_estimate_size(task_id, taken_dirs, taken_files, target_div, prefix) {
     var params = {
         "task_id": task_id,
