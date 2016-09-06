@@ -17,7 +17,9 @@ hr {
     background-color: #3b3b3b;
     color: #bcbcbc;
 }
-
+.badge{
+    border-radius: 0px;
+}
 pre {
     background-color: #434343;
     color: inherit;
@@ -29,8 +31,8 @@ pre {
 }
 
 .jumbotron {
-    background-color: #0d1c21;
-    border: 1px solid #102329;
+    background-color: #132a32;
+    border: 1px solid #142b33;
 }
 
 .text-danger {
@@ -327,7 +329,7 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .panel-body {
-    /*background-color: #3f3f3f;*/
+    background-color: #0d1b21;
 }
 
 .panel-footer {
@@ -374,7 +376,7 @@ footer {
 }
 
 .table-striped > tbody > tr:nth-of-type(even) {
-    background-color: #071316;
+    background-color: #0b1d21;
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
@@ -1402,8 +1404,8 @@ fieldset[disabled] .btn-warning.focus {
 }
 
 .badge-danger {
-    background-color: #622121;
-    color: white;
+    background-color: #ca4747;
+    color: #ffffff;
 }
 
 .btn-danger {
@@ -1683,7 +1685,6 @@ a:focus {
 #recent_analysis {
     border: 1px solid #151D1F;
 }
-
 #recent_analysis div.nav_container {
     margin-top: 0px;
     margin-bottom: 10px !important;
@@ -1691,12 +1692,12 @@ a:focus {
 }
 
 #recent_analysis table#recent .badge-default {
-    background-color: #17281a;
-    color: #e3e3e3;
+    background-color: #417a4b;
+    color: #efefef;
 }
 
 #recent_analysis table#recent a {
-    color: #859292;
+    color: #9aa9a9;
 }
 
 #recent_analysis table#recent td:first-child {
@@ -1717,14 +1718,15 @@ a:focus {
 }
 
 #recent_analysis div.nav_container {
-    border-bottom: 1px solid #172730;
-    background: #13252e;
+    border-bottom: 1px solid #182932;
+    background: #172d38;
 }
 
 #recent_analysis div.nav_container > div#item.active {
     color: #555;
-    background-color: #293c46;
-    border: #484848;
+    background-color: #364f5c;
+    border: 1px solid #000000;
+    border-radius: 0px;
 }
 
 #recent_analysis div.nav_container > div.active > a:hover, div.nav_container > div.active > a:focus {
@@ -1733,10 +1735,11 @@ a:focus {
 
 #recent_analysis div.nav_container > div#item > a {
     color: white;
+    cursor: pointer;
 }
 
 #recent_analysis div.nav_container > div#item > a:hover {
-    background-color: #293c46 !important;
+    background-color: #364f5c !important;
 }
 
 #recent_analysis #no_more_results {
@@ -1756,4 +1759,16 @@ div.loading {
 .navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:focus, .navbar-inverse .navbar-nav>.open>a:hover {
     color: #fff;
     background-color: inherit;
+}
+
+.tab-behaviour_summary ul li ul li {
+    padding-top: 0px !important;
+}
+
+div#network_dns_wrapper{
+    background-color: #0d1b21;
+}
+
+img.opaque {
+    opacity: 0.8;
 }
