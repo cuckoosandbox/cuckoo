@@ -70,7 +70,7 @@ class FileTree {
         let theme_active = Cookies.get("theme");
         let themes = {"name": "default"};
 
-        if(theme_active == "night"){
+        if(theme_active == "night" || theme_active == "cyborg"){
             themes["name"] = "default-dark"
         }
 

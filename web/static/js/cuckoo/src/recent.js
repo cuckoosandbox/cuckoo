@@ -117,7 +117,7 @@ class Recent {
                 if (analysis.status == "reported" || analysis.status == "failed_analysis") {
                     html += `<a href="${analysis.id}/summary"><span class="mono">${date_completed_on}</span></a>`;
                 } else {
-                    html += `<span class="muted">${date_added_on}</span>`;
+                    html += `<span class="mono muted">${date_added_on}</span>`;
                 }
 
                 html += "</td><td>";
