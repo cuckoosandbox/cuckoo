@@ -4,7 +4,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// @TO-DO: cleanup jQuery selectors / comment code / abstract ajax calls / trigger loading indicator
+// @TO-DO: cleanup jQuery selectors / comment code / trigger loading indicator
 
 var SummaryBehaviorDetail = function () {
     function SummaryBehaviorDetail(task_id, pname, pid, category, val) {
@@ -37,18 +37,8 @@ var SummaryBehaviorDetail = function () {
 
             var self = this;
 
-            $.ajax({
-                type: "post",
-                contentType: "application/json",
-                url: "/analysis/api/behavior_get_watcher/",
-                dataType: "json",
-                data: JSON.stringify(params),
-                timeout: 40000,
-                success: function success(data) {
-                    self.start_cb(data, self);
-                }
-            }).fail(function (err) {
-                return console.log(err);
+            api_post("/analysis/api/behavior_get_watcher/", params, function (data) {
+                self.start_cb(data, self);
             });
         }
     }, {
@@ -156,22 +146,8 @@ var SummaryBehaviorController = function () {
             var params = { "task_id": this.task_id, "pid": this.pid };
             var self = this;
 
-            $.ajax({
-                type: "post",
-                contentType: "application/json",
-                url: "/analysis/api/behavior_get_watchers/",
-                dataType: "json",
-                data: JSON.stringify(params),
-                timeout: 40000,
-                beforeSend: function beforeSend() {
-                    //self.toggle_loading(self);
-                },
-                success: function success(data) {
-                    self.start_cb(data, self);
-                    //self.toggle_loading(self);
-                }
-            }).fail(function (err) {
-                return console.log(err);
+            api_post("/analysis/api/behavior_get_watchers/", params, function (data) {
+                self.start_cb(data, self);
             });
         }
     }, {

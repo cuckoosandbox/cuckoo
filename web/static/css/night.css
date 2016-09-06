@@ -331,7 +331,7 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .list-group-item:nth-child(odd) {
-    background-color: #363636;
+    /*background-color: #363636;*/
 }
 
 .pagination > .disabled > a, .pagination > .disabled > a:focus, .pagination > .disabled > a:hover, .pagination > .disabled > span, .pagination > .disabled > span:focus, .pagination > .disabled > span:hover {

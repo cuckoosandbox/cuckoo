@@ -249,21 +249,11 @@ $(document).ready( function() {
                 formdata[x.name] = x.value;
             });
 
-            $.ajax({
-                type: "post",
-                contentType: "application/json",
-                url: `/submit/api/submit/`,
-                dataType: "json",
-                data: JSON.stringify({
-                    "submit_id": submit_id,
-                    "selected_files": selected_files,
-                    "form": formdata
-                }),
-                timeout: 40000,
-                success: function(data){
-                    console.log(data);
-                }
-            }).fail(function(err) { console.log(err) });
+            api_post("/submit/api/submit/", {
+                "submit_id": submit_id,
+                "selected_files": selected_files,
+                "form": formdata
+            });
         });
 
         function filetree_drawcallback(){
@@ -326,18 +316,10 @@ $(document).ready( function() {
             });
 
             $(document).ready(function(){
-                $.ajax({
-                    type: "post",
-                    contentType: "application/json",
-                    url: `/submit/api/filetree/`,
-                    dataType: "json",
-                    data: JSON.stringify({"submit_id": submit_id}),
-                    timeout: 40000,
-                    success: function(data){
-                        filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
-                        filetree.draw();
-                    }
-                }).fail(function(err) { console.log(err) });
+                api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
+                    filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
+                    filetree.draw();
+                });
             });
         });
 

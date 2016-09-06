@@ -11,18 +11,8 @@ function feedback_send(task_id, firstname, email, company, message, include_anal
         "include_analysis": include_analysis
     };
 
-    $.ajax({
-        type: "post",
-        contentType: "application/json",
-        url: "/analysis/api/feedback_send/",
-        dataType: "json",
-        data: JSON.stringify(params),
-        timeout: 40000,
-        success: function success(data) {
-            callback(data);
-        }
-    }).fail(function (err) {
-        console.log(err);
+    api_post("/analysis/api/feedback_send/", params, function (data) {
+        callback(data);
     });
 }
 

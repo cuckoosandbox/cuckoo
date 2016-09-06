@@ -60,21 +60,16 @@ class Recent {
 
         let self = this;
 
-        $.ajax({
-            type: "post",
-            contentType: "application/json",
-            url: `api/recent/`,
-            dataType: "json",
-            data: JSON.stringify(params),
-            timeout: 40000,
-            beforeSend: function(){
-                self.toggle_loading(self);
-            },
-            success: function(data){
-                self.results_callback(data);
-                self.toggle_loading(self);
-            }
-        }).fail(err => console.log(err))
+        function cb(data){
+            self.results_callback(data);
+            self.toggle_loading(self);
+        }
+
+        function beforesend(){
+            self.toggle_loading(self);
+        }
+
+        api_post("api/recent/", params, cb, null, beforesend);
     }
 
     load(){

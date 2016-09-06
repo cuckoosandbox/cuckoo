@@ -23,21 +23,16 @@ section .nav>li>a {
             var behaviors = [];
 
             $(document).ready(function(){
-                $.ajax({
-                    type: "post",
-                    contentType: "application/json",
-                    url: `/analysis/api/behavior_get_processes/`,
-                    dataType: "json",
-                    data: JSON.stringify({"task_id": task_id}),
-                    timeout: 40000,
-                    success: function(data){
-                        data["data"].forEach(function(obj, i){
-                            var behavior = new SummaryBehaviorController(task_id, obj["process_name"], obj["pid"]);
-                            behavior.start();
-                            behaviors.push(behavior);
-                        });
-                    }
-                }).fail(function(){ console.log(err)});
+                api_post("/analysis/api/behavior_get_processes/", {"task_id": task_id}, function(data){
+                    data["data"].forEach(function(obj, i){
+                        var behavior = new SummaryBehaviorController(
+                                task_id,
+                                obj["process_name"], obj["pid"]);
+
+                        behavior.start();
+                        behaviors.push(behavior);
+                    });
+                });
             });
         </script>
         <style>

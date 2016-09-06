@@ -52,26 +52,16 @@
                         <pre class="body"></pre>
                         
                         <script>
-                            $(document).ready(function () {
-                                $.ajax({
-                                    type: "post",
-                                    contentType: "application/json",
-                                    url: "/analysis/api/network_http_response_data/",
-                                    dataType: "json",
-                                    data: JSON.stringify({
-                                        "task_id": task_id,
-                                        "request_body": false,
-                                        "request_index": {{ forloop.counter0 }}
-                                    }),
-                                    timeout: 20000,
-                                    success: function (data) {
-                                        sel = $("#http_" + {{ forloop.counter0 }} + ">.panel>.row pre.body");
+                            $(document).ready(function() {
+                                api_post("/analysis/api/network_http_response_data/", {
+                                    "task_id": task_id,
+                                    "request_body": false,
+                                    "request_index": {{ forloop.counter0 }}
+                                }, function(data) {
+                                    sel = $("#http_" + {{ forloop.counter0 }} + ">.panel>.row pre.body");
 
-                                        hex = hexy(base64.decode(data["body"]));
-                                        sel.append(hex);
-                                    }
-                                }).fail(function () {
-                                    console.log(err);
+                                    hex = hexy(base64.decode(data["body"]));
+                                    sel.append(hex);
                                 });
                             });
                         </script>
