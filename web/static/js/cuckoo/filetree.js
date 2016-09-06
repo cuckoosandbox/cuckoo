@@ -13,7 +13,6 @@ var FileTree = function () {
         this._draw_callback = draw_callback;
         this._convert_from_sflock = sflock;
 
-        this._jstree = null;
         this._filters = {
             simplify_mime: true,
             simplify_magic: true,
@@ -128,7 +127,7 @@ var FileTree = function () {
     }, {
         key: "_convert_sflock",
         value: function _convert_sflock() {
-            var data = $.extend({}, this.data);
+            var data = $.extend({}, this.data); //shallow copy
 
             var data_tmp = [];
             for (var key in data) {
@@ -153,10 +152,11 @@ var FileTree = function () {
                 state: false, // pre-selected tree item
                 size: entry.size,
                 duplicate: entry.duplicate,
-                opened: false
+                opened: false,
+                description: entry.description
             };
 
-            if (obj.type != "directory") {
+            if (obj.description != "dir") {
                 if (this._filters.simplify_magic) {
                     obj.magic = entry.finger.magic_human;
                 } else {
@@ -204,6 +204,9 @@ var FileTree = function () {
                 a_attr: {}
             };
 
+            data.a_attr.filepath = obj.filepath;
+            data.a_attr.sha256 = entry.sha256;
+
             if (obj.duplicate) {
                 obj.type = "duplicate";
 
@@ -219,8 +222,9 @@ var FileTree = function () {
                 _self.stats.duplicates += 1;
             }
 
-            if (obj.type == "directory") {
+            if (obj.description == "dir") {
                 obj.opened = true;
+                obj.type = "directory";
                 _self.stats.directories += 1;
             }
 
@@ -276,6 +280,20 @@ var FileTree = function () {
          * @param {Boolean} [highlight] - Wether to highlight or not
          */
 
+    }, {
+        key: "selected",
+        value: function selected() {
+            var files = [];
+            $(this.sel_target).jstree("get_checked", true, true).forEach(function (e) {
+                files.push({
+                    "filepath": e.a_attr.filepath,
+                    "filename": e.text,
+                    "sha256": e.a_attr.sha256
+                });
+            });
+
+            return files;
+        }
     }, {
         key: "simplify",
         value: function simplify(state) {
