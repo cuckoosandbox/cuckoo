@@ -39,6 +39,8 @@ def choose_package(file_type, file_name, exports):
         return "exe"
     elif "PDF" in file_type or file_name.endswith(".pdf"):
         return "pdf"
+    elif file_name.endswith(".pub"):
+        return "pub"
     elif "Rich Text Format" in file_type or \
             "Microsoft Word" in file_type or \
             "Microsoft Office Word" in file_type or \
