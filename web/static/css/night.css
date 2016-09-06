@@ -1800,3 +1800,12 @@ a.jstree-anchor[filetree_type=container] {
 .network_http_request{
     border: 1px solid #434343;
 }
+
+/* page errors */
+#page_error .error-code {
+  color: #bababa;
+}
+
+#page_error .error-desc {
+  color: #bababa;
+}

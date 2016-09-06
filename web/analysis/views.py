@@ -529,7 +529,7 @@ def pcapstream(request, task_id, conntuple):
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The specified analysis does not exist",
         })
 
@@ -543,7 +543,7 @@ def pcapstream(request, task_id, conntuple):
         stream = conns[0]
         offset = stream["offset"]
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "Could not find the requested stream",
         })
 
@@ -551,7 +551,7 @@ def pcapstream(request, task_id, conntuple):
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
         setattr(fobj, "fileno", lambda: -1)
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The required sorted PCAP does not exist",
         })
 
@@ -650,7 +650,7 @@ def import_analysis(request):
             return view_error(request, "You uploaded an empty analysis.")
 
         # if analysis.size > settings.MAX_UPLOAD_SIZE:
-            # return render(request, "error.html", {
+            # return render(request, "errors/error.html", {
             #     "error": "You uploaded a file that exceeds that maximum allowed upload size.",
             # })
 

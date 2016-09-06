@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<div id="page_error" class="row">
+    <div class="error">
+        <div class="error-code m-b-10 m-t-20">
+            {% if code %}
+                {{ code }} <i class="fa fa-warning"></i>
+            {% else %}
+                Oops <i class="fa fa-warning"></i>
+            {% endif %}
+        </div>
+
+        <div class="error-desc">
+            {% if error %}
+                {{error}}
+            {% else %}
+                Sorry, but the page you are looking for was either not found or encountered an error.
+            {% endif %}
+
+            <div>
+                <a class=" login-detail-panel-button btn" href="{% url "dashboard" %}">
+                <i class="fa fa-arrow-left"></i>
+                    Go back to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
