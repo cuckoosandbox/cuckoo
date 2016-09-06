@@ -7,6 +7,7 @@ Cuckoo Sandbox 2.0-rc2 (2016-xx-xx)
 * Added Elasticsearch support and rely on it for global search
 * Fixed pythonw.exe execution for the new Agent
 * Added initial MISP integration
+* Added initial IRMA integration
 * Added reboot analysis
 * Added Process Monitor (procmon) support to aid debugging
 * Added .docm documents to the Word document analysis package
@@ -18,9 +19,20 @@ Cuckoo Sandbox 2.0-rc2 (2016-xx-xx)
 * Added sniffer.debug option to create a debug network capture
 * Added PID tracking for dropped files
 * Added per-task Cuckoo logging
+* Added trigger support to the Cuckoo Monitor to reduce behavioral calls noise
+* Added static analysis for Office and PDF samples
+* Added screenshots auxiliary module for Mac OS X analysis
+* Added IP address pinning for the new Cuckoo Agent
+* Introduce the Gatherer (collect VM-specific information)
 * Greatly improved the stability of the Cuckoo Monitor
 * Fixed setting the clock in the Guest for non-English users
 * Fixed support for Ubuntu 16.04
+* Fixed Moloch-related web interface bugs
+* Fixed title issue with the generic package
+* Included Git hashes for debugging purposes in Cuckoo reports
+* Improved tcpdump output and error filtering
+* Enable special monitoring modes by default for malicious documents
+* Use custom pefile2 package to avoid pefile issues
 * Automatically start PowerPoint documents in slide show mode
 * Use the Linux routing table for properly routing analysis traffic
 * Document known 2.0-rc1 issues and fixes in our FAQ

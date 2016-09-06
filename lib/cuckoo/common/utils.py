@@ -316,6 +316,9 @@ def md5_file(filepath):
 def sha1_file(filepath):
     return hash_file(hashlib.sha1, filepath)
 
+def sha256_file(filepath):
+    return hash_file(hashlib.sha256, filepath)
+
 GUIDS = {}
 
 def guid_name(guid):

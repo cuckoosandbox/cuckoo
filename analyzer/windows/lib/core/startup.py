@@ -33,4 +33,4 @@ def set_clock(clock):
     st.wMinute = clock.minute
     st.wSecond = clock.second
     st.wMilliseconds = 0
-    KERNEL32.SetSystemTime(ctypes.byref(st))
+    KERNEL32.SetLocalTime(ctypes.byref(st))

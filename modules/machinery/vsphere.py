@@ -231,7 +231,7 @@ class vSphere(Machinery):
                     yield node
 
         self.VMtoDC = {}
-        
+
         for dc, dcpath in traverseDCFolders(conn, conn.content.rootFolder.childEntity):
             for vm in traverseVMFolders(conn, dc.vmFolder.childEntity):
                 self.VMtoDC[vm.summary.config.name] = dcpath
@@ -323,16 +323,27 @@ class vSphere(Machinery):
                 (name, vm.summary.config.name)
             )
 
-        datakey = filespec = None
+        memorykey = datakey = filespec = None
         for s in vm.layoutEx.snapshot:
             if s.key == snapshot:
+                memorykey = s.memoryKey
                 datakey = s.dataKey
                 break
 
         for f in vm.layoutEx.file:
-            if f.key == datakey:
+            if f.key == memorykey and (f.type == "snapshotMemory" or
+                                       f.type == "suspendMemory"):
                 filespec = f.name
                 break
+
+        if not filespec:
+            for f in vm.layoutEx.file:
+                if f.key == datakey and f.type == "snapshotData":
+                    filespec = f.name
+                    break
+
+        if not filespec:
+            raise CuckooMachineError("Cannot find snapshot memory file")
 
         log.info("Downloading memory dump %s to %s", filespec, path)
 

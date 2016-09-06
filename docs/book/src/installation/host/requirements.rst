@@ -14,7 +14,7 @@ preferred.
 
 Install the basic dependencies::
 
-    $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
+    $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev libxml2-dev libxslt1-dev libjpeg-dev
 
 If you want to use the Django-based web interface, you'll have to install
 MongoDB too::
