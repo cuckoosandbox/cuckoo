@@ -707,7 +707,7 @@ div.loading>img{
 .jstree-default .jstree-clicked.jstree-grid-col-0, .jstree-default .jstree-checked { color: #4c4c4c; }
 a[filetree_duplicate=true] { color: red !important; }
 a.jstree-anchor[filetree_type=container] { color: #4c4c4c !important; }
-a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
+a.jstree-grid-col-0.highlight{ text-decoration: underline !important; font-weight: bold; }
 .jstree-grid-separator { border-width: 0 1px 0 0 !important; }
 .jstree-grid-resizable-separator { width: 2px !important; }
 .jstree-grid-header-cell { padding: 3px 10px 2px 10px !important; }

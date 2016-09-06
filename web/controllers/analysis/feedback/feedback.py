@@ -94,11 +94,11 @@ class AnalysisFeedBackController(object):
             raise Exception(resp["message"])
 
         feedback_id = resp["feedback_id"]
-        self._register_sent(feedback_id)
+        self._feedback_sent(feedback_id)
 
         return feedback_id
 
-    def _register_sent(self, feedback_id):
+    def _feedback_sent(self, feedback_id):
         return results_db.analysis.update_one(
             {"info.id": int(self.task_id)},
             {"$set": {"feedback": self.to_dict(), "feedback_id": feedback_id}})

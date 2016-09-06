@@ -5,7 +5,6 @@ class FileTree {
         this._draw_callback = draw_callback;
         this._convert_from_sflock = sflock;
 
-        this._jstree = null;
         this._filters = {
             simplify_mime: true,
             simplify_magic: true,
@@ -114,7 +113,7 @@ class FileTree {
      * @private
      */
     _convert_sflock(){
-        let data = $.extend({}, this.data);
+        let data = $.extend({}, this.data);  //shallow copy
 
         let data_tmp = [];
         for (let key in data) {
@@ -138,10 +137,11 @@ class FileTree {
             state: false, // pre-selected tree item
             size: entry.size,
             duplicate: entry.duplicate,
-            opened: false
+            opened: false,
+            description: entry.description
         };
 
-        if(obj.type != "directory"){
+        if(obj.description != "dir"){
             if(this._filters.simplify_magic){
                 obj.magic = entry.finger.magic_human;
             } else {
@@ -186,6 +186,9 @@ class FileTree {
             a_attr: {}
         };
 
+        data.a_attr.filepath = obj.filepath;
+        data.a_attr.sha256 = entry.sha256;
+
         if(obj.duplicate) {
             obj.type = "duplicate";
 
@@ -201,8 +204,9 @@ class FileTree {
             _self.stats.duplicates += 1;
         }
 
-        if(obj.type == "directory"){
+        if(obj.description == "dir"){
             obj.opened = true;
+            obj.type = "directory";
             _self.stats.directories += 1;
         }
 
@@ -279,6 +283,19 @@ class FileTree {
                 else obj.removeClass("highlight");
             }
         }
+    }
+
+    selected(){
+        let files = [];
+        $(this.sel_target).jstree("get_checked",true,true).forEach(function(e){
+            files.push({
+                "filepath": e.a_attr.filepath,
+                "filename": e.text,
+                "sha256": e.a_attr.sha256
+            });
+        });
+
+       return files;
     }
 
     simplify(state){
