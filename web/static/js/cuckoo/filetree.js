@@ -86,7 +86,7 @@ var FileTree = function () {
             var theme_active = Cookies.get("theme");
             var themes = { "name": "default" };
 
-            if (theme_active == "night") {
+            if (theme_active == "night" || theme_active == "cyborg") {
                 themes["name"] = "default-dark";
             }
 

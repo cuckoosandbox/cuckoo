@@ -10,7 +10,7 @@ body {
 }
 
 hr {
-    border-top: 1px solid #434343;
+    border-top: 1px solid #345274;
 }
 
 .dns_badge {
@@ -36,7 +36,7 @@ pre {
 }
 
 .text-danger {
-    color: #d34845;
+    color: #db302c;
 }
 
 .text-success {
@@ -46,7 +46,9 @@ pre {
 .process {
     background-color: #345274;
 }
-
+.panel {
+    border: 1px solid #1a293b;
+}
 .panel-heading .glyphicon {
     color: #b8b8b8;
 }
@@ -63,10 +65,14 @@ section#summary .list-group li ul {
     list-style-type: initial;
 }
 
-input, textarea, select {
-    background-color: #383838 !important;
-    border-color: #545454 !important;
-    color: #d7d7d7 !important;
+input, textarea, select, pre, .well, .pagination>li>a {
+    background-color: #152d3d !important;
+    border-color: #162c56 !important;
+    color: #e8e8e8 !important;
+}
+
+.pagination>li.active>a {
+    background-color: #244d69 !important;
 }
 
 input[readonly] {
@@ -75,7 +81,7 @@ input[readonly] {
 }
 
 input:focus, textarea:focus, select:focus {
-    box-shadow: 0 0 2px #59595a !important;
+    box-shadow: 0 0 0px #59595a !important;
 }
 
 .dataTables_paginate .pagination > .active > a {
@@ -86,7 +92,7 @@ input:focus, textarea:focus, select:focus {
 
 /* checkboxes */
 .cuckoo-box input[type="radio"]:empty ~ label:before, .cuckoo-box input[type="checkbox"]:empty ~ label:before {
-    background: #434343;
+    background: #345274;
 }
 
 .cuckoo-box-primary input[type="radio"]:checked ~ label:before, .cuckoo-box-primary input[type="checkbox"]:checked ~ label:before {
@@ -99,7 +105,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .cuckoo-box label {
-    border: 1px solid #434343;
+    border: 1px solid #345274;
 }
 
 section#summary .panel-default .list-group > li > p > b {
@@ -109,11 +115,11 @@ section#summary .panel-default .list-group > li > p > b {
 
 /* sidebar */
 .analysis_menu-usermenu ul li {
-    border-bottom: 1px solid #434343;
+    border-bottom: 1px solid #345274;
 }
 
 .analysis_menu-usermenu ul li a:hover {
-    background-color: #2d2d2d;
+    background-color: transparent;
     color: #0ce3ac;
     text-decoration: none;
 }
@@ -155,7 +161,7 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .panel {
-    background-color: #303030;
+    background-color: #0d1b21;
     -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
     box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
 }
@@ -333,8 +339,8 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .panel-footer {
-    background-color: #303030;
-    border-top: 1px solid #434343;
+    background-color: #0d1b21;
+    border-top: 1px solid #0d1b21;
 }
 
 .list-group-item {
@@ -395,7 +401,7 @@ footer {
 }
 
 .table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {
-    border: 1px solid #434343;
+    border: 1px solid #132b3b;
 }
 
 .table-bordered {
@@ -530,8 +536,8 @@ mark,
 }
 
 .alert-info {
-    background-color: #375a7f;
-    border-color: #375a7f;
+    background-color: #152d3d;
+    border-color: #152d3d;
     color: #ffffff;
 }
 
@@ -1639,9 +1645,10 @@ a:focus {
 }
 
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
-    color: #00bc8c;
-    background-color: #313131;
-    border: 1px solid #464545;
+    color: white;
+    background-color: #345274;
+    border: 1px solid #345274;
+    text-decoration: underline;
     border-bottom-color: transparent;
     cursor: default;
 }
@@ -1670,11 +1677,12 @@ a:focus {
 
 .nav > li > a:hover, .nav > li > a:focus {
     text-decoration: none;
-    background-color: #303030;
+    background-color: #5277a2;
+    border-color: #5277a2;
 }
 
 .nav-tabs {
-    border-bottom: 1px solid #414141;
+    border-bottom: 1px solid #345274;
 }
 
 .tcp-out pre, .tcp-in pre {
@@ -1771,4 +1779,100 @@ div#network_dns_wrapper{
 
 img.opaque {
     opacity: 0.8;
+}
+.dndupload label strong {
+    color: #96c1d0;
+}
+.dndupload progress { background: #152d3d; height: 20px; margin: auto; width: 50%; display: inherit; }
+.dndupload progress::-webkit-progress-bar { background: #152d3d; /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
+.dndupload progress::-webkit-progress-value { /*background: #0063a6;*/ }
+
+/* jstree */
+.jstree-grid-header-regular {
+    background-color: #0d1b21 !important;
+    margin-bottom: 21px !important;
+}
+
+.jstree-grid-separator-regular {
+    border-color: #313131 !important;
+}
+
+.jstree-default .jstree-hovered {
+    box-shadow: none !important;
+}
+
+.jstree-grid-cell {
+    padding-right: 20px !important;
+}
+
+.jstree-default-dark {
+    background: transparent !important;
+}
+
+.jstree-default-dark .jstree-clicked, .jstree-default-dark .jstree-checked {
+    color: #e0e0e0 !important;
+}
+
+.jstree-anchor {
+    color: #9c9c9c !important;
+}
+
+li[aria-expanded]>a.jstree-anchor{
+    color: white;
+}
+
+.jstree-default-dark .jstree-clicked, .jstree-default-dark .jstree-checked {
+    color: #e8e8e8 !important;
+}
+
+.jstree-grid-midwrapper {
+    background: url("/static/img/theme_cyborg/table_bg_22px.png");
+    background-position-y: 3px;
+}
+
+a[filetree_duplicate=true] {
+    color: red !important;
+}
+
+a.jstree-anchor[filetree_type=container] {
+    color: white !important;
+}
+
+.jstree-grid-cell {
+    color: #9c9c9c !important;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.5) !important;
+}
+
+.calltable tr span.gray, .calltable tr strong{
+    color: #0ce3ac;
+}
+
+table > tbody > tr:nth-child(even){
+    background-color: #0b1d21 !important;
+}
+
+.network_http_request>.panel{
+    background-color: #152d3d;
+}
+.network_http_request>.panel>.panel-heading{
+    background: #152d3d;
+}
+.network_http_request{
+    border: 1px solid #0f2b45;
+}
+
+.analysis_menu-usermenu ul li a {
+    color: #b6d7fc;
+}
+
+.btn-success {
+    color: #fff !important;
+    background-color: #008664 !important;
+    border-color: #005741 !important;
+}
+
+.btn-default{
+    background-color: #152d3d !important;
+    border-color: #162c56 !important;
+    color: #e8e8e8 !important;
 }
