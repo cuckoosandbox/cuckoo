@@ -11,7 +11,9 @@
                 <div class="col-md-12">
                     <div class="tabbable tabs">
                         <ul class="nav nav-pills" style="margin-bottom: 0;">
-                            <li class="active"><a href="#static_analysis_tab" data-toggle="tab">Static Analysis</a></li>
+                            <li class="active">
+                                <a href="#static_analysis_tab" data-toggle="tab">Static Analysis</a>
+                            </li>
                             <li><a href="#static_strings_tab" data-toggle="tab">Strings</a></li>
                             <li><a href="#static_antivirus_tab" data-toggle="tab">Antivirus</a></li>
                         </ul>
@@ -21,6 +23,8 @@
                                     {% include "analysis/pages/static/_pe32.html" %}
                                 {% elif "office" in report.analysis.static %}
                                     {% include "analysis/pages/static/_office.html" %}
+                                {% elif "pdf" in report.analysis.static %}
+                                    {% include "analysis/pages/static/_pdf.html" %}
                                 {% else %}
                                     No static analysis available.
                                 {% endif %}
@@ -30,6 +34,9 @@
                             </div>
                             <div class="tab-pane fade" id="static_antivirus_tab">
                                 {% include "analysis/pages/static/_antivirus.html" %}
+                            </div>
+                            <div class="tab-pane fade" id="static_irma_tab">
+                                {% include "analysis/pages/static/_irma.html" %}
                             </div>
                         </div>
                     </div>

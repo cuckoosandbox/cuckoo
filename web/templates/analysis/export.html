@@ -3,7 +3,7 @@
 {% load analysis_tags %}
 {% block content %}
 
-    <script src="/static/js/analysis_export.js"></script>
+    <script src="/static/js/cuckoo/analysis_export.js"></script>
 
     <div class="row">
         {% include "analysis/pages/sidebar.html" %}
@@ -43,7 +43,7 @@
 
                         <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
                             <div class="panel" id="accordion" style="margin-top: 20px;">
-                                <div class="panel panel-default">
+                                <div class="panel-default">
                                     <div class="panel-heading">
                                         <label class="accordion-toggle">Options</label>
                                     </div>

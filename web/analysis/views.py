@@ -27,11 +27,12 @@ from gridfs import GridFS
 sys.path.insert(0, settings.CUCKOO_PATH)
 
 from lib.cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
-from lib.cuckoo.common.utils import store_temp_file, versiontuple
+from lib.cuckoo.common.utils import json_default, versiontuple
+from lib.cuckoo.common.files import Files
 from lib.cuckoo.common.constants import CUCKOO_ROOT, LATEST_HTTPREPLAY
 import modules.processing.network as network
 
-from bin.utils import view_error, json_default
+from bin.utils import view_error
 
 results_db = settings.MONGO
 fs = GridFS(results_db)
@@ -528,7 +529,7 @@ def pcapstream(request, task_id, conntuple):
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The specified analysis does not exist",
         })
 
@@ -542,7 +543,7 @@ def pcapstream(request, task_id, conntuple):
         stream = conns[0]
         offset = stream["offset"]
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "Could not find the requested stream",
         })
 
@@ -550,7 +551,7 @@ def pcapstream(request, task_id, conntuple):
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
         setattr(fobj, "fileno", lambda: -1)
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The required sorted PCAP does not exist",
         })
 
@@ -649,7 +650,7 @@ def import_analysis(request):
             return view_error(request, "You uploaded an empty analysis.")
 
         # if analysis.size > settings.MAX_UPLOAD_SIZE:
-            # return render(request, "error.html", {
+            # return render(request, "errors/error.html", {
             #     "error": "You uploaded a file that exceeds that maximum allowed upload size.",
             # })
 
@@ -685,7 +686,8 @@ def import_analysis(request):
         info = analysis_info.get("info", {})
 
         if category == "file":
-            binary = store_temp_file(zf.read("binary"), "binary")
+            binary = Files.tmp_put(file=zf.read("binary"),
+                                   path="binary")
 
             if os.path.isfile(binary):
                 task_id = db.add_path(file_path=binary,

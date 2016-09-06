@@ -11,6 +11,7 @@ from controllers.analysis.compare.routes import AnalysisCompareRoutes
 from controllers.analysis.api import AnalysisApi
 from controllers.analysis.export.api import ExportApi
 from controllers.analysis.feedback.api import FeedbackApi
+from controllers.analysis.network.api import AnalysisNetworkApi
 
 urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name='analysis/recent'),
@@ -43,5 +44,6 @@ urlpatterns = [
     url(r"^api/feedback_send/$", FeedbackApi.send),
     url(r"^api/behavior_get_processes/$", AnalysisApi.behavior_get_processes),
     url(r"^api/behavior_get_watcher/$", AnalysisApi.behavior_get_watcher),
-    url(r"^api/behavior_get_watchers/$", AnalysisApi.behavior_get_watchers)
+    url(r"^api/behavior_get_watchers/$", AnalysisApi.behavior_get_watchers),
+    url(r"^api/network_http_response_data/$", AnalysisNetworkApi.http_response_data),
 ]

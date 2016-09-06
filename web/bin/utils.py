@@ -5,16 +5,25 @@
 
 import os
 import calendar
+import json
 from datetime import datetime
+from functools import wraps
 
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
 from django.shortcuts import render
 
-def json_default(obj):
-    if isinstance(obj, datetime):
-        if obj.utcoffset() is not None:
-            obj = obj - obj.utcoffset()
-        return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
-    raise TypeError("%r is not JSON serializable" % obj)
+class json_default_response(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+
+        if isinstance(obj, datetime):
+            if obj.utcoffset() is not None:
+                obj = obj - obj.utcoffset()
+            return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
+        raise TypeError("%r is not JSON serializable" % obj)
 
 def view_error(request, msg):
     return render(request, "error.html", {
@@ -31,3 +40,17 @@ def get_directory_size(path):
             size += os.path.getsize(fp)
 
     return size
+
+def _api_post(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        request = args[0]
+
+        if not request.is_ajax():
+            return JsonResponse({"status": False}, status=200)
+
+        args += (json.loads(request.body),)
+        return func(*args, **kwargs)
+    return inner
+
+api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))

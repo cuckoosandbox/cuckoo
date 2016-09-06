@@ -20,7 +20,8 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.common.exceptions import CuckooResultError
 from lib.cuckoo.common.netlog import BsonParser
-from lib.cuckoo.common.utils import create_folder, Singleton
+from lib.cuckoo.common.utils import Singleton
+from lib.cuckoo.common.files import Folders
 from lib.cuckoo.core.log import task_log_start, task_log_stop
 
 log = logging.getLogger(__name__)
@@ -307,7 +308,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         for folder in folders:
             try:
-                create_folder(self.storagepath, folder=folder)
+                Folders.create(root=self.storagepath, folder=folder)
             except CuckooOperationalError:
                 log.error("Unable to create folder %s" % folder)
                 return False
@@ -352,7 +353,7 @@ class FileUpload(ProtocolHandler):
                 )
 
         try:
-            create_folder(self.storagepath, dir_part)
+            Folders.create(root=self.storagepath, folder=dir_part)
         except CuckooOperationalError:
             log.error("Unable to create folder %s", dir_part)
             return
