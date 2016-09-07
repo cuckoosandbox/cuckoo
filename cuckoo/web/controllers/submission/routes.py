@@ -15,7 +15,7 @@ from cuckoo.misc import cwd
 
 from controllers.submission.submission import SubmissionController
 
-cfg = Config()
+cfg = Config("routing")
 results_db = settings.MONGO
 
 class SubmissionRoutes:
