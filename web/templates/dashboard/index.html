@@ -8,23 +8,55 @@
 {% endif %}
 
 <div class="row">
-    <div class="col-xs-6">
-        <div class="jumbotron" style="text-align: center;">
-            <h1>{{report.total_tasks}}</h1>
-            Total tasks
+    <div class="col-xs-8">
+        <div class="panel panel-primary" id="panel_create-analysis">
+            <div class="panel-heading">
+                <h3 class="panel-title">Submit URL(s)/Hashes</h3>
+            </div>
+            <div class="panel-body" style="padding:14px;">
+                <textarea type="text" class="form-control" id="form_url" placeholder="Url/Hash - one per line" style="min-height: 148px;border: 1px dashed #797979 !important;"></textarea>
+
+                <div class="pull-right" style="padding-top:10px;">
+                    <input id="submit" disabled type="submit" class="btn btn-primary" value="Submit"/>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-xs-6">
-        <div class="jumbotron" style="text-align: center;">
-            <h1>{{report.total_samples}}</h1>
-            Total samples
+
+    <div class="col-xs-4">
+        <div class="panel panel-primary" id="panel_create-analysis">
+            <div class="panel-heading">
+                <h3 class="panel-title">Upload File(s)</h3>
+            </div>
+            <div class="panel-body" style="padding:14px;">
+                <script src="{% static "js/cuckoo/dndupload.js"%}"></script>
+
+                <div id="dndsubmit" style="height:192px;"></div>
+
+                <script>
+                    $(document).ready(function(){
+                        $(document).on("submit", "#uploader", function(e){
+                            e.preventDefault();
+                        });
+
+                        function dndsuccess(data){
+                            window.location.href = data.responseURL;
+                        }
+
+                        var dndupload = new DndUpload(
+                            "div#dndsubmit",
+                            "/submit/api/submit",
+                            dndsuccess
+                        );
+
+                        dndupload.draw();
+                    });
+                </script>
+            </div>
         </div>
     </div>
-</div>
 
-
-<div class="row">
-    <div class="col-xs-6">
+    <div class="col-xs-4">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">States</h3>
@@ -48,46 +80,18 @@
         </div>
     </div>
 
-    <div class="col-xs-6">
-        <div class="panel panel-primary" id="panel_create-analysis">
-            <div class="panel-heading">
-                <h3 class="panel-title">Create Analysis</h3>
-            </div>
-            <div class="panel-body" style="padding:0px;">
-                <script src="{% static "js/cuckoo/dndupload.js"%}"></script>
-
-                <div id="dndsubmit" style="height:292px;"></div>
-
-                <div style="width: 100%; padding: 0px 20px 20px;" class="input-group">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="form_url" placeholder="URL" style="border-right: 0px;">
-                        <span class="input-group-btn">
-                            <button class="btn btn-secondary btn-primary" type="button">Create</button>
-                        </span>
-                    </div>
-                </div>
-
-                <script>
-                    $(document).ready(function(){
-                        $(document).on("submit", "#uploader", function(e){
-                            e.preventDefault();
-                        });
-
-                        function dndsuccess(data){
-                            window.location.href = data.responseURL;
-                        }
-
-                        var dndupload = new DndUpload(
-                            "div#dndsubmit",
-                            "/submit/api/presubmit",
-                            dndsuccess
-                        );
-
-                        dndupload.draw();
-                    });
-                </script>
-            </div>
+    <div class="col-xs-4">
+        <div class="jumbotron" style="text-align: center;">
+            <h1>{{report.total_tasks}}</h1>
+            Total tasks
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <div class="jumbotron" style="text-align: center;">
+            <h1>{{report.total_samples}}</h1>
+            Total samples
         </div>
     </div>
 </div>
+
 {% endblock %}
