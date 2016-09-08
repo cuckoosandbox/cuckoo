@@ -1,7 +1,3 @@
-branches:
-  only:
-    - package
-
 language: python
 
 python:
