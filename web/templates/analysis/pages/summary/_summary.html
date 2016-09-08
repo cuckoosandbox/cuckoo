@@ -23,7 +23,7 @@ section .nav>li>a {
             var behaviors = [];
 
             $(document).ready(function(){
-                api_post("/analysis/api/behavior_get_processes/", {"task_id": task_id}, function(data){
+                CuckooWeb.api_post("/analysis/api/behavior_get_processes/", {"task_id": task_id}, function(data){
                     data["data"].forEach(function(obj, i){
                         var behavior = new SummaryBehaviorController(
                                 task_id,

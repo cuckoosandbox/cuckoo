@@ -56,7 +56,7 @@ from lib.cuckoo.core.startup import init_rooter, init_routing
 init_rooter()
 init_routing()
 
-DEBUG = True
+DEBUG = False
 
 # Database settings. We don't need it.
 DATABASES = {}

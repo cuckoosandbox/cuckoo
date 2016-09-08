@@ -45,7 +45,7 @@ class SubmissionController:
     @staticmethod
     def analyze_file(filename, data, password=None):
         extracted = unpack(filepath=filename, contents=data, password=password)
-        converted = extracted.asobjtree()
+        converted = extracted.astree()
         return converted
 
     def submit(self):

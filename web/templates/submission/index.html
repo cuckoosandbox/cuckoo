@@ -249,7 +249,7 @@ $(document).ready( function() {
                 formdata[x.name] = x.value;
             });
 
-            api_post("/submit/api/submit/", {
+            CuckooWeb.api_post("/submit/api/submit/", {
                 "submit_id": submit_id,
                 "selected_files": selected_files,
                 "form": formdata
@@ -316,7 +316,7 @@ $(document).ready( function() {
             });
 
             $(document).ready(function(){
-                api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
+                CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
                     filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
                     filetree.draw();
                 });

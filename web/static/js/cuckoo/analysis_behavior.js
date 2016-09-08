@@ -45,7 +45,7 @@ var SummaryBehaviorDetail = function () {
 
             var self = this;
 
-            api_post("/analysis/api/behavior_get_watcher/", params, function (data) {
+            CuckooWeb.api_post("/analysis/api/behavior_get_watcher/", params, function (data) {
                 self.start_cb(data, self);
             });
         }
@@ -154,7 +154,7 @@ var SummaryBehaviorController = function () {
             var params = { "task_id": this.task_id, "pid": this.pid };
             var self = this;
 
-            api_post("/analysis/api/behavior_get_watchers/", params, function (data) {
+            CuckooWeb.api_post("/analysis/api/behavior_get_watchers/", params, function (data) {
                 self.start_cb(data, self);
             });
         }

@@ -38,3 +38,7 @@ DEBUG404 = True
 # When DEBUG is True or when running tests, host validation is disabled; any
 # host will be accepted. Thus it's usually only necessary to set it in production.
 ALLOWED_HOSTS = ["*"]
+
+import web.errors
+handler404 = web.errors.handler404
+handler500 = web.errors.handler500

@@ -164,7 +164,8 @@ var FileTree = function () {
                 description: entry.description
             };
 
-            if (obj.description != "dir") {
+            if (obj.type != "directory") {
+                // simplify filters
                 if (this._filters.simplify_magic) {
                     obj.magic = entry.finger.magic_human;
                 } else {
@@ -176,36 +177,40 @@ var FileTree = function () {
                 } else {
                     obj.mime = entry.finger.mime;
                 }
+
+                if (this._filters.simplify_sizes) {
+                    obj.size = CuckooWeb.human_size(obj.size, true);
+                }
+
+                // Sanitize object properties
+                if (obj.magic) {
+                    if (obj.magic.length >= 170) {
+                        obj.magic = obj.magic.substring(0, 170) + "...";
+                    }
+                } else {
+                    obj.magic = "empty";
+                }
+
+                [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
+                    if (obj.filepath.endsWith(x)) {
+                        obj.type = "exec";
+                        obj.state = true;
+
+                        _self.stats.executables += 1;
+                    }
+                });
+
+                [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
+                    if (obj.filepath.endsWith(x)) {
+                        obj.type = "office";
+                        obj.state = true;
+
+                        _self.stats.executables += 1;
+                    }
+                });
             }
 
-            // Sanitize object properties
-            if (obj.magic) {
-                if (obj.magic.length >= 170) {
-                    obj.magic = obj.magic.substring(0, 170) + "...";
-                }
-            } else {
-                obj.magic = "empty";
-            }
-
-            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
-                if (obj.filepath.endsWith(x)) {
-                    obj.type = "exec";
-                    obj.state = true;
-
-                    _self.stats.executables += 1;
-                }
-            });
-
-            [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
-                if (obj.filepath.endsWith(x)) {
-                    obj.type = "office";
-                    obj.state = true;
-
-                    _self.stats.executables += 1;
-                }
-            });
-
-            // Build the JSTree JSON return object
+            // Build JSTree JSON return object
             var data = {
                 text: obj.filename,
                 data: {},
@@ -230,13 +235,11 @@ var FileTree = function () {
                 _self.stats.duplicates += 1;
             }
 
-            if (obj.description == "dir") {
+            if (obj.type == "directory") {
                 obj.opened = true;
                 obj.type = "directory";
                 _self.stats.directories += 1;
-            }
-
-            if (obj.type != "directory") {
+            } else {
                 data.data.mime = obj.mime;
                 data.data.size = obj.size;
                 data.data.magic = obj.magic;

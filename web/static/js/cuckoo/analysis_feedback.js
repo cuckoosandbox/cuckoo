@@ -19,7 +19,7 @@ function feedback_send(task_id, firstname, email, company, message, include_anal
         "include_analysis": include_analysis
     };
 
-    api_post("/analysis/api/feedback_send/", params, function (data) {
+    CuckooWeb.api_post("/analysis/api/feedback_send/", params, function (data) {
         callback(data);
     });
 }

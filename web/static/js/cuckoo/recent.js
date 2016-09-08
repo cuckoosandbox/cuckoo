@@ -91,7 +91,7 @@ var Recent = function () {
                 self.toggle_loading(self);
             }
 
-            api_post("api/recent/", params, cb, null, beforesend);
+            CuckooWeb.api_post("api/recent/", params, cb, null, beforesend);
         }
     }, {
         key: "load",

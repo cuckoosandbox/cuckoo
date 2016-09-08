@@ -37,7 +37,7 @@ class SummaryBehaviorDetail {
 
         let self = this;
 
-        api_post("/analysis/api/behavior_get_watcher/", params, function(data){ self.start_cb(data, self); });
+        CuckooWeb.api_post("/analysis/api/behavior_get_watcher/", params, function(data){ self.start_cb(data, self); });
     }
 
     _setup_html(context){
@@ -126,7 +126,7 @@ class SummaryBehaviorController {
         let params = {"task_id": this.task_id, "pid": this.pid};
         let self = this;
 
-        api_post("/analysis/api/behavior_get_watchers/", params,
+        CuckooWeb.api_post("/analysis/api/behavior_get_watchers/", params,
             function(data){ self.start_cb(data, self); });
     }
 
