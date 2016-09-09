@@ -10,8 +10,8 @@ import pymongo
 from django.conf import settings
 from django.http import JsonResponse
 
+from bin.utils import api_post, json_error_response
 from lib.cuckoo.core.database import Database, Task
-from bin.utils import api_post
 from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
@@ -37,7 +37,7 @@ class AnalysisApi:
 
         if isinstance(score_range, (str, unicode)) and score_range != "":
             if "-" not in score_range:
-                raise Exception("faulty score")
+                return json_error_response("faulty score")
 
             score_min, score_max = score_range.split("-", 1)
 
@@ -46,11 +46,11 @@ class AnalysisApi:
                 score_max = int(score_max)
 
                 if score_min < 0 or score_min > 10 or score_max < 0 or score_max > 10:
-                    raise Exception("faulty score")
+                    return json_error_response("faulty score")
 
                 filters["info.score"] = {"$gte": score_min, "$lte": score_max}
             except:
-                raise Exception("faulty score")
+                return json_error_response("faulty score")
 
         # @TO-DO: Use a mongodb abstraction class if there is one
         cursor = results_db.analysis.find(
@@ -107,7 +107,7 @@ class AnalysisApi:
     def behavior_get_processes(request, body):
         task_id = body.get("task_id", None)
         if not task_id:
-            return JsonResponse({"status": False, "message": "missing task_id"}, status=200)
+            return json_error_response("missing task_id")
 
         report = AnalysisController.get_report(task_id)
 
@@ -148,14 +148,14 @@ class AnalysisApi:
         pid = body.get("pid", None)
 
         if not task_id or not pid:
-            return JsonResponse({"status": False, "message": "missing task_id or pid"}, status=200)
+            return json_error_response("missing task_id or pid")
 
         report = AnalysisController.get_report(task_id)
         behavior_generic = report["analysis"]["behavior"]["generic"]
         process = [z for z in behavior_generic if z["pid"] == pid]
 
         if not process:
-            return JsonResponse({"status": False, "message": "missing pid"}, status=200)
+            return json_error_response("missing pid")
         else:
             process = process[0]
 
@@ -179,21 +179,21 @@ class AnalysisApi:
         offset = body.get("offset", None)
 
         if not task_id or not watcher or not pid:
-            return JsonResponse({"status": False, "message": "missing task_id, watcher, and/or pid"}, status=200)
+            return json_error_response("missing task_id, watcher, and/or pid")
 
         report = AnalysisController.get_report(task_id)
         behavior_generic = report["analysis"]["behavior"]["generic"]
         process = [z for z in behavior_generic if z["pid"] == pid]
 
         if not process:
-            return JsonResponse({"status": False, "message": "supplied pid not found"}, status=200)
+            return json_error_response("supplied pid not found")
         else:
             process = process[0]
 
         summary = process["summary"]
 
         if watcher not in summary:
-            return JsonResponse({"status": False, "message": "supplied watcher not found"}, status=200)
+            return json_error_response("supplied watcher not found")
 
         if offset:
             summary[watcher] = summary[watcher][offset:]

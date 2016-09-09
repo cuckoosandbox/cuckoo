@@ -7,7 +7,7 @@ import base64
 
 from django.http import JsonResponse
 
-from bin.utils import api_post
+from bin.utils import api_post, json_error_response
 from controllers.analysis.analysis import AnalysisController
 
 class AnalysisNetworkApi:
@@ -18,7 +18,7 @@ class AnalysisNetworkApi:
         request_index = body.get("request_index", None)
 
         if not task_id or not isinstance(request_index, int):
-            return JsonResponse({"status": False, "message": "missing task_id or valid request_index"}, status=200)
+            return json_error_response("missing task_id or valid request_index")
 
         try:
             report = AnalysisController.get_report(task_id)
@@ -35,4 +35,4 @@ class AnalysisNetworkApi:
                 "body": data
             }, safe=False)
         except:
-            return JsonResponse({"status": False, "message": "error"}, status=200)
+            return json_error_response("error")

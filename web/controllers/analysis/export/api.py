@@ -5,7 +5,7 @@
 
 from django.http import JsonResponse
 
-from bin.utils import api_post
+from bin.utils import api_post, json_error_response
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
 
@@ -20,7 +20,7 @@ class ExportApi:
             return JsonResponse({"size": 0, "size_human": "-"}, safe=False)
 
         if not task_id:
-            raise Exception('invalid task_id')
+            return json_error_response("invalid task_id")
 
         size = ExportController.estimate_size(task_id=task_id,
                                               taken_dirs=taken_dirs,
@@ -33,7 +33,7 @@ class ExportApi:
         task_id = body.get('task_id', None)
 
         if not task_id:
-            raise Exception('invalid task_id')
+            return json_error_response("invalid task_id")
 
         report = AnalysisController.get_report(task_id)
         analysis_path = report["analysis"]["info"]["analysis_path"]

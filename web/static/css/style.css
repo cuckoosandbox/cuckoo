@@ -212,8 +212,9 @@ td {
     min-height:30px;
 }
 
-.navbar-fixed-top li img{
-    margin: 5px 10px -10px 20px;height: 34px;
+.navbar-fixed-top li a img{
+    margin: 5px 0px 10px 20px;
+    height: 34px;
 }
 
 
