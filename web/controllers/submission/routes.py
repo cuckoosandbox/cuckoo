@@ -65,7 +65,7 @@ class SubmissionRoutes:
 
     @staticmethod
     def presubmit(request, submit_id):
-        file_data = SubmissionController(submit_id=submit_id).get_submit()
+        controller = SubmissionController(submit_id=submit_id)
+        data = controller.get_files(astree=True)
 
-        return render(request, "submission/index.html", {"file_data": file_data, "submit_id": submit_id})
-        #return JsonResponse({"data": file_list}, encoder=json_default_response)
+        return render(request, "submission/index.html", {"file_data": data, "submit_id": submit_id})

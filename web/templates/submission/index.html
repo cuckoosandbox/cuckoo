@@ -317,7 +317,7 @@ $(document).ready( function() {
 
             $(document).ready(function(){
                 CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
-                    filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
+                    filetree = new FileTree("div#filetree_target", data.data["files"], true, filetree_drawcallback);
                     filetree.draw();
                 });
             });

@@ -182,9 +182,11 @@ var DndUpload = function () {
         key: "_upload",
         value: function _upload(formdata) {
             var _self = this;
-            this.display_text("Uploading");
-
             var xhr = new XMLHttpRequest();
+
+            this.display_text("Uploading");
+            formdata["type"] = "files";
+
             xhr.open('POST', this.endpoint);
 
             // update progress bar when server response is received

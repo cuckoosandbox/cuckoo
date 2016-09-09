@@ -23,25 +23,28 @@ class SubmissionApi:
     @csrf_exempt
     @require_http_methods(["POST"])
     def presubmit(request):
-        body = json.loads(request.body)
-
-        submit_type = body["type"]
-        if submit_type != "url" and submit_type != "files":
-            return json_error_response("type not \"url\" or \"files\"")
-
+        files = request.FILES.getlist("files[]")
         data = []
-        if submit_type == "files":
-            for file in request.FILES.getlist("files[]"):
-                data.append({"data": file.file, "name": file.name})
-        elif submit_type == "url":
-            if "data" not in body:
-                return json_error_response("type not \"url\" or \"files\"")
+
+        if files:
+            for f in files:
+                data.append({"data": f.file, "name": f.name})
+
+            submit_type = "files"
+        else:
+            body = json.loads(request.body)
+            submit_type = body["type"]
+
+            if submit_type != "url" or "data" not in body:
+                return json_error_response("type not \"url\"")
 
             data = body["data"].split("\n")
 
-        submit_id = SubmissionController.presubmit(submit_type=submit_type, data=data)
+        if submit_type == "url" or submit_type == "files":
+            submit_id = SubmissionController.presubmit(submit_type=submit_type, data=data)
+            return redirect('submission/pre', submit_id=submit_id)
 
-        return redirect('submission/pre', submit_id=submit_id)
+        return json_error_response("submit failed")
 
     @api_post
     def submit(request, body):
