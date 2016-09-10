@@ -28,6 +28,37 @@ class IE(Package):
 
                 # "Set Up Windows Internet Explorer 8"
                 "DisableFirstRunCustomize": 1,
+
+		### added
+		"NoProtectedModeBanner": 1,
+		"NoUpdateCheck": 1,
+		"Start Page": "about:blank",
+		"Enable Browser Extensions": "yes",
+		"DoNotTrack": 0,
+		"NoProtectedModeBanner": 1,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\VersionManager",
+            {
+                "DownloadVersionList": 0,
+		"UpdateEnabled": 0,
+            },
+        ],
+        [   
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\PhishingFilter",
+            {   
+                "EnabledV9": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\TabbedBrowsing",
+            {
+                "NTPFirstRun": 1,
+		"UseMRUSwitching": "no",
             },
         ],
         [
@@ -45,6 +76,16 @@ class IE(Package):
             {
                 # Disable Security Settings Check.
                 "DisableSecuritySettingsCheck": 1,
+                # no automatic updates
+                "EnableAutoUpgrde": 0,
+            },
+        ],
+        [
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies",
+            {
+                "DisableAddonLoadTimePerformanceNotifications": 1,
+		"IgnoreFrameApprovalCheck": 1,
             },
         ],
         [
@@ -75,6 +116,9 @@ class IE(Package):
 
                 # "You are about to view pages over a secure connection."
                 "WarnOnZoneCrossing": 0,
+
+		"WarnonBadCertRecving": 0,
+		"WarnOnPostRedirect": 0,
             },
         ],
         [
@@ -92,6 +136,14 @@ class IE(Package):
                 # "Internet Explorer - Security Warning"
                 # "The publisher could not be verified."
                 "CheckExeSignatures": "no",
+		"RunInvalidSignatures": 1
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\0",
+            {
+                "1201": 0,
             },
         ],
     ]

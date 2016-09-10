@@ -11,6 +11,28 @@ from lib.common.abstracts import Package
 class Exe(Package):
     """EXE analysis package."""
 
+    REGKEYS = [
+        [
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Security Center",
+            {
+                # "Would you like Internet Explorer as default browser?"
+                "Check_Associations": "no",
+
+                # "Set Up Windows Internet Explorer 8"
+                "DisableFirstRunCustomize": 1,
+
+                ### added
+                "NoProtectedModeBanner": 1,
+                "NoUpdateCheck": 1,
+                "Start Page": "about:blank",
+                "Enable Browser Extensions": "yes",
+                "DoNotTrack": 0,
+                "NoProtectedModeBanner": 1,
+            },
+        ],
+    ]
+
     def start(self, path):
         args = self.options.get("arguments", "")
 
