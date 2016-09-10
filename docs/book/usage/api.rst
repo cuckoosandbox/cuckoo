@@ -154,6 +154,8 @@ each one. For details click on the resource name.
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_rereport`     | Re-run reporting for task associated with a given analysis task ID.                                              |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reboot`       | Reboot a given analysis task ID.                                                                                 |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`memory_get`         | Retrieves one memory dump file associated with a given analysis task ID.                                         |
@@ -171,6 +173,8 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview.                                           |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
++-----------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`exit`               | Shuts down the API server.                                                                                       |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------+
 
 .. _tasks_create_file:
@@ -225,13 +229,15 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
 * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
 * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
-* ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
-* ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
 * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
+* ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
+* ``unique`` *(optional)* - only submit samples that have not been analyzed before
+* ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
 
 **Status codes**:
 
 * ``200`` - no error
+* ``400`` - duplicated file detected (when using unique option)
 
 .. _tasks_create_url:
 
@@ -264,7 +270,7 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
     task_id = r.json()["task_id"]
 
-    # Add your code toerror checking if task_id is None.
+    # Add your code to error checking if task_id is None.
 
 **Example response**.
 
@@ -578,10 +584,43 @@ Re-run reporting for task associated with the specified task ID.
 * ``200`` - no error
 * ``404`` - task not found
 
+.. _tasks_reboot:
+
+/tasks/reboot
+-------------
+
+**GET /tasks/reboot/** *(int: id)* **
+
+Add a reboot task to database from an existing analysis ID.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/reboot/1
+
+**Example response**.
+
+.. code-block:: json
+
+    {
+        "task_id": 1,
+        "reboot_id": 3
+    }
+
+**Parameters**:
+
+* ``id`` *(required)* *(int)* - ID of the task
+
+**Status codes**:
+
+* ``200`` - success
+* ``404`` - error creating reboot task
+
 .. _memory_list:
 
 /memory/list
-------------------
+------------
 
 **GET /memory/list/** *(int: id)*
 
@@ -604,7 +643,7 @@ Returns a list of memory dump files or one memory dump file associated with the 
 .. _memory_get:
 
 /memory/get
-------------------
+-----------
 
 **GET /memory/get/** *(int: id)* **/** *(str: number)*
 
@@ -902,3 +941,24 @@ Returns VPN status.
 
 * ``200`` - show status
 * ``500`` - not available
+
+.. _exit:
+
+/exit
+-----
+
+**GET /exit**
+
+Shuts down the server if in debug mode and using the werkzeug server.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/exit
+
+**Status codes**:
+
+* ``200`` - success
+* ``403`` - this call can only be used in debug mode
+* ``500`` - error
