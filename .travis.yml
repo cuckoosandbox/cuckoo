@@ -9,7 +9,8 @@ before_install:
     - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev
 
 install:
-    - ONLYINSTALL=yes python setup.py install
+    - ONLYINSTALL=yes python setup.py develop
+    - pip install pytest pytest-cov coveralls
 
 script:
     # Create the Cuckoo Working Directory.
@@ -22,4 +23,7 @@ script:
     - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
 
     # Run tests from the "tests" directory.
-    - py.test
+    - py.test --cov=cuckoo
+
+after_success:
+    - coveralls

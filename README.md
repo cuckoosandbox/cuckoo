@@ -14,4 +14,5 @@ You can find a full documentation of the latest stable release [here](http://doc
 
 <hr />
 
-[![Build Status](https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=master)](https://travis-ci.org/cuckoosandbox/cuckoo)
+[![Build Status](https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=package)](https://travis-ci.org/cuckoosandbox/cuckoo)
+[![Coverage Status](https://coveralls.io/repos/github/cuckoosandbox/cuckoo/badge.svg?branch=package)](https://coveralls.io/github/cuckoosandbox/cuckoo?branch=package)
