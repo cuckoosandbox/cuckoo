@@ -60,7 +60,7 @@ In this example we just walk through all the accessed files in the summary and c
 if there is anything ending with "*.exe*": in that case it will return ``True``, meaning that
 the signature matched, otherwise return ``False``.
 
-the function ``on_complete`` is called at the end of the cuckoo signature process.
+The function ``on_complete`` is called at the end of the cuckoo signature process.
 Other function will be called before on specific events and help you to write
 more sophisticated and faster signatures.
 
