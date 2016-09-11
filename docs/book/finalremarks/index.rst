@@ -8,12 +8,12 @@ Links
     * `www.cuckoosandbox.org`_
     * `community.cuckoosandbox.org`_
     * `github.com/cuckoosandbox`_
-    * `www.malwr.com`_
+    * `malwr.com`_
 
 .. _`www.cuckoosandbox.org`: http://www.cuckoosandbox.org
 .. _`community.cuckoosandbox.org`: https://community.cuckoosandbox.org
 .. _`github.com/cuckoosandbox`: http://github.com/cuckoosandbox
-.. _`www.malwr.com`: http://www.malwr.com
+.. _`malwr.com`: https://malwr.com
 
 .. _join_the_discussion:
 
