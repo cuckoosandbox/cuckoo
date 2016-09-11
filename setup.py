@@ -98,7 +98,7 @@ setuptools.setup(
         "pymisp==2.4.50",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
-        "python-magic==0.4.6",
+        "python-magic==0.4.12",
         "SQLAlchemy==1.0.8",
         "wakeonlan==0.2.2",
     ],

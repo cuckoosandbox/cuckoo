@@ -6,6 +6,7 @@
 import bs4
 import datetime
 import logging
+import magic
 import oletools.olevba
 import os
 import peepdf.JSAnalysis
@@ -15,12 +16,6 @@ import peutils
 import re
 import struct
 import zipfile
-
-try:
-    import magic
-    HAVE_MAGIC = True
-except ImportError:
-    HAVE_MAGIC = False
 
 try:
     import M2Crypto
@@ -60,25 +55,7 @@ class PortableExecutable(object):
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        if not HAVE_MAGIC:
-            return None
-
-        try:
-            ms = magic.open(magic.MAGIC_NONE)
-            ms.load()
-            file_type = ms.buffer(data)
-        except:
-            try:
-                file_type = magic.from_buffer(data)
-            except Exception:
-                return None
-        finally:
-            try:
-                ms.close()
-            except:
-                pass
-
-        return file_type
+        return magic.from_buffer(data)
 
     def _get_peid_signatures(self):
         """Gets PEID signatures.

@@ -9,6 +9,7 @@ import re
 import tempfile
 
 from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.processing.static import PortableExecutable
 
 class TestDictionary:
     def setup_method(self, method):
@@ -76,6 +77,20 @@ class TestFile:
 
     def teardown(self):
         os.remove(self.path)
+
+class TestMagic(object):
+    def test_magic1(self):
+        f = File("tests/files/foo.txt")
+        assert "ASCII text" in f.get_type()
+        assert f.get_content_type() == "text/plain"
+
+    def test_magic2(self):
+        pe = PortableExecutable(None)
+        assert "ASCII text" in pe._get_filetype("hello world")
+
+    def test_magic3(self):
+        assert "Python script" in File(__file__).get_type()
+        assert File(__file__).get_content_type() == "text/x-python"
 
 def test_regex():
     r = re.findall(URL_REGEX, "foo http://google.com/search bar")

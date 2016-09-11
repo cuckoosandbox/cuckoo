@@ -7,20 +7,14 @@ import androguard
 import binascii
 import hashlib
 import logging
+import magic
 import mmap
 import os
 import pefile
 import re
-import subprocess
 
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.misc import cwd
-
-try:
-    import magic
-    HAVE_MAGIC = True
-except ImportError:
-    HAVE_MAGIC = False
 
 try:
     import pydeep
@@ -228,64 +222,13 @@ class File(object):
         """Get MIME file type.
         @return: file type.
         """
-        file_type = None
-        if HAVE_MAGIC:
-            try:
-                ms = magic.open(magic.MAGIC_NONE)
-                ms.load()
-                file_type = ms.file(self.file_path)
-            except:
-                try:
-                    file_type = magic.from_file(self.file_path)
-                except Exception as e:
-                    log.debug("Error getting magic from file %s: %s",
-                              self.file_path, e)
-            finally:
-                try:
-                    ms.close()
-                except:
-                    pass
-
-        if file_type is None:
-            try:
-                p = subprocess.Popen(["file", "-b", self.file_path],
-                                     stdout=subprocess.PIPE)
-                file_type = p.stdout.read().strip()
-            except Exception as e:
-                log.debug("Error running file(1) on %s: %s",
-                          self.file_path, e)
-
-        return file_type
+        return magic.from_file(self.file_path)
 
     def get_content_type(self):
         """Get MIME content file type (example: image/jpeg).
         @return: file content type.
         """
-        file_type = None
-        if HAVE_MAGIC:
-            try:
-                ms = magic.open(magic.MAGIC_MIME)
-                ms.load()
-                file_type = ms.file(self.file_path)
-            except:
-                try:
-                    file_type = magic.from_file(self.file_path, mime=True)
-                except:
-                    pass
-            finally:
-                try:
-                    ms.close()
-                except:
-                    pass
-
-        if file_type is None:
-            try:
-                args = ["file", "-b", "--mime-type", self.file_path]
-                file_type = subprocess.check_output(args).strip()
-            except:
-                pass
-
-        return file_type
+        return magic.from_file(self.file_path, mime=True)
 
     def get_exported_functions(self):
         """Get the exported function names of this PE file."""
