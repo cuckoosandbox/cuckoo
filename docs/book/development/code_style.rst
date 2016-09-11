@@ -172,4 +172,4 @@ attention must be placed when fixing bugs: it's good practice to write unit
 tests to reproduce the bug.
 All unit tests and fixtures are placed in the tests folder in the Cuckoo
 root.
-We adopted `Nose <http://nose.readthedocs.org/en/latest/>`_ as unit testing framework.
+We have adopted `Pytest <http://doc.pytest.org/en/latest/>`_ as unit testing framework.
