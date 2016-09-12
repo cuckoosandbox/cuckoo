@@ -198,9 +198,13 @@ class ElasticSearch(Report):
         # Index target information, the behavioral summary, and
         # VirusTotal results.
         self.do_index({
+            "cuckoo_node": self.options.get("cuckoo_node"), 
             "target": results.get("target"),
             "summary": results.get("behavior", {}).get("summary"),
             "virustotal": results.get("virustotal"),
+            "irma": results.get("irma"),
+            "signatures": results.get("signatures"),
+            "dropped": results.get("dropped"),
         })
 
         # Index the API calls.
