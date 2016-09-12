@@ -93,7 +93,52 @@ def tasks_create_file():
     )
 
     return jsonify(task_id=task_id)
+    
+@app.route("/tasks/create/downloadfile", methods=["POST"])
+@app.route("/v1/tasks/create/downloadfile", methods=["POST"])
+def tasks_create_downloadfile():
+    url = request.form.get("url")
+    data = requests.get(url).content
 
+    package = request.form.get("package", "")
+    timeout = request.form.get("timeout", "")
+    priority = request.form.get("priority", 1)
+    options = request.form.get("options", "")
+    machine = request.form.get("machine", "")
+    platform = request.form.get("platform", "")
+    tags = request.form.get("tags", None)
+    custom = request.form.get("custom", "")
+    owner = request.form.get("owner", "")
+    memory = request.form.get("memory", False)
+    clock = request.form.get("clock", None)
+
+    if memory:
+        memory = True
+    enforce_timeout = request.form.get("enforce_timeout", False)
+
+    if enforce_timeout:
+        enforce_timeout = True
+
+    temp_file_path = store_temp_file(data.read(), data.filename)
+
+    task_id = db.add_path(
+        file_path=temp_file_path,
+        package=package,
+        timeout=timeout,
+        priority=priority,
+        options=options,
+        machine=machine,
+        platform=platform,
+        tags=tags,
+        custom=custom,
+        owner=owner,
+        memory=memory,
+        enforce_timeout=enforce_timeout,
+        clock=clock
+    )
+
+    return jsonify(task_id=task_id)
+    
 @app.route("/tasks/create/url", methods=["POST"])
 @app.route("/v1/tasks/create/url", methods=["POST"])
 def tasks_create_url():
