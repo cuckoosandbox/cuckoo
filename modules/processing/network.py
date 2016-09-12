@@ -111,6 +111,18 @@ class Pcap(object):
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
+        # List containing all whitelist entries.
+        self.whitelist = self._build_whitelist()
+
+    def _build_whitelist(self):
+        result = []
+        f = open('/srv/cuckoo/data/whitelist/domain.txt', 'rb')
+        while True:
+            line = f.readline()
+            if not line: break
+            result.append(line.split('\n')[0])
+        
+        return result
 
     def _dns_gethostbyname(self, name):
         """Get host by name wrapper.
@@ -292,6 +304,10 @@ class Pcap(object):
             except IndexError:
                 return False
 
+            if q_name in self.whitelist:
+                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
+                return True
+
             # DNS RR type mapping.
             # See: http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
             # See: https://github.com/kbandla/dpkt/blob/master/dpkt/dns.py#L42
@@ -399,6 +415,10 @@ class Pcap(object):
         for entry in self.unique_domains:
             if entry["domain"] == domain:
                 return
+
+        if domain in self.whitelist:
+            log.debug("Domain {0} is whitelisted. Skipping ...".format(domain))
+            return
 
         self.unique_domains.append({"domain": domain,
                                     "ip": self._dns_gethostbyname(domain)})
