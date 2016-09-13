@@ -126,7 +126,15 @@ class FileTree {
         let data_tmp = [];
         for (let key in data) {
             if (data.hasOwnProperty(key)) {
-                let converted = this._convert_entry(data[key]);
+                let entry = data[key];
+                let converted;
+
+                if(entry.hasOwnProperty("type") && entry.type == "container"){
+                    converted = this._convert_entry(data[key], entry.filename);
+                } else {
+                    converted = this._convert_entry(data[key]);
+                }
+
                 data_tmp.push(converted);
             }
         }
@@ -134,13 +142,15 @@ class FileTree {
         return data_tmp;
     }
 
-    _convert_entry(entry){
+    _convert_entry(entry, parent_archive){
         let _self = this;
 
         // Temporary object
         let obj = {
             filepath: entry.filepath,
             filename: entry.filename,
+            relapath: entry.relapath,
+            extrpath: entry.extrpath,
             type: entry.type,
             state: false, // pre-selected tree item
             size: entry.size,
@@ -148,6 +158,14 @@ class FileTree {
             opened: false,
             description: entry.description
         };
+
+        if(obj.extrpath){
+            obj.filepath = `${parent_archive}/${obj.extrpath.join("/")}`;
+        } else if(!obj.filepath && obj.relapath){
+            obj.filepath = obj.relapath;
+        } else if (!obj.relapath){
+            obj.relapath = obj.filepath;
+        }
 
         if(obj.type != "directory"){
             // simplify filters
@@ -189,6 +207,11 @@ class FileTree {
                     _self.stats.executables += 1;
                 }
             });
+
+            if(entry.selected) {
+                obj.state = true;
+                _self.stats.executables += 1;
+            }
         }
 
         // Build JSTree JSON return object
@@ -245,7 +268,7 @@ class FileTree {
         if(entry.children.length >= 1){
             entry.children.forEach(function(e){
                 if(!data.hasOwnProperty("children")) { data.children = []; }
-                data.children.push(_self._convert_entry(e));
+                data.children.push(_self._convert_entry(e, parent_archive));
             })
         }
 

@@ -57,7 +57,7 @@ class SubmissionApi:
                 "_checkboxes": {}
             }
         }
-        
+
         for option in ["route", "package", "timeout", "options", "priority", "custom", "tags"]:
             if option not in body["form"]:
                 return json_error_response("Expected %s in parameter \"form\", none found" % option)

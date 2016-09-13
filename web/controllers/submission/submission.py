@@ -9,6 +9,7 @@ import requests
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.files import Storage, Files
+from lib.cuckoo.common.config import Config
 
 from sflock import unpack
 
@@ -28,6 +29,7 @@ class SubmissionController:
         if submit_type is 'url': a list of strings containing either
         @return: presubmission id
         """
+        cfg = Config("processing")
         db = Database()
 
         if submit_type == "files":
@@ -39,13 +41,15 @@ class SubmissionController:
             for line in data:
                 if not line:
                     continue
+
                 elif line.startswith("http://") or line.startswith("https://"):
                     # @TO-DO: analyse url
                     pass
-                elif len(line) == 32 or len(line) == 40 or len(line) == 64 or len(line) == 128:
+                elif len(line) in (32, 40, 64, 128):
                     try:
                         r = requests.get("https://www.virustotal.com/vtapi/v2/file/download", params={
-                            "apikey": "key", "hash": line
+                            "apikey": cfg.virustotal.get("key"),
+                            "hash": line
                         })
                     except:
                         continue
@@ -63,8 +67,10 @@ class SubmissionController:
                     })
 
             if files:
-                tmp_path = Files.tmp_put(files=data)
+                tmp_path = Files.tmp_put(files=files)
                 return db.add_submit(tmp_path)
+
+            return
 
         raise Exception("Unknown submit type")
 

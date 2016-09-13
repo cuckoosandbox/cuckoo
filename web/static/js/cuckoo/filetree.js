@@ -140,7 +140,15 @@ var FileTree = function () {
             var data_tmp = [];
             for (var key in data) {
                 if (data.hasOwnProperty(key)) {
-                    var converted = this._convert_entry(data[key]);
+                    var entry = data[key];
+                    var converted = void 0;
+
+                    if (entry.hasOwnProperty("type") && entry.type == "container") {
+                        converted = this._convert_entry(data[key], entry.filename);
+                    } else {
+                        converted = this._convert_entry(data[key]);
+                    }
+
                     data_tmp.push(converted);
                 }
             }
@@ -149,13 +157,15 @@ var FileTree = function () {
         }
     }, {
         key: "_convert_entry",
-        value: function _convert_entry(entry) {
+        value: function _convert_entry(entry, parent_archive) {
             var _self = this;
 
             // Temporary object
             var obj = {
                 filepath: entry.filepath,
                 filename: entry.filename,
+                relapath: entry.relapath,
+                extrpath: entry.extrpath,
                 type: entry.type,
                 state: false, // pre-selected tree item
                 size: entry.size,
@@ -163,6 +173,14 @@ var FileTree = function () {
                 opened: false,
                 description: entry.description
             };
+
+            if (obj.extrpath) {
+                obj.filepath = parent_archive + "/" + obj.extrpath.join("/");
+            } else if (!obj.filepath && obj.relapath) {
+                obj.filepath = obj.relapath;
+            } else if (!obj.relapath) {
+                obj.relapath = obj.filepath;
+            }
 
             if (obj.type != "directory") {
                 // simplify filters
@@ -208,6 +226,11 @@ var FileTree = function () {
                         _self.stats.executables += 1;
                     }
                 });
+
+                if (entry.selected) {
+                    obj.state = true;
+                    _self.stats.executables += 1;
+                }
             }
 
             // Build JSTree JSON return object
@@ -266,7 +289,7 @@ var FileTree = function () {
                     if (!data.hasOwnProperty("children")) {
                         data.children = [];
                     }
-                    data.children.push(_self._convert_entry(e));
+                    data.children.push(_self._convert_entry(e, parent_archive));
                 });
             }
 

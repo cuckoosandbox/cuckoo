@@ -1729,7 +1729,7 @@ div.loading {
 }
 
 .dndupload #uploader {
-    outline: 1px dashed #b1b1b1;
+    outline: 1px dashed #5c5c5c;
 }
 
 .dndupload progress::-webkit-progress-bar { background: #4b4b4b; /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
