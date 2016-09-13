@@ -362,7 +362,7 @@ class Droidmon(Processing):
             return self.droidmon
 
         results = {}
-        log_path = self.logs_path + "/droidmon.log"
+        log_path = os.path.join(self.logs_path, "droidmon.log")
         if not os.path.exists(log_path):
             return results
 
