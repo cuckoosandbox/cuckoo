@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
+
     {% if report.estimate_hour and report.estimate_day %}
         <div class="alert alert-info" style="text-align: center;font-size: 22px;">
             Estimating ~<b>{{ report.estimate_hour }}</b> analysis per hour, <b>{{ report.estimate_day }}</b> per day.
@@ -8,70 +9,16 @@
     {% endif %}
 
     <div class="row">
-        <div class="col-xs-8">
-            <div class="panel panel-primary" id="panel_create-analysis">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Submit URL(s)/Hashes</h3>
-                </div>
-                <div class="panel-body" style="padding:14px;">
-                    <textarea id="presubmit_urlhash" class="form-control" placeholder="Url/Hash - one per line"
-                              style="min-height: 148px;border: 1px dashed #797979 !important;"></textarea>
-
-                    <div class="pull-right" style="padding-top:10px;">
-                        <input id="testyy" type="submit" class="btn btn-primary" value="Submit"/>
-                    </div>
-
-                    <script>
-                        $(document).ready(function () {
-                            $("input#testyy").click(function () {
-                                var urls = $("textarea#presubmit_urlhash").val();
-                                if (urls == "") {
-                                    return;
-                                }
-
-                                CuckooWeb.api_post("/submit/api/presubmit", {
-                                    "data": urls,
-                                    "type": "url"
-                                }, function (data) {
-                                    console.log(data);
-                                })
-                            });
-                        });
-                    </script>
-                </div>
+        <div class="col-xs-6">
+            <div class="jumbotron" style="text-align: center;">
+                <h1>{{ report.total_tasks }}</h1>
+                Total tasks
             </div>
         </div>
-
-        <div class="col-xs-4">
-            <div class="panel panel-primary" id="panel_create-analysis">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Upload File(s)</h3>
-                </div>
-                <div class="panel-body" style="padding:14px;">
-                    <script src="{% static "js/cuckoo/dndupload.js" %}"></script>
-
-                    <div id="dndsubmit" style="height:192px;"></div>
-
-                    <script>
-                        $(document).ready(function () {
-                            $(document).on("submit", "#uploader", function (e) {
-                                e.preventDefault();
-                            });
-
-                            function dndsuccess(data) {
-                                window.location.href = data.responseURL;
-                            }
-
-                            var dndupload = new DndUpload(
-                                    "div#dndsubmit",
-                                    "/submit/api/presubmit",
-                                    dndsuccess
-                            );
-
-                            dndupload.draw();
-                        });
-                    </script>
-                </div>
+        <div class="col-xs-6">
+            <div class="jumbotron" style="text-align: center;">
+                <h1>{{ report.total_samples }}</h1>
+                Total samples
             </div>
         </div>
 
@@ -96,19 +43,6 @@
                     {% endfor %}
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="col-xs-4">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_tasks }}</h1>
-                Total tasks
-            </div>
-        </div>
-        <div class="col-xs-4">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_samples }}</h1>
-                Total samples
             </div>
         </div>
     </div>

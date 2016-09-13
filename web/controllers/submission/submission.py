@@ -48,7 +48,7 @@ class SubmissionController:
                 elif len(line) in (32, 40, 64, 128):
                     try:
                         r = requests.get("https://www.virustotal.com/vtapi/v2/file/download", params={
-                            "apikey": cfg.virustotal.get("key"),
+                            "apikey": cfg.virustotal.key,
                             "hash": line
                         })
                     except:

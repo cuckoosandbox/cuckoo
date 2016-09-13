@@ -61,7 +61,7 @@ class SubmissionRoutes:
         }
 
         values.update(kwargs)
-        return render(request, "submission/test.html", values)
+        return render(request, "submission/submit.html", values)
 
     @staticmethod
     def presubmit(request, submit_id):
