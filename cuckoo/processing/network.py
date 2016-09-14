@@ -746,13 +746,12 @@ class NetworkAnalysis(Processing):
                         self.pcap_path)
             return results
 
-        if os.path.getsize(self.pcap_path) == 0:
+        if not os.path.getsize(self.pcap_path):
             log.error("The PCAP file at path \"%s\" is empty." % self.pcap_path)
             return results
 
         # PCAP file hash.
-        if os.path.exists(self.pcap_path):
-            results["pcap_sha256"] = File(self.pcap_path).get_sha256()
+        results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if Config().processing.sort_pcap:
