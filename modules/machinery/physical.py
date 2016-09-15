@@ -105,6 +105,9 @@ class Physical(Machinery):
         if self._status(label) == self.RUNNING:
             log.debug("Rebooting machine: %s.", label)
             machine = self._get_machine(label)
+            
+            url = "http://{0}:{1}".format(machine.ip, CUCKOO_GUEST_PORT)
+            server = TimeoutServer(url, allow_none=True, timeout=60)
 
             args = [
                 "net", "rpc", "shutdown", "-I", machine.ip,
@@ -113,7 +116,17 @@ class Physical(Machinery):
             output = subprocess.check_output(args)
 
             if "Shutdown of remote machine succeeded" not in output:
-                raise CuckooMachineError("Unable to initiate RPC request")
+                log.warning("Unable to restart with RPC request. Trying to issue request to agent.")
+                try: 
+                    is_restart = server.restart()
+                    if is_restart == True: 
+                        log.info("Shutdown of remote machine via agent succeeded.")
+                    else:
+                        log.critical("Shutdown of remote machine via agent failed.")
+                        raise CuckooMachineError("Unable to initiate RPC request.")
+                catch:
+                    log.critical("Exception occured during call to agent.")
+                    raise CuckooMachineError("Unable to initiate RPC request.")
             else:
                 log.debug("Reboot success: %s." % label)
 
