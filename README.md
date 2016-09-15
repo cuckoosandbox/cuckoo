@@ -1,4 +1,8 @@
-![Cuckoo](http://cuckoosandbox.org/graphic/cuckoo.png)
+![Cuckoo](http://cuckoosandbox.org/graphic/cuckoo.png) - Barkly Fork
+----
+If you've found this page you're probably looking for forked changes to Cuckoo.  In order to keep our fork as closely in line with the project, we keep master clean with any changes.  Develop is a merge of our feature branches that have not been accepted by the greater Cuckoo community. Feature branches will exist until they're either accepted or replaced.
+
+----
 
 In three words, [Cuckoo Sandbox](http://www.cuckoosandbox.org) is a malware analysis system.
 
