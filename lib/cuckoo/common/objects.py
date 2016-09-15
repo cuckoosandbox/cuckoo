@@ -348,48 +348,49 @@ class File(object):
     def get_apk_entry(self):
         """Get the entry point for this APK. The entry point is denoted by a
         package and main activity name."""
-        filetype = self.get_type()
-        if "Zip archive data" not in filetype and "Java archive data" not in filetype:
-            return "", ""
+        
+	
+	cmd123 = [
+		"apktool",
+		"d",
+		"%s" % self.file_path
+	]
 
-        if not HAVE_ANDROGUARD:
-            if not File.notified_androguard:
-                File.notified_androguard = True
-                log.warning("Unable to import androguard (`pip install androguard`)")
-            return "", ""
+	print("exctrating the apk by apktool")
+	subprocess.call(cmd123, stdin=None, stdout=None, stderr=None, shell=False)
+	print("apk_entry path:"+ str(cmd123))
 
-        try:
-            a = androguard.core.bytecodes.apk.APK(self.file_path)
-            if not a.is_valid_APK():
-                return "", ""
 
-            package = a.get_package()
-            if not package:
-                log.warning("Unable to find the main package, this analysis "
-                            "will probably fail.")
-                return "", ""
+	list_path=self.file_path.split('/')
+	out_put_folder=list_path[len(list_path)-1]
 
-            main_activity = a.get_main_activity()
-            if main_activity:
-                log.debug("Picked package %s and main activity %s.",
-                          package, main_activity)
-                return package, main_activity
+	if out_put_folder[-4:]==".apk":
+		out_put_folder=out_put_folder[:-4]
+	else:
+		out_put_folder=out_put_folder+".out"
+	
 
-            activities = a.get_activities()
-            for activity in activities:
-                if "main" in activity or "start" in activity:
-                    log.debug("Choosing package %s and main activity due to "
-                              "its name %s.", package, activity)
-                    return package, activity
+	manifest_path= out_put_folder +"/AndroidManifest.xml"
 
-            if activities and activities[0]:
-                log.debug("Picked package %s and the first activity %s.",
-                          package, activities[0])
-                return package, activities[0]
-        except Exception as e:
-            log.warning("Error extracting package and main activity: %s.", e)
+	print("\n\n"+manifest_path+"\n\n")
 
-        return "", ""
+
+	tree = ET.parse(manifest_path)
+	root = tree.getroot()
+	package_name=root.get('package')
+
+	print("\n\n"+package_name+"\n\n")
+
+	cmd124=[
+	       "rm",
+	       "-rf",
+	       "%s" %out_put_folder
+	]
+	subprocess.call(cmd124, stdin=None, stdout=None, stderr=None, shell=False)
+
+	return package_name , ""
+
+
 
     def _yara_encode_string(self, s):
         # Beware, spaghetti code ahead.

@@ -72,7 +72,7 @@ class Avd(Machinery):
         """
         log.debug("Starting vm %s" % label)
 
-        self.duplicate_reference_machine(label)
+        #self.duplicate_reference_machine(label)
         self.start_emulator(label, task)
         self.port_forward(label)
         self.start_agent(label)
@@ -177,8 +177,8 @@ class Avd(Machinery):
         ]
 
         # In headless mode we remove the skin, audio, and window support.
-        if self.options.avd.mode == "headless":
-            cmd += ["-no-skin", "-no-audio", "-no-window"]
+#        if self.options.avd.mode == "headless":
+#            cmd += ["-no-skin", "-no-audio", "-no-window"]
 
         # If a proxy address has been provided for this analysis, then we have
         # to pass the proxy address along to the emulator command. The

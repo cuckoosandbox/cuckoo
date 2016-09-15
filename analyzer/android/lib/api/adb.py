@@ -23,14 +23,19 @@ def install_sample(path):
 
     log.info("Installed sample: %r", output)
 
-def execute_sample(package, activity):
+def execute_sample(package):
     """Execute the sample on the emulator via adb"""
     try:
-        package_activity = "%s/%s" % (package, activity)
-        args = [
-            "/system/bin/sh", "/system/bin/am", "start",
-            "-n", package_activity,
+                args = [
+	    "/system/bin/sh",
+            "/system/bin/monkey",
+	    "-p", 
+	    "%s" % package,
+	    "-c",
+            "android.intent.category.LAUNCHER",
+	    "1",
         ]
+
         output = subprocess.check_output(args)
     except subprocess.CalledProcessError as e:
         log.error("Error executing package activity: %r", e)
