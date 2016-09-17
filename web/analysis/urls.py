@@ -39,6 +39,7 @@ urlpatterns = [
         views.moloch),
     url(r"^import/$", views.import_analysis),
     url(r"^api/recent/$", AnalysisApi.recent),
+    url(r"^api/recent_stats/$", AnalysisApi.recent_stats),
     url(r"^api/export_estimate_size/$", ExportApi.export_estimate_size),
     url(r"^api/export_get_files/$", ExportApi.get_files),
     url(r"^api/feedback_send/$", FeedbackApi.send),

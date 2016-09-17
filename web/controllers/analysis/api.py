@@ -4,9 +4,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import json
 import pymongo
+import calendar
+from datetime import datetime, timedelta
 
+import dateutil.relativedelta
+from sqlalchemy import asc
 from django.conf import settings
 from django.http import JsonResponse
 
@@ -102,6 +105,66 @@ class AnalysisApi:
         tasks = sorted(tasks, key=lambda k: k["id"], reverse=True)
 
         return JsonResponse(tasks, safe=False)
+
+    @api_post
+    def recent_stats(request, body):
+        """
+        Fetches the number of analysis over a
+        given period for the "failed" and
+        "successful" states. Values are
+        returned in months.
+        :param days: integer; the amount of days to go back in time starting from today.
+        :return: A list of months and their statistics
+        """
+        now = datetime.now()
+        days = body.get("days", 365)
+
+        if not isinstance(days, int):
+            return json_error_response("parameter \"days\" not an integer")
+
+        db = Database()
+        q = db.Session().query(Task)
+        q = q.filter(Task.added_on.between(now - timedelta(days=days), now))
+        q = q.order_by(asc(Task.added_on))
+        tasks = q.all()
+
+        def _rtn_structure(start):
+            _data = []
+
+            for i in range(0, 12):
+                if (now - start).total_seconds() < 0:
+                    return _data
+
+                _data.append({
+                    "month": start.month,
+                    "year": start.year,
+                    "month_human": calendar.month_name[start.month],
+                    "num": 0
+                })
+
+                start = start + dateutil.relativedelta.relativedelta(months=1)
+
+            return _data
+
+        if not tasks:
+            return json_error_response("No tasks found")
+
+        data = {
+            "analysis": _rtn_structure(tasks[0].added_on),
+            "failed": _rtn_structure(tasks[0].added_on)
+        }
+
+        for task in tasks:
+            added_on = task.added_on
+            success = "analysis" if task.status == "reported" else "failed"
+
+            entry = next((z for z in data[success] if
+                          z["month"] == added_on.month and
+                          z["year"] == added_on.year), None)
+            if entry:
+                entry["num"] += 1
+
+        return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_post
     def behavior_get_processes(request, body):

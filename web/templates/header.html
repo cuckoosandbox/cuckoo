@@ -34,6 +34,9 @@
 <link href="{% static "css/style.css" %}" rel="stylesheet">
 <link href="{% static "css/analysis_sidebar.css" %}" rel="stylesheet">
 
+<script src="{% static "js/misc/d3.v3.min.js"%}"></script>
+<script src="{% static "js/misc/plotly.min.js"%}"></script>
+
 {% if request.COOKIES.theme == "night" %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default-dark/style.min.css"/>
     <link href="{% static "css/night.css" %}" rel="stylesheet">

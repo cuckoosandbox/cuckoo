@@ -1876,3 +1876,28 @@ table > tbody > tr:nth-child(even){
     border-color: #162c56 !important;
     color: #e8e8e8 !important;
 }
+
+/* cyborg */
+.plotly>.svg-container>.main-svg{
+	background: rgba(255,255,255,0) !important;
+}
+
+.plotly>.svg-container g.subplot>rect{
+    fill: rgba(255, 255, 255, 0) !important;
+}
+
+.plotly>.svg-container text{
+    fill:white !important;
+}
+
+.plotly>.svg-container path.xgrid, .plotly>.svg-container path.ygrid{
+    stroke: rgb(83, 83, 83) !important;
+}
+
+.plotly>.svg-container g.legend>rect.bg{
+    fill: rgba(255,255,255, 0) !important;
+}
+
+.plotly>.svg-container rect.drag{
+    pointer-events: none !important;
+}

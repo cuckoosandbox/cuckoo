@@ -86,4 +86,8 @@ function alertbox(msg, context, attr_id) {
     return '<div ' + attr_id + ' class="alert ' + context + ' signature">' + msg + '</div>';
 }
 
+String.prototype.capitalize = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
 //# sourceMappingURL=app.js.map
