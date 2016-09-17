@@ -13,7 +13,7 @@ from lib.api.process import subprocess_checkcall
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import NTDLL, UNICODE_STRING
 from lib.common.rand import random_string
-from lib.common.registry import set_regkey
+from lib.common.registry import set_regkey, del_regkey
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class LoadZer0m0n(Auxiliary):
         self.set_regkey(random_name, "Type", _winreg.REG_DWORD, 1)
         self.set_regkey(random_name, "ErrorControl", _winreg.REG_DWORD, 1)
         self.load_driver(random_name)
+        self.del_regkeys(random_name)
 
         log.info("Successfully loaded the zer0m0n kernel driver.")
 
@@ -69,6 +70,22 @@ class LoadZer0m0n(Auxiliary):
             _winreg.HKEY_LOCAL_MACHINE,
             "SYSTEM\\CurrentControlSet\\Services\\%s" % random_name,
             key, type_, value
+        )
+
+    def del_regkeys(self, random_name):
+        del_regkey(
+            _winreg.HKEY_LOCAL_MACHINE,
+            "SYSTEM\\CurrentControlSet\\Services\\%s\\Enum" % random_name
+        )
+
+        del_regkey(
+            _winreg.HKEY_LOCAL_MACHINE,
+            "SYSTEM\\CurrentControlSet\\Services\\%s\\Security" % random_name
+        )
+
+        del_regkey(
+            _winreg.HKEY_LOCAL_MACHINE,
+            "SYSTEM\\CurrentControlSet\\Services\\%s" % random_name
         )
 
     def load_driver(self, random_name):
