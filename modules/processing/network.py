@@ -15,7 +15,7 @@ import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
+from lib.cuckoo.common.constants import LATEST_HTTPREPLAY, CUCKOO_ROOT
 from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
 from lib.cuckoo.common.objects import File
