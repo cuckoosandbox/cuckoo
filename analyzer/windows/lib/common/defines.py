@@ -185,3 +185,10 @@ class SYSTEMTIME(Structure):
         ("wSecond", WORD),
         ("wMilliseconds", WORD),
     ]
+
+class UNICODE_STRING(Structure):
+    _fields_ = [
+        ("Length", c_ushort),
+        ("MaximumLength", c_ushort),
+        ("Buffer", c_wchar_p),
+    ]

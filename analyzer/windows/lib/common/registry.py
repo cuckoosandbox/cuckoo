@@ -4,20 +4,16 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
+import struct
 import _winreg
 
-from ctypes import windll, POINTER, byref, Structure, pointer
+from ctypes import windll, POINTER, byref, pointer
 from ctypes import c_ushort, c_wchar_p, c_void_p, create_string_buffer
 from ctypes.wintypes import HANDLE, DWORD, LPCWSTR, ULONG, LONG
 
-log = logging.getLogger(__name__)
+from lib.common.defines import UNICODE_STRING
 
-class UNICODE_STRING(Structure):
-    _fields_ = [
-        ("Length", c_ushort),
-        ("MaximumLength", c_ushort),
-        ("Buffer", c_wchar_p),
-    ]
+log = logging.getLogger(__name__)
 
 RegOpenKeyExW = windll.advapi32.RegOpenKeyExW
 RegOpenKeyExW.argtypes = HANDLE, LPCWSTR, DWORD, ULONG, POINTER(HANDLE)
@@ -90,8 +86,15 @@ def regkey_exists(rootkey, subkey):
 def set_regkey(rootkey, subkey, name, type_, value):
     if type_ == _winreg.REG_SZ:
         value = unicode(value)
-    if type_ == _winreg.REG_MULTI_SZ:
+        length = len(value) * 2 + 2
+    elif type_ == _winreg.REG_MULTI_SZ:
         value = u"\u0000".join(value) + u"\u0000\u0000"
+        length = len(value) * 2 + 2
+    elif type_ == _winreg.REG_DWORD:
+        value = struct.pack("I", value)
+        length = 4
+    else:
+        length = len(value)
 
     res_handle = HANDLE()
     res = RegCreateKeyExW(
@@ -99,7 +102,7 @@ def set_regkey(rootkey, subkey, name, type_, value):
         0, byref(res_handle), None
     )
     if not res:
-        RegSetValueExW(res_handle, name, 0, type_, value, len(value))
+        RegSetValueExW(res_handle, name, 0, type_, value, length)
         RegCloseKey(res_handle)
 
 def set_regkey_full(regkey, type_, value):

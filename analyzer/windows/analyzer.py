@@ -29,7 +29,7 @@ from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
-from lib.core.privileges import grant_debug_privilege
+from lib.core.privileges import grant_privilege
 from lib.core.startup import init_logging, set_clock
 from modules import auxiliary
 
@@ -436,7 +436,8 @@ class Analyzer(object):
         """Prepare env for analysis."""
         # Get SeDebugPrivilege for the Python process. It will be needed in
         # order to perform the injections.
-        grant_debug_privilege()
+        grant_privilege("SeDebugPrivilege")
+        grant_privilege("SeLoadDriverPrivilege")
 
         # Initialize logging.
         init_logging()
