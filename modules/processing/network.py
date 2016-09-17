@@ -116,7 +116,10 @@ class Pcap(object):
 
     def _build_whitelist(self):
         result = []
-        f = open('/srv/cuckoo/data/whitelist/domain.txt', 'rb')
+        whitelist_path = os.path.join(
+            CUCKOO_ROOT, "data", "whitelist", "domain.txt"
+        )
+        f = open(whitelist_path, 'rb')
         while True:
             line = f.readline()
             if not line: break
