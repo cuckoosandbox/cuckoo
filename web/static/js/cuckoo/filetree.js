@@ -240,7 +240,7 @@ var FileTree = function () {
                 a_attr: {}
             };
 
-            data.a_attr.filepath = obj.filepath;
+            data.a_attr.filepath = obj.extrpath ? obj.extrpath : [obj.filepath];
             data.a_attr.sha256 = entry.sha256;
 
             if (obj.duplicate) {
@@ -319,6 +319,10 @@ var FileTree = function () {
         value: function selected() {
             var files = [];
             $(this.sel_target).jstree("get_checked", true, true).forEach(function (e) {
+                if (!e.a_attr.hasOwnProperty("filetree_type") || e.a_attr.filetree_type == "container" || e.a_attr.filetree_type == "directory") {
+                    return true;
+                }
+
                 files.push({
                     "filepath": e.a_attr.filepath,
                     "filename": e.text,
