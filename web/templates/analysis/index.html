@@ -23,7 +23,7 @@
 
                     $('.nav_container>div#item>a[data-filter^="score"]').each(function(i, obj){
                         obj = $(obj);
-                        let uid = obj.attr('data-filter');
+                        var uid = obj.attr('data-filter');
 
                         if(uid != score_choice){
                             obj.parent().removeClass('active');

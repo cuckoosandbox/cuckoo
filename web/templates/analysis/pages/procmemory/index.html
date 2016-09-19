@@ -19,14 +19,17 @@
                                 {% endif %}
 
                                 {% if proc.extracted %}
-                                    <b>Extracted/injected images (may contain unpacked executables)</b>
-                                    <ul>
-                                    {% for extracted in proc.extracted %}
-                                        {% if extracted.extracted_id %}
-                                        <li><a href="{% url "analysis.views.file" "procmem_extracted" extracted.extracted_id %}" class="btn btn-primary btn-small">Download</a></li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
+                                    <p>
+                                        <b>Extracted/injected images</b> <small>(may contain unpacked executables)</small>
+                                        <br>
+                                        {% for extracted in proc.extracted %}
+                                            {% if extracted.extracted_id %}
+                                                <a href="{% url "analysis.views.file" "procmem_extracted" extracted.extracted_id %}">Download #{{ forloop.counter }}</a>
+                                                <br>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </p>
+                                    <hr />
                                 {% endif %}
 
                                 {% if proc.yara %}
@@ -39,15 +42,17 @@
                                         {% endfor %}
                                         </ul></p>
                                     {% endfor %}
+                                    <hr />
                                 {% endif %}
 
                                 {% if proc.urls %}
                                     <b>URLs found in process memory</b>
-                                    <ul>
-                                    {% for url in proc.urls %}
-                                        <li>{{url}}</li>
-                                    {% endfor %}
-                                    </ul>
+
+                                        <pre>
+{% for url in proc.urls %}{{url}}
+{% endfor %}
+                                        </pre>
+
                                 {% endif %}
 
                                 {% if proc.procmem_id %}
