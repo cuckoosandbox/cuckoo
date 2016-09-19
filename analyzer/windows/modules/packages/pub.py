@@ -65,5 +65,5 @@ class PUB(Package):
     def start(self, path):
         publisher = self.get_path("Microsoft Office Publisher")
         return self.execute(
-            publisher, args=[path], mode="office", trigger="file:%s" % path
+            publisher, args=["/o", path], mode="office", trigger="file:%s" % path
         )
