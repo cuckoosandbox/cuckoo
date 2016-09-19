@@ -40,7 +40,7 @@ class PUB(Package):
             HKEY_CURRENT_USER,
             "Software\\Microsoft\\Office\\15.0\\Publisher\\Security",
             {
-                # Enable VBA macros in Office 2007.
+                # Enable VBA macros in Office 2013.
                 "VBAWarnings": 1,
                 "AccessVBOM": 1,
 
