@@ -115,17 +115,11 @@ class Pcap(object):
         self.whitelist = self._build_whitelist()
 
     def _build_whitelist(self):
-        result = []
         whitelist_path = os.path.join(
             CUCKOO_ROOT, "data", "whitelist", "domain.txt"
         )
-        f = open(whitelist_path, 'rb')
-        while True:
-            line = f.readline()
-            if not line: break
-            result.append(line.split('\n')[0])
-        
-        return result
+        f = open(whitelist_path, 'rb').readlines()
+        return [whitelisted.strip() for whitelisted in f]
 
     def _dns_gethostbyname(self, name):
         """Get host by name wrapper.
