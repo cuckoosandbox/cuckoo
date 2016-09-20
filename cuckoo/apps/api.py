@@ -84,7 +84,7 @@ def tasks_create_file():
     if unique and db.find_sample(sha256=hashlib.sha256(content).hexdigest()):
         return json_error(400, "This file has already been submitted")
 
-    temp_file_path = Files.temp_put(content, data.filename)
+    temp_file_path = Files.temp_named_put(content, data.filename)
 
     task_id = db.add_path(
         file_path=temp_file_path,
