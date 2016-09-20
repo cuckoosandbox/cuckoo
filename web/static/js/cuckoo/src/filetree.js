@@ -81,6 +81,10 @@ class FileTree {
                 "animation" : 0,
                 "themes": themes
             },
+            checkbox : {
+                three_state : false,
+                cascade : 'undetermined'
+            },
             types: {
                 "container": {
                     "icon": "fa fa-file-archive-o"
@@ -101,6 +105,7 @@ class FileTree {
             grid: {
                 columns: [
                     {width: "auto", header: "File"},
+                    {width: "auto", header: "Package"},
                     {width: "auto", header: "Mime", value: "mime"},
                     {width: "auto", header: "Size", value: "size"},
                     {width: "10px", header: "Magic", value: "magic"}
@@ -321,8 +326,7 @@ class FileTree {
     selected(){
         let files = [];
         $(this.sel_target).jstree("get_checked",true,true).forEach(function(e){
-            if(!e.a_attr.hasOwnProperty("filetree_type") ||
-                e.a_attr.filetree_type == "container" ||
+            if(!e.a_attr.hasOwnProperty("filetree_type")  ||
                 e.a_attr.filetree_type == "directory"){
                 return true;
             }
