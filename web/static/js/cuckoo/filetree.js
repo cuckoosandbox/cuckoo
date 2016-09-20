@@ -311,7 +311,7 @@ var FileTree = function () {
          * Programtically toggles the highlight of a jstree item
          * @param {Object} [obj] - A jQuery object of a `a.jstree-grid.col-0` selector
          * @param {String} [file_category] - "files", "containers", "exec"
-         * @param {Boolean} [highlight] - Wether to highlight or not
+         * @param {Boolean} [highlight] - Whether to highlight or not
          */
 
     }, {
