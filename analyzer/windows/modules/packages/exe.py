@@ -22,7 +22,7 @@ class Exe(Package):
                 # "Set Up Windows Internet Explorer 8"
                 "DisableFirstRunCustomize": 1,
 
-                ### added
+                # Make Windows environment more loose and clean
                 "NoProtectedModeBanner": 1,
                 "NoUpdateCheck": 1,
                 "Start Page": "about:blank",

@@ -29,13 +29,12 @@ class IE(Package):
                 # "Set Up Windows Internet Explorer 8"
                 "DisableFirstRunCustomize": 1,
 
-		### added
-		"NoProtectedModeBanner": 1,
-		"NoUpdateCheck": 1,
-		"Start Page": "about:blank",
-		"Enable Browser Extensions": "yes",
-		"DoNotTrack": 0,
-		"NoProtectedModeBanner": 1,
+                "NoProtectedModeBanner": 1,
+                "NoUpdateCheck": 1,
+                "Start Page": "about:blank",
+                "Enable Browser Extensions": "yes",
+                "DoNotTrack": 0,
+                "NoProtectedModeBanner": 1,
             },
         ],
         [
@@ -43,7 +42,7 @@ class IE(Package):
             "Software\\Microsoft\\Internet Explorer\\VersionManager",
             {
                 "DownloadVersionList": 0,
-		"UpdateEnabled": 0,
+                "UpdateEnabled": 0,
             },
         ],
         [   
@@ -58,7 +57,7 @@ class IE(Package):
             "Software\\Microsoft\\Internet Explorer\\TabbedBrowsing",
             {
                 "NTPFirstRun": 1,
-		"UseMRUSwitching": "no",
+                "UseMRUSwitching": "no",
             },
         ],
         [
@@ -85,7 +84,7 @@ class IE(Package):
             "Software\\Microsoft\\Windows\\CurrentVersion\\Policies",
             {
                 "DisableAddonLoadTimePerformanceNotifications": 1,
-		"IgnoreFrameApprovalCheck": 1,
+                "IgnoreFrameApprovalCheck": 1,
             },
         ],
         [
@@ -116,9 +115,8 @@ class IE(Package):
 
                 # "You are about to view pages over a secure connection."
                 "WarnOnZoneCrossing": 0,
-
-		"WarnonBadCertRecving": 0,
-		"WarnOnPostRedirect": 0,
+                "WarnonBadCertRecving": 0,
+                "WarnOnPostRedirect": 0,
             },
         ],
         [
@@ -136,7 +134,7 @@ class IE(Package):
                 # "Internet Explorer - Security Warning"
                 # "The publisher could not be verified."
                 "CheckExeSignatures": "no",
-		"RunInvalidSignatures": 1
+                "RunInvalidSignatures": 1
             },
         ],
         [
