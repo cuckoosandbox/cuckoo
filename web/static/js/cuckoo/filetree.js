@@ -119,7 +119,7 @@ var FileTree = function () {
                     }
                 },
                 grid: {
-                    columns: [{ width: "auto", header: "File" }, { width: "auto", header: "Package" }, { width: "auto", header: "Mime", value: "mime" }, { width: "auto", header: "Size", value: "size" }, { width: "10px", header: "Magic", value: "magic" }],
+                    columns: [{ width: "auto", header: "File" }, { width: "auto", header: "Package", value: "package" }, { width: "auto", header: "Mime", value: "mime" }, { width: "auto", header: "Size", value: "size" }, { width: "10px", header: "Magic", value: "magic" }],
                     resizable: true
                 },
                 plugins: ["themes", "types", "checkbox", "grid", "wholerow"]
@@ -260,6 +260,10 @@ var FileTree = function () {
 
                 // Update stats
                 _self.stats.duplicates += 1;
+            }
+
+            if (entry.hasOwnProperty("package")) {
+                data.data.package = entry.package;
             }
 
             if (obj.type == "directory") {
