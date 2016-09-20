@@ -60,12 +60,12 @@ class DOC(Package):
                 "AccessVBOM": 1,
             },
         ],
-	[
+        [
            HKEY_CURRENT_USER,
            "Software\\Microsoft\\Office\\14.0\\Common\\General",
            {
-		"ShownFirstRunOptin": 1,
-		"FirstRunTime": "0175d569",
+               "ShownFirstRunOptin": 1,
+               "FirstRunTime": "0175d569",
            },
         ],
         [
@@ -74,10 +74,9 @@ class DOC(Package):
            {
                 "UseOnlineContent": 1,
                 "IDN_AlertOff": 1,
-		"UseOnlineAppDetect": 0,
+                "UseOnlineAppDetect": 0,
            },
         ],
-
         [
            HKEY_CURRENT_USER,
            "Software\\Microsoft\\Office\\14.0\\Word\\Security\\FileBlock",
