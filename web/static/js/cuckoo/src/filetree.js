@@ -198,7 +198,6 @@ class FileTree {
             [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "exec";
-                    obj.state = true;
 
                     _self.stats.executables += 1;
                 }
@@ -207,7 +206,6 @@ class FileTree {
             [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "office";
-                    obj.state = true;
 
                     _self.stats.executables += 1;
                 }
@@ -226,7 +224,7 @@ class FileTree {
             a_attr: {}
         };
 
-        data.a_attr.filepath = obj.extrpath ? obj.extrpath : [obj.filepath];
+        data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
         data.a_attr.sha256 = entry.sha256;
 
         if(obj.duplicate) {
