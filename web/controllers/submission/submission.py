@@ -95,6 +95,8 @@ class SubmissionController:
             "path": submit.path
         }
 
-    def submit(self):
-        pass
+    def submit(self, *args):
+        import json
+        print json.dumps(args, indent=4)
+        return {}
 

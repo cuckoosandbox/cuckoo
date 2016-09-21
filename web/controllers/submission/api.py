@@ -80,6 +80,8 @@ class SubmissionApi:
 
         # do something with `data`
         controller = SubmissionController(submit_id=body["submit_id"])
+        tasks = controller.submit(data)
+
         return JsonResponse({"status": True, "data": ""}, encoder=json_default_response)
 
     @api_post
