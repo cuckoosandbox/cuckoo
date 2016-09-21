@@ -30,7 +30,6 @@ class TestAPI(object):
 
         Folders.create(self.dirpath, "conf")
         Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
-        print self.dirpath
 
     def teardown(self):
         shutil.rmtree(self.dirpath)
