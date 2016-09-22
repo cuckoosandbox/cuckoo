@@ -184,24 +184,30 @@ class OldGuestManager(object):
             try:
                 self.server.add_config(options)
             except:
-                raise CuckooGuestError("{0}: unable to upload config to "
-                                       "analysis machine".format(self.id))
+                raise CuckooGuestError(
+                    "%s: unable to upload config to analysis machine" %
+                    self.id
+                )
 
             # If the target of the analysis is a file, upload it to the guest.
             if options["category"] in ("file", "archive"):
                 try:
                     file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
-                    raise CuckooGuestError("Unable to read {0}, error: "
-                                           "{1}".format(options["target"], e))
+                    raise CuckooGuestError(
+                        "Unable to read %s, error: %s" %
+                        (options["target"], e)
+                    )
 
                 data = xmlrpclib.Binary(file_data)
 
                 try:
                     self.server.add_malware(data, options["file_name"])
                 except Exception as e:
-                    raise CuckooGuestError("{0}: unable to upload malware to "
-                                           "analysis machine: {1}".format(self.id, e))
+                    raise CuckooGuestError(
+                        "#%s: unable to upload malware to analysis "
+                        "machine: %s" % (self.id, e)
+                    )
 
             # Launch the analyzer.
             pid = self.server.execute()
@@ -209,9 +215,10 @@ class OldGuestManager(object):
         # If something goes wrong when establishing the connection, raise an
         # exception and abort the analysis.
         except (socket.timeout, socket.error):
-            raise CuckooGuestError("{0}: guest communication timeout, check "
-                                   "networking or try to increase "
-                                   "timeout".format(self.id))
+            raise CuckooGuestError(
+                "%s: guest communication timeout, check networking or try "
+                "to increase timeout" % self.id
+            )
 
     def wait_for_completion(self):
         """Wait for analysis completion.
