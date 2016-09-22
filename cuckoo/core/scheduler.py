@@ -199,6 +199,8 @@ class AnalysisManager(threading.Thread):
 
             package, activity = File(self.task.target).get_apk_entry()
             self.task.options["apk_entry"] = "%s:%s" % (package, activity)
+        elif self.task.category == "archive":
+            options["file_name"] = File(self.task.target).get_name()
 
         options["id"] = self.task.id
         options["ip"] = self.machine.resultserver_ip
@@ -352,7 +354,7 @@ class AnalysisManager(threading.Thread):
         succeeded = False
 
         target = self.task.target
-        if self.task.category == "file":
+        if self.task.category == "file" or self.task.category == "archive":
             target = os.path.basename(target)
 
         log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
@@ -368,7 +370,7 @@ class AnalysisManager(threading.Thread):
 
         self.store_task_info()
 
-        if self.task.category == "file":
+        if self.task.category == "file" or self.task.category == "archive":
             # Check if we have permissions to access the file.
             # And fail this analysis if we don't have access to the file.
             if not self.check_permissions():

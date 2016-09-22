@@ -243,7 +243,6 @@ var FileTree = function () {
             };
 
             data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
-            data.a_attr.sha256 = entry.sha256;
 
             if (obj.duplicate) {
                 obj.type = "duplicate";
@@ -262,6 +261,7 @@ var FileTree = function () {
 
             if (entry.hasOwnProperty("package")) {
                 data.data.package = entry.package;
+                data.a_attr.package = entry.package;
             }
 
             if (obj.type == "directory") {
@@ -332,7 +332,7 @@ var FileTree = function () {
                 files.push({
                     "filepath": e.a_attr.filepath,
                     "filename": e.text,
-                    "sha256": e.a_attr.sha256
+                    "package": e.a_attr.package,
                 });
             });
 

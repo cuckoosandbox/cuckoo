@@ -1054,6 +1054,7 @@ class Database(object):
         if not priority:
             priority = 1
 
+        options = emit_options(options)
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock, "archive")

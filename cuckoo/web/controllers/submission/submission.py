@@ -11,9 +11,9 @@ from cuckoo.core.database import Database
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
 
-from sflock import unpack
+from sflock import unpack, zipify
 
-class SubmissionController:
+class SubmissionController(object):
     def __init__(self, submit_id=None):
         self.submit_id = submit_id
 
@@ -81,15 +81,17 @@ class SubmissionController:
 
     def get_files(self, password=None, astree=False):
         submit = Database().view_submit(self.submit_id)
-        tmp_path = submit.path
 
-        files = []
+        files, duplicates = [], []
 
-        for path in os.listdir(tmp_path):
+        for path in os.listdir(submit.path):
             filename = Storage.get_filename_from_path(path)
-            filedata = open("%s/%s" % (tmp_path, path), "rb").read()
+            filedata = open(os.path.join(submit.path, path), "rb").read()
 
-            unpacked = unpack(filepath=filename, contents=filedata, password=password)
+            unpacked = unpack(
+                filepath=filename, contents=filedata,
+                password=password, duplicates=duplicates
+            )
             if astree:
                 unpacked = unpacked.astree()
 
@@ -101,4 +103,47 @@ class SubmissionController:
         }
 
     def submit(self, data):
-        return {}
+        ret, db = [], Database()
+        submit = db.view_submit(self.submit_id)
+
+        for entry in data["selected_files"]:
+            # TODO Error logging.
+            if not entry.get("filepath"):
+                continue
+
+            # Read the upper archive.
+            arcpath = os.path.join(
+                submit.path, os.path.basename(entry["filepath"][0])
+            )
+
+            # TODO Error logging.
+            if not os.path.exists(arcpath):
+                continue
+
+            # Extract any sub-archives where required.
+            if len(entry["filepath"]) > 2:
+                content = unpack(arcpath).read(entry["filepath"][1:-1])
+            else:
+                content = open(arcpath, "rb").read()
+
+            # Write .zip archive file.
+            filename = entry["filepath"][-2]
+            arcpath = Files.temp_named_put(
+                zipify(unpack(filename, contents=content)),
+                os.path.basename(entry["filepath"][-2])
+            )
+
+            ret.append(db.add_archive(
+                file_path=arcpath,
+                filename=entry["filepath"][-1],
+                package=entry.get("package", data["form"]["package"]),
+                timeout=data["form"]["timeout"],
+                options=data["form"]["options"],
+                priority=int(data["form"]["priority"]),
+                custom=data["form"]["custom"],
+                tags=data["form"]["tags"],
+                memory=data["form"]["memory"],
+                enforce_timeout=data["form"]["enforce_timeout"],
+            ))
+
+        return ret

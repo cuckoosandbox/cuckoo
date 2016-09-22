@@ -22,22 +22,22 @@
     }
 </style>
 <script type='text/javascript'>
-$(document).on('change', '.btn-file :file', function() {
+$(document).on("change", ".btn-file :file", function() {
     var input = $(this),
     numFiles = input.get(0).files ? input.get(0).files.length : 1,
-    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    input.trigger('fileselect', [numFiles, label]);
+    label = input.val().replace(/\\/g, "/").replace(/.*\//, '');
+    input.trigger("fileselect", [numFiles, label]);
 });
 
 $(document).ready( function() {
-    $('.btn-file').on('fileselect', function(event, numFiles, label) {
-        var input = $(this).parents('.input-group').find(':text'),
-            log = numFiles > 1 ? numFiles + ' files selected' : label;
+    $(".btn-file").on("fileselect", function(event, numFiles, label) {
+        var input = $(this).parents(".input-group").find(":text");
+        var log = numFiles > 1 ? numFiles + " files selected" : label;
 
-        if( input.length ) {
+        if(input.length) {
             input.val(log);
         } else {
-            if( log ) alert(log);
+            if(log) alert(log);
         }
     });
 });
@@ -47,26 +47,30 @@ $(document).ready( function() {
         console.log("progress");
     }
 
-    $('input#file_select').on("change", function(){
+    $("input#file_select").on("change", function(){
         presubmit();
     });
 
     function presubmit(){
-        var formData = new FormData($('form')[0]);
+        var formData = new FormData($("form")[0]);
 
         $.ajax({
-            url: '/submit/pre',
-            type: 'POST',
+            url: "/submit/pre",
+            type: "POST",
             xhr: function() {
                 var myXhr = $.ajaxSettings.xhr();
-                if(myXhr.upload) myXhr.upload.addEventListener('progress',progressHandlingFunction, false);
+                if(myXhr.upload) {
+                    myXhr.upload.addEventListener(
+                        "progress", progressHandlingFunction, false
+                    );
+                }
 
                 return myXhr;
             },
-            success: function(){
+            success: function() {
                 console.log("successHandler");
             },
-            error: function(){
+            error: function() {
                 console.log("errorHandler");
             },
             data: formData,
@@ -316,15 +320,22 @@ $(document).ready( function() {
                 var highlight = e.type == "mouseover";
 
                 // First un-highlight all items for speed
-                items.each(function(i, obj){ $(obj).removeClass("highlight"); });
+                items.each(function(i, obj) {
+                    $(obj).removeClass("highlight");
+                });
 
                 // Loop items, attempt to highlight
-                items.each(function(i, obj){ FileTree.highlight($(obj), file_category, highlight); });
+                items.each(function(i, obj) {
+                    FileTree.highlight($(obj), file_category, highlight);
+                });
             });
 
             $(document).ready(function(){
-                CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
-                    filetree = new FileTree("div#filetree_target", data.data["files"], true, filetree_drawcallback);
+                CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data) {
+                    filetree = new FileTree(
+                        "div#filetree_target", data.data["files"],
+                        true, filetree_drawcallback
+                    );
                     filetree.draw();
                 });
             });

@@ -489,9 +489,7 @@ class Analyzer(object):
                 os.environ["TEMP"], self.config.file_name
             )
         elif self.config.category == "archive":
-            zip_path = os.path.join(
-                os.environ["TEMP"], self.config.file_name
-            )
+            zip_path = os.path.join(os.environ["TEMP"], self.config.file_name)
             zipfile.ZipFile(zip_path).extractall(os.environ["TEMP"])
             self.target = os.path.join(
                 os.environ["TEMP"], self.config.options["filename"]

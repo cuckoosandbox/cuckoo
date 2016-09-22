@@ -188,7 +188,7 @@ class OldGuestManager(object):
                                        "analysis machine".format(self.id))
 
             # If the target of the analysis is a file, upload it to the guest.
-            if options["category"] == "file":
+            if options["category"] in ("file", "archive"):
                 try:
                     file_data = open(options["target"], "rb").read()
                 except (IOError, OSError) as e:
@@ -440,9 +440,11 @@ class GuestManager(object):
         self.aux.callback("prepare_guest")
 
         # If the target is a file, upload it to the guest.
-        if options["category"] == "file":
+        if options["category"] == "file" or options["category"] == "archive":
             data = {
-                "filepath": os.path.join(self.environ["TEMP"], options["file_name"]),
+                "filepath": os.path.join(
+                    self.environ["TEMP"], options["file_name"]
+                ),
             }
             files = {
                 "file": open(options["target"], "rb"),
