@@ -40,8 +40,9 @@ class SubmissionController(object):
                 Files.create(dirpath, filename, entry["data"])
 
             return db.add_submit(dirpath)
-        elif submit_type == "url":
-            files = []
+
+        if submit_type == "url":
+            dirpath = Folders.create_temp()
 
             for line in data:
                 if not line:
@@ -66,16 +67,9 @@ class SubmissionController(object):
                     if not name:
                         continue
 
-                    files.append({
-                        "data": r.content,
-                        "name": name
-                    })
+                    Files.create(dirpath, line, r.content)
 
-            if files:
-                tmp_path = Files.tmp_put(files=files)
-                return db.add_submit(tmp_path)
-
-            return
+            return db.add_submit(dirpath)
 
         raise Exception("Unknown submit type")
 
