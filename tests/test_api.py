@@ -10,9 +10,9 @@ import tempfile
 import werkzeug
 
 from cuckoo.apps import api
+from cuckoo.common.files import Folders, Files
 from cuckoo.core.database import Database
 from cuckoo.misc import set_cwd
-from cuckoo.common.files import Folders, Files
 
 CUCKOO_CONF = """
 [cuckoo]

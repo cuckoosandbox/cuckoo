@@ -1,3 +1,34 @@
+<style>
+    section#static_analysis pre{
+        background-color: transparent;
+        border: 0 solid #ccc;
+        margin: 0 0 0;
+        padding: 0;
+        display: flex;
+        width: 100%;
+    }
+
+    section#static_analysis .panel-body{
+        padding:0;
+    }
+
+    section#static_analysis pre code{
+        padding: 14px;
+        padding-top: 0px;
+        width: 100%;
+        background-color: white;
+        font-size:12px;
+        margin: 10px;
+        margin-top: 20px;
+    }
+
+    section#static_analysis .panel-body h4{
+        margin-left:12px;
+        margin-bottom:0px;
+        margin-top:20px;
+    }
+</style>
+
 <section id="static_analysis">
     {% for js in report.analysis.static.pdf %}
         {% if js.javascript %}
@@ -9,6 +40,7 @@
                                 <div class="panel-heading">
                                     <label class=accordion-toggle">Javascript</label>
                                 </div>
+
                                 <div id="options" class="panel-collapse collapse in" style="text-align: left;">
                                     <div class="panel-body">
                                         <div class="col-md-12">
@@ -18,6 +50,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -26,3 +59,7 @@
         {% endif %}
     {% endfor %}
 </section>
+<script>
+    $(document).ready(function() {
+        hljs.initHighlightingOnLoad();
+    });</script>

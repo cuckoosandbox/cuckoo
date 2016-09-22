@@ -33,8 +33,7 @@ except:
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
-from cuckoo.common.utils import convert_to_printable
-from cuckoo.common.utils import to_unicode
+from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -570,8 +569,10 @@ class PdfDocument(object):
                     if not peepdf.JSAnalysis.isJavascript(stream):
                         continue
 
+                    javascript = stream.decode("latin-1")
                     row["javascript"].append({
-                        "orig_code": stream.decode("latin-1"),
+                        "orig_code": javascript,
+                        "beautified": jsbeautify(javascript),
                         "urls": [],
                     })
                     continue
