@@ -25,18 +25,25 @@
 <!-- jstree -->
 <script src="{% static "js/jstree/jstree.min.js"%}"></script>
 <script src="{% static "js/jstree/jstreegrid.js"%}"></script>
-{#<link href="{% static "css/jstree.style.min.css" %}" rel="stylesheet"> @TO-DO: fix local import #}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
+<link href="{% static "js/jstree/default/style.min.css" %}" rel="stylesheet">
 
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+<!-- Font-Awesome -->
+<link href="{% static "css/font-awesome.min.css"%}" rel="stylesheet">
+
+<!-- Graphs -->
+<script src="{% static "js/misc/d3.v3.min.js"%}"></script>
+<script src="{% static "js/misc/plotly.min.js"%}"></script>
 
 <!-- Custom style -->
 <link href="{% static "css/style.css" %}" rel="stylesheet">
 <link href="{% static "css/analysis_sidebar.css" %}" rel="stylesheet">
 
 {% if request.COOKIES.theme == "night" %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default-dark/style.min.css"/>
+    <link href="{% static "js/jstree/night/style.min.css" %}" rel="stylesheet">
     <link href="{% static "css/night.css" %}" rel="stylesheet">
+{% elif request.COOKIES.theme == "cyborg" %}
+    <link href="{% static "js/jstree/default/style.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/cyborg.css" %}" rel="stylesheet">
 {% endif %}
 
 </head>
@@ -54,7 +61,11 @@
 
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav">
-                <li><img src="{% static "graphic/cuckoo_inverse.png" %}" /></li>
+                <li>
+                    <a href="/">
+                        <img src="{% static "graphic/cuckoo_inverse.png" %}" />
+                    </a>
+                </li>
                 <li><a href="{% url "dashboard.views.index" %}"><span class="glyphicon glyphicon-dashboard"></span> Dashboard</a></li>
                 <li><a href="{% url "analysis/recent" %}"><span class="glyphicon glyphicon-list"></span> Recent</a></li>
                 <li><a href="{% url "analysis.views.pending" %}"><span class="glyphicon glyphicon-time"></span> Pending</a></li>
@@ -72,6 +83,7 @@
                         <li class="dropdown-header">Appearance</li>
                         <li><a id="theme_default" href="#">Default Theme</a></li>
                         <li><a id="theme_night" href="#">Night Theme</a></li>
+                        <li><a id="theme_cyborg" href="#">Cyborg Theme</a></li>
                     </ul>
                 </li>
             </ul>

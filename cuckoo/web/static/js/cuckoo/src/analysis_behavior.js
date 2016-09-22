@@ -1,4 +1,12 @@
-// @TO-DO: cleanup jQuery selectors / comment code / abstract ajax calls / trigger loading indicator
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
+// @TO-DO: cleanup jQuery selectors / comment code / trigger loading indicator
 
 class SummaryBehaviorDetail {
     constructor(task_id, pname, pid, category, val) {
@@ -29,17 +37,7 @@ class SummaryBehaviorDetail {
 
         let self = this;
 
-        $.ajax({
-            type: "post",
-            contentType: "application/json",
-            url: `/analysis/api/behavior_get_watcher/`,
-            dataType: "json",
-            data: JSON.stringify(params),
-            timeout: 40000,
-            success: function(data){
-                self.start_cb(data, self)
-            }
-        }).fail(err => console.log(err))
+        CuckooWeb.api_post("/analysis/api/behavior_get_watcher/", params, function(data){ self.start_cb(data, self); });
     }
 
     _setup_html(context){
@@ -128,21 +126,8 @@ class SummaryBehaviorController {
         let params = {"task_id": this.task_id, "pid": this.pid};
         let self = this;
 
-        $.ajax({
-            type: "post",
-            contentType: "application/json",
-            url: `/analysis/api/behavior_get_watchers/`,
-            dataType: "json",
-            data: JSON.stringify(params),
-            timeout: 40000,
-            beforeSend: function(){
-                //self.toggle_loading(self);
-            },
-            success: function(data){
-                self.start_cb(data, self);
-                //self.toggle_loading(self);
-            }
-        }).fail(err => console.log(err))
+        CuckooWeb.api_post("/analysis/api/behavior_get_watchers/", params,
+            function(data){ self.start_cb(data, self); });
     }
 
     start_cb(data, context){

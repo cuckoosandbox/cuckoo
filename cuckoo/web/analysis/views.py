@@ -505,7 +505,7 @@ def pcapstream(request, task_id, conntuple):
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The specified analysis does not exist",
         })
 
@@ -519,7 +519,7 @@ def pcapstream(request, task_id, conntuple):
         stream = conns[0]
         offset = stream["offset"]
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "Could not find the requested stream",
         })
 
@@ -527,7 +527,7 @@ def pcapstream(request, task_id, conntuple):
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
         setattr(fobj, "fileno", lambda: -1)
     except:
-        return render(request, "standalone_error.html", {
+        return render(request, "errors/error.html", {
             "error": "The required sorted PCAP does not exist",
         })
 
@@ -626,7 +626,7 @@ def import_analysis(request):
             return view_error(request, "You uploaded an empty analysis.")
 
         # if analysis.size > settings.MAX_UPLOAD_SIZE:
-            # return render(request, "error.html", {
+            # return render(request, "errors/error.html", {
             #     "error": "You uploaded a file that exceeds that maximum allowed upload size.",
             # })
 
@@ -663,9 +663,10 @@ def import_analysis(request):
 
         if category == "file":
             binary = Files.temp_named_put(zf.read("binary"), "binary")
+            tmp_path = "%s/%s" % (binary, zf.filename)
 
-            if os.path.isfile(binary):
-                task_id = db.add_path(file_path=binary,
+            if os.path.isfile(tmp_path):
+                task_id = db.add_path(file_path=tmp_path,
                                       package=info.get("package"),
                                       timeout=0,
                                       options=info.get("options"),

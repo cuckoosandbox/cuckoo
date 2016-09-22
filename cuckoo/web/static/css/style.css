@@ -212,8 +212,9 @@ td {
     min-height:30px;
 }
 
-.navbar-fixed-top li img{
-    margin: 5px 10px -10px 20px;height: 34px;
+.navbar-fixed-top li a img{
+    margin: 5px 0px 10px 20px;
+    height: 34px;
 }
 
 
@@ -761,4 +762,32 @@ a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
 .network_http_request #body pre.collapse {
     max-height: none !important;
     overflow: visible !important;
+}
+
+/* page errors */
+#page_error .error {
+    margin: 0 auto;
+    text-align: center;
+}
+
+#page_error .error-code {
+    bottom: 60%;
+    font-size: 96px;
+    line-height: 100px;
+}
+
+#page_error .error-desc {
+    font-size: 12px;
+}
+
+#page_error .m-b-10 {
+    margin-bottom: 10px!important;
+}
+
+#page_error .m-b-20 {
+    margin-bottom: 20px!important;
+}
+
+#page_error .m-t-20 {
+    margin-top: 20px!important;
 }

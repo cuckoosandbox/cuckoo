@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
 class FileTree {
     constructor(target, data, sflock, draw_callback) {
         this.sel_target = target;
@@ -5,7 +13,6 @@ class FileTree {
         this._draw_callback = draw_callback;
         this._convert_from_sflock = sflock;
 
-        this._jstree = null;
         this._filters = {
             simplify_mime: true,
             simplify_magic: true,
@@ -63,7 +70,7 @@ class FileTree {
         let theme_active = Cookies.get("theme");
         let themes = {"name": "default"};
 
-        if(theme_active == "night"){
+        if(theme_active == "night" || theme_active == "cyborg"){
             themes["name"] = "default-dark"
         }
 
@@ -73,6 +80,10 @@ class FileTree {
                 "multiple" : true,
                 "animation" : 0,
                 "themes": themes
+            },
+            checkbox : {
+                three_state : false,
+                cascade : 'undetermined'
             },
             types: {
                 "container": {
@@ -94,6 +105,7 @@ class FileTree {
             grid: {
                 columns: [
                     {width: "auto", header: "File"},
+                    {width: "auto", header: "Package", value: "package"},
                     {width: "auto", header: "Mime", value: "mime"},
                     {width: "auto", header: "Size", value: "size"},
                     {width: "10px", header: "Magic", value: "magic"}
@@ -114,12 +126,20 @@ class FileTree {
      * @private
      */
     _convert_sflock(){
-        let data = $.extend({}, this.data);
+        let data = $.extend({}, this.data);  //shallow copy
 
         let data_tmp = [];
         for (let key in data) {
             if (data.hasOwnProperty(key)) {
-                let converted = this._convert_entry(data[key]);
+                let entry = data[key];
+                let converted;
+
+                if(entry.hasOwnProperty("type") && entry.type == "container"){
+                    converted = this._convert_entry(data[key], entry.filename);
+                } else {
+                    converted = this._convert_entry(data[key]);
+                }
+
                 data_tmp.push(converted);
             }
         }
@@ -127,21 +147,33 @@ class FileTree {
         return data_tmp;
     }
 
-    _convert_entry(entry){
+    _convert_entry(entry, parent_archive){
         let _self = this;
 
         // Temporary object
         let obj = {
             filepath: entry.filepath,
             filename: entry.filename,
+            relapath: entry.relapath,
+            extrpath: entry.extrpath,
             type: entry.type,
             state: false, // pre-selected tree item
             size: entry.size,
             duplicate: entry.duplicate,
-            opened: false
+            opened: false,
+            description: entry.description
         };
 
+        if(obj.extrpath){
+            obj.filepath = `${parent_archive}/${obj.extrpath.join("/")}`;
+        } else if(!obj.filepath && obj.relapath){
+            obj.filepath = obj.relapath;
+        } else if (!obj.relapath){
+            obj.relapath = obj.filepath;
+        }
+
         if(obj.type != "directory"){
+            // simplify filters
             if(this._filters.simplify_magic){
                 obj.magic = entry.finger.magic_human;
             } else {
@@ -152,39 +184,48 @@ class FileTree {
                 obj.mime = entry.finger.mime_human;
             } else{ obj.mime = entry.finger.mime; }
 
-        }
+            if(this._filters.simplify_sizes){
+                obj.size = CuckooWeb.human_size(obj.size, true);
+            }
 
-        // Sanitize object properties
-        if(obj.magic){
-            if(obj.magic.length >= 170){ obj.magic = `${obj.magic.substring(0, 170)}...`; }
-        } else {
-            obj.magic = "empty";
-        }
+            // Sanitize object properties
+            if(obj.magic){
+                if(obj.magic.length >= 170){ obj.magic = `${obj.magic.substring(0, 170)}...`; }
+            } else {
+                obj.magic = "empty";
+            }
 
-        [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", "js", ".jse"].forEach(function (x) {
-            if (obj.filepath.endsWith(x)) {
-                obj.type = "exec";
+            [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
+                if (obj.filepath.endsWith(x)) {
+                    obj.type = "exec";
+
+                    _self.stats.executables += 1;
+                }
+            });
+
+            [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
+                if (obj.filepath.endsWith(x)) {
+                    obj.type = "office";
+
+                    _self.stats.executables += 1;
+                }
+            });
+
+            if(entry.selected) {
                 obj.state = true;
-
                 _self.stats.executables += 1;
             }
-        });
+        }
 
-        [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
-            if (obj.filepath.endsWith(x)) {
-                obj.type = "office";
-                obj.state = true;
-
-                _self.stats.executables += 1;
-            }
-        });
-
-        // Build the JSTree JSON return object
+        // Build JSTree JSON return object
         let data = {
             text: obj.filename,
             data: {},
             a_attr: {}
         };
+
+        data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
+        data.a_attr.sha256 = entry.sha256;
 
         if(obj.duplicate) {
             obj.type = "duplicate";
@@ -201,12 +242,15 @@ class FileTree {
             _self.stats.duplicates += 1;
         }
 
-        if(obj.type == "directory"){
-            obj.opened = true;
-            _self.stats.directories += 1;
+        if(entry.hasOwnProperty("package")){
+            data.data.package = entry.package;
         }
 
-        if(obj.type != "directory") {
+        if(obj.type == "directory"){
+            obj.opened = true;
+            obj.type = "directory";
+            _self.stats.directories += 1;
+        } else {
             data.data.mime = obj.mime;
             data.data.size = obj.size;
             data.data.magic = obj.magic;
@@ -231,7 +275,7 @@ class FileTree {
         if(entry.children.length >= 1){
             entry.children.forEach(function(e){
                 if(!data.hasOwnProperty("children")) { data.children = []; }
-                data.children.push(_self._convert_entry(e));
+                data.children.push(_self._convert_entry(e, parent_archive));
             })
         }
 
@@ -252,7 +296,7 @@ class FileTree {
      * Programtically toggles the highlight of a jstree item
      * @param {Object} [obj] - A jQuery object of a `a.jstree-grid.col-0` selector
      * @param {String} [file_category] - "files", "containers", "exec"
-     * @param {Boolean} [highlight] - Wether to highlight or not
+     * @param {Boolean} [highlight] - Whether to highlight or not
      */
     static highlight(obj, file_category, highlight){
         let item_type = obj.attr("filetree_type");
@@ -279,6 +323,24 @@ class FileTree {
                 else obj.removeClass("highlight");
             }
         }
+    }
+
+    selected(){
+        let files = [];
+        $(this.sel_target).jstree("get_checked",true,true).forEach(function(e){
+            if(!e.a_attr.hasOwnProperty("filetree_type")  ||
+                e.a_attr.filetree_type == "directory"){
+                return true;
+            }
+
+            files.push({
+                "filepath": e.a_attr.filepath,
+                "filename": e.text,
+                "sha256": e.a_attr.sha256
+            });
+        });
+
+       return files;
     }
 
     simplify(state){

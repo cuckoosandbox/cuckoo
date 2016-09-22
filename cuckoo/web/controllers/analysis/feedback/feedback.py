@@ -3,12 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
+import base64
 import json
 import requests
 from datetime import datetime
 
 from django.conf import settings
 
+from cuckoo.common.constants import CUCKOO_VERSION
 from controllers.analysis.analysis import AnalysisController
 from controllers.analysis.export.export import ExportController
 
@@ -18,7 +20,7 @@ class AnalysisFeedBackController(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
 
     def __init__(self, task_id):
-        self._url_feedback = "http://cuckoo.sh/test/"
+        self._url_feedback = "https://cuckoo.sh/feedback/api/submit/"
 
         self.task_id = task_id
         self.email = None
@@ -27,14 +29,27 @@ class AnalysisFeedBackController(object):
         self.name = None
         self.include_analysis = False
         self.include_memdump = False
+        self.feedback_automated = False
 
     def send(self):
-        data = {"analysis_id": self.task_id}
-        files = {}
+        data = {
+            "errors": [],
+            "contact": {
+                "email": self.email,
+                "company": self.company,
+                "name": self.name
+            },
+            "analysis_info": {},
+            "automated": self.feedback_automated,
+            "message": self.message
+        }
 
         report = AnalysisController.get_report(self.task_id)
         if "feedback" in report["analysis"] and isinstance(report["analysis"]["feedback"], dict):
             raise Exception("Feedback previously sent")
+
+        if "debug" in report["analysis"] and "errors" in report["analysis"]["debug"]:
+            data["errors"] = report["analysis"]["debug"]["errors"]
 
         if self.include_analysis:
             analysis_path = report["analysis"]["info"]["analysis_path"]
@@ -46,42 +61,47 @@ class AnalysisFeedBackController(object):
             export = ExportController.create(task_id=self.task_id,
                                              taken_dirs=taken_dirs,
                                              taken_files=taken_files)
-
             # attach the zip file
-            files = {"export": export}
+            export.seek(0)
+            data["export"] = base64.b64encode(export.read())
 
         # attach additional analysis information
         if "file" in report["analysis"]["target"]:
-            data.update({k: v for k, v in report["analysis"]["target"]["file"].items() if
-                         isinstance(v, (str, unicode, int, float))})
+            data["analysis_info"]["file"] = {
+                k: v for k, v in report["analysis"]["target"]["file"].items()
+                if isinstance(v, (str, unicode, int, float))}
+            data["analysis_info"]["file"]["task_id"] = self.task_id
         else:
-            data.update({"url": report["analysis"]["target"]["url"]})
+            data["analysis_info"]["url"] = {"url": report["analysis"]["target"]["url"]}
+            data["analysis_info"]["url"]["task_id"] = self.task_id
 
-        data.update({
-            "email": self.email,
-            "message": self.message,
-            "company": self.company,
-            "firstname": self.name
-        })
+        feedback_id = self._send(data)
+        return feedback_id
 
-        data.update({"submit": ""})
+    def _send(self, data):
+        headers = {
+            "Content-type": "application/json",
+            "Accept": "text/plain",
+            "User-Agent": "Cuckoo %s" % CUCKOO_VERSION
+        }
 
-        resp = requests.post(url=self._url_feedback, files=files, data=data)
+        resp = requests.post(url=self._url_feedback, json=data, headers=headers)
         if not resp.status_code == 200:
             raise Exception("the remote server did not respond correctly")
 
-        try:
-            resp = json.loads(resp.content)
-            self._register()
+        resp = json.loads(resp.content)
+        if not resp["status"]:
+            raise Exception(resp["message"])
 
-            return resp["identifier"]
-        except ValueError:
-            raise Exception("could not parse server response as JSON")
+        feedback_id = resp["feedback_id"]
+        self._feedback_sent(feedback_id)
 
-    def _register(self):
+        return feedback_id
+
+    def _feedback_sent(self, feedback_id):
         return results_db.analysis.update_one(
             {"info.id": int(self.task_id)},
-            {"$set": {"feedback": self.to_dict()}})
+            {"$set": {"feedback": self.to_dict(), "feedback_id": feedback_id}})
 
     def to_dict(self):
         return {

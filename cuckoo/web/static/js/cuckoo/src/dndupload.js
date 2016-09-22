@@ -24,7 +24,7 @@ class DndUpload {
         this.endpoint = endpoint;
         this._success_callback = success_callback;
         this._selectors = {
-            "uid": `dndupload_${this.generateUUID()}`,
+            "uid": `dndupload_${DndUpload.generateUUID()}`,
             "target": target
         };
 
@@ -40,7 +40,7 @@ class DndUpload {
 
         let html = `
             <div class="dndupload" id="${this._selectors["uid"]}">
-                <form id="uploader" action="/submit/api/submit" method="POST" enctype="multipart/form-data">
+                <form id="uploader" action="/submit/api/presubmit" method="POST" enctype="multipart/form-data">
                     <div id="container">
                         <svg xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43">
                             <path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z"/>
@@ -186,9 +186,11 @@ class DndUpload {
      */
     _upload(formdata){
         let _self = this;
-        this.display_text("Uploading");
-
         let xhr = new XMLHttpRequest();
+
+        this.display_text("Uploading");
+        formdata["type"] = "files";
+
         xhr.open('POST', this.endpoint);
 
         // update progress bar when server response is received
@@ -238,16 +240,7 @@ class DndUpload {
      * Generates UUID
      * @return
      */
-    generateUUID(){
-        let d = new Date().getTime();
-        if(window.performance && typeof window.performance.now === "function"){
-            d += performance.now(); //use high-precision timer if available
-        }
-
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-            let r = (d + Math.random()*16)%16 | 0;
-            d = Math.floor(d/16);
-            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-        });
+    static generateUUID(){
+        return (new Date).getTime();
     }
 }

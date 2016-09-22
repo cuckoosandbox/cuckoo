@@ -14,17 +14,6 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from django.shortcuts import render
 
-class json_default_response(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, "to_dict"):
-            return obj.to_dict()
-
-        if isinstance(obj, datetime):
-            if obj.utcoffset() is not None:
-                obj = obj - obj.utcoffset()
-            return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
-        raise TypeError("%r is not JSON serializable" % obj)
-
 def view_error(request, msg):
     return render(request, "error.html", {
         "error": msg
@@ -47,10 +36,26 @@ def _api_post(func):
         request = args[0]
 
         if not request.is_ajax():
-            return JsonResponse({"status": False}, status=200)
+            return json_error_response("Request was not ajax")
 
         args += (json.loads(request.body),)
         return func(*args, **kwargs)
     return inner
 
 api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))
+
+class json_default_response(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+
+        if isinstance(obj, datetime):
+            if obj.utcoffset() is not None:
+                obj = obj - obj.utcoffset()
+            return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
+        raise TypeError("%r is not JSON serializable" % obj)
+
+def json_error_response(message):
+    return JsonResponse({
+        "status": False, "message": message
+    }, encoder=json_default_response)

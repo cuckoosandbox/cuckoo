@@ -7,6 +7,7 @@ import os
 
 import pymongo
 from django.conf import settings
+from django.http import Http404
 
 from cuckoo.core.database import Database, TASK_PENDING
 
@@ -57,7 +58,7 @@ class AnalysisController:
     def get_report(task_id):
         report = AnalysisController._get_report(task_id)
         if not report:
-            raise Exception("the specified analysis does not exist")
+            raise Http404("the specified analysis does not exist")
 
         data = {
             "analysis": report
@@ -95,5 +96,5 @@ class AnalysisController:
 
         return {
             "domainlookups": domainlookups,
-            "iplookups": iplookups
+            "iplookups": iplookups,
         }

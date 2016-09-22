@@ -3,73 +3,102 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
 import os
+import requests
 
 from cuckoo.core.database import Database
-from cuckoo.common.files import Storage
+from cuckoo.common.files import Folders, Files, Storage
+from cuckoo.common.config import Config
 
-from sflock.abstracts import File
-# from sflock.unpack.zip import Zipfile
-# from sflock.unpack.rar import Rarfile
-# from sflock.unpack.tar import Tarfile
+from sflock import unpack
 
 class SubmissionController:
-    def __init__(self, submit_id):
+    def __init__(self, submit_id=None):
         self.submit_id = submit_id
 
         self._path_root = ""
         self._files = []
 
-        self.get_submit()
-
-    def get_submit(self):
+    @staticmethod
+    def presubmit(submit_type, data):
+        """
+        Register new file(s) for analysis into the database.
+        @param submit_type: 'url' or 'files'
+        @param data: if submit_type is 'files': a list of dicts containing 'name' (file name) and 'data' (file data)
+        if submit_type is 'url': a list of strings containing either
+        @return: presubmission id
+        """
+        cfg = Config("processing")
         db = Database()
 
-        submit = db.view_submit(self.submit_id)
+        if submit_type == "files":
+            dirpath = Folders.create_temp()
+
+            for entry in data:
+                filename = Storage.get_filename_from_path(entry["name"])
+                Files.create(dirpath, filename, entry["data"])
+
+            return db.add_submit(dirpath)
+        elif submit_type == "url":
+            files = []
+
+            for line in data:
+                if not line:
+                    continue
+
+                elif line.startswith("http://") or line.startswith("https://"):
+                    # @TO-DO: analyse url
+                    pass
+                elif len(line) in (32, 40, 64, 128):
+                    try:
+                        r = requests.get("https://www.virustotal.com/vtapi/v2/file/download", params={
+                            "apikey": cfg.virustotal.key,
+                            "hash": line
+                        })
+                    except:
+                        continue
+
+                    if r.status_code != 200:
+                        continue
+
+                    name = "".join([c for c in line if re.match(r'\w', c)])
+                    if not name:
+                        continue
+
+                    files.append({
+                        "data": r.content,
+                        "name": name
+                    })
+
+            if files:
+                tmp_path = Files.tmp_put(files=files)
+                return db.add_submit(tmp_path)
+
+            return
+
+        raise Exception("Unknown submit type")
+
+    def get_files(self, password=None, astree=False):
+        submit = Database().view_submit(self.submit_id)
         tmp_path = submit.path
 
-        self._files = os.listdir(tmp_path)
-        self._path_root = submit.path
+        files = []
 
-    def get_filetree(self):
-        data = []
-        duplicates = []
+        for path in os.listdir(tmp_path):
+            filename = Storage.get_filename_from_path(path)
+            filedata = open("%s/%s" % (tmp_path, path), "rb").read()
 
-        for f in self._files:
-            filename = Storage.get_filename_from_path(f)
+            unpacked = unpack(filepath=filename, contents=filedata, password=password)
+            if astree:
+                unpacked = unpacked.astree()
 
-            file_data = open("%s/%s" % (self._path_root, f), "rb")
-            extracted = self.analyze_file(filename=filename,
-                                          data=file_data.read(),
-                                          duplicates=duplicates)
+            files.append(unpacked)
 
-            duplicates.append(extracted.sha256)
-            data.append(extracted)
+        return {
+            "files": files,
+            "path": submit.path,
+        }
 
-        return data
-
-    @staticmethod
-    def analyze_file(filename, data, password=None, duplicates=None):
-        if filename.endswith((".zip", ".gz", ".tar", ".tar.gz", ".bz2", ".tgz")):
-            f = File(filepath=filename, contents=data)
-            signature = f.get_signature()
-
-            container = None
-            if signature["family"] == "rar":
-                container = Rarfile
-            elif signature["family"] == "zip":
-                container = Zipfile
-            elif signature["family"] == "tar":
-                container = Tarfile
-            else:
-                return f
-
-            container = container(f=f)
-            f.children = container.unpack(mode=signature["mode"],
-                                          duplicates=duplicates)
-            return f
-
-        return File(filepath=filename, contents=data)
-
-    def submit(self):
-        pass
+    def submit(self, data):
+        return {}

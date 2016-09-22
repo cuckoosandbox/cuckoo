@@ -4,6 +4,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
 var Recent = function () {
     function Recent() {
         _classCallCheck(this, Recent);
@@ -74,23 +82,16 @@ var Recent = function () {
 
             var self = this;
 
-            $.ajax({
-                type: "post",
-                contentType: "application/json",
-                url: "api/recent/",
-                dataType: "json",
-                data: JSON.stringify(params),
-                timeout: 40000,
-                beforeSend: function beforeSend() {
-                    self.toggle_loading(self);
-                },
-                success: function success(data) {
-                    self.results_callback(data);
-                    self.toggle_loading(self);
-                }
-            }).fail(function (err) {
-                return console.log(err);
-            });
+            function cb(data) {
+                self.results_callback(data);
+                self.toggle_loading(self);
+            }
+
+            function beforesend() {
+                self.toggle_loading(self);
+            }
+
+            CuckooWeb.api_post("api/recent/", params, cb, null, beforesend);
         }
     }, {
         key: "load",
@@ -133,7 +134,7 @@ var Recent = function () {
                     if (analysis.status == "reported" || analysis.status == "failed_analysis") {
                         html += "<a href=\"" + analysis.id + "/summary\"><span class=\"mono\">" + date_completed_on + "</span></a>";
                     } else {
-                        html += "<span class=\"muted\">" + date_added_on + "</span>";
+                        html += "<span class=\"mono muted\">" + date_added_on + "</span>";
                     }
 
                     html += "</td><td>";

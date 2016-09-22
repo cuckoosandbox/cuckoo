@@ -80,8 +80,8 @@ $(document).ready( function() {
 
 <div class="row">
     <div class="col-md-12">
-        <form role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-            <div class="col-md-4">
+        <form id="submit_form" role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+            <div class="col-md-3">
                 <div class="panel" id="accordion" style="margin-top: 20px;">
                     <div class="panel-primary">
                         <div class="panel-heading">Advanced Options</div>
@@ -184,7 +184,7 @@ $(document).ready( function() {
                 </div>
             </div>
 
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <div class="col-md-12">
                     <div class="panel" style="margin-top: 20px;">
                         <div id="filetree_container" class="panel-primary">
@@ -205,10 +205,12 @@ $(document).ready( function() {
                                                 <input type="checkbox" id="cb_simplify" name="cb_simplify" value="cb_simplify" checked="checked">
                                                 <label for="cb_simplify" style="margin-top: 0px;">Simplify results</label>
                                             </div>
+                                            <!--
                                             <div class="cuckoo-box-primary">
                                                 <input type="checkbox" id="cb_duplicates" name="cb_duplicates" value="cb_duplicates" checked="checked">
                                                 <label for="cb_duplicates">Deselect duplicates</label>
                                             </div>
+                                            -->
                                         </div>
                                     </div>
                                     <div class="col-md-4"></div>
@@ -235,7 +237,7 @@ $(document).ready( function() {
                 </div>
                 <div class="col-md-12">
                     <div style="float:right;">
-                        <button type="submit" class="btn btn-primary">Analyze</button>
+                        <div id="btn_analyze" class="btn btn-primary">Analyze</div>
                     </div>
                 </div>
             </div>
@@ -246,6 +248,20 @@ $(document).ready( function() {
     <script>
         var submit_id = {{ submit_id }};
         var filetree = null;
+
+        $("div#btn_analyze").click(function(){
+            var selected_files = filetree.selected();
+            var formdata = {};
+            $('form#submit_form').serializeArray().map(function(x){
+                formdata[x.name] = x.value;
+            });
+
+            CuckooWeb.api_post("/submit/api/submit/", {
+                "submit_id": submit_id,
+                "selected_files": selected_files,
+                "form": formdata
+            });
+        });
 
         function filetree_drawcallback(){
             var sel_target = $("#filetree_messages");
@@ -307,18 +323,10 @@ $(document).ready( function() {
             });
 
             $(document).ready(function(){
-                $.ajax({
-                    type: "post",
-                    contentType: "application/json",
-                    url: `/submit/api/filetree/`,
-                    dataType: "json",
-                    data: JSON.stringify({"submit_id": submit_id}),
-                    timeout: 40000,
-                    success: function(data){
-                        filetree = new FileTree("div#filetree_target", data.data, true, filetree_drawcallback);
-                        filetree.draw();
-                    }
-                }).fail(function(err) { console.log(err)});
+                CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data){
+                    filetree = new FileTree("div#filetree_target", data.data["files"], true, filetree_drawcallback);
+                    filetree.draw();
+                });
             });
         });
 

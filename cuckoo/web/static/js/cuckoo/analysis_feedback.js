@@ -1,5 +1,13 @@
 "use strict";
 
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
 function feedback_send(task_id, firstname, email, company, message, include_analysis, include_memdump, callback) {
     var params = {
         "task_id": task_id,
@@ -11,18 +19,8 @@ function feedback_send(task_id, firstname, email, company, message, include_anal
         "include_analysis": include_analysis
     };
 
-    $.ajax({
-        type: "post",
-        contentType: "application/json",
-        url: "/analysis/api/feedback_send/",
-        dataType: "json",
-        data: JSON.stringify(params),
-        timeout: 40000,
-        success: function success(data) {
-            callback(data);
-        }
-    }).fail(function (err) {
-        console.log(err);
+    CuckooWeb.api_post("/analysis/api/feedback_send/", params, function (data) {
+        callback(data);
     });
 }
 

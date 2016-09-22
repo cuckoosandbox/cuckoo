@@ -331,7 +331,7 @@ section#summary .panel-default .list-group > li > p > b {
 }
 
 .list-group-item:nth-child(odd) {
-    background-color: #363636;
+    /*background-color: #363636;*/
 }
 
 .pagination > .disabled > a, .pagination > .disabled > a:focus, .pagination > .disabled > a:hover, .pagination > .disabled > span, .pagination > .disabled > span:focus, .pagination > .disabled > span:hover {
@@ -1729,7 +1729,7 @@ div.loading {
 }
 
 .dndupload #uploader {
-    outline: 1px dashed #b1b1b1;
+    outline: 1px dashed #5c5c5c;
 }
 
 .dndupload progress::-webkit-progress-bar { background: #4b4b4b; /*border: 1px solid lightgrey;*/ /*border-radius: 10px;*/  }
@@ -1797,6 +1797,42 @@ a.jstree-anchor[filetree_type=container] {
 .network_http_request>.panel>.panel-heading{
     background: #2d2d2d;
 }
+
 .network_http_request{
     border: 1px solid #434343;
+}
+
+/* page errors */
+#page_error .error-code {
+  color: #bababa;
+}
+
+#page_error .error-desc {
+  color: #bababa;
+}
+
+/* plotly */
+
+.plotly>.svg-container>.main-svg{
+	background: rgba(255,255,255,0) !important;
+}
+
+.plotly>.svg-container g.subplot>rect{
+    fill: rgba(255, 255, 255, 0) !important;
+}
+
+.plotly>.svg-container text{
+    fill:white !important;
+}
+
+.plotly>.svg-container path.xgrid, .plotly>.svg-container path.ygrid{
+    stroke: rgb(83, 83, 83) !important;
+}
+
+.plotly>.svg-container g.legend>rect.bg{
+    fill: rgba(255,255,255, 0) !important;
+}
+
+.plotly>.svg-container rect.drag{
+    pointer-events: none !important;
 }
