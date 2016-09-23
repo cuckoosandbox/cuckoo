@@ -113,6 +113,8 @@ class Pcap(object):
         self.results = {}
         # List containing all whitelist entries.
         self.whitelist = self._build_whitelist()
+        # List for holding whitelisted IP-s according to DNS responses
+        self.whitelist_ips = []
 
     def _build_whitelist(self):
         result = []
@@ -203,7 +205,7 @@ class Pcap(object):
                     # We add external IPs to the list, only the first time
                     # we see them and if they're the destination of the
                     # first packet they appear in.
-                    if not self._is_private_ip(ip):
+                    if not self._is_private_ip(ip) and ip not in self.whitelist_ips:
                         self.unique_hosts.append(ip)
         except:
             pass
@@ -292,6 +294,8 @@ class Pcap(object):
 
         # DNS query parsing.
         query = {}
+        # Temporary list for found A or AAAA responses.
+        _ip = []
 
         if dns.rcode == dpkt.dns.DNS_RCODE_NOERR or \
                 dns.qr == dpkt.dns.DNS_R or \
@@ -302,10 +306,6 @@ class Pcap(object):
                 q_type = dns.qd[0].type
             except IndexError:
                 return False
-
-            if q_name in self.whitelist:
-                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
-                return True
 
             # DNS RR type mapping.
             # See: http://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
@@ -346,6 +346,7 @@ class Pcap(object):
                     ans["type"] = "A"
                     try:
                         ans["data"] = socket.inet_ntoa(answer.rdata)
+                        _ip.append(ans["data"])
                     except socket.error:
                         continue
                 elif answer.type == dpkt.dns.DNS_AAAA:
@@ -353,6 +354,7 @@ class Pcap(object):
                     try:
                         ans["data"] = socket.inet_ntop(socket.AF_INET6,
                                                        answer.rdata)
+                        _ip.append(ans["data"])
                     except (socket.error, ValueError):
                         continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
@@ -385,6 +387,11 @@ class Pcap(object):
 
                 # TODO: add srv handling
                 query["answers"].append(ans)
+
+            if q_name in self.whitelist:
+                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
+                self.whitelist_ips = self.whitelist_ips + _ip
+                return True
 
             self._add_domain(query["request"])
 
