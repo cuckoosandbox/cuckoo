@@ -21,7 +21,6 @@ class Mattermost(Report):
     """Notifies about finished analysis via Mattermost webhook."""
 
     def run(self, results):
-
         if not HAVE_REQUESTS:
             raise CuckooOperationalError(
                 "The Mattermost processing module requires the requests "
@@ -36,9 +35,9 @@ class Mattermost(Report):
                     urls.append(http.get("ioc"))
 
         post = "Finished analyze ::: [{0}]({1}{0}) ::: ".format(
-                            results.get("info").get("id"),
-                            self.options.get("myurl")
-                            )
+            results.get("info").get("id"),
+            self.options.get("myurl")
+        )
 
         filename = results.get("target").get("file").get("name")
         if self.options.get("hash-filename"):
@@ -46,21 +45,23 @@ class Mattermost(Report):
             
 
         post += "File : {0} ::: Score : **{1}** ::: ".format(
-                            filename,
-                            results.get("info").get("score")
-                            )
+            filename,
+            results.get("info").get("score")
+        )
 
         if self.options.get("show-virustotal"):
             post += "**VT : {0} / {1}**\n".format(
-                            results.get("virustotal").get("positives"),
-                            results.get("virustotal").get("total"),
-                            )
+                results.get("virustotal").get("positives"),
+                results.get("virustotal").get("total"),
+            )
 
         if self.options.get("show-signatures"):
-            post += "**Signatures** ::: {0} \n".format(' : '.join(sigs),)
+            post += "**Signatures** ::: {0} \n".format(' : '.join(sigs))
 
         if self.options.get("show-urls"):
-            post += "**URLS**\n`{0}`".format('\n'.join(urls).replace(".", "[.]"))
+            post += "**URLS**\n`{0}`".format(
+                '\n'.join(urls).replace(".", "[.]")
+            )
 
         data = {
             "username": self.options.get("username"),
@@ -70,6 +71,12 @@ class Mattermost(Report):
         headers = {'Content-Type': 'application/json'}
         
         try:
-            requests.post(self.options.get("url"), headers=headers, data=json.dumps(data))
+            requests.post(
+                self.options.get("url"), 
+                headers=headers, 
+                data=json.dumps(data)
+            )
         except Exception as e:
-            raise CuckooReportError("Failed posting message to Mattermost: %s" % e)
+            raise CuckooReportError(
+                    "Failed posting message to Mattermost: %s" % e
+            )
