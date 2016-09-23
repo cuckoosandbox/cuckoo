@@ -53,9 +53,9 @@ class SubmissionController(object):
                     pass
                 elif len(line) in (32, 40, 64, 128):
                     try:
-                        if cfg.virustotal.key.type != "public":
-                            if cfg.virustotal.key.type == "intelligence":
-                                url = 'https://www.virustotal.com/intelligence/download/'
+                        if int(cfg.virustotal.get("download", 0)):
+                            if cfg.virustotal.apitype == "intelligence":
+                                url = "https://www.virustotal.com/intelligence/download/"
                             else:
                                 url = "https://www.virustotal.com/vtapi/v2/file/download"
 
