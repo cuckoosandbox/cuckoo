@@ -546,7 +546,7 @@ def init_vt_download():
                     # no permission in private api
                     if r.status_code == 403:
                         exception = True
-                    # no permission in inteligence api
+                    # no permission in intelligence api
                     # if user have perissions to download from vt intelligence it will return file
                     elif r.status_code == 200 and r.content[:20] == "\n\n\n\n<!DOCTYPE html P":
                         exception = True
