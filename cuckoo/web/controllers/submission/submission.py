@@ -56,7 +56,7 @@ class SubmissionController(object):
                         if cfg.virustotal.key.type != "public":
                             if cfg.virustotal.key.type == "intelligence":
                                 url = 'https://www.virustotal.com/intelligence/download/'
-                            else
+                            else:
                                 url = "https://www.virustotal.com/vtapi/v2/file/download"
 
                             r = requests.get(url, params={
