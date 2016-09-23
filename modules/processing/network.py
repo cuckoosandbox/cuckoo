@@ -71,11 +71,13 @@ class Pcap(object):
 
     notified_dpkt = False
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, known_dns):
         """Creates a new instance.
         @param filepath: path to PCAP file
+        @param known_dns: known DNS servers list
         """
         self.filepath = filepath
+        self.known_dns = known_dns
 
         # List of all hosts.
         self.hosts = []
@@ -388,7 +390,10 @@ class Pcap(object):
                 # TODO: add srv handling
                 query["answers"].append(ans)
 
-            if q_name in self.whitelist:
+            if ( 
+                (conn.get("src") in self.known_dns or conn.get("dst") in self.known_dns) and 
+                q_name in self.whitelist 
+            ):
                 log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
                 self.whitelist_ips = self.whitelist_ips + _ip
                 return True
@@ -421,10 +426,6 @@ class Pcap(object):
         for entry in self.unique_domains:
             if entry["domain"] == domain:
                 return
-
-        if domain in self.whitelist:
-            log.debug("Domain {0} is whitelisted. Skipping ...".format(domain))
-            return
 
         self.unique_domains.append({"domain": domain,
                                     "ip": self._dns_gethostbyname(domain)})
@@ -833,7 +834,7 @@ class NetworkAnalysis(Processing):
             pcap_path = self.pcap_path
 
         if HAVE_DPKT:
-            results.update(Pcap(pcap_path).run())
+            results.update(Pcap(pcap_path, self.options.get("allowed-dns").split(",")).run())
 
         if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
             try:
