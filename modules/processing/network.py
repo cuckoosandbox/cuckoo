@@ -238,7 +238,7 @@ class Pcap(object):
         # Select DNS and MDNS traffic.
         if conn["dport"] == 53 or conn["sport"] == 53 or conn["dport"] == 5353 or conn["sport"] == 5353:
             if self._check_dns(data):
-                self._add_dns(data)
+                self._add_dns(conn, data)
 
     def _check_icmp(self, icmp_data):
         """Checks for ICMP traffic.
@@ -286,7 +286,7 @@ class Pcap(object):
 
         return True
 
-    def _add_dns(self, udpdata):
+    def _add_dns(self, conn, udpdata):
         """Adds a DNS data flow.
         @param udpdata: UDP data flow.
         """
