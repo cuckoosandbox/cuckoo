@@ -71,13 +71,13 @@ class Pcap(object):
 
     notified_dpkt = False
 
-    def __init__(self, filepath, known_dns):
+    def __init__(self, filepath, options):
         """Creates a new instance.
         @param filepath: path to PCAP file
-        @param known_dns: known DNS servers list
+        @param options: config options
         """
         self.filepath = filepath
-        self.known_dns = known_dns
+        self.options = options
 
         # List of all hosts.
         self.hosts = []
@@ -117,6 +117,10 @@ class Pcap(object):
         self.whitelist = self._build_whitelist()
         # List for holding whitelisted IP-s according to DNS responses
         self.whitelist_ips = []
+        # state of whitelisting
+        self.whitelist_enabled = self._build_whitelist_conf()
+        # List of known good DNS servers
+        self.known_dns = None
 
     def _build_whitelist(self):
         result = []
@@ -126,6 +130,17 @@ class Pcap(object):
         for line in open(whitelist_path, 'rb'):
             result.append(line.strip())
         return result
+
+    def _build_whitelist_conf(self):
+        if not self.options.get("whitelist-dns"):
+            log.debug("Whitelisting Disabled.")
+            return False
+
+        self.known_dns = self.options.get("allowed-dns")
+        if self.known_dns is not None:
+            self.known_dns = self.known_dns.split(",")
+
+        return True
 
     def _dns_gethostbyname(self, name):
         """Get host by name wrapper.
@@ -390,8 +405,8 @@ class Pcap(object):
                 # TODO: add srv handling
                 query["answers"].append(ans)
 
-            if ( 
-                (conn.get("src") in self.known_dns or conn.get("dst") in self.known_dns) and 
+            if ( self.whitelist_enabled and 
+                (conn.get("src") in self.known_dns or conn.get("dst") in self.known_dns) and  
                 q_name in self.whitelist 
             ):
                 log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
@@ -834,7 +849,7 @@ class NetworkAnalysis(Processing):
             pcap_path = self.pcap_path
 
         if HAVE_DPKT:
-            results.update(Pcap(pcap_path, self.options.get("allowed-dns").split(",")).run())
+            results.update(Pcap(pcap_path, self.options).run())
 
         if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
             try:
