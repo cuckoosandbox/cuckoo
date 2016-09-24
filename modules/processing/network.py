@@ -139,11 +139,35 @@ class Pcap(object):
 
         return True
 
+    def _is_whitelisted(self, conn, hostname):
+        """Checks if whitelisting conditions are met"""
+        # is whitelistng enabled ?
+        if not self.whitelist_enabled:
+            return False
+        
+        # is DNS recording coming from allowed NS server
+        if not self.known_dns:
+            pass
+        elif (conn.get("src") in self.known_dns or 
+              conn.get("dst") in self.known_dns):
+            pass
+        else:
+            return False
+
+        # is hostname whitelisted
+        if hostname not in self.whitelist:
+            return False
+        
+        return True
+
     def _build_known_dns(self):
         """Build known DNS list."""
+        result = []
         _known_dns = self.options.get("allowed-dns")
         if _known_dns is not None:
-            return _known_dns.split(",")
+            for r in _known_dns.split(","):
+                result.append(r.strip())
+            return result
 
         return []
 
@@ -410,10 +434,7 @@ class Pcap(object):
                 # TODO: add srv handling
                 query["answers"].append(ans)
 
-            if ( self.whitelist_enabled and 
-                (conn.get("src") in self.known_dns or conn.get("dst") in self.known_dns) and  
-                q_name in self.whitelist 
-            ):
+            if self._is_whitelisted(conn, q_name):
                 log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
                 self.whitelist_ips = self.whitelist_ips + _ip
                 return True
