@@ -62,7 +62,9 @@ class SubmissionController(object):
                             r = requests.get(url, params={
                                 "apikey": cfg.virustotal.key,
                                 "hash": line
-                            })
+                                }, 
+                                timeout=int(cfg.virustotal.get("timeout"), 60)
+                            )
                     except:
                         continue
 
