@@ -541,7 +541,9 @@ def init_vt_download():
                 r = requests.get(url, params={
                     "apikey": cfg.virustotal.key,
                     "hash": "f72cee733b1a6f30f8c850598d67b50a"
-                })
+                    }, 
+                    timeout=int(cfg.virustotal.get("timeout"), 60)
+                )
                 if r:
                     # no permission in private api
                     if r.status_code == 403:
