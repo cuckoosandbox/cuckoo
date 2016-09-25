@@ -6,6 +6,7 @@
 import os
 import shlex
 
+from _winreg import HKEY_CURRENT_USER
 from lib.common.abstracts import Package
 
 class Exe(Package):
