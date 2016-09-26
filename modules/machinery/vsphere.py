@@ -315,7 +315,7 @@ class vSphere(Machinery):
     def _download_snapshot(self, conn, vm, name, path):
         """Download snapshot file from host to local path"""
 
-        # Get filespec to .vmsn file of named snapshot
+        # Get filespec to .vmsn or .vmem file of named snapshot
         snapshot = self._get_snapshot_by_name(vm, name)
         if not snapshot:
             raise CuckooMachineError(
@@ -343,7 +343,7 @@ class vSphere(Machinery):
                     break
 
         if not filespec:
-            raise CuckooMachineError("Cannot find snapshot memory file")
+            raise CuckooMachineError("Could not find snapshot memory file")
 
         log.info("Downloading memory dump %s to %s", filespec, path)
 
@@ -367,9 +367,12 @@ class vSphere(Machinery):
             response = requests.get(url, params=params, headers=headers,
                                     verify=False, stream=True)
 
+            response.raise_for_status()
+
             with open(path, "wb") as localfile:
                 for chunk in response.iter_content(16*1024):
                     localfile.write(chunk)
+
         except Exception as e:
             raise CuckooMachineError(
                 "Error downloading memory dump %s: %s" %
