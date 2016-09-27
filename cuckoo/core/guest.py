@@ -6,14 +6,13 @@
 import datetime
 import io
 import json
-import os
-import time
-import socket
 import logging
+import os
 import requests
+import socket
+import time
 import xmlrpclib
-
-from zipfile import ZipFile, ZIP_STORED
+import zipfile
 
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
@@ -32,7 +31,7 @@ def analyzer_zipfile(platform, monitor):
     t = time.time()
 
     zip_data = io.BytesIO()
-    zip_file = ZipFile(zip_data, "w", ZIP_STORED)
+    zip_file = zipfile.ZipFile(zip_data, "w", zipfile.ZIP_STORED)
 
     # Select the proper analyzer's folder according to the operating
     # system associated with the current machine.
