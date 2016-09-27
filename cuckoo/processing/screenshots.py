@@ -43,7 +43,7 @@ class Screenshots(Processing):
             im = Image.open(shot_path)
             im.thumbnail((320, 320), Image.ANTIALIAS)
 
-            shot_file_name_resized = '%s_%s.jpg' % (shot_file_name, "small")
+            shot_file_name_resized = "%s_%s.jpg" % (shot_file_name, "small")
             shot_path_resized = "%s/%s" % (self.shots_path, shot_file_name_resized)
 
             im.save(shot_path_resized, "JPEG")
