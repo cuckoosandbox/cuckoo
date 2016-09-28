@@ -13,4 +13,5 @@ documentation.
     routing
     cwd
     configuration
+    monitoring
     configuration_android
