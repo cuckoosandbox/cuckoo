@@ -52,13 +52,20 @@ def init_cuckooml():
         sf = [i.strip() for i in cfg.cuckooml.features.split(",")]
         if "simple" in sf:
             selected_features.append(simple_features)
-        elif "nominal" in sf:
+        if "nominal" in sf:
             selected_features.append(features_nominal)
-        elif "numerical" in sf:
+        if "numerical" in sf:
             selected_features.append(features_numerical)
 
         # Apply filters to selected datasets
         filters = [i.strip() for i in cfg.cuckooml.features_filter.split(",")]
+
+        # Check whether features and filters dimension agrees
+        if len(filters) != len(selected_features):
+            print >> sys.stderr, "Number of *filters* and *selected_features* \
+                does not agree."
+            sys.exit(1)
+
         data = []
         for f, d in itertools.izip(filters, selected_features):
             if f == "log_bin":
