@@ -127,6 +127,7 @@ def init_cuckooml():
     if cfg.cuckooml.compare_new_samples:
         test_location = CUCKOO_ROOT + "/" + cfg.cuckooml.test_directory
 
+        new_sample = None
         if os.path.isdir(test_location):
             new_sample = Loader()
             new_sample.load_binaries(test_location)
@@ -136,9 +137,14 @@ def init_cuckooml():
             new_sample.label_sample()
             new_sample.extract_features()
             new_sample.extract_basic_features()
+        else:
+            print >> sys.stderr, "Indicated sample(s) to compare with do(es) \
+                not exist"
+
         # Compare new sample(s)
-        ml.compare_sample(new_sample).to_csv("test_samples.csv", \
-                                             encoding="utf-8")
+        if new_sample is not None:
+            ml.compare_sample(new_sample).to_csv("test_samples.csv", \
+                                                encoding="utf-8")
 
     if cfg.cuckooml.clustering and cfg.cuckooml.save_clustering_results:
         if cfg.cuckooml.clustering_results_directory:
