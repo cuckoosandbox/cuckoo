@@ -72,6 +72,8 @@ def init_cuckooml():
                 data.append(d.applymap(ml.__log_bin))
             elif f == "filter_dataset":
                 data.append(ml.filter_dataset(d))
+            elif f == "none":
+                data.append(d)
 
         data = pd.concat(data, axis=1)
 
