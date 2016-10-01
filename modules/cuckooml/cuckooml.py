@@ -1050,13 +1050,13 @@ class ML(object):
 
         # Clustered as X but below threshold
         anomalies["low_probability"] = \
-            sample[sample.probability < probability_threshold] \
-                  [sample.cluster != -1].index.tolist()
+            sample.loc[sample.probability < probability_threshold] \
+                  .loc[sample.cluster != -1].index.tolist()
 
         # High outlier score
         anomalies["high_outlier_score"] = \
-            sample[sample.outlier_score > outlier_threshold] \
-                  [sample.cluster != -1].index.tolist()
+            sample.loc[sample.outlier_score > outlier_threshold] \
+                  .loc[sample.cluster != -1].index.tolist()
 
         # Within cluster inconsistencies - detect non-homogeneous clusters
         anomalies["homogeneity_suspects"] = {}
@@ -1069,7 +1069,7 @@ class ML(object):
             anomalies["homogeneity_suspects"][i] = []
             for j in suspicious:
                 anomalies["homogeneity_suspects"][i] += \
-                    sample[sample.cluster == i][sample.label == j] \
+                    sample.loc[sample.cluster == i].loc[sample.label == j] \
                     .index.tolist()
 
         return anomalies
