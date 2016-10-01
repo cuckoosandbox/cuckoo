@@ -1155,7 +1155,7 @@ class ML(object):
             clustering = cluster_label
             labels = ground_label
 
-        return performance_metric(clustering, labels, data, False)
+        return performance_metric(clustering, labels, data, discard_noise)
 
 
     def clustering_label_distribution(self, clustering, labels, plot=False):
