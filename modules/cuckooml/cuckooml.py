@@ -52,19 +52,28 @@ def init_cuckooml():
         sf = [i.strip() for i in cfg.cuckooml.features.split(",")]
         if "simple" in sf:
             selected_features.append(simple_features)
-        elif "nominal" in sf:
+        if "nominal" in sf:
             selected_features.append(features_nominal)
-        elif "numerical" in sf:
+        if "numerical" in sf:
             selected_features.append(features_numerical)
 
         # Apply filters to selected datasets
         filters = [i.strip() for i in cfg.cuckooml.features_filter.split(",")]
+
+        # Check whether features and filters dimension agrees
+        if len(filters) != len(selected_features):
+            print >> sys.stderr, "Number of *filters* and *selected_features* \
+                does not agree."
+            sys.exit(1)
+
         data = []
         for f, d in itertools.izip(filters, selected_features):
             if f == "log_bin":
                 data.append(d.applymap(ml.__log_bin))
             elif f == "filter_dataset":
                 data.append(ml.filter_dataset(d))
+            elif f == "none":
+                data.append(d)
 
         data = pd.concat(data, axis=1)
 
@@ -127,6 +136,7 @@ def init_cuckooml():
     if cfg.cuckooml.compare_new_samples:
         test_location = CUCKOO_ROOT + "/" + cfg.cuckooml.test_directory
 
+        new_sample = None
         if os.path.isdir(test_location):
             new_sample = Loader()
             new_sample.load_binaries(test_location)
@@ -136,9 +146,14 @@ def init_cuckooml():
             new_sample.label_sample()
             new_sample.extract_features()
             new_sample.extract_basic_features()
+        else:
+            print >> sys.stderr, "Indicated sample(s) to compare with do(es) \
+                not exist"
+
         # Compare new sample(s)
-        ml.compare_sample(new_sample).to_csv("test_samples.csv", \
-                                             encoding="utf-8")
+        if new_sample is not None:
+            ml.compare_sample(new_sample).to_csv("test_samples.csv", \
+                                                encoding="utf-8")
 
     if cfg.cuckooml.clustering and cfg.cuckooml.save_clustering_results:
         if cfg.cuckooml.clustering_results_directory:
@@ -1035,13 +1050,13 @@ class ML(object):
 
         # Clustered as X but below threshold
         anomalies["low_probability"] = \
-            sample[sample.probability < probability_threshold] \
-                  [sample.cluster != -1].index.tolist()
+            sample.loc[sample.probability < probability_threshold] \
+                  .loc[sample.cluster != -1].index.tolist()
 
         # High outlier score
         anomalies["high_outlier_score"] = \
-            sample[sample.outlier_score > outlier_threshold] \
-                  [sample.cluster != -1].index.tolist()
+            sample.loc[sample.outlier_score > outlier_threshold] \
+                  .loc[sample.cluster != -1].index.tolist()
 
         # Within cluster inconsistencies - detect non-homogeneous clusters
         anomalies["homogeneity_suspects"] = {}
@@ -1054,7 +1069,7 @@ class ML(object):
             anomalies["homogeneity_suspects"][i] = []
             for j in suspicious:
                 anomalies["homogeneity_suspects"][i] += \
-                    sample[sample.cluster == i][sample.label == j] \
+                    sample.loc[sample.cluster == i].loc[sample.label == j] \
                     .index.tolist()
 
         return anomalies
@@ -1140,7 +1155,7 @@ class ML(object):
             clustering = cluster_label
             labels = ground_label
 
-        return performance_metric(clustering, labels, data, False)
+        return performance_metric(clustering, labels, data, discard_noise)
 
 
     def clustering_label_distribution(self, clustering, labels, plot=False):
