@@ -74,19 +74,26 @@ class STAP(Auxiliary):
         strace_start = time.time()
 
         # wait completion of strace attachment; it may take a bit of time
+        traced_fn = "strace/straced.%u" % os.getpid()
         while True:
-            try:
-                if os.path.getsize("strace/straced.%u" % os.getpid()) > 0:
-                    break
-                time.sleep(1)
+            time.sleep(1)
 
-            except: # file is not yet there
-                if (time.time() - strace_start) > 10:
-                    # timeout; something wrong
-                    log.info("STAP aux module timed out to run strace.")
-                    break
+            if (time.time() - strace_start) > 10:
+                # timeout; something wrong
+                log.info("STAP aux module timed out to run strace.")
+                break
 
+            if not os.path.exists(traced_fn):
+                # file has not been generated yet
                 continue
+
+            try:
+                if os.path.getsize(traced_fn) > 0: break
+
+            except Exception as e: 
+                # something wrong
+                log.warning(e)
+
 
         return True
 
