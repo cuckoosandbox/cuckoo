@@ -126,3 +126,26 @@ class TestConvertToPrintable:
 
     def test_non_printable(self):
         assert r"\x0b" == utils.convert_to_printable(chr(11))
+
+class TestIsPrintable:
+    def test_utf(self):
+        assert not utils.is_printable(u"\xe9")
+
+    def test_digit(self):
+        assert utils.is_printable(u"9")
+
+    def test_literal(self):
+        assert utils.is_printable("e")
+
+    def test_punctation(self):
+        assert utils.is_printable(".")
+
+    def test_whitespace(self):
+        assert utils.is_printable(" ")
+
+    def test_non_printable(self):
+        assert not utils.is_printable(chr(11))
+
+class TestVersiontuple:
+    def test_version_tuple(self):
+        assert (1, 1, 1, 0) == utils.versiontuple("1.1.1.0")
