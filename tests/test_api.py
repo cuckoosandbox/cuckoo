@@ -35,8 +35,30 @@ class TestAPI(object):
         shutil.rmtree(self.dirpath)
 
     def test_list_tasks(self):
+        # Test an empty task list.
         r = json.loads(self.app.get("/tasks/list").data)
         assert r == {"tasks": []}
+
+        # Fill the task list.
+        assert self.create_task() == 1
+        assert self.create_task() == 2
+        assert self.create_task() == 3
+
+        # Test limit option.
+        r = json.loads(self.app.get("/tasks/list/1").data)
+        assert len(r["tasks"]) == 1
+        assert r["tasks"][0]["id"] == 1
+
+        # Offest 1, limit 1.
+        r = json.loads(self.app.get("/tasks/list/1/1").data)
+        assert len(r["tasks"]) == 1
+        assert r["tasks"][0]["id"] == 2
+
+        # Offest 1, limit 2.
+        r = json.loads(self.app.get("/tasks/list/2/1").data)
+        assert len(r["tasks"]) == 2
+        assert r["tasks"][0]["id"] == 2
+        assert r["tasks"][1]["id"] == 3
 
     def test_create_task(self):
         assert self.create_task() == 1
@@ -49,11 +71,20 @@ class TestAPI(object):
         r = json.loads(self.app.get("/tasks/list").data)
         assert len(r["tasks"]) == 3
 
+    def test_create_file_task(self):
+        assert self.create_task() == 1
         r = json.loads(self.app.get("/tasks/view/1").data)
         task = r["task"]
         assert task["category"] == "file"
         assert task["sample"]["md5"] == "f2d886558b2866065c3da842bfe13ce6"
         assert open(task["target"], "rb").read() == "eval('alert(1)')"
+
+    def test_create_url_task(self):
+        assert self.create_url() == 1
+        r = json.loads(self.app.get("/tasks/view/1").data)
+        task = r["task"]
+        assert task["category"] == "url"
+        assert task["target"] == "http://machete.pwn"
 
     def test_delete_task(self):
         task_id = self.create_task()
@@ -71,8 +102,67 @@ class TestAPI(object):
         # TODO Should the file be deleted?
         # assert not os.path.exists(target)
 
+    def test_reschedule_task(self):
+        task_id = self.create_task()
+
+        # Reschedule the task.
+        r = self.app.get("/tasks/reschedule/%s" % task_id)
+        data = json.loads(r.data)
+        assert data["task_id"] == 2
+        assert data["status"] == "OK"
+        assert r.status_code == 200
+
+        # Task not found.
+        r = self.app.get("/tasks/reschedule/666")
+        assert r.status_code == 404
+
+    def test_files_view(self):
+        task_id = self.create_task()
+
+        # Fetch by id.
+        r = self.app.get("/files/view/id/%s" % task_id)
+        sample = json.loads(r.data)
+        assert sample["sample"]["id"] == 1
+
+        # Fetch by md5.
+        r = self.app.get("/files/view/md5/f2d886558b2866065c3da842bfe13ce6")
+        sample = json.loads(r.data)
+        assert sample["sample"]["id"] == 1
+
+        # Fetch by sha256.
+        r = self.app.get("/files/view/sha256/c6039bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
+        sample = json.loads(r.data)
+        assert sample["sample"]["id"] == 1
+
+        # Fetch not found id.
+        r = self.app.get("/files/view/id/69")
+        assert r.status_code == 404
+
+        # Fetch not found md5.
+        r = self.app.get("/files/view/md5/zzz886558b2866065c3da842bfe13ce6")
+        assert r.status_code == 404
+
+        # Fetch not found sha256.
+        r = self.app.get("/files/view/sha256/zzz39bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
+        assert r.status_code == 404
+
+    def test_files_get(self):
+        task_id = self.create_task()
+
+        # TODO: add fetch file case.
+
+        # Not found.
+        r = self.app.get("/files/get/zzz39bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
+        assert r.status_code == 404
+
     def create_task(self, filename="a.js", content="eval('alert(1)')"):
         r = self.app.post("/tasks/create/file", data={
             "file": werkzeug.FileStorage(io.BytesIO(content), filename),
+        })
+        return json.loads(r.data)["task_id"]
+
+    def create_url(self, url="http://machete.pwn"):
+        r = self.app.post("/tasks/create/url", data={
+            "url": url,
         })
         return json.loads(r.data)["task_id"]
