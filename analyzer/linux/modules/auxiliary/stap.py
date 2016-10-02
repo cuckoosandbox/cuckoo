@@ -68,14 +68,26 @@ class STAP(Auxiliary):
         try: os.mkdir("strace")
         except: pass # don't worry, it exists
 
-        strace_start = time.time()
         stderrfd = open("strace/strace.stderr", "wb")
         self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
         self.fallback_strace = True
+        strace_start = time.time()
 
-        time.sleep(10)
-        strace_end = time.time()
-        log.info("STAP aux module startup took %.2f seconds" % (strace_end - strace_start))
+        # wait completion of strace attachment; it may take a bit of time
+        while True:
+            try:
+                if os.path.getsize("strace/straced.%u" % os.getpid()) > 0:
+                    break
+                time.sleep(1)
+
+            except: # file is not yet there
+                if (time.time() - strace_start) > 10:
+                    # timeout; something wrong
+                    log.info("STAP aux module timed out to run strace.")
+                    break
+
+                continue
+
         return True
 
     def get_pids(self):
