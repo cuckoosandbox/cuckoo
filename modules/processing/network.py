@@ -15,7 +15,7 @@ import urlparse
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.config import Config
-from lib.cuckoo.common.constants import LATEST_HTTPREPLAY
+from lib.cuckoo.common.constants import LATEST_HTTPREPLAY, CUCKOO_ROOT
 from lib.cuckoo.common.dns import resolve
 from lib.cuckoo.common.irc import ircMessage
 from lib.cuckoo.common.objects import File
@@ -71,11 +71,13 @@ class Pcap(object):
 
     notified_dpkt = False
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, options):
         """Creates a new instance.
         @param filepath: path to PCAP file
+        @param options: config options
         """
         self.filepath = filepath
+        self.options = options
 
         # List of all hosts.
         self.hosts = []
@@ -111,6 +113,63 @@ class Pcap(object):
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
+        # List containing all whitelist entries.
+        self.whitelist = self._build_whitelist()
+        # List for holding whitelisted IP-s according to DNS responses
+        self.whitelist_ips = []
+        # state of whitelisting
+        self.whitelist_enabled = self._build_whitelist_conf()
+        # List of known good DNS servers
+        self.known_dns = self._build_known_dns()
+
+    def _build_whitelist(self):
+        result = []
+        whitelist_path = os.path.join(
+            CUCKOO_ROOT, "data", "whitelist", "domain.txt"
+        )
+        for line in open(whitelist_path, 'rb'):
+            result.append(line.strip())
+        return result
+
+    def _build_whitelist_conf(self):
+        """Check if whitelisting is enabled."""
+        if not self.options.get("whitelist-dns"):
+            log.debug("Whitelisting Disabled.")
+            return False
+
+        return True
+
+    def _is_whitelisted(self, conn, hostname):
+        """Checks if whitelisting conditions are met"""
+        # is whitelistng enabled ?
+        if not self.whitelist_enabled:
+            return False
+        
+        # is DNS recording coming from allowed NS server
+        if not self.known_dns:
+            pass
+        elif (conn.get("src") in self.known_dns or 
+              conn.get("dst") in self.known_dns):
+            pass
+        else:
+            return False
+
+        # is hostname whitelisted
+        if hostname not in self.whitelist:
+            return False
+        
+        return True
+
+    def _build_known_dns(self):
+        """Build known DNS list."""
+        result = []
+        _known_dns = self.options.get("allowed-dns")
+        if _known_dns is not None:
+            for r in _known_dns.split(","):
+                result.append(r.strip())
+            return result
+
+        return []
 
     def _dns_gethostbyname(self, name):
         """Get host by name wrapper.
@@ -192,7 +251,7 @@ class Pcap(object):
                     # We add external IPs to the list, only the first time
                     # we see them and if they're the destination of the
                     # first packet they appear in.
-                    if not self._is_private_ip(ip):
+                    if not self._is_private_ip(ip) and ip not in self.whitelist_ips:
                         self.unique_hosts.append(ip)
         except:
             pass
@@ -225,7 +284,7 @@ class Pcap(object):
         # Select DNS and MDNS traffic.
         if conn["dport"] == 53 or conn["sport"] == 53 or conn["dport"] == 5353 or conn["sport"] == 5353:
             if self._check_dns(data):
-                self._add_dns(data)
+                self._add_dns(conn, data)
 
     def _check_icmp(self, icmp_data):
         """Checks for ICMP traffic.
@@ -273,7 +332,7 @@ class Pcap(object):
 
         return True
 
-    def _add_dns(self, udpdata):
+    def _add_dns(self, conn, udpdata):
         """Adds a DNS data flow.
         @param udpdata: UDP data flow.
         """
@@ -281,6 +340,8 @@ class Pcap(object):
 
         # DNS query parsing.
         query = {}
+        # Temporary list for found A or AAAA responses.
+        _ip = []
 
         if dns.rcode == dpkt.dns.DNS_RCODE_NOERR or \
                 dns.qr == dpkt.dns.DNS_R or \
@@ -331,6 +392,7 @@ class Pcap(object):
                     ans["type"] = "A"
                     try:
                         ans["data"] = socket.inet_ntoa(answer.rdata)
+                        _ip.append(ans["data"])
                     except socket.error:
                         continue
                 elif answer.type == dpkt.dns.DNS_AAAA:
@@ -338,6 +400,7 @@ class Pcap(object):
                     try:
                         ans["data"] = socket.inet_ntop(socket.AF_INET6,
                                                        answer.rdata)
+                        _ip.append(ans["data"])
                     except (socket.error, ValueError):
                         continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
@@ -370,6 +433,11 @@ class Pcap(object):
 
                 # TODO: add srv handling
                 query["answers"].append(ans)
+
+            if self._is_whitelisted(conn, q_name):
+                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
+                self.whitelist_ips = self.whitelist_ips + _ip
+                return True
 
             self._add_domain(query["request"])
 
@@ -807,7 +875,7 @@ class NetworkAnalysis(Processing):
             pcap_path = self.pcap_path
 
         if HAVE_DPKT:
-            results.update(Pcap(pcap_path).run())
+            results.update(Pcap(pcap_path, self.options).run())
 
         if HAVE_HTTPREPLAY and os.path.exists(pcap_path):
             try:
