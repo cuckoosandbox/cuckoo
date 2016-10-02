@@ -11,17 +11,23 @@ import os
 import re
 import sys
 import time
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
-from hdbscan import HDBSCAN
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from math import log
-from sklearn import metrics
-from sklearn.cluster import DBSCAN
-from sklearn.manifold import TSNE
+
+try:
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    from hdbscan import HDBSCAN
+    from sklearn import metrics
+    from sklearn.cluster import DBSCAN
+    from sklearn.manifold import TSNE
+except ImportError, e:
+    print >> sys.stderr, "Some of the packages required by CuckooML are not \
+        available."
+    print >> sys.stderr, e
 
 def init_cuckooml():
     """Initialise CuckooML analysis with default parameters."""
