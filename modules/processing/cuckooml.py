@@ -11,17 +11,23 @@ import os
 import re
 import sys
 import time
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
-from hdbscan import HDBSCAN
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from math import log
-from sklearn import metrics
-from sklearn.cluster import DBSCAN
-from sklearn.manifold import TSNE
+
+try:
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    from hdbscan import HDBSCAN
+    from sklearn import metrics
+    from sklearn.cluster import DBSCAN
+    from sklearn.manifold import TSNE
+except ImportError, e:
+    print >> sys.stderr, "Some of the packages required by CuckooML are not \
+        available."
+    print >> sys.stderr, e
 
 def init_cuckooml():
     """Initialise CuckooML analysis with default parameters."""
@@ -349,6 +355,38 @@ class ML(object):
         }
     }
 
+    PATTERNS = [r"Armadillo", r"PECompact", r"ASPack", r"ASProtect",
+        r"Upack", r"U(PX|px)", r"FSG", r"BobSoft Mini Delphi",
+        r"InstallShield 2000", r"InstallShield Custom",
+        r"Xtreme\-Protector", r"Crypto\-Lock", r"MoleBox", r"Dev\-C\+\+",
+        r"StarForce", r"Wise Installer Stub", r"SVK Protector",
+        r"eXPressor", r"EXECryptor", r"N(s|S)Pac(k|K)", r"KByS",
+        r"themida", r"Packman", r"EXE Shield", r"WinRAR 32-bit SFX",
+        r"WinZip 32-bit SFX", r"Install Stub 32-bit", r"P(E|e)tite",
+        r"PKLITE32", r"y(o|0)da's (Protector|Crypter)", r"Ste@lth PE",
+        r"PE\-Armor", r"KGB SFX", r"tElock", r"PEBundle", r"Crunch\/PE",
+        r"Obsidium", r"nPack", r"PEX", r"PE Diminisher",
+        r"North Star PE Shrinker", r"PC Guard for Win32", r"W32\.Jeefo",
+        r"MEW [0-9]+", r"InstallAnywhere", r"Anskya Binder",
+        r"BeRoEXEPacker", r"NeoLite", r"SVK\-Protector",
+        r"Ding Boy's PE\-lock Phantasm", r"hying's PEArmor", r"E language",
+        r"NSIS Installer", r"Video\-Lan\-Client", r"EncryptPE",
+        r"HASP HL Protection", r"PESpin", r"CExe", r"UG2002 Cruncher",
+        r"ACProtect", r"Thinstall", r"DBPE", r"XCR", r"PC Shrinker",
+        r"AH(p|P)ack", r"ExeShield Protector",
+        r"\* \[MSLRH\]", r"XJ \/ XPAL", r"Krypton", r"Stealth PE",
+        r"Goats Mutilator", r"PE\-PACK", r"RCryptor", r"\* PseudoSigner",
+        r"Shrinker", r"PC-Guard", r"PELOCKnt", r"WinZip \(32\-bit\)",
+        r"EZIP", r"PeX", r"PE( |\-)Crypt", r"E(XE|xe)()?Stealth",
+        r"ShellModify", r"Macromedia Windows Flash Projector\/Player",
+        r"WARNING ->", r"PE Protector", r"Software Compress",
+        r"PE( )?Ninja", r"Feokt", r"RLPack",
+        r"Nullsoft( PIMP)? Install System", r"SDProtector Pro Edition",
+        r"VProtector", r"WWPack32", r"CreateInstall Stub", r"ORiEN",
+        r"dePACK", r"ENIGMA Protector", r"MicroJoiner", r"Virogen Crypt",
+        r"SecureEXE", r"PCShrink", r"WinZip Self\-Extractor",
+        r"PEiD\-Bundle", r"DxPack", r"Freshbind", r"kkrunchy"]
+
     def __init__(self, context="standalone"):
         """The context variable defines type of operation for the functions
         using visualisations. *standalone* saves figures as files, *notebook*
@@ -519,60 +557,22 @@ class ML(object):
                 self.__log_bin(features[i]["timestamp"])
 
             # Handle ExifTool output
-            for j in self.__handle_string(features[i]["FileDescription"]):
-                my_features[i][":meta:" + j] = 1
-            for j in self.__handle_string(features[i]["OriginalFilename"]):
-                my_features[i][":meta:" + j] = 1
-            for j in self.__handle_string(features[i]["magic_byte"]):
-                my_features[i][":meta:" + j] = 1
+            exif = ["FileDescription", "OriginalFilename", "magic_byte"]
+            for e in exif:
+                for j in self.__handle_string(features[i][e]):
+                    my_features[i][":meta:" + j] = 1
 
             # Is the binary signed?
             my_features[i][":sign:signed"] = int(features[i]["signed"])
             # And other signature features
-            for j in self.__handle_string(features[i]["Comments"]):
-                my_features[i][":sign:" + j] = 1
-            for j in self.__handle_string(features[i]["ProductName"]):
-                my_features[i][":sign:" + j] = 1
-            for j in self.__handle_string(features[i]["LegalCopyright"]):
-                my_features[i][":sign:" + j] = 1
-            for j in self.__handle_string(features[i]["InternalName"]):
-                my_features[i][":sign:" + j] = 1
-            for j in self.__handle_string(features[i]["CompanyName"]):
-                my_features[i][":sign:" + j] = 1
+            signature = ["Comments", "ProductName", "LegalCopyright",
+                         "InternalName", "CompanyName"]
+            for s in signature:
+                for j in self.__handle_string(features[i][s]):
+                    my_features[i][":sign:" + j] = 1
 
             # Extract packer
-            patterns = [r"Armadillo", r"PECompact", r"ASPack", r"ASProtect",
-            r"Upack", r"U(PX|px)", r"FSG", r"BobSoft Mini Delphi",
-            r"InstallShield 2000", r"InstallShield Custom",
-            r"Xtreme\-Protector", r"Crypto\-Lock", r"MoleBox", r"Dev\-C\+\+",
-            r"StarForce", r"Wise Installer Stub", r"SVK Protector",
-            r"eXPressor", r"EXECryptor", r"N(s|S)Pac(k|K)", r"KByS",
-            r"themida", r"Packman", r"EXE Shield", r"WinRAR 32-bit SFX",
-            r"WinZip 32-bit SFX", r"Install Stub 32-bit", r"P(E|e)tite",
-            r"PKLITE32", r"y(o|0)da's (Protector|Crypter)", r"Ste@lth PE",
-            r"PE\-Armor", r"KGB SFX", r"tElock", r"PEBundle", r"Crunch\/PE",
-            r"Obsidium", r"nPack", r"PEX", r"PE Diminisher",
-            r"North Star PE Shrinker", r"PC Guard for Win32", r"W32\.Jeefo",
-            r"MEW [0-9]+", r"InstallAnywhere", r"Anskya Binder",
-            r"BeRoEXEPacker", r"NeoLite", r"SVK\-Protector",
-            r"Ding Boy's PE\-lock Phantasm", r"hying's PEArmor", r"E language",
-            r"NSIS Installer", r"Video\-Lan\-Client", r"EncryptPE",
-            r"HASP HL Protection", r"PESpin", r"CExe", r"UG2002 Cruncher",
-            r"ACProtect", r"Thinstall", r"DBPE", r"XCR", r"PC Shrinker",
-            r"AH(p|P)ack", r"ExeShield Protector",
-            r"\* \[MSLRH\]", r"XJ \/ XPAL", r"Krypton", r"Stealth PE",
-            r"Goats Mutilator", r"PE\-PACK", r"RCryptor", r"\* PseudoSigner",
-            r"Shrinker", r"PC-Guard", r"PELOCKnt", r"WinZip \(32\-bit\)",
-            r"EZIP", r"PeX", r"PE( |\-)Crypt", r"E(XE|xe)()?Stealth",
-            r"ShellModify", r"Macromedia Windows Flash Projector\/Player",
-            r"WARNING ->", r"PE Protector", r"Software Compress",
-            r"PE( )?Ninja", r"Feokt", r"RLPack",
-            r"Nullsoft( PIMP)? Install System", r"SDProtector Pro Edition",
-            r"VProtector", r"WWPack32", r"CreateInstall Stub", r"ORiEN",
-            r"dePACK", r"ENIGMA Protector", r"MicroJoiner", r"Virogen Crypt",
-            r"SecureEXE", r"PCShrink", r"WinZip Self\-Extractor",
-            r"PEiD\-Bundle", r"DxPack", r"Freshbind", r"kkrunchy"]
-            regexps = [re.compile(pattern) for pattern in patterns]
+            regexps = [re.compile(pattern) for pattern in self.PATTERNS]
             if features[i]["packer"] is not None:
                 for packer in features[i]["packer"]:
                     for regexp in regexps:
@@ -627,54 +627,27 @@ class ML(object):
             # File operations
             # TODO: tell apart different file operations by prefixing
             # Files touched
-            for f in features[i]["file_read"]:
-                my_features[i][":file:touch:" + f] = 1
-            for f in features[i]["file_written"]:
-                my_features[i][":file:touch:" + f] = 1
-            for f in features[i]["file_deleted"]:
-                my_features[i][":file:touch:" + f] = 1
-            for f in features[i]["file_copied"]:
-                my_features[i][":file:touch:" + f] = 1
-            for f in features[i]["file_renamed"]:
-                my_features[i][":file:touch:" + f] = 1
+            touch = ["file_read", "file_written", "file_deleted", "file_copied",
+                     "file_renamed"]
+            for t in touch:
+                for f in features[i][t]:
+                    my_features[i][":file:touch:" + f] = 1
             # TODO: better binning (linear not logarithmic)
             # File numbers
-            my_features[i][":file:count:all"] = \
-                self.__log_bin(features[i]["files_operations"])
-            my_features[i][":count:file:all"] = \
-                features[i]["files_operations"]
-            my_features[i][":file:count:read"] = \
-                self.__log_bin(features[i]["files_read"])
-            my_features[i][":count:file:read"] = \
-                features[i]["files_read"]
-            my_features[i][":file:count:written"] = \
-                self.__log_bin(features[i]["files_written"])
-            my_features[i][":count:file:written"] = \
-                features[i]["files_written"]
-            my_features[i][":file:count:deleted"] = \
-                self.__log_bin(features[i]["files_deleted"])
-            my_features[i][":count:file:deleted"] = \
-                features[i]["files_deleted"]
-            my_features[i][":file:count:copied"] = \
-                self.__log_bin(features[i]["files_copied"])
-            my_features[i][":count:file:copied"] = \
-                features[i]["files_copied"]
-            my_features[i][":file:count:renamed"] = \
-                self.__log_bin(features[i]["files_renamed"])
-            my_features[i][":count:file:renamed"] = \
-                features[i]["files_renamed"]
-            my_features[i][":file:count:opened"] = \
-                self.__log_bin(features[i]["files_opened"])
-            my_features[i][":count:file:opened"] = \
-                features[i]["files_opened"]
-            my_features[i][":file:count:exists"] = \
-                self.__log_bin(features[i]["files_exists"])
-            my_features[i][":count:file:exists"] = \
-                features[i]["files_exists"]
-            my_features[i][":file:count:failed"] = \
-                self.__log_bin(features[i]["files_failed"])
-            my_features[i][":count:file:failed"] = \
-                features[i]["files_failed"]
+            operation_number = [("all", "files_operations"),
+                                ("read", "files_read"),
+                                ("written", "files_written"),
+                                ("deleted", "files_deleted"),
+                                ("copied", "files_copied"),
+                                ("renamed", "files_renamed"),
+                                ("opened", "files_opened"),
+                                ("exists", "files_exists"),
+                                ("failed", "files_failed")]
+            for o in operation_number:
+                my_features[i][":file:count:" + o[0]] = \
+                    self.__log_bin(features[i][o[1]])
+                my_features[i][":count:file:" + o[0]] = \
+                    features[i][o[1]]
 
             # Networking
             # TODO: include subnets
@@ -682,22 +655,22 @@ class ML(object):
             #       "udp", "dns"
             for tcp in features[i]["tcp"]:
                 my_features[i][":net:" + tcp] = 1
-            # Count tcp addresses
-            my_features[i][":count:tcp"] = len(features[i]["tcp"])
             for udp in features[i]["udp"]:
                 my_features[i][":net:" + udp] = 1
-            # Count udp addresses
-            my_features[i][":count:udp"] = len(features[i]["udp"])
             for dns in features[i]["dns"]:
                 my_features[i][":net:" + dns] = 1
                 for j in features[i]["dns"][dns]:
                     my_features[i][":net:" + j] = 1
-            # Count dns addresses
-            my_features[i][":count:dns"] = len(features[i]["dns"])
             for http in features[i]["http"]:
                 my_features[i][":net:" + features[i]["http"][http]["host"]] \
                     = 1
+            # Count tcp addresses
+            my_features[i][":count:tcp"] = len(features[i]["tcp"])
+            # Count udp addresses
+            my_features[i][":count:udp"] = len(features[i]["udp"])
             # Count dns addresses
+            my_features[i][":count:dns"] = len(features[i]["dns"])
+            # Count http addresses
             my_features[i][":count:http"] = len(features[i]["http"])
 
             # Register operations
