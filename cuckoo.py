@@ -24,7 +24,7 @@ try:
     from lib.cuckoo.core.startup import init_logging, init_modules
     from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
     from lib.cuckoo.core.startup import init_rooter, init_routing
-    from modules.cuckooml.cuckooml import init_cuckooml
+    from modules.processing.cuckooml import init_cuckooml
 
     import bson
 
