@@ -43,6 +43,31 @@ class XLS(Package):
                 "ExtensionHardening": 0,
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Excel\\Security",
+            {
+                "VBAWarnings": 1,
+                "AccessVBOM": 1,
+            },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\General",
+           {
+               "ShownFirstRunOptin": 1,
+               "FirstRunTime": "0175d569",
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\Internet",
+           {
+                "UseOnlineContent": 1,
+                "IDN_AlertOff": 1,
+                "UseOnlineAppDetect": 0,
+           },
+        ],
     ]
 
     def start(self, path):
