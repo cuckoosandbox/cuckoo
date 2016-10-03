@@ -58,6 +58,7 @@ class DOC(Package):
             {
                 "VBAWarnings": 1,
                 "AccessVBOM": 1,
+                "ExtensionHardening": 0,
             },
         ],
         [
