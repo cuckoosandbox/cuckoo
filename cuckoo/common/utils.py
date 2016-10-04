@@ -226,7 +226,7 @@ def exception_message():
     msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
     msg += "OS version: %s\n" % os.name
     msg += "OS release: %s\n" % get_os_release()
-    msg += "Python version: %s\n" % sys.version.split()[0]
+    msg += "Python version: %s\n" % platform.python_version()
     msg += "Machine arch: %s\n" % platform.machine()
 
     """
