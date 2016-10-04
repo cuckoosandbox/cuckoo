@@ -7,6 +7,8 @@ import os
 import shutil
 import tempfile
 
+import cuckoo
+
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common import utils
 
@@ -154,3 +156,29 @@ def test_version():
     from cuckoo import __version__
     from cuckoo.misc import version
     assert __version__ == version
+
+def test_exception():
+    s = utils.exception_message()
+    assert "Cuckoo version: %s" % cuckoo.__version__ in s
+    assert "alembic:" in s
+    assert "django-extensions:" in s
+    assert "peepdf:" in s
+    assert "sflock:" in s
+
+def test_guid():
+    assert utils.guid_name("{0002e005-0000-0000-c000-000000000046}") == "InprocServer32"
+    assert utils.guid_name("{13709620-c279-11ce-a49e-444553540000}") == "Shell"
+
+def test_jsbeautify():
+    js = {
+        "if(1){a(1,2,3);}": "if (1) {\n    a(1, 2, 3);\n}",
+    }
+    for k, v in js.items():
+        assert utils.jsbeautify(k) == v
+
+def test_htmlprettify():
+    html = {
+        "<a href=google.com>wow</a>": '<a href="google.com">\n wow\n</a>',
+    }
+    for k, v in html.items():
+        assert utils.htmlprettify(k) == v
