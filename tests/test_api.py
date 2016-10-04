@@ -7,11 +7,12 @@ import json
 import os.path
 import shutil
 import tempfile
+import time
 import werkzeug
 
 from cuckoo.apps import api
 from cuckoo.common.files import Folders, Files
-from cuckoo.core.database import Database
+from cuckoo.core.database import Database, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.misc import set_cwd
 
 CUCKOO_CONF = """
@@ -93,6 +94,11 @@ class TestAPI(object):
         target = json.loads(r.data)["task"]["target"]
         assert os.path.exists(target)
 
+        Database().set_status(task_id, TASK_RUNNING)
+        r = self.app.get("/tasks/delete/%s" % task_id)
+        assert r.status_code == 500
+
+        Database().set_status(task_id, TASK_COMPLETED)
         r = self.app.get("/tasks/delete/%s" % task_id)
         assert r.status_code == 200
 
@@ -147,13 +153,60 @@ class TestAPI(object):
         assert r.status_code == 404
 
     def test_files_get(self):
-        task_id = self.create_task()
+        self.create_task()
 
         # TODO: add fetch file case.
 
         # Not found.
         r = self.app.get("/files/get/zzz39bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
         assert r.status_code == 404
+
+    def test_completed_after(self):
+        a = self.create_task()
+        b = self.create_task()
+
+        t1 = int(time.time())
+        Database().set_status(a, TASK_COMPLETED)
+
+        time.sleep(1)
+        t2 = int(time.time())
+        Database().set_status(b, TASK_COMPLETED)
+
+        r = json.loads(self.app.get("/tasks/list", query_string={
+            "completed_after": t1,
+        }).data)
+        assert len(r["tasks"]) == 2
+
+        r = json.loads(self.app.get("/tasks/list", query_string={
+            "completed_after": t2,
+        }).data)
+        assert len(r["tasks"]) == 1
+
+    def test_list_status(self):
+        a = self.create_task()
+        b = self.create_task()
+
+        Database().set_status(a, TASK_COMPLETED)
+
+        r = json.loads(self.app.get("/tasks/list", query_string={
+            "status": TASK_COMPLETED,
+        }).data)
+        assert len(r["tasks"]) == 1
+
+        Database().set_status(a, TASK_COMPLETED)
+        r = json.loads(self.app.get("/tasks/list", query_string={
+            "status": TASK_COMPLETED,
+        }).data)
+        assert len(r["tasks"]) == 1
+
+        Database().set_status(b, TASK_COMPLETED)
+        r = json.loads(self.app.get("/tasks/list", query_string={
+            "status": TASK_COMPLETED,
+        }).data)
+        assert len(r["tasks"]) == 2
+
+    def test_exit(self):
+        assert self.app.get("/exit").status_code == 403
 
     def create_task(self, filename="a.js", content="eval('alert(1)')"):
         r = self.app.post("/tasks/create/file", data={
@@ -166,3 +219,18 @@ class TestAPI(object):
             "url": url,
         })
         return json.loads(r.data)["task_id"]
+
+def test_bool():
+    assert api.parse_bool("true") is True
+    assert api.parse_bool("True") is True
+    assert api.parse_bool("yes") is True
+    assert api.parse_bool("1") is True
+
+    assert api.parse_bool("false") is False
+    assert api.parse_bool("False") is False
+    assert api.parse_bool("None") is False
+    assert api.parse_bool("no") is False
+    assert api.parse_bool("0") is False
+
+    assert api.parse_bool("2") is True
+    assert api.parse_bool("3") is True

@@ -3,23 +3,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import hashlib
+import io
 import os
 import socket
 import tarfile
-
-from datetime import datetime
-from StringIO import StringIO
-from zipfile import ZipFile, ZIP_STORED
+import zipfile
 
 from flask import Flask, request, jsonify, make_response
 
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.files import Files, Folders
-from cuckoo.core.database import Database, TASK_RUNNING, Task
-from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
+from cuckoo.core.database import Database, Task
+from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, set_cwd
+from cuckoo.misc import cwd, set_cwd, version
 
 # Global Database object.
 db = Database()
@@ -159,14 +157,20 @@ def tasks_list(limit=None, offset=None):
 
     completed_after = request.args.get("completed_after")
     if completed_after:
-        completed_after = datetime.fromtimestamp(int(completed_after))
+        completed_after = datetime.datetime.fromtimestamp(
+            int(completed_after)
+        )
 
     owner = request.args.get("owner")
     status = request.args.get("status")
 
-    for row in db.list_tasks(limit=limit, details=True, offset=offset,
-                             completed_after=completed_after, owner=owner,
-                             status=status, order_by=Task.completed_on.asc()):
+    tasks = db.list_tasks(
+        limit=limit, details=True, offset=offset,
+        completed_after=completed_after, owner=owner,
+        status=status, order_by=Task.completed_on.asc()
+    )
+
+    for row in tasks:
         task = row.to_dict(dt=True)
 
         # Sanitize the target in case it contains non-ASCII characters as we
@@ -196,27 +200,24 @@ def tasks_view(task_id):
     response = {}
 
     task = db.view_task(task_id, details=True)
-    if task:
-        entry = task.to_dict()
-        entry["guest"] = {}
-        if task.guest:
-            entry["guest"] = task.guest.to_dict()
+    if not task:
+        return json_error(404, "Task not found")
 
-        entry["errors"] = []
-        for error in task.errors:
-            entry["errors"].append(error.message)
+    entry = task.to_dict()
+    entry["guest"] = {}
+    if task.guest:
+        entry["guest"] = task.guest.to_dict()
 
-        entry["sample"] = {}
-        if task.sample_id:
-            sample = db.view_sample(task.sample_id)
-            entry["sample"] = sample.to_dict()
+    entry["errors"] = []
+    for error in task.errors:
+        entry["errors"].append(error.message)
 
-        response["task"] = entry
-    else:
-        r = jsonify(message="Task not found")
-        r.status_code = 404
-        return r
+    entry["sample"] = {}
+    if task.sample_id:
+        sample = db.view_sample(task.sample_id)
+        entry["sample"] = sample.to_dict()
 
+    response["task"] = entry
     return jsonify(response)
 
 @app.route("/tasks/reschedule/<int:task_id>")
@@ -230,13 +231,13 @@ def tasks_reschedule(task_id, priority=None):
         return json_error(404, "There is no analysis with the specified ID")
 
     new_task_id = db.reschedule(task_id, priority)
-    if new_task_id:
-        response["status"] = "OK"
-        response["task_id"] = new_task_id
-    else:
-        return json_error(500, "An error occurred while trying to "
-                          "reschedule the task")
+    if not new_task_id:
+        return json_error(
+            500, "An error occurred while trying to reschedule the task"
+        )
 
+    response["status"] = "OK"
+    response["task_id"] = new_task_id
     return jsonify(response)
 
 @app.route("/tasks/delete/<int:task_id>")
@@ -245,20 +246,21 @@ def tasks_delete(task_id):
     response = {}
 
     task = db.view_task(task_id)
-    if task:
-        if task.status == TASK_RUNNING:
-            return json_error(500, "The task is currently being "
-                              "processed, cannot delete")
-
-        if db.delete_task(task_id):
-            Folders.delete(cwd("storage", "analyses", "%d" % task_id))
-            response["status"] = "OK"
-        else:
-            return json_error(500, "An error occurred while trying to "
-                              "delete the task")
-    else:
+    if not task:
         return json_error(404, "Task not found")
 
+    if task.status == TASK_RUNNING:
+        return json_error(
+            500, "The task is currently being processed, cannot delete"
+        )
+
+    if not db.delete_task(task_id):
+        return json_error(
+            500, "An error occurred while trying to delete the task"
+        )
+
+    Folders.delete(cwd("storage", "analyses", "%d" % task_id))
+    response["status"] = "OK"
     return jsonify(response)
 
 @app.route("/tasks/report/<int:task_id>")
@@ -284,13 +286,14 @@ def tasks_report(task_id, report_format="json"):
     }
 
     if report_format.lower() in formats:
-        report_path = cwd("storage", "analyses",
-                          "%d" % task_id, "reports",
-                          formats[report_format.lower()])
+        report_path = cwd(
+            "storage", "analyses", "%d" % task_id, "reports",
+            formats[report_format.lower()]
+        )
     elif report_format.lower() in bz_formats:
         bzf = bz_formats[report_format.lower()]
         srcdir = cwd("storage", "analyses", "%d" % task_id)
-        s = StringIO()
+        s = io.BytesIO()
 
         # By default go for bz2 encoded tar files (for legacy reasons).
         tarmode = tar_formats.get(request.args.get("tar"), "w:bz2")
@@ -313,15 +316,15 @@ def tasks_report(task_id, report_format="json"):
     else:
         return json_error(400, "Invalid report format")
 
-    if os.path.exists(report_path):
-        if report_format == "json":
-            response = make_response(open(report_path, "rb").read())
-            response.headers["Content-Type"] = "application/json"
-            return response
-        else:
-            return open(report_path, "rb").read()
-    else:
+    if not os.path.exists(report_path):
         return json_error(404, "Report not found")
+
+    if report_format == "json":
+        response = make_response(open(report_path, "rb").read())
+        response.headers["Content-Type"] = "application/json"
+        return response
+    else:
+        return open(report_path, "rb").read()
 
 @app.route("/tasks/screenshots/<int:task_id>")
 @app.route("/v1/tasks/screenshots/<int:task_id>")
@@ -330,40 +333,41 @@ def tasks_report(task_id, report_format="json"):
 def task_screenshots(task_id=0, screenshot=None):
     folder_path = cwd("storage", "analyses", "%s" % task_id, "shots")
 
-    if os.path.exists(folder_path):
-        if screenshot:
-            screenshot_name = "{0}.jpg".format(screenshot)
-            screenshot_path = os.path.join(folder_path, screenshot_name)
-            if os.path.exists(screenshot_path):
-                # TODO: Add content disposition.
-                response = make_response(open(screenshot_path, "rb").read())
-                response.headers["Content-Type"] = "image/jpeg"
-                return response
-            else:
-                return json_error(404, "Screenshot not found!")
-        else:
-            zip_data = StringIO()
-            with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                for shot_name in os.listdir(folder_path):
-                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
-
-            # TODO: Add content disposition.
-            response = make_response(zip_data.getvalue())
-            response.headers["Content-Type"] = "application/zip"
-            return response
+    if not os.path.exists(folder_path):
         return json_error(404, "Task not found")
+
+    if screenshot:
+        screenshot_name = "%s.jpg" % screenshot
+        screenshot_path = os.path.join(folder_path, screenshot_name)
+        if not os.path.exists(screenshot_path):
+            return json_error(404, "Screenshot not found!")
+
+        # TODO: Add content disposition.
+        response = make_response(open(screenshot_path, "rb").read())
+        response.headers["Content-Type"] = "image/jpeg"
+        return response
+    else:
+        zip_data = io.BytesIO()
+        with zipfile.ZipFile(zip_data, "w", zipfile.ZIP_STORED) as zip_file:
+            for shot_name in os.listdir(folder_path):
+                zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+
+        # TODO: Add content disposition.
+        response = make_response(zip_data.getvalue())
+        response.headers["Content-Type"] = "application/zip"
+        return response
 
 @app.route("/tasks/rereport/<int:task_id>")
 def rereport(task_id):
     task = db.view_task(task_id)
-    if task:
-        if task.status == TASK_REPORTED:
-            db.set_status(task_id, TASK_COMPLETED)
-            return jsonify(success=True)
-
-        return jsonify(success=False)
-    else:
+    if not task:
         return json_error(404, "Task not found")
+
+    if task.status == TASK_REPORTED:
+        db.set_status(task_id, TASK_COMPLETED)
+        return jsonify(success=True)
+
+    return jsonify(success=False)
 
 @app.route("/tasks/reboot/<int:task_id>")
 def reboot(task_id):
@@ -391,41 +395,40 @@ def files_view(md5=None, sha256=None, sample_id=None):
     else:
         return json_error(400, "Invalid lookup term")
 
-    if sample:
-        response["sample"] = sample.to_dict()
-    else:
+    if not sample:
         return json_error(404, "File not found")
 
+    response["sample"] = sample.to_dict()
     return jsonify(response)
 
 @app.route("/files/get/<sha256>")
 @app.route("/v1/files/get/<sha256>")
 def files_get(sha256):
     file_path = cwd("storage", "binaries", sha256)
-    if os.path.exists(file_path):
-        response = make_response(open(file_path, "rb").read())
-        response.headers["Content-Type"] = \
-            "application/octet-stream; charset=UTF-8"
-        return response
-    else:
+    if not os.path.exists(file_path):
         return json_error(404, "File not found")
+
+    response = make_response(open(file_path, "rb").read())
+    response.headers["Content-Type"] = \
+        "application/octet-stream; charset=UTF-8"
+    return response
 
 @app.route("/pcap/get/<int:task_id>")
 @app.route("/v1/pcap/get/<int:task_id>")
 def pcap_get(task_id):
     file_path = cwd("storage", "analyses", "%s" % task_id, "dump.pcap")
-    if os.path.exists(file_path):
-        try:
-            # TODO This could be a big file, so eventually we have to switch
-            # to app.send_static_file() instead.
-            response = make_response(open(file_path, "rb").read())
-            response.headers["Content-Type"] = \
-                "application/octet-stream; charset=UTF-8"
-            return response
-        except:
-            return json_error(500, "An error occurred while reading PCAP")
-    else:
+    if not os.path.exists(file_path):
         return json_error(404, "File not found")
+
+    try:
+        # TODO This could be a big file, so eventually we have to switch
+        # to app.send_static_file() instead.
+        response = make_response(open(file_path, "rb").read())
+        response.headers["Content-Type"] = \
+            "application/octet-stream; charset=UTF-8"
+        return response
+    except:
+        return json_error(500, "An error occurred while reading PCAP")
 
 @app.route("/machines/list")
 @app.route("/v1/machines/list")
@@ -446,11 +449,10 @@ def machines_view(name=None):
     response = {}
 
     machine = db.view_machine(name=name)
-    if machine:
-        response["machine"] = machine.to_dict()
-    else:
+    if not machine:
         return json_error(404, "Machine not found")
 
+    response["machine"] = machine.to_dict()
     return jsonify(response)
 
 @app.route("/cuckoo/status")
@@ -500,7 +502,7 @@ def cuckoo_status():
         memory = None
 
     response = dict(
-        version=CUCKOO_VERSION,
+        version=version,
         hostname=socket.gethostname(),
         machines=dict(
             total=len(db.list_machines()),
@@ -524,39 +526,34 @@ def cuckoo_status():
 def memorydumps_list(task_id):
     folder_path = cwd("storage", "analyses", "%s" % task_id, "memory")
 
-    if os.path.exists(folder_path):
-        memory_files = []
-        memory_path = cwd("storage", "analyses", "%s" % task_id, "memory")
-        for subdir, dirs, files in os.walk(memory_path):
-            for filename in files:
-                memory_files.append(filename.replace(".dmp", ""))
-
-        if len(memory_files) == 0:
-            return json_error(404, "Memory dump not found")
-
-        return jsonify({"dump_files": memory_files})
-    else:
+    if not os.path.exists(folder_path):
         return json_error(404, "Memory dump not found")
+
+    memory_files = []
+    for subdir, dirs, files in os.walk(folder_path):
+        for filename in files:
+            memory_files.append(filename.replace(".dmp", ""))
+
+    if not memory_files:
+        return json_error(404, "Memory dump not found")
+
+    return jsonify({"dump_files": memory_files})
 
 @app.route("/memory/get/<int:task_id>/<pid>")
 def memorydumps_get(task_id, pid=None):
     folder_path = cwd("storage", "analyses", "%s" % task_id, "memory")
 
-    if os.path.exists(folder_path):
-        if pid:
-            pid_name = "{0}.dmp".format(pid)
-            pid_path = os.path.join(folder_path, pid_name)
-            if os.path.exists(pid_path):
-                response = make_response(open(pid_path, "rb").read())
-                response.headers["Content-Type"] = \
-                    "application/octet-stream; charset=UTF-8"
-                return response
-            else:
-                return json_error(404, "Memory dump not found")
-        else:
-            return json_error(404, "Memory dump not found")
-    else:
+    if not os.path.exists(folder_path) or not pid:
         return json_error(404, "Memory dump not found")
+
+    pid_path = os.path.join(folder_path, "%s.dmp" % pid)
+    if not os.path.exists(pid_path):
+        return json_error(404, "Memory dump not found")
+
+    response = make_response(open(pid_path, "rb").read())
+    response.headers["Content-Type"] = \
+        "application/octet-stream; charset=UTF-8"
+    return response
 
 @app.route("/vpn/status")
 def vpn_status():
@@ -570,14 +567,15 @@ def vpn_status():
 def exit_api():
     """Shuts down the server if in debug mode and
     using the werkzeug server"""
-    if app.debug:
-        if not shutdown_server():
-            return json_error(500, "Shutdown only possible if using werkzeug"
-                                   " server")
-        else:
-            return jsonify(message="Server stopped")
-    else:
+    if not app.debug:
         return json_error(403, "This call can only be used in debug mode")
+
+    if not shutdown_server():
+        return json_error(
+            500, "Shutdown only possible if using werkzeug server"
+        )
+    else:
+        return jsonify(message="Server stopped")
 
 def cuckoo_api(hostname, port, debug):
     app.run(host=hostname, port=port, debug=debug)
