@@ -501,11 +501,7 @@ def cuckoo_clean():
             # Then drop all starting with cuckoo index
             # prefix (clears previously rotated indexes)
             es = Elasticsearch(hosts)
-            indexes = es.indices.get_aliases().keys()
-            for index in indexes:
-                if index.startswith("%s-" % cuckoo_index):
-                    es.indices.delete(index=index, ignore=[400, 404])
-            
+            es.indices.delete(index='%s-*' % cuckoo_index, ignore=[400, 404])           
         except:
             log.warning("Unable to drop ElasticSearch database: %s", index)
 
