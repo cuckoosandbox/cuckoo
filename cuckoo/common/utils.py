@@ -227,6 +227,7 @@ def exception_message():
     msg += "OS version: %s\n" % os.name
     msg += "OS release: %s\n" % get_os_release()
     msg += "Python version: %s\n" % platform.python_version()
+    msg += "Python implementation: %s\n" % platform.python_implementation()
     msg += "Machine arch: %s\n" % platform.machine()
 
     """
