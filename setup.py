@@ -122,4 +122,6 @@ setuptools.setup(
             "psycopg2==2.6.2",
         ],
     },
+    setup_requires = ["pytest-runner"],
+    tests_require = ["pytest"],
 )
