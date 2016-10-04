@@ -6,6 +6,7 @@ import imp
 import inspect
 import logging
 import os.path
+import pkg_resources
 import sys
 
 try:
@@ -21,6 +22,8 @@ log = logging.getLogger(__name__)
 # Cuckoo Working Directory base path.
 _root = None
 _raw = None
+
+version = pkg_resources.require("Cuckoo")[0].version
 
 def set_cwd(path, raw=None):
     global _root, _raw

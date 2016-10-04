@@ -149,3 +149,8 @@ class TestIsPrintable:
 class TestVersiontuple:
     def test_version_tuple(self):
         assert (1, 1, 1, 0) == utils.versiontuple("1.1.1.0")
+
+def test_version():
+    from cuckoo import __version__
+    from cuckoo.misc import version
+    assert __version__ == version
