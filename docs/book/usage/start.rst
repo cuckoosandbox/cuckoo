@@ -14,7 +14,7 @@ You will get an output similar to this::
       88   88  8 88   88   8 8   8 8   8
       88e8 88ee8 88e8 88   8 8eee8 8eee8
 
-     Cuckoo Sandbox 2.0-rc2
+     Cuckoo Sandbox 2.0.0
      www.cuckoosandbox.org
      Copyright (c) 2010-2016
 
@@ -82,8 +82,9 @@ if you're running multiple machines with Cuckoo on it, you will want the
 process of running Cuckoo to be automated.
 
 Fortunately Cuckoo will automatically provide one with a ``supervisord.conf``
-file in the :ref:`cwd` which may be started either by running ``supervisord``
-from the ``CWD`` directory, or by providing the configuration directly to
+file in the ``Cuckoo Working Directory`` (this topic will be explained on the
+next page) which may be started either by running ``supervisord`` from the
+``CWD`` directory, or by providing the configuration directly to
 ``supervisord`` as follows::
 
     $ supervisord -c $CWD/supervisord.conf

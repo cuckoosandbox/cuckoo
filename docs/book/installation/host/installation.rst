@@ -36,6 +36,8 @@ want to bump the file count limits before starting Cuckoo as otherwise some
 samples will fail to properly process the report (due to opening more files
 than allowed by the Operating System).
 
+.. _install_cuckoo:
+
 Install Cuckoo
 ==============
 

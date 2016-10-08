@@ -43,7 +43,7 @@ def convert_char(c):
         return "\\x%02x" % ord(c)
 
 def is_printable(s):
-    """ Test if a string is printable."""
+    """Test if a string is printable."""
     for c in s:
         if c not in PRINTABLE_CHARACTERS:
             return False
@@ -152,13 +152,6 @@ def to_unicode(s):
 
     return result
 
-def cleanup_value(v):
-    """Cleanup utility function, strips some unwanted parts from values."""
-    v = str(v)
-    if v.startswith("\\??\\"):
-        v = v[4:]
-    return v
-
 def classlock(f):
     """Classlock decorator (created for database.Database).
     Used to put a lock to avoid sqlite errors.
@@ -194,12 +187,12 @@ def guid_name(guid):
     if not GUIDS:
         for line in open(cwd("guids.txt", private=True)):
             try:
-                guid, name, url = line.strip().split()
+                guid_, name, url = line.strip().split()
             except:
                 log.debug("Invalid GUID entry: %s", line)
                 continue
 
-            GUIDS["{%s}" % guid] = name
+            GUIDS["{%s}" % guid_] = name
 
     return GUIDS.get(guid)
 
@@ -226,7 +219,8 @@ def exception_message():
     msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
     msg += "OS version: %s\n" % os.name
     msg += "OS release: %s\n" % get_os_release()
-    msg += "Python version: %s\n" % sys.version.split()[0]
+    msg += "Python version: %s\n" % platform.python_version()
+    msg += "Python implementation: %s\n" % platform.python_implementation()
     msg += "Machine arch: %s\n" % platform.machine()
 
     """

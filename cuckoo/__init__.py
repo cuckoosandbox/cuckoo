@@ -7,6 +7,8 @@ from cuckoo import (
     auxiliary, machinery, processing, reporting, signatures,
 )
 
+from cuckoo.misc import version as __version__
+
 # Don't include machinery here as its data structure is different from the
 # other plugins - of which multiple are in use at any time.
 plugins = {
