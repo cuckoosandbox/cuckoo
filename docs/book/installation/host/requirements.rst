@@ -5,8 +5,8 @@ Requirements
 Before proceeding to installing and configuring Cuckoo, you'll need to install
 some required software packages and libraries.
 
-Installing Python libraries
-===========================
+Installing Python libraries (on Ubuntu/Debian-based distributions)
+==================================================================
 
 The Cuckoo host components is completely written in Python, therefore it is
 required to have an appropriate version of Python installed. At this point we
@@ -47,6 +47,20 @@ installation instructions.
 .. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _mitmproxy: https://mitmproxy.org/
+
+Installing Python libraries (on Mac OS X)
+=========================================
+
+This is mostly the same as the installation on Ubuntu/Debian, except that
+we'll be using the ``brew`` package manager. Install all the required
+dependencies as follows (this list is WIP)::
+
+    $ brew install libmagic
+
+Installing Python libraries (on Windows 7)
+==========================================
+
+To be documented.
 
 Virtualization Software
 =======================
