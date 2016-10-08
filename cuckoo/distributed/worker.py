@@ -90,6 +90,9 @@ if os.environ.get("CUCKOO_APP") == "worker":
         ("dist.scheduler", True): gevent.spawn(
             with_app, "dist.scheduler", scheduler
         ),
+        ("dist.status", True): gevent.spawn(
+            with_app, "dist.status", scheduler
+        ),
     }
 
     with_app("dist.spawner", spawner)
