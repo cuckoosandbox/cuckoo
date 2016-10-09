@@ -23,6 +23,7 @@ from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
 from cuckoo.core.database import Database
+from cuckoo.core.init import write_supervisor_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import check_configs, init_modules
@@ -35,7 +36,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(context, debug):
+def cuckoo_create(context):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -74,71 +75,23 @@ def cuckoo_create(context, debug):
     our_version = open(cwd(".cwd", private=True), "rb").read()
     open(cwd(".cwd"), "wb").write(our_version)
 
-    with open(cwd("supervisord.conf"), "wb") as f:
-        # Temporarily redirect stdout to our file.
-        f, sys.stdout = sys.stdout, f
-
-        if os.environ.get("VIRTUAL_ENV"):
-            python_path = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "python")
-            cuckoo_path = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "cuckoo")
-        else:
-            python_path = "python"
-            cuckoo_path = "cuckoo"
-
-        username = context.user or getuser()
-
-        print "[supervisord]"
-        print "logfile =", cwd("supervisord", "log.log")
-        print "pidfile =", cwd("supervisord", "pidfile")
-        print "user =", username
-        print
-        print "[supervisorctl]"
-        print "serverurl = unix://%s" % cwd("supervisord", "unix.sock")
-        print
-        print "[rpcinterface:supervisor]"
-        print "supervisor.rpcinterface_factory =",
-        print "supervisor.rpcinterface:make_main_rpcinterface"
-        print
-        print "[unix_http_server]"
-        print "file =", cwd("supervisord", "unix.sock")
-        print
-        print "[program:cuckoo]"
-        print "command = %s -d -m 10000" % cuckoo_path
-        print "user =", username
-        print "startsecs = 30"
-        print "autorestart = true"
-        print
-        print "[program:cuckoo-process]"
-        print "command = %s process p%%(process_num)d" % cuckoo_path
-        print "process_name = cuckoo-process_%(process_num)d"
-        print "numprocs = 4"
-        print "user =", username
-        print "autorestart = true"
-        print
-        print "[program:distributed]"
-        print "command = %s -m cuckoo.distributed.worker" % python_path
-        print "user =", username
-        print "autostart = false"
-        print "autorestart = true"
-        print 'environment = CUCKOO_APP="worker",CUCKOO_CWD="%s"' % cwd()
-
-        f, sys.stdout = sys.stdout, f
+    # Write the supervisord.conf configuration file.
+    write_supervisor_conf(context.parent.user)
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
     print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
 
-def cuckoo_init(level, context, debug):
+def cuckoo_init(level, context):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
-    @param debug: enable debug mode.
     """
     logo()
 
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(context, debug)
+        cuckoo_create(context)
         sys.exit(0)
 
     # Determine if this is a proper CWD.
@@ -233,7 +186,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
         level = logging.INFO
 
     try:
-        cuckoo_init(level, ctx, debug)
+        cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
         message = "{0}: {1}".format(e.__class__.__name__, e)
@@ -249,6 +202,15 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
         # Deal with an unhandled exception.
         message = exception_message()
         print message, traceback.format_exc()
+
+@main.command()
+@click.pass_context
+def init(context):
+    """Initializes a Cuckoo instance and checks its configuration/setup."""
+    # Write the supervisord.conf configuration file (if needed).
+    write_supervisor_conf(context.parent.user)
+
+    cuckoo_init(logging.INFO, context)
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
