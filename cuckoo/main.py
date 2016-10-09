@@ -103,7 +103,7 @@ def cuckoo_create(context, debug):
         print "file =", cwd("supervisord", "unix.sock")
         print
         print "[program:cuckoo]"
-        print "command = %s -d" % cuckoo_path
+        print "command = %s -d -m 10000" % cuckoo_path
         print "user =", username
         print "startsecs = 30"
         print "autorestart = true"
