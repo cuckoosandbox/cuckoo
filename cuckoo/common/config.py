@@ -14,6 +14,145 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
+class Type(object):
+    """Base Class for Type Definitions"""
+
+    def __init__(self):
+        """Base constructor for Type Definition class"""
+        pass
+
+    def get(self,config,section,name):
+        """Gets the Parameter value from the config file."""
+        pass
+
+    def check(self,value):
+        """ Checks the type of the value."""
+        pass
+
+
+class IntType(Type):
+    """ Integer Type Definition class. """
+
+    def __init__(self):
+        super(IntType,self).__init__()
+        return
+
+    def get(self,config,section,name):
+        """Gets the value of the parameter from the config file. """
+        try:
+            value = config.getint(section, name)
+        except ValueError:
+            if config.get(section, name) is not '':
+                log.error("Incorrect Integer %s", config.get(section, name))
+            value = config.get(section, name)
+        return value
+
+    def check(self,value):
+        """Checks if the value is of type Integer. """
+        try:
+            click.INT(value)
+            return True
+        except Exception as ex:
+            return False
+
+class StringType(Type):
+    """ String Type Definition class. """
+
+    def __init__(self):
+        super(StringType,self).__init__()
+        return
+
+    def get(self,config,section,name):
+        """Gets the value of the parameter from the config file. """
+        value = config.get(section, name)
+        return value
+
+    def check(self,value):
+        """Checks if the value is of type String. """
+        if isinstance(value,str):
+            return True
+        else:
+            return False
+
+class PathType(StringType):
+    """ Path Type Definition class. """
+
+    def __init__(self):
+        super(PathType,self).__init__()
+        return
+
+    def get(self,config,section,name):
+        """Gets the value of the parameter from the config file. """
+        try:
+            c = click.Path()
+            value = c.convert(config.get(section, name), None, None)
+        except Exception as ex:
+            if config.get(section, name) is not '':
+                log.error("Incorrect Path : %s , Error : %s",
+                        config.get(section, name), ex)
+            value = config.get(section, name)
+        return value
+
+    def check(self,value):
+        """Checks if the value is of type String. """
+        try:
+            c = click.Path()
+            c.convert(config.get(section, name), None, None)
+            return True
+        except Exception as ex:
+            return False
+
+class BooleanType(Type):
+    """ Boolean Type Definition class. """
+
+    def __init__(self):
+        super(BooleanType,self).__init__()
+        return
+
+    def get(self,config,section,name):
+        """Gets the value of the parameter from the config file. """
+        try:
+            value = config.getboolean(section, name)
+        except ValueError:
+            if config.get(section, name) is not '':
+                log.error("Incorrect Boolean %s", config.get(section, name))
+            value = config.get(section, name)
+        return value
+
+    def check(self,value):
+        """Checks if the value is of type Boolean. """
+        try:
+            click.BOOL(value)
+            return True
+        except Exception as ex:
+            return False
+
+class UUIDType(Type):
+    """ UUID Type Definition class. """
+
+    def __init__(self):
+        super(UUIDType,self).__init__()
+        return
+
+    def get(self,config,section,name):
+        """Gets the value of the parameter from the config file. """
+        try:
+            c = click.UUID(config.get(section, name))
+            value = str(c)
+        except Exception as ex:
+            if config.get(section, name) is not '':
+                log.error("Incorrect UUID %s", config.get(section, name))
+            value = config.get(section, name)
+        return value
+
+    def check(self,value):
+        """Checks if the value is of type UUID. """
+        try:
+            click.UUID(value)
+            return True
+        except Exception as ex:
+            return False
+
 class Config:
     """Configuration file parser."""
 
@@ -553,6 +692,11 @@ class Config:
         else:
             config.read(cwd("conf", "%s.conf" % file_name))
 
+        int_type = IntType()
+        str_type = StringType()
+        bool_type = BooleanType()
+        path_type = PathType()
+        uuid_type = UUIDType()
         if file_name not in self.ParamTypes:
             log.error("Unknown config file %s.conf" % (file_name))
             return
@@ -570,33 +714,18 @@ class Config:
                 if name in sectionTypes:
                     value = ''
                     if sectionTypes[name] in [self.STRING, self.IP]:
-                        value = config.get(section,name)
+                        value = str_type.get(config,section,name)
                     elif sectionTypes[name] is self.PATH:
-                        try:
-                            c = click.Path()
-                            value = c.convert(config.get(section,name),None,None)
-                        except Exception as ex:
-                            log.error("Incorrect Path : %s , Error : %s",
-                                      config.get(section,name),ex)
+                        value = path_type.get(config,section,name)
                     elif sectionTypes[name] is self.UUID:
-                        try:
-                            c = click.UUID(config.get(section,name))
-                            value = str(c)
-                        except Exception as ex:
-                            log.error("Incorrect UUID %s",config.get(section, name))
+                        value = uuid_type.get(config,section,name)
                     elif sectionTypes[name] is self.INT:
-                        try:
-                            value = config.getint(section,name)
-                        except ValueError:
-                            value = config.get(section,name)
+                        value = int_type.get(config,section,name)
                     elif sectionTypes[name] is self.BOOLEAN:
-                        try:
-                            value = config.getboolean(section, name)
-                        except ValueError:
-                            value = config.get(section,name)
+                        value = bool_type.get(config,section,name)
                 else:
+                    log.error("Type of config parameter %s.%s NOT FOUND!!" % (section, name))
                     value = config.get(section, name)
-                    log.error("Type of config parameter %s.%s NOT FOUND!!"%(section,name))
                 setattr(getattr(self, section), name, value)
 
     def get(self, section):
