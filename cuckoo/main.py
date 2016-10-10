@@ -36,7 +36,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(context):
+def cuckoo_create(ctx):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -76,13 +76,13 @@ def cuckoo_create(context):
     open(cwd(".cwd"), "wb").write(our_version)
 
     # Write the supervisord.conf configuration file.
-    write_supervisor_conf(context.parent.user)
+    write_supervisor_conf(ctx.parent.user or getuser())
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
     print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
 
-def cuckoo_init(level, context):
+def cuckoo_init(level, ctx):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
     """
@@ -91,7 +91,7 @@ def cuckoo_init(level, context):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(context)
+        cuckoo_create(ctx)
         sys.exit(0)
 
     # Determine if this is a proper CWD.
@@ -205,12 +205,12 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
 
 @main.command()
 @click.pass_context
-def init(context):
+def init(ctx):
     """Initializes a Cuckoo instance and checks its configuration/setup."""
-    # Write the supervisord.conf configuration file (if needed).
-    write_supervisor_conf(context.parent.user)
+    cuckoo_init(logging.INFO, ctx)
 
-    cuckoo_init(logging.INFO, context)
+    # Write the supervisord.conf configuration file (if needed).
+    write_supervisor_conf(ctx.parent.user or getuser())
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")

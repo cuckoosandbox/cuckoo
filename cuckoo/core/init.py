@@ -5,7 +5,7 @@
 import os
 import sys
 
-from cuckoo.misc import cwd, getuser
+from cuckoo.misc import cwd
 
 def write_supervisor_conf(username):
     """Writes supervisord.conf configuration file if it does not exist yet."""
@@ -23,8 +23,6 @@ def write_supervisor_conf(username):
         else:
             python_path = "python"
             cuckoo_path = "cuckoo"
-
-        username = username or getuser()
 
         print "[supervisord]"
         print "logfile =", cwd("supervisord", "log.log")

@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import shutil
 import tempfile
 
 from cuckoo.core.init import write_supervisor_conf
@@ -12,6 +13,9 @@ class TestInit(object):
     def setup(self):
         self.dirpath = tempfile.mkdtemp()
         set_cwd(self.dirpath)
+
+    def teardown(self):
+        shutil.rmtree(self.dirpath)
 
     def test_exists(self):
         filepath = cwd("supervisord.conf")
