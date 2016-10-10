@@ -19,9 +19,14 @@ if not cfg.mongodb.get("enabled"):
 MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
 MONGO_PORT = cfg.mongodb.get("port", 27017)
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
+MONGO_USER = cfg.mongodb.get("user", None)
+MONGO_PASS = cfg.mongodb.get("pass", None)
 
 try:
-    MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+    _mongo = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
+    if MONGO_USER and MONGO_PASS:
+        _mongo.cuckoo.authenticate(MONGO_USER, MONGO_PASS)
+    MONGO = _mongo[MONGO_DB]
 except Exception as e:
     raise Exception("Unable to connect to Mongo: %s" % e)
 
