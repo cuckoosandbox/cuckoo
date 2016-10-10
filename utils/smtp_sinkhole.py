@@ -62,7 +62,7 @@ class SmtpSink(SMTPServer):
                 server = smtplib.SMTP_SSL(email_config.email['server'], int(email_config.email["port"]))
                 server.login(email_config.email['user'], email_config.email['password'])
                 server.set_debuglevel(0)
-                server.sendmail(email_config.email["from"], email_config.email["to"].split(" ,"), data)
+                server.sendmail(email_config.email["from"], email_config.email["to"].split(" ,"), msg.as_string())
                 server.quit()
             except Exception as e:
                 logging.error(e)
