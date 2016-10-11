@@ -14,6 +14,7 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
+
 class Type(object):
     """Base Class for Type Definitions"""
 
@@ -86,10 +87,10 @@ class PathType(StringType):
         super(PathType, self).__init__()
         return
 
-    def get(self, config, section, name):
+    def get(self, config, section, name, exists=False, writable=False, readable=False):
         """Gets the value of the parameter from the config file."""
         try:
-            c = click.Path()
+            c = click.Path(exists=exists, writable=writable, readable=readable)
             value = c.convert(config.get(section, name), None, None)
         except Exception as ex:
             if config.get(section, name) is not "":
@@ -167,7 +168,8 @@ class Config:
     """Configuration file parser."""
 
     # Config Parameters and their types
-    BOOLEAN, STRING, INT, PATH, IP, UUID = range(6)
+    BOOLEAN, STRING, INT, EXIST_WRITE_PATH, EXIST_READ_PATH, READ_PATH,\
+        WRITE_PATH, IP, UUID = range(9)
     ParamTypes = {
         ## cuckoo.conf parameters
         "cuckoo": {
@@ -180,14 +182,14 @@ class Config:
                 "terminate_processes": BOOLEAN,
                 "reschedule": BOOLEAN,
                 "process_results": BOOLEAN,
-                "debug" : BOOLEAN,
+                "debug": BOOLEAN,
                 "max_analysis_count": INT,
                 "max_machines_count": INT,
                 "max_vmstartup_count": INT,
                 "critical_timeout": INT,
                 "freespace": INT,
-                "tmppath": PATH,
-                "rooter": PATH,
+                "tmppath": EXIST_WRITE_PATH,
+                "rooter": READ_PATH,
             },
             "resultserver": {
                 "ip": IP,
@@ -214,7 +216,7 @@ class Config:
         "virtualbox": {
             "virtualbox": {
                 "mode": STRING,
-                "path": PATH,
+                "path": EXIST_READ_PATH,
                 "interface": STRING,
                 "machines": STRING,
             },
@@ -240,15 +242,15 @@ class Config:
         "auxiliary": {
             "sniffer": {
                 "enabled": BOOLEAN,
-                "tcpdump": PATH,
+                "tcpdump": EXIST_READ_PATH,
                 "bpf": STRING,
             },
             "mitm": {
                 "enabled": BOOLEAN,
-                "mitmdump": PATH,
+                "mitmdump": EXIST_READ_PATH,
                 "port_base": INT,
-                "script": PATH,
-                "certificate": PATH,
+                "script": EXIST_READ_PATH,
+                "certificate": EXIST_READ_PATH,
             },
             "services": {
                 "enabled": BOOLEAN,
@@ -263,9 +265,9 @@ class Config:
         "avd": {
             "avd": {
                 "mode": STRING,
-                "emulator_path": PATH,
-                "adb_path": PATH,
-                "avd_path": PATH,
+                "emulator_path": EXIST_READ_PATH,
+                "adb_path": EXIST_READ_PATH,
+                "avd_path": EXIST_READ_PATH,
                 "reference_machine": STRING,
                 "machines": STRING,
             },
@@ -497,8 +499,8 @@ class Config:
             },
             "snort": {
                 "enabled": BOOLEAN,
-                "snort": PATH,
-                "conf": PATH,
+                "snort": READ_PATH,
+                "conf": READ_PATH,
             },
             "static": {
                 "enabled": BOOLEAN,
@@ -508,11 +510,11 @@ class Config:
             },
             "suricata": {
                 "enabled": BOOLEAN,
-                "suricata": PATH,
-                "eve_log": PATH,
-                "files_log": PATH,
-                "files_dir": PATH,
-                "socket": PATH,
+                "suricata": EXIST_READ_PATH,
+                "eve_log": WRITE_PATH,
+                "files_log": WRITE_PATH,
+                "files_dir": READ_PATH,
+                "socket": EXIST_READ_PATH,
             },
             "targetinfo": {
                 "enabled": BOOLEAN,
@@ -534,13 +536,13 @@ class Config:
         ## qemu.conf parameters
         "qemu": {
             "qemu": {
-                "path": PATH,
+                "path": EXIST_READ_PATH,
                 "interface": STRING,
                 "machines": STRING,
             },
             "*": {
                 "label": STRING,
-                "image": PATH,
+                "image": EXIST_READ_PATH,
                 "arch": STRING,
                 "platform": STRING,
                 "ip": IP,
@@ -548,7 +550,7 @@ class Config:
                 "resultserver_ip": IP,
                 "resultserver_port": INT,
                 "tags": STRING,
-                "kernel_path": PATH,
+                "kernel_path": EXIST_READ_PATH,
             },
         },
         ## reporting.conf parameters
@@ -586,8 +588,8 @@ class Config:
             "moloch": {
                 "enabled": BOOLEAN,
                 "host": IP,
-                "moloch_capture": PATH,
-                "conf": PATH,
+                "moloch_capture": EXIST_READ_PATH,
+                "conf": EXIST_READ_PATH,
                 "instance": STRING,
             },
             "notification": {
@@ -629,12 +631,12 @@ class Config:
         "vmware": {
             "vmware": {
                 "mode": STRING,
-                "path": PATH,
+                "path": EXIST_READ_PATH,
                 "interface": STRING,
                 "machines": STRING,
             },
             "*": {
-                "vmx_path": PATH,
+                "vmx_path": EXIST_READ_PATH,
                 "snapshot": STRING,
                 "platform": STRING,
                 "ip": IP,
@@ -727,8 +729,14 @@ class Config:
                     value = ''
                     if sectionTypes[name] in [self.STRING, self.IP]:
                         value = str_type.get(config, section, name)
-                    elif sectionTypes[name] is self.PATH:
-                        value = path_type.get(config, section, name)
+                    elif sectionTypes[name] is self.EXIST_WRITE_PATH:
+                        value = path_type.get(config, section, name, True, True, False)
+                    elif sectionTypes[name] is self.EXIST_READ_PATH:
+                        value = path_type.get(config, section, name, True, False, True)
+                    elif sectionTypes[name] is self.READ_PATH:
+                        value = path_type.get(config, section, name, False, False, True)
+                    elif sectionTypes[name] is self.WRITE_PATH:
+                        value = path_type.get(config, section, name, False, True, False)
                     elif sectionTypes[name] is self.UUID:
                         value = uuid_type.get(config, section, name)
                     elif sectionTypes[name] is self.INT:
