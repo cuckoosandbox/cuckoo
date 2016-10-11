@@ -99,11 +99,11 @@ class PathType(StringType):
             value = config.get(section, name)
         return value
 
-    def check(self, value):
+    def check(self, value, exists=False, writable=False, readable=False):
         """Checks if the value is of type String. """
         try:
-            c = click.Path()
-            c.convert(config.get(section, name), None, None)
+            c = click.Path(exists=exists, writable=writable, readable=readable)
+            c.convert(value, None, None)
             return True
         except Exception as ex:
             return False
@@ -168,8 +168,8 @@ class Config:
     """Configuration file parser."""
 
     # Config Parameters and their types
-    BOOLEAN, STRING, INT, EXIST_WRITE_PATH, EXIST_READ_PATH, READ_PATH,\
-        WRITE_PATH, IP, UUID = range(9)
+    BOOLEAN, STRING, INT, EXIST_WRITE_PATH, EXIST_READ_PATH, READ_PATH, \
+    WRITE_PATH, IP, UUID = range(9)
     ParamTypes = {
         ## cuckoo.conf parameters
         "cuckoo": {
@@ -725,28 +725,31 @@ class Config:
                 continue
             setattr(self, section, Dictionary())
             for name, raw_value in config.items(section):
-                if name in sectionTypes:
-                    value = ''
-                    if sectionTypes[name] in [self.STRING, self.IP]:
-                        value = str_type.get(config, section, name)
-                    elif sectionTypes[name] is self.EXIST_WRITE_PATH:
-                        value = path_type.get(config, section, name, True, True, False)
-                    elif sectionTypes[name] is self.EXIST_READ_PATH:
-                        value = path_type.get(config, section, name, True, False, True)
-                    elif sectionTypes[name] is self.READ_PATH:
-                        value = path_type.get(config, section, name, False, False, True)
-                    elif sectionTypes[name] is self.WRITE_PATH:
-                        value = path_type.get(config, section, name, False, True, False)
-                    elif sectionTypes[name] is self.UUID:
-                        value = uuid_type.get(config, section, name)
-                    elif sectionTypes[name] is self.INT:
-                        value = int_type.get(config, section, name)
-                    elif sectionTypes[name] is self.BOOLEAN:
-                        value = bool_type.get(config, section, name)
-                else:
-                    log.error("Type of config parameter %s.%s NOT FOUND!!" % (section, name))
-                    value = config.get(section, name)
-                setattr(getattr(self, section), name, value)
+                if getattr(getattr(self, section), "enabled", None) in [True, None]:
+                    if name in sectionTypes:
+                        value = ''
+                        if sectionTypes[name] in [self.STRING, self.IP]:
+                            value = str_type.get(config, section, name)
+                        elif sectionTypes[name] is self.EXIST_WRITE_PATH:
+                            value = path_type.get(config, section, name, True, True, False)
+                        elif sectionTypes[name] is self.EXIST_READ_PATH:
+                            value = path_type.get(config, section, name, True, False, True)
+                        elif sectionTypes[name] is self.READ_PATH:
+                            value = path_type.get(config, section, name, False, False, True)
+                        elif sectionTypes[name] is self.WRITE_PATH:
+                            value = path_type.get(config, section, name, False, True, False)
+                        elif sectionTypes[name] is self.UUID:
+                            value = uuid_type.get(config, section, name)
+                        elif sectionTypes[name] is self.INT:
+                            value = int_type.get(config, section, name)
+                        elif sectionTypes[name] is self.BOOLEAN:
+                            value = bool_type.get(config, section, name)
+                        else:
+                            value = str_type.get(config, section, name)
+                    else:
+                        log.error("Type of config parameter %s.%s NOT FOUND!!" % (section, name))
+                        value = config.get(section, name)
+                    setattr(getattr(self, section), name, value)
 
     def get(self, section):
         """Get option.
