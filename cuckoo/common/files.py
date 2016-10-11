@@ -62,11 +62,7 @@ class Folders(Storage):
         @param folder: path or components to path to delete.
         @raise CuckooOperationalError: if fails to delete folder.
         """
-        if len(folder) == 1:
-            folder = folder[0]
-        else:
-            folder = os.path.join(*folder)
-
+        folder = os.path.join(*folder)
         if os.path.exists(folder):
             try:
                 shutil.rmtree(folder)

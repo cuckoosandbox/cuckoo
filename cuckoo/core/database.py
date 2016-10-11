@@ -981,7 +981,7 @@ class Database(object):
                 task.tags.append(tag)
 
         if clock:
-            if isinstance(clock, str) or isinstance(clock, unicode):
+            if isinstance(clock, basestring):
                 try:
                     task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
                 except ValueError:
