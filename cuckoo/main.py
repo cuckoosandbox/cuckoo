@@ -76,7 +76,7 @@ def cuckoo_create(ctx):
     open(cwd(".cwd"), "wb").write(our_version)
 
     # Write the supervisord.conf configuration file.
-    write_supervisor_conf(ctx.parent.user or getuser())
+    write_supervisor_conf(ctx.user or getuser())
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
@@ -111,7 +111,10 @@ def cuckoo_init(level, ctx):
     check_version()
     create_structure()
 
-    init_logging(level)
+    if ctx.log:
+        init_logging(level)
+    else:
+        init_console_logging(level)
 
     Database().connect()
 
@@ -137,11 +140,12 @@ def cuckoo_main(max_analysis_count=0):
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
+@click.option("--nolog", is_flag=True, help="Don't log to file.")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.option("--user", help="Drop privileges to this user")
 @click.option("--cwd", envvar="CUCKOO", help="Cuckoo Working Directory")
 @click.pass_context
-def main(ctx, debug, quiet, maxcount, user, cwd):
+def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     """Invokes the Cuckoo daemon or one of its subcommands.
 
     To be able to use different Cuckoo configurations on the same machine with
@@ -170,6 +174,8 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
     # Drop privileges.
     user and drop_privileges(user)
     ctx.user = user
+
+    ctx.log = not nolog
 
     # Load additional Signatures.
     load_signatures()
@@ -207,7 +213,7 @@ def main(ctx, debug, quiet, maxcount, user, cwd):
 @click.pass_context
 def init(ctx):
     """Initializes a Cuckoo instance and checks its configuration/setup."""
-    cuckoo_init(logging.INFO, ctx)
+    cuckoo_init(logging.INFO, ctx.parent)
 
     # Write the supervisord.conf configuration file (if needed).
     write_supervisor_conf(ctx.parent.user or getuser())

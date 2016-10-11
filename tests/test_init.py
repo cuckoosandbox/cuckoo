@@ -3,10 +3,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import pytest
 import shutil
 import tempfile
 
 from cuckoo.core.init import write_supervisor_conf
+from cuckoo.main import main
 from cuckoo.misc import set_cwd, cwd
 
 class TestInit(object):
@@ -45,3 +47,21 @@ class TestInit(object):
         assert "command = %s -d -m 10000" % cuckoo_path in buf
 
         os.environ["VIRTUAL_ENV"] = venv
+
+    def test_cuckoo_init(self):
+        """Tests that 'cuckoo init' works with a new CWD."""
+        with pytest.raises(SystemExit):
+            main.main(
+                ("--cwd", self.dirpath, "--nolog", "init"),
+                standalone_mode=False
+            )
+
+        assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
+
+    def test_cuckoo_init_main(self):
+        """Tests that 'cuckoo' works with a new CWD."""
+        main.main(
+            ("--cwd", self.dirpath, "--nolog"),
+            standalone_mode=False
+        )
+        assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
