@@ -31,12 +31,12 @@ class Type(object):
         pass
 
 
-class IntType(Type):
+class Int(Type):
     """Integer Type Definition class. """
 
     def __init__(self):
         """Constructor for Integer Type."""
-        super(IntType, self).__init__()
+        super(Int, self).__init__()
         return
 
     def get(self, config, section, name):
@@ -58,12 +58,12 @@ class IntType(Type):
             return False
 
 
-class StringType(Type):
+class String(Type):
     """ String Type Definition class. """
 
     def __init__(self):
         """Constructor for String Type."""
-        super(StringType, self).__init__()
+        super(String, self).__init__()
         return
 
     def get(self, config, section, name):
@@ -79,18 +79,21 @@ class StringType(Type):
             return False
 
 
-class PathType(StringType):
+class Path(String):
     """ Path Type Definition class. """
 
-    def __init__(self):
+    def __init__(self, exists=False, writable=False, readable=False):
         """Constructor for Path Type."""
-        super(PathType, self).__init__()
+        super(Path, self).__init__()
+        self.exists = exists
+        self.writable = writable
+        self.readable = readable
         return
 
-    def get(self, config, section, name, exists=False, writable=False, readable=False):
+    def get(self, config, section, name):
         """Gets the value of the parameter from the config file."""
         try:
-            c = click.Path(exists=exists, writable=writable, readable=readable)
+            c = click.Path(exists=self.exists, writable=self.writable, readable=self.readable)
             value = c.convert(config.get(section, name), None, None)
         except Exception as ex:
             if config.get(section, name) is not "":
@@ -109,12 +112,12 @@ class PathType(StringType):
             return False
 
 
-class BooleanType(Type):
+class Boolean(Type):
     """ Boolean Type Definition class. """
 
     def __init__(self):
         """Constructor for Boolean Type."""
-        super(BooleanType, self).__init__()
+        super(Boolean, self).__init__()
         return
 
     def get(self, config, section, name):
@@ -136,12 +139,12 @@ class BooleanType(Type):
             return False
 
 
-class UUIDType(Type):
+class UUID(Type):
     """ UUID Type Definition class. """
 
     def __init__(self):
         """Constructor for UUID Type."""
-        super(UUIDType, self).__init__()
+        super(UUID, self).__init__()
         return
 
     def get(self, config, section, name):
@@ -168,523 +171,521 @@ class Config:
     """Configuration file parser."""
 
     # Config Parameters and their types
-    BOOLEAN, STRING, INT, EXIST_WRITE_PATH, EXIST_READ_PATH, READ_PATH, \
-    WRITE_PATH, IP, UUID = range(9)
     ParamTypes = {
         ## cuckoo.conf parameters
         "cuckoo": {
             "cuckoo": {
-                "version_check": BOOLEAN,
-                "delete_original": BOOLEAN,
-                "delete_bin_copy": BOOLEAN,
-                "machinery": STRING,
-                "memory_dump": BOOLEAN,
-                "terminate_processes": BOOLEAN,
-                "reschedule": BOOLEAN,
-                "process_results": BOOLEAN,
-                "debug": BOOLEAN,
-                "max_analysis_count": INT,
-                "max_machines_count": INT,
-                "max_vmstartup_count": INT,
-                "critical_timeout": INT,
-                "freespace": INT,
-                "tmppath": EXIST_WRITE_PATH,
-                "rooter": READ_PATH,
+                "version_check": Boolean(),
+                "delete_original": Boolean(),
+                "delete_bin_copy": Boolean(),
+                "machinery": String(),
+                "memory_dump": Boolean(),
+                "terminate_processes": Boolean(),
+                "reschedule": Boolean(),
+                "process_results": Boolean(),
+                "debug": Boolean(),
+                "max_analysis_count": Int(),
+                "max_machines_count": Int(),
+                "max_vmstartup_count": Int(),
+                "critical_timeout": Int(),
+                "freespace": Int(),
+                "tmppath": Path(exists=True, writable=True, readable=False),
+                "rooter": Path(exists=False, writable=False, readable=True),
             },
             "resultserver": {
-                "ip": IP,
-                "port": INT,
-                "force_port": BOOLEAN,
-                "upload_max_size": INT,
+                "ip": String(),
+                "port": Int(),
+                "force_port": Boolean(),
+                "upload_max_size": Int(),
             },
             "processing": {
-                "analysis_size_limit": INT,
-                "resolve_dns": BOOLEAN,
-                "sort_pcap": BOOLEAN,
+                "analysis_size_limit": Int(),
+                "resolve_dns": Boolean(),
+                "sort_pcap": Boolean(),
             },
             "database": {
-                "connection": STRING,
-                "timeout": INT,
+                "connection": String(),
+                "timeout": Int(),
             },
             "timeouts": {
-                "default": INT,
-                "critical": INT,
-                "vm_state": INT,
+                "default": Int(),
+                "critical": Int(),
+                "vm_state": Int(),
             },
         },
         ## virtualbox.conf parameters
         "virtualbox": {
             "virtualbox": {
-                "mode": STRING,
-                "path": EXIST_READ_PATH,
-                "interface": STRING,
-                "machines": STRING,
+                "mode": String(),
+                "path": Path(exists=True, writable=False, readable=True),
+                "interface": String(),
+                "machines": String(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "snapshot": STRING,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "snapshot": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
             "honeyd": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "tags": STRING,
-                "options": STRING,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "tags": String(),
+                "options": String(),
             },
         },
         ## auxiliary.conf parameters
         "auxiliary": {
             "sniffer": {
-                "enabled": BOOLEAN,
-                "tcpdump": EXIST_READ_PATH,
-                "bpf": STRING,
+                "enabled": Boolean(),
+                "tcpdump": Path(exists=True, writable=False, readable=True),
+                "bpf": String(),
             },
             "mitm": {
-                "enabled": BOOLEAN,
-                "mitmdump": EXIST_READ_PATH,
-                "port_base": INT,
-                "script": EXIST_READ_PATH,
-                "certificate": EXIST_READ_PATH,
+                "enabled": Boolean(),
+                "mitmdump": Path(exists=True, writable=False, readable=True),
+                "port_base": Int(),
+                "script": Path(exists=True, writable=False, readable=True),
+                "certificate": Path(exists=True, writable=False, readable=True),
             },
             "services": {
-                "enabled": BOOLEAN,
-                "services": STRING,
-                "timeout": INT,
+                "enabled": Boolean(),
+                "services": String(),
+                "timeout": Int(),
             },
             "reboot": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
         },
         ## avd.conf parameters
         "avd": {
             "avd": {
-                "mode": STRING,
-                "emulator_path": EXIST_READ_PATH,
-                "adb_path": EXIST_READ_PATH,
-                "avd_path": EXIST_READ_PATH,
-                "reference_machine": STRING,
-                "machines": STRING,
+                "mode": String(),
+                "emulator_path": Path(exists=True, writable=False, readable=True),
+                "adb_path": Path(exists=True, writable=False, readable=True),
+                "avd_path": Path(exists=True, writable=False, readable=True),
+                "reference_machine": String(),
+                "machines": String(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "emulator_port": INT,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "emulator_port": Int(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
             },
         },
         ## esx.conf parameters
         "esx": {
             "esx": {
-                "dsn": STRING,
-                "username": STRING,
-                "password": STRING,
-                "machines": STRING,
-                "interface": STRING,
+                "dsn": String(),
+                "username": String(),
+                "password": String(),
+                "machines": String(),
+                "interface": String(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "snapshot": STRING,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "snapshot": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
         },
         ## kvm.conf parameters
         "kvm": {
             "kvm": {
-                "machines": STRING,
-                "interface": STRING,
+                "machines": String(),
+                "interface": String(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "snapshot": STRING,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "snapshot": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
         },
         ## memory.conf parameters
         "memory": {
             "basic": {
-                "guest_profile": STRING,
-                "delete_memdump": STRING,
-                "filter": BOOLEAN,
+                "guest_profile": String(),
+                "delete_memdump": String(),
+                "filter": Boolean(),
             },
             "malfind": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "apihooks": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "pslist": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "psxview": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "callbacks": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "idt": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "timers": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "messagehooks": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "getsids": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "privs": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "dlllist": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "handles": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "ldrmodules": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "mutantscan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "devicetree": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "svcscan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "modscan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "yarascan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "ssdt": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "gdt": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "sockscan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "netscan": {
-                "enabled": BOOLEAN,
-                "filter": BOOLEAN,
+                "enabled": Boolean(),
+                "filter": Boolean(),
             },
             "mask": {
-                "enabled": BOOLEAN,
-                "pid_generic": STRING,
+                "enabled": Boolean(),
+                "pid_generic": String(),
             },
         },
         ## physical.conf parameters
         "physical": {
             "physical": {
-                "machines": STRING,
-                "user": STRING,
-                "password": STRING,
-                "interface": STRING,
+                "machines": String(),
+                "user": String(),
+                "password": String(),
+                "interface": String(),
             },
             "fog": {
-                "hostname": STRING,
-                "username": STRING,
-                "password": STRING,
+                "hostname": String(),
+                "username": String(),
+                "password": String(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
             },
         },
         ## processing.conf parameters
         "processing": {
             "analysisinfo": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "apkinfo": {
-                "enabled": BOOLEAN,
-                "decompilation_threshold": INT,
+                "enabled": Boolean(),
+                "decompilation_threshold": Int(),
             },
             "baseline": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "behavior": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "buffer": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "debug": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "droidmon": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "dropped": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "dumptls": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "googleplay": {
-                "enabled": BOOLEAN,
-                "android_id": STRING,
-                "google_login": STRING,
-                "google_password": STRING,
+                "enabled": Boolean(),
+                "android_id": String(),
+                "google_login": String(),
+                "google_password": String(),
             },
             "memory": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "misp": {
-                "enabled": BOOLEAN,
-                "url": STRING,
-                "apikey": STRING,
-                "maxioc": INT,
+                "enabled": Boolean(),
+                "url": String(),
+                "apikey": String(),
+                "maxioc": Int(),
             },
             "network": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "procmemory": {
-                "enabled": BOOLEAN,
-                "idapro": BOOLEAN,
-                "extract_img": BOOLEAN,
-                "dump_delete": BOOLEAN,
+                "enabled": Boolean(),
+                "idapro": Boolean(),
+                "extract_img": Boolean(),
+                "dump_delete": Boolean(),
             },
             "procmon": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "screenshots": {
-                "enabled": BOOLEAN,
-                "tesseract": BOOLEAN,
+                "enabled": Boolean(),
+                "tesseract": Boolean(),
             },
             "snort": {
-                "enabled": BOOLEAN,
-                "snort": READ_PATH,
-                "conf": READ_PATH,
+                "enabled": Boolean(),
+                "snort": Path(exists=False, writable=False, readable=True),
+                "conf": Path(exists=False, writable=False, readable=True),
             },
             "static": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
-            "strings": {
-                "enabled": BOOLEAN,
+            "String()s": {
+                "enabled": Boolean(),
             },
             "suricata": {
-                "enabled": BOOLEAN,
-                "suricata": EXIST_READ_PATH,
-                "eve_log": WRITE_PATH,
-                "files_log": WRITE_PATH,
-                "files_dir": READ_PATH,
-                "socket": EXIST_READ_PATH,
+                "enabled": Boolean(),
+                "suricata": Path(exists=True, writable=False, readable=True),
+                "eve_log": Path(exists=False, writable=True, readable=False),
+                "files_log": Path(exists=False, writable=True, readable=False),
+                "files_dir": Path(exists=False, writable=False, readable=True),
+                "socket": Path(exists=True, writable=False, readable=True),
             },
             "targetinfo": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "virustotal": {
-                "enabled": BOOLEAN,
-                "timeout": INT,
-                "scan": BOOLEAN,
-                "key": STRING,
+                "enabled": Boolean(),
+                "timeout": Int(),
+                "scan": Boolean(),
+                "key": String(),
             },
             "irma": {
-                "enabled": BOOLEAN,
-                "force": BOOLEAN,
-                "timeout": INT,
-                "scan": BOOLEAN,
-                "url": STRING,
+                "enabled": Boolean(),
+                "force": Boolean(),
+                "timeout": Int(),
+                "scan": Boolean(),
+                "url": String(),
             },
         },
         ## qemu.conf parameters
         "qemu": {
             "qemu": {
-                "path": EXIST_READ_PATH,
-                "interface": STRING,
-                "machines": STRING,
+                "path": Path(exists=True, writable=False, readable=True),
+                "interface": String(),
+                "machines": String(),
             },
             "*": {
-                "label": STRING,
-                "image": EXIST_READ_PATH,
-                "arch": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
-                "kernel_path": EXIST_READ_PATH,
+                "label": String(),
+                "image": Path(exists=True, writable=False, readable=True),
+                "arch": String(),
+                "platform": String(),
+                "ip": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
+                "kernel_path": Path(exists=True, writable=False, readable=True),
             },
         },
         ## reporting.conf parameters
         "reporting": {
             "jsondump": {
-                "enabled": BOOLEAN,
-                "indent": INT,
-                "encoding": STRING,
-                "calls": BOOLEAN,
+                "enabled": Boolean(),
+                "indent": Int(),
+                "encoding": String(),
+                "calls": Boolean(),
             },
             "reporthtml": {
-                "enabled": BOOLEAN,
+                "enabled": Boolean(),
             },
             "misp": {
-                "enabled": BOOLEAN,
-                "url": STRING,
-                "apikey": STRING,
-                "mode": STRING,
+                "enabled": Boolean(),
+                "url": String(),
+                "apikey": String(),
+                "mode": String(),
             },
             "mongodb": {
-                "enabled": BOOLEAN,
-                "host": IP,
-                "port": INT,
-                "db": STRING,
-                "store_memdump": BOOLEAN,
-                "paginate": INT,
+                "enabled": Boolean(),
+                "host": String(),
+                "port": Int(),
+                "db": String(),
+                "store_memdump": Boolean(),
+                "paginate": Int(),
             },
             "elasticsearch": {
-                "enabled": BOOLEAN,
-                "hosts": STRING,
-                "calls": BOOLEAN,
-                "index": STRING,
-                "index_time_pattern": STRING,
+                "enabled": Boolean(),
+                "hosts": String(),
+                "calls": Boolean(),
+                "index": String(),
+                "index_time_pattern": String(),
             },
             "moloch": {
-                "enabled": BOOLEAN,
-                "host": IP,
-                "moloch_capture": EXIST_READ_PATH,
-                "conf": EXIST_READ_PATH,
-                "instance": STRING,
+                "enabled": Boolean(),
+                "host": String(),
+                "moloch_capture": Path(exists=True, writable=False, readable=True),
+                "conf": Path(exists=True, writable=False, readable=True),
+                "instance": String(),
             },
             "notification": {
-                "enabled": BOOLEAN,
-                "url": STRING,
-                "identifier": STRING,
+                "enabled": Boolean(),
+                "url": String(),
+                "identifier": String(),
             },
         },
         ## routing.conf parameters
         "routing": {
             "routing": {
-                "route": STRING,
-                "internet": STRING,
-                "rt_table": STRING,
-                "auto_rt": BOOLEAN,
-                "drop": BOOLEAN,
+                "route": String(),
+                "internet": String(),
+                "rt_table": String(),
+                "auto_rt": Boolean(),
+                "drop": Boolean(),
             },
             "inetsim": {
-                "enabled": BOOLEAN,
-                "server": IP,
+                "enabled": Boolean(),
+                "server": String(),
             },
             "tor": {
-                "enabled": BOOLEAN,
-                "dnsport": INT,
-                "proxyport": INT,
+                "enabled": Boolean(),
+                "dnsport": Int(),
+                "proxyport": Int(),
             },
             "vpn": {
-                "enabled": BOOLEAN,
-                "vpns": STRING,
+                "enabled": Boolean(),
+                "vpns": String(),
             },
             "*": {
-                "name": STRING,
-                "description": STRING,
-                "interface": STRING,
-                "rt_table": STRING,
+                "name": String(),
+                "description": String(),
+                "interface": String(),
+                "rt_table": String(),
             },
         },
         ## vmware.conf parameters
         "vmware": {
             "vmware": {
-                "mode": STRING,
-                "path": EXIST_READ_PATH,
-                "interface": STRING,
-                "machines": STRING,
+                "mode": String(),
+                "path": Path(exists=True, writable=False, readable=True),
+                "interface": String(),
+                "machines": String(),
             },
             "*": {
-                "vmx_path": EXIST_READ_PATH,
-                "snapshot": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "vmx_path": Path(exists=True, writable=False, readable=True),
+                "snapshot": String(),
+                "platform": String(),
+                "ip": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
         },
         ## vsphere.conf parameters
         "vsphere": {
             "vsphere": {
-                "host": IP,
-                "port": INT,
-                "user": STRING,
-                "pwd": STRING,
-                "interface": STRING,
-                "machines": STRING,
-                "unverified_ssl": BOOLEAN,
+                "host": String(),
+                "port": Int(),
+                "user": String(),
+                "pwd": String(),
+                "interface": String(),
+                "machines": String(),
+                "unverified_ssl": Boolean(),
             },
             "*": {
-                "label": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "label": String(),
+                "platform": String(),
+                "ip": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
         },
         ## xenserver.conf parameters
         "xenserver": {
             "xenserver": {
-                "user": STRING,
-                "password": STRING,
-                "url": STRING,
-                "interface": STRING,
-                "machines": STRING,
+                "user": String(),
+                "password": String(),
+                "url": String(),
+                "interface": String(),
+                "machines": String(),
             },
             "*": {
-                "uuid": UUID,
-                "snapshot": STRING,
-                "platform": STRING,
-                "ip": IP,
-                "interface": STRING,
-                "resultserver_ip": IP,
-                "resultserver_port": INT,
-                "tags": STRING,
+                "uuid": UUID(),
+                "snapshot": String(),
+                "platform": String(),
+                "ip": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
             },
         },
     }
@@ -706,11 +707,6 @@ class Config:
         else:
             config.read(cwd("conf", "%s.conf" % file_name))
 
-        int_type = IntType()
-        str_type = StringType()
-        bool_type = BooleanType()
-        path_type = PathType()
-        uuid_type = UUIDType()
         if file_name not in self.ParamTypes:
             log.error("Unknown config file %s.conf" % (file_name))
             return
@@ -727,25 +723,7 @@ class Config:
             for name, raw_value in config.items(section):
                 if getattr(getattr(self, section), "enabled", None) in [True, None]:
                     if name in sectionTypes:
-                        value = ''
-                        if sectionTypes[name] in [self.STRING, self.IP]:
-                            value = str_type.get(config, section, name)
-                        elif sectionTypes[name] is self.EXIST_WRITE_PATH:
-                            value = path_type.get(config, section, name, True, True, False)
-                        elif sectionTypes[name] is self.EXIST_READ_PATH:
-                            value = path_type.get(config, section, name, True, False, True)
-                        elif sectionTypes[name] is self.READ_PATH:
-                            value = path_type.get(config, section, name, False, False, True)
-                        elif sectionTypes[name] is self.WRITE_PATH:
-                            value = path_type.get(config, section, name, False, True, False)
-                        elif sectionTypes[name] is self.UUID:
-                            value = uuid_type.get(config, section, name)
-                        elif sectionTypes[name] is self.INT:
-                            value = int_type.get(config, section, name)
-                        elif sectionTypes[name] is self.BOOLEAN:
-                            value = bool_type.get(config, section, name)
-                        else:
-                            value = str_type.get(config, section, name)
+                        value = sectionTypes[name].get(config, section, name)
                     else:
                         log.error("Type of config parameter %s.%s NOT FOUND!!" % (section, name))
                         value = config.get(section, name)
