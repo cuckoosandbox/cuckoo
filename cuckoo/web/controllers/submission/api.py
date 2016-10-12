@@ -11,7 +11,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from bin.utils import api_post, json_default_response, json_error_response
+from bin.utils import api_post, JsonSerialize, json_error_response
 from controllers.submission.submission import SubmissionController
 
 results_db = settings.MONGO
@@ -97,7 +97,7 @@ class SubmissionApi:
         return JsonResponse({
             "status": True,
             "data": tasks,
-        }, encoder=json_default_response)
+        }, encoder=JsonSerialize)
 
     @api_post
     def filetree(request, body):
@@ -109,4 +109,4 @@ class SubmissionApi:
         return JsonResponse({
             "status": True,
             "data": data,
-        }, encoder=json_default_response)
+        }, encoder=JsonSerialize)

@@ -77,7 +77,7 @@ class Recent {
             self.toggle_loading(self);
         }
 
-        CuckooWeb.api_post("api/recent/", params, cb, null, beforesend);
+        CuckooWeb.api_post("api/tasks/recent/", params, cb, null, beforesend);
     }
 
     load(){

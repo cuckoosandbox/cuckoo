@@ -53,7 +53,7 @@
                         
                         <script>
                             $(document).ready(function() {
-                                CuckooWeb.api_post("/analysis/api/network_http_response_data/", {
+                                CuckooWeb.api_post("/analysis/api/task/network_http_response_data/", {
                                     "task_id": task_id,
                                     "request_body": false,
                                     "request_index": {{ forloop.counter0 }}

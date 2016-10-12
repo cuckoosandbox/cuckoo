@@ -12,7 +12,7 @@ from controllers.analysis.analysis import AnalysisController
 class ExportApi:
     @api_post
     def export_estimate_size(request, body):
-        task_id = body.get('task_id', None)
+        task_id = body.get('task_id')
         taken_dirs = body.get("dirs", [])
         taken_files = body.get("files", [])
 
