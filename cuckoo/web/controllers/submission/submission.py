@@ -102,7 +102,7 @@ class SubmissionController(object):
 
         for entry in data["selected_files"]:
             # TODO Error logging.
-            if not entry.get("filepath"):
+            if not 'filepath' in entry.keys():
                 continue
 
             # Read the upper archive.

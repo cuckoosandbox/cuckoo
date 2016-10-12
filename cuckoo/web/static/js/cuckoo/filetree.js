@@ -131,7 +131,7 @@ class FileTree {
                 if (entry.hasOwnProperty("type") && entry.type == "container") {
                     converted = this._convert_entry(data[key], entry.filename);
                 } else {
-                    converted = this._convert_entry(data[key]);
+                    converted = this._convert_entry(data[key], "");
                 }
 
                 data_tmp.push(converted);
@@ -149,7 +149,7 @@ class FileTree {
             filepath: entry.filepath,
             filename: entry.filename,
             relapath: entry.relapath,
-            extrpath: entry.extrpath,
+            extrpath: entry.extrpath ? entry.extrpath : [],
             type: entry.type,
             state: false, // pre-selected tree item
             size: entry.size,
@@ -224,7 +224,7 @@ class FileTree {
             a_attr: {}
         };
 
-        data.a_attr.filepath = obj.extrpath ? obj.extrpath : [obj.filepath];
+        data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
         data.a_attr.sha256 = entry.sha256;
 
         if (obj.duplicate) {
