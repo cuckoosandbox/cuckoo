@@ -198,6 +198,7 @@ class FileTree {
             [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "exec";
+                    obj.state = true;
 
                     _self.stats.executables += 1;
                 }
@@ -206,6 +207,7 @@ class FileTree {
             [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
                 if (obj.filepath.endsWith(x)) {
                     obj.type = "office";
+                    obj.state = true;
 
                     _self.stats.executables += 1;
                 }
@@ -224,13 +226,14 @@ class FileTree {
             a_attr: {}
         };
 
-        data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
+        data.a_attr.filepath = obj.extrpath ? obj.extrpath : [obj.filepath];
+        data.a_attr.sha256 = entry.sha256;
 
         if(obj.duplicate) {
             obj.type = "duplicate";
 
             // Deselect duplicate file entries depending on the filter settings
-            if(this._filters.deselect_duplicates) {
+            if(this._filters.deselect_duplicates){
                 obj.state = false;
             }
 
@@ -241,9 +244,8 @@ class FileTree {
             _self.stats.duplicates += 1;
         }
 
-        if(entry.hasOwnProperty("package")) {
+        if(entry.hasOwnProperty("package")){
             data.data.package = entry.package;
-            data.a_attr.package = entry.package;
         }
 
         if(obj.type == "directory"){
@@ -325,7 +327,7 @@ class FileTree {
         }
     }
 
-    selected() {
+    selected(){
         let files = [];
         $(this.sel_target).jstree("get_checked",true,true).forEach(function(e){
             if(!e.a_attr.hasOwnProperty("filetree_type")  ||
@@ -336,7 +338,7 @@ class FileTree {
             files.push({
                 "filepath": e.a_attr.filepath,
                 "filename": e.text,
-                "package": e.a_attr.package,
+                "sha256": e.a_attr.sha256
             });
         });
 
