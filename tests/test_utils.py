@@ -3,14 +3,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import cStringIO
+import io
 import os
+import pytest
 import shutil
 import tempfile
 
 import cuckoo
 
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common import utils
+from cuckoo.misc import set_cwd
 
 class TestCreateFolders:
     def setup(self):
@@ -65,6 +70,33 @@ class TestCreateFolders:
         assert os.path.exists(dirpath2)
         assert dirpath1 != dirpath2
 
+    def test_create_temp_conf(self):
+        """Test creation of temporary directory with configuration."""
+        dirpath = tempfile.mkdtemp()
+        set_cwd(dirpath)
+
+        Folders.create(dirpath, "conf")
+        with open(os.path.join(dirpath, "conf", "cuckoo.conf"), "wb") as f:
+            f.write("[cuckoo]\ntmppath = %s" % dirpath)
+
+        assert Folders.create_temp().startswith("%s/cuckoo-tmp/" % dirpath)
+
+    def test_create_invld(self):
+        """Test creation of a folder we can't access."""
+        with pytest.raises(CuckooOperationalError):
+            Folders.create("/invalid/directory/path")
+
+    def test_delete_invld(self):
+        """Test deletion of a folder we can't access."""
+        dirpath = tempfile.mkdtemp()
+
+        os.chmod(dirpath, 0)
+        with pytest.raises(CuckooOperationalError):
+            Folders.delete(dirpath)
+
+        os.chmod(dirpath, 0775)
+        Folders.delete(dirpath)
+
 class TestCreateFile:
     def test_temp_file(self):
         filepath1 = Files.temp_put("hello", "/tmp")
@@ -86,6 +118,35 @@ class TestCreateFile:
         assert open(filepath, "rb").read() == "test"
         assert os.path.basename(filepath) == "hello.txt"
         os.unlink(filepath)
+
+    def test_temp_conf(self):
+        dirpath = tempfile.mkdtemp()
+        set_cwd(dirpath)
+
+        Folders.create(dirpath, "conf")
+        with open(os.path.join(dirpath, "conf", "cuckoo.conf"), "wb") as f:
+            f.write("[cuckoo]\ntmppath = %s" % dirpath)
+
+        assert Files.temp_put("foo").startswith("%s/cuckoo-tmp/" % dirpath)
+
+    def test_stringio(self):
+        filepath = Files.temp_put(cStringIO.StringIO("foo"), "/tmp")
+        assert open(filepath, "rb").read() == "foo"
+
+    def test_bytesio(self):
+        filepath = Files.temp_put(io.BytesIO("foo"), "/tmp")
+        assert open(filepath, "rb").read() == "foo"
+
+    def test_create_bytesio(self):
+        dirpath = tempfile.mkdtemp()
+        filepath = Files.create(dirpath, "a.txt", io.BytesIO("A"*1024*1024))
+        assert open(filepath, "rb").read() == "A"*1024*1024
+
+    def test_hash_file(self):
+        filepath = Files.temp_put("hehe", "/tmp")
+        assert Files.md5_file(filepath) == "529ca8050a00180790cf88b63468826a"
+        assert Files.sha1_file(filepath) == "42525bb6d3b0dc06bb78ae548733e8fbb55446b3"
+        assert Files.sha256_file(filepath) == "0ebe2eca800cf7bd9d9d9f9f4aafbc0c77ae155f43bbbeca69cb256a24c7f9bb"
 
 class TestStorage:
     def test_basename(self):

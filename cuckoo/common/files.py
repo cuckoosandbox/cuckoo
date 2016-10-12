@@ -54,6 +54,9 @@ class Folders(Storage):
             tmp_path = Config().cuckoo.get("tmppath", "/tmp")
             target_path = os.path.join(tmp_path, "cuckoo-tmp")
 
+        if not os.path.exists(target_path):
+            os.mkdir(target_path)
+
         return tempfile.mkdtemp(dir=target_path)
 
     @staticmethod
@@ -123,7 +126,8 @@ class Files(Storage):
 
     @staticmethod
     def create(root, filename, content):
-        with open(os.path.join(root, filename), "wb") as f:
+        filepath = os.path.join(root, filename)
+        with open(filepath, "wb") as f:
             if hasattr(content, "read"):
                 chunk = content.read(1024)
                 while chunk:
@@ -131,6 +135,7 @@ class Files(Storage):
                     chunk = content.read(1024)
             else:
                 f.write(content)
+        return filepath
 
     @staticmethod
     def hash_file(method, filepath):
