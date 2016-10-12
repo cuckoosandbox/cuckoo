@@ -9,7 +9,7 @@ from controllers.submission.routes import SubmissionRoutes
 from controllers.submission.api import SubmissionApi
 
 urlpatterns = [
-    url(r"^$", SubmissionRoutes.index, name="submission/index"),
+    url(r"^$", SubmissionRoutes.submit, name="submission/index"),
     url(r"status/(?P<task_id>\d+)/$", views.status, name="submission/status"),
     url(r"pre/(?P<submit_id>\d+)/$", SubmissionRoutes.presubmit, name="submission/pre"),
     url(r"^re/(?P<task_id>\d+)/$", views.resubmit, name="submission/resubmit"),

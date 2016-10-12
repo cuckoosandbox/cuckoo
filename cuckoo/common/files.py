@@ -54,6 +54,9 @@ class Folders(Storage):
             tmp_path = Config().cuckoo.get("tmppath", "/tmp")
             target_path = os.path.join(tmp_path, "cuckoo-tmp")
 
+        if not os.path.exists(target_path):
+            os.mkdir(target_path)
+
         return tempfile.mkdtemp(dir=target_path)
 
     @staticmethod

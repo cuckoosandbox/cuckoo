@@ -13,14 +13,12 @@ from cuckoo.common.config import Config
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
-from controllers.submission.submission import SubmissionController
-
 cfg = Config("routing")
 results_db = settings.MONGO
 
 class SubmissionRoutes:
     @staticmethod
-    def index(request, kwargs={}):
+    def presubmit(request, submit_id):
         files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 
         packages = []
@@ -49,22 +47,17 @@ class SubmissionRoutes:
         machines.insert(0, ("", "First available"))
         machines.insert(1, ("all", "All"))
 
-        values = {
+        data = {
             "packages": sorted(packages),
             "machines": machines,
             "vpns": vpns.values(),
             "route": cfg.routing.route,
             "internet": cfg.routing.internet,
+            "submit_id": submit_id
         }
 
-        values.update(kwargs)
-        return render(request, "submission/submit.html", values)
+        return render(request, "submission/presubmit.html", data)
 
     @staticmethod
-    def presubmit(request, submit_id):
-        controller = SubmissionController(submit_id=submit_id)
-        data = controller.get_files(astree=True)
-        return render(request, "submission/index.html", {
-            "file_data": data,
-            "submit_id": submit_id,
-        })
+    def submit(request):
+        return render(request, "submission/submit.html")

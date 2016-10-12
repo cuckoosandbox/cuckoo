@@ -7,7 +7,10 @@ import os
 import pymongo
 
 from cuckoo.common.config import Config
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, set_cwd, _root
+
+if os.environ.get("CUCKOO_CWD") and _root is None:
+    set_cwd(os.environ.get("CUCKOO_CWD"))
 
 cfg = Config("reporting")
 
