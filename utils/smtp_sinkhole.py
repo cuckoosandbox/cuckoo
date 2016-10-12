@@ -51,8 +51,8 @@ class SmtpSink(SMTPServer):
             try:
                 timestamp = datetime.now()
                 msg = MIMEMultipart()
-                msg['Subject'] = "Email from smtp sinkhole: {0}".format(timestamp.strftime("%Y%-m%-d% H%:M:%S"))
-                msg['From'] = email_config.email['server']
+                msg['Subject'] = "Email from smtp sinkhole: {0}".format(timestamp.strftime("%Y%-m%-d %H%:M:%S"))
+                msg['From'] = email_config.email['from']
                 msg['To'] = email_config.email['to']
                 part = MIMEBase('application', "octet-stream")
                 part.set_payload(data)
