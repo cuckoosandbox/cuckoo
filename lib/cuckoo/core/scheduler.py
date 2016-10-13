@@ -57,6 +57,7 @@ class AnalysisManager(threading.Thread):
         self.task = self.db.view_task(task_id)
         self.guest_manager = None
 
+        self.route = None
         self.interface = None
         self.rt_table = None
 
