@@ -34,7 +34,7 @@ except:
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, dispatch
 
 log = logging.getLogger(__name__)
 
@@ -627,8 +627,14 @@ class Static(Processing):
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
             static["office"] = OfficeDocument(self.file_path).run()
 
+        def pdf_worker(filepath):
+            return PdfDocument(filepath).run()
+
         if package == "pdf" or ext == "pdf":
-            static["pdf"] = PdfDocument(self.file_path).run()
+            timeout = int(self.options.get("pdf_timeout", 60))
+            static["pdf"] = dispatch(
+                pdf_worker, (self.file_path,), timeout=timeout
+            )
 
         return static
 
