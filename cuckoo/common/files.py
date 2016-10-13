@@ -140,6 +140,16 @@ class Files(Storage):
                 f.write(content)
 
     @staticmethod
+    def copy(path_target, path_dest):
+        """Copy a file. The destination may be a directory.
+        @param path_target: The
+        @param path_dest: path_dest
+        @return: path to the file or directory
+        """
+        shutil.copy(src=path_target, dst=path_dest)
+        return os.path.join(path_dest, os.path.basename(path_target))
+
+    @staticmethod
     def hash_file(method, filepath):
         """Calculates an hash on a file by path.
         @param method: callable hashing method

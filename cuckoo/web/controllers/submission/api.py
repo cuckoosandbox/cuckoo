@@ -61,7 +61,7 @@ class SubmissionApi:
 
         options = (
             "route", "package", "timeout", "options", "priority",
-            "custom", "tags",
+            "custom", "tags", "machine", "human"
         )
 
         for option in options:

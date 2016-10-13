@@ -226,6 +226,8 @@ class FileTree {
 
         data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
         data.a_attr.sha256 = entry.sha256;
+        data.a_attr.package = entry.package;
+        data.a_attr.type = entry.type;
 
         if (obj.duplicate) {
             obj.type = "duplicate";
@@ -265,7 +267,7 @@ class FileTree {
         }
 
         data.a_attr.filetree_type = obj.type;
-        data.type = obj.type;
+        data.type = entry.type;
         data.state = {
             selected: obj.state,
             opened: obj.opened
@@ -333,7 +335,9 @@ class FileTree {
             files.push({
                 "filepath": e.a_attr.filepath,
                 "filename": e.text,
-                "sha256": e.a_attr.sha256
+                "sha256": e.a_attr.sha256,
+                "type": e.a_attr.type,
+                "package": e.a_attr.package
             });
         });
 

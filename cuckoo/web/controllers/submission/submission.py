@@ -97,47 +97,76 @@ class SubmissionController(object):
         }
 
     def submit(self, data):
+        # TODO: Example function that should be moved to Cuckoo core (remade too)
         ret, db = [], Database()
         submit = db.view_submit(self.submit_id)
+        form_options = data["form"]
 
         for entry in data["selected_files"]:
-            # TODO Error logging.
-            if not 'filepath' in entry.keys():
-                continue
+            for expected in ["filepath", "filename", "package", "type"]:
+                if not expected in entry.keys() or not entry[expected]:
+                    # TODO Error logging.
+                    continue
 
-            # Read the upper archive.
-            arcpath = os.path.join(
-                submit.path, os.path.basename(entry["filepath"][0])
-            )
+            # for each selected file entry, create a new temp. folder
+            path_dest = Folders.create_temp()
 
-            # TODO Error logging.
-            if not os.path.exists(arcpath):
-                continue
+            if entry["filepath"][0] == "":
+                path = os.path.join(
+                    submit.path, os.path.basename(entry["filename"])
+                )
 
-            # Extract any sub-archives where required.
-            if len(entry["filepath"]) > 2:
-                content = unpack(arcpath).read(entry["filepath"][1:-1])
+                # content = open(path, "rb").read()
+                filename = entry["filename"]
+
+                # Write to disk
+                # Files.temp_named_put(content=content,
+                #                      filename=filename,
+                #                      path=submit.path)
+                #
+                # arcpath = Files.temp_named_put(
+                #     zipify(unpack(filename, contents=content)),
+                #     os.path.basename(filename)
+                # )
+
+                filepath = Files.copy(path, path_dest=path_dest)
+            elif len(entry["filepath"]) >= 2:
+                path = os.path.join(submit.path, os.path.basename(entry["filepath"][0]))
+                path_extracted = os.path.join(
+                    submit.path,
+                    os.path.basename(entry["filepath"][-1])
+                )
+
+                content = unpack(path).read(entry["filepath"][1:])
+                filename = entry["filepath"][-1]
+
+                # Write extracted file to disk
+                f = open(path_extracted, "wb")
+                f.write(content)
+                f.close()
+
+                filepath = path_extracted
             else:
-                content = open(arcpath, "rb").read()
+                # TODO Error logging.
+                continue
 
-            # Write .zip archive file.
-            filename = entry["filepath"][-2]
-            arcpath = Files.temp_named_put(
-                zipify(unpack(filename, contents=content)),
-                os.path.basename(entry["filepath"][-2])
-            )
+            if data["form"]["package"]:
+                package = data["form"]["package"]
+            else:
+                package = entry.get("package")
 
-            ret.append(db.add_archive(
-                file_path=arcpath,
-                filename=entry["filepath"][-1],
-                package=entry.get("package", data["form"]["package"]),
-                timeout=data["form"]["timeout"],
-                options=data["form"]["options"],
-                priority=int(data["form"]["priority"]),
-                custom=data["form"]["custom"],
-                tags=data["form"]["tags"],
-                memory=data["form"]["memory"],
-                enforce_timeout=data["form"]["enforce_timeout"],
+            ret.append(db.add_path(
+                file_path=filepath,
+                package=package,  # user-defined package comes first, else let sflock decide
+                timeout=form_options["timeout"],
+                options=form_options["options"],
+                priority=int(form_options["priority"]),
+                custom=form_options["custom"],
+                tags=form_options["tags"],
+                memory=form_options["memory"],
+                enforce_timeout=form_options["enforce_timeout"],
+                machine=form_options["machine"],
+                platform="",  # what should this be?
             ))
 
         return ret

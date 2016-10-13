@@ -921,6 +921,7 @@ class Database(object):
         @param clock: virtual machine clock time
         @return: cursor or None.
         """
+        # TODO: parameter `package` is not mentioned in the function docstring
         session = self.Session()
 
         # Convert empty strings and None values to a valid int
@@ -974,10 +975,9 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
 
-        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.split(","):
-                tag = self._get_or_create(session, Tag, name=tag.strip())
+            for tag in [t.strip() for t in tags.split(",") if t]:
+                tag = self._get_or_create(session, Tag, name=tag)
                 task.tags.append(tag)
 
         if clock:
