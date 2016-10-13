@@ -5,6 +5,7 @@
 import imp
 import inspect
 import logging
+import multiprocessing
 import os.path
 import pkg_resources
 import sys
