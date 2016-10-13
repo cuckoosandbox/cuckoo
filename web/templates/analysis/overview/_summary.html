@@ -242,6 +242,29 @@
                                 </ul>
                             </li>
                         {% endif %}
+
+                        {% if process.summary.directory_opened %}
+                            <li class="list-group-item">
+                                <p><b>Directories opened</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_opened %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.directory_failed %}
+                            <li class="list-group-item">
+                                <p><b>Directories failed access</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_failed %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
                         </ul>
                     </div>
                     {% endif %}
