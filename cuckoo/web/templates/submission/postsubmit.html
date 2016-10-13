@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+<style>
+    .btn-file {
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-file input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        font-size: 999px;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        background: red;
+        cursor: inherit;
+        display: block;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-success"><h4>Submission complete!</h4>
+        The following tasks were added successfully:
+        {% for task in tasks %}
+            <a href="{% url "submission.views.status" task %}">{{task}}</a>
+        {% endfor %}.
+        <br /><br />
+        Click on the links to monitor the status of the submission:<br />
+        {% for task in tasks %}
+            <a href="{% url "submission.views.status" task %}">{{ baseurl }}{% url "submission.views.status" task %}</a><br />
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script type='text/javascript'>
+
+$(document).ready( function() {
+
+});
+</script>
+
+{% endblock %}
