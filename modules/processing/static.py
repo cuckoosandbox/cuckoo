@@ -61,6 +61,7 @@ from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.objects import File
 from lib.cuckoo.common.utils import convert_to_printable
 from lib.cuckoo.common.utils import to_unicode
+from lib.cuckoo.misc import dispatch
 
 log = logging.getLogger(__name__)
 
@@ -685,8 +686,14 @@ class Static(Processing):
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
             static["office"] = OfficeDocument(self.file_path).run()
 
+        def pdf_worker(filepath):
+            return PdfDocument(filepath).run()
+
         if package == "pdf" or ext == "pdf":
-            static["pdf"] = PdfDocument(self.file_path).run()
+            timeout = int(self.options.get("pdf_timeout", 60))
+            static["pdf"] = dispatch(
+                pdf_worker, (self.file_path,), timeout=timeout
+            )
 
         return static
 
