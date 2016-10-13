@@ -359,20 +359,30 @@ class BehaviorReconstructor(object):
 
     def _api_NtCreateFile(self, return_value, arguments, flags):
         self.files[arguments["file_handle"]] = arguments["filepath"]
-        if NT_SUCCESS(return_value):
-            status_info = flags.get("status_info", "").lower()
-            if status_info in ("file_overwritten", "file_superseded"):
-                return single("file_recreated", arguments["filepath"])
-            elif status_info == "file_exists":
-                return single("file_opened", arguments["filepath"])
-            elif status_info == "file_does_not_exist":
-                return single("file_failed", arguments["filepath"])
-            elif status_info == "file_created":
-                return single("file_created", arguments["filepath"])
+        create_options = flags.get("create_options", "").lower()
+        status_info = flags.get("status_info", "").lower()
+        if create_options == "file_directory_file":
+            if NT_SUCCESS(return_value):
+                if status_info == "file_created":
+                    return single("directory_created", arguments["filepath"])
+                elif status_info == "file_opened":
+                    return single("directory_opened", arguments["filepath"])
             else:
-                return single("file_opened", arguments["filepath"])
+                return single("directory_failed", arguments["filepath"])
         else:
-            return single("file_failed", arguments["filepath"])
+            if NT_SUCCESS(return_value):
+                if status_info in ("file_overwritten", "file_superseded"):
+                    return single("file_recreated", arguments["filepath"])
+                elif status_info == "file_exists":
+                    return single("file_opened", arguments["filepath"])
+                elif status_info == "file_does_not_exist":
+                    return single("file_failed", arguments["filepath"])
+                elif status_info == "file_created":
+                    return single("file_created", arguments["filepath"])
+                else:
+                    return single("file_opened", arguments["filepath"])
+            else:
+                return single("file_failed", arguments["filepath"])
 
     _api_NtOpenFile = _api_NtCreateFile
 
