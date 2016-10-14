@@ -21,7 +21,7 @@ class TestDropDatabase:
         self.d.connect(dsn="sqlite:///:memory:")
 
     def add_url(self, url, priority=1, status="pending"):
-        task_id = self.d.add_url("http://foo.bar", priority=priority)
+        task_id = self.d.add_url(url, priority=priority)
         self.d.set_status(task_id, status)
         return task_id
 
