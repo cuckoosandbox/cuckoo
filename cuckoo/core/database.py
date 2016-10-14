@@ -1466,7 +1466,9 @@ class Database(object):
             # Fetch a task that has yet to be processed and make sure no other
             # threads are allowed to access it through "for update".
             q = session.query(Task).filter_by(status=TASK_COMPLETED)
-            task = q.filter_by(processing=None).with_for_update().first()
+            q = q.filter_by(processing=None)
+            q = q.order_by(Task.priority.desc(), Task.id)
+            task = q.with_for_update().first()
 
             # There's nothing to process in the first place.
             if not task:
