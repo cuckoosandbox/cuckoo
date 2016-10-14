@@ -20,6 +20,11 @@ class TestDropDatabase:
         self.d = Database()
         self.d.connect(dsn="sqlite:///:memory:")
 
+    def add_url(self, url, priority=1, status="pending"):
+        task_id = self.d.add_url("http://foo.bar", priority=priority)
+        self.d.set_status(task_id, status)
+        return task_id
+
     def test_drop(self):
         # Add task.
         sample_path = tempfile.mkstemp()[1]
@@ -40,3 +45,21 @@ class TestDropDatabase:
         # exception; "no such table".
         with pytest.raises(OperationalError):
             assert session.query(Task).count() == 0
+
+    def test_processing_get_task(self):
+        self.add_url("http://google.com/1", priority=1, status="completed")
+        self.add_url("http://google.com/2", priority=2, status="completed")
+        self.add_url("http://google.com/3", priority=1, status="completed")
+        self.add_url("http://google.com/4", priority=1, status="completed")
+        self.add_url("http://google.com/5", priority=3, status="completed")
+        self.add_url("http://google.com/6", priority=1, status="completed")
+        self.add_url("http://google.com/7", priority=1, status="completed")
+
+        assert self.d.processing_get_task("foo") == 5
+        assert self.d.processing_get_task("foo") == 2
+        assert self.d.processing_get_task("foo") == 1
+        assert self.d.processing_get_task("foo") == 3
+        assert self.d.processing_get_task("foo") == 4
+        assert self.d.processing_get_task("foo") == 6
+        assert self.d.processing_get_task("foo") == 7
+        assert self.d.processing_get_task("foo") is None
