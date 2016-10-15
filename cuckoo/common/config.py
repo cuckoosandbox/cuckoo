@@ -44,9 +44,9 @@ class Int(Type):
         try:
             value = config.getint(section, name)
         except ValueError:
-            if config.get(section, name) is not "":
-                log.error("Incorrect Integer %s", config.get(section, name))
             value = config.get(section, name)
+            if value is not "":
+                log.error("Incorrect Integer %s", value)
         return value
 
     def check(self, value):
@@ -96,10 +96,9 @@ class Path(String):
             c = click.Path(exists=self.exists, writable=self.writable, readable=self.readable)
             value = c.convert(config.get(section, name), None, None)
         except Exception as ex:
-            if config.get(section, name) is not "":
-                log.error("Incorrect Path : %s , Error : %s",
-                          config.get(section, name), ex)
             value = config.get(section, name)
+            if value is not "":
+                log.error("Incorrect Path : %s , Error : %s", value, ex)
         return value
 
     def check(self, value, exists=False, writable=False, readable=False):
@@ -125,9 +124,9 @@ class Boolean(Type):
         try:
             value = config.getboolean(section, name)
         except ValueError:
-            if config.get(section, name) is not "":
-                log.error("Incorrect Boolean %s", config.get(section, name))
             value = config.get(section, name)
+            if value is not "":
+                log.error("Incorrect Boolean %s", value)
         return value
 
     def check(self, value):
@@ -153,9 +152,9 @@ class UUID(Type):
             c = click.UUID(config.get(section, name))
             value = str(c)
         except Exception as ex:
-            if config.get(section, name) is not "":
-                log.error("Incorrect UUID %s", config.get(section, name))
             value = config.get(section, name)
+            if value is not "":
+                log.error("Incorrect UUID %s", value)
         return value
 
     def check(self, value):
