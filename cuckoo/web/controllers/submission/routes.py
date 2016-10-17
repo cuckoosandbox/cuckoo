@@ -12,11 +12,26 @@ from cuckoo.core.rooter import vpns
 from cuckoo.common.config import Config
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
+from cuckoo.web.bin.utils import view_error
 
 cfg = Config("routing")
 results_db = settings.MONGO
 
 class SubmissionRoutes:
+    @staticmethod
+    def submit(request):
+        return render(request, "submission/submit.html")
+
+    @staticmethod
+    def postsubmit(request):
+        submit_ids = request.GET.getlist("id")
+        if not submit_ids:
+            return view_error(request, "No task ids specified")
+
+        return render(request, "submission/postsubmit.html", {
+            "submit_ids": submit_ids
+        })
+
     @staticmethod
     def presubmit(request, submit_id):
         files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
@@ -57,7 +72,3 @@ class SubmissionRoutes:
         }
 
         return render(request, "submission/presubmit.html", data)
-
-    @staticmethod
-    def submit(request):
-        return render(request, "submission/submit.html")

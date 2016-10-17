@@ -90,7 +90,6 @@ class SubmissionApi:
                 else:
                     data["form"][checkbox] = False
 
-        # do something with `data`
         controller = SubmissionController(submit_id=body["submit_id"])
         tasks = controller.submit(data)
 

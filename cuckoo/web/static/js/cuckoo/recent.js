@@ -111,8 +111,8 @@ class Recent {
                 let date_completed_on = "-";
                 let date_added_on = "-";
 
-                if (analysis.hasOwnProperty("completed_on")) date_completed_on = Recent.getFormattedDate(analysis.completed_on);
-                if (analysis.hasOwnProperty("added_on")) date_added_on = Recent.getFormattedDate(analysis.added_on);
+                if (analysis.hasOwnProperty("completed_on")) date_completed_on = CuckooWeb.getFormattedDate(analysis.completed_on);
+                if (analysis.hasOwnProperty("added_on")) date_added_on = CuckooWeb.getFormattedDate(analysis.added_on);
 
                 if (analysis.status == "reported" || analysis.status == "failed_analysis") {
                     html += `<a href="${ analysis.id }/summary"><span class="mono">${ date_completed_on }</span></a>`;
@@ -174,24 +174,6 @@ class Recent {
                 $("table#recent tbody").append(html);
             });
         }
-    }
-
-    static getFormattedDate(jsondate) {
-        var date = new Date(jsondate);
-
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var hour = date.getHours();
-        var min = date.getMinutes();
-        var sec = date.getSeconds();
-
-        month = (month < 10 ? "0" : "") + month;
-        day = (day < 10 ? "0" : "") + day;
-        hour = (hour < 10 ? "0" : "") + hour;
-        min = (min < 10 ? "0" : "") + min;
-        sec = (sec < 10 ? "0" : "") + sec;
-
-        return date.getFullYear() + "-" + month + "-" + day + " " + hour + ":" + min;
     }
 }
 

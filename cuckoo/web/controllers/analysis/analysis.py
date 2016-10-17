@@ -12,8 +12,38 @@ from django.http import Http404
 from cuckoo.core.database import Database, TASK_PENDING
 
 results_db = settings.MONGO
+db = Database()
 
 class AnalysisController:
+    @staticmethod
+    def task_info(task_id):
+        if not isinstance(task_id, int):
+            raise Exception("Task ID should be integer")
+
+        data = {}
+
+        task = db.view_task(task_id, details=True)
+        if task:
+            entry = task.to_dict()
+            entry["guest"] = {}
+            if task.guest:
+                entry["guest"] = task.guest.to_dict()
+
+            entry["errors"] = []
+            for error in task.errors:
+                entry["errors"].append(error.message)
+
+            entry["sample"] = {}
+            if task.sample_id:
+                sample = db.view_sample(task.sample_id)
+                entry["sample"] = sample.to_dict()
+
+            data["task"] = entry
+        else:
+            return Exception("Task not found")
+
+        return data
+
     @staticmethod
     def get_recent(limit=50, offset=0):
         db = Database()

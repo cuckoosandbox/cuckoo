@@ -70,28 +70,21 @@ class AnalysisApi:
         return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_get
-    def task_view(request, task_id):
+    def task_info(request, task_id):
+        try:
+            data = AnalysisController.task_info(task_id)
+            return JsonResponse({"status": True, "data": data}, safe=False)
+        except Exception as e:
+            return json_error_response(str(e))
+
+    @api_post
+    def tasks_info(request, body):
+        task_ids = body.get("task_ids", [])
         data = {}
 
-        task = db.view_task(task_id, details=True)
-        if task:
-            entry = task.to_dict()
-            entry["guest"] = {}
-            if task.guest:
-                entry["guest"] = task.guest.to_dict()
-
-            entry["errors"] = []
-            for error in task.errors:
-                entry["errors"].append(error.message)
-
-            entry["sample"] = {}
-            if task.sample_id:
-                sample = db.view_sample(task.sample_id)
-                entry["sample"] = sample.to_dict()
-
-            data["task"] = entry
-        else:
-            return json_error_response("Task not found")
+        for task_id in task_ids:
+            task_info = AnalysisController.task_info(task_id)
+            data[task_info["task"]["id"]] = task_info["task"]
 
         return JsonResponse({"status": True, "data": data}, safe=False)
 
