@@ -9,7 +9,7 @@ ecdsa==0.13
 elasticsearch==2.2.0
 enum34==1.0.4
 Flask==0.10.1
-HTTPReplay==0.1.15
+HTTPReplay==0.1.17
 idna==2.0
 ipaddress==1.0.14
 itsdangerous==0.24

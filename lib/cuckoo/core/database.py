@@ -1408,7 +1408,7 @@ class Database(object):
             WHERE id IN (
                 SELECT id FROM tasks
                 WHERE status = :status AND processing IS NULL
-                LIMIT 1 FOR UPDATE
+                ORDER BY priority DESC, id ASC LIMIT 1 FOR UPDATE
             )
             RETURNING id
         """
