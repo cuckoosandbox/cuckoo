@@ -117,6 +117,9 @@ def index(request, task_id=None, sha1=None):
     if not request.POST.get("human"):
         options["human"] = "0"
 
+    if request.POST.get("screenshots"):
+        options["screenshots"] = force_int(request.POST.get("screenshots"))
+
     db = Database()
     task_ids = []
     task_machines = []
