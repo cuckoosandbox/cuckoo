@@ -38,13 +38,20 @@ manifest.extend(excl)
 
 open("MANIFEST.in", "wb").write("\n".join(manifest) + "\n")
 
-# Update cuckoo/data-private/.cwd with the latest Git hash. TODO Update the
-# branch name when merging package into master or read out .git/HEAD to parse
-# out the current branch name.
-githash_path = os.path.join(".git", "refs", "heads", "package")
-if os.path.exists(githash_path):
-    h = open(githash_path, "rb").read().strip()
-    open(os.path.join("cuckoo", "data-private", ".cwd"), "wb").write(h)
+def githash():
+    """Extracts the current Git hash."""
+    git_head = os.path.join(".git", "HEAD")
+    if os.path.exists(git_head):
+        head = open(git_head, "rb").read().strip()
+        if not head.startswith("ref: "):
+            return head
+
+        git_ref = os.path.join(".git", head.split()[1])
+        if os.path.exists(git_ref):
+            return open(git_ref, "rb").read().strip()
+
+cwd_path = os.path.join("cuckoo", "data-private", ".cwd")
+open(cwd_path, "wb").write(githash() or "")
 
 setuptools.setup(
     name="Cuckoo",
