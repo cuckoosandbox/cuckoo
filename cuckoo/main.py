@@ -16,7 +16,7 @@ import cuckoo
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
     cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
-    cuckoo_dnsserve, cuckoo_machine
+    cuckoo_dnsserve, cuckoo_machine, import_cuckoo
 )
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
@@ -533,6 +533,16 @@ def migrate():
         exit(1)
 
     print yellow(">>> Your database migration was successful!")
+
+@main.command("import")
+@click.argument("path", type=click.Path(file_okay=False, exists=True))
+@click.option("-f", "--force", help="Perform non-reversible in-place database migrations")
+@click.option("--database", help="Creation of a new database for a reversible migration")
+def import_(path, force, database):
+    if force and database:
+        sys.exit("Can't have both the --force and the --database parameter.")
+
+    import_cuckoo(path, force, database)
 
 @main.group()
 def distributed():
