@@ -201,13 +201,6 @@ class Config:
                 "resultserver_port": Int(),
                 "tags": String(),
             },
-            "honeyd": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
-                "tags": String(),
-                "options": String(),
-            },
         },
         # auxiliary.conf parameters
         "auxiliary": {
@@ -476,7 +469,7 @@ class Config:
             "static": {
                 "enabled": Boolean(),
             },
-            "String()s": {
+            "strings": {
                 "enabled": Boolean(),
             },
             "suricata": {
@@ -567,6 +560,11 @@ class Config:
                 "enabled": Boolean(),
                 "url": String(),
                 "identifier": String(),
+            },
+            "mattermost": {
+                "enabled": Boolean(),
+                "username": String(),
+                "url": String(),
             },
         },
         # routing.conf parameters
