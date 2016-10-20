@@ -695,7 +695,14 @@ class Config:
                 continue
 
             setattr(self, section, Dictionary())
-            for name, raw_value in config.items(section):
+
+            try:
+                items = config.items(section)
+            except ConfigParser.InterpolationMissingOptionError as e:
+                log.error("Missing environment variable(s): %s", e)
+                raise CuckooOperationalError(e)
+
+            for name, raw_value in items:
                 if getattr(getattr(self, section), "enabled", None) in [True, None]:
                     if name in sectionTypes:
                         value = sectionTypes[name].get(config, section, name)

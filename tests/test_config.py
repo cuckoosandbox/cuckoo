@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
 import pytest
 import shutil
 import tempfile
@@ -54,6 +55,7 @@ class TestConfig:
     def test_options(self):
         assert parse_options("a=b") == {"a": "b"}
         assert parse_options("a=b,b=c") == {"a": "b", "b": "c"}
+        assert parse_options("a,b") == {}
 
         assert emit_options({"a": "b"}) == "a=b"
         assert emit_options({"a": "b", "b": "c"}).count(",") == 1
@@ -61,6 +63,30 @@ class TestConfig:
         assert "b=c" in emit_options({"a": "b", "b": "c"})
 
         assert parse_options(emit_options({"x": "y"})) == {"x": "y"}
+
+ENV_EXAMPLE = """
+[cuckoo]
+tmppath = foo %(CUCKOO_FOOBAR)s bar
+"""
+
+ENV2_EXAMPLE = """
+[cuckoo]
+tmppath = foo %(FOOBAR)s bar
+"""
+
+def test_env():
+    path = tempfile.mkstemp()[1]
+
+    os.environ["CUCKOO_FOOBAR"] = "top"
+    os.environ["FOOBAR"] = "kek"
+
+    open(path, "wb").write(ENV_EXAMPLE)
+    c = Config("cuckoo", cfg=path)
+    assert c.get("cuckoo")["tmppath"] == "foo top bar"
+
+    open(path, "wb").write(ENV2_EXAMPLE)
+    with pytest.raises(CuckooOperationalError):
+        Config("cuckoo", cfg=path)
 
 VIRTUALBOX_CONFIG_EXAMPLE = """
 [virtualbox]
