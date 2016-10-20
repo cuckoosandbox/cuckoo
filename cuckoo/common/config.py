@@ -14,6 +14,8 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
+_cache = {}
+
 class Type(object):
     """Base Class for Type Definitions"""
 
@@ -734,3 +736,17 @@ def parse_options(options):
 def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
     return ",".join("%s=%s" % (k, v) for k, v in options.items())
+
+def config(s, default=None, cfg=None):
+    """Fetch a configuration value, denoted as file:section:key."""
+    if s.count(":") != 2:
+        raise RuntimeError("Invalid configuration entry: %s" % s)
+
+    file_name, section, key = s.split(":")
+
+    # Just have to be careful with caching and unit tests.
+    if (file_name, cfg, cwd()) not in _cache:
+        _cache[file_name, cfg, cwd()] = Config(file_name, cfg=cfg)
+
+    config = getattr(_cache[file_name, cfg, cwd()], section, {})
+    return config.get(key, default)

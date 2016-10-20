@@ -4,10 +4,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import pytest
+import shutil
 import tempfile
 
-from cuckoo.common.config import Config, parse_options, emit_options
+from cuckoo.common.config import Config, parse_options, emit_options, config
 from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.main import main
 from cuckoo.misc import set_cwd
 
 CONF_EXAMPLE = """
@@ -126,3 +128,27 @@ class TestConfigType:
         """Testing the Path parsing in the configuration file parsing."""
         assert self.c.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
         assert self.f.get("cuckoo")["rooter"] == "/tmp/cuckoo-rooter"
+
+def test_default_config():
+    """Test the default configuration."""
+    dirpath = tempfile.mkdtemp()
+
+    with pytest.raises(SystemExit):
+        main.main(
+            ("--cwd", dirpath, "--nolog", "init"),
+            standalone_mode=False
+        )
+
+    assert config("cuckoo:cuckoo:version_check") is True
+    assert config("cuckoo:cuckoo:tmppath") == "/tmp"
+    assert config("cuckoo:resultserver:ip") == "192.168.56.1"
+    assert config("cuckoo:processing:analysis_size_limit") == 104857600
+    assert config("cuckoo:timeouts:critical") == 60
+
+    with pytest.raises(RuntimeError):
+        config("nope")
+
+    with pytest.raises(RuntimeError):
+        config("nope:nope")
+
+    shutil.rmtree(dirpath)
