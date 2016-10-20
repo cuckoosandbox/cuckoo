@@ -684,7 +684,6 @@ class Config:
         for section in config.sections():
             if section in self.ParamTypes[file_name]:
                 sectionTypes = self.ParamTypes[file_name][section]
-
             # Hacky fix to get the type of unknown sections
             elif "*" in self.ParamTypes[file_name]:
                 sectionTypes = self.ParamTypes[file_name]["*"]
@@ -703,17 +702,16 @@ class Config:
                 raise CuckooOperationalError(e)
 
             for name, raw_value in items:
-                if getattr(getattr(self, section), "enabled", None) in [True, None]:
-                    if name in sectionTypes:
-                        value = sectionTypes[name].get(config, section, name)
-                    else:
-                        log.error(
-                            "Type of config parameter %s:%s:%s not found!",
-                            file_name, section, name
-                        )
-                        value = config.get(section, name)
+                if name in sectionTypes:
+                    value = sectionTypes[name].get(config, section, name)
+                else:
+                    log.error(
+                        "Type of config parameter %s:%s:%s not found!",
+                        file_name, section, name
+                    )
+                    value = config.get(section, name)
 
-                    setattr(getattr(self, section), name, value)
+                setattr(getattr(self, section), name, value)
 
     def get(self, section):
         """Get option.

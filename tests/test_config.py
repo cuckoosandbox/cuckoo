@@ -170,6 +170,7 @@ def test_default_config():
     assert config("cuckoo:resultserver:ip") == "192.168.56.1"
     assert config("cuckoo:processing:analysis_size_limit") == 104857600
     assert config("cuckoo:timeouts:critical") == 60
+    assert config("auxiliary:mitm:mitmdump") == "/usr/local/bin/mitmdump"
 
     with pytest.raises(RuntimeError):
         config("nope")
