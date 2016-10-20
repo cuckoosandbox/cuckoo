@@ -22,7 +22,6 @@ tcpdump = /usr/sbin/tcpdump
 interface = vboxnet0
 """
 
-
 class TestConfig:
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -61,7 +60,6 @@ class TestConfig:
 
         assert parse_options(emit_options({"x": "y"})) == {"x": "y"}
 
-
 VIRTUALBOX_CONFIG_EXAMPLE = """
 [virtualbox]
 path = /usr/bin/VBoxManage
@@ -76,6 +74,7 @@ label = 8
 [machine1]
 label = machine1
 """
+
 CUCKOO_CONFIG_EXAMPLE = """
 [cuckoo]
 version_check = on
@@ -101,7 +100,7 @@ class TestConfigType:
         self.f = Config(file_name="cuckoo", cfg=self.path)
 
     def test_integer_parse(self):
-        """ Testing the integer parsing in the configuration file parsing"""
+        """Testing the integer parsing in the configuration file parsing."""
         assert self.c.get("virtualbox")["machines"] == "7,8,machine1"
         assert self.c.get("7") is not None
         assert self.c.get("7")["label"] is "7"
@@ -112,18 +111,18 @@ class TestConfigType:
         assert self.c.get("machine1")["label"] == "machine1"
 
     def test_string_parse(self):
-        """ Testing the string parsing in the configuration file parsing"""
+        """Testing the string parsing in the configuration file parsing."""
         assert self.c.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
         assert self.c.get("7")["ip"] == "192.168.58.10"
         assert self.c.get("7")["tags"] == "windows_xp_sp3,32_bit,acrobat_reader_6"
 
     def test_boolean_parse(self):
-        """ Testing the boolean parsing in the configuration file parsing"""
+        """Testing the boolean parsing in the configuration file parsing."""
         assert self.f.get("cuckoo")["version_check"] is True
         assert self.f.get("cuckoo")["max_analysis_count"] is not False
         assert self.f.get("resultserver")["force_port"] is False
 
     def test_path_parse(self):
-        """ Testing the Path parsing in the configuration file parsing"""
+        """Testing the Path parsing in the configuration file parsing."""
         assert self.c.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
         assert self.f.get("cuckoo")["rooter"] == "/tmp/cuckoo-rooter"

@@ -14,13 +14,8 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
-
 class Type(object):
     """Base Class for Type Definitions"""
-
-    def __init__(self):
-        """Base constructor for Type Definition class"""
-        pass
 
     def get(self, config, section, name):
         """Gets the Parameter value from the config file."""
@@ -30,17 +25,11 @@ class Type(object):
         """Checks the type of the value."""
         pass
 
-
 class Int(Type):
-    """Integer Type Definition class. """
-
-    def __init__(self):
-        """Constructor for Integer Type."""
-        super(Int, self).__init__()
-        return
+    """Integer Type Definition class."""
 
     def get(self, config, section, name):
-        """Gets the value of the parameter from the config file. """
+        """Gets the value of the parameter from the config file."""
         try:
             value = config.getint(section, name)
         except ValueError:
@@ -50,77 +39,66 @@ class Int(Type):
         return value
 
     def check(self, value):
-        """Checks if the value is of type Integer. """
+        """Checks if the value is of type Integer."""
         try:
             click.INT(value)
             return True
-        except Exception as ex:
+        except Exception:
             return False
-
 
 class String(Type):
-    """ String Type Definition class. """
-
-    def __init__(self):
-        """Constructor for String Type."""
-        super(String, self).__init__()
-        return
-
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file. """
-        value = config.get(section, name)
-        return value
-
-    def check(self, value):
-        """Checks if the value is of type String. """
-        if isinstance(value, str):
-            return True
-        else:
-            return False
-
-
-class Path(String):
-    """ Path Type Definition class. """
-
-    def __init__(self, exists=False, writable=False, readable=False):
-        """Constructor for Path Type."""
-        super(Path, self).__init__()
-        self.exists = exists
-        self.writable = writable
-        self.readable = readable
-        return
+    """String Type Definition class."""
 
     def get(self, config, section, name):
         """Gets the value of the parameter from the config file."""
-        try:
-            c = click.Path(exists=self.exists, writable=self.writable, readable=self.readable)
-            value = c.convert(config.get(section, name), None, None)
-        except Exception as ex:
-            value = config.get(section, name)
-            if value is not "":
-                log.error("Incorrect Path : %s , Error : %s", value, ex)
-        return value
+        return config.get(section, name)
 
-    def check(self, value, exists=False, writable=False, readable=False):
-        """Checks if the value is of type String. """
-        try:
-            c = click.Path(exists=exists, writable=writable, readable=readable)
-            c.convert(value, None, None)
-            return True
-        except Exception as ex:
-            return False
+    def check(self, value):
+        """Checks if the value is of type String."""
+        return isinstance(value, basestring)
 
+class Path(String):
+    """Path Type Definition class."""
 
-class Boolean(Type):
-    """ Boolean Type Definition class. """
-
-    def __init__(self):
-        """Constructor for Boolean Type."""
-        super(Boolean, self).__init__()
-        return
+    def __init__(self, exists=False, writable=False, readable=False):
+        """Constructor for Path Type."""
+        self.exists = exists
+        self.writable = writable
+        self.readable = readable
 
     def get(self, config, section, name):
-        """Gets the value of the parameter from the config file. """
+        """Gets the value of the parameter from the config file."""
+        value = config.get(section, name)
+        try:
+            c = click.Path(
+                exists=self.exists,
+                writable=self.writable,
+                readable=self.readable
+            )
+            value = c.convert(value, None, None)
+        except Exception as e:
+            if value:
+                log.error("Incorrect path: %s, error: %s", value, e)
+        return value
+
+    def check(self, value):
+        """Checks if the value is of type Path."""
+        try:
+            c = click.Path(
+                exists=self.exists,
+                writable=self.writable,
+                readable=self.readable
+            )
+            c.convert(value, None, None)
+            return True
+        except Exception:
+            return False
+
+class Boolean(Type):
+    """Boolean Type Definition class."""
+
+    def get(self, config, section, name):
+        """Gets the value of the parameter from the config file."""
         try:
             value = config.getboolean(section, name)
         except ValueError:
@@ -130,48 +108,41 @@ class Boolean(Type):
         return value
 
     def check(self, value):
-        """Checks if the value is of type Boolean. """
+        """Checks if the value is of type Boolean."""
         try:
             click.BOOL(value)
             return True
-        except Exception as ex:
+        except Exception:
             return False
 
-
 class UUID(Type):
-    """ UUID Type Definition class. """
-
-    def __init__(self):
-        """Constructor for UUID Type."""
-        super(UUID, self).__init__()
-        return
+    """UUID Type Definition class."""
 
     def get(self, config, section, name):
-        """Gets the value of the parameter from the config file. """
+        """Gets the value of the parameter from the config file."""
         try:
             c = click.UUID(config.get(section, name))
             value = str(c)
-        except Exception as ex:
+        except Exception:
             value = config.get(section, name)
             if value is not "":
                 log.error("Incorrect UUID %s", value)
         return value
 
     def check(self, value):
-        """Checks if the value is of type UUID. """
+        """Checks if the value is of type UUID."""
         try:
             click.UUID(value)
             return True
-        except Exception as ex:
+        except Exception:
             return False
-
 
 class Config:
     """Configuration file parser."""
 
     # Config Parameters and their types
     ParamTypes = {
-        ## cuckoo.conf parameters
+        # cuckoo.conf parameters
         "cuckoo": {
             "cuckoo": {
                 "version_check": Boolean(),
@@ -212,7 +183,7 @@ class Config:
                 "vm_state": Int(),
             },
         },
-        ## virtualbox.conf parameters
+        # virtualbox.conf parameters
         "virtualbox": {
             "virtualbox": {
                 "mode": String(),
@@ -238,7 +209,7 @@ class Config:
                 "options": String(),
             },
         },
-        ## auxiliary.conf parameters
+        # auxiliary.conf parameters
         "auxiliary": {
             "sniffer": {
                 "enabled": Boolean(),
@@ -261,7 +232,7 @@ class Config:
                 "enabled": Boolean(),
             },
         },
-        ## avd.conf parameters
+        # avd.conf parameters
         "avd": {
             "avd": {
                 "mode": String(),
@@ -280,7 +251,7 @@ class Config:
                 "resultserver_port": Int(),
             },
         },
-        ## esx.conf parameters
+        # esx.conf parameters
         "esx": {
             "esx": {
                 "dsn": String(),
@@ -300,7 +271,7 @@ class Config:
                 "tags": String(),
             },
         },
-        ## kvm.conf parameters
+        # kvm.conf parameters
         "kvm": {
             "kvm": {
                 "machines": String(),
@@ -317,7 +288,7 @@ class Config:
                 "tags": String(),
             },
         },
-        ## memory.conf parameters
+        # memory.conf parameters
         "memory": {
             "basic": {
                 "guest_profile": String(),
@@ -417,7 +388,7 @@ class Config:
                 "pid_generic": String(),
             },
         },
-        ## physical.conf parameters
+        # physical.conf parameters
         "physical": {
             "physical": {
                 "machines": String(),
@@ -436,7 +407,7 @@ class Config:
                 "ip": String(),
             },
         },
-        ## processing.conf parameters
+        # processing.conf parameters
         "processing": {
             "analysisinfo": {
                 "enabled": Boolean(),
@@ -533,7 +504,7 @@ class Config:
                 "url": String(),
             },
         },
-        ## qemu.conf parameters
+        # qemu.conf parameters
         "qemu": {
             "qemu": {
                 "path": Path(exists=True, writable=False, readable=True),
@@ -553,7 +524,7 @@ class Config:
                 "kernel_path": Path(exists=True, writable=False, readable=True),
             },
         },
-        ## reporting.conf parameters
+        # reporting.conf parameters
         "reporting": {
             "jsondump": {
                 "enabled": Boolean(),
@@ -598,7 +569,7 @@ class Config:
                 "identifier": String(),
             },
         },
-        ## routing.conf parameters
+        # routing.conf parameters
         "routing": {
             "routing": {
                 "route": String(),
@@ -627,7 +598,7 @@ class Config:
                 "rt_table": String(),
             },
         },
-        ## vmware.conf parameters
+        # vmware.conf parameters
         "vmware": {
             "vmware": {
                 "mode": String(),
@@ -646,7 +617,7 @@ class Config:
                 "tags": String(),
             },
         },
-        ## vsphere.conf parameters
+        # vsphere.conf parameters
         "vsphere": {
             "vsphere": {
                 "host": String(),
@@ -667,7 +638,7 @@ class Config:
                 "tags": String(),
             },
         },
-        ## xenserver.conf parameters
+        # xenserver.conf parameters
         "xenserver": {
             "xenserver": {
                 "user": String(),
@@ -707,25 +678,34 @@ class Config:
             config.read(cwd("conf", "%s.conf" % file_name))
 
         if file_name not in self.ParamTypes:
-            log.error("Unknown config file %s.conf" % (file_name))
+            log.error("Unknown config file %s.conf", file_name)
             return
+
         for section in config.sections():
             if section in self.ParamTypes[file_name]:
                 sectionTypes = self.ParamTypes[file_name][section]
-            ## Hacky fix to get the type of unknown sections
+
+            # Hacky fix to get the type of unknown sections
             elif "*" in self.ParamTypes[file_name]:
                 sectionTypes = self.ParamTypes[file_name]["*"]
             else:
-                log.error("Config section %s NOT FOUND!!" % (section))
+                log.error(
+                    "Config section %s:%s not found!", file_name, section
+                )
                 continue
+
             setattr(self, section, Dictionary())
             for name, raw_value in config.items(section):
                 if getattr(getattr(self, section), "enabled", None) in [True, None]:
                     if name in sectionTypes:
                         value = sectionTypes[name].get(config, section, name)
                     else:
-                        log.error("Type of config parameter %s.%s NOT FOUND!!" % (section, name))
+                        log.error(
+                            "Type of config parameter %s:%s:%s not found!",
+                            file_name, section, name
+                        )
                         value = config.get(section, name)
+
                     setattr(getattr(self, section), name, value)
 
     def get(self, section):
@@ -737,10 +717,10 @@ class Config:
         try:
             return getattr(self, section)
         except AttributeError as e:
-            raise CuckooOperationalError("Option %s is not found in "
-                                         "configuration, error: %s" %
-                                         (section, e))
-
+            raise CuckooOperationalError(
+                "Option %s is not found in configuration, error: %s" %
+                (section, e)
+            )
 
 def parse_options(options):
     """Parse the analysis options field to a dictionary."""
@@ -752,7 +732,6 @@ def parse_options(options):
         key, value = field.split("=", 1)
         ret[key.strip()] = value.strip()
     return ret
-
 
 def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
