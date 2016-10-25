@@ -265,7 +265,11 @@ $(document).ready( function() {
                 "selected_files": selected_files,
                 "form": formdata
             }, function(data){
-                console.log(data);
+                if(data.status === true){
+                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
+                } else {
+                    alert("Submission failed: " + data.message);
+                }
             });
         });
 

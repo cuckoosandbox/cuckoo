@@ -73,6 +73,10 @@ class CuckooWeb {
 
         return date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min;
     }
+
+    static redirect(location){
+        window.location.href = location;
+    }
 }
 
 $(document).ready(function() {
