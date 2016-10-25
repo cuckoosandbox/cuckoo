@@ -6,7 +6,6 @@
 import bs4
 import datetime
 import logging
-import magic
 import oletools.olevba
 import os
 import peepdf.JSAnalysis
@@ -34,6 +33,7 @@ except:
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
+from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch
 
 log = logging.getLogger(__name__)

@@ -7,13 +7,13 @@ import androguard
 import binascii
 import hashlib
 import logging
-import magic
 import mmap
 import os
 import pefile
 import re
 
 from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.compat import magic
 from cuckoo.misc import cwd
 
 try:
