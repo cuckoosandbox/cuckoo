@@ -1,0 +1,18 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+  ONLYINSTALL: yes
+
+install:
+  - "%PYTHON%/Python.exe setup.py develop"
+  - "%PYTHON%/Scripts/pip.exe install pytest pytest-cov coveralls"
+
+build: false
+
+test_script:
+  - "%PYTHON%/Scripts/cuckoo.exe -d"
+  - "%PYTHON%/Scripts/cuckoo.exe community"
+  - "%PYTHON%/Scripts/pytest.exe --cov=cuckoo"
+
+after_test:
+  - "%PYTHON%/Scripts/coveralls.exe"
