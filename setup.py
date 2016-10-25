@@ -116,7 +116,10 @@ setuptools.setup(
         ":sys_platform == 'win32'": [
             "requests==2.7.0",
         ],
-        ":sys_platform != 'win32'": [
+        ":sys_platform == 'darwin'": [
+            "requests==2.7.0",
+        ],
+        ":sys_platform == 'linux2'": [
             "requests[security]==2.7.0",
             "scapy==2.3.2",
         ],
