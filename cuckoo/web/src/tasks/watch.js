@@ -17,5 +17,6 @@ var watch = require('gulp-watch');
 	- initiates watchers for static building
  */
 module.exports = function() {
+	// starts a watcher RECURSIVE on all .scss files in /src/scss and assigns 'styles' as task
 	gulp.watch('./scss/**/*.scss', ['styles']);
 }
