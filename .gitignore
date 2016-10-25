@@ -42,3 +42,8 @@ build/
 dist/
 local/
 cuckoo/data-private/.cwd
+
+# Frontend compilation services
+node_modules/
+bower_components/
+.sass-cache/

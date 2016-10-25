@@ -1,0 +1,20 @@
+{
+  "name": "cuckoo-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp",
+    "build": "gulp build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-ruby-sass": "^2.1.0",
+    "gulp-sourcemaps": "^2.2.0",
+    "gulp-task-loader": "^1.4.4",
+    "gulp-watch": "^4.3.10"
+  }
+}
