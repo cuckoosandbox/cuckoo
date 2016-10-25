@@ -20,6 +20,8 @@ storage/*
 ehthumbs.db
 Icon?
 Thumbs.db
+.cache
+Cuckoo.egg-info/
 
 # Ignore development files
 docs/book/_build/
@@ -47,3 +49,5 @@ cuckoo/data-private/.cwd
 node_modules/
 bower_components/
 .sass-cache/
+
+cuckoo/web/manage.py
