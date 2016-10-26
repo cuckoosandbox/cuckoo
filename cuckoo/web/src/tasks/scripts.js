@@ -6,6 +6,7 @@ var source 		= require('vinyl-source-stream');
 var buffer 		= require('vinyl-buffer');
 var es 			= require('event-stream');
 var glob 		= require('glob');
+var rename 		= require('gulp-rename');
 
 module.exports = function(done) {
 
@@ -21,7 +22,10 @@ module.exports = function(done) {
 				.transform(babelify, { presets: "es2015" })
 				.bundle()
 				.pipe(source(entry))
-				.pipe(gulp.dest('../static/js/babel-test'));
+				.pipe(rename(function(path) {
+					path.dirname = './';
+				}))
+				.pipe(gulp.dest('../static/js/cuckoo/'));
 		});
 
 		es.merge(tasks).on('end', done);

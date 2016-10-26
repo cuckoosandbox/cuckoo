@@ -18,6 +18,7 @@
     "glob": "^7.1.1",
     "gulp": "^3.9.1",
     "gulp-insert": "^0.5.0",
+    "gulp-rename": "^1.2.2",
     "gulp-ruby-sass": "^2.1.0",
     "gulp-sourcemaps": "^2.2.0",
     "gulp-task-loader": "^1.4.4",
