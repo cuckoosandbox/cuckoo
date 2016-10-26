@@ -247,5 +247,4 @@ var DndUpload = function () {
 
     return DndUpload;
 }();
-
 //# sourceMappingURL=dndupload.js.map

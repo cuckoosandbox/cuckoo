@@ -61,7 +61,7 @@ var BarChart = function (_Plots) {
     function BarChart(target_div, ui_minimal) {
         _classCallCheck(this, BarChart);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(BarChart).call(this, target_div, ui_minimal));
+        return _possibleConstructorReturn(this, (BarChart.__proto__ || Object.getPrototypeOf(BarChart)).call(this, target_div, ui_minimal));
     }
 
     _createClass(BarChart, [{
@@ -78,5 +78,4 @@ var BarChart = function (_Plots) {
 
     return BarChart;
 }(Plots);
-
 //# sourceMappingURL=plots.js.map

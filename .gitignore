@@ -20,6 +20,8 @@ storage/*
 ehthumbs.db
 Icon?
 Thumbs.db
+.cache
+Cuckoo.egg-info/
 
 # Ignore development files
 docs/book/_build/
@@ -42,3 +44,10 @@ build/
 dist/
 local/
 cuckoo/data-private/.cwd
+
+# Frontend compilation services
+node_modules/
+bower_components/
+.sass-cache/
+
+cuckoo/web/manage.py

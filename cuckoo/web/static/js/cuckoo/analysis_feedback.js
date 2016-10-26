@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  * Copyright (C) 2010-2013 Claudio Guarnieri.
  * Copyright (C) 2014-2016 Cuckoo Foundation.
@@ -21,5 +23,4 @@ function feedback_send(task_id, firstname, email, company, message, include_anal
         callback(data);
     });
 }
-
 //# sourceMappingURL=analysis_feedback.js.map
