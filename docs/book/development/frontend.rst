@@ -14,6 +14,20 @@ make sure that the following dependencies are installed (required for Node and f
     - Sass (http://sass-lang.com)
     - Gulp (http://gulpjs.com)
 
+On a Debian based system the package requirements are:
+
+.. code-block:: text
+    :emphasize-lines: 2
+
+    apt-get install build-essential
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    apt-get install nodejs
+    apt-get install gulp
+    apt-get install sass
+    apt-get install rubygems
+    gem update --system
+    npm install gulp-ruby-sass
+
 After these packages have been installed, navigate to the source folder (`cd cuckoo/web/src`) and run `npm install`. This
 will install all node modules as listed in `package.json`. After this you should be good to go!
 
