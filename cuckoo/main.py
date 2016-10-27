@@ -125,13 +125,12 @@ def cuckoo_init(level, ctx):
     init_rooter()
     init_routing()
 
-    ResultServer()
-
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
     try:
+        ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:

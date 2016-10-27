@@ -7,7 +7,9 @@ import pytest
 import shutil
 import tempfile
 
+from cuckoo.common.utils import Singleton
 from cuckoo.core.init import write_supervisor_conf
+from cuckoo.core.resultserver import ResultServer
 from cuckoo.main import main
 from cuckoo.misc import set_cwd, cwd
 
@@ -65,3 +67,20 @@ class TestInit(object):
             standalone_mode=False
         )
         assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
+
+    def test_cuckoo_init_no_resultserver(self):
+        """Tests that 'cuckoo init' doesn't launch the ResultServer."""
+        with pytest.raises(SystemExit):
+            main.main(
+                ("--cwd", self.dirpath, "--nolog", "init"),
+                standalone_mode=False
+            )
+
+        # Raises CuckooCriticalError if ResultServer can't bind (which no
+        # longer happens now, naturally).
+        main.main(
+            ("--cwd", self.dirpath, "--nolog", "init"),
+            standalone_mode=False
+        )
+
+        assert ResultServer not in Singleton._instances
