@@ -39,7 +39,7 @@ def write_supervisor_conf(username):
         print "[unix_http_server]"
         print "file =", cwd("supervisord", "unix.sock")
         print
-        print "[program:cuckoo]"
+        print "[program:cuckoo-daemon]"
         print "command = %s -d -m 10000" % cuckoo_path
         print "user =", username
         print "startsecs = 30"
@@ -51,6 +51,9 @@ def write_supervisor_conf(username):
         print "numprocs = 4"
         print "user =", username
         print "autorestart = true"
+        print
+        print "[group:cuckoo]"
+        print "programs = cuckoo-daemon, cuckoo-process"
         print
         print "[program:distributed]"
         print "command = %s -m cuckoo.distributed.worker" % python_path
