@@ -86,6 +86,11 @@ var CuckooWeb = function () {
 
             return date.getFullYear() + "-" + month + "-" + day + " " + hour + ":" + min;
         }
+    }, {
+        key: 'redirect',
+        value: function redirect(location) {
+            window.location.href = location;
+        }
     }]);
 
     return CuckooWeb;

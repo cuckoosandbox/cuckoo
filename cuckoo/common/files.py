@@ -130,7 +130,8 @@ class Files(Storage):
 
     @staticmethod
     def create(root, filename, content):
-        with open(os.path.join(root, filename), "wb") as f:
+        filepath = os.path.join(root, filename)
+        with open(filepath, "wb") as f:
             if hasattr(content, "read"):
                 chunk = content.read(1024)
                 while chunk:
@@ -138,6 +139,7 @@ class Files(Storage):
                     chunk = content.read(1024)
             else:
                 f.write(content)
+        return filepath
 
     @staticmethod
     def copy(path_target, path_dest):
