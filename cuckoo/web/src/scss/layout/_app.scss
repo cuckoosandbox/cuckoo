@@ -1,0 +1,85 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.content {
+    background-color: white;
+    padding: 40px;
+    padding-top: 15px;
+    -moz-border-radius-bottomleft: 15px;
+    -moz-border-radius-bottomright: 15px;
+    -webkit-border-bottom-left-radius: 15px;
+    -webkit-border-bottom-right-radius: 15px;
+}
+
+.section-title {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    padding-bottom: 3px;
+}
+
+span.block-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+img.opaque {
+    opacity: 0.6;
+    filter: alpha(opacity=30);
+}
+
+img.opaque:hover {
+    opacity: 1.0;
+    filter: alpha(opacity=100);
+}
+
+img.screenshot {
+    border: 1px solid #000000;
+    margin: 0px 1px 2px 1px;
+}
+
+input[readonly] {
+    background-color: white !important;
+    cursor: text !important;
+}
+
+// icon tab override fix
+.nav-tabs > .active > a > [class^="icon-"],
+.nav-tabs > .active  >a >[class*=" icon-"] { 
+    background-image:url("../img/glyphicons-halflings.png") !important; 
+}
+
+td {
+    word-wrap: break-word;
+}
+
+.tab-content {
+    margin-top: 25px;
+}
+
+.row-active {
+    background-color: #d9edf7;
+}
+
+.break-everywhere {
+    word-break: break-all;
+}
+
+table>tbody>tr>td{
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+table#network_dns>tbody>tr>td:nth-child(2)>a{
+    display: inline;
+    word-break: break-all;
+}
+
+section#screenshots .minified{
+    overflow: hidden;
+    max-height: 278px;
+}
+

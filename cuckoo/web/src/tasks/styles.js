@@ -30,9 +30,9 @@ module.exports = function() {
 		// enables verbose logging of SASS errors
 		.on('error', sass.logError)
 		// adds a copyright notice to the top of the compiled document
-		.pipe(insert.transform(function(contents) {
-			return "/* \n\n\t Copyright (C) "+ new Date().getFullYear() +" Cuckoo Foundation.\n\t This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org \n\t see the file 'docs/LICENSE' for copying permission \n\n */ \n\n " + contents;
-		}))
+		// .pipe(insert.transform(function(contents) {
+		// 	return "/* \n\n\t Copyright (C) "+ new Date().getFullYear() +" Cuckoo Foundation.\n\t This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org \n\t see the file 'docs/LICENSE' for copying permission \n\n */ \n\n " + contents;
+		// }))
 		// writes the sourcemap
 		.pipe(sourcemaps.write())
 		// output file to static web dir

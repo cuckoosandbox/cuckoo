@@ -1,0 +1,27 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.loading {
+	
+	background-color: white;
+    width:100px;
+    height: 40px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -50px;
+    margin-top: -200px;
+    display: none;
+    border: 1px solid #dedede;
+    z-index: 666;
+    border-radius: 4px;
+
+    img {
+    	margin-left: 30%;
+    	margin-top: 4px;
+    }
+
+}

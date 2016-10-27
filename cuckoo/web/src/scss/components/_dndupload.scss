@@ -1,0 +1,98 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.dndupload {
+
+    margin: 0px auto;
+    background-color: transparent;
+    position: relative;
+    padding: 10px;
+    height: 100%;
+
+    #uploader {
+        height: 100%;
+        padding: 50px 20px;
+        outline-offset: -10px;
+        outline: 1px dashed #92b0b3;
+        -webkit-transition: outline-offset .1s ease-in-out, background-color .1s linear;
+        transition: outline-offset .1s ease-in-out, background-color .1s linear;
+
+        &.hover {
+            outline-offset: -20px; 
+        }
+    }
+
+    #container {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .holder_input {
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        position: absolute;
+        z-index: -1;
+    }
+
+    .holder-button {
+        font-weight: 700;
+        color: #e5edf1;
+        background-color: #39bfd3;
+        display: none;
+        padding: 8px 16px;
+        margin: 40px auto 0;
+    }
+
+    .fail {
+        background: #c00; 
+        padding: 2px; 
+        color: #fff;
+    }
+
+    .hidden { display: none !important; }
+
+    label {
+        width: 100%;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+        overflow: hidden;
+        text-align: center;
+        color: #6e8e91;
+
+        strong {
+            color: #4e6658; 
+            text-decoration: underline; 
+            cursor: pointer;
+        }
+    }
+
+    svg {
+        width: 100%;
+        fill: #cccccc;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    img { display: block; margin: 10px auto; }
+    p { margin: 10px; font-size: 14px; }
+
+    progress {
+
+        background: #f3f3f3; 
+        height: 20px; 
+        margin: auto; 
+        width: 50%; 
+        display: inherit;
+
+        &::-webkit-progress-bar { background: #f3f3f3; }
+
+    }
+
+}
