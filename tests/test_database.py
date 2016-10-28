@@ -11,8 +11,8 @@ from sqlalchemy.exc import OperationalError
 from cuckoo.core.database import Database, Sample, Task
 from cuckoo.misc import set_cwd
 
-class TestDropDatabase:
-    """Tests database creation, adding a couple of tasks and dropping the db."""
+class TestDatabase:
+    """Tests database stuff."""
 
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -63,3 +63,15 @@ class TestDropDatabase:
         assert self.d.processing_get_task("foo") == 6
         assert self.d.processing_get_task("foo") == 7
         assert self.d.processing_get_task("foo") is None
+
+    def test_error_exists(self):
+        self.add_url("http://google.com/")
+        self.d.add_error("A"*1024, 1)
+        assert self.d.view_errors(1)
+
+    @pytest.mark.xfail(strict=True)
+    def test_long_error(self):
+        self.add_url("http://google.com/")
+        self.d.add_error("A"*1024, 1)
+        err = self.d.view_errors(1)
+        assert err and len(err[0].message) == 1024

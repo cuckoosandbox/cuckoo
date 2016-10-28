@@ -890,7 +890,7 @@ class Database(object):
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message, task_id=task_id)
+        error = Error(message=message[:255], task_id=task_id)
         session.add(error)
         try:
             session.commit()
