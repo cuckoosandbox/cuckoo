@@ -116,12 +116,15 @@ class SummaryBehaviorDetail {
 class SummaryBehaviorController {
 
     constructor(task_id, pname, pid) {
+
         this.task_id = task_id;
         this.pname = pname;
         this.pid = pid;
         this.loading = false;
+        this.loader = new Loader($(".loading"));
 
         this.behavioral_details = [];
+
     }
 
     start(){
@@ -153,13 +156,7 @@ class SummaryBehaviorController {
     }
 
     static toggle_loading(){
-        if(this.loading){
-            // $(".loading").hide();
-            this.loading = false;
-        } else {
-            // $(".loading").show();
-            this.loading = true;
-        }
+        this.loader.toggle();
     }
 
 }

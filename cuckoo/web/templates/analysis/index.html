@@ -13,7 +13,11 @@
         var recent;
 
         $(document).ready(function() {
+
+            
+            
             $('body').on('click', 'div.nav_container>div', function() {
+
                 var btn_id = $(this).find("a").attr("data-filter");
                 var btn_active = $(this).attr('class');
                 var btn_categories = ["cat_files", "cat_urls"];
@@ -83,13 +87,7 @@
                     }
                 </style>
 
-                <div class="loading">
-                    <div class="spinner">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                </div>
+                {% include "components/loader.html" %}
 
                 <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
                     <tbody>

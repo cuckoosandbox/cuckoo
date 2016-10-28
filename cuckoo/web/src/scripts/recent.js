@@ -8,7 +8,9 @@
 
 class Recent {
     constructor() {
+
         this.loading = false;
+        this.loader = new Loader($('.loading'));
         this.limit = 100;
         this.offset = 0;
         this.empty_results = false;
@@ -21,12 +23,10 @@ class Recent {
     }
 
     toggle_loading(){
-        if(this.loading){
-            $(".loading").hide();
-            this.loading = false;
+        if(this.loader.loading){
+            this.loader.stop();
         } else {
-            $(".loading").show();
-            this.loading = true;
+            this.loader.start();
         }
     }
 
@@ -70,11 +70,11 @@ class Recent {
 
         function cb(data){
             self.results_callback(data);
-            self.toggle_loading(self);
+            self.toggle_loading();
         }
 
         function beforesend(){
-            self.toggle_loading(self);
+            self.toggle_loading();
         }
 
         CuckooWeb.api_post("api/tasks/recent/", params, cb, null, beforesend);

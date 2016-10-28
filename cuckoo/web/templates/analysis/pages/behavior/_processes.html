@@ -1,4 +1,5 @@
 <script type="text/javascript">
+
 function paginationbar(pages, page) {
     if (pages === 0) return "";
 
@@ -23,6 +24,10 @@ function paginationbar(pages, page) {
     return out;
 }
 function load_chunk(pid, pagenum, callback) {
+
+    $(".loading").show();
+    $("div.calltable").hide();
+
     $("#process_"+pid+" div.calltable").load("{% url "analysis/recent" %}chunk/{{report.analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
         if (status == "error") {
             $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
@@ -33,6 +38,9 @@ function load_chunk(pid, pagenum, callback) {
                 var t = $(e.target);
                 load_chunk(t.parents("#process_"+pid).data("pid"), parseInt(t.text()));
             });
+
+            $("div.calltable").show();
+            $(".loading").hide();
             typeof callback === 'function' && callback();
         }
     });
@@ -141,6 +149,8 @@ function load_filtered_chunk(pid, category) {
                 </ul>
             </div>
 
+            {% include 'components/loader.html' %}
+
             <div class="calltable"></div>
             <div class="pagination pagination-centered pagination_{{process.pid}}">
                 <ul class="pagination">
@@ -156,9 +166,11 @@ function load_filtered_chunk(pid, category) {
     </div>
 </div>
 <script type="text/javascript">
+
     $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
         var pid = $(e.target).data("pid");
-        $("#process_"+pid+" div.calltable").html("Loading..");
-        load_chunk(pid, 1);
+        // $("#process_"+pid+" div.calltable").html("Loading..");
+        load_chunk(pid, 1);;
     });
+
 </script>
