@@ -1,0 +1,36 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.badge {
+
+    &.file { background-color: #ffe3c5; }
+    &.registry { background-color: #ffc5c5; }
+    &.process { background-color: #c5e0ff; }
+    &.services { background-color: #ccc5ff; }
+    &.device { background-color: #ccc5ff; }
+    &.network { background-color: #d3ffc5; }
+    &.synchronisation { background-color: #f9c5ff; }
+    &.system { background-color: #fffcc5; }
+    &.windows { background-color: #ffc5ee; }
+    &.iexplore { background-color: #ccddbb; }
+    &.office { background-color: #ccddbb; }
+    &.pdf { background-color: #ccddbb; }
+
+}
+
+.dns_badge_container{
+    min-width: 60px;
+    float: left;
+}
+
+.dns_badge {
+    background-color: #ebebeb;
+    color: #7a7a7a;
+    font-weight: bold;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 12px;
+}

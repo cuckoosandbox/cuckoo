@@ -1,0 +1,84 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.cuckoo-box {
+
+	div {
+		clear: both;
+		overflow: hidden;
+	}
+
+	label {
+		width: 100%;
+		border-radius: 3px;
+		border: 1px solid #D1D3D4;
+		font-weight: normal;	
+	}
+
+	input[type="radio"],
+	input[type="checkbox"] {
+
+		&:empty { 
+			display: none; 
+
+			& ~ label {
+				position: relative;
+				line-height: 1.8em;
+				margin-top: 8px;
+				text-indent: 3.25em;
+				cursor: pointer;
+				-webkit-user-select: none;
+				 -moz-user-select: none;
+				  -ms-user-select: none;
+					  user-select: none;
+
+				&:before {
+					position: absolute;
+					display: block;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					content: '';
+					width: 2.5em;
+					background: #D1D3D4;
+					border-radius: 3px 0 0 3px;
+				}
+			}
+		}
+
+		&:hover:not(:checked) ~ label { 
+			color: #888; 
+			&:before {
+				content: '\2714';
+				text-indent: .9em;
+				color: #C2C2C2;
+			}
+		}
+
+		&:checked ~ label {
+			color: #777;
+			&:before {
+				content: '\2714';
+				text-indent: .9em;
+				color: #333;
+				background-color: #ccc;
+			}
+		}
+
+		&:focus ~ label:before {
+			box-shadow: 0 0 0 3px #999;
+		}
+
+	}
+
+	&-default { @include cuckoo-input-label($color: #333, $background-color: #ccc); }
+	&-primary { @include cuckoo-input-label($color: #fff, $background-color: #337ab7); }
+	&-success { @include cuckoo-input-label($color: #fff, $background-color: #5cb85c); }
+	&-danger { @include cuckoo-input-label($color: #fff, $background-color: #d9534f); }
+	&-warning { @include cuckoo-input-label($color: #fff, $background-color: #f0ad4e); }
+	&-info { @include cuckoo-input-label($color: #fff, $background-color: #5bc0de); }
+
+}

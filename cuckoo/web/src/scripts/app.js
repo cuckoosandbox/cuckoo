@@ -80,7 +80,28 @@ class CuckooWeb {
 }
 
 $(document).ready(function() {
+
     $("[data-toggle=popover]").popover();
+
+    // INTERACTION FOR CUCKOO ERRORS
+    $(".cuckoo-errors #errors").on('shown.bs.collapse', function(e) {
+        $(".cuckoo-errors [data-toggle='collapse']").text('hide');
+    }).on('hidden.bs.collapse', function() {
+        $(".cuckoo-errors [data-toggle='collapse']").text('show');
+    });
+
+    $(".cuckoo-errors .expand-error").bind('click', function(e) {
+        e.preventDefault();
+
+        if($(this).parent().hasClass('expanded')) {
+            $(this).attr('title', 'Expand error message');
+            $(this).parent().removeClass('expanded');
+        } else {
+            $(this).attr('title', 'Collapse error message');
+            $(this).parent().addClass('expanded');
+        }
+    });
+
 });
 
 function alertbox(msg, context, attr_id){

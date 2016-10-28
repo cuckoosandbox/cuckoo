@@ -144,6 +144,7 @@ var SummaryBehaviorController = function () {
         this.pname = pname;
         this.pid = pid;
         this.loading = false;
+        this.loader = new Loader($(".loading"));
 
         this.behavioral_details = [];
     }
@@ -177,13 +178,7 @@ var SummaryBehaviorController = function () {
     }], [{
         key: "toggle_loading",
         value: function toggle_loading() {
-            if (this.loading) {
-                $(".loading").hide();
-                this.loading = false;
-            } else {
-                $(".loading").show();
-                this.loading = true;
-            }
+            this.loader.toggle();
         }
     }]);
 
