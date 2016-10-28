@@ -21,12 +21,15 @@ On a Debian based system the package requirements are:
 
     apt-get install build-essential
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-    apt-get install nodejs
-    apt-get install gulp
-    apt-get install sass
-    apt-get install rubygems
-    gem update --system
-    npm install gulp-ruby-sass
+    sudo apt-get install nodejs
+    sudo npm install gulp -g
+    sudo apt-get install ruby-full rubygems
+    sudo gem update --system
+    sudo gem install sass
+    npm install
+    # At this point the required libs are installed.
+    # Run the following command to build new JS and CSS:
+    gulp build
 
 After these packages have been installed, navigate to the source folder (`cd cuckoo/web/src`) and run `npm install`. This
 will install all node modules as listed in `package.json`. After this you should be good to go!
