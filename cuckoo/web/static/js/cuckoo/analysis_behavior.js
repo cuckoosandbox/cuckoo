@@ -178,10 +178,10 @@ var SummaryBehaviorController = function () {
         key: "toggle_loading",
         value: function toggle_loading() {
             if (this.loading) {
-                $(".loading").hide();
+                // $(".loading").hide();
                 this.loading = false;
             } else {
-                $(".loading").show();
+                // $(".loading").show();
                 this.loading = true;
             }
         }

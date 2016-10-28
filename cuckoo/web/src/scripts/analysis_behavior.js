@@ -9,6 +9,7 @@
 // @TO-DO: cleanup jQuery selectors / comment code / trigger loading indicator
 
 class SummaryBehaviorDetail {
+
     constructor(task_id, pname, pid, category, val) {
         this.task_id = task_id;
         this.pname = pname;
@@ -113,6 +114,7 @@ class SummaryBehaviorDetail {
 }
 
 class SummaryBehaviorController {
+
     constructor(task_id, pname, pid) {
         this.task_id = task_id;
         this.pname = pname;
@@ -152,11 +154,12 @@ class SummaryBehaviorController {
 
     static toggle_loading(){
         if(this.loading){
-            $(".loading").hide();
+            // $(".loading").hide();
             this.loading = false;
         } else {
-            $(".loading").show();
+            // $(".loading").show();
             this.loading = true;
         }
     }
+
 }
