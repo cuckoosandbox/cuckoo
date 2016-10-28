@@ -37,3 +37,7 @@ body { padding-top: 70px; }
 
 // responsive at last - responsive code OVERRIDES defaults always
 @import "layout/responsive";
+
+// imports all the themes
+@import "themes/cyborg";
+@import "themes/night";
