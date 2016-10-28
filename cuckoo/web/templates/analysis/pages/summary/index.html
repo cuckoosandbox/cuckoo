@@ -9,6 +9,9 @@
         <div class="col-md-10">
             <div class="row">
                 <div class="col-md-8">
+
+                    {% include "analysis/pages/summary/_errors.html" %}
+                    
                     {% if report.analysis.info.category == "file" and report.analysis.target %}
                         {% include "analysis/pages/summary/_file.html" %}
                     {% elif report.analysis.info.category == "url" %}

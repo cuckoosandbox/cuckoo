@@ -1,0 +1,24 @@
+<div class="cuckoo-errors">
+
+	<h4>
+		<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span> 
+		Errors
+		<small><a href="#errors" class="pull-right" data-toggle="collapse">Hide</a></small>
+	</h4>
+
+	<ul class="errors collapse in" id="errors">
+
+		{% for err in report.analysis.debug.errors %}
+
+			<li class="error">
+				<p class="text-danger">{{err}}</p>
+				<a href="#" class="expand-error" title="Expand error message"><i class="fa fa-expand"></i> <span>click to expand / collapse this error</span></a>
+			</li>
+
+		{% endfor %}
+
+	</ul>
+
+	<a class="btn btn-default" href="#">View all errors</a>
+
+</div>
