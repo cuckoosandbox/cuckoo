@@ -76,6 +76,16 @@ class TestInit(object):
                 standalone_mode=False
             )
 
+        # We copy the monitor binary directory over from user-CWD (which is
+        # also present in the Travis CI environment, etc) as otherwise the
+        # following call will raise an exception about not having found the
+        # monitoring binaries.
+        shutil.rmtree(os.path.join(self.dirpath, "monitor"))
+        shutil.copytree(
+            os.path.expanduser("~/.cuckoo/monitor"),
+            os.path.join(self.dirpath, "monitor")
+        )
+
         # Raises CuckooCriticalError if ResultServer can't bind (which no
         # longer happens now, naturally).
         main.main(
