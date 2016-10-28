@@ -156,30 +156,31 @@ class SubmitManager(object):
         }
 
     @staticmethod
-    def submit(submit_id, data):
+    def submit(submit_id, selected_files, timeout=0, package="", options="",
+               priority=1, custom="", owner="", machine="", platform="",
+               tags=None, memory=False, enforce_timeout=False):
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
-        form_options = data["form"]
 
-        for entry in data["selected_files"]:
+        for entry in selected_files:
             for expected in ["filepath", "filename", "type"]:
-                if not expected in entry.keys() or not entry[expected]:
-                    # TODO Error logging.
+                if expected not in entry.keys() or not entry[expected]:
+                    submit.data["errors"].append("")
                     continue
 
             if entry["type"] == "url":
                 ret.append(db.add_url(
                     url=entry["filename"],
                     package="ie",
-                    timeout=form_options["timeout"],
-                    options=form_options["options"],
-                    priority=int(form_options["priority"]),
-                    custom=form_options["custom"],
-                    tags=form_options["tags"],
-                    memory=form_options["memory"],
-                    enforce_timeout=form_options["enforce_timeout"],
-                    machine=form_options["machine"],
-                    platform="",
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                    platform=platform,
                 ))
 
                 continue
@@ -211,26 +212,24 @@ class SubmitManager(object):
 
                 filepath = path_extracted
             else:
-                # TODO Error logging.
+                submit.data["errors"].append("")
                 continue
 
-            if data["form"]["package"]:
-                package = data["form"]["package"]
-            else:
-                package = entry.get("package")
+            if not package:
+                package = entry.get("package", "")
 
             ret.append(db.add_path(
                 file_path=filepath,
                 package=package,  # user-defined package comes first, else let sflock decide
-                timeout=form_options["timeout"],
-                options=form_options["options"],
-                priority=int(form_options["priority"]),
-                custom=form_options["custom"],
-                tags=form_options["tags"],
-                memory=form_options["memory"],
-                enforce_timeout=form_options["enforce_timeout"],
-                machine=form_options["machine"],
-                platform="",  # what should this be?
+                timeout=timeout,
+                options=options,
+                priority=int(priority),
+                custom=custom,
+                tags=tags,
+                memory=memory,
+                enforce_timeout=enforce_timeout,
+                machine=machine,
+                platform=""
             ))
 
         return ret

@@ -113,7 +113,12 @@ class SubmissionApi:
                     data["form"][checkbox] = False
 
         controller = SubmitManager()
-        tasks = controller.submit(submit_id=body["submit_id"], data=data)
+        options = data["form"].copy()
+        selected_files= data["selected_files"]
+
+        tasks = controller.submit(submit_id=body["submit_id"],
+                                  selected_files=selected_files,
+                                  **options)
 
         return JsonResponse({
             "status": True,
