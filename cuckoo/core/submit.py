@@ -158,7 +158,7 @@ class SubmitManager(object):
     @staticmethod
     def submit(submit_id, selected_files, timeout=0, package="", options="",
                priority=1, custom="", owner="", machine="", platform="",
-               tags=None, memory=False, enforce_timeout=False):
+               tags=None, memory=False, enforce_timeout=False, **kwargs):
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
 
@@ -215,12 +215,15 @@ class SubmitManager(object):
                 submit.data["errors"].append("")
                 continue
 
-            if not package:
-                package = entry.get("package", "")
+            # let sflock decide the package if option 'package' is set to 'automatically detect'
+            if package:
+                _package = package
+            else:
+                _package = entry.get("package", "")
 
             ret.append(db.add_path(
                 file_path=filepath,
-                package=package,  # user-defined package comes first, else let sflock decide
+                package=_package,
                 timeout=timeout,
                 options=options,
                 priority=int(priority),

@@ -114,11 +114,13 @@ class SubmissionApi:
 
         controller = SubmitManager()
         options = data["form"].copy()
-        selected_files= data["selected_files"]
+        selected_files = data["selected_files"]
 
-        tasks = controller.submit(submit_id=body["submit_id"],
-                                  selected_files=selected_files,
-                                  **options)
+        tasks = controller.submit(
+            submit_id=body["submit_id"],
+            selected_files=selected_files,
+            **options
+        )
 
         return JsonResponse({
             "status": True,
