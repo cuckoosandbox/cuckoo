@@ -32,18 +32,16 @@ class SubmitManager(object):
 
     def pre(self, submit_type, data):
         """
-        The first step to submitting new files.
-        @param submit_type: may be any of: "url", "virustotal", "files".
-        @param data: if `submit_type` is "files": a list of dicts
-        containing "name" (file name) and "data" (file data).
-        if `submit_type` is "url": a list of strings (urls)
-        if `submit_type` is "virustotal": a list of strings (hashes)
+        The first step to submitting new analysis.
+        @param submit_type: "files" or "strings"
+        @param data: a list of dicts containing "name" (file name) and "data" (file data)
+        or a list of strings (urls or hashes)
         @return: submit id
         """
         global _cfg
 
         if not isinstance(submit_type, (str, unicode)) or \
-                        submit_type not in ["url", "virustotal", "files"]:
+                        submit_type not in ["strings", "files"]:
             log.error("Bad parameter \"%s\" for submit_type" % submit_type)
             return False
 
@@ -53,53 +51,57 @@ class SubmitManager(object):
             "errors": []
         }
 
-        if submit_type == "virustotal":
-            for hash in data:
-                if not hash:
+        if submit_type == "strings":
+            for line in data:
+                if not line:
                     continue
 
                 try:
-                    filedata = VirusTotal().fetch_file(file_hash=hash)
-                except:
-                    submit_data["errors"].append("Could not fetch hash \"%s\" from VirusTotal" % hash)
+                    validate_url(line)
+                    submit_data["data"].append({
+                        "type": "url",
+                        "data": line
+                    })
+
                     continue
+                except Exception as e:
+                    pass
 
-                filepath = Files.create(path_tmp, hash, filedata)
-                submit_data["data"].append(filepath)
+                try:
+                    validate_hash(line)
+                    filedata = VirusTotal(api_version="v2").fetch(file_hash=line)
+                    filepath = Files.create(path_tmp, line, filedata)
 
-            return db.add_submit(tmp_path=path_tmp, submit_type="virustotal")
+                    submit_data["data"].append({
+                        "type": "file",
+                        "data": filepath
+                    })
+                    continue
+                except Exception as e:
+                    submit_data["errors"].append("\"%s\" was neither a valid hash or url" % line)
+                    continue
 
         if submit_type == "files":
             for entry in data:
                 filename = Storage.get_filename_from_path(entry["name"])
                 filepath = Files.create(path_tmp, filename, entry["data"])
-                submit_data["data"].append(filepath)
-
-            return db.add_submit(tmp_path=path_tmp, submit_type="files")
-
-        if submit_type == "url":
-            for url in [url for url in data if url]:
-                try:
-                    validate_url(url)
-                except Exception as e:
-                    submit_data["errors"].append(str(e))
-                    continue
-
-                submit_data["data"].append(url)
-
-            if submit_data["data"]:
-                submit = Submit(tmp_path=path_tmp, submit_type="url")
-                submit.data = submit_data
-
-                db.session.add(submit)
-                db.session.commit()
-
-                return submit.id
-            else:
-                raise Exception("No URLs found")
+                submit_data["data"].append({
+                    "type": "file",
+                    "data": filepath
+                })
 
         if not submit_data["data"]:
             raise Exception("Unknown submit type or no data could be processed")
+        else:
+            submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
+            submit.data = submit_data
+
+            session = db.Session()
+
+            session.add(submit)
+            session.commit()
+
+            return submit.id
 
     def get_files(self, password=None, astree=False):
         submit = Database().view_submit(self.submit_id)
@@ -211,7 +213,7 @@ class VirusTotal:
             }
         }[api_version]
 
-    def fetch_file(self, file_hash):
+    def fetch(self, file_hash):
         invalid_hash = re.search("[^\\w]+", file_hash)
         if invalid_hash:
             raise Exception("bad character \"%s\"" % invalid_hash.group(0))

@@ -77,8 +77,7 @@ def validate_hash(hash):
 def validate_url(url, schemes=None):
     """Validates an URL using Django's built-in URL validator"""
 
-    val = URLValidator(schemes=schemes,
-                       verify_exists=False)
+    val = URLValidator(schemes=schemes)
     try:
         return val(url)
     except ValidationError:

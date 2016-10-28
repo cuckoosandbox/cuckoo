@@ -11,10 +11,13 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from bin.utils import api_post, JsonSerialize, json_error_response
-from controllers.submission.submission import SubmissionController
+from cuckoo.core.database import Database
+from cuckoo.core.submit import SubmitManager
+from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
+from cuckoo.web.controllers.submission.submission import SubmissionController
 
 results_db = settings.MONGO
+db = Database()
 
 class SubmissionApi:
     @staticmethod
@@ -30,23 +33,24 @@ class SubmissionApi:
                     "name": f.name,
                     "data": f.file,
                 })
-            submit_type = "files"
+
+            submit_id = SubmitManager().pre(submit_type="files", data=data)
+            return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
             submit_type = body["type"]
 
-            if submit_type != "url" or "data" not in body:
-                return json_error_response("type not \"url\"")
+            if submit_type != "strings":
+                return json_error_response("type not \"strings\"")
 
             data = body["data"].split("\n")
 
-        if submit_type == "url" or submit_type == "files":
-            submit_id = SubmissionController.presubmit(
-                submit_type=submit_type, data=data
-            )
-            return redirect("submission/pre", submit_id=submit_id)
+            submit_id = SubmitManager().pre(submit_type=submit_type, data=data)
 
-        return json_error_response("submit failed")
+            return JsonResponse({
+                "status": True,
+                "submit_id": submit_id,
+            }, encoder=JsonSerialize)
 
     @api_post
     def submit(request, body):
@@ -104,6 +108,26 @@ class SubmissionApi:
 
         controller = SubmissionController(submit_id=submit_id)
         data = controller.get_files(astree=True)
+
+        submit = db.view_submit(submit_id)
+        for d in submit.data["data"]:
+            if d["type"] == "url":
+                data["files"].append({
+                    "filename": d["data"],
+                    "filepath": "",
+                    "relapath": "",
+                    "selected": True,
+                    "size": 0,
+                    "type": "url",
+                    "packkage": None,
+                    "extrpath": [],
+                    "duplicate": False,
+                    "children": [],
+                    "finger": {
+                        "magic_human": "url",
+                        "magic": "url"
+                    }
+                })
 
         return JsonResponse({
             "status": True,

@@ -24,7 +24,7 @@ class SubmissionController(object):
     def presubmit(submit_type, data):
         """
         Register new file(s) for analysis into the database.
-        @param submit_type: 'url' or 'files'
+        @param submit_type: 'strings' or 'files'
         @param data: if submit_type is 'files': a list of dicts containing 'name' (file name) and 'data' (file data)
         if submit_type is 'url': a list of strings containing either
         @return: presubmission id
@@ -78,9 +78,9 @@ class SubmissionController(object):
 
         files, duplicates = [], []
 
-        for path in os.listdir(submit.path):
+        for path in os.listdir(submit.tmp_path):
             filename = Storage.get_filename_from_path(path)
-            filedata = open(os.path.join(submit.path, path), "rb").read()
+            filedata = open(os.path.join(submit.tmp_path, path), "rb").read()
 
             unpacked = unpack(
                 filepath=filename, contents=filedata,
@@ -93,7 +93,7 @@ class SubmissionController(object):
 
         return {
             "files": files,
-            "path": submit.path,
+            "path": submit.tmp_path,
         }
 
     def submit(self, data):
@@ -103,32 +103,37 @@ class SubmissionController(object):
         form_options = data["form"]
 
         for entry in data["selected_files"]:
-            for expected in ["filepath", "filename", "package", "type"]:
+            for expected in ["filepath", "filename", "type"]:
                 if not expected in entry.keys() or not entry[expected]:
                     # TODO Error logging.
                     continue
+
+            if entry["type"] == "url":
+                ret.append(db.add_url(
+                    url=entry["filename"],
+                    package=None,
+                    timeout=form_options["timeout"],
+                    options=form_options["options"],
+                    priority=int(form_options["priority"]),
+                    custom=form_options["custom"],
+                    tags=form_options["tags"],
+                    memory=form_options["memory"],
+                    enforce_timeout=form_options["enforce_timeout"],
+                    machine=form_options["machine"],
+                    platform="",
+                ))
+
+                continue
 
             # for each selected file entry, create a new temp. folder
             path_dest = Folders.create_temp()
 
             if entry["filepath"][0] == "":
                 path = os.path.join(
-                    submit.path, os.path.basename(entry["filename"])
+                    submit.tmp_path, os.path.basename(entry["filename"])
                 )
 
-                # content = open(path, "rb").read()
                 filename = entry["filename"]
-
-                # Write to disk
-                # Files.temp_named_put(content=content,
-                #                      filename=filename,
-                #                      path=submit.path)
-                #
-                # arcpath = Files.temp_named_put(
-                #     zipify(unpack(filename, contents=content)),
-                #     os.path.basename(filename)
-                # )
-
                 filepath = Files.copy(path, path_dest=path_dest)
             elif len(entry["filepath"]) >= 2:
                 path = os.path.join(submit.path, os.path.basename(entry["filepath"][0]))
