@@ -46,10 +46,14 @@
         a:hover { text-decoration: none; }
 
         & > #item {
-            float: left;
+            display: inline-block;
             margin-bottom: -1px;
             position: relative;
-            display: block;
+
+            &.item-spacer {
+                float: none;
+                margin: 0 10px;
+            }
 
             & > a {
                 margin-right: 2px;
@@ -75,7 +79,6 @@
                     text-decoration: none !important;
                 }
 
-                &:not(:first-child) { border-left: 0; }
             }
 
             &:hover {
