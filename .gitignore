@@ -14,6 +14,9 @@ storage/*
 *.pem
 *.cert
 
+# Ignore .map files (css/js debugging)
+*.map
+
 # Ignore OS generated files
 .DS_Store*
 .AppleDouble
