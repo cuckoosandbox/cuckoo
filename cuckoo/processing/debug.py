@@ -30,21 +30,9 @@ class Logfile(list):
     def __nonzero__(self):
         return bool(os.path.getsize(self.filepath))
 
-class Errors(list):
-    def __init__(self, task_id):
-        list.__init__(self)
-        self.task_id = task_id
-
-    def __iter__(self):
-        for error in Database().view_errors(self.task_id):
-            yield error.message
-
-    def __nonzero__(self):
-        return bool(Database().view_errors(self.task_id))
-
 class Debug(Processing):
     """Analysis debug information."""
-    order = 2
+    order = 999
 
     def run(self):
         """Run debug analysis.
@@ -77,7 +65,9 @@ class Debug(Processing):
         if os.path.exists(self.action_path):
             debug["action"] = Logfile(self.action_path, is_json=True)
 
-        debug["errors"] = Errors(int(self.task["id"]))
+        debug["errors"] = []
+        for error in Database().view_errors(self.task["id"]):
+            debug["errors"].append(error.message)
 
         if os.path.exists(self.mitmerr_path):
             mitmerr = open(self.mitmerr_path, "rb").read()
