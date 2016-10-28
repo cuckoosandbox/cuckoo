@@ -25,7 +25,8 @@ class FileTree {
             files: 0,
             containers: 0,
             directories: 0,
-            executables: 0
+            executables: 0,
+            urls: 0
         };
     }
 
@@ -100,6 +101,9 @@ class FileTree {
                 },
                 "duplicate": {
                     "icon": "fa fa-ban"
+                },
+                "url": {
+                    "icon": "fa fa-external-link"
                 }
             },
             grid: {
@@ -150,130 +154,124 @@ class FileTree {
     _convert_entry(entry, parent_archive){
         let _self = this;
 
-        // Temporary object
-        let obj = {
-            filepath: entry.filepath,
-            filename: entry.filename,
-            relapath: entry.relapath,
-            extrpath: entry.extrpath ? entry.extrpath : [],
-            type: entry.type,
-            state: false, // pre-selected tree item
-            size: entry.size,
-            duplicate: entry.duplicate,
-            opened: false,
-            description: entry.description
-        };
-
-        if(obj.extrpath){
-            obj.filepath = `${parent_archive}/${obj.extrpath.join("/")}`;
-        } else if(!obj.filepath && obj.relapath){
-            obj.filepath = obj.relapath;
-        } else if (!obj.relapath){
-            obj.relapath = obj.filepath;
+        // Normalize entry object
+        if(entry.size === "undefined"){ entry.size = 0 }
+        entry.extrpath = entry.extrpath ? entry.extrpath : [];
+        if(entry.extrpath){
+            entry.filepath = `${parent_archive}/${entry.extrpath.join("/")}`;
+        } else if(!entry.filepath && entry.relapath){
+            entry.filepath = entry.relapath;
+        } else if (!entry.relapath){
+            entry.relapath = entry.filepath;
         }
 
-        if(obj.type != "directory"){
+        // The JSTree return object
+        let data = {
+            text: entry.filename,
+            data: {},
+            a_attr: {
+                sha256: entry.sha256,
+                package: entry.package,
+                type: entry.type
+            }
+        };
+
+        if(entry.hasOwnProperty("package")){
+            data.data.package = entry.package;
+        }
+
+        if(entry.type == "directory"){
+            entry.type = "directory";
+            entry.opened = true;
+            data.state = {
+                opened: entry.opened
+            };
+
+            _self.stats.directories += 1;
+        } else {
+            data.data.mime = entry.mime;
+            data.data.size = entry.size;
+            data.data.magic = entry.magic;
+
+            if(entry.type == "url"){
+                _self.stats.urls += 1;
+                _self.stats.files += 1;
+            } else {
+                _self.stats.files += 1;
+            }
+
             // simplify filters
             if(this._filters.simplify_magic){
-                obj.magic = entry.finger.magic_human;
+                entry.magic = entry.finger.magic_human;
             } else {
-                obj.magic = entry.finger.magic;
+                entry.magic = entry.finger.magic;
             }
 
             if(this._filters.simplify_mime){
-                obj.mime = entry.finger.mime_human;
-            } else{ obj.mime = entry.finger.mime; }
+                entry.mime = entry.finger.mime_human;
+            } else{ entry.mime = entry.finger.mime; }
 
-            if(this._filters.simplify_sizes){
-                obj.size = CuckooWeb.human_size(obj.size, true);
+            if(this._filters.simplify_sizes && !entry.size instanceof String){
+                entry.size = CuckooWeb.human_size(entry.size, true);
             }
 
             // Sanitize object properties
-            if(obj.magic){
-                if(obj.magic.length >= 170){ obj.magic = `${obj.magic.substring(0, 170)}...`; }
+            if(entry.magic){
+                if(entry.magic.length >= 170){ entry.magic = `${entry.magic.substring(0, 170)}...`; }
             } else {
-                obj.magic = "empty";
+                entry.magic = "Empty";
             }
 
             [".exe", ".pdf", ".vbs", ".vba", ".bat", ".py", ".pyc", ".pl", ".rb", ".js", ".jse"].forEach(function (x) {
-                if (obj.filepath.endsWith(x)) {
-                    obj.type = "exec";
-                    obj.state = true;
+                if (entry.filepath.endsWith(x)) {
+                    entry.type = "exec";
+                    entry.state = true;
 
                     _self.stats.executables += 1;
                 }
             });
 
             [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
-                if (obj.filepath.endsWith(x)) {
-                    obj.type = "office";
-                    obj.state = true;
+                if (entry.filepath.endsWith(x)) {
+                    entry.type = "office";
+                    entry.state = true;
 
                     _self.stats.executables += 1;
                 }
             });
 
-            if(entry.selected) {
-                obj.state = true;
-                _self.stats.executables += 1;
-            }
-        }
+            entry.state = entry.selected;
 
-        // Build JSTree JSON return object
-        let data = {
-            text: obj.filename,
-            data: {},
-            a_attr: {}
-        };
-
-        data.a_attr.filepath = obj.extrpath.unshift(parent_archive) ? obj.extrpath : [obj.filepath];
-        data.a_attr.sha256 = entry.sha256;
-        data.a_attr.package = entry.package;
-        data.a_attr.type = entry.type;
-
-        if(obj.duplicate) {
-            obj.type = "duplicate";
-
-            // Deselect duplicate file entries depending on the filter settings
-            if(this._filters.deselect_duplicates){
-                obj.state = false;
+            if(entry.duplicate) {
+                entry.type = "duplicate";
+    
+                // Deselect duplicate file entries depending on the filter settings
+                if(this._filters.deselect_duplicates){
+                    entry.state = false;
+                }
+    
+                // Set class for CSS
+                data.a_attr.filetree_duplicate = "true";
+    
+                // Update stats
+                _self.stats.duplicates += 1;
             }
 
-            // Set class for CSS
-            data.a_attr.filetree_duplicate = "true";
-
-            // Update stats
-            _self.stats.duplicates += 1;
-        }
-
-        if(entry.hasOwnProperty("package")){
-            data.data.package = entry.package;
-        }
-
-        if(obj.type == "directory"){
-            obj.opened = true;
-            obj.type = "directory";
-            _self.stats.directories += 1;
-        } else {
-            data.data.mime = obj.mime;
-            data.data.size = obj.size;
-            data.data.magic = obj.magic;
-
-            _self.stats.files += 1;
+            data.a_attr.filepath = entry.extrpath.unshift(parent_archive) ? entry.extrpath : [entry.filepath];
 
             if(entry.children.length >= 1) {
-                obj.type = "container";
-                obj.opened = true;
+                entry.type = "container";
+                entry.opened = true;
                 _self.stats.containers += 1;
             }
-        }
 
-        data.a_attr.filetree_type = obj.type;
-        data.type = entry.type;
-        data.state = {
-            selected: obj.state,
-            opened: obj.opened
-        };
+            data.a_attr.filetree_type = entry.type;
+            data.type = entry.type;
+            data.state = {
+                selected: entry.state,
+                opened: entry.opened
+            };
+        }
 
         // Recurse this function for the child entries
         if(entry.children.length >= 1){
@@ -292,7 +290,8 @@ class FileTree {
             files: 0,
             containers: 0,
             directories: 0,
-            executables: 0
+            executables: 0,
+            urls: 0
         };
     }
 
@@ -323,6 +322,11 @@ class FileTree {
             }
         } else if (file_category == "duplicates"){
              if(item_dup == "true"){
+                if(highlight) obj.addClass("highlight");
+                else obj.removeClass("highlight");
+            }
+        } else if (file_category == "urls"){
+             if(item_type == "url"){
                 if(highlight) obj.addClass("highlight");
                 else obj.removeClass("highlight");
             }
@@ -359,7 +363,6 @@ class FileTree {
 
     duplicates(state){
         this._filters.deselect_duplicates = state;
-
         this.refresh();
     }
 }

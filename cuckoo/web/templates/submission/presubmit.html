@@ -281,7 +281,7 @@ $(document).ready( function() {
             sel_target.empty();
 
             if(filetree.stats.files >= 0){
-                msgs.push(alertbox("File count: " + filetree.stats.files,
+                msgs.push(alertbox("File/Url count: " + filetree.stats.files,
                         "info",
                         "filetree_messages-files"))
             }
@@ -290,6 +290,12 @@ $(document).ready( function() {
                 msgs.push(alertbox("Executables: " + filetree.stats.executables,
                         "info",
                         "filetree_messages-exec"))
+            }
+
+            if(filetree.stats.urls >= 0){
+                msgs.push(alertbox("Web: " + filetree.stats.urls,
+                        "info",
+                        "filetree_messages-urls"));
             }
 
             if(filetree.stats.containers >= 0){

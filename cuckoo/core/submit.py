@@ -103,67 +103,101 @@ class SubmitManager(object):
 
             return submit.id
 
-    def get_files(self, password=None, astree=False):
-        submit = Database().view_submit(self.submit_id)
+    @staticmethod
+    def get_files(submit_id, password=None, astree=False):
+        """
+        Returns files from a submitted analysis.
+        @param password: The password to unlock container archives with
+        @param astree: sflock option; determines the format in which the files are returned
+        @return: A tree of files
+        """
+        submit = Database().view_submit(submit_id)
 
         files, duplicates = [], []
 
-        for path in os.listdir(submit.path):
-            filename = Storage.get_filename_from_path(path)
-            filedata = open(os.path.join(submit.path, path), "rb").read()
+        for data in submit.data["data"]:
+            if data["type"] == "file":
+                filename = Storage.get_filename_from_path(data["data"])
+                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
 
-            unpacked = unpack(
-                filepath=filename, contents=filedata,
-                password=password, duplicates=duplicates
-            )
-            if astree:
-                unpacked = unpacked.astree()
+                unpacked = unpack(
+                    filepath=filename, contents=filedata,
+                    password=password, duplicates=duplicates
+                )
 
-            files.append(unpacked)
+                if astree:
+                    unpacked = unpacked.astree()
+
+                files.append(unpacked)
+            elif data["type"] == "url":
+                files.append({
+                    "filename": data["data"],
+                    "filepath": "",
+                    "relapath": "",
+                    "selected": True,
+                    "size": 0,
+                    "type": "url",
+                    "package": "ie",
+                    "extrpath": [],
+                    "duplicate": False,
+                    "children": [],
+                    "mime": "text/html",
+                    "finger": {
+                        "magic_human": "url",
+                        "magic": "url"
+                    }
+                })
+            else:
+                continue
 
         return {
             "files": files,
-            "path": submit.path,
+            "path": submit.tmp_path,
         }
 
-    def submit(self, data):
-        # TODO: Example function that should be moved to Cuckoo core (remade too)
+    @staticmethod
+    def submit(submit_id, data):
         ret, db = [], Database()
-        submit = db.view_submit(self.submit_id)
+        submit = db.view_submit(submit_id)
         form_options = data["form"]
 
         for entry in data["selected_files"]:
-            for expected in ["filepath", "filename", "package", "type"]:
+            for expected in ["filepath", "filename", "type"]:
                 if not expected in entry.keys() or not entry[expected]:
                     # TODO Error logging.
                     continue
+
+            if entry["type"] == "url":
+                ret.append(db.add_url(
+                    url=entry["filename"],
+                    package="ie",
+                    timeout=form_options["timeout"],
+                    options=form_options["options"],
+                    priority=int(form_options["priority"]),
+                    custom=form_options["custom"],
+                    tags=form_options["tags"],
+                    memory=form_options["memory"],
+                    enforce_timeout=form_options["enforce_timeout"],
+                    machine=form_options["machine"],
+                    platform="",
+                ))
+
+                continue
 
             # for each selected file entry, create a new temp. folder
             path_dest = Folders.create_temp()
 
             if entry["filepath"][0] == "":
                 path = os.path.join(
-                    submit.path, os.path.basename(entry["filename"])
+                    submit.tmp_path, os.path.basename(entry["filename"])
                 )
 
-                # content = open(path, "rb").read()
                 filename = entry["filename"]
-
-                # Write to disk
-                # Files.temp_named_put(content=content,
-                #                      filename=filename,
-                #                      path=submit.path)
-                #
-                # arcpath = Files.temp_named_put(
-                #     zipify(unpack(filename, contents=content)),
-                #     os.path.basename(filename)
-                # )
-
                 filepath = Files.copy(path, path_dest=path_dest)
             elif len(entry["filepath"]) >= 2:
-                path = os.path.join(submit.path, os.path.basename(entry["filepath"][0]))
+                path = os.path.join(submit.tmp_path, os.path.basename(entry["filepath"][0]))
                 path_extracted = os.path.join(
-                    submit.path,
+                    submit.tmp_path,
                     os.path.basename(entry["filepath"][-1])
                 )
 
