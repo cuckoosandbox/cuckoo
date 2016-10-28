@@ -2,28 +2,37 @@ class Loader {
 
     constructor(el) {
         this.el = el ? el : $('.loading');
+        this.message = '';
         this.loading = false;
     }
 
-    start() {
-        console.log('start loader');
+    start(msg) {
+        if(msg) this.message = msg;
+        this.setText();
         this.loading = true;
         this.el.show();
     }
 
     stop() {
-        console.log('stop loader');
+        this.clearText();
         this.loading = false;
         this.el.hide();
     }
 
-    toggle() {
-        console.log('toggle loader');
+    toggle(msg) {
         if(this.loading) {
             this.stop();
         } else {
-            this.start();
+            this.start(msg);
         }
+    }
+
+    setText() {
+        this.el.find('.loading-message').text(this.message);
+    }
+
+    clearText() {
+        this.el.find('.loading-message').text('');
     }
 
 }

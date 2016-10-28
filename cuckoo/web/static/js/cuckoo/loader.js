@@ -9,32 +9,43 @@ var Loader = function () {
         _classCallCheck(this, Loader);
 
         this.el = el ? el : $('.loading');
+        this.message = '';
         this.loading = false;
     }
 
     _createClass(Loader, [{
         key: 'start',
-        value: function start() {
-            console.log('start loader');
+        value: function start(msg) {
+            if (msg) this.message = msg;
+            this.setText();
             this.loading = true;
             this.el.show();
         }
     }, {
         key: 'stop',
         value: function stop() {
-            console.log('stop loader');
+            this.clearText();
             this.loading = false;
             this.el.hide();
         }
     }, {
         key: 'toggle',
-        value: function toggle() {
-            console.log('toggle loader');
+        value: function toggle(msg) {
             if (this.loading) {
                 this.stop();
             } else {
-                this.start();
+                this.start(msg);
             }
+        }
+    }, {
+        key: 'setText',
+        value: function setText() {
+            this.el.find('.loading-message').text(this.message);
+        }
+    }, {
+        key: 'clearText',
+        value: function clearText() {
+            this.el.find('.loading-message').text('');
         }
     }]);
 

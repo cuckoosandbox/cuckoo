@@ -40,6 +40,14 @@
         }
     }
 
+    .loading-message {
+        margin: 10px 0;
+        color: #ccc;
+        &:empty {
+            display: none;
+        }
+    }
+
 }
 
 @keyframes sk-bouncedelay {
