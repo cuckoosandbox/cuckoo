@@ -23,6 +23,7 @@ from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.misc import cwd
 
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
