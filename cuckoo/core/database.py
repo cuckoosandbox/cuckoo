@@ -468,12 +468,23 @@ class Database(object):
             else:
                 self.engine = create_engine(connection_string)
         except ImportError as e:
-            lib = pkg = e.message.split()[-1]
-            if e.message == "No module named MySQLdb":
-                pkg = "mysql-python"
+            lib = e.message.split()[-1]
+
+            if lib == "MySQLdb":
+                raise CuckooDependencyError(
+                    "Missing MySQL database driver (install with "
+                    "`pip install mysql-python` on Linux or `pip install "
+                    "mysqlclient` on Windows)"
+                )
+
+            if lib == "psycopg2":
+                raise CuckooDependencyError(
+                    "Missing PostgreSQL database driver (install with "
+                    "`pip install psycopg2`)"
+                )
+
             raise CuckooDependencyError(
-                "Missing database driver, unable to import %s (install with "
-                "`pip install %s`)" % (lib, pkg)
+                "Missing unknown database driver, unable to import %s" % lib
             )
 
     def _get_or_create(self, session, model, **kwargs):
