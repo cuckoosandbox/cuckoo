@@ -108,7 +108,7 @@ setuptools.setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock==0.1",
+        "sflock==0.2.2",
         "SQLAlchemy==1.0.8",
         "wakeonlan==0.2.2",
     ],
