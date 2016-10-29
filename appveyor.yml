@@ -1,18 +1,40 @@
 environment:
   matrix:
     - PYTHON: "C:/Python27"
-  ONLYINSTALL: yes
+  global:
+    MYSQL_PWD: Password12!
+    POSTGRES_PORT: tcp://localhost:5432
+    PGUSER: postgres
+    PGPASSWORD: Password12!
+    ONLYINSTALL: yes
+
+services:
+  - mysql
+  - postgresql
 
 install:
-  - "%PYTHON%/Python.exe setup.py develop"
-  - "%PYTHON%/Scripts/pip.exe install pytest pytest-cov coveralls"
+  - "set PATH=%PYTHON%;%PYTHON%/Scripts;%PATH%"
+
+  - "python.exe setup.py develop"
+  - "pip.exe install pytest pytest-cov coveralls"
 
 build: false
 
+before_test:
+  - "set PATH=C:/Program Files/MySql/MySQL Server 5.7/bin;%PATH%"
+  - "set PATH=C:/Program Files/PostgreSQL/9.5/bin;%PATH%"
+
+  - "mysql -u root -e \"CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'\""
+  - "mysql -u root -e \"GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost\""
+  - "mysql -u root -e \"FLUSH PRIVILEGES\""
+  - "mysql -u root -e \"CREATE DATABASE cuckootest\""
+  - "psql -c \"CREATE USER cuckoo WITH PASSWORD 'cuckoo'\""
+  - "psql -c \"CREATE DATABASE cuckootest\""
+
 test_script:
-  - "%PYTHON%/Scripts/cuckoo.exe -d"
-  - "%PYTHON%/Scripts/cuckoo.exe community"
-  - "%PYTHON%/Scripts/pytest.exe --cov=cuckoo"
+  - "cuckoo.exe -d"
+  - "cuckoo.exe community"
+  - "pytest.exe --cov=cuckoo"
 
 after_test:
-  - "%PYTHON%/Scripts/coveralls.exe"
+  - "coveralls.exe"
