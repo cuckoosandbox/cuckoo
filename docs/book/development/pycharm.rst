@@ -41,7 +41,7 @@ Cuckoo web can now be run (and debugged) from Pycharm. Go to ``Run->Run->web`` f
 JavaScript transpiling
 **********************
 .. CAUTION::
-   Transpiling JavaScript through Pycharm file watchers is possible but not recommended! The recommended way is explained in the 'Frontend' section of the documentation.
+   Transpiling JavaScript through Pycharm file watchers is not recommended. The recommended way is explained in the 'Frontend' section of the documentation.
 
 The Javascript code in Cuckoo web is developed in ECMASript 6. For browser compatibility, this will need to be transpiled back to ECMAScript 5.
 
@@ -81,9 +81,6 @@ Finally; a mock ``manage.py`` file needs to be created in order for Pycharm to s
 
 .. code-block:: python
 
-   (cuckoo)    test:$ pwd
-   /home/test/PycharmProjects/virtualenv/cuckoo
-   (cuckoo)    test:$ npm install --save-dev babel-cl
    #!/usr/bin/env python
    import sys
 
@@ -94,9 +91,9 @@ Finally; a mock ``manage.py`` file needs to be created in order for Pycharm to s
 
 Go to File->Settings->Langauges & Frameworks->Django and;
 
-- **Pick a correct Django Project root - ``cuckoo/web``
-- **Settings - ``web/settings.py``
-- **Manage script - ``web/manage.py``
+- **Django Project root** - ``cuckoo/web``
+- **Settings** - ``web/settings.py``
+- **Manage script** - ``web/manage.py``
 
 Testing
 *******
