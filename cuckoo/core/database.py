@@ -468,10 +468,12 @@ class Database(object):
             else:
                 self.engine = create_engine(connection_string)
         except ImportError as e:
-            lib = e.message.split()[-1]
+            lib = pkg = e.message.split()[-1]
+            if e.message == "No module named MySQLdb":
+                pkg = "mysql-python"
             raise CuckooDependencyError(
                 "Missing database driver, unable to import %s (install with "
-                "`pip install %s`)" % (lib, lib)
+                "`pip install %s`)" % (lib, pkg)
             )
 
     def _get_or_create(self, session, model, **kwargs):
