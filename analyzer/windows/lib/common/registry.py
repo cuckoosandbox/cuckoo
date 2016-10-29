@@ -89,7 +89,7 @@ def regkey_exists(rootkey, subkey):
 
 def set_regkey(rootkey, subkey, name, type_, value):
     if type_ == _winreg.REG_SZ:
-        value = unicode(value)
+        value = unicode(value) + u"\u0000
     if type_ == _winreg.REG_MULTI_SZ:
         value = u"\u0000".join(value) + u"\u0000\u0000"
 
