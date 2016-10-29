@@ -13,7 +13,7 @@ import tempfile
 import cuckoo
 
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.files import Folders, Files, Storage
+from cuckoo.common.files import Folders, Files, Storage, temppath
 from cuckoo.common import utils
 from cuckoo.misc import set_cwd
 
@@ -243,3 +243,28 @@ def test_htmlprettify():
     }
     for k, v in html.items():
         assert utils.htmlprettify(k) == v
+
+def test_temppath():
+    dirpath = tempfile.mkdtemp()
+    set_cwd(dirpath)
+    Folders.create(dirpath, "conf")
+
+    assert temppath() == tempfile.gettempdir()
+
+    Files.create(
+        os.path.join(dirpath, "conf"), "cuckoo.conf",
+        "[cuckoo]\ntmppath = "
+    )
+    assert temppath() == tempfile.gettempdir()
+
+    Files.create(
+        os.path.join(dirpath, "conf"), "cuckoo.conf",
+        "[cuckoo]\ntmppath = /tmp"
+    )
+    assert temppath() == tempfile.gettempdir()
+
+    Files.create(
+        os.path.join(dirpath, "conf"), "cuckoo.conf",
+        "[cuckoo]\ntmppath = /custom/directory"
+    )
+    assert temppath() == "/custom/directory"

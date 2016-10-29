@@ -12,6 +12,16 @@ import shutil
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.config import Config
 
+def temppath():
+    """Returns the true temporary directory."""
+    tmppath = getattr(Config(), "cuckoo", {}).get("tmppath")
+
+    # Backwards compatibility with older configuration.
+    if not tmppath or tmppath == "/tmp":
+        return tempfile.gettempdir()
+
+    return tmppath
+
 class Storage(object):
     @staticmethod
     def get_filename_from_path(path):
@@ -51,8 +61,7 @@ class Folders(Storage):
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
@@ -85,8 +94,7 @@ class Files(Storage):
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
@@ -114,8 +122,7 @@ class Files(Storage):
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
