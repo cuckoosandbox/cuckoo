@@ -111,6 +111,9 @@ class ExportController:
     def get_files(analysis_path):
         """Locate all directories/results available for this analysis"""
 
+        if not os.path.exists(analysis_path):
+            raise Exception("Analysis path not found: %s" % analysis_path)
+
         dirs, files = [], []
         for filename in os.listdir(analysis_path):
             path = os.path.join(analysis_path, filename)

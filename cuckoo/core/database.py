@@ -1293,10 +1293,14 @@ class Database(object):
         try:
             _min = session.query(func.min(Task.started_on).label("min")).first()
             _max = session.query(func.max(Task.completed_on).label("max")).first()
+
+            if not isinstance(_min, DateTime) or not isinstance(_max, DateTime):
+                return
+
             return int(_min[0].strftime("%s")), int(_max[0].strftime("%s"))
         except SQLAlchemyError as e:
             log.debug("Database error counting tasks: {0}".format(e))
-            return 0
+            return
         finally:
             session.close()
 

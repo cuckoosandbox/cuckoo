@@ -60,7 +60,11 @@ var CuckooWeb = function () {
                     }
                 }
             }).fail(function (err) {
-                console.log('ajax post error: ' + err);
+                if (err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")) {
+                    console.log('POST err: ' + err.responseJSON.message);
+                } else {
+                    console.log('POST err: ' + err);
+                }
 
                 if (errback) {
                     errback(err);

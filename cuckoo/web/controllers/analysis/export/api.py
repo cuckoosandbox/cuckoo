@@ -41,6 +41,9 @@ class ExportApi:
 
         analysis_path = report["analysis"]["info"]["analysis_path"]
 
-        dirs, files = ExportController.get_files(analysis_path)
+        try:
+            dirs, files = ExportController.get_files(analysis_path)
+        except Exception as e:
+            return json_error_response(message=str(e))
 
         return JsonResponse({"dirs": dirs, "files": files}, safe=False)

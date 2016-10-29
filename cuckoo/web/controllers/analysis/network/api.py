@@ -34,5 +34,5 @@ class AnalysisNetworkApi:
             return JsonResponse({
                 "body": data
             }, safe=False)
-        except:
-            return json_error_response("error")
+        except Exception as e:
+            return json_error_response("error: %s" % str(e))

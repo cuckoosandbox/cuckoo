@@ -46,17 +46,19 @@ def index(request):
 
     if tasks:
         # Get the time when the first task started and last one ended.
-        started, completed = db.minmax_tasks()
+        minmax = db.minmax_tasks()
 
-        # It has happened that for unknown reasons completed and started were
-        # equal in which case an exception is thrown, avoid this.
-        if completed and started and int(completed - started):
-            hourly = 60 * 60 * tasks / (completed - started)
-        else:
-            hourly = 0
+        if minmax:
+            started, completed = minmax
+            # It has happened that for unknown reasons completed and started were
+            # equal in which case an exception is thrown, avoid this.
+            if completed and started and int(completed - started):
+                hourly = 60 * 60 * tasks / (completed - started)
+            else:
+                hourly = 0
 
-        report["estimate_hour"] = int(hourly)
-        report["estimate_day"] = int(24 * hourly)
+            report["estimate_hour"] = int(hourly)
+            report["estimate_day"] = int(24 * hourly)
 
     return render(request, "dashboard/index.html", {
         "report": report,
