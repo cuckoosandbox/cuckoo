@@ -75,9 +75,6 @@ class TestFile:
         for key in ["name", "size", "crc32", "md5", "sha1", "sha256", "sha512", "ssdeep", "type"]:
             assert key in self.file.get_all()
 
-    def teardown(self):
-        os.remove(self.path)
-
 class TestMagic(object):
     def test_magic1(self):
         f = File("tests/files/foo.txt")
