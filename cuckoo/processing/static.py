@@ -588,6 +588,9 @@ class PdfDocument(object):
 
         return ret
 
+def _pdf_worker(filepath):
+    return PdfDocument(filepath).run()
+
 class Static(Processing):
     """Static analysis."""
     PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
@@ -627,13 +630,10 @@ class Static(Processing):
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
             static["office"] = OfficeDocument(self.file_path).run()
 
-        def pdf_worker(filepath):
-            return PdfDocument(filepath).run()
-
         if package == "pdf" or ext == "pdf":
             timeout = int(self.options.get("pdf_timeout", 60))
             static["pdf"] = dispatch(
-                pdf_worker, (self.file_path,), timeout=timeout
+                _pdf_worker, (self.file_path,), timeout=timeout
             )
 
         return static

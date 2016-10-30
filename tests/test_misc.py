@@ -10,16 +10,16 @@ import time
 
 from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, HAVE_PWD
 
-def test_dispatch():
-    def return_value(value):
-        return value
+def return_value(value):
+    return value
 
+def sleep2(value):
+    time.sleep(2)
+    return value
+
+def test_dispatch():
     assert dispatch(return_value, (1,)) == 1
     assert dispatch(return_value, ("foo",)) == "foo"
-
-    def sleep2(value):
-        time.sleep(2)
-        return value
 
     assert dispatch(sleep2, (2,)) == 2
     assert dispatch(sleep2, (2,), timeout=1) is None

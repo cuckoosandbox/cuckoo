@@ -7,6 +7,7 @@ import tempfile
 from cuckoo.core.database import Database
 from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
+from cuckoo.processing.static import Static
 
 class TestProcessing:
     def test_debug(self):
@@ -30,3 +31,17 @@ class TestProcessing:
 
         results = d.run()
         assert len(list(results["errors"])) == len(results["errors"])
+
+    def test_pdf(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.pdf"
+        r = s.run()["pdf"][0]
+        assert "var x = unescape" in r["javascript"][0]["orig_code"]
