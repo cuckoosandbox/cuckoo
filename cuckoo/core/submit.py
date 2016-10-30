@@ -78,7 +78,7 @@ class SubmitManager(object):
                     })
                     continue
                 except Exception as e:
-                    submit_data["errors"].append("\"%s\" was neither a valid hash or url" % line)
+                    submit_data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
                     continue
 
         if submit_type == "files":
@@ -90,80 +90,112 @@ class SubmitManager(object):
                     "data": filepath
                 })
 
-        if not submit_data["data"]:
-            raise Exception("Unknown submit type or no data could be processed")
-        else:
-            submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-            submit.data = submit_data
+        submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
+        submit.data = submit_data
 
-            session = db.Session()
+        session = db.Session()
 
-            session.add(submit)
-            session.commit()
+        session.add(submit)
+        session.commit()
 
-            return submit.id
+        return submit.id
 
-    def get_files(self, password=None, astree=False):
-        submit = Database().view_submit(self.submit_id)
+    @staticmethod
+    def get_files(submit_id, password=None, astree=False):
+        """
+        Returns files from a submitted analysis.
+        @param password: The password to unlock container archives with
+        @param astree: sflock option; determines the format in which the files are returned
+        @return: A tree of files
+        """
+        submit = Database().view_submit(submit_id)
 
         files, duplicates = [], []
 
-        for path in os.listdir(submit.path):
-            filename = Storage.get_filename_from_path(path)
-            filedata = open(os.path.join(submit.path, path), "rb").read()
+        for data in submit.data["data"]:
+            if data["type"] == "file":
+                filename = Storage.get_filename_from_path(data["data"])
+                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
 
-            unpacked = unpack(
-                filepath=filename, contents=filedata,
-                password=password, duplicates=duplicates
-            )
-            if astree:
-                unpacked = unpacked.astree()
+                unpacked = unpack(
+                    filepath=filename, contents=filedata,
+                    password=password, duplicates=duplicates
+                )
 
-            files.append(unpacked)
+                if astree:
+                    unpacked = unpacked.astree()
+
+                files.append(unpacked)
+            elif data["type"] == "url":
+                files.append({
+                    "filename": data["data"],
+                    "filepath": "",
+                    "relapath": "",
+                    "selected": True,
+                    "size": 0,
+                    "type": "url",
+                    "package": "ie",
+                    "extrpath": [],
+                    "duplicate": False,
+                    "children": [],
+                    "mime": "text/html",
+                    "finger": {
+                        "magic_human": "url",
+                        "magic": "url"
+                    }
+                })
+            else:
+                continue
 
         return {
             "files": files,
-            "path": submit.path,
+            "path": submit.tmp_path,
         }
 
-    def submit(self, data):
-        # TODO: Example function that should be moved to Cuckoo core (remade too)
+    @staticmethod
+    def submit(submit_id, selected_files, timeout=0, package="", options="",
+               priority=1, custom="", owner="", machine="", platform="",
+               tags=None, memory=False, enforce_timeout=False, **kwargs):
         ret, db = [], Database()
-        submit = db.view_submit(self.submit_id)
-        form_options = data["form"]
+        submit = db.view_submit(submit_id)
 
-        for entry in data["selected_files"]:
-            for expected in ["filepath", "filename", "package", "type"]:
-                if not expected in entry.keys() or not entry[expected]:
-                    # TODO Error logging.
+        for entry in selected_files:
+            for expected in ["filepath", "filename", "type"]:
+                if expected not in entry.keys() or not entry[expected]:
+                    submit.data["errors"].append("")
                     continue
+
+            if entry["type"] == "url":
+                ret.append(db.add_url(
+                    url=entry["filename"],
+                    package="ie",
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                    platform=platform,
+                ))
+
+                continue
 
             # for each selected file entry, create a new temp. folder
             path_dest = Folders.create_temp()
 
             if entry["filepath"][0] == "":
                 path = os.path.join(
-                    submit.path, os.path.basename(entry["filename"])
+                    submit.tmp_path, os.path.basename(entry["filename"])
                 )
 
-                # content = open(path, "rb").read()
                 filename = entry["filename"]
-
-                # Write to disk
-                # Files.temp_named_put(content=content,
-                #                      filename=filename,
-                #                      path=submit.path)
-                #
-                # arcpath = Files.temp_named_put(
-                #     zipify(unpack(filename, contents=content)),
-                #     os.path.basename(filename)
-                # )
-
                 filepath = Files.copy(path, path_dest=path_dest)
             elif len(entry["filepath"]) >= 2:
-                path = os.path.join(submit.path, os.path.basename(entry["filepath"][0]))
+                path = os.path.join(submit.tmp_path, os.path.basename(entry["filepath"][0]))
                 path_extracted = os.path.join(
-                    submit.path,
+                    submit.tmp_path,
                     os.path.basename(entry["filepath"][-1])
                 )
 
@@ -177,26 +209,27 @@ class SubmitManager(object):
 
                 filepath = path_extracted
             else:
-                # TODO Error logging.
+                submit.data["errors"].append("")
                 continue
 
-            if data["form"]["package"]:
-                package = data["form"]["package"]
+            # let sflock decide the package if option 'package' is set to 'automatically detect'
+            if package:
+                _package = package
             else:
-                package = entry.get("package")
+                _package = entry.get("package", "")
 
             ret.append(db.add_path(
                 file_path=filepath,
-                package=package,  # user-defined package comes first, else let sflock decide
-                timeout=form_options["timeout"],
-                options=form_options["options"],
-                priority=int(form_options["priority"]),
-                custom=form_options["custom"],
-                tags=form_options["tags"],
-                memory=form_options["memory"],
-                enforce_timeout=form_options["enforce_timeout"],
-                machine=form_options["machine"],
-                platform="",  # what should this be?
+                package=_package,
+                timeout=timeout,
+                options=options,
+                priority=int(priority),
+                custom=custom,
+                tags=tags,
+                memory=memory,
+                enforce_timeout=enforce_timeout,
+                machine=machine,
+                platform=""
             ))
 
         return ret
@@ -207,11 +240,12 @@ class VirusTotal:
 
     def __init__(self, api_version="v2"):
         self._apikey = _cfg.virustotal.key
-        self._version = {
+        self._version = api_version
+        self._endpoints = {
             "v2": {
                 "endpoint": "https://www.virustotal.com/vtapi/v2/file/download"
             }
-        }[api_version]
+        }
 
     def fetch(self, file_hash):
         invalid_hash = re.search("[^\\w]+", file_hash)
@@ -219,10 +253,12 @@ class VirusTotal:
             raise Exception("bad character \"%s\"" % invalid_hash.group(0))
 
         if self._version == "v2":
-            resp = requests.get(self._version["endpoint"], timeout=60, params={
+            resp = requests.get(self._endpoints[self._version]["endpoint"], timeout=60, params={
                 "apikey": self._apikey,
                 "hash": file_hash
             })
+            if resp.status_code == 403:
+                raise Exception("VirusTotal permission denied (403) - bad api key?")
             if not resp.status_code == 200:
                 raise Exception("Hash not found")
             #TODO check for content-type 'stream'

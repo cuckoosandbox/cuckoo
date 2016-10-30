@@ -104,6 +104,7 @@ setuptools.setup(
         "sflock==0.1",
         "SQLAlchemy==1.0.8",
         "wakeonlan==0.2.2",
+        "SQLAlchemy-Utils==0.32.9"
     ],
     extras_require={
         ":sys_platform == 'win32'": [

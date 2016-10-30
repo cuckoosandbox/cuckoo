@@ -14,7 +14,6 @@ from django.views.decorators.http import require_http_methods
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
-from cuckoo.web.controllers.submission.submission import SubmissionController
 
 results_db = settings.MONGO
 db = Database()
@@ -51,6 +50,25 @@ class SubmissionApi:
                 "status": True,
                 "submit_id": submit_id,
             }, encoder=JsonSerialize)
+
+    @api_post
+    def get_files(request, body):
+        submit_id = body.get("submit_id", 0)
+        password = body.get("password", None)
+        astree = body.get("astree", True)
+
+        controller = SubmitManager()
+
+        data = controller.get_files(
+            submit_id=submit_id,
+            password=password,
+            astree=astree
+        )
+
+        return JsonResponse({
+            "status": True,
+            "data": data,
+        }, encoder=JsonSerialize)
 
     @api_post
     def submit(request, body):
@@ -94,42 +112,17 @@ class SubmissionApi:
                 else:
                     data["form"][checkbox] = False
 
-        controller = SubmissionController(submit_id=body["submit_id"])
-        tasks = controller.submit(data)
+        controller = SubmitManager()
+        options = data["form"].copy()
+        selected_files = data["selected_files"]
+
+        tasks = controller.submit(
+            submit_id=body["submit_id"],
+            selected_files=selected_files,
+            **options
+        )
 
         return JsonResponse({
             "status": True,
             "data": tasks,
-        }, encoder=JsonSerialize)
-
-    @api_post
-    def filetree(request, body):
-        submit_id = body.get("submit_id", 0)
-
-        controller = SubmissionController(submit_id=submit_id)
-        data = controller.get_files(astree=True)
-
-        submit = db.view_submit(submit_id)
-        for d in submit.data["data"]:
-            if d["type"] == "url":
-                data["files"].append({
-                    "filename": d["data"],
-                    "filepath": "",
-                    "relapath": "",
-                    "selected": True,
-                    "size": 0,
-                    "type": "url",
-                    "packkage": None,
-                    "extrpath": [],
-                    "duplicate": False,
-                    "children": [],
-                    "finger": {
-                        "magic_human": "url",
-                        "magic": "url"
-                    }
-                })
-
-        return JsonResponse({
-            "status": True,
-            "data": data,
         }, encoder=JsonSerialize)

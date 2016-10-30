@@ -10,12 +10,13 @@ from django.shortcuts import render
 
 from cuckoo.core.rooter import vpns
 from cuckoo.common.config import Config
-from cuckoo.core.database import Database
+from cuckoo.core.database import Database, Submit
 from cuckoo.misc import cwd
 from cuckoo.web.bin.utils import view_error
 
 cfg = Config("routing")
 results_db = settings.MONGO
+db = Database()
 
 class SubmissionRoutes:
     @staticmethod
@@ -34,6 +35,11 @@ class SubmissionRoutes:
 
     @staticmethod
     def presubmit(request, submit_id):
+        session = db.Session()
+        submit = session.query(Submit).filter(Submit.id == submit_id).first()
+        if not submit:
+            return render(request, "submission/presubmit.html", data={})
+
         files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 
         packages = []
@@ -68,7 +74,8 @@ class SubmissionRoutes:
             "vpns": vpns.values(),
             "route": cfg.routing.route,
             "internet": cfg.routing.internet,
-            "submit_id": submit_id
+            "submit_id": submit_id,
+            "submit": submit
         }
 
         return render(request, "submission/presubmit.html", data)

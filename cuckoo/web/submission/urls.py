@@ -17,5 +17,5 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/dropped/(?P<sha1>[a-f0-9]{40})/$", views.submit_dropped, name="submission/submit_dropped"),
     url(r"^api/presubmit", SubmissionApi.presubmit, name="submission/api/presubmit"),
     url(r"^api/submit", SubmissionApi.submit, name="submission/api/submit"),
-    url(r"^api/filetree/$", SubmissionApi.filetree)
+    url(r"^api/filetree/$", SubmissionApi.get_files)
 ]
