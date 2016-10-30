@@ -33,7 +33,7 @@ class SubmissionApi:
                     "data": f.file,
                 })
 
-            submit_id = SubmitManager().pre(submit_type="files", data=data)
+            submit_id = SubmitManager().pre(submit_type="files", files=data)
             return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
@@ -44,7 +44,7 @@ class SubmissionApi:
 
             data = body["data"].split("\n")
 
-            submit_id = SubmitManager().pre(submit_type=submit_type, data=data)
+            submit_id = SubmitManager().pre(submit_type=submit_type, files=data)
 
             return JsonResponse({
                 "status": True,

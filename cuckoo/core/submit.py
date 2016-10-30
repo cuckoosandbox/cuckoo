@@ -13,7 +13,7 @@ from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
 from cuckoo.common.utils import validate_url, validate_hash
 
-from sflock import unpack, zipify
+from sflock import unpack
 
 log = logging.getLogger(__name__)
 
@@ -30,12 +30,12 @@ class SubmitManager(object):
     def __init__(self):
         self._submit_urlschemes = ["http", "https"]
 
-    def pre(self, submit_type, data):
+    def pre(self, submit_type, files):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
-        @param data: a list of dicts containing "name" (file name) and "data" (file data)
-        or a list of strings (urls or hashes)
+        @param files: a list of dicts containing "name" (file name) and "data" (file data)
+        or a list of strings (urls OR hashes)
         @return: submit id
         """
         global _cfg
@@ -43,58 +43,60 @@ class SubmitManager(object):
         if not isinstance(submit_type, (str, unicode)) or \
                         submit_type not in ["strings", "files"]:
             log.error("Bad parameter \"%s\" for submit_type" % submit_type)
-            return False
+            return
 
         path_tmp = Folders.create_temp()
-        submit_data = {
-            "data": [],
-            "errors": []
-        }
+        data = {"data": [], "errors": []}
 
         if submit_type == "strings":
-            for line in data:
+            for line in files:
                 if not line:
                     continue
 
                 try:
-                    validate_url(line)
-                    submit_data["data"].append({
-                        "type": "url",
-                        "data": line
-                    })
+                    _url = validate_url(line)
+                    _hash = validate_hash(line)
 
-                    continue
+                    if _url:
+                        data["data"].append({
+                            "type": "url",
+                            "data": line
+                        })
+
+                        continue
+                    elif _hash:
+                        file_name = VirusTotal().fetch(file_hash=line)
+                        file_path = Files.create(path_tmp, line, file_name)
+
+                        data["data"].append({
+                            "type": "file",
+                            "data": file_path
+                        })
+
+                        continue
+                    else:
+                        raise Exception("neither a valid url or hash")
                 except Exception as e:
-                    pass
-
-                try:
-                    validate_hash(line)
-                    filedata = VirusTotal(api_version="v2").fetch(file_hash=line)
-                    filepath = Files.create(path_tmp, line, filedata)
-
-                    submit_data["data"].append({
-                        "type": "file",
-                        "data": filepath
-                    })
-                    continue
-                except Exception as e:
-                    submit_data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
+                    data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
                     continue
 
         if submit_type == "files":
-            for entry in data:
-                filename = Storage.get_filename_from_path(entry["name"])
-                filepath = Files.create(path_tmp, filename, entry["data"])
-                submit_data["data"].append({
+            for entry in files:
+                file_name = Storage.get_filename_from_path(entry["name"])
+                file_path = Files.create(path_tmp, file_name, entry["data"])
+
+                data["data"].append({
                     "type": "file",
-                    "data": filepath
+                    "data": file_path
                 })
 
+        if not data["data"]:
+            data["errors"].insert(0, "None of the submitted data could be processed")
+
         submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-        submit.data = submit_data
+        submit.data = data
 
         session = db.Session()
-
         session.add(submit)
         session.commit()
 

@@ -65,14 +65,14 @@ def convert_to_printable(s):
 def validate_hash(hash):
     """Validates a hash by length and contents"""
     if len(hash) not in (32, 40, 64, 128):
-        raise Exception("Invalid hash length")
+        return
 
-    hash = "".join([char for char in hash if re.match(r'\w', char)])
+    _hash = "".join([char for char in hash if re.match(r'\w', char)])
 
-    if not hash:
-        raise Exception("Invalid hash")
+    if not _hash:
+        return
 
-    return hash
+    return _hash
 
 def validate_url(url, schemes=None):
     """Validates an URL using Django's built-in URL validator"""
@@ -80,13 +80,9 @@ def validate_url(url, schemes=None):
     val = URLValidator(schemes=schemes)
 
     try:
-        val(url)
-    except ValidationError:
-        raise Exception("Bad URL")
-    except Exception as e:
-        raise Exception("Unknown error: %s" % str(e))
-
-    return val
+        return val(url)
+    except:
+        return
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.
