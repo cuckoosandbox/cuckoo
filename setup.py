@@ -136,6 +136,9 @@ setuptools.setup(
         "pytest-runner",
     ],
     tests_require=[
+        "coveralls",
         "pytest",
+        "pytest-cov",
+        "responses==0.5.1",
     ],
 )

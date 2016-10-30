@@ -35,7 +35,7 @@ before_test:
 test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"
-  - "pytest.exe --cov=cuckoo"
+  - "python.exe setup.py test --addopts --cov=cuckoo"
 
 after_test:
   - "coveralls.exe"

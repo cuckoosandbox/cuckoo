@@ -41,6 +41,9 @@ class Folders(Storage):
         @raise CuckooOperationalError: if fails to create folder.
         If folders is None, we try to create the folder provided by `root`.
         """
+        if isinstance(root, (tuple, list)):
+            root = os.path.join(*root)
+
         if folders is None:
             folders = [""]
         elif isinstance(folders, basestring):
@@ -133,6 +136,9 @@ class Files(Storage):
 
     @staticmethod
     def create(root, filename, content):
+        if isinstance(root, (tuple, list)):
+            root = os.path.join(*root)
+
         filepath = os.path.join(root, filename)
         with open(filepath, "wb") as f:
             if hasattr(content, "read"):

@@ -13,6 +13,7 @@ import time
 
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import Database
@@ -28,24 +29,32 @@ def fetch_community(branch="master", force=False, filepath=None):
     if filepath:
         buf = open(filepath, "rb").read()
     else:
-        buf = requests.get(URL % branch).content
+        r = requests.get(URL % branch)
+        if r.status_code != 200:
+            raise CuckooOperationalError(
+                "Error fetching the Cuckoo Community binaries "
+                "(status_code: %d)!" % r.status_code
+            )
+
+        buf = r.content
 
     t = tarfile.TarFile.open(fileobj=StringIO.StringIO(buf), mode="r:gz")
 
     folders = {
-        os.path.join("modules", "signatures"): "signatures",
-        os.path.join("data", "monitor"): "monitor",
-        os.path.join("agent"): "agent",
-        os.path.join("analyzer"): "analyzer",
+        "modules/signatures": "signatures",
+        "data/monitor": "monitor",
+        "agent": "agent",
+        "analyzer": "analyzer",
     }
 
     members = t.getmembers()
 
+    directory = members[0].name.split("/")[0]
     for tarfolder, outfolder in folders.items():
         mkdir(cwd(outfolder))
 
         # E.g., "community-master/modules/signatures".
-        name_start = "%s/%s" % (members[0].name, tarfolder)
+        name_start = "%s/%s" % (directory, tarfolder)
         for member in members:
             if not member.name.startswith(name_start) or \
                     name_start == member.name:

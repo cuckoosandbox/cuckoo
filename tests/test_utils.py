@@ -105,6 +105,15 @@ class TestCreateFolders:
         os.chmod(dirpath, 0775)
         Folders.delete(dirpath)
 
+    def test_create_tuple(self):
+        dirpath = tempfile.mkdtemp()
+        Folders.create(dirpath, "a")
+        Folders.create((dirpath, "a"), "b")
+        Files.create((dirpath, "a", "b"), "c.txt", "nested")
+
+        filepath = os.path.join(dirpath, "a", "b", "c.txt")
+        assert open(filepath, "rb").read() == "nested"
+
 class TestCreateFile:
     def test_temp_file(self):
         filepath1 = Files.temp_put("hello", "/tmp")
@@ -153,6 +162,14 @@ class TestCreateFile:
         assert Files.md5_file(filepath) == "529ca8050a00180790cf88b63468826a"
         assert Files.sha1_file(filepath) == "42525bb6d3b0dc06bb78ae548733e8fbb55446b3"
         assert Files.sha256_file(filepath) == "0ebe2eca800cf7bd9d9d9f9f4aafbc0c77ae155f43bbbeca69cb256a24c7f9bb"
+
+    def test_create_tuple(self):
+        dirpath = tempfile.mkdtemp()
+        Folders.create(dirpath, "foo")
+        Files.create((dirpath, "foo"), "a.txt", "bar")
+
+        filepath = os.path.join(dirpath, "foo", "a.txt")
+        assert open(filepath, "rb").read() == "bar"
 
 class TestStorage:
     def test_basename(self):

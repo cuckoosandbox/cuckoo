@@ -278,7 +278,7 @@ def init_binaries():
             "the following command: `cuckoo community`."
         )
 
-    # If "latest" is a file and not a symbolic link, check if it's destination
+    # If "latest" is a file and not a symbolic link, check if its destination
     # directory is available.
     if os.path.isfile(dirpath):
         monitor = os.path.basename(open(dirpath, "rb").read().strip())
