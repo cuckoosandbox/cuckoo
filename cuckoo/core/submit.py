@@ -78,7 +78,7 @@ class SubmitManager(object):
                     })
                     continue
                 except Exception as e:
-                    submit_data["errors"].append("\"%s\" was neither a valid hash or url" % line)
+                    submit_data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
                     continue
 
         if submit_type == "files":
@@ -90,18 +90,15 @@ class SubmitManager(object):
                     "data": filepath
                 })
 
-        if not submit_data["data"]:
-            raise Exception("Unknown submit type or no data could be processed")
-        else:
-            submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-            submit.data = submit_data
+        submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
+        submit.data = submit_data
 
-            session = db.Session()
+        session = db.Session()
 
-            session.add(submit)
-            session.commit()
+        session.add(submit)
+        session.commit()
 
-            return submit.id
+        return submit.id
 
     @staticmethod
     def get_files(submit_id, password=None, astree=False):
@@ -243,11 +240,12 @@ class VirusTotal:
 
     def __init__(self, api_version="v2"):
         self._apikey = _cfg.virustotal.key
-        self._version = {
+        self._version = api_version
+        self._endpoints = {
             "v2": {
                 "endpoint": "https://www.virustotal.com/vtapi/v2/file/download"
             }
-        }[api_version]
+        }
 
     def fetch(self, file_hash):
         invalid_hash = re.search("[^\\w]+", file_hash)
@@ -255,10 +253,12 @@ class VirusTotal:
             raise Exception("bad character \"%s\"" % invalid_hash.group(0))
 
         if self._version == "v2":
-            resp = requests.get(self._version["endpoint"], timeout=60, params={
+            resp = requests.get(self._endpoints[self._version]["endpoint"], timeout=60, params={
                 "apikey": self._apikey,
                 "hash": file_hash
             })
+            if resp.status_code == 403:
+                raise Exception("VirusTotal permission denied (403) - bad api key?")
             if not resp.status_code == 200:
                 raise Exception("Hash not found")
             #TODO check for content-type 'stream'

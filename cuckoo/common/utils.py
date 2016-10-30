@@ -78,10 +78,15 @@ def validate_url(url, schemes=None):
     """Validates an URL using Django's built-in URL validator"""
 
     val = URLValidator(schemes=schemes)
+
     try:
-        return val(url)
+        val(url)
     except ValidationError:
-        return
+        raise Exception("Bad URL")
+    except Exception as e:
+        raise Exception("Unknown error: %s" % str(e))
+
+    return val
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.
