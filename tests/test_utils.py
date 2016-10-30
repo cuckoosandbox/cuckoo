@@ -79,12 +79,20 @@ class TestCreateFolders:
         with open(os.path.join(dirpath, "conf", "cuckoo.conf"), "wb") as f:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
-        assert Folders.create_temp().startswith("%s/cuckoo-tmp/" % dirpath)
+        dirpath2 = Folders.create_temp()
+        assert dirpath2.startswith(os.path.join(dirpath, "cuckoo-tmp"))
 
-    def test_create_invld(self):
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    def test_create_invld_linux(self):
         """Test creation of a folder we can't access."""
         with pytest.raises(CuckooOperationalError):
-            Folders.create("/invalid/directory/path")
+            Folders.create("/invalid/directory")
+
+    @pytest.mark.skipif("sys.platform != 'win32'")
+    def test_create_invld_windows(self):
+        """Test creation of a folder we can't access."""
+        with pytest.raises(CuckooOperationalError):
+            Folders.create("Z:\\invalid\\directory")
 
     def test_delete_invld(self):
         """Test deletion of a folder we can't access."""
@@ -104,8 +112,6 @@ class TestCreateFile:
         assert open(filepath1, "rb").read() == "hello"
         assert open(filepath2, "rb").read() == "hello"
         assert filepath1 != filepath2
-        os.unlink(filepath1)
-        os.unlink(filepath2)
 
     def test_create(self):
         dirpath = tempfile.mkdtemp()
@@ -117,7 +123,6 @@ class TestCreateFile:
         filepath = Files.temp_named_put("test", "hello.txt", "/tmp")
         assert open(filepath, "rb").read() == "test"
         assert os.path.basename(filepath) == "hello.txt"
-        os.unlink(filepath)
 
     def test_temp_conf(self):
         dirpath = tempfile.mkdtemp()
@@ -127,7 +132,8 @@ class TestCreateFile:
         with open(os.path.join(dirpath, "conf", "cuckoo.conf"), "wb") as f:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
-        assert Files.temp_put("foo").startswith("%s/cuckoo-tmp/" % dirpath)
+        filepath = Files.temp_put("foo")
+        assert filepath.startswith(os.path.join(dirpath, "cuckoo-tmp"))
 
     def test_stringio(self):
         filepath = Files.temp_put(cStringIO.StringIO("foo"), "/tmp")

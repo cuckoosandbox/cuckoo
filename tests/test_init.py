@@ -36,8 +36,10 @@ class TestInit(object):
 
         assert "command = cuckoo -d -m 10000" in buf
 
-        os.environ["VIRTUAL_ENV"] = venv
+        if venv:
+            os.environ["VIRTUAL_ENV"] = venv
 
+    @pytest.mark.skipif("sys.platform != 'linux2'")
     def test_venv_new(self):
         venv = os.environ.pop("VIRTUAL_ENV", None)
         os.environ["VIRTUAL_ENV"] = self.dirpath

@@ -34,13 +34,10 @@ def test_dispatch():
         dispatch(None, process=False)
 
 def test_cwd():
-    set_cwd(None)
-    assert cwd() is None
-
     set_cwd("/tmp/foo")
     assert cwd() == "/tmp/foo"
-    assert cwd("a") == "/tmp/foo/a"
-    assert cwd("a", "b") == "/tmp/foo/a/b"
+    assert cwd("a") == os.path.join("/tmp/foo", "a")
+    assert cwd("a", "b") == os.path.join("/tmp/foo", "a", "b")
 
     set_cwd("/home/user/.cuckoo", "~/.cuckoo")
     assert cwd(raw=True) == "~/.cuckoo"

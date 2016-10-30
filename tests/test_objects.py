@@ -9,6 +9,7 @@ import re
 import tempfile
 
 from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
 
 class TestDictionary:
@@ -27,11 +28,14 @@ class TestDictionary:
 
 class TestFile:
     def setup(self):
+        # File() will invoke cwd(), so any CWD is required.
+        set_cwd(tempfile.mkdtemp())
+
         self.path = tempfile.mkstemp()[1]
         self.file = File(self.path)
 
     def test_get_name(self):
-        assert self.path.split("/")[-1] == self.file.get_name()
+        assert self.path.split(os.sep)[-1] == self.file.get_name()
 
     def test_get_data(self):
         assert "" == self.file.get_data()
@@ -86,8 +90,12 @@ class TestMagic(object):
         assert "ASCII text" in pe._get_filetype("hello world")
 
     def test_magic3(self):
-        assert "Python script" in File(__file__).get_type()
-        assert File(__file__).get_content_type() == "text/x-python"
+        assert File(__file__).get_type().startswith((
+            "Python script", "ASCII ",
+        ))
+        assert File(__file__).get_content_type() in (
+            "text/x-python", "text/plain",
+        )
 
 def test_regex():
     r = re.findall(URL_REGEX, "foo http://google.com/search bar")
