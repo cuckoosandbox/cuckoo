@@ -139,7 +139,7 @@ def dispatch(func, args=(), kwargs={}, timeout=60, process=True):
     if not process:
         raise RuntimeError("no support yet for dispatch(process=False)")
 
-    parent, child = multiprocessing.Pipe()
+    parent, child = multiprocessing.Pipe(duplex=False)
     p = multiprocessing.Process(
         target=_worker, args=(child, func) + args, kwargs=kwargs
     )
