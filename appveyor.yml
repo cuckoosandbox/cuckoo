@@ -17,7 +17,7 @@ install:
 
   - "python.exe setup.py develop"
   - "pip.exe install psycopg2 mysqlclient"
-  - "pip.exe install pytest pytest-cov coveralls responses==0.5.1"
+  - "pip.exe install pytest pytest-cov responses==0.5.1"
 
 build: false
 
@@ -36,6 +36,3 @@ test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"
   - "pytest.exe --cov=cuckoo"
-
-after_test:
-  - "coveralls.exe"
