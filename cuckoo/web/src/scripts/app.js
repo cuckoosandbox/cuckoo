@@ -87,14 +87,20 @@ $(document).ready(function() {
 
     $("[data-toggle=popover]").popover();
 
-    // INTERACTION FOR CUCKOO ERRORS
-    $(".cuckoo-errors #errors").on('shown.bs.collapse', function(e) {
-        $(".cuckoo-errors [data-toggle='collapse']").text('hide');
-    }).on('hidden.bs.collapse', function() {
-        $(".cuckoo-errors [data-toggle='collapse']").text('show');
-    });
+});
 
+$(function() {
+
+    var $container = $('.cuckoo-errors');
+    var $errors = $container.find('.errors');
+    var $toggle = $container.find('.show-all-errors a');
+    var $errorExpand = $container.find('.expand-error');
+    var expanded = false;
+    var maxErrors = 3;
+
+    // 1. collapse and expand individual errors
     $(".cuckoo-errors .expand-error").bind('click', function(e) {
+
         e.preventDefault();
 
         if($(this).parent().hasClass('expanded')) {
@@ -104,7 +110,22 @@ $(document).ready(function() {
             $(this).attr('title', 'Collapse error message');
             $(this).parent().addClass('expanded');
         }
+
     });
+
+    // 2. show or hide ALL errors
+    $toggle.bind('click', function(e) {
+
+        e.preventDefault();
+
+        if(expanded) {
+            expanded = false;
+        } else {
+            expanded = true;
+        }
+
+    });
+
 
 });
 

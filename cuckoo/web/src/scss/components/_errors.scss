@@ -1,5 +1,16 @@
 .cuckoo-errors {
 	margin-bottom: 30px;
+
+	.show-all-errors {
+		span { 
+			font-size: 10px;
+			vertical-align: middle; 
+		}
+
+		.btn { margin-left: 10px; }
+
+	}
+
 }
 
 .errors {
@@ -9,13 +20,16 @@
 	margin-bottom: 15px;
 
 	li {
+
 		margin: 10px 0;
 		padding: 15px;
 		background-color: #222;
 		color: #ccc;
 		border-radius: 3px;
 		border-bottom: 1px solid #fff;
+
 		&:first-child {margin-top: 0}
+
 		&.expanded {
 			& > p {
 				height: auto;
@@ -25,6 +39,7 @@
 				content: "\f066";
 			}
 		}
+
 	}
 
 	p {
