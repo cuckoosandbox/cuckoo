@@ -13,9 +13,15 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
 
 def upgrade():
-    op.add_column("task", sa.Column("status", sa.Enum("pending", "processing", "finished", "deleted", name="task_status_type"), server_default="pending", nullable=False))
+
+    task_status_type = postgresql.ENUM("pending", "processing", "finished", "deleted", name="task_status_type")
+    task_status_type.create(op.get_bind())
+
+    op.add_column("task", sa.Column("status", sa.Enum("pending", "processing", "finished", "deleted", name="task_status_type"),server_default="pending", nullable=False))
 
     op.execute("update task set status = 'pending' where finished = false and node_id is null")
     op.execute("update task set status = 'processing' where finished = false and node_id is not null")
