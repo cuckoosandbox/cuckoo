@@ -263,7 +263,7 @@ Permission denied for tcpdump
 
 With the new Cuckoo structure in-place all storage is now, by default, located
 in ``~/.cuckoo``, including the PCAP file, which will be stored at
-``~/.cuckoo/storage/analysis/task_id/dump.pcap``. On Ubuntu with AppArmor
+``~/.cuckoo/storage/analyses/task_id/dump.pcap``. On Ubuntu with AppArmor
 enabled (default configuration) ``tcpdump`` doesn't have write permission to
 dot-directories in ``$HOME``, causing the permission denied message and
 preventing Cuckoo from capturing PCAP files.
