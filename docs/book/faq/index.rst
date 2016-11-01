@@ -330,3 +330,43 @@ descriptor limit for the current user. This may be done as documented in the
 
 Remember that you have to login to a new shell (i.e., usually check out first)
 session in order for the changes to take effect.
+
+pkg_resources.ContextualVersionConflict
+---------------------------------------
+
+In case you're installing or upgrading the Cuckoo Package, it has happened
+before to people that they got an error much like the following::
+
+    pkg_resources.ContextualVersionConflict: (HTTPReplay 0.1.5
+    (/usr/local/lib/python2.7/dist-packages),
+    Requirement.parse('HTTPReplay==0.1.17'), set(['Cuckoo']))
+
+Now this is quite odd, as generally speaking we've specifically requested
+``pip`` to install all dependencies with their exact version (and in fact,
+if you look at ``pip freeze`` you'll see the correct version), but it does
+happen sometimes that older versions of various libraries are still around.
+
+The easiest way to resolve this issue is by uninstalling ``all`` versions of
+said dependency and reinstalling Cuckoo. In the case presented above, with
+``HTTPReplay``, this may look as follows::
+
+    $ sudo pip uninstall httpreplay
+    Uninstalling HTTPReplay-0.1.17:
+    /usr/local/bin/httpreplay
+    /usr/local/bin/pcap2mitm
+    /usr/local/lib/python2.7/dist-packages/HTTPReplay-0.1.17-py2.7.egg-info
+    ...
+    Proceed (y/n)? y
+    Successfully uninstalled HTTPReplay-0.1.17
+
+    $ sudo pip uninstall httpreplay
+    Uninstalling HTTPReplay-0.1.5:
+    /usr/local/lib/python2.7/dist-packages/HTTPReplay-0.1.5-py2.7.egg-info
+    Proceed (y/n)? y
+    Successfully uninstalled HTTPReplay-0.1.5
+
+    $ sudo pip uninstall httpreplay
+    Cannot uninstall requirement httpreplay, not installed
+
+Then reinstalling Cuckoo again is simply invoking ``pip install -U cuckoo`` or
+similar.
