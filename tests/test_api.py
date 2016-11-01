@@ -205,6 +205,15 @@ class TestAPI(object):
         }).data)
         assert len(r["tasks"]) == 2
 
+    def test_status(self):
+        # Create any temporary file, as long as the temporary directory is
+        # not empty. Tests bug fix where /cuckoo/status tries to remove the
+        # entire temporary directory.
+        Files.temp_put("")
+
+        r = self.app.get("/cuckoo/status")
+        assert r.status_code == 200
+
     def test_exit(self):
         assert self.app.get("/exit").status_code == 403
 

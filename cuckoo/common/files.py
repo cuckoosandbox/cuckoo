@@ -112,6 +112,7 @@ class Files(Storage):
         else:
             os.write(fd, content)
 
+        os.close(fd)
         return filepath
 
     @staticmethod

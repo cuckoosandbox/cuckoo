@@ -480,7 +480,6 @@ def cuckoo_status():
 
     # Now we remove the temporary file and its parent directory.
     os.unlink(temp_file)
-    os.rmdir(os.path.dirname(temp_file))
 
     # Get the CPU load.
     if hasattr(os, "getloadavg"):

@@ -171,6 +171,17 @@ class TestCreateFile:
         filepath = os.path.join(dirpath, "foo", "a.txt")
         assert open(filepath, "rb").read() == "bar"
 
+    def test_fd_exhaustion(self):
+        fd, filepath = tempfile.mkstemp()
+
+        for x in xrange(0x100):
+            Files.temp_put("foo")
+
+        fd2, filepath = tempfile.mkstemp()
+
+        # Let's leave a bit of working space.
+        assert fd2 - fd < 64
+
 class TestStorage:
     def test_basename(self):
         assert Storage.get_filename_from_path("C:\\a.txt") == "a.txt"
