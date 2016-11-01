@@ -17,7 +17,7 @@ install:
 
   - "python.exe setup.py develop"
   - "pip.exe install psycopg2 mysqlclient"
-  - "pip.exe install pytest pytest-cov responses==0.5.1"
+  - "pip.exe install pytest pytest-cov responses==0.5.1 flask-sqlalchemy==2.1"
 
 build: false
 

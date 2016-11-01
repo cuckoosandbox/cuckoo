@@ -105,7 +105,11 @@ def handle_node(instance):
             q = q.order_by(Task.priority.desc(), Task.id)
             tasks = q.limit(settings.threshold).all()
             for t in tasks:
-                t.task_id = submit_task(node.url, t.to_dict())
+                task_id = submit_task(node.url, t.to_dict())
+                if not task_id:
+                    continue
+
+                t.task_id = task_id
                 t.status = Task.PROCESSING
                 t.delegated = datetime.datetime.now()
 

@@ -140,5 +140,6 @@ setuptools.setup(
         "pytest",
         "pytest-cov",
         "responses==0.5.1",
+        "flask-sqlalchemy==2.1",
     ],
 )
