@@ -19,6 +19,11 @@ log = logging.getLogger(__name__)
 def scheduler():
     while True:
         for node in Node.query.filter_by(enabled=True, mode="normal").all():
+            # Check how many tasks have already been assigned for this node.
+            q = Task.query.filter_by(status=Task.ASSIGNED, node_id=node.id)
+            if q.count() >= settings.threshold:
+                continue
+
             # Fetch the status of this node.
             status = node_status(node.url)
             if not status:
