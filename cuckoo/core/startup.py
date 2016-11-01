@@ -188,20 +188,6 @@ def init_tasks():
     for task in db.list_tasks(status=TASK_PENDING, category="service"):
         db.set_status(task.id, TASK_FAILED_ANALYSIS)
 
-def delete_file(*rel_path):
-    filepath = cwd(*rel_path)
-    if not os.path.exists(filepath):
-        return
-
-    try:
-        os.unlink(filepath)
-    except Exception as e:
-        log.warning(
-            "Unable to remove old %s leftover file from before you updated "
-            "your Cuckoo setup to the latest version: %s.",
-            os.path.join(*rel_path), e
-        )
-
 def init_modules():
     """Initializes plugins."""
     log.debug("Imported modules...")
