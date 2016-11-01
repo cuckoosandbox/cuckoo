@@ -14,7 +14,7 @@ import os
 import time
 import sys
 
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
 
 try:
     from cuckoo.distributed.app import create_app
@@ -81,6 +81,14 @@ if os.environ.get("CUCKOO_APP") == "worker":
             "Please install Distributed Cuckoo dependencies (through "
             "`pip install cuckoo[distributed]`)"
         )
+
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
+
+    fh = logging.handlers.WatchedFileHandler(cwd("log", "distributed.log"))
+    fh.setFormatter(formatter)
+    logging.getLogger().addHandler(fh)
 
     # Create the Flask object and push its context so that we can reuse the
     # database connection throughout our script.
