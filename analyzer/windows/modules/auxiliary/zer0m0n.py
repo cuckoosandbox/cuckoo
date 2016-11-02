@@ -12,6 +12,7 @@ import _winreg
 from lib.api.process import subprocess_checkcall
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import NTDLL, UNICODE_STRING
+from lib.common.exceptions import CuckooError
 from lib.common.rand import random_string
 from lib.common.registry import set_regkey, del_regkey
 
@@ -98,4 +99,8 @@ class LoadZer0m0n(Auxiliary):
         us.Length = len(regkey) * 2
         us.MaximumLength = us.Length
 
-        NTDLL.NtLoadDriver(ctypes.byref(us))
+        status = NTDLL.NtLoadDriver(ctypes.byref(us)) % 2**32
+        if status:
+            raise CuckooError(
+                "Unable to load the zer0m0n driver: 0x%x" % status
+            )
