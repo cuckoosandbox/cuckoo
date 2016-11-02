@@ -47,7 +47,7 @@ What do I need to use Cuckoo with VMware ESXi?
 ----------------------------------------------
 
 To run with VMware vSphere Hypervisor (or ESXi) Cuckoo leverages libvirt.
-Libivirt is currently using the VMware API to take control over virtual machines,
+Libvirt is currently using the VMware API to take control over virtual machines,
 though these APIs are available only in the licensed version.
 In VMware vSphere free edition, these APIs are read only, so you are unable
 to use Cuckoo with it.
