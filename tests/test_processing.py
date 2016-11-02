@@ -45,3 +45,16 @@ class TestProcessing:
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+
+    def test_office(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "doc",
+            "target": "createproc1.docm",
+        })
+        s.file_path = "tests/files/createproc1.docm"
+        r = s.run()["office"]
+        assert "ThisDocument" in r["macros"][0]["orig_code"]
+        assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
+        assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]

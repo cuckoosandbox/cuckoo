@@ -139,7 +139,10 @@ setuptools.setup(
         "coveralls",
         "pytest",
         "pytest-cov",
-        "responses==0.5.1",
+        "pytest-django",
+        "pytest-pythonpath",
         "flask-sqlalchemy==2.1",
+        "mock==2.0.0",
+        "responses==0.5.1",
     ],
 )
