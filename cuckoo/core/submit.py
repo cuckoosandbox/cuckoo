@@ -54,7 +54,7 @@ class SubmitManager(object):
                     continue
 
                 try:
-                    _url = validate_url(line)
+                    _url = validate_url(line, schemes=self._submit_urlschemes)
                     _hash = validate_hash(line)
 
                     if _url:
@@ -158,6 +158,7 @@ class SubmitManager(object):
     def submit(submit_id, selected_files, timeout=0, package="", options="",
                priority=1, custom="", owner="", machine="", platform="",
                tags=None, memory=False, enforce_timeout=False, **kwargs):
+        """Creates tasks, returns a list of `Task` id's"""
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
 

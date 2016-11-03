@@ -80,7 +80,8 @@ def validate_url(url, schemes=None):
     val = URLValidator(schemes=schemes)
 
     try:
-        return val(url)
+        val(url)
+        return True
     except:
         return
 
