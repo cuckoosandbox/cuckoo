@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import ntpath
 import shutil
 import tempfile
 
@@ -107,7 +108,7 @@ class TestSubmitManager(object):
         assert tasks[1] == 2
 
         for task_id in tasks:
-            url = self.urls[task_id]
+            url = self.urls[task_id - 1]
             view_task = self.d.view_task(task_id=task_id, details=True)
 
             assert view_task.target == url
@@ -155,12 +156,12 @@ class TestSubmitManager(object):
         assert tasks[0] == 1
 
         for task_id in tasks:
-            url = self.files[task_id]
+            f = self.files[task_id - 1]
             view_task = self.d.view_task(task_id=task_id, details=True)
 
-            assert view_task.target == url
+            assert view_task.target.endswith(ntpath.basename(f["name"]))
             assert view_task.status == "pending"
-            assert view_task.package == None
+            assert view_task.package is None
             assert view_task.priority == 2
             assert view_task.memory is False
             assert view_task.id == task_id
