@@ -41,18 +41,32 @@
 <!-- <link href="{% static "css/style.css" %}" rel="stylesheet"> -->
 <!-- <link href="{% static "css/analysis_sidebar.css" %}" rel="stylesheet"> -->
 
+
 {% if request.COOKIES.theme == "night" %}
     <link href="{% static "js/jstree/night/style.min.css" %}" rel="stylesheet">
     <link href="{% static "css/night.css" %}" rel="stylesheet">
 {% elif request.COOKIES.theme == "cyborg" %}
     <link href="{% static "js/jstree/default/style.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/cyborg.css" %}" rel="stylesheet">
+    <!-- <link href="{% static "css/cyborg.css" %}" rel="stylesheet"> -->
 {% endif %}
+
+
 
 <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
 </head>
-<body>
+
+
+<body
+    
+    {% if request.COOKIES.theme == "night" %}
+        class="night"
+    {% elif request.COOKIES.theme == "cyborg" %}
+        class="cyborg"
+    {% endif %}
+
+>
+
 <header>
     <nav class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
         <div class="navbar-header">

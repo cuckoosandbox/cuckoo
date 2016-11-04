@@ -1,15 +1,13 @@
 body[data-theme="cyborg"],
 body.cyborg {
 
+	color: #d7d7d7;
+	background-color: #020e10;
+
 	/* random */
 
 	html {
 	    background: transparent;
-	}
-
-	body {
-	    color: #d7d7d7;
-	    background-color: #020e10;
 	}
 
 	hr {
@@ -1758,8 +1756,12 @@ body.cyborg {
 	}
 
 	div.loading {
-	    background-color: dimgrey;
+	    // background-color: dimgrey;
 	    border-color: grey;
+
+	    .spinner > div {
+	    	background-color: dimgrey;
+	    }
 	}
 
 	.nav-pills > li.active > a, .nav-pills > li.active > a:focus, .nav-pills > li.active > a:hover {
@@ -1903,6 +1905,10 @@ body.cyborg {
 
 	.plotly>.svg-container rect.drag{
 	    pointer-events: none !important;
+	}
+
+	.cuckoo-errors .errors > li {
+		border-bottom: 1px solid #0f2b45;
 	}
 	
 }
