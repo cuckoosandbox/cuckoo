@@ -17,6 +17,14 @@ CUCKOO_CONF = """
 tmppath = /tmp
 """
 
+PROCESSING_CONF = """
+[virustotal]
+enabled = yes
+timeout = 60
+scan = 0
+key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
+"""
+
 class TestSubmitManager(object):
     def setup(self):
         self.dirpath = tempfile.mkdtemp()
@@ -27,6 +35,7 @@ class TestSubmitManager(object):
 
         Folders.create(self.dirpath, "conf")
         Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
+        Files.create(self.dirpath, "conf/processing.conf", PROCESSING_CONF)
 
         from cuckoo.core.submit import SubmitManager
         self.submit_manager = SubmitManager()
@@ -34,6 +43,10 @@ class TestSubmitManager(object):
         self.urls = [
             "http://theguardian.com/",
             "https://news.ycombinator.com/"
+        ]
+
+        self.hashes = [
+            "ba78410702f0cc8453da1afbb2a8b670"
         ]
 
         self.files = [{
@@ -69,6 +82,20 @@ class TestSubmitManager(object):
 
         for obj in submit.data["data"]:
             assert obj["type"] == "url"
+
+    def test_pre_hash(self):
+        """Tests the submission of a VirusTotal hash"""
+        assert self.submit_manager.pre(
+            submit_type="strings",
+            files=self.hashes
+        ) == 1
+
+        submit = self.d.view_submit(1)
+        assert isinstance(submit.data["data"], list)
+        assert len(submit.data["data"]) == 1
+
+        for obj in submit.data["data"]:
+            assert obj["type"] == "file"
 
     def test_pre_url_submit(self):
         """

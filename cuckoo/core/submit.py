@@ -3,15 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import re
 import os
 import logging
-import requests
 
 from cuckoo.core.database import Database, Submit
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
 from cuckoo.common.utils import validate_url, validate_hash
+from cuckoo.common.virustotal import VirusTotalAPI
 
 from sflock import unpack
 
@@ -65,8 +64,19 @@ class SubmitManager(object):
 
                         continue
                     elif _hash:
-                        file_name = VirusTotal().fetch(file_hash=line)
-                        file_path = Files.create(path_tmp, line, file_name)
+                        vt = _cfg.get("virustotal")
+                        vt_api_key = vt["key"]
+                        vt_timeout = vt["timeout"]
+                        vt_scan = vt["scan"]
+
+                        vt_api = VirusTotalAPI(
+                            apikey=vt_api_key,
+                            timeout=vt_timeout,
+                            scan=vt_scan
+                        )
+
+                        file_data = vt_api.hash_fetch(file_hash=_hash)
+                        file_path = Files.create(path_tmp, _hash, file_data)
 
                         data["data"].append({
                             "type": "file",
@@ -236,33 +246,3 @@ class SubmitManager(object):
             ))
 
         return ret
-
-
-class VirusTotal:
-    global _cfg
-
-    def __init__(self, api_version="v2"):
-        self._apikey = _cfg.virustotal.key
-        self._version = api_version
-        self._endpoints = {
-            "v2": {
-                "endpoint": "https://www.virustotal.com/vtapi/v2/file/download"
-            }
-        }
-
-    def fetch(self, file_hash):
-        invalid_hash = re.search("[^\\w]+", file_hash)
-        if invalid_hash:
-            raise Exception("bad character \"%s\"" % invalid_hash.group(0))
-
-        if self._version == "v2":
-            resp = requests.get(self._endpoints[self._version]["endpoint"], timeout=60, params={
-                "apikey": self._apikey,
-                "hash": file_hash
-            })
-            if resp.status_code == 403:
-                raise Exception("VirusTotal permission denied (403) - bad api key?")
-            if not resp.status_code == 200:
-                raise Exception("Hash not found")
-            #TODO check for content-type 'stream'
-            return resp.content
