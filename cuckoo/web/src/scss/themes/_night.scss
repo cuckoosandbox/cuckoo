@@ -2,11 +2,8 @@ body[data-theme="night"],
 body.night {
     
     /* random */
-
-    body {
-        color: #d7d7d7;
-        background: linear-gradient(#313131, #3c3c3c);
-    }
+    color: #d7d7d7;
+    background: linear-gradient(#313131, #3c3c3c);
 
     hr {
         border-top: 1px solid #434343;
@@ -1696,8 +1693,11 @@ body.night {
     }
 
     div.loading {
-        background-color: dimgrey;
-        border-color: grey;
+        // border-color: grey;
+
+        .spinner > div {
+            background-color: dimgrey;
+        }
     }
 
     .nav-pills > li.active > a, .nav-pills > li.active > a:focus, .nav-pills > li.active > a:hover {
@@ -1838,6 +1838,12 @@ body.night {
 
     .plotly>.svg-container rect.drag{
         pointer-events: none !important;
+    }
+
+    .cuckoo-errors {
+        .errors > li {
+            border-color: #434343;
+        }
     }
 
 }
