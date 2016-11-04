@@ -9,6 +9,7 @@ import _winreg
 
 from lib.common.abstracts import Auxiliary
 from lib.common.registry import set_regkey
+from lib.common.results import upload_to_host
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +34,13 @@ class DbgView(Auxiliary):
             "", _winreg.REG_DWORD, 0xffffffff
         )
 
+        self.filepath = os.path.join(self.analyzer.path, "bin", "dbgview.log")
+
         # Accept the EULA and enable Kernel Capture.
-        subprocess.Popen([dbgview_path, "/accepteula", "/k"])
+        subprocess.Popen([
+            dbgview_path, "/accepteula", "/k", "/l", self.filepath,
+        ])
         log.info("Successfully started DbgView.")
+
+    def stop(self):
+        upload_to_host(self.filepath, os.path.join("logs", "dbgview.log"))

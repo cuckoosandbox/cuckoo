@@ -36,7 +36,7 @@ class Debug(Processing):
         @return: debug information dict.
         """
         self.key = "debug"
-        debug = {"log": [], "cuckoo": [], "errors": []}
+        debug = {"log": [], "cuckoo": [], "errors": [], "dbgview": []}
 
         if os.path.exists(self.log_path):
             try:
@@ -51,6 +51,15 @@ class Debug(Processing):
 
         if os.path.exists(self.cuckoolog_path):
             debug["cuckoo"] = Logfile(self.cuckoolog_path)
+
+        dbgview_log = os.path.join(self.analysis_path, "logs", "dbgview.log")
+        if os.path.exists(dbgview_log):
+            f = open(dbgview_log, "rb")
+            # Ignore the first line which identifies the machine.
+            f.readline()
+            for line in f:
+                idx, time, message = line.split(None, 2)
+                debug["dbgview"].append(message)
 
         for error in Database().view_errors(int(self.task["id"])):
             debug["errors"].append(error.message)
