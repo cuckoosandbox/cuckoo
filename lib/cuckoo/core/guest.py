@@ -326,8 +326,13 @@ class GuestManager(object):
         directory in the systemdrive, i.e., C:\\."""
         systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
 
-        r = self.post("/mkdtemp", data={"dirpath": systemdrive})
-        self.analyzer_path = r.json()["dirpath"]
+        if self.options.get("analpath"):
+            dirpath = "%s\\%s" % (systemdrive, self.options["analpath"])
+            r = self.post("/mkdir", data={"dirpath": dirpath})
+            self.analyzer_path = dirpath
+        else:
+            r = self.post("/mkdtemp", data={"dirpath": systemdrive})
+            self.analyzer_path = r.json()["dirpath"]
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
