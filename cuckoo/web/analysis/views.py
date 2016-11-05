@@ -11,6 +11,7 @@ import zipfile
 
 from cStringIO import StringIO
 
+import sflock
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -28,6 +29,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
+from cuckoo.web.bin.utils import view_error
 
 from bin.utils import view_error
 
@@ -662,10 +664,15 @@ def import_analysis(request):
         info = analysis_info.get("info", {})
 
         if category == "file":
-            binary = Files.temp_named_put(zf.read("binary"), "binary")
-            tmp_path = "%s/%s" % (binary, zf.filename)
+            tmp_path = Files.temp_named_put(zf.read("binary"), "binary")
 
             if os.path.isfile(tmp_path):
+                if not info.get("package"):
+                    unpack = sflock.unpack(filename="binary",
+                                           filepath="",
+                                           contents=zf.read("binary"))
+                    info["package"] = unpack.package
+
                 task_id = db.add_path(file_path=tmp_path,
                                       package=info.get("package"),
                                       timeout=0,
@@ -706,7 +713,10 @@ def import_analysis(request):
         analysis_path = cwd("storage", "analyses", "%d" % task_id)
 
         if not os.path.exists(analysis_path):
-            os.mkdir(analysis_path)
+            try:
+                os.mkdir(analysis_path)
+            except OSError as e:
+                return view_error(request, "Error: path \"%s\" could not be created" % analysis_path)
 
         zf.extractall(analysis_path)
 
