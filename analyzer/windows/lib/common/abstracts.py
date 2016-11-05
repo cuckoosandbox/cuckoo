@@ -141,6 +141,11 @@ class Package(object):
         """
         dll = self.options.get("dll")
         free = self.options.get("free")
+        analysis = self.options.get("analysis")
+
+        # Kernel analysis overrides the free argument.
+        if analysis == "kernel":
+            free = True
 
         source = source or self.options.get("from")
         mode = mode or self.options.get("mode")

@@ -88,6 +88,21 @@ BM_CLICK                  = 0x000000F5
 
 SHARD_PATHA               = 0x00000002
 
+GENERIC_READ              = 0x80000000
+GENERIC_WRITE             = 0x40000000
+GENERIC_EXECUTE           = 0x20000000
+GENERIC_ALL               = 0x10000000
+
+FILE_SHARE_READ           = 0x00000001
+FILE_SHARE_WRITE          = 0x00000002
+FILE_SHARE_DELETE         = 0x00000004
+
+CREATE_NEW                = 1
+CREATE_ALWAYS             = 2
+OPEN_EXISTING             = 3
+OPEN_ALWAYS               = 4
+TRUNCATE_EXISTING         = 5
+
 class STARTUPINFO(Structure):
     _fields_ = [
         ("cb",            DWORD),

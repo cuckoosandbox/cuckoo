@@ -13,8 +13,8 @@ from lib.api.process import subprocess_checkcall
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import NTDLL, UNICODE_STRING
 from lib.common.exceptions import CuckooError
-from lib.common.rand import random_string
 from lib.common.registry import set_regkey, del_regkey
+from lib.core.ioctl import driver_name as random_name
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +46,6 @@ class LoadZer0m0n(Auxiliary):
         # Disable the Program Compability Assistant (which would otherwise
         # show an annoying popup about our kernel driver not being signed).
         subprocess_checkcall(["sc", "stop", "PcaSvc"])
-
-        random_name = random_string(16)
 
         shutil.copy(
             os.path.join("bin", driver_name),
