@@ -2,6 +2,7 @@
     section#static_analysis pre{
         background-color: transparent;
         border: 0 solid #ccc;
+        border-radius: 0;
         margin: 0 0 0;
         padding: 0;
         display: flex;
@@ -13,13 +14,11 @@
     }
 
     section#static_analysis pre code{
-        padding: 14px;
-        padding-top: 0px;
+        padding: 6px 14px 14px;
         width: 100%;
         background-color: white;
         font-size:12px;
-        margin: 10px;
-        margin-top: 20px;
+        margin: 20px 10px 10px;
     }
 
     section#static_analysis .panel-body h4{
@@ -34,23 +33,25 @@
         {% if js.javascript %}
             {% for code in js.javascript %}
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel" id="accordion">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <label class=accordion-toggle">Javascript</label>
-                                </div>
+                    <div class="col-md-12">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                Javascript <small>(original / beautified)</small>
+                            </div>
 
-                                <div id="options" class="panel-collapse collapse in" style="text-align: left;">
-                                    <div class="panel-body">
-                                        <div class="col-md-12">
-                                            <pre>
-                                                <code class="js">{{ code.orig_code }}</code>
-                                            </pre>
-                                        </div>
+                            <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                                <div class="panel-body">
+                                    <div class="col-md-5" style="padding-right:0;">
+                                        <pre>
+                                            <code class="js">{{ code.orig_code }}</code>
+                                        </pre>
+                                    </div>
+                                    <div class="col-md-7" style="padding-left:0;border-left: 1px solid #d4d4d4;">
+                                        <pre>
+                                            <code class="js">{{ code.beautified }}</code>
+                                        </pre>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>

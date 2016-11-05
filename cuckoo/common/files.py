@@ -121,6 +121,7 @@ class Files(Storage):
         @param content: the content of this file
         @param filename: filename that the file should have
         @param path: directory path to store the file
+        @return: full path to the temporary file
         """
         # Create temporary directory path.
         if path:
