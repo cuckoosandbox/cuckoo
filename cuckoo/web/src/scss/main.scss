@@ -1,0 +1,44 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// import variables and mixins files [exposed globally]
+@import "variables";
+@import "mixins";
+
+// general css on the body and the html
+html { background: #1c1c1c; }
+body { padding-top: 70px; }
+
+// layout utils
+@import "layout/typography";
+@import "layout/app";
+@import "layout/badges";
+
+// components
+@import "components/analysis-sidebar";
+@import "components/network-http-request";
+@import "components/dndupload";
+@import "components/nav";
+@import "components/navbar";
+@import "components/panel";
+@import "components/tcp";
+@import "components/page-error";
+@import "components/recent-analysis";
+@import "components/loading";
+@import "components/cuckoo-box";
+@import "components/errors";
+@import "components/footer";
+
+// custom plugin css overrides
+@import "plugins/jstree";
+@import "plugins/data-tables";
+
+// responsive at last - responsive code OVERRIDES defaults always
+@import "layout/responsive";
+
+// imports all the themes
+@import "themes/cyborg";
+@import "themes/night";

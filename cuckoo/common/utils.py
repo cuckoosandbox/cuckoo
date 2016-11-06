@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
 import bs4
 import chardet
 import jsbeautifier
@@ -20,6 +21,9 @@ import warnings
 
 from cStringIO import StringIO
 from datetime import datetime
+
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
@@ -57,6 +61,29 @@ def convert_to_printable(s):
     if is_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
+
+def validate_hash(hash):
+    """Validates a hash by length and contents"""
+    if len(hash) not in (32, 40, 64, 128):
+        return
+
+    _hash = "".join([char for char in hash if re.match(r'\w', char)])
+
+    if not _hash:
+        return
+
+    return _hash
+
+def validate_url(url, schemes=None):
+    """Validates an URL using Django's built-in URL validator"""
+
+    val = URLValidator(schemes=schemes)
+
+    try:
+        val(url)
+        return True
+    except:
+        return
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.

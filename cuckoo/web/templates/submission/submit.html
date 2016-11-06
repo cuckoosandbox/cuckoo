@@ -112,9 +112,11 @@
 
                 CuckooWeb.api_post("/submit/api/presubmit", {
                     "data": urls,
-                    "type": "url"
+                    "type": "strings"
                 }, function (data) {
-                    console.log(data);
+                    CuckooWeb.redirect("/submit/pre/" + data.submit_id);
+                }, function(data){
+                    console.log("err: " + data);
                 })
             });
 

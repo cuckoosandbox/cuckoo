@@ -24,6 +24,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker, relationship, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy_utils import JSONType
 
 Base = declarative_base()
 
@@ -184,11 +185,14 @@ class Submit(Base):
     __tablename__ = "submit"
 
     id = Column(Integer(), primary_key=True)
-    path = Column(String(256), nullable=False)
+    tmp_path = Column(String(), nullable=False)
     added = Column(DateTime, nullable=False, default=datetime.utcnow)
+    submit_type = Column(String(16), nullable=False)  # "file", "virustotal" or "url"
+    data = Column(JSONType)
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, tmp_path, submit_type):
+        self.tmp_path = tmp_path
+        self.submit_type = submit_type
 
 class Sample(Base):
     """Submitted files details."""
@@ -934,6 +938,7 @@ class Database(object):
         @param clock: virtual machine clock time
         @return: cursor or None.
         """
+        # TODO: parameter `package` is not mentioned in the function docstring
         session = self.Session()
 
         # Convert empty strings and None values to a valid int
@@ -987,10 +992,9 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
 
-        # Deal with tags format (i.e., foo,bar,baz)
         if tags:
-            for tag in tags.split(","):
-                tag = self._get_or_create(session, Tag, name=tag.strip())
+            for tag in [t.strip() for t in tags.split(",") if t]:
+                tag = self._get_or_create(session, Tag, name=tag)
                 task.tags.append(tag)
 
         if clock:
@@ -1163,9 +1167,9 @@ class Database(object):
                         memory, enforce_timeout, clock, "file")
 
     @classlock
-    def add_submit(self, path):
+    def add_submit(self, tmp_path, submit_type):
         session = self.Session()
-        submit = Submit(path=path)
+        submit = Submit(tmp_path=tmp_path, submit_type=submit_type)
         submit_id = None
         session.add(submit)
 

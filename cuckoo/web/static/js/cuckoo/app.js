@@ -67,13 +67,57 @@ var CuckooWeb = function () {
                 }
             });
         }
+    }, {
+        key: 'getFormattedDate',
+        value: function getFormattedDate(jsondate) {
+            var date = new Date(jsondate);
+
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            var hour = date.getHours();
+            var min = date.getMinutes();
+            var sec = date.getSeconds();
+
+            month = (month < 10 ? "0" : "") + month;
+            day = (day < 10 ? "0" : "") + day;
+            hour = (hour < 10 ? "0" : "") + hour;
+            min = (min < 10 ? "0" : "") + min;
+            sec = (sec < 10 ? "0" : "") + sec;
+
+            return date.getFullYear() + "-" + month + "-" + day + " " + hour + ":" + min;
+        }
+    }, {
+        key: 'redirect',
+        value: function redirect(location) {
+            window.location.href = location;
+        }
     }]);
 
     return CuckooWeb;
 }();
 
 $(document).ready(function () {
+
     $("[data-toggle=popover]").popover();
+
+    // INTERACTION FOR CUCKOO ERRORS
+    $(".cuckoo-errors #errors").on('shown.bs.collapse', function (e) {
+        $(".cuckoo-errors [data-toggle='collapse']").text('hide');
+    }).on('hidden.bs.collapse', function () {
+        $(".cuckoo-errors [data-toggle='collapse']").text('show');
+    });
+
+    $(".cuckoo-errors .expand-error").bind('click', function (e) {
+        e.preventDefault();
+
+        if ($(this).parent().hasClass('expanded')) {
+            $(this).attr('title', 'Expand error message');
+            $(this).parent().removeClass('expanded');
+        } else {
+            $(this).attr('title', 'Collapse error message');
+            $(this).parent().addClass('expanded');
+        }
+    });
 });
 
 function alertbox(msg, context, attr_id) {
@@ -89,5 +133,4 @@ function alertbox(msg, context, attr_id) {
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
-
 //# sourceMappingURL=app.js.map

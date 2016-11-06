@@ -11,10 +11,12 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from bin.utils import api_post, json_default_response, json_error_response
-from controllers.submission.submission import SubmissionController
+from cuckoo.core.database import Database
+from cuckoo.core.submit import SubmitManager
+from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 
 results_db = settings.MONGO
+db = Database()
 
 class SubmissionApi:
     @staticmethod
@@ -30,23 +32,43 @@ class SubmissionApi:
                     "name": f.name,
                     "data": f.file,
                 })
-            submit_type = "files"
+
+            submit_id = SubmitManager().pre(submit_type="files", files=data)
+            return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
             submit_type = body["type"]
 
-            if submit_type != "url" or "data" not in body:
-                return json_error_response("type not \"url\"")
+            if submit_type != "strings":
+                return json_error_response("type not \"strings\"")
 
             data = body["data"].split("\n")
 
-        if submit_type == "url" or submit_type == "files":
-            submit_id = SubmissionController.presubmit(
-                submit_type=submit_type, data=data
-            )
-            return redirect("submission/pre", submit_id=submit_id)
+            submit_id = SubmitManager().pre(submit_type=submit_type, files=data)
 
-        return json_error_response("submit failed")
+            return JsonResponse({
+                "status": True,
+                "submit_id": submit_id,
+            }, encoder=JsonSerialize)
+
+    @api_post
+    def get_files(request, body):
+        submit_id = body.get("submit_id", 0)
+        password = body.get("password", None)
+        astree = body.get("astree", True)
+
+        controller = SubmitManager()
+
+        data = controller.get_files(
+            submit_id=submit_id,
+            password=password,
+            astree=astree
+        )
+
+        return JsonResponse({
+            "status": True,
+            "data": data,
+        }, encoder=JsonSerialize)
 
     @api_post
     def submit(request, body):
@@ -61,7 +83,7 @@ class SubmissionApi:
 
         options = (
             "route", "package", "timeout", "options", "priority",
-            "custom", "tags",
+            "custom", "tags", "machine", "human"
         )
 
         for option in options:
@@ -90,23 +112,17 @@ class SubmissionApi:
                 else:
                     data["form"][checkbox] = False
 
-        # do something with `data`
-        controller = SubmissionController(submit_id=body["submit_id"])
-        tasks = controller.submit(data)
+        controller = SubmitManager()
+        options = data["form"].copy()
+        selected_files = data["selected_files"]
+
+        tasks = controller.submit(
+            submit_id=body["submit_id"],
+            selected_files=selected_files,
+            **options
+        )
 
         return JsonResponse({
             "status": True,
             "data": tasks,
-        }, encoder=json_default_response)
-
-    @api_post
-    def filetree(request, body):
-        submit_id = body.get("submit_id", 0)
-
-        controller = SubmissionController(submit_id=submit_id)
-        data = controller.get_files(astree=True)
-
-        return JsonResponse({
-            "status": True,
-            "data": data,
-        }, encoder=json_default_response)
+        }, encoder=JsonSerialize)

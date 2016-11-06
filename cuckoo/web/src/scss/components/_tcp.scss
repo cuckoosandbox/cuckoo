@@ -1,0 +1,38 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+/* tcp-flow.scss */
+.tcp {
+
+    &-flow {
+        list-style-type: none;
+
+        li {
+            margin-bottom: 20px;        
+        }
+    }
+
+    &-out pre {
+        padding: 0;
+        border: 0;
+        background-color: white;
+        color: #d9534f;
+    }
+
+    &-in {
+
+        padding-left: 100px;
+
+        pre {
+            padding: 0;
+            border: 0;
+            background-color: white;
+            color: #5bc0de;        
+        }
+
+    }
+
+}

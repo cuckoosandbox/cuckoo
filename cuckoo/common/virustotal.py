@@ -6,13 +6,18 @@
 import logging
 import re
 import requests
+from requests.exceptions import HTTPError
 
 # Disable requests/urllib3 debug & info messages.
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.utils import validate_hash
 from cuckoo.common.objects import File
+
+class VirusTotalError(CuckooOperationalError):
+    """VirusTotal operational error"""
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
@@ -24,6 +29,7 @@ class VirusTotalAPI(object):
     URL_REPORT = "https://www.virustotal.com/vtapi/v2/url/report"
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
+    HASH_DOWNLOAD = "https://www.virustotal.com/vtapi/v2/file/download"
 
     VARIANT_BLACKLIST = [
         "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
@@ -78,6 +84,19 @@ class VirusTotalAPI(object):
         except (requests.ConnectionError, ValueError) as e:
             raise CuckooOperationalError("Unable to fetch VirusTotal "
                                          "results: %r" % e.message)
+
+    def _request_hash(self, file_hash, **kwargs):
+        """Wrapper around requesting a hash."""
+        params = dict(hash=file_hash, apikey=self.apikey)
+
+        try:
+            r = requests.get(self.HASH_DOWNLOAD, params=params,
+                             timeout=self.timeout, **kwargs)
+            r.raise_for_status()  # raise an exception for HTTP error codes
+            return r.content
+        except (requests.ConnectionError, ValueError, HTTPError):
+            raise CuckooOperationalError("Could not fetch hash \"%s\" "
+                                         "from VirusTotal" % file_hash)
 
     def _get_report(self, url, resource, summary=False):
         """Fetch the report of a file or URL."""
@@ -148,6 +167,13 @@ class VirusTotalAPI(object):
         data = dict(apikey=self.apikey, url=url)
         r = self._request_json(self.URL_SCAN, data=data)
         return dict(summary=dict(permalink=r.get("permalink")))
+
+    def hash_fetch(self, file_hash):
+        file_hash = validate_hash(file_hash)
+        if not file_hash:
+            raise VirusTotalError("Invalid hash")
+
+        return self._request_hash(file_hash=file_hash)
 
     def file_scan(self, filepath):
         """Submit a file to be scanned.

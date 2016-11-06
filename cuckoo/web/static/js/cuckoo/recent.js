@@ -17,6 +17,7 @@ var Recent = function () {
         _classCallCheck(this, Recent);
 
         this.loading = false;
+        this.loader = new Loader($('.loading'));
         this.limit = 100;
         this.offset = 0;
         this.empty_results = false;
@@ -31,12 +32,10 @@ var Recent = function () {
     _createClass(Recent, [{
         key: "toggle_loading",
         value: function toggle_loading() {
-            if (this.loading) {
-                $(".loading").hide();
-                this.loading = false;
+            if (this.loader.loading) {
+                this.loader.stop();
             } else {
-                $(".loading").show();
-                this.loading = true;
+                this.loader.start();
             }
         }
     }, {
@@ -84,14 +83,14 @@ var Recent = function () {
 
             function cb(data) {
                 self.results_callback(data);
-                self.toggle_loading(self);
+                self.toggle_loading();
             }
 
             function beforesend() {
-                self.toggle_loading(self);
+                self.toggle_loading();
             }
 
-            CuckooWeb.api_post("api/recent/", params, cb, null, beforesend);
+            CuckooWeb.api_post("api/tasks/recent/", params, cb, null, beforesend);
         }
     }, {
         key: "load",
@@ -128,8 +127,8 @@ var Recent = function () {
                     var date_completed_on = "-";
                     var date_added_on = "-";
 
-                    if (analysis.hasOwnProperty("completed_on")) date_completed_on = Recent.getFormattedDate(analysis.completed_on);
-                    if (analysis.hasOwnProperty("added_on")) date_added_on = Recent.getFormattedDate(analysis.added_on);
+                    if (analysis.hasOwnProperty("completed_on")) date_completed_on = CuckooWeb.getFormattedDate(analysis.completed_on);
+                    if (analysis.hasOwnProperty("added_on")) date_added_on = CuckooWeb.getFormattedDate(analysis.added_on);
 
                     if (analysis.status == "reported" || analysis.status == "failed_analysis") {
                         html += "<a href=\"" + analysis.id + "/summary\"><span class=\"mono\">" + date_completed_on + "</span></a>";
@@ -192,28 +191,8 @@ var Recent = function () {
                 });
             }
         }
-    }], [{
-        key: "getFormattedDate",
-        value: function getFormattedDate(jsondate) {
-            var date = new Date(jsondate);
-
-            var month = date.getMonth() + 1;
-            var day = date.getDate();
-            var hour = date.getHours();
-            var min = date.getMinutes();
-            var sec = date.getSeconds();
-
-            month = (month < 10 ? "0" : "") + month;
-            day = (day < 10 ? "0" : "") + day;
-            hour = (hour < 10 ? "0" : "") + hour;
-            min = (min < 10 ? "0" : "") + min;
-            sec = (sec < 10 ? "0" : "") + sec;
-
-            return date.getFullYear() + "-" + month + "-" + day + " " + hour + ":" + min;
-        }
     }]);
 
     return Recent;
 }();
-
 //# sourceMappingURL=recent.js.map

@@ -10,17 +10,36 @@ from django.shortcuts import render
 
 from cuckoo.core.rooter import vpns
 from cuckoo.common.config import Config
-from cuckoo.core.database import Database
+from cuckoo.core.database import Database, Submit
 from cuckoo.misc import cwd
-
-from controllers.submission.submission import SubmissionController
+from cuckoo.web.bin.utils import view_error
 
 cfg = Config("routing")
 results_db = settings.MONGO
+db = Database()
 
 class SubmissionRoutes:
     @staticmethod
-    def index(request, kwargs={}):
+    def submit(request):
+        return render(request, "submission/submit.html")
+
+    @staticmethod
+    def postsubmit(request):
+        submit_ids = request.GET.getlist("id")
+        if not submit_ids:
+            return view_error(request, "No task ids specified")
+
+        return render(request, "submission/postsubmit.html", {
+            "submit_ids": submit_ids
+        })
+
+    @staticmethod
+    def presubmit(request, submit_id):
+        session = db.Session()
+        submit = session.query(Submit).filter(Submit.id == submit_id).first()
+        if not submit:
+            return render(request, "submission/presubmit.html", data={})
+
         files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 
         packages = []
@@ -49,22 +68,14 @@ class SubmissionRoutes:
         machines.insert(0, ("", "First available"))
         machines.insert(1, ("all", "All"))
 
-        values = {
+        data = {
             "packages": sorted(packages),
             "machines": machines,
             "vpns": vpns.values(),
             "route": cfg.routing.route,
             "internet": cfg.routing.internet,
+            "submit_id": submit_id,
+            "submit": submit
         }
 
-        values.update(kwargs)
-        return render(request, "submission/submit.html", values)
-
-    @staticmethod
-    def presubmit(request, submit_id):
-        controller = SubmissionController(submit_id=submit_id)
-        data = controller.get_files(astree=True)
-        return render(request, "submission/index.html", {
-            "file_data": data,
-            "submit_id": submit_id,
-        })
+        return render(request, "submission/presubmit.html", data)

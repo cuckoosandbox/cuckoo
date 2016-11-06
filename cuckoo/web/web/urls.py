@@ -19,7 +19,11 @@ urlpatterns = [
     url(r"^file/(?P<category>\w+)/(?P<object_id>\w+)/(?P<fetch>\w+)/$", analysis.views.file),
     url(r"^full_memory/(?P<analysis_number>\w+)/$", analysis.views.full_memory_dump_file),
     url(r"^dashboard/", include("dashboard.urls")),
-    url(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATICFILES_DIRS[0]})
+    url(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATICFILES_DIRS[0]}),
+    url(r"^files/", include("controllers.files.urls")),
+    url(r"^pcap/", include("controllers.pcap.urls")),
+    url(r"^machines/", include("controllers.pcap.urls")),
+    url(r"^cuckoo/", include("controllers.cuckoo.urls")),
 ]
 
 handler404 = web.errors.handler404

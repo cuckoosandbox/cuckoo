@@ -1,0 +1,29 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.jstree-default .jstree-node { min-height: 22px !important; line-height: 22px !important; }
+.jstree-anchor { line-height: 22px !important; height: 22px !important; }
+.jstree-default .jstree-icon:empty { width: 22px !important; height: 22px !important; line-height: 22px !important; }
+.jstree-default .jstree-wholerow { height: 22px; }
+.jstree-children, .jstree-grid-cell { font-size: inherit; }
+.jstree-grid-wrapper .jstree-grid-midwrapper .jstree-grid-column:last-child { width: 100% !important; }
+.jstree-default .jstree-icon { background-position-y: -6px !important; }
+.jstree-default .jstree-wholerow-clicked, .jstree-default .jstree-hovered,
+.jstree-default .jstree-clicked, .jstree-default .jstree-wholerow-hovered { background: transparent !important; box-shadow: none; }
+.jstree-grid-header-regular { text-align: center !important; margin-bottom: 21px !important; background-color: #f9f9f9; }
+.jstree-grid-wrapper {  padding-bottom: 20px !important; }
+.jstree-grid-midwrapper { background: url("/static/img/theme_default/table_bg_22px.png"); background-position-y: 2px; }
+.jstree-grid-cell { color: #929292; }
+.jstree-default.jstree-checkbox-selection .jstree-clicked>.jstree-checkbox, .jstree-default .jstree-checked>.jstree-checkbox { background-position: -228px -4px; }
+.jstree-default .jstree-clicked.jstree-grid-col-0, .jstree-default .jstree-checked { color: #4c4c4c; }
+a[filetree_duplicate=true] { color: red !important; }
+a.jstree-anchor[filetree_type=container] { color: #4c4c4c !important; }
+a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
+.jstree-grid-separator { border-width: 0 1px 0 0 !important; }
+.jstree-grid-resizable-separator { width: 2px !important; }
+.jstree-grid-header-cell { padding: 3px 10px 2px 10px !important; }
+.jstree-default .jstree-icon:empty { line-height: 21px !important; }
+.jstree-grid-cell span { padding-left: 8px; padding-right: 8px; }

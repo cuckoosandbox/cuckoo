@@ -1,3 +1,4 @@
+/* main.scss */
 html {
     background: #1c1c1c;
 }
@@ -5,6 +6,8 @@ body {
     padding-top: 70px;
     /*background: #ffffff url('/static/graphic/background.png') repeat-x;*/
 }
+
+/* responsive.scss */
 @media (max-width: 979px) {
     body {
         padding-top: 50px;
@@ -12,11 +15,15 @@ body {
     }
 }
 
+/* typography.scss */
 pre {
     font-stretch: ultra-condensed;
     font-family: Consolas, monaco, monospace;
     font-size: 0.8em;
 }
+
+
+/* footer.scss */
 footer {
     background: #292727;
     margin: 40px 0 0;
@@ -47,12 +54,16 @@ footer a:hover {
     color: #ccc;
     text-decoration: underline;
 }
+
+/* typography.scss */
 .center {
     text-align: center;
 }
 .mono {
     font-family: monospace;
 }
+
+/* app.scss */
 .content {
     background-color: white;
     padding: 40px;
@@ -89,6 +100,7 @@ input[readonly] {
     cursor: text !important;
 }
 
+/* nav.scss */
 .nav>li>a:hover {
     text-decoration: none;
     cursor:pointer;
@@ -105,61 +117,35 @@ input[readonly] {
     background-color: #eee;
 }
 
-.gray {
-    color: #666;
-}
+/* typography.scss */
+.gray { color: #666; }
+a.tag-label { color: white; }
+
+/* app.scss */
 .table-centered {
     margin: 0 auto !important;
     float: none !important;
 }
-.table-hover{
+.table-hover {
     cursor:pointer;
 }
-a.tag-label {
-    color: white;
-}
 
-.file {
-    background-color: #ffe3c5;
-}
-.registry {
-    background-color: #ffc5c5;
-}
-.process {
-    background-color: #c5e0ff;
-}
-.services {
-    background-color: #ccc5ff;
-}
-.device {
-    background-color: #ccc5ff;
-}
-.network {
-    background-color: #d3ffc5;
-}
-.synchronisation {
-    background-color: #f9c5ff;
-}
-.system {
-    background-color: #fffcc5;
-}
-.windows {
-    background-color: #ffc5ee;
-}
-.iexplore {
-    background-color: #ccddbb;
-}
-.office {
-    background-color: #ccddbb;
-}
-.pdf {
-    background-color: #ccddbb;
-}
-.page-header {
-    margin-bottom: 10px;
-}
+/* badges.scss */
+.file { background-color: #ffe3c5; }
+.registry { background-color: #ffc5c5; }
+.process { background-color: #c5e0ff; }
+.services { background-color: #ccc5ff; }
+.device { background-color: #ccc5ff; }
+.network { background-color: #d3ffc5; }
+.synchronisation { background-color: #f9c5ff; }
+.system { background-color: #fffcc5; }
+.windows { background-color: #ffc5ee; }
+.iexplore { background-color: #ccddbb; }
+.office { background-color: #ccddbb; }
+.pdf { background-color: #ccddbb; }
+.page-header { margin-bottom: 10px; }
 
-/* Fix the icon tab override */
+/* Fix the icon tab override - app.scss */
 .nav-tabs > .active > a > [class^="icon-"],.nav-tabs>.active>a>[class*=" icon-"] { background-image:url("../img/glyphicons-halflings.png") !important; }
 
 td {
@@ -174,6 +160,7 @@ td {
     background-color: #d9edf7;
 }
 
+/* tcp.scss */
 .tcp-flow {
     list-style-type: none;
 }
@@ -198,9 +185,12 @@ td {
     color: #5bc0de;
 }
 
+/* app.scss */
 .break-everywhere {
     word-break: break-all;
 }
+
+/* navbar.scss */
 .navbar-brand,
 .navbar-nav li a {
     line-height: 40px;
@@ -219,6 +209,7 @@ td {
 
 
 /* datatables override */
+/* data-tables.scss */
 .dataTables_paginate .pagination>li>a{
     margin-top: 20px;
     padding: 3px 10px;
@@ -241,6 +232,7 @@ td {
     width: inherit !important;
 }
 
+/* app.scss */
 table>tbody>tr>td{
     padding-top: 6px !important;
     padding-bottom: 6px !important;
@@ -251,6 +243,7 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
     word-break: break-all;
 }
 
+/* badges.scss */
 .dns_badge_container{
     min-width: 60px;
     float: left;
@@ -265,6 +258,7 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
     font-size: 12px;
 }
 
+/* panel.scss */
 .panel {
     border: 1px solid #d0d0d0;
 }
@@ -286,11 +280,13 @@ table#network_dns>tbody>tr>td:nth-child(2)>a{
     margin-top: 6px;
 }
 
+/* app.scss */
 section#screenshots .minified{
     overflow: hidden;
     max-height: 278px;
 }
 
+/* data-tables.scss */
 .dataTables_paginate .pagination>.active>a {
     z-index: 2;
     color: #fff;
@@ -313,10 +309,6 @@ div.dataTables_wrapper div.dataTables_filter input {
 div.dataTables_wrapper div.dataTables_filter label {
     text-align: right;
     padding-top: 4px;
-}
-
-table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child, table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child {
-
 }
 
 table#network_dns, table#network_hosts{
@@ -345,7 +337,7 @@ section#domains .dataTables_filter, section#hosts .dataTables_filter{
     padding-top: 18px;
 }
 
-
+/* cuckoo-box.scss */
 .cuckoo-box div {
   clear: both;
   overflow: hidden;
@@ -460,7 +452,7 @@ section#domains .dataTables_filter, section#hosts .dataTables_filter{
     margin-right: 10px;
 }
 
-/* recent analysis page */
+/* recent-analysis.scss */
 #recent_analysis div.nav_container {
     margin-bottom: 30px;
     border-bottom: 1px solid #ddd;
@@ -548,6 +540,7 @@ section#domains .dataTables_filter, section#hosts .dataTables_filter{
     border-left:0;
 }
 
+/* loading.scss */
 div.loading{
     background-color: white;
     width:100px;
@@ -568,6 +561,7 @@ div.loading>img{
     margin-top: 4px;
 }
 
+/* recent-analysis.scss */
 #recent_analysis div#no_more_results{
     display: none;
 }
@@ -623,6 +617,7 @@ div.loading>img{
 }
 
 /* dndupload.js */
+/* dndupload.scss */
 .dndupload {
     margin: 0px auto;
     background-color: transparent;
@@ -691,6 +686,7 @@ div.loading>img{
 .dndupload .hidden { display: none !important;}
 
 /* filetree.js */
+/* jstree.scss */
 .jstree-default .jstree-node { min-height: 22px !important; line-height: 22px !important; }
 .jstree-anchor { line-height: 22px !important; height: 22px !important; }
 .jstree-default .jstree-icon:empty { width: 22px !important; height: 22px !important; line-height: 22px !important; }
@@ -716,6 +712,7 @@ a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
 .jstree-grid-cell span { padding-left: 8px; padding-right: 8px; }
 
 /* analysis/network/http */
+/* network-http-request.scss */
 .network_http_request{
     border: 1px solid #d0d0d0;
 }
@@ -755,10 +752,6 @@ a.jstree-grid-col-0.highlight{ text-decoration: underline !important; }
 .network_http_request pre{
     border-radius: 0px;
 }
-/*.network_http_request #body pre{*/
-    /*max-height: 104px;*/
-    /*overflow: hidden;*/
-/*}*/
 .network_http_request #body pre.collapse {
     max-height: none !important;
     overflow: visible !important;

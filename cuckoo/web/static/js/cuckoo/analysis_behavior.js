@@ -45,7 +45,7 @@ var SummaryBehaviorDetail = function () {
 
             var self = this;
 
-            CuckooWeb.api_post("/analysis/api/behavior_get_watcher/", params, function (data) {
+            CuckooWeb.api_post("/analysis/api/task/behavior_get_watcher/", params, function (data) {
                 self.start_cb(data, self);
             });
         }
@@ -144,6 +144,7 @@ var SummaryBehaviorController = function () {
         this.pname = pname;
         this.pid = pid;
         this.loading = false;
+        this.loader = new Loader($(".loading"));
 
         this.behavioral_details = [];
     }
@@ -154,7 +155,7 @@ var SummaryBehaviorController = function () {
             var params = { "task_id": this.task_id, "pid": this.pid };
             var self = this;
 
-            CuckooWeb.api_post("/analysis/api/behavior_get_watchers/", params, function (data) {
+            CuckooWeb.api_post("/analysis/api/task/behavior_get_watchers/", params, function (data) {
                 self.start_cb(data, self);
             });
         }
@@ -177,17 +178,10 @@ var SummaryBehaviorController = function () {
     }], [{
         key: "toggle_loading",
         value: function toggle_loading() {
-            if (this.loading) {
-                $(".loading").hide();
-                this.loading = false;
-            } else {
-                $(".loading").show();
-                this.loading = true;
-            }
+            this.loader.toggle();
         }
     }]);
 
     return SummaryBehaviorController;
 }();
-
 //# sourceMappingURL=analysis_behavior.js.map

@@ -13,7 +13,9 @@
         var recent;
 
         $(document).ready(function() {
+            
             $('body').on('click', 'div.nav_container>div', function() {
+
                 var btn_id = $(this).find("a").attr("data-filter");
                 var btn_active = $(this).attr('class');
                 var btn_categories = ["cat_files", "cat_urls"];
@@ -64,12 +66,13 @@
         });
     </script>
 
-    <div class="loading"><img src="/static/img/loading.gif"/></div>
-
     <div id="recent_analysis">
+
         <div class="nav_container" style="margin-bottom:30px;">
+            <div></div>
             <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
             <div id="item"><a href="#" data-filter="cat_urls">URLs</a></div>
+            <div id="item" class="item-spacer"></div>
             <div id="item"><a href="#" data-filter="score_0-4">Score 0 - 4</a></div>
             <div id="item"><a href="#" data-filter="score_4-7">Score 4 - 7</a></div>
             <div id="item"><a href="#" data-filter="score_7-10">Score 7 - 10</a></div>
@@ -84,6 +87,9 @@
                         border-radius: 0px;
                     }
                 </style>
+
+                {% include "components/loader.html" %}
+
                 <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
                     <tbody>
 

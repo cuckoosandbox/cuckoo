@@ -1,0 +1,20 @@
+{% if submit.data.errors %}
+    <div class="cuckoo-errors">
+        <h4>
+            <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+            Errors
+            <small><a href="#errors" class="pull-right" data-toggle="collapse">Hide</a></small>
+        </h4>
+
+        <p>Some of the submitted data could not be processed.</p>
+
+        <ul class="errors collapse in" id="errors">
+            {% for error in submit.data.errors %}
+                <li class="error">
+                    <p class="text-danger">{{ error }}</p>
+                    <a href="#" class="expand-error" title="Expand error message"><i class="fa fa-expand"></i> <span>click to expand / collapse this error</span></a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

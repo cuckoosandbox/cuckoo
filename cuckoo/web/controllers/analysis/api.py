@@ -7,21 +7,247 @@ import os
 import pymongo
 import calendar
 from datetime import datetime, timedelta
+from StringIO import StringIO
+import tarfile
+from zipfile import ZipFile, ZIP_STORED
 
 import dateutil.relativedelta
+from wsgiref.util import FileWrapper
 from sqlalchemy import asc
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
-from cuckoo.core.database import Database, Task
-from bin.utils import api_post, json_error_response
+from cuckoo.misc import cwd
+from cuckoo.core.database import Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
+from cuckoo.common.files import Folders
+
+from bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
 from controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
+db = Database()
 
 class AnalysisApi:
     @api_post
-    def recent(request, body):
+    def tasks_list(request, body):
+        completed_after = body.get("completed_after")
+        if completed_after:
+            completed_after = datetime.fromtimestamp(int(completed_after))
+
+        data = {
+            "tasks": []
+        }
+
+        limit = body.get("limit")
+        offset = body.get("offset")
+        owner = body.get("owner")
+        status = body.get("status")
+
+        for row in db.list_tasks(limit=limit, details=True, offset=offset,
+                                 completed_after=completed_after, owner=owner,
+                                 status=status, order_by=Task.completed_on.asc()):
+            task = row.to_dict()
+
+            # Sanitize the target in case it contains non-ASCII characters as we
+            # can't pass along an encoding to flask's jsonify().
+            task["target"] = task["target"].decode("latin-1")
+
+            task["guest"] = {}
+            if row.guest:
+                task["guest"] = row.guest.to_dict()
+
+            task["errors"] = []
+            for error in row.errors:
+                task["errors"].append(error.message)
+
+            task["sample"] = {}
+            if row.sample_id:
+                sample = db.view_sample(row.sample_id)
+                task["sample"] = sample.to_dict()
+
+            data["tasks"].append(task)
+
+        return JsonResponse({"status": True, "data": data}, safe=False)
+
+    @api_get
+    def task_info(request, task_id):
+        try:
+            data = AnalysisController.task_info(task_id)
+            return JsonResponse({"status": True, "data": data}, safe=False)
+        except Exception as e:
+            return json_error_response(str(e))
+
+    @api_post
+    def tasks_info(request, body):
+        task_ids = body.get("task_ids", [])
+        data = {}
+
+        for task_id in task_ids:
+            task_info = AnalysisController.task_info(task_id)
+            data[task_info["task"]["id"]] = task_info["task"]
+
+        return JsonResponse({"status": True, "data": data}, safe=False)
+
+    @api_get
+    def task_delete(request, task_id):
+        """
+        Deletes a task
+        :param body: required: task_id
+        :return:
+        """
+        task = db.view_task(task_id)
+        if task:
+            if task.status == TASK_RUNNING:
+                return json_fatal_response("The task is currently being "
+                                           "processed, cannot delete")
+
+            if db.delete_task(task_id):
+                Folders.delete(os.path.join(cwd(), "storage",
+                                            "analyses", "%d" % task_id))
+            else:
+                return json_fatal_response("An error occurred while trying to "
+                                           "delete the task")
+        else:
+            return json_error_response("Task not found")
+
+        return JsonResponse({"status": True})
+
+    @api_get
+    def tasks_reschedule(request, task_id, priority=None):
+        """
+        Reschedules a task
+        :param body: required: task_id, priority
+        :return: new task_id
+        """
+        if not db.view_task(task_id):
+            return json_error_response("There is no analysis with the specified ID")
+
+        new_task_id = db.reschedule(task_id, priority)
+        if new_task_id:
+            return JsonResponse({"status": True, "task_id": new_task_id}, safe=False)
+        else:
+            return json_fatal_response("An error occurred while trying to "
+                                       "reschedule the task")
+
+    @api_get
+    def task_rereport(request, body):
+        task_id = body.get("task_id")
+        if not task_id:
+            return json_error_response("Task not set")
+
+        task = db.view_task(task_id)
+        if task:
+            if task.status == TASK_REPORTED:
+                db.set_status(task_id, TASK_COMPLETED)
+                return JsonResponse({"status": True})
+
+            return JsonResponse({"status": False})
+
+        return json_error_response("Task not found")
+
+    @api_get
+    def task_screenshots(request, task_id, screenshot=None):
+        folder_path = os.path.join(cwd(), "storage", "analyses", str(task_id), "shots")
+
+        if os.path.exists(folder_path):
+            if screenshot:
+                screenshot_name = "{0}.jpg".format(screenshot)
+                screenshot_path = os.path.join(folder_path, screenshot_name)
+                if os.path.exists(screenshot_path):
+                    response = HttpResponse(FileWrapper(open(screenshot_path, "rb")),
+                                            content_type='image/jpeg')
+                    return response
+                else:
+                    return json_error_response("Screenshot not found")
+            else:
+                zip_data = StringIO()
+                with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
+                    for shot_name in os.listdir(folder_path):
+                        zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+
+                zip_data.seek(0)
+
+                response = file_response(data=zip_data,
+                                         filename="analysis_screenshots_%s.tar" % str(task_id),
+                                         content_type="application/zip")
+                return response
+
+        return json_error_response("Task not found")
+
+    @api_get
+    def task_report(request, task_id, report_format="json"):
+        # @TO-DO: test /api/task/report/<task_id>/all/?tarmode=bz2
+        # duplicate filenames?
+        task_id = int(task_id)
+        tarmode = request.REQUEST.get("tarmode", "bz2")
+
+        formats = {
+            "json": "report.json",
+            "html": "report.html",
+        }
+
+        bz_formats = {
+            "all": {"type": "-", "files": ["memory.dmp"]},
+            "dropped": {"type": "+", "files": ["files"]},
+            "package_files": {"type": "+", "files": ["package_files"]},
+        }
+
+        tar_formats = {
+            "bz2": "w:bz2",
+            "gz": "w:gz",
+            "tar": "w",
+        }
+
+        if report_format.lower() in formats:
+            report_path = os.path.join(cwd(), "storage", "analyses",
+                                       str(task_id), "reports",
+                                       formats[report_format.lower()])
+        elif report_format.lower() in bz_formats:
+            bzf = bz_formats[report_format.lower()]
+            srcdir = os.path.join(cwd(), "storage",
+                                  "analyses", str(task_id))
+
+            s = StringIO()
+
+            # By default go for bz2 encoded tar files (for legacy reasons).
+            if tarmode not in tar_formats:
+                tarmode = tar_formats["bz2"]
+            else:
+                tarmode = tar_formats[tarmode]
+
+            tar = tarfile.open(fileobj=s, mode=tarmode, dereference=True)
+            for filedir in os.listdir(srcdir):
+                filepath = os.path.join(srcdir, filedir)
+                if not os.path.exists(filepath):
+                    continue
+
+                if bzf["type"] == "-" and filedir not in bzf["files"]:
+                    tar.add(filepath, arcname=filedir)
+                if bzf["type"] == "+" and filedir in bzf["files"]:
+                    tar.add(filepath, arcname=filedir)
+
+            tar.close()
+            s.seek(0)
+
+            response = file_response(data=s, filename="analysis_report_%s.tar" % str(task_id),
+                                     content_type="application/x-tar; charset=UTF-8")
+            return response
+        else:
+            return json_fatal_response("Invalid report format")
+
+        if os.path.exists(report_path):
+            if report_format == "json":
+                response = file_response(data=open(report_path, "rb"),
+                                         filename="analysis_report_%s.json" % str(task_id),
+                                         content_type="application/json; charset=UTF-8")
+                return response
+            else:
+                return open(report_path, "rb").read()
+        else:
+            return json_error_response("Report not found")
+
+    @api_post
+    def tasks_recent(request, body):
         limit = body.get("limit", 50)
         offset = body.get("offset", 0)
 
@@ -107,7 +333,7 @@ class AnalysisApi:
         return JsonResponse(tasks, safe=False)
 
     @api_post
-    def recent_stats(request, body):
+    def tasks_stats(request, body):
         """
         Fetches the number of analysis over a
         given period for the "failed" and
