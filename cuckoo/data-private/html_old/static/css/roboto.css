@@ -1,0 +1,44 @@
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/roboto/roboto-regular/Roboto-Regular-webfont.eot');
+    src: url('../fonts/roboto/roboto-regular/Roboto-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto/roboto-regular/Roboto-Regular-webfont.woff') format('woff'),
+         url('../fonts/roboto/roboto-regular/Roboto-Regular-webfont.ttf') format('truetype'),
+         url('../fonts/roboto/roboto-regular/Roboto-Regular-webfont.svg#robotoregular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/roboto/roboto-italic/Roboto-Italic-webfont.eot');
+    src: url('../fonts/roboto/roboto-italic/Roboto-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto/roboto-italic/Roboto-Italic-webfont.woff') format('woff'),
+         url('../fonts/roboto/roboto-italic/Roboto-Italic-webfont.ttf') format('truetype'),
+         url('../fonts/roboto/roboto-italic/Roboto-Italic-webfont.svg#robotoitalic') format('svg');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/roboto/roboto-bold/Roboto-Bold-webfont.eot');
+    src: url('../fonts/roboto/roboto-bold/Roboto-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto/roboto-bold/Roboto-Bold-webfont.woff') format('woff'),
+         url('../fonts/roboto/roboto-bold/Roboto-Bold-webfont.ttf') format('truetype'),
+         url('../fonts/roboto/roboto-bold/Roboto-Bold-webfont.svg#robotobold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/roboto/roboto-medium/Roboto-Medium-webfont.eot');
+    src: url('../fonts/roboto/roboto-medium/Roboto-Medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto/roboto-medium/Roboto-Medium-webfont.woff') format('woff'),
+         url('../fonts/roboto/roboto-medium/Roboto-Medium-webfont.ttf') format('truetype'),
+         url('../fonts/roboto/roboto-medium/Roboto-Medium-webfont.svg#robotomedium') format('svg');
+    font-weight: 500;
+    font-style: normal;
+
+}

@@ -1,0 +1,566 @@
+<html>
+
+	<head>
+		<link rel="stylesheet" type="text/css" href="static/css/roboto.css" />
+		<link rel="stylesheet" type="text/css" href="static/css/font-awesome.css" />
+		<link rel="stylesheet" type="text/css" href="static/css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="static/css/report.css" />
+	</head>
+
+	<body>
+
+		<!-- wrapping container, defines the wrapping width of the content -->
+		<div class="container">
+
+			<!-- top header, logo and datetime of the report -->
+			<header class="main-header">
+				<div class="brand">
+					<img src="static/img/cuckoo.png" alt="Cuckoo" />
+				</div>
+				<h1>Analysis report</h1>
+				<div class="main-header-right">
+					<time datetime="11-03-2016, 16:48"><i class="fa fa-clock-o"></i> 11/03/2016, 16:48</time>
+				</div>
+			</header>
+
+			<!-- row -->
+			<div class="row">
+
+				<!-- block: summary -->
+				<div class="block block-summary">
+
+					<header class="block-header">
+						<h4><i class="fa fa-file-o"></i> Summary - <em>CVE-2011-0611.pdf_</em></h4>
+					</header>
+
+					<section class="block-section">
+
+						<!-- file info -->
+						<div class="block-section-col">
+							<h5>File info</h5>
+							<ul class="list-reset key-value-list">
+								<li><strong>name: </strong> CVE-2011-0611.pdf_</li>
+								<li><strong>type: </strong> PDF document, version 1.7</li>
+								<li><strong>size: </strong> 88.8kb</li>
+							</ul>
+						</div>
+
+						<!-- checksum hashes -->
+						<div class="block-section-col">
+							<h5>Checksums</h5>
+							<ul class="list-reset list-checksums">
+								<li><span class="label">SHA1</span> dc1fc6805a645f12f6864ff9d6f5096a09dbec6c</li>
+								<li><span class="label">MD5</span> 86730a9bc3ab99503322eda6115c1096</li>
+							</ul>
+						</div>
+
+					</section>
+
+					<!-- <footer class="block-footer"></footer> -->
+
+				</div>
+
+				<!-- block: status and process messages / information -->
+				<div class="block">
+
+					<header class="block-header">
+						<h4><i class="fa fa-qrcode"></i> Detected signatures</h4>
+					</header>
+
+					<section class="block-section no-padding">
+						<ul class="list-reset list-status">
+							<!-- <li><p>Some non-status signature</p></li> -->
+
+							<li class="list-status-separator info">Info messages</li>
+							<li class="info">
+								<p>Collects information to fingerprint the system (MachineGuid, DigitalProductId, SystemBiosDate) (1 event)</p>
+								<table class="table-key-value">
+									<tbody>
+										<tr>
+											<td><span class="monospace">Registry</span></td>
+											<td><span class="monospace">HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\Registration\{91150000-0011-0000-0000-0000000FF1CE}\DigitalProductID</span></td>
+										</tr>
+										<tr>
+											<td><span class="monospace">Registry</span></td>
+											<td><span class="monospace">HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\Registration\{91150000-0011-0000-0000-0000000FF1CE}\DigitalProductID</span></td>
+										</tr>
+										<tr>
+											<td><span class="monospace">Registry</span></td>
+											<td><span class="monospace">HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\Registration\{91150000-0011-0000-0000-0000000FF1CE}\DigitalProductID</span></td>
+										</tr>
+									</tbody>
+								</table>
+							</li>
+							<li class="info">
+								<p>Queries for the computername (2 events)</p>
+								<table>
+									<thead>
+										<tr>
+											<th>Time &amp; API</th>
+											<th>Arguments</th>
+											<th>Status</th>
+											<th class="small-integer">Return</th>
+											<th class="small-integer">Repeated</th>
+										</tr>
+									</thead>
+									<tbody>
+
+										<tr>
+											<td>
+												<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:49 a.m.</time>
+												<p class="monospace">GetComputerNameA</p>
+											</td>
+											<td>computer_name: <span class="monospace">WWITSRPPPJ</span></td>
+											<td><span class="monospace">success</span></td>
+											<td><span class="monospace">1</span></td>
+											<td><span class="monospace">0</span></td>
+										</tr>
+
+										<tr>
+											<td>
+												<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:49 a.m.</time>
+												<p class="monospace">GetComputerNameA</p>
+											</td>
+											<td>computer_name: <span class="monospace">WWITSRPPPJ</span></td>
+											<td><span class="monospace">success</span></td>
+											<td><span class="monospace">1</span></td>
+											<td><span class="monospace">0</span></td>
+										</tr>
+
+										<tr>
+											<td>
+												<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:49 a.m.</time>
+												<p class="monospace">GetComputerNameA</p>
+											</td>
+											<td>computer_name: <span class="monospace">WWITSRPPPJ</span></td>
+											<td><span class="monospace">success</span></td>
+											<td><span class="monospace">1</span></td>
+											<td><span class="monospace">0</span></td>
+										</tr>
+
+									</tbody>
+								</table>
+							</li>
+
+							<li class="list-status-separator warning">Warning messages</li>
+							<li class="warning">
+								<p>Allocates read-write-execute memory (usually to unpack itself) (19 events)</p>
+							</li>
+							<li class="warning">
+								<p>Potentially malicious URLs were found in the process memory dump (1 event)</p>
+							</li>
+
+							<li class="list-status-separator danger">Critical messages</li>
+							<li class="danger">
+								<p>Creates an Alternate Data Stream (ADS) (1 event)</p>
+							</li>
+							<li class="danger">
+								<p>File has been identified by 32 AntiVirus engines on VirusTotal as malicious (32 events)</p>
+							</li>
+						</ul>
+					</section>
+
+				</div>
+
+				<!-- screenshots -->
+				<div class="block">
+
+					<header class="block-header">
+						<h4><i class="fa fa-desktop"></i> Screenshots</h4>
+					</header>
+
+					<section class="block-section screenshots">
+						<div class="image">
+							<img src="img/screenshots/1.jpg" alt="1" />
+							<p>1.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/2.jpg" alt="2" />
+							<p>2.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/3.jpg" alt="3" />
+							<p>3.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/4.jpg" alt="4" />
+							<p>4.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/5.jpg" alt="5" />
+							<p>4.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/6.jpg" alt="6" />
+							<p>4.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/7.jpg" alt="7" />
+							<p>4.jpg - Screenshot description</p>
+						</div>
+						<div class="image">
+							<img src="img/screenshots/8.jpg" alt="8" />
+							<p>4.jpg - Screenshot description</p>
+						</div>
+					</section>
+
+				</div>
+
+				<!-- processes summary -->
+				<div class="block block-processes">
+					
+					<header class="block-header">
+						<h4><i class="fa fa-cogs"></i> Processes</h4>
+					</header>
+
+					<section class="block-section no-padding process-view">
+						<header class="process-view-header">
+							<h5>1. Files</h5>
+						</header>
+
+						<ul class="process-display list-reset">
+							<li class="process-display-title">Explorer.exe <span class="pid">pid: 1336</span></li>
+							<li>
+								file_read:
+								<ul>
+									<li>C:\Users\Administrator\AppData\Local\Microsoft\Windows\Burn\Burn\desktop.ini</li>
+									<li>C:\Users\desktop.ini</li>
+									<li>C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft Office 2013\Excel 2013.lnk</li>
+								</ul>
+							</li>
+							<li>
+								file_opened:
+								<ul>
+									<li>C:\Windows\System32\imageres.dll</li>
+									<li>C:\Windows\Fonts\arial.ttf</li>
+									<li>C:\</li>
+									<li>C:\Users\Administrator\AppData\Local\Temp</li>
+									<li>C:\Windows\Fonts\tahoma.ttf</li>
+								</ul>
+							</li>
+						</ul>
+
+						<ul class="process-display list-reset">
+							<li class="process-display-title">EXCEL.EXE <span class="pid">pid: 2128</span></li>
+							<li>
+								file_read:
+								<ul>
+									<li>C:\Windows\System32\imageres.dll</li>
+									<li>C:\Windows\Fonts\arial.ttf</li>
+									<li>C:\</li>
+									<li>C:\Users\Administrator\AppData\Local\Temp</li>
+									<li>C:\Windows\Fonts\tahoma.ttf</li>
+								</ul>
+							</li>
+							<li>
+								file_opened:
+								<ul>
+									<li>C:\Users\Administrator\AppData\Local\Temp\8b8960a855603393190152439c64ac9fd16655b304d472ecb83422900369a266</li>
+									<li>C:\Users\desktop.ini</li>
+								</ul>
+							</li>
+						</ul>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+						<header class="process-view-header">
+							<h5>2. Registry</h5>
+						</header>
+
+						<ul class="process-display list-reset">
+							<li class="process-display-title">EXCEL.EXE <span class="pid">pid: 2128</span></li>
+							<li>
+								regkey_written
+								<ul>
+									<li>HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\Excel\Resiliency\StartupItems\.a?</li>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\00005109E60090400000000000F01FEC\Usage\ProductNonBootFilesIntl_1033</li>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\00005119110000000000000000F01FEC\Usage\ProductFiles</li>
+									<li>HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\Excel\MTTT</li>
+									<li>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet</li>
+								</ul>
+							</li>
+							<li>
+								regkey_opened
+								<ul>
+									<li>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\CFFC5E9EEFFA38F46A597743AF74579B</li>
+									<li>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\7A1D1891699C40E459B785BF7198266C</li>
+									<li>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\2</li>
+									<li>HKEY_CURRENT_USER\Software\Microsoft\AuthCookies\Live\Default\CAW</li>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\OneNoteToWordAddin</li>
+								</ul>
+							</li>
+							<li>
+								regkey_read
+								<ul>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{2F632ABD-D62A-46C8-BF95-70186096F1ED}\Order</li>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{2030A84D-D6C7-4968-8CEC-CF4737ACC337}\Order</li>
+									<li>HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Nls\CustomLocale\nso-ZA</li>
+									<li>HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Nls\Locale\00000501</li>
+									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{4C1D1588-3088-4796-B3B2-8935F3A0D886}\Order</li>
+								</ul>
+							</li>
+						</ul>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+						<header class="process-view-header">
+							<h5>3. Mutexes</h5>
+						</header>
+					</section>
+
+					<section class="block-section no-padding process-view">
+						<header class="process-view-header">
+							<h5>4. Directories</h5>
+						</header>
+					</section>
+
+					<section class="block-section no-padding process-view">
+						<header class="process-view-header">
+							<h5>5. Processes</h5>
+						</header>
+					</section>
+
+				</div>
+
+				<!-- process memory dump -->
+				<div class="block block-procmemory">
+
+					<header class="block-header">
+						<h4><i class="fa fa-barcode"></i> Process memory dump</h4>
+					</header>
+
+					<ul class="list-reset list-simple">
+						<li class="list-simple-title">URLs found in process memory</li>
+						<li class="monospace">http://schemas.microsoft.com/xps/2005/06</li>
+						<li class="monospace malicious"><i class="fa fa-warning"></i> http://www.gewgle.org/</li>
+						<li class="monospace malicious"><i class="fa fa-warning"></i> https://www.facebo.ok/</li>
+						<li class="monospace malicious"><i class="fa fa-warning"></i> http://www.myfirstadware.net/get/worst-version</li>
+					</ul>
+
+				</div>
+
+				<!-- network -->
+				<div class="block block-network">
+
+					<header class="block-header">
+						<h4><i class="fa fa-globe"></i> Network</h4>
+					</header>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5>DNS (3)</h5>
+						</header>
+
+						<!-- table with info -->
+						<table>
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Response</th>
+									<th>Post-analysis lookup</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>www.msftncsi.com</td>
+									<td></td>
+									<td>82.94.234.89</td>
+								</tr>
+								<tr>
+									<td>dns.msftncsi.com</td>
+									<td></td>
+									<td>131.107.255.255</td>
+								</tr>
+								<tr>
+									<td>teredo.ipv6.microsoft.com</td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5>Hosts (1)</h5>
+						</header>
+
+						<table>
+							<thead>
+								<tr>
+									<th>IP Address</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>8.8.8.8</td>
+								</tr>
+							</tbody>
+						</table>
+
+					</section>
+
+				</div>
+
+				<!-- behavioral data -->
+				<div class="block block-behavioral">
+					
+					<header class="block-header">
+						<h4><i class="fa fa-heartbeat"></i> Behavioral</h4>
+					</header>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header clearfix">
+							<h5><span class="indicate"></span> default</h5>
+							<small class="pull-right limited-results"><i class="fa fa-info"></i> data limited to 3 records</small>
+						</header>
+
+						<table>
+							<thead>
+								<tr>
+									<th>Time &amp; API</th>
+									<th>Arguments</th>
+									<th>Status</th>
+									<th class="small-integer">Return</th>
+									<th class="small-integer">Repeated</th>
+								</tr>
+							</thead>
+							<tbody>
+
+								<tr>
+									<td>
+										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:42 a.m.</time>
+										<p class="monospace">GetSystemTimeAsFileTime</p>
+									</td>
+									<td></td>
+									<td><span class="monospace">success</span></td>
+									<td><span class="monospace">0</span></td>
+									<td><span class="monospace">0</span></td>
+								</tr>
+
+								<tr>
+									<td>
+										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:42 a.m.</time>
+										<p class="monospace">NtProtectVirtualMemory</p>
+									</td>
+									<td>
+										<ul class="list-reset list-arguments">
+											<li>base_address: 0x00949000</li>
+											<li>length: 4096</li>
+											<li>protection: 64 (PAGE_EXECUTE_READWRITE)</li>
+											<li>process_identifier: 2128</li>
+											<li>process_handle: 0xffffffff</li>
+										</ul>
+									</td>
+									<td><span class="monospace">success</span></td>
+									<td><span class="monospace">0</span></td>
+									<td><span class="monospace">0</span></td>
+								</tr>
+
+								<tr>
+									<td>
+										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:49 a.m.</time>
+										<p class="monospace">SetUnhandledExceptionFilter</p>
+									</td>
+									<td></td>
+									<td><span class="monospace failed">failed</span></td>
+									<td><span class="monospace">0</span></td>
+									<td><span class="monospace">0</span></td>
+								</tr>
+
+							</tbody>
+						</table>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-registry"></span> registry</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-file"></span> file</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-network"></span> network</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-process"></span> process</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-services"></span> services</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-synchronisation"></span> synchronisation</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-iexplore"></span> iexplore</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-office"></span> office</h5>
+						</header>
+
+					</section>
+
+					<section class="block-section no-padding process-view">
+
+						<header class="process-view-header">
+							<h5><span class="indicate indicate-pdf"></span> pdf</h5>
+						</header>
+
+					</section>
+
+				</div>
+
+			</div>
+
+			<footer class="footnote">
+				&copy; 2010 - 2016, Cuckoo Sandbox
+			</footer>
+
+		</div>
+
+	</body>
+
+</html>

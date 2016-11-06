@@ -1,0 +1,117 @@
+<section id="file">
+    <div class="section-title">
+        <h4>File Details</h4>
+    </div>
+    <table class="table table-striped table-bordered">
+        <colgroup>
+            <col width="150" />
+            <col width="*" />
+        </colgroup>
+        {% if results.target %}
+            <tr>
+                <th>File name</th>
+                <td><span class="mono">{{results.target.file.name}}</span></td>
+            </tr>
+            <tr>
+                <th>File size</th>
+                <td><span class="mono">{{results.target.file.size}} bytes</span></td>
+            </tr>
+            <tr>
+                <th>File type</th>
+                <td><span class="mono">{{results.target.file.type}}</span></td>
+            </tr>
+            <tr>
+                <th>CRC32</th>
+                <td><span class="mono">{{results.target.file.crc32}}</span></td>
+            </tr>
+            <tr>
+                <th>MD5</th>
+                <td><span class="mono">{{results.target.file.md5}}</span></td>
+            </tr>
+            <tr>
+                <th>SHA1</th>
+                <td><span class="mono">{{results.target.file.sha1}}</span></td>
+            </tr>
+            <tr>
+                <th>SHA256</th>
+                <td><span class="mono">{{results.target.file.sha256}}</span></td>
+            </tr>
+            <tr>
+                <th>SHA512</th>
+                <td><span class="mono">{{results.target.file.sha512}}</span></td>
+            </tr>
+            <tr>
+                <th>Ssdeep</th>
+                <td><span class="mono">{{results.target.file.ssdeep}}</span></td>
+            </tr>
+            <tr>
+                <th>PEiD</th>
+                <td>
+                    {% if results.static and results.static.peid_signatures %}
+                        {% if results.static.peid_signatures|length == 0 %}
+                            None matched
+                        {% else %}
+                            <ul style="margin-top: 0;margin-bottom: 0;">
+                            {% for sign in results.static.peid_signatures %}
+                                <li>{{sign}}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% else %}
+                        None matched
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Yara</th>
+                <td>
+                    {% if results.target.file.yara|length == 0 %}
+                        None matched
+                    {% else %}
+                        <ul style="margin-top: 0;margin-bottom: 0;">
+                            {% for sign in results.target.file.yara %}
+                            <li>{{sign.name}} ({{sign.meta.description}})</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+        <tr>
+            <th>VirusTotal</th>
+            <td>
+                {% if results.virustotal %}
+                    {% if results.virustotal.response_code == 1 %}
+                        <a href={{results.virustotal.permalink}}>Permalink</a><br>
+                        VirusTotal Scan Date: {{results.virustotal.scan_date}}<br>
+                        Detection Rate: {{results.virustotal.positives}}/{{results.virustotal.total}} (<a id="virustotal_lbl" href="javascript:showHide('virustotal', 'virustotal_lbl');">Expand</a>)
+                        <div id="virustotal" style="display: none;margin-top: 5px;">
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <th>Antivirus</th>
+                                    <th>Version</th>
+                                    <th>Result</th>
+                                </tr>
+                                {% for key in results.virustotal.scans|sort %}
+                                <tr>
+                                    <td>{{key}}</td>
+                                    <td>{{results["virustotal"]["scans"][key]["version"]}}</td>
+                                    {% if results["virustotal"]["scans"][key]["result"] == None %}
+                                        <td><span class="muted">Clean</span></td>
+                                    {% else %}
+                                        <td><span class="text-error">{{results["virustotal"]["scans"][key]["result"]}}</span></td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    {% else %}
+                        File not found on VirusTotal
+                    {% endif %}
+                {% else %}
+                    VirusTotal lookup disabled, add your API key to the module
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</section>

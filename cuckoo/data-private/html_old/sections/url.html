@@ -1,0 +1,50 @@
+<section id="url">
+    <div class="section-title">
+        <h4>URL Details</h4>
+    </div>
+    <table class="table table-striped table-bordered">
+        <colgroup>
+            <col width="150" />
+            <col width="*" />
+        </colgroup>
+        <tr>
+            <th>URL</th>
+            <td><span class="mono">{{results.target.url}}</span></td>
+        </tr>
+        <tr>
+            <th>VirusTotal</th>
+            <td>
+                {% if results.virustotal %}
+                    {% if results.virustotal.response_code == 1 %}
+                        <a href={{results.virustotal.permalink}}>Permalink</a><br>
+                        VirusTotal Scan Date: {{results.virustotal.scan_date}}<br>
+                        Detection Rate: {{results.virustotal.positives}}/{{results.virustotal.total}} (<a id="virustotal_lbl" href="javascript:showHide('virustotal', 'virustotal_lbl');">Expand</a>)
+                        <div id="virustotal" style="display: none;margin-top: 5px;">
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <th>Antivirus</th>
+                                    <th>Result</th>
+                                </tr>
+                                {% for key in results.virustotal.scans|sort %}
+                                <tr>
+                                    <td>{{key}}</td>
+                                    {% if results["virustotal"]["scans"][key]["detected"] %}
+                                        <td><span class="text-error">
+                                    {% else %}
+                                        <td><span class="muted">
+                                    {% endif %}
+                                    {{ results["virustotal"]["scans"][key]["result"]|title }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    {% else %}
+                        Domain not found on VirusTotal
+                    {% endif %}
+                {% else %}
+                    VirusTotal lookup disabled, add your API key to the module
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</section>

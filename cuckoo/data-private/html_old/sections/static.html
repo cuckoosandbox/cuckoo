@@ -1,0 +1,133 @@
+<section id="static">
+    <div class="section-title">
+        <h4>Static Analysis</h4>
+    </div>
+    {% if results.static %}
+        {% if results.static.pe_versioninfo %}
+            <div>
+                <h4><a href="javascript:showHide('pe_versioninfo');">Version Infos</a></h4>
+                <div id="pe_versioninfo" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        {% for info in results.static.pe_versioninfo %}
+                            <tr>
+                                <td><strong>{{info.name}}</strong>:</td>
+                                <td><span class="mono">{{info.value}}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.static.pe_sections %}
+            <div>
+                <h4><a href="javascript:showHide('pe_sections');">Sections</a></h4>
+                <div id="pe_sections" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Virtual Address</th>
+                            <th>Virtual Size</th>
+                            <th>Size of Raw Data</th>
+                            <th>Entropy</th>
+                        </tr>
+                        {% for section in results.static.pe_sections %}
+                            <tr>
+                                <td>{{section.name}}</td>
+                                <td>{{section.virtual_address}}</td>
+                                <td>{{section.virtual_size}}</td>
+                                <td>{{section.size_of_data}}</td>
+                                <td>{{section.entropy}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.static.pe_resources %}
+            <div>
+                <h4><a href="javascript:showHide('pe_resources');">Resources</a></h4>
+                <div id="pe_resources" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Offset</th>
+                            <th>Size</th>
+                            <th>Language</th>
+                            <th>Sub-language</th>
+                            <th>File type</th>
+                        </tr>
+                        {% for section in results.static.pe_resources %}
+                            <tr>
+                                <td>{{section.name}}</td>
+                                <td>{{section.offset}}</td>
+                                <td>{{section.size}}</td>
+                                <td>{{section.language}}</td>
+                                <td>{{section.sublanguage}}</td>
+                                <td>{{section.filetype}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.static.pe_imports %}
+            <div>
+                <h4><a href="javascript:showHide('pe_imports');">Imports</a></h4>
+                <div id="pe_imports" style="display: none;">
+                    {% for library in results.static.pe_imports %}
+                        <div class="well">
+                            <div><strong>Library {{library.dll}}</strong>:</div>
+                            {% for function in library.imports %}
+                                <div>&bull; <span class="mono">{{function.address}}</span> - {{function.name}}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.static.pe_exports %}
+            <div>
+                <h4><a href="javascript:showHide('pe_exports');">Exports</a></h4>
+                <div id="pe_exports" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Ordinal</th>
+                            <th>Address</th>
+                            <th>Name</th>
+                        </tr>
+                        {% for export in results.static.pe_exports %}
+                            <tr>
+                                <td>{{export.ordinal}}</td>
+                                <td>{{export.address}}</td>
+                                <td>{{export.name}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.strings %}
+            <div>
+                <h4><a href="javascript:showHide('strings');">Strings</a></h4>
+                <div id="strings" style="display: none;">
+                    {% for str in results.strings %}
+                        <div><span class="mono">{{str}}</span></div>
+                    {% endfor %}
+                </div> 
+            </div>
+        {% endif %}
+
+
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>

@@ -1,0 +1,47 @@
+<section id="info">
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Started On</th>
+                <th>Completed On</th>
+                <th>Duration</th>
+                <th>Cuckoo Version</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{results.info.category|upper}}</td>
+                <td>{{results.info.started}}</td>
+                <td>{{results.info.ended}}</td>
+                <td>{{results.info.duration}} seconds</td>
+                <td>{{results.info.version}}</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+{% if results.info.machine and results.info.machine.name %}
+    <section id="machine">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Machine</th>
+                    <th>Label</th>
+                    <th>Manager</th>
+                    <th>Started On</th>
+                    <th>Shutdown On</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{results.info.machine.name}}</td>
+                    <td>{{results.info.machine.label}}</td>
+                    <td>{{results.info.machine.manager}}</td>
+                    <td>{{results.info.machine.started_on}}</td>
+                    <td>{{results.info.machine.shutdown_on}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+{% endif %}

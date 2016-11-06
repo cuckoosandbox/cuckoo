@@ -1,0 +1,116 @@
+<section id="network">
+    <div class="section-title">
+        <h4>Network Analysis</h4>
+    </div>
+    {% if results.network %}
+        {% if results.network.hosts %}
+            <div>
+                <h4><a href="javascript:showHide('hosts');">Hosts Involved</a></h4>
+                <div id="hosts" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>IP Address</th>
+                        </tr>
+                        {% for host in results.network.hosts %}
+                        <tr>
+                            <td><span class="mono">{{host}}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if results.network.domains %}
+        <div>
+            <h4><a href="javascript:showHide('dns');">DNS Requests</a></h4>
+            <div id="dns" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Domain</th>
+                        <th>IP Address</th>
+                    </tr>
+                    {% for dns in results.network.domains %}
+                    <tr>
+                        <td><span class="mono">{{dns.domain}}</span></td>
+                        <td><span class="mono">{{dns.ip}}</span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.network.http %}
+        <div>
+            <h4><a href="javascript:showHide('http');">HTTP Requests</a></h4>
+            <div id="http" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>URL</th>
+                        <th>Data</th>
+                    </tr>
+                    {% for http in results.network.http %}
+                    <tr>
+                        <td><span class="mono">{{http.uri}}</span></td>
+                        <td><span class="mono"><pre>{{http.data}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.network.irc %}
+        <div>
+            <h4><a href="javascript:showHide('irc');">IRC Requests</a></h4>
+            <div id="irc" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Command</th>
+                        <th>Params</th>
+                        <th>Type</th>
+                    </tr>
+                    {% for irc in results.network.irc %}
+                    <tr>
+                        <td><span class="mono">{{irc.command}}</span></td>
+                        <td><span class="mono"><pre>{{irc.params}}</pre></span></td>
+                        <td><span class="mono"><pre>{{irc.type}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.network.icmp %}
+        <div>
+            <h4><a href="javascript:showHide('icmp');">ICMP requests</a></h4>
+            <div id="icmp" style="display: none;">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                       <th>Source</th>
+                       <th>Destination</th>
+                       <th>ICMP Type</th>
+                       <th>Data</th>
+                    </tr>
+                    {% for icmp in results.network.icmp %}
+                    <tr>
+                       <td><span class="mono">{{icmp.src}}</span></td>
+                       <td><span class="mono">{{icmp.dst}}</span></td>
+                       <td><span class="mono">{{icmp.type}}</span></td>
+                       <td><span class="mono"><pre>{{icmp.data}}</pre></span></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+         </div>
+        {% endif %}
+
+        {% if not results.network.hosts and not results.network.domains and not results.network.http and not results.network.irc and not results.network.icmp %}
+            Nothing to display.
+        {% endif %}
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>

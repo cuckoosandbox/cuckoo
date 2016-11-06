@@ -4,8 +4,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import jinja2
 import codecs
 import base64
+
+from glob import glob
+from datetime import datetime
+from collections import OrderedDict
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
@@ -15,12 +20,16 @@ from cuckoo.misc import cwd
 try:
     from jinja2.environment import Environment
     from jinja2.loaders import FileSystemLoader
+
     HAVE_JINJA2 = True
 except ImportError:
     HAVE_JINJA2 = False
 
+
 class ReportHTML(Report):
     """Stores report in HTML format."""
+
+    path_base = cwd("html", private=True)
 
     def run(self, results):
         """Writes report.
@@ -57,7 +66,7 @@ class ReportHTML(Report):
             results["screenshots"] = []
 
         env = Environment(autoescape=True)
-        env.loader = FileSystemLoader(cwd("html", private=True))
+        env.loader = FileSystemLoader(self.path_base)
 
         processed = None
         mapping = [
@@ -82,6 +91,10 @@ class ReportHTML(Report):
             ("mutex", "Mutex", "Accessed"),
         ]
 
+        constants = {
+            "date_now": datetime.now().strftime("%Y/%m/%d %H:%M")
+        }
+
         processed = {}
         for proc in results.get("behavior", {}).get("generic", []):
             for orig, cat, subcat in mapping:
@@ -102,19 +115,170 @@ class ReportHTML(Report):
                     for content in proc["summary"][orig]:
                         processed[cat][subcat].append(content)
 
-        try:
-            tpl = env.get_template("report.html")
-            html = tpl.render({"results": results,
-                               "processed": processed,
-                               "mapping": mapping})
-        except Exception as e:
-            raise CuckooReportError("Failed to generate HTML report: %s" % e)
+        def x(results, processed, mapping, constants):
+            try:
+                html_file = open("%s/report.html" % self.path_base, "r")
+                html_contents = html_file.read()
+                html_file.close()
 
-        try:
-            report_path = os.path.join(self.reports_path, "report.html")
-            with codecs.open(report_path, "w", encoding="utf-8") as report:
-                report.write(html)
-        except (TypeError, IOError) as e:
-            raise CuckooReportError("Failed to write HTML report: %s" % e)
+                head = self.generate_html_head(results["info"]["id"])
+                html_contents = html_contents.replace("{{ head }}", head)
+
+                html_jinja2 = jinja2.Environment().from_string(html_contents)
+
+                signatures = self.format_signatures(results["signatures"])
+
+                html_template = html_jinja2.render({
+                    "results": results,
+                    "processed": processed,
+                    "mapping": mapping,
+                    "signatures": signatures,
+                    "constants": constants})
+
+            except Exception as e:
+                raise CuckooReportError("Failed to generate HTML report: %s" % e)
+
+            try:
+                report_path = os.path.join(self.reports_path, "report.html")
+                with codecs.open(report_path, "w", encoding="utf-8") as report:
+                    report.write(html_template)
+            except (TypeError, IOError) as e:
+                raise CuckooReportError("Failed to write HTML report: %s" % e)
+
+        x(results, processed, mapping, constants)
 
         return True
+
+    def format_signatures(self, signatures):
+        """Returns an OrderedDict containing a lists with signatures based on severity"""
+        data = OrderedDict()
+        for signature in signatures:
+            severity = signature["severity"]
+            if severity > 3:
+                severity = 3
+            if not data.has_key(severity):
+                data[severity] = []
+            data[severity].append(signature)
+        return data
+
+    def generate_html_head(self, analysis_id):
+        """
+        Generates the <head> tag for report.html.
+        It'll combine files from both `static/css/` and `static/fonts/`
+        so that external CSS includes are not needed.
+        Non-plaintext files (like fonts) are converted
+        to base64 encoded data URI's
+        @param analysis_id: analysis ID
+        @return: the <head> tag
+        """
+        return """
+            <meta charset="UTF-8">
+            <title>Cuckoo Report #%d</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="">
+            <meta name="author" content="">
+            <style>
+            /* CSS */
+            %s
+
+            /* FONTS */
+            %s
+            </style>
+        """ % (analysis_id,
+               self.combine_css(),
+               self.combine_fonts())
+
+    def combine_css(self):
+        """Scans the `static/css/ directory for stylesheets and concatenates them"""
+        css_includes = ""
+        for css_path in glob("%s/static/css/*.css" % self.path_base):
+            css_file = open(css_path, "r")
+            css_data = css_file.read()
+            css_includes += "%s\n\n" % css_data
+            css_file.close()
+
+        return css_includes
+
+    def combine_fonts(self):
+        fonts = [{
+            "family": "Roboto",
+            "weight": 400,
+            "style": "normal",
+            "src": [{
+                "src": "Roboto-Regular-webfont.woff",
+                "format": "woff"
+            }]}, {
+            "family": "Roboto",
+            "weight": 400,
+            "style": "italic",
+            "src": [{
+                "src": "Roboto-Italic-webfont.woff",
+                "format": "woff"
+            }]}, {
+            "family": "Roboto",
+            "weight": 700,
+            "style": "normal",
+            "src": [{
+                "src": "Roboto-Bold-webfont.woff",
+                "format": "woff"}
+            ]}, {
+            "family": "Roboto",
+            "weight": 500,
+            "style": "normal",
+            "src": [{
+                "src": "Roboto-Medium-webfont.woff",
+                "format": "woff"}
+            ]}, {
+            "family": "FontAwesome",
+            "weight": "normal",
+            "style": "normal",
+            "src": [{
+                "src": "fontawesome-webfont.woff2",
+                "format": "woff2"}
+            ]}]
+
+        mime_types = {
+            "svg": "image/svg+xml",
+            "ttf": "application/x-font-ttf",
+            "otf": "application/x-font-opentype",
+            "woff": "application/font-woff",
+            "woff2": "application/font-woff2",
+            "eot": "application/vnd.ms-fontobject",
+            "sfnt": "application/font-sfnt"
+        }
+
+        font_includes = ""
+
+        for font in fonts:
+            font_face = """
+                @font-face {
+                    font-family: '%s';
+                    src: {{ urls }};
+                    font-weight: %s;
+                    font-style: %s;
+                }
+                """ % (font["family"], font["weight"], font["style"])
+
+            urls = []
+            for src in font["src"]:
+                font_name = src["src"]
+                font_format = src["format"]
+                font_ext = os.path.splitext(font_name)[1]
+                font_ext = font_ext.replace(".", "")
+                font_mime = mime_types[font_ext]
+                font_path = "%s/static/fonts/%s" % (self.path_base, src["src"])
+
+                font = open(font_path, "r")
+                font_read = font.read()
+                font_b64 = base64.b64encode(font_read)
+
+                data_uri = "url(data:%s;charset=utf-8;base64,%s) format('%s')" % (
+                    font_mime, font_b64, font_format)
+                urls.append(data_uri)
+
+                font.close()
+
+            font_face = font_face.replace("{{ urls }}", ",".join(urls))
+            font_includes += font_face
+
+        return font_includes

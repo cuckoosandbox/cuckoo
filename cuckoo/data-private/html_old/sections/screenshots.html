@@ -1,0 +1,12 @@
+<section id="screenshots">
+    <div class="section-title">
+        <h4>Screenshots</h4>
+    </div>
+    {% if results.screenshots %}
+        {% for shot in results.screenshots %}
+            <a href="data:image/png;base64,{{shot.data}}"><img class="fade" src="data:image/png;base64,{{shot.data}}" height="100px" width="150px" /></a>
+        {% endfor %}
+    {% else %}
+        No screenshots available.
+    {% endif %}
+</section>

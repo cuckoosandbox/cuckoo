@@ -1,0 +1,16 @@
+        <script language="text/javascript">
+            
+        </script>
+        <div class="span4" style="text-align: right;">
+            <div class="pagination">
+                <form>
+                    Results per page:&nbsp;&nbsp;
+                    <select name="rpp" class="input-mini" onchange="function goto(form){window.location.assign('/browse/page/{{pagination.page_id}}/' + form.rpp.options[form.rpp.selectedIndex].value); };goto(this.form);">
+                        <option value="25" {% if pagination.limit == 25 %}selected="selected"{% endif %}>25</option>
+                        <option value="50" {% if pagination.limit == 50 %}selected="selected"{% endif %}>50</option>
+                        <option value="100" {% if pagination.limit == 100 %}selected="selected"{% endif %}>100</option>
+                        <option value="200" {% if pagination.limit == 200 %}selected="selected"{% endif %}>200</option>
+                    </select>
+                </form>
+            </div>
+        </div>

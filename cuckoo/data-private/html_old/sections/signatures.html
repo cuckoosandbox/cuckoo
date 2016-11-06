@@ -1,0 +1,31 @@
+<section id="signatures">
+    <div class="section-title">
+        <h4>Signatures</h4>
+    </div>
+    {% if results.signatures %}
+        {% for sign in results.signatures %}
+        <div>
+            {% if sign.severity == 1 %}
+                <div class="alert alert-success signature">
+            {% elif sign.severity == 2 %}
+                <div class="alert alert-warning signature">
+            {% elif sign.severity >= 3 %}
+                <div class="alert alert-error signature">
+            {% else %}
+                <div class="alert alert-info signature">
+            {% endif %}
+            <b>{{sign.name}}<a href="javascript:showHide('signature_{{sign.name}}');">  details</a></b>
+            <div id="signature_{{sign.name}}" style="display: none;">
+            {{sign.description}}
+            {% if sign.marker and sign.marker.start %}
+                <a href="#{{sign.marker.start.pid}}_{{sign.marker.start.tid}}_{{sign.marker.start.cid}}">jump</a>
+
+            {% endif %}
+            </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        No signatures matched
+    {% endif %}
+</section>

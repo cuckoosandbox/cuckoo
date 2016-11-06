@@ -1,0 +1,74 @@
+<section id="dropped">
+    <div class="section-title">
+        <h4>Dropped Files</h4>
+    </div>
+    {% if results.dropped %}
+        {% set counter = 1 %}
+        {% for dropped_file in results.dropped %}
+            <div>
+                <h4><a href="javascript:showHide('dropped_{{counter}}');">{{dropped_file.name}}</a></h4>
+                <div id="dropped_{{counter}}" style="display: none;">
+                    <table class="table table-striped table-bordered">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        <tr>
+                            <th>File name</th>
+                            <td><span class="mono">{{dropped_file.name}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>File size</th>
+                            <td><span class="mono">{{dropped_file.size}} bytes</span></td>
+                        </tr>
+                        <tr>
+                            <th>File type</th>
+                            <td><span class="mono">{{dropped_file.type}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>MD5</th>
+                            <td><span class="mono">{{dropped_file.md5}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>SHA1</th>
+                            <td><span class="mono">{{dropped_file.sha1}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>SHA256</th>
+                            <td><span class="mono">{{dropped_file.sha256}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>SHA512</th>
+                            <td><span class="mono">{{dropped_file.sha512}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Ssdeep</th>
+                            <td><span class="mono">{{dropped_file.ssdeep}}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Yara</th>
+                            <td>
+                                {% if dropped_file.yara|length == 0 %}
+                                    None matched
+                                {% else %}
+                                    <ul style="margin-top: 0;margin-bottom: 0;">
+                                        {% for sign in dropped_file.yara %}
+                                        <li>{{sign.name}} ({{sign.meta.description}})</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>VirusTotal</th>
+                            <td><span class="mono"><a href="https://www.virustotal.com/en/file/{{dropped_file.sha256}}/analysis/">Search for Analysis</a></span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% set counter = counter + 1 %}
+        {% endfor %}
+    {% else %}
+        Nothing to display.
+    {% endif %}
+</section>

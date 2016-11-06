@@ -1,0 +1,134 @@
+<!--
+  Cuckoo Sandbox - Automated Malware Analysis
+  Copyright (C) 2010-2015 Cuckoo Foundation.
+  http://www.cuckoosandbox.org
+ 
+  This file is part of Cuckoo.
+ 
+  Cuckoo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  Cuckoo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cuckoo Sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<style>
+{% include "css/bootstrap.min.css" %}
+{% include "css/bootstrap-responsive.min.css" %}
+body {
+    margin-top: 20px;
+}
+.footer {
+    margin-top: 45px;
+    padding: 35px 0 36px;
+    border-top: 1px solid #e5e5e5;
+}
+.footer p {
+    margin-bottom: 0;
+    color: #555;
+}
+.mono {
+    font-family: monospace;
+}
+.signature {
+    padding: 6px;
+    margin-bottom: 3px;
+}
+img.fade {
+    opacity:0.4;
+    filter:alpha(opacity=40);
+}
+img.fade:hover {
+    opacity:1.0;
+    filter:alpha(opacity=100);
+}
+.section-title {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    padding-bottom: 3px;
+}
+.filesystem {
+    background-color: #ffe3c5; {# Light Orange #}
+}
+.registry {
+    background-color: #ffc5c5; {# Light Red #}
+}
+.process {
+    background-color: #c5e0ff; {# Light Blue #}
+}
+.services {
+    background-color: #ccc5ff;
+}
+.device {
+    background-color: #ccc5ff;
+}
+.network {
+    background-color: #d3ffc5; {# Light Green #}
+}
+.socket {
+    background-color: #d3ffc5;
+}
+.synchronization {
+    background-color: #f9c5ff;
+}
+</style>
+</head>
+<body>
+<div class="container-fluid">
+    {% include "graphic/logo.html" %}
+    <div class="navbar navbar-inverse" style="margin-top: 10px;">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li><a href="#info">Info</a></li>
+                        {% if results.info.category == "file" %}
+                        <li><a href="#file">File</a></li>
+                        {% elif results.info.category == "url" %}
+                        <li><a href="#url">URL</a></li>
+                        {% endif %}
+                        <li><a href="#signatures">Signatures</a></li>
+                        <li><a href="#screenshots">Screenshots</a></li>
+                        {% if results.info.category == "file" %}
+                        <li><a href="#static">Static</a></li>
+                        {% endif %}
+                        <li><a href="#dropped">Dropped</a></li>
+                        <li><a href="#network">Network</a></li>
+                        <li><a href="#behavior">Behavior</a></li>
+                        <li><a href="#volatility">Volatility</a></li>
+                        <!-- BOTTLEREMOVEME <li><a href="/pcap/{{results.info.id}}">PCAP</a></li> BOTTLEREMOVEME --!>
+                        <!-- BOTTLEREMOVEME <li><a href="/view/{{results.info.id}}/download">Download Report</a></li> BOTTLEREMOVEME --!>
+                        <!-- BOTTLEREMOVEME <li><li><a href="/files/{{results.info.id}}">Download Files</a></li>  BOTTLEREMOVEME --!>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+        <p>&copy;2010-2015 <a href="http://www.cuckoosandbox.org">Cuckoo Sandbox</a></p>
+    </footer>
+</div>
+<script>
+{% include "js/bootstrap.min.js" %}
+{% include "js/functions.js" %}
+</script>
+</body>
+</html>

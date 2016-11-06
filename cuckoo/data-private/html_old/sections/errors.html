@@ -1,0 +1,12 @@
+{% if results.debug.errors %}
+<div class="section-title">
+    <h4>Errors</h4>
+</div>
+<section id="errors">
+    <ul>
+    {% for error in results.debug.errors %}
+        <li class="text-error"><b>{{error}}</b></li>
+    {% endfor %}
+    </ul>
+</section>
+{% endif %}

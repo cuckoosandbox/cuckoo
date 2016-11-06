@@ -1,0 +1,101 @@
+{% extends "base-web.html" %}
+{% block content %}
+    <div class="fileupload">
+        <div class="page-header">
+            <h3>New Analysis <small>use this form to add a new analysis task</smalll></h3>
+        </div>
+        {% if context.error_toggle %}
+            <div class="alert alert-error"><strong>OOPS!</strong> Some error occurred, please check the instructions below!</div>
+        {% endif %}
+        <form method="POST" action="/submit" class="form-horizontal" enctype="multipart/form-data">
+            <fieldset>
+                <div class="control-group {{'error' if context.get('error_file', '') else ''}}">
+                    <label class="control-label" for="input01">File to upload</label>
+                    <div class="controls">
+                        <input type="file" name="file" class="input-xlarge" id="input01">
+                        {% if context.error_file %}
+                            <span class="help-inline">{{error_file}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_package', '') else ''}}">
+                    <label class="control-label" for="input02">Package to use</label>
+                    <div class="controls">
+                        <input type="text" name="package" class="input-xlarge" id="input02" value="{{package}}">
+                        {% if context.error_package %}
+                            <span class="help-inline">{{context.error_package}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_options', '') else ''}}">
+                    <label class="control-label" for="input03">Options</label>
+                    <div class="controls">
+                        <input type="text" name="options" class="input-xlarge" id="input03" value="{{options}}">
+                        {% if context.error_options %}
+                            <span class="help-inline">{{context.error_options}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_timeout','') else ''}}">
+                    <label class="control-label" for="input04">Timeout</label>
+                    <div class="controls">
+                        <input type="text" name="timeout" class="input-xlarge" id="input04" value="{{timeout}}">
+                        {% if context.error_timeout %}
+                            <span class="help-inline">{{context.error_timeout}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_priority','') else ''}}">
+                    <label class="control-label" for="select01">Priority</label>
+                    <div class="controls">
+                        <select id="select01" name="priority">
+                            <option {{'selected' if priority == 1 else ''}} value="1">Low</option>
+                            <option {{'selected' if priority == 2 else ''}} value="2">Medium</option>
+                            <option {{'selected' if priority == 3 else ''}} value="3">High</option>
+                        </select>
+                        {% if context.error_priority %}
+                            <span class="help-inline">{{context.error_priority}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_machine','') else ''}}">
+                    <label class="control-label" for="select02">Machine</label>
+                    <div class="controls">
+                        <select id="select02" name="machine">
+                            <option value="">Any</option>
+                           {% for m in machines %}
+                                <option {{'selected' if machine == m else ''}} value="{{m}}">{{m}}</option>
+                           {% endfor %}
+                        </select>
+                        {% if context.error_machine %}
+                            <span class="help-inline">{{context.error_machine}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="control-group {{'error' if context.get('error_memory','') else ''}}">
+                    <label class="control-label" for="input05">Capture Memory</label>
+                    <div class="controls">
+                        <select id="select03" name="memory">
+                            <option value="0">False</option>
+                            <option {{'selected' if memory == 'True' else ''}} value="1">True</option>
+                        </select>
+                        {% if context.error_timeout %}
+                            <span class="help-inline">{{context.error_timeout}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button class="btn">Cancel</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}
