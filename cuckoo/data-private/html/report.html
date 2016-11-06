@@ -197,235 +197,95 @@
                     {% endfor %}
 				</div>
 
-				<!-- process memory dump -->
-				<div class="block block-procmemory">
+                {% if results.procmemory %}
+                    {% if results.procmemory[0].urls %}
+                        <!-- process memory dump -->
+                        <div class="block block-procmemory">
+                            <header class="block-header">
+                                <h4><i class="fa fa-barcode"></i> Process memory dump</h4>
+                            </header>
 
-					<header class="block-header">
-						<h4><i class="fa fa-barcode"></i> Process memory dump</h4>
-					</header>
+                            <ul class="list-reset list-simple">
+                                <li class="list-simple-title">URLs found in process memory</li>
+                                {% for url in results.procmemory[0].urls %}
+                                    <li class="monospace">{{ url }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endif %}
 
-					<ul class="list-reset list-simple">
-						<li class="list-simple-title">URLs found in process memory</li>
-						<li class="monospace">http://schemas.microsoft.com/xps/2005/06</li>
-						<li class="monospace malicious"><i class="fa fa-warning"></i> http://www.gewgle.org/</li>
-						<li class="monospace malicious"><i class="fa fa-warning"></i> https://www.facebo.ok/</li>
-						<li class="monospace malicious"><i class="fa fa-warning"></i> http://www.myfirstadware.net/get/worst-version</li>
-					</ul>
+                {% if results.network.dns or results.network.hosts %}
+                    <!-- network -->
+                    <div class="block block-network">
 
-				</div>
+                        <header class="block-header">
+                            <h4><i class="fa fa-globe"></i> Network</h4>
+                        </header>
 
-				<!-- network -->
-				<div class="block block-network">
+                        {% if results.network.dns %}
+                            <section class="block-section no-padding process-view">
 
-					<header class="block-header">
-						<h4><i class="fa fa-globe"></i> Network</h4>
-					</header>
+                                <header class="process-view-header">
+                                    <h5>DNS (3)</h5>
+                                </header>
 
-					<section class="block-section no-padding process-view">
+                                <!-- table with info -->
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Name</th>
+                                            <th>Response</th>
+                                            <th>Post-analysis lookup</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in results.network.dns %}
+                                            <tr>
+                                                <td>{{ p.type }}</td>
+                                                <td>{{ p.request }}</td>
+                                                {% if "answers" in p and p.answers %}
+                                                    <td>{{ p.answers|length }}</td>
+                                                {% else %}
+                                                    <td>Empty</td>
+                                                {% endif %}
+                                                <td>-</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
 
-						<header class="process-view-header">
-							<h5>DNS (3)</h5>
-						</header>
+                            </section>
+                        {% endif %}
 
-						<!-- table with info -->
-						<table>
-							<thead>
-								<tr>
-									<th>Name</th>
-									<th>Response</th>
-									<th>Post-analysis lookup</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>www.msftncsi.com</td>
-									<td></td>
-									<td>82.94.234.89</td>
-								</tr>
-								<tr>
-									<td>dns.msftncsi.com</td>
-									<td></td>
-									<td>131.107.255.255</td>
-								</tr>
-								<tr>
-									<td>teredo.ipv6.microsoft.com</td>
-									<td></td>
-									<td></td>
-								</tr>
-							</tbody>
-						</table>
+                        {% if results.network.hosts %}
+                            <section class="block-section no-padding process-view">
 
-					</section>
+                                <header class="process-view-header">
+                                    <h5>Hosts ({{ results.network.hosts|length }})</h5>
+                                </header>
 
-					<section class="block-section no-padding process-view">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>IP Address</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for host in results.network.hosts %}
+                                            <tr>
+                                                <td>{{ host }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
 
-						<header class="process-view-header">
-							<h5>Hosts (1)</h5>
-						</header>
-
-						<table>
-							<thead>
-								<tr>
-									<th>IP Address</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>8.8.8.8</td>
-								</tr>
-							</tbody>
-						</table>
-
-					</section>
-
-				</div>
-
-				<!-- behavioral data -->
-				<div class="block block-behavioral">
-
-					<header class="block-header">
-						<h4><i class="fa fa-heartbeat"></i> Behavioral</h4>
-					</header>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header clearfix">
-							<h5><span class="indicate"></span> default</h5>
-							<small class="pull-right limited-results"><i class="fa fa-info"></i> data limited to 3 records</small>
-						</header>
-
-						<table>
-							<thead>
-								<tr>
-									<th>Time &amp; API</th>
-									<th>Arguments</th>
-									<th>Status</th>
-									<th class="small-integer">Return</th>
-									<th class="small-integer">Repeated</th>
-								</tr>
-							</thead>
-							<tbody>
-
-								<tr>
-									<td>
-										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:42 a.m.</time>
-										<p class="monospace">GetSystemTimeAsFileTime</p>
-									</td>
-									<td></td>
-									<td><span class="monospace">success</span></td>
-									<td><span class="monospace">0</span></td>
-									<td><span class="monospace">0</span></td>
-								</tr>
-
-								<tr>
-									<td>
-										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:42 a.m.</time>
-										<p class="monospace">NtProtectVirtualMemory</p>
-									</td>
-									<td>
-										<ul class="list-reset list-arguments">
-											<li>base_address: 0x00949000</li>
-											<li>length: 4096</li>
-											<li>protection: 64 (PAGE_EXECUTE_READWRITE)</li>
-											<li>process_identifier: 2128</li>
-											<li>process_handle: 0xffffffff</li>
-										</ul>
-									</td>
-									<td><span class="monospace">success</span></td>
-									<td><span class="monospace">0</span></td>
-									<td><span class="monospace">0</span></td>
-								</tr>
-
-								<tr>
-									<td>
-										<time datetime="July 20, 2016, 8:49 a.m.">July 20, 2016, 8:49 a.m.</time>
-										<p class="monospace">SetUnhandledExceptionFilter</p>
-									</td>
-									<td></td>
-									<td><span class="monospace failed">failed</span></td>
-									<td><span class="monospace">0</span></td>
-									<td><span class="monospace">0</span></td>
-								</tr>
-
-							</tbody>
-						</table>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-registry"></span> registry</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-file"></span> file</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-network"></span> network</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-process"></span> process</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-services"></span> services</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-synchronisation"></span> synchronisation</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-iexplore"></span> iexplore</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-office"></span> office</h5>
-						</header>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-
-						<header class="process-view-header">
-							<h5><span class="indicate indicate-pdf"></span> pdf</h5>
-						</header>
-
-					</section>
-
-				</div>
-
+                            </section>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            
 			</div>
 
 			<footer class="footnote">
