@@ -11,6 +11,7 @@ import base64
 from glob import glob
 from datetime import datetime
 from collections import OrderedDict
+from jinja2 import Environment, FileSystemLoader
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
@@ -92,7 +93,7 @@ class ReportHTML(Report):
         ]
 
         constants = {
-            "date_now": datetime.now().strftime("%Y/%m/%d %H:%M")
+            "date_now": datetime.now()
         }
 
         processed = {}
@@ -115,39 +116,43 @@ class ReportHTML(Report):
                     for content in proc["summary"][orig]:
                         processed[cat][subcat].append(content)
 
-        def x(results, processed, mapping, constants):
+        signatures = self.format_signatures(results["signatures"])
+
+        def tmp_test():
             try:
-                html_file = open("%s/report.html" % self.path_base, "r")
-                html_contents = html_file.read()
-                html_file.close()
-
-                head = self.generate_html_head(results["info"]["id"])
-                html_contents = html_contents.replace("{{ head }}", head)
-
-                html_jinja2 = jinja2.Environment().from_string(html_contents)
-
-                signatures = self.format_signatures(results["signatures"])
-
-                html_template = html_jinja2.render({
-                    "results": results,
-                    "processed": processed,
-                    "mapping": mapping,
-                    "signatures": signatures,
-                    "constants": constants})
-
+                template = self.generate_jinja2_template(
+                    results=results,
+                    processed=processed,
+                    mapping=mapping,
+                    signatures=signatures,
+                    constants=constants)
             except Exception as e:
                 raise CuckooReportError("Failed to generate HTML report: %s" % e)
 
             try:
                 report_path = os.path.join(self.reports_path, "report.html")
                 with codecs.open(report_path, "w", encoding="utf-8") as report:
-                    report.write(html_template)
+                    report.write(template)
             except (TypeError, IOError) as e:
                 raise CuckooReportError("Failed to write HTML report: %s" % e)
 
-        x(results, processed, mapping, constants)
+        tmp_test()
 
         return True
+
+    def generate_jinja2_template(self, **kwargs):
+        html_file = open("%s/report.html" % self.path_base, "r")
+        html_contents = html_file.read()
+        html_file.close()
+
+        head = self.generate_html_head(kwargs["results"]["info"]["id"])
+        html_contents = html_contents.replace("{{ head }}", head)
+        template_env = Environment(autoescape=True,
+                                   loader=FileSystemLoader(self.path_base),
+                                   trim_blocks=False,
+                                   lstrip_blocks=True)
+        
+        return template_env.from_string(html_contents).render(kwargs)
 
     def format_signatures(self, signatures):
         """Returns an OrderedDict containing a lists with signatures based on severity"""
@@ -164,9 +169,9 @@ class ReportHTML(Report):
     def generate_html_head(self, analysis_id):
         """
         Generates the <head> tag for report.html.
-        It'll combine files from both `static/css/` and `static/fonts/`
-        so that external CSS includes are not needed.
-        Non-plaintext files (like fonts) are converted
+        It'll combine files from `static/css/`, `static/fonts/`
+        and `static/img/`.  So that external resources are not needed.
+        Non-plaintext files (fonts/images) are converted
         to base64 encoded data URI's
         @param analysis_id: analysis ID
         @return: the <head> tag
@@ -178,6 +183,9 @@ class ReportHTML(Report):
             <meta name="description" content="">
             <meta name="author" content="">
             <style>
+            /* IMAGES */
+            %s
+
             /* CSS */
             %s
 
@@ -185,6 +193,7 @@ class ReportHTML(Report):
             %s
             </style>
         """ % (analysis_id,
+               self.combine_images(),
                self.combine_css(),
                self.combine_fonts())
 
@@ -282,3 +291,36 @@ class ReportHTML(Report):
             font_includes += font_face
 
         return font_includes
+
+    def combine_images(self):
+        """
+        Scans the `static/img/ directory for images and
+        creates CSS classes with base64 encoded data URI's"""
+        img_includes = ""
+        for img_path in glob("%s/static/img/*.png" % self.path_base):
+            img_file = open(img_path, "r")
+            img_spl = os.path.splitext(img_path)
+            img_name = os.path.basename(img_spl[0])
+            img_ext = img_spl[1]
+            img_ext = img_ext.replace(".", "")
+            img_data = img_file.read()
+            img_file.close()
+
+            img_data_b64 = base64.b64encode(img_data)
+            img_includes += self.generate_b64_image_css(img_name, img_ext, img_data_b64)
+
+        return img_includes
+
+    @staticmethod
+    def generate_b64_image_css(img_name, img_ext, img_data_b64):
+        mime_types = {
+            "png": "image/png",
+            "gif": "image/gif",
+            "jpg": "image/jpeg"
+        }
+
+        return """
+            div.img-%s{
+                background: url(data:%s;base64,%s)
+            }
+        """ % (img_name, mime_types[img_ext], img_data_b64)

@@ -1,6 +1,6 @@
 <!--
   Cuckoo Sandbox - Automated Malware Analysis
-  Copyright (C) 2010-2015 Cuckoo Foundation.
+  Copyright (C) 2010-2016 Cuckoo Foundation.
   http://www.cuckoosandbox.org
 
   This file is part of Cuckoo.
@@ -22,6 +22,13 @@
 <html>
 	<head>
 		{{ head }}
+
+        <style>
+            div.img-cuckoo{
+                width: 186px;
+                height: 60px;
+            }
+        </style>
 	</head>
 
 	<body>
@@ -32,11 +39,13 @@
 			<!-- top header, logo and datetime of the report -->
 			<header class="main-header">
 				<div class="brand">
-					<img src="static/img/cuckoo.png" alt="Cuckoo" />
+                    <div class="img-cuckoo"></div>
 				</div>
 				<h1>Analysis report</h1>
 				<div class="main-header-right">
-					<time datetime="11-03-2016, 16:48"><i class="fa fa-clock-o"></i> {{ constants["date_now"] }} </time>
+					<time datetime="{{ constants["date_now"].strftime("%Y-%m-%d, %H:%M") }}">
+                        <i class="fa fa-clock-o"></i> {{ constants["date_now"].strftime("%Y/%m/%d %H:%M") }}
+                    </time>
 				</div>
 			</header>
 
@@ -112,66 +121,18 @@
                                             <p>{{ signature.description }} <small>{{ signature.markcount }} {{ event }}</small></p>
 
                                             {% if signature.name == "antivirus_virustotal" %}
-                                                {% set display_max = 6 %}
-                                                <table class="table-key-value">
-                                                    <tbody>
-                                                    {% for viri in signature.marks %}
-                                                        {% if viri.ioc and loop.index <= display_max %}
-                                                            <tr>
-                                                                <td><span class="monospace">{{ viri.category }}</span></td>
-                                                                <td><span class="monospace malicious">{{ viri.ioc }}</span></td>
-                                                            </tr>
-
-                                                            {% if loop.index == display_max %}
-                                                                <tr>
-                                                                    <td><span class="monospace">And more ...</span></td>
-                                                                    <td><span class="monospace malicious"></span></td>
-                                                                </tr>
-                                                            {% endif %}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
+                                                {% include "sections/signatures/antivirus_virustotal.html" %}
                                             {% elif signature.name == "persistence_autorun" %}
-                                                <table class="table-key-value">
-                                                    <tbody>
-                                                    {% for regkey in signature.marks %}
-                                                        <tr>
-                                                            <td><span class="monospace">{{ regkey.category.capitalize() }}</span></td>
-                                                            <td><span class="monospace">{{ regkey.ioc }}</span></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
+                                                {% include "sections/signatures/persistence_autorun.html" %}
                                             {% elif signature.name == "creates_doc" %}
-                                                <table class="table-key-value">
-                                                    <tbody>
-                                                    {% for doc in signature.marks %}
-                                                        <tr>
-                                                            <td><span class="monospace">{{ doc.category.capitalize() }}</span></td>
-                                                            <td><span class="monospace">{{ doc.ioc }}</span></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
+                                                {% include "sections/signatures/creates_doc.html" %}
                                             {% elif signature.name == "suspicious_process" %}
-                                                <table class="table-key-value">
-                                                    <tbody>
-                                                    {% for proc in signature.marks %}
-                                                        <tr>
-                                                            <td><span class="monospace">{{ proc.category }}</span></td>
-                                                            <td><span class="monospace">{{ proc.ioc }}</span></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
+                                                {% include "sections/signatures/suspicious_process.html" %}
                                             {% endif %}
-
                                         </li>
                                     {% endfor %}
                                 {% endfor %}
                             {% else %}
-                                test
                                 <li class="list-status-separator info">No signatures</li>
                             {% endif %}
 						</ul>

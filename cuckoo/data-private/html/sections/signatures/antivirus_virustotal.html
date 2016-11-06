@@ -1,0 +1,20 @@
+{% set display_max = 6 %}
+<table class="table-key-value">
+    <tbody>
+    {% for viri in signature.marks %}
+        {% if viri.ioc and loop.index <= display_max %}
+            <tr>
+                <td><span class="monospace">{{ viri.category }}</span></td>
+                <td><span class="monospace malicious">{{ viri.ioc }}</span></td>
+            </tr>
+
+            {% if loop.index == display_max %}
+                <tr>
+                    <td><span class="monospace">And more ...</span></td>
+                    <td><span class="monospace malicious"></span></td>
+                </tr>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>

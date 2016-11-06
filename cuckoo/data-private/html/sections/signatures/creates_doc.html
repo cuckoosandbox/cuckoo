@@ -1,0 +1,10 @@
+<table class="table-key-value">
+    <tbody>
+    {% for doc in signature.marks %}
+        <tr>
+            <td><span class="monospace">{{ doc.category.capitalize() }}</span></td>
+            <td><span class="monospace">{{ doc.ioc }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

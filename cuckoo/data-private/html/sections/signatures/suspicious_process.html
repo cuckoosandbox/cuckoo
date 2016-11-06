@@ -1,0 +1,10 @@
+<table class="table-key-value">
+    <tbody>
+    {% for proc in signature.marks %}
+        <tr>
+            <td><span class="monospace">{{ proc.category }}</span></td>
+            <td><span class="monospace">{{ proc.ioc }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
