@@ -5,11 +5,14 @@
 
 import os
 import ntpath
+import responses
 import shutil
 import tempfile
 
 from cuckoo.common.files import Folders, Files
+from cuckoo.common.virustotal import VirusTotalAPI
 from cuckoo.core.database import Database
+from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import cwd, set_cwd
 
 CUCKOO_CONF = """
@@ -37,7 +40,6 @@ class TestSubmitManager(object):
         Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
         Files.create(self.dirpath, "conf/processing.conf", PROCESSING_CONF)
 
-        from cuckoo.core.submit import SubmitManager
         self.submit_manager = SubmitManager()
 
         self.urls = [
@@ -54,14 +56,12 @@ class TestSubmitManager(object):
             "data": open("tests/files/foo.txt", "rb").read()
         }]
 
-    def teardown(self):
-        shutil.rmtree(self.dirpath)
-
     def test_pre_file(self):
         """Tests the submission of a plaintext file"""
         assert self.submit_manager.pre(
             submit_type="files",
-            files=self.files) == 1
+            files=self.files
+        ) == 1
 
         submit = self.d.view_submit(1)
         assert isinstance(submit.data["data"], list)
@@ -83,8 +83,13 @@ class TestSubmitManager(object):
         for obj in submit.data["data"]:
             assert obj["type"] == "url"
 
+    @responses.activate
     def test_pre_hash(self):
         """Tests the submission of a VirusTotal hash"""
+        responses.add(
+            responses.GET, VirusTotalAPI.HASH_DOWNLOAD, body="A"*1024*1024
+        )
+
         assert self.submit_manager.pre(
             submit_type="strings",
             files=self.hashes
@@ -94,8 +99,9 @@ class TestSubmitManager(object):
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["data"]) == 1
 
-        for obj in submit.data["data"]:
-            assert obj["type"] == "file"
+        task0 = submit.data["data"][0]
+        assert task0["type"] == "file"
+        assert open(task0["data"], "rb").read() == "A"*1024*1024
 
     def test_pre_url_submit(self):
         """

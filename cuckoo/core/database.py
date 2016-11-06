@@ -412,7 +412,7 @@ class Database(object):
             self.engine.pool_timeout = 60
 
         # Let's emit a warning just in case.
-        if not hasattr(cfg, "database"):
+        if not dsn and not hasattr(cfg, "database"):
             log.warning("It appears you don't have a valid `database` "
                         "section in conf/cuckoo.conf, using sqlite3 instead.")
 

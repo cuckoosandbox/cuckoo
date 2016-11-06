@@ -16,7 +16,6 @@ from sflock import unpack
 
 log = logging.getLogger(__name__)
 
-_cfg = Config("processing")
 db = Database()
 
 class SubmitManager(object):
@@ -28,6 +27,7 @@ class SubmitManager(object):
     """
     def __init__(self):
         self._submit_urlschemes = ["http", "https"]
+        self.cfg = Config("processing")
 
     def pre(self, submit_type, files):
         """
@@ -37,8 +37,6 @@ class SubmitManager(object):
         or a list of strings (urls OR hashes)
         @return: submit id
         """
-        global _cfg
-
         if not isinstance(submit_type, (str, unicode)) or \
                         submit_type not in ["strings", "files"]:
             log.error("Bad parameter \"%s\" for submit_type" % submit_type)
@@ -64,7 +62,7 @@ class SubmitManager(object):
 
                         continue
                     elif _hash:
-                        vt = _cfg.get("virustotal")
+                        vt = self.cfg.get("virustotal")
                         vt_api_key = vt["key"]
                         vt_timeout = vt["timeout"]
                         vt_scan = vt["scan"]
