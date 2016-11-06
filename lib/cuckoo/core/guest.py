@@ -15,7 +15,7 @@ import xmlrpclib
 
 from zipfile import ZipFile, ZIP_STORED
 
-from lib.cuckoo.common.config import Config
+from lib.cuckoo.common.config import Config, parse_options
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
 from lib.cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
@@ -326,8 +326,9 @@ class GuestManager(object):
         directory in the systemdrive, i.e., C:\\."""
         systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
 
-        if self.options.get("analpath"):
-            dirpath = "%s\\%s" % (systemdrive, self.options["analpath"])
+        options = parse_options(self.options["options"])
+        if options.get("analpath"):
+            dirpath = "%s\\%s" % (systemdrive, options["analpath"])
             r = self.post("/mkdir", data={"dirpath": dirpath})
             self.analyzer_path = dirpath
         else:
