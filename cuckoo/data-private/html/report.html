@@ -140,143 +140,61 @@
 
 				</div>
 
-				<!-- screenshots -->
-				<div class="block">
+                {% if screenshots %}
+                    <!-- screenshots -->
+                    <style>
+                        {% for shot in screenshots %}
+                            {{ shot.css }}
+                        {% endfor %}
+                    </style>
 
-					<header class="block-header">
-						<h4><i class="fa fa-desktop"></i> Screenshots</h4>
-					</header>
+                    <div class="block">
 
-					<section class="block-section screenshots">
-						<div class="image">
-							<img src="img/screenshots/1.jpg" alt="1" />
-							<p>1.jpg - Screenshot description</p>
-						</div>
-						<div class="image">
-							<img src="img/screenshots/2.jpg" alt="2" />
-							<p>2.jpg - Screenshot description</p>
-						</div>
+                        <header class="block-header">
+                            <h4><i class="fa fa-desktop"></i> Screenshots <small>({{ screenshots|length }}/{{ results.screenshots|length }})</small></h4>
+                        </header>
 
-					</section>
+                        <section class="block-section screenshots">
+                        {% for shot in screenshots %}
+                            <div class="image">
+                                <div class="img-{{ shot.selector }}" id="img-shot-{{ shot.id }}"></div>
+                                <p>{{ shot.name }}.jpg</p>
+                            </div>
+                        {% endfor %}
+                        </section>
 
-				</div>
+                    </div>
+                {% endif %}
 
 				<!-- processes summary -->
 				<div class="block block-processes">
 
 					<header class="block-header">
-						<h4><i class="fa fa-cogs"></i> Processes</h4>
+						<h4><i class="fa fa-cogs"></i> Processes <small>(warning: truncated results)</small></h4>
 					</header>
 
-					<section class="block-section no-padding process-view">
-						<header class="process-view-header">
-							<h5>1. Files</h5>
-						</header>
-
-						<ul class="process-display list-reset">
-							<li class="process-display-title">Explorer.exe <span class="pid">pid: 1336</span></li>
-							<li>
-								file_read:
-								<ul>
-									<li>C:\Users\Administrator\AppData\Local\Microsoft\Windows\Burn\Burn\desktop.ini</li>
-									<li>C:\Users\desktop.ini</li>
-									<li>C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft Office 2013\Excel 2013.lnk</li>
-								</ul>
-							</li>
-							<li>
-								file_opened:
-								<ul>
-									<li>C:\Windows\System32\imageres.dll</li>
-									<li>C:\Windows\Fonts\arial.ttf</li>
-									<li>C:\</li>
-									<li>C:\Users\Administrator\AppData\Local\Temp</li>
-									<li>C:\Windows\Fonts\tahoma.ttf</li>
-								</ul>
-							</li>
-						</ul>
-
-						<ul class="process-display list-reset">
-							<li class="process-display-title">EXCEL.EXE <span class="pid">pid: 2128</span></li>
-							<li>
-								file_read:
-								<ul>
-									<li>C:\Windows\System32\imageres.dll</li>
-									<li>C:\Windows\Fonts\arial.ttf</li>
-									<li>C:\</li>
-									<li>C:\Users\Administrator\AppData\Local\Temp</li>
-									<li>C:\Windows\Fonts\tahoma.ttf</li>
-								</ul>
-							</li>
-							<li>
-								file_opened:
-								<ul>
-									<li>C:\Users\Administrator\AppData\Local\Temp\8b8960a855603393190152439c64ac9fd16655b304d472ecb83422900369a266</li>
-									<li>C:\Users\desktop.ini</li>
-								</ul>
-							</li>
-						</ul>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-						<header class="process-view-header">
-							<h5>2. Registry</h5>
-						</header>
-
-						<ul class="process-display list-reset">
-							<li class="process-display-title">EXCEL.EXE <span class="pid">pid: 2128</span></li>
-							<li>
-								regkey_written
-								<ul>
-									<li>HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\Excel\Resiliency\StartupItems\.a?</li>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\00005109E60090400000000000F01FEC\Usage\ProductNonBootFilesIntl_1033</li>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\00005119110000000000000000F01FEC\Usage\ProductFiles</li>
-									<li>HKEY_CURRENT_USER\Software\Microsoft\Office\15.0\Excel\MTTT</li>
-									<li>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet</li>
-								</ul>
-							</li>
-							<li>
-								regkey_opened
-								<ul>
-									<li>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\CFFC5E9EEFFA38F46A597743AF74579B</li>
-									<li>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Components\7A1D1891699C40E459B785BF7198266C</li>
-									<li>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\2</li>
-									<li>HKEY_CURRENT_USER\Software\Microsoft\AuthCookies\Live\Default\CAW</li>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\OneNoteToWordAddin</li>
-								</ul>
-							</li>
-							<li>
-								regkey_read
-								<ul>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{2F632ABD-D62A-46C8-BF95-70186096F1ED}\Order</li>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{2030A84D-D6C7-4968-8CEC-CF4737ACC337}\Order</li>
-									<li>HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Nls\CustomLocale\nso-ZA</li>
-									<li>HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Nls\Locale\00000501</li>
-									<li>HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\User Settings\{4C1D1588-3088-4796-B3B2-8935F3A0D886}\Order</li>
-								</ul>
-							</li>
-						</ul>
-
-					</section>
-
-					<section class="block-section no-padding process-view">
-						<header class="process-view-header">
-							<h5>3. Mutexes</h5>
-						</header>
-					</section>
-
-					<section class="block-section no-padding process-view">
-						<header class="process-view-header">
-							<h5>4. Directories</h5>
-						</header>
-					</section>
-
-					<section class="block-section no-padding process-view">
-						<header class="process-view-header">
-							<h5>5. Processes</h5>
-						</header>
-					</section>
-
+                    {% for behavior, procs in behavioral.iteritems() %}
+                        <section class="block-section no-padding process-view">
+                            <header class="process-view-header">
+                                <h5>{{ loop.index + 1 }}. {{ behavior.capitalize() }}</h5>
+                            </header>
+                            {% for proc_name, proc in procs.iteritems() %}
+                                <ul class="process-display list-reset">
+                                    <li class="process-display-title">{{ proc.process_name }} <span class="pid">pid: {{ proc.pid }}</span></li>
+                                    {% for event_type, events in proc.events.iteritems() %}
+                                    <li>
+                                        {{ event_type }}:
+                                        <ul>
+                                            {% for event in events[0:15] %}
+                                                <li>{{ event }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endfor %}
+                        </section>
+                    {% endfor %}
 				</div>
 
 				<!-- process memory dump -->

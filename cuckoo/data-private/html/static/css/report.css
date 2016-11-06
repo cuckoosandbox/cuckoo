@@ -306,9 +306,15 @@ table {
 		border-right: 0;
 	}
 
-	.screenshots .image > img {
+	.screenshots .image > div {
 		width: 100%;
 		border: 2px solid #ccc;
+	}
+
+	div[class^="img-shot-"]{
+		width:450px;
+		height:340px;
+		background-size: cover !important;
 	}
 
 	.screenshots .image > p {

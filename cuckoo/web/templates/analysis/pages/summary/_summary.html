@@ -22,6 +22,7 @@ section .nav>li>a {
             var task_id = {{report.analysis.info.id}};
             var behaviors = [];
 
+            //TODO: move to CuckooWeb js api
             $(document).ready(function(){
                 CuckooWeb.api_post("/analysis/api/task/behavior_get_processes/", {"task_id": task_id}, function(data){
                     data["data"].forEach(function(obj, i){

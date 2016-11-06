@@ -7,8 +7,10 @@ import os
 import jinja2
 import codecs
 import base64
+import random
 
 from glob import glob
+from copy import copy
 from datetime import datetime
 from collections import OrderedDict
 from jinja2 import Environment, FileSystemLoader
@@ -69,63 +71,88 @@ class ReportHTML(Report):
         env = Environment(autoescape=True)
         env.loader = FileSystemLoader(self.path_base)
 
-        processed = None
-        mapping = [
-            ("file_read", "File", "Read"),
-            ("file_written", "File", "Written"),
-            ("file_deleted", "File", "Deleted"),
-            ("file_opened", "File", "Opened"),
-            ("file_copied", "File", "Copied"),
-            ("file_moved", "File", "Moved"),
-            ("connects_ip", "Network", "Connects IP"),
-            ("resolves_url", "Network", "Resolves URL"),
-            ("fetches_url", "Network", "Fetches URL"),
-            ("connects_host", "Network", "Connects Host"),
-            ("downloads_file_url", "Network", "Downloads File URL"),
-            ("directory_created", "Directory", "Created"),
-            ("directory_removed", "Directory", "Removed"),
-            ("directory_enumerated", "Directory", "Enumerated"),
-            ("regkey_opened", "Registry Key", "Opened"),
-            ("regkey_deleted", "Registry Key", "Deleted"),
-            ("regkey_read", "Registry Key", "Read"),
-            ("regkey_written", "Registry Key", "Written"),
-            ("mutex", "Mutex", "Accessed"),
-        ]
-
         constants = {
             "date_now": datetime.now()
         }
 
-        processed = {}
-        for proc in results.get("behavior", {}).get("generic", []):
-            for orig, cat, subcat in mapping:
-                if cat not in processed:
-                    processed[cat] = {}
-
-                if subcat not in processed[cat]:
-                    processed[cat][subcat] = []
-
-                # Special handling required for file moved/copied.
-                if orig == "file_moved" or orig == "file_copied":
-                    for src, dst in proc.get("summary", {}).get(orig, []):
-                        entry = "%s -> %s" % (src, dst)
-                        processed[cat][subcat].append(entry)
-                    continue
-
-                if "summary" in proc and orig in proc["summary"]:
-                    for content in proc["summary"][orig]:
-                        processed[cat][subcat].append(content)
-
         signatures = self.format_signatures(results["signatures"])
+        screenshots = self.combine_screenshots(results["screenshots"])
+
+        #TODO: Code resembles web/controllers/analysis/api.py, should be in a controller that we can import
+        # def behavior_get_processes
+        behavioral = {}
+
+        plist = {
+            "data": [],
+            "status": True
+        }
+
+        for process in results.get("behavior", {}).get("generic", []):
+            plist["data"].append({
+                "process_name": process["process_name"],
+                "pid": process["pid"]
+            })
+
+        # sort returning list of processes by their name
+        plist["data"] = sorted(plist["data"], key=lambda k: k["process_name"])
+
+        for proc in plist["data"]:
+            # def behavior_get_watchers
+            behavior_generic = results["behavior"]["generic"]
+            process = [z for z in behavior_generic if z["pid"] == proc["pid"]]
+
+            if not process:
+                continue
+            else:
+                process = process[0]
+
+            data = {}
+            for category, watchers in {  # def behavior_get_watcherlist
+                "files":
+                    ["file_opened", "file_read"],
+                "registry":
+                    ["regkey_opened", "regkey_written", "regkey_read"],
+                "mutexes":
+                    ["mutex"],
+                "directories":
+                    ["directory_created", "directory_removed", "directory_enumerated"],
+                "processes":
+                    ["command_line", "dll_loaded"],
+            }.iteritems():
+                for watcher in watchers:
+                    if watcher in process["summary"]:
+                        if category not in data:
+                            data[category] = [watcher]
+                        else:
+                            data[category].append(watcher)
+
+            # def behavior_get_watcher
+            for category, events in data.iteritems():
+                if not behavioral.has_key(category):
+                    behavioral[category] = {}
+
+                if not behavioral[category].has_key(proc["pid"]):
+                    behavioral[category][proc["process_name"]] = {
+                        "pid": proc["pid"],
+                        "process_name": proc["process_name"],
+                        "events": {}
+                    }
+
+                for event in events:
+                    if not behavioral[category][proc["process_name"]]["events"].has_key(event):
+                        behavioral[category][proc["process_name"]]["events"][event] = []
+
+                    for _event in process["summary"][event]:
+                        behavioral[category][proc["process_name"]]["events"][event].append(_event)
 
         def tmp_test():
             try:
                 template = self.generate_jinja2_template(
                     results=results,
-                    processed=processed,
-                    mapping=mapping,
+                    behavioral=behavioral,
                     signatures=signatures,
-                    constants=constants)
+                    constants=constants,
+                    screenshots=screenshots)
             except Exception as e:
                 raise CuckooReportError("Failed to generate HTML report: %s" % e)
 
@@ -196,7 +223,7 @@ class ReportHTML(Report):
                self.combine_images(),
                self.combine_css(),
                self.combine_fonts())
-
+    
     def combine_css(self):
         """Scans the `static/css/ directory for stylesheets and concatenates them"""
         css_includes = ""
@@ -292,6 +319,33 @@ class ReportHTML(Report):
 
         return font_includes
 
+    def combine_screenshots(self, screenshots, num=4, shuffle=True):
+        if not screenshots:
+            return
+
+        shots = copy(screenshots)
+        if shuffle:
+            random.shuffle(shots)
+
+        shots = shots[0:num]
+        shot_includes = []
+        for shot_id in range(0, len(shots)):
+            shot_name = "shot-%d" % shot_id
+            shot_css = self.generate_b64_image_css(
+                img_name=shot_name,
+                img_ext="jpg",
+                img_data_b64=shots[shot_id]["data"])
+
+            shot_includes.append({
+                "selector": shot_name,
+                "name": shots[shot_id]["id"],
+                "css": shot_css,
+                "ext": "jpg",
+                "id": shot_id
+            })
+
+        return shot_includes
+
     def combine_images(self):
         """
         Scans the `static/img/ directory for images and
@@ -321,6 +375,6 @@ class ReportHTML(Report):
 
         return """
             div.img-%s{
-                background: url(data:%s;base64,%s)
+                background: url(data:%s;base64,%s);
             }
         """ % (img_name, mime_types[img_ext], img_data_b64)
