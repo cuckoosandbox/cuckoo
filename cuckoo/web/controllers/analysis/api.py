@@ -398,38 +398,11 @@ class AnalysisApi:
         if not task_id:
             return json_error_response("missing task_id")
 
-        report = AnalysisController.get_report(task_id)
-
-        plist = {
-            "data": [],
-            "status": True
-        }
-
-        for process in report["analysis"].get("behavior", {}).get("generic", []):
-            plist["data"].append({
-                "process_name": process["process_name"],
-                "pid": process["pid"]
-            })
-
-        # sort returning list of processes by their name
-        plist["data"] = sorted(plist["data"], key=lambda k: k["process_name"])
-
-        return JsonResponse(plist, safe=False)
-
-    @staticmethod
-    def behavior_get_watcherlist():
-        return {
-            "files":
-                ["file_opened", "file_read"],
-            "registry":
-                ["regkey_opened", "regkey_written", "regkey_read"],
-            "mutexes":
-                ["mutex"],
-            "directories":
-                ["directory_created", "directory_removed", "directory_enumerated"],
-            "processes":
-                ["command_line", "dll_loaded"],
-        }
+        try:
+            data = AnalysisController.behavior_get_processes(task_id)
+            return JsonResponse({"status": True, "data": data}, safe=False)
+        except Exception as e:
+            return json_error_response(str(e))
 
     @api_post
     def behavior_get_watchers(request, body):
@@ -439,25 +412,13 @@ class AnalysisApi:
         if not task_id or not pid:
             return json_error_response("missing task_id or pid")
 
-        report = AnalysisController.get_report(task_id)
-        behavior_generic = report["analysis"]["behavior"]["generic"]
-        process = [z for z in behavior_generic if z["pid"] == pid]
-
-        if not process:
-            return json_error_response("missing pid")
-        else:
-            process = process[0]
-
-        data = {}
-        for category, watchers in AnalysisApi.behavior_get_watcherlist().iteritems():
-            for watcher in watchers:
-                if watcher in process["summary"]:
-                    if category not in data:
-                        data[category] = [watcher]
-                    else:
-                        data[category].append(watcher)
-
-        return JsonResponse({"status": True, "data": data}, safe=False)
+        try:
+            data = AnalysisController.behavior_get_watchers(
+                task_id=task_id,
+                pid=pid)
+            return JsonResponse({"status": True, "data": data}, safe=False)
+        except Exception as e:
+            return json_error_response(str(e))
 
     @api_post
     def behavior_get_watcher(request, body):
@@ -470,24 +431,13 @@ class AnalysisApi:
         if not task_id or not watcher or not pid:
             return json_error_response("missing task_id, watcher, and/or pid")
 
-        report = AnalysisController.get_report(task_id)
-        behavior_generic = report["analysis"]["behavior"]["generic"]
-        process = [z for z in behavior_generic if z["pid"] == pid]
-
-        if not process:
-            return json_error_response("supplied pid not found")
-        else:
-            process = process[0]
-
-        summary = process["summary"]
-
-        if watcher not in summary:
-            return json_error_response("supplied watcher not found")
-
-        if offset:
-            summary[watcher] = summary[watcher][offset:]
-
-        if limit:
-            summary[watcher] = summary[watcher][:limit]
-
-        return JsonResponse({"status": True, "data": summary[watcher]}, safe=False)
+        try:
+            data = AnalysisController.behavior_get_watcher(
+                task_id=task_id,
+                pid=pid,
+                watcher=watcher,
+                limit=limit,
+                offset=offset)
+            return JsonResponse({"status": True, "data": data}, safe=False)
+        except Exception as e:
+            return json_error_response(str(e))

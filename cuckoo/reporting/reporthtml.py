@@ -4,7 +4,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import jinja2
 import codecs
 import base64
 import random
@@ -12,13 +11,12 @@ import random
 from glob import glob
 from copy import copy
 from datetime import datetime
-from collections import OrderedDict
-from jinja2 import Environment, FileSystemLoader
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.objects import File
 from cuckoo.misc import cwd
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 try:
     from jinja2.environment import Environment
@@ -27,7 +25,6 @@ try:
     HAVE_JINJA2 = True
 except ImportError:
     HAVE_JINJA2 = False
-
 
 class ReportHTML(Report):
     """Stores report in HTML format."""
@@ -43,6 +40,8 @@ class ReportHTML(Report):
             raise CuckooReportError(
                 "Failed to generate HTML report: Jinja2 library is not "
                 "installed (install `pip install jinja2`)")
+
+        analysis_id = results["info"]["id"]
 
         shots_path = os.path.join(self.analysis_path, "shots")
         if os.path.exists(shots_path):
@@ -68,106 +67,42 @@ class ReportHTML(Report):
         else:
             results["screenshots"] = []
 
-        env = Environment(autoescape=True)
-        env.loader = FileSystemLoader(self.path_base)
-
         constants = {
             "date_now": datetime.now()
         }
 
-        signatures = self.format_signatures(results["signatures"])
+        signatures = {}
+        if results["signatures"]:
+            signatures = AnalysisController.signatures(
+                task_id=results["signatures"],
+                signatures=results["signatures"])
+
+        behavioral = AnalysisController.get_behavior(analysis_id, report=results)
         screenshots = self.combine_screenshots(results["screenshots"])
 
-        #TODO: Code resembles web/controllers/analysis/api.py, should be in a controller that we can import
-        # def behavior_get_processes
-        behavioral = {}
+        try:
+            template = self.generate_jinja2_template(
+                results=results,
+                behavioral=behavioral,
+                signatures=signatures,
+                constants=constants,
+                screenshots=screenshots)
+        except Exception as e:
+            raise CuckooReportError("Failed to generate HTML report: %s" % e)
 
-        plist = {
-            "data": [],
-            "status": True
-        }
-
-        for process in results.get("behavior", {}).get("generic", []):
-            plist["data"].append({
-                "process_name": process["process_name"],
-                "pid": process["pid"]
-            })
-
-        # sort returning list of processes by their name
-        plist["data"] = sorted(plist["data"], key=lambda k: k["process_name"])
-
-        for proc in plist["data"]:
-            # def behavior_get_watchers
-            behavior_generic = results["behavior"]["generic"]
-            process = [z for z in behavior_generic if z["pid"] == proc["pid"]]
-
-            if not process:
-                continue
-            else:
-                process = process[0]
-
-            data = {}
-            for category, watchers in {  # def behavior_get_watcherlist
-                "files":
-                    ["file_opened", "file_read"],
-                "registry":
-                    ["regkey_opened", "regkey_written", "regkey_read"],
-                "mutexes":
-                    ["mutex"],
-                "directories":
-                    ["directory_created", "directory_removed", "directory_enumerated"],
-                "processes":
-                    ["command_line", "dll_loaded"],
-            }.iteritems():
-                for watcher in watchers:
-                    if watcher in process["summary"]:
-                        if category not in data:
-                            data[category] = [watcher]
-                        else:
-                            data[category].append(watcher)
-
-            # def behavior_get_watcher
-            for category, events in data.iteritems():
-                if not behavioral.has_key(category):
-                    behavioral[category] = {}
-
-                if not behavioral[category].has_key(proc["pid"]):
-                    behavioral[category][proc["process_name"]] = {
-                        "pid": proc["pid"],
-                        "process_name": proc["process_name"],
-                        "events": {}
-                    }
-
-                for event in events:
-                    if not behavioral[category][proc["process_name"]]["events"].has_key(event):
-                        behavioral[category][proc["process_name"]]["events"][event] = []
-
-                    for _event in process["summary"][event]:
-                        behavioral[category][proc["process_name"]]["events"][event].append(_event)
-
-        def tmp_test():
-            try:
-                template = self.generate_jinja2_template(
-                    results=results,
-                    behavioral=behavioral,
-                    signatures=signatures,
-                    constants=constants,
-                    screenshots=screenshots)
-            except Exception as e:
-                raise CuckooReportError("Failed to generate HTML report: %s" % e)
-
-            try:
-                report_path = os.path.join(self.reports_path, "report.html")
-                with codecs.open(report_path, "w", encoding="utf-8") as report:
-                    report.write(template)
-            except (TypeError, IOError) as e:
-                raise CuckooReportError("Failed to write HTML report: %s" % e)
-
-        tmp_test()
+        try:
+            report_path = os.path.join(self.reports_path, "report.html")
+            with codecs.open(report_path, "w", encoding="utf-8") as report:
+                report.write(template)
+        except (TypeError, IOError) as e:
+            raise CuckooReportError("Failed to write HTML report: %s" % e)
 
         return True
 
     def generate_jinja2_template(self, **kwargs):
+        jinja2_env = Environment(autoescape=True)
+        jinja2_env.loader = FileSystemLoader(self.path_base)
+
         html_file = open("%s/report.html" % self.path_base, "r")
         html_contents = html_file.read()
         html_file.close()
@@ -180,18 +115,6 @@ class ReportHTML(Report):
                                    lstrip_blocks=True)
         
         return template_env.from_string(html_contents).render(kwargs)
-
-    def format_signatures(self, signatures):
-        """Returns an OrderedDict containing a lists with signatures based on severity"""
-        data = OrderedDict()
-        for signature in signatures:
-            severity = signature["severity"]
-            if severity > 3:
-                severity = 3
-            if not data.has_key(severity):
-                data[severity] = []
-            data[severity].append(signature)
-        return data
 
     def generate_html_head(self, analysis_id):
         """
