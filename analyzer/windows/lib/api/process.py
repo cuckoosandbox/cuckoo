@@ -292,7 +292,7 @@ class Process(object):
             return False
 
         # Report this PID to the kernel driver (if present).
-        ioctl("addpid", "I", self.pid)
+        ioctl.addpid(self.pid)
 
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")

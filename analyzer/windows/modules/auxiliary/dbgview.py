@@ -38,7 +38,7 @@ class DbgView(Auxiliary):
 
         # Accept the EULA and enable Kernel Capture.
         subprocess.Popen([
-            dbgview_path, "/accepteula", "/k", "/l", self.filepath,
+            dbgview_path, "/accepteula", "/t", "/k", "/l", self.filepath,
         ])
         log.info("Successfully started DbgView.")
 
