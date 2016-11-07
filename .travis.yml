@@ -14,7 +14,7 @@ services:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
-  - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev
+  - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev swig
   - sudo apt-get install libpq-dev libmysqlclient-dev
 
   - sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"

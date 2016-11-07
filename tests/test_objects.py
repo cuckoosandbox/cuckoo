@@ -101,3 +101,10 @@ def test_regex():
     r = re.findall(URL_REGEX, "foo http://google.com/search bar")
     assert len(r) == 1
     assert "".join(r[0]) == "http://google.com/search"
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+def test_m2crypto():
+    pe = PortableExecutable("tests/files/icardres.dll")
+    sig0 = pe.run()["signature"][0]
+    assert sig0["organization"] == "Microsoft Corporation"
+    assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
