@@ -123,7 +123,7 @@ class TestSubmitManager(object):
                 "type": "url"
             })
 
-        tasks = self.submit_manager.submit(
+        tasks = self.submit_manager.pre_submit(
             submit_id=1,
             selected_files=selected_files,
             memory=False,
@@ -171,7 +171,7 @@ class TestSubmitManager(object):
                 "type": "file"
             })
 
-        tasks = self.submit_manager.submit(
+        tasks = self.submit_manager.pre_submit(
             submit_id=1,
             selected_files=selected_files,
             memory=False,

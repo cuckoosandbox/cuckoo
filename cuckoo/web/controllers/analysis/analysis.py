@@ -150,18 +150,18 @@ class AnalysisController:
             pname = proc["process_name"]
             pdetails = None
             for p in report["behavior"]["generic"]:
-                if p["pid"] == proc["pid"]:
+                if p["pid"] == pid:
                     pdetails = p
             if not pdetails:
                 continue
 
             watchers = AnalysisController.behavior_get_watchers(
-                task_id, pid=proc["pid"], report=report)
+                task_id, pid=pid, report=report)
 
             for category, events in watchers.iteritems():
                 if not data.has_key(category):
                     data[category] = {}
-                if not data[category].has_key(proc["pid"]):
+                if not data[category].has_key(pid):
                     data[category][pname] = {
                         "pid": pid,
                         "process_name": pname,
@@ -244,10 +244,8 @@ class AnalysisController:
 
         if watcher not in summary:
             raise Exception("supplied watcher not found")
-
         if offset:
             summary[watcher] = summary[watcher][offset:]
-
         if limit:
             summary[watcher] = summary[watcher][:limit]
 

@@ -32,7 +32,6 @@
 	</head>
 
 	<body>
-
 		<!-- wrapping container, defines the wrapping width of the content -->
 		<div class="container">
 
@@ -60,7 +59,6 @@
 					</header>
 
 					<section class="block-section">
-
 						<!-- file info -->
 						<div class="block-section-col">
 							<h5>File info</h5>
@@ -79,11 +77,8 @@
 								<li><span class="label">MD5</span> {{results.target.file.md5}}</li>
 							</ul>
 						</div>
-
 					</section>
-
 					<!-- <footer class="block-footer"></footer> -->
-
 				</div>
 
 				<!-- block: status and process messages / information -->
@@ -137,7 +132,6 @@
                             {% endif %}
 						</ul>
 					</section>
-
 				</div>
 
                 {% if screenshots %}
@@ -149,7 +143,6 @@
                     </style>
 
                     <div class="block">
-
                         <header class="block-header">
                             <h4><i class="fa fa-desktop"></i> Screenshots <small>({{ screenshots|length }}/{{ results.screenshots|length }})</small></h4>
                         </header>
@@ -162,13 +155,11 @@
                             </div>
                         {% endfor %}
                         </section>
-
                     </div>
                 {% endif %}
 
 				<!-- processes summary -->
 				<div class="block block-processes">
-
 					<header class="block-header">
 						<h4><i class="fa fa-cogs"></i> Processes <small>(warning: truncated results)</small></h4>
 					</header>
@@ -285,7 +276,6 @@
                         {% endif %}
                     </div>
                 {% endif %}
-
 			</div>
 
 			<footer class="footnote">

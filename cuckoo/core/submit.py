@@ -19,17 +19,17 @@ log = logging.getLogger(__name__)
 _cfg = Config("processing")
 db = Database()
 
-class SubmitManager(object):
+class SubmitManager:
     """Submit Manager.
 
     This class handles the submission process for files to be analyzed. It takes
     care of preparing the temporary storage locations, database registrations and
     interacting with the submitted files to determine a package.
     """
-    def __init__(self):
-        self._submit_urlschemes = ["http", "https"]
+    _submit_urlschemes = ["http", "https"]
 
-    def pre(self, submit_type, files):
+    @staticmethod
+    def pre(submit_type, files):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
@@ -113,61 +113,9 @@ class SubmitManager(object):
         return submit.id
 
     @staticmethod
-    def get_files(submit_id, password=None, astree=False):
-        """
-        Returns files from a submitted analysis.
-        @param password: The password to unlock container archives with
-        @param astree: sflock option; determines the format in which the files are returned
-        @return: A tree of files
-        """
-        submit = Database().view_submit(submit_id)
-
-        files, duplicates = [], []
-
-        for data in submit.data["data"]:
-            if data["type"] == "file":
-                filename = Storage.get_filename_from_path(data["data"])
-                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
-
-                unpacked = unpack(
-                    filepath=filename, contents=filedata,
-                    password=password, duplicates=duplicates
-                )
-
-                if astree:
-                    unpacked = unpacked.astree()
-
-                files.append(unpacked)
-            elif data["type"] == "url":
-                files.append({
-                    "filename": data["data"],
-                    "filepath": "",
-                    "relapath": "",
-                    "selected": True,
-                    "size": 0,
-                    "type": "url",
-                    "package": "ie",
-                    "extrpath": [],
-                    "duplicate": False,
-                    "children": [],
-                    "mime": "text/html",
-                    "finger": {
-                        "magic_human": "url",
-                        "magic": "url"
-                    }
-                })
-            else:
-                continue
-
-        return {
-            "files": files,
-            "path": submit.tmp_path,
-        }
-
-    @staticmethod
-    def submit(submit_id, selected_files, timeout=0, package="", options="",
-               priority=1, custom="", owner="", machine="", platform="",
-               tags=None, memory=False, enforce_timeout=False, **kwargs):
+    def pre_submit(submit_id, selected_files, timeout=0, package="", options="",
+                   priority=1, custom="", owner="", machine="", platform="",
+                   tags=None, memory=False, enforce_timeout=False, **kwargs):
         """Creates tasks, returns a list of `Task` id's"""
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
@@ -246,3 +194,83 @@ class SubmitManager(object):
             ))
 
         return ret
+
+    @staticmethod
+    def submit(data):
+        """
+        Automatic file submission
+        @param data: a list of dicts containing "name" (file name) and "data" (file data)
+        or a list of strings (urls OR hashes)
+        """
+        if not data:
+            raise Exception("parameter data missing")
+        if not isinstance(data, list):
+            raise Exception("parameter data should be a list")
+        if isinstance(data[0], (unicode, str)):
+            submit_type = "strings"
+        elif isinstance(data[0], dict):
+            submit_type = "files"
+        else:
+            raise Exception("paramter data has an invalid format")
+
+        submit_id = SubmitManager.pre(submit_type=submit_type, files=data)
+        files = SubmitManager.get_files(submit_id=submit_id, astree=True)
+        path = files["path"]
+
+        # fill selected_files in such way that calling the functionworks
+        SubmitManager.pre_submit(
+            submit_id=submit_id,
+            selected_files=""
+        )
+
+    @staticmethod
+    def get_files(submit_id, password=None, astree=False):
+        """
+        Returns files from a submitted analysis.
+        @param password: The password to unlock container archives with
+        @param astree: sflock option; determines the format in which the files are returned
+        @return: A tree of files
+        """
+        submit = Database().view_submit(submit_id)
+
+        files, duplicates = [], []
+
+        for data in submit.data["data"]:
+            if data["type"] == "file":
+                filename = Storage.get_filename_from_path(data["data"])
+                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
+
+                unpacked = unpack(
+                    filepath=filename, contents=filedata,
+                    password=password, duplicates=duplicates
+                )
+
+                if astree:
+                    unpacked = unpacked.astree()
+
+                files.append(unpacked)
+            elif data["type"] == "url":
+                files.append({
+                    "filename": data["data"],
+                    "filepath": "",
+                    "relapath": "",
+                    "selected": True,
+                    "size": 0,
+                    "type": "url",
+                    "package": "ie",
+                    "extrpath": [],
+                    "duplicate": False,
+                    "children": [],
+                    "mime": "text/html",
+                    "finger": {
+                        "magic_human": "url",
+                        "magic": "url"
+                    }
+                })
+            else:
+                continue
+
+        return {
+            "files": files,
+            "path": submit.tmp_path,
+        }
