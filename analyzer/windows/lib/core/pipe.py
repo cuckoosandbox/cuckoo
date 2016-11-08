@@ -41,9 +41,10 @@ class PipeForwarder(threading.Thread):
         # specifying the same process identifier will reuse the same socket,
         # thus making it look like as if it was never closed in the first
         # place.
-        success = KERNEL32.ReadFile(self.pipe_handle,
-                                    byref(pid), sizeof(pid),
-                                    byref(bytes_read), None)
+        success = KERNEL32.ReadFile(
+            self.pipe_handle, byref(pid), sizeof(pid),
+            byref(bytes_read), None
+        )
 
         if not success or bytes_read.value != sizeof(pid):
             log.warning("Unable to read the process identifier of this "
@@ -69,9 +70,10 @@ class PipeForwarder(threading.Thread):
             sock = socket.create_connection(self.destination)
 
         while True:
-            success = KERNEL32.ReadFile(self.pipe_handle,
-                                        byref(buf), sizeof(buf),
-                                        byref(bytes_read), None)
+            success = KERNEL32.ReadFile(
+                self.pipe_handle, byref(buf), sizeof(buf),
+                byref(bytes_read), None
+            )
 
             if success or KERNEL32.GetLastError() == ERROR_MORE_DATA:
                 sock.sendall(buf.raw[:bytes_read.value])
@@ -151,12 +153,14 @@ class PipeServer(threading.Thread):
                 pipe_handle = KERNEL32.CreateNamedPipeA(
                     self.pipe_name, PIPE_ACCESS_DUPLEX | flags,
                     PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                    PIPE_UNLIMITED_INSTANCES, BUFSIZE, BUFSIZE, 0, None)
+                    PIPE_UNLIMITED_INSTANCES, BUFSIZE, BUFSIZE, 0, None
+                )
             else:
                 pipe_handle = KERNEL32.CreateNamedPipeA(
                     self.pipe_name, PIPE_ACCESS_INBOUND | flags,
                     PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                    PIPE_UNLIMITED_INSTANCES, 0, BUFSIZE, 0, None)
+                    PIPE_UNLIMITED_INSTANCES, 0, BUFSIZE, 0, None
+                )
 
             if pipe_handle == INVALID_HANDLE_VALUE:
                 log.warning("Error opening logging pipe server.")
