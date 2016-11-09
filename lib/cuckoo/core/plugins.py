@@ -442,6 +442,31 @@ class RunSignatures(object):
                 if self.call_signature(sig, sig.on_call, call, proc) is False:
                     self.api_sigs[call["api"]].remove(sig)
 
+    def process_yara_matches(self):
+        """Yields any Yara matches to each signature."""
+        for procmem in self.results.get("procmemory", []):
+            # Yara matches on extracted PE files from process memory dumps.
+            for extr in procmem.get("extracted", []):
+                for match in extr.get("yara", []):
+                    for sig in self.signatures:
+                        self.call_signature(
+                            sig, sig.on_yara, "extracted", extr["path"], match
+                        )
+
+            # Yara rules on the process memory dump itself.
+            for match in procmem.get("yara", []):
+                for sig in self.signatures:
+                    self.call_signature(
+                        sig, sig.on_yara, "procmem", procmem["file"], match
+                    )
+
+        for dropped in self.results.get("dropped", []):
+            for match in dropped.get("yara", []):
+                for sig in self.signatures:
+                    self.call_signature(
+                        sig, sig.on_yara, "dropped", dropped["file"], match
+                    )
+
     def run(self):
         """Run signatures."""
         # Allow signatures to initialize themselves.
@@ -459,6 +484,9 @@ class RunSignatures(object):
                 self.call_signature(sig, sig.on_process, proc)
 
             self.yield_calls(proc)
+
+        # Iterate through all Yara matches.
+        self.process_yara_matches()
 
         # Yield completion events to each signature.
         for sig in self.signatures:

@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
+import ctypes
 import multiprocessing
 
 def dispatch(func, args=(), kwargs={}, timeout=60, process=True):
@@ -30,3 +35,17 @@ def dispatch(func, args=(), kwargs={}, timeout=60, process=True):
     parent.close()
     return ret
 
+class Structure(ctypes.Structure):
+    def as_dict(self):
+        ret = {}
+        for field, _ in self._fields_:
+            value = getattr(self, field)
+            if isinstance(value, Structure):
+                ret[field] = value.as_dict()
+            elif hasattr(value, "value"):
+                ret[field] = value
+            elif hasattr(value, "__getitem__"):
+                ret[field] = value[:]
+            else:
+                ret[field] = value
+        return ret

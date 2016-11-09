@@ -459,13 +459,22 @@ class File(object):
 
             for match in matches:
                 strings = set()
+                offsets = {}
                 for s in match.strings:
-                    strings.add(self._yara_encode_string(s[2]))
+                    o, s = s[0], self._yara_encode_string(s[2])
+                    strings.add(s)
+                    offsets[s] = offsets.get(s, []) + [o]
+
+                # Map the offsets.
+                strings, offs = list(strings), {}
+                for s, o in offsets.items():
+                    offs[strings.index(s)] = o
 
                 results.append({
                     "name": match.rule,
                     "meta": match.meta,
-                    "strings": list(strings),
+                    "strings": strings,
+                    "offsets": offs,
                 })
 
         except Exception as e:

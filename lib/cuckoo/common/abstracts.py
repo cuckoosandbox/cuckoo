@@ -1087,6 +1087,14 @@ class Signature(object):
         mark.update(kwargs)
         self.marks.append(mark)
 
+    def mark_config(self, config):
+        """Mark configuration from this malware family."""
+        mark = {
+            "type": "config",
+            "config": config,
+        }
+        self.marks.append(mark)
+
     def mark(self, **kwargs):
         """Mark arbitrary data."""
         mark = {
@@ -1130,6 +1138,18 @@ class Signature(object):
         Can be used for cleanup of flags, re-activation of the signature, etc.
 
         @param process: dictionary describing this process
+        """
+
+    def on_yara(self, category, filepath, match):
+        """Called on YARA match.
+        @param category: yara match category
+        @param filepath: path to the file that matched
+        @param match: yara match information
+
+        The Yara match category can be one of the following.
+          extracted: an extracted PE image from a process memory dump
+          procmem: a process memory dump
+          dropped: a dropped file
         """
 
     def on_complete(self):

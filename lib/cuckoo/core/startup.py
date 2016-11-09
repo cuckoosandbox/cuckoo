@@ -256,7 +256,7 @@ def init_yara():
         # Check if the directory contains any rules.
         signatures = []
         for entry in os.listdir(category_root):
-            if entry.endswith(".yara") or entry.endswith(".yar"):
+            if entry.endswith((".yar", ".yara")):
                 signatures.append(os.path.join(category_root, entry))
 
         if not signatures:
