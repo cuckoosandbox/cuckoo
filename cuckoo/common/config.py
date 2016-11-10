@@ -143,8 +143,7 @@ class Config:
     """Configuration file parser."""
 
     # Config Parameters and their types
-    ParamTypes = {
-        # cuckoo.conf parameters
+    configuration = {
         "cuckoo": {
             "cuckoo": {
                 "version_check": Boolean(),
@@ -185,7 +184,6 @@ class Config:
                 "vm_state": Int(),
             },
         },
-        # virtualbox.conf parameters
         "virtualbox": {
             "virtualbox": {
                 "mode": String(),
@@ -202,9 +200,9 @@ class Config:
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "options": String(),
             },
         },
-        # auxiliary.conf parameters
         "auxiliary": {
             "sniffer": {
                 "enabled": Boolean(),
@@ -213,10 +211,10 @@ class Config:
             },
             "mitm": {
                 "enabled": Boolean(),
-                "mitmdump": Path(exists=True, writable=False, readable=True),
+                "mitmdump": Path(exists=False, writable=False, readable=True),
                 "port_base": Int(),
-                "script": Path(exists=True, writable=False, readable=True),
-                "certificate": Path(exists=True, writable=False, readable=True),
+                "script": Path(exists=False, writable=False, readable=True),
+                "certificate": Path(exists=False, writable=False, readable=True),
             },
             "services": {
                 "enabled": Boolean(),
@@ -227,7 +225,6 @@ class Config:
                 "enabled": Boolean(),
             },
         },
-        # avd.conf parameters
         "avd": {
             "avd": {
                 "mode": String(),
@@ -246,7 +243,6 @@ class Config:
                 "resultserver_port": Int(),
             },
         },
-        # esx.conf parameters
         "esx": {
             "esx": {
                 "dsn": String(),
@@ -266,7 +262,6 @@ class Config:
                 "tags": String(),
             },
         },
-        # kvm.conf parameters
         "kvm": {
             "kvm": {
                 "machines": String(),
@@ -283,7 +278,6 @@ class Config:
                 "tags": String(),
             },
         },
-        # memory.conf parameters
         "memory": {
             "basic": {
                 "guest_profile": String(),
@@ -383,7 +377,6 @@ class Config:
                 "pid_generic": String(),
             },
         },
-        # physical.conf parameters
         "physical": {
             "physical": {
                 "machines": String(),
@@ -402,7 +395,6 @@ class Config:
                 "ip": String(),
             },
         },
-        # processing.conf parameters
         "processing": {
             "analysisinfo": {
                 "enabled": Boolean(),
@@ -499,7 +491,6 @@ class Config:
                 "url": String(),
             },
         },
-        # qemu.conf parameters
         "qemu": {
             "qemu": {
                 "path": Path(exists=True, writable=False, readable=True),
@@ -519,7 +510,6 @@ class Config:
                 "kernel_path": Path(exists=True, writable=False, readable=True),
             },
         },
-        # reporting.conf parameters
         "reporting": {
             "jsondump": {
                 "enabled": Boolean(),
@@ -569,7 +559,6 @@ class Config:
                 "url": String(),
             },
         },
-        # routing.conf parameters
         "routing": {
             "routing": {
                 "route": String(),
@@ -598,7 +587,6 @@ class Config:
                 "rt_table": String(),
             },
         },
-        # vmware.conf parameters
         "vmware": {
             "vmware": {
                 "mode": String(),
@@ -617,7 +605,6 @@ class Config:
                 "tags": String(),
             },
         },
-        # vsphere.conf parameters
         "vsphere": {
             "vsphere": {
                 "host": String(),
@@ -638,7 +625,6 @@ class Config:
                 "tags": String(),
             },
         },
-        # xenserver.conf parameters
         "xenserver": {
             "xenserver": {
                 "user": String(),
@@ -677,16 +663,16 @@ class Config:
         else:
             config.read(cwd("conf", "%s.conf" % file_name))
 
-        if file_name not in self.ParamTypes:
+        if file_name not in self.configuration:
             log.error("Unknown config file %s.conf", file_name)
             return
 
         for section in config.sections():
-            if section in self.ParamTypes[file_name]:
-                sectionTypes = self.ParamTypes[file_name][section]
+            if section in self.configuration[file_name]:
+                sections = self.configuration[file_name][section]
             # Hacky fix to get the type of unknown sections
-            elif "*" in self.ParamTypes[file_name]:
-                sectionTypes = self.ParamTypes[file_name]["*"]
+            elif "*" in self.configuration[file_name]:
+                sections = self.configuration[file_name]["*"]
             else:
                 log.error(
                     "Config section %s:%s not found!", file_name, section
@@ -702,8 +688,8 @@ class Config:
                 raise CuckooOperationalError(e)
 
             for name, raw_value in items:
-                if name in sectionTypes:
-                    value = sectionTypes[name].get(config, section, name)
+                if name in sections:
+                    value = sections[name].get(config, section, name)
                 else:
                     log.error(
                         "Type of config parameter %s:%s:%s not found!",

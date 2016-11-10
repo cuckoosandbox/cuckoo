@@ -10,8 +10,9 @@ import tempfile
 
 from cuckoo.common.config import Config, parse_options, emit_options, config
 from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Folders
 from cuckoo.main import main
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
 
 CONF_EXAMPLE = """
 [cuckoo]
@@ -118,42 +119,51 @@ timeout =
 class TestConfigType:
     def setup(self):
         set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
 
-        self.path = tempfile.mkstemp()[1]
-        open(self.path, "wb").write(VIRTUALBOX_CONFIG_EXAMPLE)
-        self.c = Config(file_name="virtualbox", cfg=self.path)
+        self.vbox_path = cwd("conf", "virtualbox.conf")
+        open(self.vbox_path, "wb").write(VIRTUALBOX_CONFIG_EXAMPLE)
+        self.virtualbox = Config(file_name="virtualbox", cfg=self.vbox_path)
 
-        self.path = tempfile.mkstemp()[1]
-        open(self.path, "wb").write(CUCKOO_CONFIG_EXAMPLE)
-        self.f = Config(file_name="cuckoo", cfg=self.path)
+        filepath = cwd("conf", "cuckoo.conf")
+        open(filepath, "wb").write(CUCKOO_CONFIG_EXAMPLE)
+        self.cuckoo = Config(file_name="cuckoo", cfg=filepath)
 
     def test_integer_parse(self):
         """Testing the integer parsing in the configuration file parsing."""
-        assert self.c.get("virtualbox")["machines"] == "7,8,machine1"
-        assert self.c.get("7") is not None
-        assert self.c.get("7")["label"] is "7"
-        assert self.c.get("7")["resultserver_port"] == 2042
-        assert self.c.get("8") is not None
-        assert self.c.get("8")["label"] is "8"
-        assert self.c.get("machine1") is not None
-        assert self.c.get("machine1")["label"] == "machine1"
+        assert self.virtualbox.get("virtualbox")["machines"] == "7,8,machine1"
+        assert self.virtualbox.get("7") is not None
+        assert self.virtualbox.get("7")["label"] is "7"
+        assert self.virtualbox.get("7")["resultserver_port"] == 2042
+        assert self.virtualbox.get("8") is not None
+        assert self.virtualbox.get("8")["label"] is "8"
+        assert self.virtualbox.get("machine1") is not None
+        assert self.virtualbox.get("machine1")["label"] == "machine1"
+
+    def test_config_wrapper(self):
+        assert config("virtualbox:7:label") == "7"
+        assert config("virtualbox:7:ip") == "192.168.58.10"
+        assert config("virtualbox:7:resultserver_port") == 2042
+
+        assert config("cuckoo:notasection:hello") is None
+        assert config("cuckoo:cuckoo:notafield") is None
 
     def test_string_parse(self):
         """Testing the string parsing in the configuration file parsing."""
-        assert self.c.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
-        assert self.c.get("7")["ip"] == "192.168.58.10"
-        assert self.c.get("7")["tags"] == "windows_xp_sp3,32_bit,acrobat_reader_6"
+        assert self.virtualbox.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
+        assert self.virtualbox.get("7")["ip"] == "192.168.58.10"
+        assert self.virtualbox.get("7")["tags"] == "windows_xp_sp3,32_bit,acrobat_reader_6"
 
     def test_boolean_parse(self):
         """Testing the boolean parsing in the configuration file parsing."""
-        assert self.f.get("cuckoo")["version_check"] is True
-        assert self.f.get("cuckoo")["max_analysis_count"] is not False
-        assert self.f.get("resultserver")["force_port"] is False
+        assert self.cuckoo.get("cuckoo")["version_check"] is True
+        assert self.cuckoo.get("cuckoo")["max_analysis_count"] is not False
+        assert self.cuckoo.get("resultserver")["force_port"] is False
 
     def test_path_parse(self):
         """Testing the Path parsing in the configuration file parsing."""
-        assert self.c.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
-        assert self.f.get("cuckoo")["rooter"] == "/tmp/cuckoo-rooter"
+        assert self.virtualbox.get("virtualbox")["path"] == "/usr/bin/VBoxManage"
+        assert self.cuckoo.get("cuckoo")["rooter"] == "/tmp/cuckoo-rooter"
 
 def test_default_config():
     """Test the default configuration."""
