@@ -508,3 +508,47 @@ def drop_privileges(username):
         sys.exit("Invalid user specified to drop privileges to: %s" % username)
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
+
+def init_vt_download():
+    """Checks if your provided apikey allows download from VirusTotal
+    """
+    cfg = Config("processing")
+    log.debug("Checking VirusTotal download permissions")
+    exception = False
+    if int(cfg.virustotal.get("download", 0)):
+        if cfg.virustotal.apitype != "public" and cfg.virustotal.key != "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088":
+
+            if cfg.virustotal.apitype == "intelligence":
+                url = "https://www.virustotal.com/intelligence/download/"
+            elif cfg.virustotal.apitype == "private":
+                url = "https://www.virustotal.com/vtapi/v2/file/download"
+            try:
+                # MD5 (pafish.exe) = f72cee733b1a6f30f8c850598d67b50a
+                r = requests.get(url, params={
+                    "apikey": cfg.virustotal.key,
+                    "hash": "f72cee733b1a6f30f8c850598d67b50a"
+                    }, 
+                    timeout=int(cfg.virustotal.get("timeout"), 60)
+                )
+                if r:
+                    # no permission in private api
+                    if r.status_code == 403:
+                        exception = True
+                    # no permission in intelligence api
+                    # if user have perissions to download from vt intelligence it will return file
+                    elif r.status_code == 200 and r.content[:20] == "\n\n\n\n<!DOCTYPE html P":
+                        exception = True
+
+                    if exception:
+                        raise CuckooStartupError("Check provided VirusTotal apikey or apitype "
+                            "you don't have permissions for download")
+
+                log.debug("VirusTotal download works correctly")
+
+            except:
+                raise CuckooStartupError("Check provided VirusTotal apikey or apitype "
+                    "you don't have permissions for download")
+        else:
+            raise CuckooStartupError("Check provided VirusTotal apikey or apitype "
+                "you don't have permissions for download")
+

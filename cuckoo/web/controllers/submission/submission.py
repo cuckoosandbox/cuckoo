@@ -53,10 +53,18 @@ class SubmissionController(object):
                     pass
                 elif len(line) in (32, 40, 64, 128):
                     try:
-                        r = requests.get("https://www.virustotal.com/vtapi/v2/file/download", params={
-                            "apikey": cfg.virustotal.key,
-                            "hash": line
-                        })
+                        if int(cfg.virustotal.get("download", 0)):
+                            if cfg.virustotal.apitype == "intelligence":
+                                url = "https://www.virustotal.com/intelligence/download/"
+                            else:
+                                url = "https://www.virustotal.com/vtapi/v2/file/download"
+
+                            r = requests.get(url, params={
+                                "apikey": cfg.virustotal.key,
+                                "hash": line
+                                }, 
+                                timeout=int(cfg.virustotal.get("timeout"), 60)
+                            )
                     except:
                         continue
 

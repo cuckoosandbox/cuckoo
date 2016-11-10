@@ -32,6 +32,7 @@ from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
+from cuckoo.core.startup import init_vt_download
 from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
@@ -124,6 +125,7 @@ def cuckoo_init(level, ctx):
     init_binaries()
     init_rooter()
     init_routing()
+    init_vt_download()
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
