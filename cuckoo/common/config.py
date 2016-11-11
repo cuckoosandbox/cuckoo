@@ -707,8 +707,8 @@ class Config(object):
                     value = types[name].get(config, section, name)
                 else:
                     log.error(
-                        "Type of config parameter %s:%s:%s not found! This may"
-                        "indicate that you've incorrectly filled out the "
+                        "Type of config parameter %s:%s:%s not found! This "
+                        "may indicate that you've incorrectly filled out the "
                         "Cuckoo configuration, please double check it.",
                         file_name, section, name
                     )

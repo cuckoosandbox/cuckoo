@@ -37,14 +37,25 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+def check_specific_config(filename):
+    sections = Config.configuration[filename]
+    for section, entries in sections.items():
+        if section == "*":
+            continue
+
+        # If an enabled field is present, check it beforehand.
+        if config("%s:%s:enabled" % (filename, section)) is False:
+            continue
+
+        for key, value in entries.items():
+            config("%s:%s:%s" % (filename, section, key), strict=True)
+
 def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
-        "auxiliary", "avd", "cuckoo", "esx", "kvm", "memory", "physical",
-        "processing", "qemu", "reporting", "virtualbox", "vmware", "routing",
-        "vsphere", "xenserver",
+        "auxiliary", "cuckoo", "memory", "processing", "reporting", "routing",
     )
 
     for filename in configs:
@@ -54,17 +65,11 @@ def check_configs():
                 cwd("conf", "%s.conf" % filename)
             )
 
-    for filename, sections in Config.configuration.items():
-        for section, entries in sections.items():
-            if section == "*":
-                continue
+        check_specific_config(filename)
 
-            # If an enabled field is present, check it beforehand.
-            if config("%s:%s:enabled" % (filename, section)) is False:
-                continue
-
-            for key, value in entries.items():
-                config("%s:%s:%s" % (filename, section, key), strict=True)
+    # Also check the specific machinery handler for this instance.
+    machinery = config("cuckoo:cuckoo:machinery")
+    check_specific_config(machinery)
 
     return True
 
