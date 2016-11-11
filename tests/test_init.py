@@ -61,6 +61,11 @@ class TestInit(object):
             )
 
         assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
+        assert os.path.exists(os.path.join(self.dirpath, "storage"))
+        assert os.path.exists(os.path.join(self.dirpath, "storage", "binaries"))
+        assert os.path.exists(os.path.join(self.dirpath, "storage", "analyses"))
+        assert os.path.exists(os.path.join(self.dirpath, "storage", "baseline"))
+        assert os.path.exists(os.path.join(self.dirpath, "log"))
 
     def test_cuckoo_init_main(self):
         """Tests that 'cuckoo' works with a new CWD."""

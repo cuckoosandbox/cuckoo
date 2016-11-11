@@ -73,21 +73,6 @@ def check_configs():
 
     return True
 
-def create_structure():
-    """Creates Cuckoo directories."""
-    folders = [
-        "log",
-        "storage",
-        os.path.join("storage", "analyses"),
-        os.path.join("storage", "binaries"),
-        os.path.join("storage", "baseline"),
-    ]
-
-    try:
-        Folders.create(cwd(), folders)
-    except CuckooOperationalError as e:
-        raise CuckooStartupError(e)
-
 def check_version():
     """Checks version of Cuckoo."""
     cfg = Config()
@@ -447,7 +432,6 @@ def cuckoo_clean():
     # Init logging.
     # This need to init a console logger handler, because the standard
     # logger (init_logging()) logs to a file which will be deleted.
-    create_structure()
     init_console_logging()
 
     # Initialize the database connection.

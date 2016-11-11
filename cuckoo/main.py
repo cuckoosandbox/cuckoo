@@ -26,8 +26,7 @@ from cuckoo.core.database import Database
 from cuckoo.core.init import write_supervisor_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
-from cuckoo.core.startup import check_configs, init_modules
-from cuckoo.core.startup import check_version, create_structure
+from cuckoo.core.startup import check_configs, init_modules, check_version
 from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
@@ -109,7 +108,6 @@ def cuckoo_init(level, ctx):
 
     check_configs()
     check_version()
-    create_structure()
 
     if ctx.log:
         init_logging(level)
