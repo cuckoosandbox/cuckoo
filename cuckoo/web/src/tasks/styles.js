@@ -25,7 +25,7 @@ module.exports = function() {
 
 	return sass('./scss/main.scss', { 
 			sourcemap: true, 
-			style: 'compressed' 
+			style: 'expanded' 
 		})
 		// enables verbose logging of SASS errors
 		.on('error', sass.logError)
