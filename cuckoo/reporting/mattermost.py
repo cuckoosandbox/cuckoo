@@ -60,7 +60,7 @@ class Mattermost(Report):
                 self.options.get("url"),
                 headers=headers,
                 data=json.dumps(data)
-            )
+            ).raise_for_status()
         except Exception as e:
             raise CuckooReportError(
                 "Failed posting message to Mattermost: %s" % e
