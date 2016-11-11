@@ -143,8 +143,8 @@ class Sniffer(Auxiliary):
                 "Error running tcpdump to sniff the network traffic during "
                 "the analysis; stdout = %r and stderr = %r. Did you enable "
                 "the extra capabilities to allow running tcpdump as non-root "
-                "user and disable AppArmor properly (only applies to Ubuntu)?"
-                % (out, err)
+                "user and disable AppArmor properly (the latter only applies "
+                "to Ubuntu-based distributions with AppArmor)?" % (out, err)
             )
 
         try:

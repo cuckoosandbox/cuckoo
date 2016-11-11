@@ -16,6 +16,7 @@ class DOC(Package):
         ("ProgramFiles", "Microsoft Office", "Office12", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office14", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office15", "WINWORD.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office16", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "root", "Office16", "WINWORD.EXE"),
         ("ProgramFiles", "Microsoft Office", "WORDVIEW.EXE"),

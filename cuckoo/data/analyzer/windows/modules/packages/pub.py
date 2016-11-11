@@ -16,6 +16,7 @@ class PUB(Package):
         ("ProgramFiles", "Microsoft Office", "Office12", "MSPUB.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office14", "MSPUB.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office15", "MSPUB.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office16", "MSPUB.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "MSPUB.EXE"),
         ("ProgramFiles", "Microsoft Office", "root", "Office16", "MSPUB.EXE"),
     ]
