@@ -8,7 +8,7 @@ import os
 import logging
 import click
 
-from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
 from cuckoo.misc import cwd
 
@@ -18,6 +18,9 @@ _cache = {}
 
 class Type(object):
     """Base Class for Type Definitions"""
+
+    def __init__(self, required=True):
+        self.required = required
 
     def get(self, config, section, name):
         """Gets the Parameter value from the config file."""
@@ -62,8 +65,10 @@ class String(Type):
 class Path(String):
     """Path Type Definition class."""
 
-    def __init__(self, exists=False, writable=False, readable=False):
+    def __init__(self, exists=False, writable=False, readable=False,
+                 required=True):
         """Constructor for Path Type."""
+        super(Path, self).__init__(required)
         self.exists = exists
         self.writable = writable
         self.readable = readable
@@ -139,7 +144,7 @@ class UUID(Type):
         except Exception:
             return False
 
-class Config:
+class Config(object):
     """Configuration file parser."""
 
     # Config Parameters and their types
@@ -154,11 +159,9 @@ class Config:
                 "terminate_processes": Boolean(),
                 "reschedule": Boolean(),
                 "process_results": Boolean(),
-                "debug": Boolean(),
                 "max_analysis_count": Int(),
                 "max_machines_count": Int(),
                 "max_vmstartup_count": Int(),
-                "critical_timeout": Int(),
                 "freespace": Int(),
                 "tmppath": Path(exists=True, writable=True, readable=False),
                 "rooter": Path(exists=False, writable=False, readable=True),
@@ -207,7 +210,7 @@ class Config:
             "sniffer": {
                 "enabled": Boolean(),
                 "tcpdump": Path(exists=True, writable=False, readable=True),
-                "bpf": String(),
+                "bpf": String(required=False),
             },
             "mitm": {
                 "enabled": Boolean(),
@@ -282,7 +285,6 @@ class Config:
             "basic": {
                 "guest_profile": String(),
                 "delete_memdump": String(),
-                "filter": Boolean(),
             },
             "malfind": {
                 "enabled": Boolean(),
@@ -401,7 +403,7 @@ class Config:
             },
             "apkinfo": {
                 "enabled": Boolean(),
-                "decompilation_threshold": Int(),
+                "decompilation_threshold": Int(required=False),
             },
             "baseline": {
                 "enabled": Boolean(),
@@ -557,6 +559,11 @@ class Config:
                 "enabled": Boolean(),
                 "username": String(),
                 "url": String(),
+                "myurl": String(),
+                "show-virustotal": Boolean(),
+                "show-signatures": Boolean(),
+                "show-urls": Boolean(),
+                "hash-filename": Boolean(),
             },
         },
         "routing": {
@@ -618,11 +625,12 @@ class Config:
             "*": {
                 "label": String(),
                 "platform": String(),
+                "snapshot": String(),
                 "ip": String(),
                 "interface": String(),
-                "resultserver_ip": String(),
-                "resultserver_port": Int(),
-                "tags": String(),
+                "resultserver_ip": String(required=False),
+                "resultserver_port": Int(required=False),
+                "tags": String(required=False),
             },
         },
         "xenserver": {
@@ -646,7 +654,7 @@ class Config:
         },
     }
 
-    def __init__(self, file_name="cuckoo", cfg=None):
+    def __init__(self, file_name="cuckoo", cfg=None, strict=False):
         """
         @param file_name: file name without extension.
         @param cfg: configuration file path.
@@ -657,6 +665,8 @@ class Config:
                 env[key] = value
 
         config = ConfigParser.ConfigParser(env)
+
+        self.sections = {}
 
         if cfg:
             config.read(cfg)
@@ -669,49 +679,55 @@ class Config:
 
         for section in config.sections():
             if section in self.configuration[file_name]:
-                sections = self.configuration[file_name][section]
+                types = self.configuration[file_name][section]
             # Hacky fix to get the type of unknown sections
             elif "*" in self.configuration[file_name]:
-                sections = self.configuration[file_name]["*"]
+                types = self.configuration[file_name]["*"]
             else:
                 log.error(
                     "Config section %s:%s not found!", file_name, section
                 )
+                if strict:
+                    raise CuckooConfigurationError(
+                        "Config section %s:%s not found!", file_name, section
+                    )
                 continue
 
-            setattr(self, section, Dictionary())
+            self.sections[section] = Dictionary()
+            setattr(self, section, self.sections[section])
 
             try:
                 items = config.items(section)
             except ConfigParser.InterpolationMissingOptionError as e:
                 log.error("Missing environment variable(s): %s", e)
-                raise CuckooOperationalError(e)
+                raise CuckooConfigurationError(e)
 
             for name, raw_value in items:
-                if name in sections:
-                    value = sections[name].get(config, section, name)
+                if name in types:
+                    value = types[name].get(config, section, name)
                 else:
                     log.error(
-                        "Type of config parameter %s:%s:%s not found!",
+                        "Type of config parameter %s:%s:%s not found! This may"
+                        "indicate that you've incorrectly filled out the "
+                        "Cuckoo configuration, please double check it.",
                         file_name, section, name
                     )
                     value = config.get(section, name)
 
-                setattr(getattr(self, section), name, value)
+                self.sections[section][name] = value
 
     def get(self, section):
         """Get option.
         @param section: section to fetch.
-        @raise CuckooOperationalError: if section not found.
+        @raise CuckooConfigurationError: if section not found.
         @return: option value.
         """
-        try:
-            return getattr(self, section)
-        except AttributeError as e:
-            raise CuckooOperationalError(
-                "Option %s is not found in configuration, error: %s" %
-                (section, e)
+        if section not in self.sections:
+            raise CuckooConfigurationError(
+                "Option %s is not found in configuration" % section
             )
+
+        return self.sections[section]
 
 def parse_options(options):
     """Parse the analysis options field to a dictionary."""
@@ -728,16 +744,43 @@ def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
     return ",".join("%s=%s" % (k, v) for k, v in options.items())
 
-def config(s, default=None, cfg=None):
+def config(s, default=None, cfg=None, strict=False):
     """Fetch a configuration value, denoted as file:section:key."""
     if s.count(":") != 2:
         raise RuntimeError("Invalid configuration entry: %s" % s)
 
     file_name, section, key = s.split(":")
 
+    type_ = Config.configuration.get(file_name, {}).get(section, {}).get(key)
+    if strict and type_ is None:
+        raise CuckooConfigurationError(
+            "No such configuration value exists: %s" % s
+        )
+
+    required = type_ is not None and type_.required
+
     # Just have to be careful with caching and unit tests.
-    if (file_name, cfg, cwd()) not in _cache:
+    if not strict and (file_name, cfg, cwd()) not in _cache:
         _cache[file_name, cfg, cwd()] = Config(file_name, cfg=cfg)
 
-    config = getattr(_cache[file_name, cfg, cwd()], section, {})
-    return config.get(key, default)
+    if strict:
+        config = Config(file_name, cfg=cfg, strict=True)
+    else:
+        config = _cache[file_name, cfg, cwd()]
+
+    if strict and required and section not in config.sections:
+        raise CuckooConfigurationError(
+            "Configuration value %s not present! This may indicate that "
+            "you've incorrectly filled out the Cuckoo configuration, "
+            "please double check it." % s
+        )
+
+    section = config.sections.get(section, {})
+    if strict and required and key not in section:
+        raise CuckooConfigurationError(
+            "Configuration value %s not present! This may indicate that "
+            "you've incorrectly filled out the Cuckoo configuration, "
+            "please double check it." % s
+        )
+
+    return section.get(key, default)
