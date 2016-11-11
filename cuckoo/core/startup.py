@@ -18,7 +18,7 @@ from distutils.version import LooseVersion
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
-from cuckoo.common.config import Config
+from cuckoo.common.config import Config, config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -37,32 +37,34 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-def check_python_version():
-    """Checks if Python version is supported by Cuckoo.
-    @raise CuckooStartupError: if version is not supported.
-    """
-    if sys.version_info[:2] != (2, 7):
-        raise CuckooStartupError("You are running an incompatible version "
-                                 "of Python, please use 2.7")
-
-
 def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
-        "auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf", "kvm.conf",
-        "memory.conf", "physical.conf", "processing.conf", "qemu.conf",
-        "reporting.conf", "virtualbox.conf", "vmware.conf", "routing.conf",
-        "vsphere.conf", "xenserver.conf",
+        "auxiliary", "avd", "cuckoo", "esx", "kvm", "memory", "physical",
+        "processing", "qemu", "reporting", "virtualbox", "vmware", "routing",
+        "vsphere", "xenserver",
     )
 
     for filename in configs:
-        if not os.path.exists(cwd("conf", filename)):
+        if not os.path.exists(cwd("conf", "%s.conf" % filename)):
             raise CuckooStartupError(
                 "Config file does not exist at path: %s" %
-                cwd("conf", filename)
+                cwd("conf", "%s.conf" % filename)
             )
+
+    for filename, sections in Config.configuration.items():
+        for section, entries in sections.items():
+            if section == "*":
+                continue
+
+            # If an enabled field is present, check it beforehand.
+            if config("%s:%s:enabled" % (filename, section)) is False:
+                continue
+
+            for key, value in entries.items():
+                config("%s:%s:%s" % (filename, section, key), strict=True)
 
     return True
 

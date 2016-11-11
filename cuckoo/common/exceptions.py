@@ -15,6 +15,9 @@ class CuckooDatabaseError(CuckooCriticalError):
 class CuckooDependencyError(CuckooCriticalError):
     """Missing dependency error."""
 
+class CuckooConfigurationError(CuckooCriticalError):
+    """Invalid configuration error."""
+
 class CuckooOperationalError(Exception):
     """Cuckoo operation error."""
 
