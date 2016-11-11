@@ -58,18 +58,6 @@ class AnalysisRoutes:
 
     @staticmethod
     def detail(request, task_id, page):
-        from cuckoo.core.submit import SubmitManager
-
-        a = [{
-            "name": "wow.zip",
-            "data": open("/home/dsc/cuckoo_26_Removeme/wow.zip", "rb").read()
-        },{
-            "name": "putty.exe",
-            "data": open("/home/dsc/cuckoo_26_Removeme/putty.exe")
-        }]
-
-        SubmitManager.submit(data=a)
-        #SubmitManager.submit(["http://nu.nl", "http://google.com"])
         report = AnalysisController.get_report(task_id)
 
         pages = {

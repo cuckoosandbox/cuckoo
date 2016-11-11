@@ -40,7 +40,7 @@
 				<div class="brand">
                     <div class="img-cuckoo"></div>
 				</div>
-				<h1>Analysis report</h1>
+				<h1>Analysis report summary</h1>
 				<div class="main-header-right">
 					<time datetime="{{ constants["date_now"].strftime("%Y-%m-%d, %H:%M") }}">
                         <i class="fa fa-clock-o"></i> {{ constants["date_now"].strftime("%Y/%m/%d %H:%M") }}
@@ -106,23 +106,37 @@
 
                                     <li class="list-status-separator {{ label }}">{{ label.capitalize() }} messages</li>
 
-                                    {% for signature in _signatures %}
-                                        <li class="{{ label }}">
-                                            {% if signature.markcount > 1 %}
+                                    {% for sig in _signatures %}
+                                        <li class="{{ label }}" data-signature="{{ sig.name }}" data-init="collapse">
+                                            {% set sig_template_mapping = {
+                                                "creates_doc": "creates_ioc.html",
+                                                "creates_exe": "creates_ioc.html",
+                                                "suspicious_process": "creates_ioc.html",
+                                                "persistence_autorun": "creates_ioc.html",
+                                                "antivirus_virustotal": "antivirus_virustotal.html"
+                                                }
+                                            %}
+
+                                            {% if sig.markcount >= 1 and sig.name in sig_template_mapping %}
+                                                {% set collapse_toggle = true %}
+                                            {% else %}
+                                                {% set collapse_toggle = false %}
+                                            {% endif %}
+
+                                            {% if sig.markcount > 1 %}
                                                 {% set event = "events" %}
                                             {% else %}
                                                 {% set event = "event" %}
                                             {% endif %}
-                                            <p>{{ signature.description }} <small>{{ signature.markcount }} {{ event }}</small></p>
 
-                                            {% if signature.name == "antivirus_virustotal" %}
-                                                {% include "sections/signatures/antivirus_virustotal.html" %}
-                                            {% elif signature.name == "persistence_autorun" %}
-                                                {% include "sections/signatures/persistence_autorun.html" %}
-                                            {% elif signature.name == "creates_doc" %}
-                                                {% include "sections/signatures/creates_doc.html" %}
-                                            {% elif signature.name == "suspicious_process" %}
-                                                {% include "sections/signatures/suspicious_process.html" %}
+                                            <p>{{ sig.description }} <small>{{ sig.markcount }} {{ event }}</small>
+                                            {% if collapse_toggle %}
+                                                <a href="#" class="collapse-toggle"><i class="fa"></i></a>
+                                            {% endif %}
+                                            </p>
+
+                                            {% if sig.name in sig_template_mapping %}
+                                                {% include "sections/signatures/" + sig_template_mapping[sig.name] %}
                                             {% endif %}
                                         </li>
                                     {% endfor %}
@@ -161,16 +175,18 @@
 				<!-- processes summary -->
 				<div class="block block-processes">
 					<header class="block-header">
-						<h4><i class="fa fa-cogs"></i> Processes <small>(warning: truncated results)</small></h4>
+						<h4><i class="fa fa-cogs"></i> Processes <small>(truncated results)</small></h4>
 					</header>
 
                     {% for behavior, procs in behavioral.iteritems() %}
-                        <section class="block-section no-padding process-view">
+                        <section class="block-section no-padding process-view open" data-init="collapse">
                             <header class="process-view-header">
-                                <h5>{{ loop.index + 1 }}. {{ behavior.capitalize() }}</h5>
+                                <h5>{{ loop.index + 1 }}. {{ behavior.capitalize() }}
+                                <a class="collapse-toggle"><i class="fa"></i></a>
+                                </h5>
                             </header>
                             {% for proc_name, proc in procs.iteritems() %}
-                                <ul class="process-display list-reset">
+                                <ul class="process-display list-reset" data-target="collapse">
                                     <li class="process-display-title">{{ proc.process_name }} <span class="pid">pid: {{ proc.pid }}</span></li>
                                     {% for event_type, events in proc.events.iteritems() %}
                                     <li>

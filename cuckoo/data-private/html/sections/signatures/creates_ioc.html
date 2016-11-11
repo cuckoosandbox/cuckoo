@@ -1,0 +1,10 @@
+<table class="table-key-value" data-target="collapse">
+    <tbody>
+    {% for mark in sig.marks %}
+        <tr>
+            <td><span class="monospace">{{ mark.category.capitalize() }}</span></td>
+            <td><span class="monospace">{{ mark.ioc }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

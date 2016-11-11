@@ -142,13 +142,17 @@ class ReportHTML(Report):
             /* FONTS */
             %s
             </style>
+            <script>
+            %s
+            </script>
         """ % (analysis_id,
                self.combine_images(),
                self.combine_css(),
-               self.combine_fonts())
+               self.combine_fonts(),
+               self.combine_js())
     
     def combine_css(self):
-        """Scans the `static/css/ directory for stylesheets and concatenates them"""
+        """Scans the `static/css/ directory and concatenates stylesheets"""
         css_includes = ""
         for css_path in glob("%s/static/css/*.css" % self.path_base):
             css_file = open(css_path, "r")
@@ -157,6 +161,20 @@ class ReportHTML(Report):
             css_file.close()
 
         return css_includes
+
+    def combine_js(self):
+        """Scans the `static/js/ directory and concatenates js files"""
+        js_includes = ""
+        js_paths = glob("%s/static/js/*.js" % self.path_base)
+        js_paths.insert(0, "%s/static/js/lib/jquery-2.2.4.min.js" % self.path_base)
+
+        for js_path in js_paths:
+            js_file = open(js_path, "r")
+            js_data = js_file.read()
+            js_includes += "%s\n\n" % js_data
+            js_file.close()
+
+        return js_includes
 
     def combine_fonts(self):
         fonts = [{

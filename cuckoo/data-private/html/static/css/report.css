@@ -94,6 +94,20 @@ html {
 	padding: 0;
 }
 
+/* collapse element state definitions */
+.collapsable .collapse-toggle { float: right; }
+.collapsable .collapse-toggle:hover { cursor: pointer; }
+.collapsable [data-target="collapse"] { display: none; }
+.collapsable.open [data-target="collapse"] { display: block; }
+.collapsable.open table[data-target="collapse"] { display: table; }
+
+.collapsable.open .collapse-toggle .fa:before {
+	content: "\f078";
+}
+.collapsable .collapse-toggle .fa:before {
+	content: "\f054";
+}
+
 /* BLOCK HEADER LAYOUT */
 .block .block-header {
 	border-bottom: 1px solid #ccc;
@@ -123,8 +137,8 @@ html {
 	border-bottom: 1px solid #ccc;
 }
 .list-simple li:last-child { border: 0; }
-.list-simple .list-simple-title { 
-	padding: 5px 10px; 
+.list-simple .list-simple-title {
+	padding: 5px 10px;
 	font-weight: 700;
 	font-size: 14px;
 	background-color: #eee;
@@ -196,7 +210,7 @@ html {
 /* list-status */
 .list-status { width: 100%; }
 
-	.list-status > li { 
+	.list-status > li {
 		background-color: #f5f5f5;
 		border-bottom: 1px solid #ddd;
 		color: #999;
@@ -205,6 +219,11 @@ html {
 	.list-status > li > p {
 		margin: 0;
 		padding: 15px 10px;
+	}
+
+	.list-status > li > p > .collapse-toggle {
+		margin-top: 3px;
+		color: rgba(0,0,0,.3);
 	}
 
 	/* font-awesome style appended to before - each different class will change its layout and icon */
@@ -224,33 +243,33 @@ html {
 
 	.list-status > li:last-child { border: 0; }
 
-	.list-status > .info { 
+	.list-status > .info {
 		background-color: #d9edf7;
 		border-color: #bce8f1;
 		color: #608b94;
 	}
-	.list-status > .info > p:before { 
-		content: "\f129";  
+	.list-status > .info > p:before {
+		content: "\f129";
 		color: #697f84;
 	}
 
 	.list-status > .warning {
-		background-color: #fcf8e3; 
+		background-color: #fcf8e3;
 		border-color: #faebcc;
 		color: #8c7b58;
 	}
-	.list-status > .warning > p:before { 
-		content: "\f12a";  
+	.list-status > .warning > p:before {
+		content: "\f12a";
 		color: #c1b261;
 	}
 
-	.list-status > .danger { 
-		background-color: #f2dede; 
+	.list-status > .danger {
+		background-color: #f2dede;
 		border-color: #ebccd1;
 		color: #a96464;
 	}
-	.list-status > .danger > p:before { 
-		content: "\f05e";  
+	.list-status > .danger > p:before {
+		content: "\f05e";
 		color: #af8c8c;
 	}
 
@@ -267,6 +286,7 @@ html {
 
 /* table */
 table {
+	/*display: block;*/
 	width: 100%;
 	background-color: #fff;
 	text-align: left;
@@ -285,8 +305,8 @@ table {
 
 	table .small-integer { width: 50px; }
 
-	table.table-key-value tr td { 
-		width: 50%; 
+	table.table-key-value tr td {
+		width: 50%;
 		border-right: 1px solid #ccc;
 	}
 	table.table-key-value tr td:last-child { border: 0; }
@@ -331,7 +351,7 @@ table {
 		border-bottom: 1px solid #ccc;
 		padding: 0 20px;
 	}
-	.process-view .process-view-header h5 { 
+	.process-view .process-view-header h5 {
 		margin: 20px 0 10px;
 		font-weight: 400;
 		font-size: 16px;
@@ -346,6 +366,10 @@ table {
 	}
 	.block-processes .process-view:last-child header {
 		border: 0;
+	}
+	.block-processes .collapse-toggle {
+		font-size: 14px;
+		color: #444;
 	}
 
 /* PROCESS DISPLAY */
