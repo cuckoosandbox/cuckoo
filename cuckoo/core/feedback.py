@@ -3,12 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import datetime
 import logging
 import base64
 import json
 import requests
-from datetime import datetime
 
 from django.conf import settings
 
