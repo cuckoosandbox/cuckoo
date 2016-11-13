@@ -370,6 +370,12 @@ machines = hello
 label = label,snapshot
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
+    assert "machine_manager" in cfg["cuckoo"]["cuckoo"]
+    assert "sniffer" in cfg["cuckoo"]
+    assert "graylog" in cfg["cuckoo"]
+    assert "pickled" in cfg["reporting"]
+    assert "metadata" in cfg["reporting"]
+    assert "maec11" in cfg["reporting"]
     cfg = migrate(cfg, "0.6.0", "1.0.0")
     assert cfg["auxiliary"]["sniffer"]["enabled"] == "no"
     assert cfg["auxiliary"]["sniffer"]["tcpdump"] == "/wow/path"
@@ -497,6 +503,7 @@ label = label
 snapshot = snapshot
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
+    assert "hpfclient" in cfg["reporting"]
     cfg = migrate(cfg, "1.1.0", "1.2.0")
     assert cfg["cuckoo"]["cuckoo"]["terminate_processes"] is False
     assert cfg["cuckoo"]["cuckoo"]["max_machines_count"] == 0
@@ -605,6 +612,9 @@ snapshot = snapshot
 machines = cuckoo1
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
+    assert "store_csvs" in cfg["cuckoo"]["resultserver"]
+    assert "mmdef" in cfg["reporting"]
+    assert "maec40" in cfg["reporting"]
     cfg = migrate(cfg, "1.2.0", "2.0-rc1")
     assert "interface" not in cfg["auxiliary"]["sniffer"]
     assert cfg["auxiliary"]["mitm"]["enabled"] is False
