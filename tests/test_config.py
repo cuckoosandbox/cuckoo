@@ -778,3 +778,70 @@ interface = hehe
     assert cfg["reporting"]["mattermost"]["enabled"] is False
     assert cfg["reporting"]["mattermost"]["username"] == "cuckoo"
     assert cfg["vpn"]["vpn0"]["rt_table"] == "hehe"
+
+def test_migration_20c2_200():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+script = data/mitm.py
+""")
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[cuckoo]
+tmppath = /tmp
+[routing]
+route = foo
+internet = bar
+rt_table = main
+auto_rt = no
+""")
+    Files.create(cwd("conf"), "reporting.conf", """
+[notification]
+enabled = no
+""")
+    Files.create(cwd("conf"), "vpn.conf", """
+[vpn]
+enabled = yes
+vpns = vpn0,vpn1
+[vpn0]
+name = vpn0
+description = foobar
+interface = tun42
+rt_table = tun42
+[vpn1]
+name = vpn1
+description = internet
+interface = wow
+rt_table = internet
+""")
+    Files.create(cwd("conf"), "vsphere.conf", """
+[vsphere]
+interface = eth0
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    assert "vpn" in cfg
+    cfg = migrate(cfg, "2.0-rc2", "2.0.0")
+    assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
+    assert cfg["cuckoo"]["cuckoo"]["tmppath"] is None
+    assert cfg["routing"]["routing"]["route"] == "foo"
+    assert cfg["routing"]["routing"]["internet"] == "bar"
+    assert cfg["routing"]["routing"]["rt_table"] == "main"
+    assert cfg["routing"]["routing"]["auto_rt"] == "no"
+    assert cfg["routing"]["routing"]["drop"] is False
+    assert cfg["routing"]["inetsim"]["enabled"] is False
+    assert cfg["routing"]["inetsim"]["server"] == "192.168.56.1"
+    assert cfg["routing"]["tor"]["enabled"] is False
+    assert cfg["routing"]["tor"]["dnsport"] == 5353
+    assert cfg["routing"]["tor"]["proxyport"] == 9040
+    assert cfg["routing"]["vpn"]["enabled"] == "yes"
+    assert cfg["routing"]["vpn"]["vpns"] == "vpn0,vpn1"
+    assert cfg["routing"]["vpn0"]["name"] == "vpn0"
+    assert cfg["routing"]["vpn0"]["description"] == "foobar"
+    assert cfg["routing"]["vpn0"]["interface"] == "tun42"
+    assert cfg["routing"]["vpn0"]["rt_table"] == "tun42"
+    assert cfg["routing"]["vpn1"]["name"] == "vpn1"
+    assert cfg["routing"]["vpn1"]["description"] == "internet"
+    assert cfg["routing"]["vpn1"]["interface"] == "wow"
+    assert cfg["routing"]["vpn1"]["rt_table"] == "internet"
+    assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
+    assert "vpn" not in cfg

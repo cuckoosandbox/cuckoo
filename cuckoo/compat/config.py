@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-def identity(c):
+def _040_041(c):
     return c
 
 def _041_042(c):
@@ -104,7 +104,7 @@ def _060_100(c):
     c["cuckoo"]["cuckoo"]["process_results"] = True
     c["cuckoo"]["cuckoo"]["max_analysis_count"] = 0
     c["cuckoo"]["cuckoo"]["freespace"] = 64
-    graylog = c["cuckoo"].pop("graylog")
+    c["cuckoo"].pop("graylog")
     c["esx"] = {
         "esx": {
             "dsn": "esx://127.0.0.1/?no_verify=1",
@@ -201,7 +201,9 @@ def _060_100(c):
         "enabled": False,
     }
     c["reporting"].pop("pickled")
-    c["reporting"]["mmdef"] = {"enabled": False}
+    c["reporting"]["mmdef"] = {
+        "enabled": False,
+    }
     c["reporting"].pop("metadata")
     c["reporting"].pop("maec11")
     c["reporting"]["maec40"] = {
@@ -504,8 +506,39 @@ def _20c1_20c2(c):
 
     return c
 
+def _20c2_200(c):
+    if c["auxiliary"]["mitm"]["script"] == "data/mitm.py":
+        c["auxiliary"]["mitm"]["script"] = "mitm.py"
+    if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
+        c["cuckoo"]["cuckoo"]["tmppath"] = None
+    c["routing"] = {
+        "routing": c["cuckoo"].pop("routing"),
+    }
+    c["reporting"]["misp"] = {
+        "enabled": False,
+        "url": None,
+        "apikey": None,
+        "mode": "maldoc ipaddr",
+    }
+    if "url" not in c["reporting"]["notification"]:
+        c["reporting"]["notification"]["url"] = None
+    c["routing"]["routing"]["drop"] = False
+    c["routing"]["inetsim"] = {
+        "enabled": False,
+        "server": "192.168.56.1",
+    }
+    c["routing"]["tor"] = {
+        "enabled": False,
+        "dnsport": 5353,
+        "proxyport": 9040,
+    }
+    # Merges the main VPN settings and all of the defined VPN entries.
+    c["routing"].update(c.pop("vpn"))
+    c["vsphere"]["vsphere"]["unverified_ssl"] = False
+    return c
+
 migrations = {
-    "0.4": ("0.4.1", identity),
+    "0.4": ("0.4.1", _040_041),
     "0.4.1": ("0.4.2", _041_042),
     "0.4.2": ("0.5.0", _042_050),
     "0.5.0": ("0.6.0", _050_060),
@@ -514,11 +547,12 @@ migrations = {
     "1.1.0": ("1.2.0", _110_120),
     "1.2.0": ("2.0-rc1", _120_20c1),
     "2.0-rc1": ("2.0-rc2", _20c1_20c2),
+    "2.0-rc2": ("2.0.0", _20c2_200),
 }
 
-def migrate(c, cur, to):
+def migrate(c, current, to):
     """Upgrade the configuration 'c' from 'current' to 'to'."""
-    while cur != to:
-        cur, migration = migrations[cur]
+    while current != to:
+        current, migration = migrations[current]
         c = migration(c)
     return c
