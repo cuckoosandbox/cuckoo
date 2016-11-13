@@ -654,7 +654,7 @@ class Config(object):
         },
     }
 
-    def __init__(self, file_name="cuckoo", cfg=None, strict=False):
+    def __init__(self, file_name="cuckoo", cfg=None, strict=False, loose=False):
         """
         @param file_name: file name without extension.
         @param cfg: configuration file path.
@@ -673,16 +673,18 @@ class Config(object):
         else:
             config.read(cwd("conf", "%s.conf" % file_name))
 
-        if file_name not in self.configuration:
+        if file_name not in self.configuration and not loose:
             log.error("Unknown config file %s.conf", file_name)
             return
 
         for section in config.sections():
-            if section in self.configuration[file_name]:
+            if section in self.configuration.get(file_name, {}):
                 types = self.configuration[file_name][section]
             # Hacky fix to get the type of unknown sections
-            elif "*" in self.configuration[file_name]:
+            elif "*" in self.configuration.get(file_name, {}):
                 types = self.configuration[file_name]["*"]
+            elif loose:
+                types = {}
             else:
                 log.error(
                     "Config section %s:%s not found!", file_name, section
@@ -728,6 +730,26 @@ class Config(object):
             )
 
         return self.sections[section]
+
+    @staticmethod
+    def from_confdir(dirpath, loose=False):
+        """Reads all the configuration from a configuration directory."""
+        ret = {}
+        for filename in os.listdir(dirpath):
+            if not filename.endswith(".conf"):
+                continue
+
+            config_name = filename.rsplit(".", 1)[0]
+            cfg = Config(
+                config_name, cfg=os.path.join(dirpath, filename), loose=loose
+            )
+
+            ret[config_name] = {}
+            for section, values in cfg.sections.items():
+                ret[config_name][section] = {}
+                for key, value in values.items():
+                    ret[config_name][section][key] = value
+        return ret
 
 def parse_options(options):
     """Parse the analysis options field to a dictionary."""
