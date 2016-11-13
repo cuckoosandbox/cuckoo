@@ -530,7 +530,7 @@ snapshot = snapshot
     assert cfg["xenserver"]["cuckoo1"]["ip"] == "192.168.54.111"
     assert cfg["xenserver"]["xenserver"]["user"] == "root"
 
-def test_migration_120_201():
+def test_migration_120_20c1():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
     Files.create(cwd("conf"), "auxiliary.conf", """
@@ -706,7 +706,7 @@ machines = cuckoo1
     assert cfg["vsphere"]["analysis1"]["ip"] == "192.168.1.1"
     assert cfg["xenserver"]["xenserver"]["interface"] == "virbr0"
 
-def test_migration_201_202():
+def test_migration_20c1_20c2():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
     Files.create(cwd("conf"), "auxiliary.conf", """

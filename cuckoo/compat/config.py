@@ -288,7 +288,7 @@ def _110_120(c):
     }
     return c
 
-def _120_201(c):
+def _120_20c1(c):
     interface = c["auxiliary"]["sniffer"].pop("interface")
     c["auxiliary"]["mitm"] = {
         "enabled": False,
@@ -452,7 +452,7 @@ def _120_201(c):
     c["xenserver"]["xenserver"]["interface"] = "virbr0"
     return c
 
-def _201_202(c):
+def _20c1_20c2(c):
     c["auxiliary"]["reboot"] = {
         "enabled": True,
     }
@@ -512,8 +512,8 @@ migrations = {
     "0.6.0": ("1.0.0", _060_100),
     "1.0.0": ("1.1.0", _100_110),
     "1.1.0": ("1.2.0", _110_120),
-    "1.2.0": ("2.0-rc1", _120_201),
-    "2.0-rc1": ("2.0-rc2", _201_202),
+    "1.2.0": ("2.0-rc1", _120_20c1),
+    "2.0-rc1": ("2.0-rc2", _20c1_20c2),
 }
 
 def migrate(c, cur, to):
