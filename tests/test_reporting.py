@@ -21,7 +21,7 @@ def task(task_id, options, conf, results):
 
     defaults = Config(
         "reporting", strict=True,
-        cfg=cwd("..", "data", "conf", "reporting.conf", private=True)
+        cfg=cwd("cwd", "conf", "reporting.conf", private=True)
     )
 
     reporting_conf = []

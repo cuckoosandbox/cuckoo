@@ -23,7 +23,7 @@ from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
 from cuckoo.core.database import Database
-from cuckoo.core.init import write_supervisor_conf
+from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import check_configs, init_modules, check_version
@@ -76,6 +76,7 @@ def cuckoo_create(ctx):
 
     # Write the supervisord.conf configuration file.
     write_supervisor_conf(ctx.user or getuser())
+    write_cuckoo_conf()
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
@@ -214,6 +215,7 @@ def init(ctx):
 
     # Write the supervisord.conf configuration file (if needed).
     write_supervisor_conf(ctx.parent.user or getuser())
+    write_cuckoo_conf()
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")

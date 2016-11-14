@@ -32,3 +32,8 @@ def write_supervisor_conf(username):
             "cuckoo_path": cuckoo_path,
             "python_path": python_path,
         }).rstrip() + "\n")
+
+def write_cuckoo_conf(cfg=None):
+    for filename in os.listdir(cwd("cwd", "conf", private=True)):
+        content = open(cwd("cwd", "conf", filename, private=True), "rb").read()
+        open(cwd("conf", filename), "wb").write(content)
