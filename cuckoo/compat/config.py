@@ -511,6 +511,12 @@ def _20c2_200(c):
         c["auxiliary"]["mitm"]["script"] = "mitm.py"
     if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
         c["cuckoo"]["cuckoo"]["tmppath"] = None
+    c["processing"]["network"]["whitelist_dns"] = (
+        c["processing"]["network"].pop("whitelist-dns")
+    )
+    c["processing"]["network"]["allowed_dns"] = (
+        c["processing"]["network"].pop("allowed-dns")
+    )
     c["routing"] = {
         "routing": c["cuckoo"].pop("routing"),
     }

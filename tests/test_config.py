@@ -795,6 +795,11 @@ internet = bar
 rt_table = main
 auto_rt = no
 """)
+    Files.create(cwd("conf"), "processing.conf", """
+[network]
+whitelist-dns = wow
+allowed-dns = 8.8.8.8
+""")
     Files.create(cwd("conf"), "reporting.conf", """
 [notification]
 enabled = no
@@ -820,9 +825,15 @@ interface = eth0
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert "vpn" in cfg
+    assert "whitelist-dns" in cfg["processing"]["network"]
+    assert "allowed-dns" in cfg["processing"]["network"]
     cfg = migrate(cfg, "2.0-rc2", "2.0.0")
     assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
     assert cfg["cuckoo"]["cuckoo"]["tmppath"] is None
+    assert "whitelist-dns" not in cfg["processing"]["network"]
+    assert "allowed-dns" not in cfg["processing"]["network"]
+    assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
+    assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"
