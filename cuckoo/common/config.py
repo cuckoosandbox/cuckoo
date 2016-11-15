@@ -10,86 +10,87 @@ import click
 
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
+from cuckoo.common.utils import parse_bool
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
 _cache = {}
 
+
 class Type(object):
     """Base Class for Type Definitions"""
 
-    def __init__(self, required=True):
+    def __init__(self, default=None, required=True):
+        self.default = self.parse(default)
         self.required = required
 
-    def get(self, config, section, name):
-        """Gets the Parameter value from the config file."""
-        pass
+    def parse(self, value):
+        """Parse a raw input value."""
 
     def check(self, value):
         """Checks the type of the value."""
-        pass
+
+    def emit(self, value):
+        """String-readable version of this object"""
 
 class Int(Type):
     """Integer Type Definition class."""
 
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file."""
-        try:
-            value = config.getint(section, name)
-        except ValueError:
-            value = config.get(section, name)
-            if value is not "":
-                log.error("Incorrect Integer %s", value)
-        return value
+    def parse(self, value):
+        if isinstance(value, (int, long)):
+            return value
+
+        if isinstance(value, basestring) and value.isdigit():
+            return int(value)
+
+        log.error("Incorrect Integer %s", value)
 
     def check(self, value):
-        """Checks if the value is of type Integer."""
         try:
             click.INT(value)
             return True
-        except Exception:
+        except:
             return False
+
+    def emit(self, value):
+        return "%d" % value if value is not None else ""
 
 class String(Type):
     """String Type Definition class."""
 
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file."""
-        return config.get(section, name)
+    def parse(self, value):
+        return (value or "").strip()
 
     def check(self, value):
-        """Checks if the value is of type String."""
         return isinstance(value, basestring)
+
+    def emit(self, value):
+        return value or ""
 
 class Path(String):
     """Path Type Definition class."""
 
-    def __init__(self, exists=False, writable=False, readable=False,
-                 required=True):
-        """Constructor for Path Type."""
-        super(Path, self).__init__(required)
+    def __init__(self, default=None, exists=False, writable=False,
+                 readable=False, required=True):
         self.exists = exists
         self.writable = writable
         self.readable = readable
+        super(Path, self).__init__(default, required)
 
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file."""
-        value = config.get(section, name)
+    def parse(self, value):
         try:
             c = click.Path(
                 exists=self.exists,
                 writable=self.writable,
                 readable=self.readable
             )
-            value = c.convert(value, None, None)
+            return c.convert(value, None, None)
         except Exception as e:
-            if value:
-                log.error("Incorrect path: %s, error: %s", value, e)
-        return value
+            log.error("Incorrect path: %s, error: %s", value, e)
+            return value
 
     def check(self, value):
-        """Checks if the value is of type Path."""
         try:
             c = click.Path(
                 exists=self.exists,
@@ -98,106 +99,145 @@ class Path(String):
             )
             c.convert(value, None, None)
             return True
-        except Exception:
+        except:
             return False
+
+    def emit(self, value):
+        return value or ""
 
 class Boolean(Type):
     """Boolean Type Definition class."""
 
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file."""
+    def parse(self, value):
         try:
-            value = config.getboolean(section, name)
-        except ValueError:
-            value = config.get(section, name)
-            if value is not "":
-                log.error("Incorrect Boolean %s", value)
-        return value
+            return parse_bool(value)
+        except:
+            log.error("Incorrect Boolean %s", value)
 
     def check(self, value):
-        """Checks if the value is of type Boolean."""
         try:
-            click.BOOL(value)
+            parse_bool(value)
             return True
-        except Exception:
+        except:
             return False
+
+    def emit(self, value):
+        return "yes" if value else "no"
 
 class UUID(Type):
     """UUID Type Definition class."""
 
-    def get(self, config, section, name):
-        """Gets the value of the parameter from the config file."""
+    def parse(self, value):
         try:
-            c = click.UUID(config.get(section, name))
-            value = str(c)
-        except Exception:
-            value = config.get(section, name)
-            if value is not "":
-                log.error("Incorrect UUID %s", value)
-        return value
+            c = click.UUID(value)
+            return str(c)
+        except:
+            log.error("Incorrect UUID %s", value)
 
     def check(self, value):
         """Checks if the value is of type UUID."""
         try:
             click.UUID(value)
             return True
-        except Exception:
+        except:
             return False
+
+    def emit(self, value):
+        return value
+
+class List(Type):
+    """List Type Definition class."""
+
+    def __init__(self, subclass, default, sep=",", strip=False):
+        self.subclass = subclass
+        self.sep = sep
+        self.strip = strip
+        super(List, self).__init__(default)
+
+    def parse(self, value):
+        try:
+            ret = []
+            for entry in value.split(self.sep):
+                if self.strip:
+                    entry = entry.strip()
+                    if not entry:
+                        continue
+
+                ret.append(self.subclass().parse(entry))
+            return ret
+        except:
+            log.error("Incorrect list: %s", value)
+
+    def check(self, value):
+        try:
+            value.split(self.sep)
+            return True
+        except:
+            return False
+
+    def emit(self, value):
+        return self.sep.join(value)
 
 class Config(object):
     """Configuration file parser."""
 
-    # Config Parameters and their types
     configuration = {
         "cuckoo": {
             "cuckoo": {
-                "version_check": Boolean(),
-                "delete_original": Boolean(),
-                "delete_bin_copy": Boolean(),
-                "machinery": String(),
-                "memory_dump": Boolean(),
-                "terminate_processes": Boolean(),
-                "reschedule": Boolean(),
-                "process_results": Boolean(),
-                "max_analysis_count": Int(),
-                "max_machines_count": Int(),
-                "max_vmstartup_count": Int(),
-                "freespace": Int(),
+                "version_check": Boolean(True),
+                "delete_original": Boolean(False),
+                "delete_bin_copy": Boolean(False),
+                "machinery": String("virtualbox"),
+                "memory_dump": Boolean(False),
+                "terminate_processes": Boolean(False),
+                "reschedule": Boolean(False),
+                "process_results": Boolean(True),
+                "max_analysis_count": Int(0),
+                "max_machines_count": Int(0),
+                "max_vmstartup_count": Int(10),
+                "freespace": Int(64),
                 "tmppath": Path(exists=True, writable=True, readable=False),
-                "rooter": Path(exists=False, writable=False, readable=True),
+                "rooter": Path(
+                    "/tmp/cuckoo-rooter",
+                    exists=False, writable=False, readable=True
+                ),
             },
             "resultserver": {
-                "ip": String(),
-                "port": Int(),
-                "force_port": Boolean(),
-                "upload_max_size": Int(),
+                "ip": String("192.168.56.1"),
+                "port": Int(2042),
+                "force_port": Boolean(False),
+                "upload_max_size": Int(10485760),
             },
             "processing": {
-                "analysis_size_limit": Int(),
-                "resolve_dns": Boolean(),
-                "sort_pcap": Boolean(),
+                "analysis_size_limit": Int(104857600),
+                "resolve_dns": Boolean(True),
+                "sort_pcap": Boolean(True),
             },
             "database": {
                 "connection": String(),
                 "timeout": Int(),
             },
             "timeouts": {
-                "default": Int(),
-                "critical": Int(),
-                "vm_state": Int(),
+                "default": Int(120),
+                "critical": Int(60),
+                "vm_state": Int(60),
             },
         },
         "virtualbox": {
             "virtualbox": {
-                "mode": String(),
-                "path": Path(exists=True, writable=False, readable=True),
-                "interface": String(),
-                "machines": String(),
+                "mode": String("headless"),
+                "path": Path(
+                    "/usr/bin/VBoxManage",
+                    exists=True, writable=False, readable=True
+                ),
+                "interface": String("vboxnet0"),
+                "machines": List(String, "cuckoo1"),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
+                "__section__": "cuckoo1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.56.101"),
                 "snapshot": String(),
                 "interface": String(),
                 "resultserver_ip": String(),
@@ -208,57 +248,80 @@ class Config(object):
         },
         "auxiliary": {
             "sniffer": {
-                "enabled": Boolean(),
-                "tcpdump": Path(exists=True, writable=False, readable=True),
+                "enabled": Boolean(True),
+                "tcpdump": Path(
+                    "/usr/sbin/tcpdump",
+                    exists=True, writable=False, readable=True
+                ),
                 "bpf": String(required=False),
             },
             "mitm": {
-                "enabled": Boolean(),
-                "mitmdump": Path(exists=False, writable=False, readable=True),
-                "port_base": Int(),
-                "script": Path(exists=False, writable=False, readable=True),
-                "certificate": Path(exists=False, writable=False, readable=True),
+                "enabled": Boolean(False),
+                "mitmdump": Path(
+                    "/usr/local/bin/mitmdump",
+                    exists=False, writable=False, readable=True
+                ),
+                "port_base": Int(50000),
+                "script": Path(
+                    "mitm.py",
+                    exists=False, writable=False, readable=True
+                ),
+                "certificate": Path(
+                    "bin/cert.p12",
+                    exists=False, writable=False, readable=True
+                ),
             },
             "services": {
-                "enabled": Boolean(),
-                "services": String(),
-                "timeout": Int(),
+                "enabled": Boolean(False),
+                "services": String("honeyd"),
+                "timeout": Int(0),
             },
             "reboot": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
         },
         "avd": {
             "avd": {
-                "mode": String(),
-                "emulator_path": Path(exists=True, writable=False, readable=True),
-                "adb_path": Path(exists=True, writable=False, readable=True),
-                "avd_path": Path(exists=True, writable=False, readable=True),
-                "reference_machine": String(),
-                "machines": String(),
+                "mode": String("headless"),
+                "emulator_path": Path(
+                    "/home/cuckoo/android-sdk-linux/tools/emulator",
+                    exists=True, writable=False, readable=True
+                ),
+                "adb_path": Path(
+                    "/home/cuckoo/android-sdk-linux/platform-tools/adb",
+                    exists=True, writable=False, readable=True
+                ),
+                "avd_path": Path(
+                    "/home/cuckoo/.android/avd",
+                    exists=True, writable=False, readable=True
+                ),
+                "reference_machine": String("cuckoo-bird"),
+                "machines": List(String, "cuckoo1"),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
-                "emulator_port": Int(),
-                "resultserver_ip": String(),
-                "resultserver_port": Int(),
+                "__section__": "cuckoo1",
+                "label": String("cuckoo1"),
+                "platform": String("android"),
+                "ip": String("127.0.0.1"),
+                "emulator_port": Int(5554),
+                "resultserver_ip": String("10.0.2.2"),
+                "resultserver_port": Int(2042),
             },
         },
         "esx": {
             "esx": {
-                "dsn": String(),
-                "username": String(),
-                "password": String(),
-                "machines": String(),
-                "interface": String(),
+                "dsn": String("esx://127.0.0.1/?no_verify=1"),
+                "username": String("username_goes_here"),
+                "password": String("password_goes_here"),
+                "machines": List(String, "analysis1"),
+                "interface": String("eth0"),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
-                "snapshot": String(),
+                "__section__": "analysis1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.122.105"),
+                "snapshot": String("clean_snapshot"),
                 "interface": String(),
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
@@ -267,13 +330,14 @@ class Config(object):
         },
         "kvm": {
             "kvm": {
-                "machines": String(),
-                "interface": String(),
+                "interface": String("virbr0"),
+                "machines": List(String, "cuckoo1"),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
+                "__section__": "cuckoo1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.122.105"),
                 "snapshot": String(),
                 "interface": String(),
                 "resultserver_ip": String(),
@@ -283,193 +347,197 @@ class Config(object):
         },
         "memory": {
             "basic": {
-                "guest_profile": String(),
-                "delete_memdump": String(),
+                "guest_profile": String("WinXPSP2x86"),
+                "delete_memdump": Boolean(False),
             },
             "malfind": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "apihooks": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
             },
             "pslist": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "psxview": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "callbacks": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "idt": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "timers": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "messagehooks": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
             },
             "getsids": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "privs": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "dlllist": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "handles": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "ldrmodules": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "mutantscan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "devicetree": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "svcscan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "modscan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "yarascan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "ssdt": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "gdt": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(True),
             },
             "sockscan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "netscan": {
-                "enabled": Boolean(),
-                "filter": Boolean(),
+                "enabled": Boolean(True),
+                "filter": Boolean(False),
             },
             "mask": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "pid_generic": String(),
             },
         },
         "physical": {
             "physical": {
-                "machines": String(),
-                "user": String(),
-                "password": String(),
-                "interface": String(),
+                "machines": List(String, "physical1"),
+                "user": String("username"),
+                "password": String("password"),
+                "interface": String("eth0"),
             },
             "fog": {
-                "hostname": String(),
-                "username": String(),
-                "password": String(),
+                "hostname": String("none"),
+                "username": String("fog"),
+                "password": String("password"),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "ip": String(),
+                "__section__": "physical1",
+                "label": String("physical1"),
+                "platform": String("windows"),
+                "ip": String("192.168.56.101"),
             },
         },
         "processing": {
             "analysisinfo": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "apkinfo": {
-                "enabled": Boolean(),
-                "decompilation_threshold": Int(required=False),
+                "enabled": Boolean(False),
+                "decompilation_threshold": Int(5000000, required=False),
             },
             "baseline": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
             },
             "behavior": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "buffer": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "debug": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "droidmon": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
             },
             "dropped": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "dumptls": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "googleplay": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "android_id": String(),
                 "google_login": String(),
                 "google_password": String(),
             },
             "memory": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
             },
             "misp": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "url": String(),
                 "apikey": String(),
-                "maxioc": Int(),
+                "maxioc": Int(100),
             },
             "network": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
+                "whitelist_dns": Boolean(False),
+                "allowed_dns": String(),
             },
             "procmemory": {
-                "enabled": Boolean(),
-                "idapro": Boolean(),
-                "extract_img": Boolean(),
-                "dump_delete": Boolean(),
+                "enabled": Boolean(True),
+                "idapro": Boolean(False),
+                "extract_img": Boolean(True),
+                "dump_delete": Boolean(False),
             },
             "procmon": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "screenshots": {
-                "enabled": Boolean(),
-                "tesseract": Boolean(),
+                "enabled": Boolean(True),
+                "tesseract": String("no"),
             },
             "snort": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "snort": Path(exists=False, writable=False, readable=True),
                 "conf": Path(exists=False, writable=False, readable=True),
             },
             "static": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
+                "pdf_timeout": Int(60),
             },
             "strings": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "suricata": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "suricata": Path(exists=True, writable=False, readable=True),
                 "eve_log": Path(exists=False, writable=True, readable=False),
                 "files_log": Path(exists=False, writable=True, readable=False),
@@ -477,87 +545,111 @@ class Config(object):
                 "socket": Path(exists=True, writable=False, readable=True),
             },
             "targetinfo": {
-                "enabled": Boolean(),
+                "enabled": Boolean(True),
             },
             "virustotal": {
-                "enabled": Boolean(),
-                "timeout": Int(),
-                "scan": Boolean(),
-                "key": String(),
+                "enabled": Boolean(True),
+                "timeout": Int(60),
+                "scan": Boolean(False),
+                "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088"),
             },
             "irma": {
-                "enabled": Boolean(),
-                "force": Boolean(),
-                "timeout": Int(),
-                "scan": Boolean(),
+                "enabled": Boolean(False),
+                "timeout": Int(60),
+                "scan": Boolean(False),
+                "force": Boolean(False),
                 "url": String(),
             },
         },
         "qemu": {
             "qemu": {
-                "path": Path(exists=True, writable=False, readable=True),
-                "interface": String(),
-                "machines": String(),
+                "path": Path(
+                    "/usr/bin/qemu-system-x86_64",
+                    exists=True, writable=False, readable=True
+                ),
+                "interface": String("qemubr"),
+                "machines": List(String, "vm1,vm2"),
             },
-            "*": {
-                "label": String(),
-                "image": Path(exists=True, writable=False, readable=True),
-                "arch": String(),
-                "platform": String(),
-                "ip": String(),
-                "interface": String(),
-                "resultserver_ip": String(),
-                "resultserver_port": Int(),
-                "tags": String(),
-                "kernel_path": Path(exists=True, writable=False, readable=True),
-            },
+            "*": [
+                {
+                    "__section__": "vm1",
+                    "label": String("vm1"),
+                    "image": Path(
+                        "/home/rep/vms/qvm_wheezy64_1.qcow2",
+                        exists=True, writable=False, readable=True
+                    ),
+                    "arch": String(),
+                    "platform": String("linux"),
+                    "ip": String("192.168.55.2"),
+                    "interface": String("qemubr"),
+                    "resultserver_ip": String("192.168.55.1"),
+                    "resultserver_port": Int(),
+                    "tags": String("debian_wheezy,64_bit"),
+                    "kernel_path": String(),
+                }, {
+                    "__section__": "vm2",
+                    "label": String("vm2"),
+                    "image": Path(
+                        "/home/rep/vms/qvm_wheezy64_1.qcow2",
+                        exists=True, writable=False, readable=True
+                    ),
+                    "arch": String("mipsel"),
+                    "platform": String("linux"),
+                    "ip": String("192.168.55.3"),
+                    "interface": String("qemubr"),
+                    "resultserver_ip": String("192.168.55.1"),
+                    "resultserver_port": Int(),
+                    "tags": String("debian_wheezy,mipsel"),
+                    "kernel_path": String("{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"),
+                },
+            ],
         },
         "reporting": {
             "jsondump": {
-                "enabled": Boolean(),
-                "indent": Int(),
-                "encoding": String(),
-                "calls": Boolean(),
+                "enabled": Boolean(True),
+                "indent": Int(4),
+                "encoding": String("latin-1"),
+                "calls": Boolean(True),
             },
             "reporthtml": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
             },
             "misp": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "url": String(),
                 "apikey": String(),
-                "mode": String(),
+                "mode": String("maldoc ipaddr"),
             },
             "mongodb": {
-                "enabled": Boolean(),
-                "host": String(),
-                "port": Int(),
-                "db": String(),
-                "store_memdump": Boolean(),
-                "paginate": Int(),
+                "enabled": Boolean(False),
+                "host": String("127.0.0.1"),
+                "port": Int(27017),
+                "db": String("cuckoo"),
+                "store_memdump": Boolean(True),
+                "paginate": Int(100),
             },
             "elasticsearch": {
-                "enabled": Boolean(),
-                "hosts": String(),
-                "calls": Boolean(),
+                "enabled": Boolean(False),
+                "hosts": String("127.0.0.1"),
+                "calls": Boolean(False),
                 "index": String(),
                 "index_time_pattern": String(),
             },
             "moloch": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "host": String(),
                 "moloch_capture": Path(exists=True, writable=False, readable=True),
                 "conf": Path(exists=True, writable=False, readable=True),
                 "instance": String(),
             },
             "notification": {
-                "enabled": Boolean(),
+                "enabled": Boolean(False),
                 "url": String(),
                 "identifier": String(),
             },
             "mattermost": {
-                "enabled": Boolean(),
-                "username": String(),
+                "enabled": Boolean(False),
+                "username": String("cuckoo"),
                 "url": String(),
                 "myurl": String(),
                 "show-virustotal": Boolean(),
@@ -568,44 +660,52 @@ class Config(object):
         },
         "routing": {
             "routing": {
-                "route": String(),
-                "internet": String(),
-                "rt_table": String(),
-                "auto_rt": Boolean(),
-                "drop": Boolean(),
+                "route": String("none"),
+                "internet": String("none"),
+                "rt_table": String("main"),
+                "auto_rt": Boolean(True),
+                "drop": Boolean(False),
             },
             "inetsim": {
-                "enabled": Boolean(),
-                "server": String(),
+                "enabled": Boolean(False),
+                "server": String("192.168.56.1"),
             },
             "tor": {
-                "enabled": Boolean(),
-                "dnsport": Int(),
-                "proxyport": Int(),
+                "enabled": Boolean(False),
+                "dnsport": Int(5353),
+                "proxyport": Int(9040),
             },
             "vpn": {
-                "enabled": Boolean(),
-                "vpns": String(),
+                "enabled": Boolean(False),
+                "vpns": List(String, "vpn0"),
             },
             "*": {
-                "name": String(),
-                "description": String(),
-                "interface": String(),
-                "rt_table": String(),
+                "__section__": "vpn0",
+                "name": String("vpn0"),
+                "description": String("Spain, Europe"),
+                "interface": String("tun0"),
+                "rt_table": String("tun0"),
             },
         },
         "vmware": {
             "vmware": {
-                "mode": String(),
-                "path": Path(exists=True, writable=False, readable=True),
-                "interface": String(),
-                "machines": String(),
+                "mode": String("gui"),
+                "path": Path(
+                    "/usr/bin/vmrun",
+                    exists=True, writable=False, readable=True
+                ),
+                "interface": String("virbr0"),
+                "machines": List(String, "cuckoo1"),
             },
             "*": {
-                "vmx_path": Path(exists=True, writable=False, readable=True),
-                "snapshot": String(),
-                "platform": String(),
-                "ip": String(),
+                "__section__": "cuckoo1",
+                "vmx_path": Path(
+                    "../cuckoo1/cuckoo1.vmx",
+                    exists=True, writable=False, readable=True
+                ),
+                "snapshot": String("Snapshot1"),
+                "platform": String("windows"),
+                "ip": String("192.168.54.111"),
                 "interface": String(),
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
@@ -614,19 +714,20 @@ class Config(object):
         },
         "vsphere": {
             "vsphere": {
-                "host": String(),
-                "port": Int(),
-                "user": String(),
-                "pwd": String(),
-                "interface": String(),
-                "machines": String(),
-                "unverified_ssl": Boolean(),
+                "host": String("10.0.0.1"),
+                "port": Int(443),
+                "user": String("username_goes_here"),
+                "pwd": String("password_goes_here"),
+                "interface": String("eth0"),
+                "machines": List(String, "analysis1"),
+                "unverified_ssl": Boolean(False),
             },
             "*": {
-                "label": String(),
-                "platform": String(),
-                "snapshot": String(),
-                "ip": String(),
+                "__section__": "analysis1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "snapshot": String("snapshot_name"),
+                "ip": String("192.168.1.100"),
                 "interface": String(),
                 "resultserver_ip": String(required=False),
                 "resultserver_port": Int(required=False),
@@ -635,17 +736,18 @@ class Config(object):
         },
         "xenserver": {
             "xenserver": {
-                "user": String(),
-                "password": String(),
-                "url": String(),
-                "interface": String(),
-                "machines": String(),
+                "user": String("root"),
+                "password": String("changeme"),
+                "url": String("https://xenserver"),
+                "interface": String("virbr0"),
+                "machines": List(String, "cuckoo1"),
             },
             "*": {
-                "uuid": UUID(),
+                "__section__": "cuckoo1",
+                "uuid": UUID("00000000-0000-0000-0000-000000000000"),
                 "snapshot": String(),
-                "platform": String(),
-                "ip": String(),
+                "platform": String("windows"),
+                "ip": String("192.168.54.111"),
                 "interface": String(),
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
@@ -680,9 +782,11 @@ class Config(object):
         for section in config.sections():
             if section in self.configuration.get(file_name, {}):
                 types = self.configuration[file_name][section]
-            # Hacky fix to get the type of unknown sections
             elif "*" in self.configuration.get(file_name, {}):
                 types = self.configuration[file_name]["*"]
+                # If multiple default values have been provided, pick one.
+                if isinstance(types, (tuple, list)):
+                    types = types[0]
             elif loose:
                 types = {}
             else:
@@ -706,7 +810,7 @@ class Config(object):
 
             for name, raw_value in items:
                 if name in types:
-                    value = types[name].get(config, section, name)
+                    value = types[name].parse(raw_value)
                 else:
                     log.error(
                         "Type of config parameter %s:%s:%s not found! This "
@@ -714,7 +818,7 @@ class Config(object):
                         "Cuckoo configuration, please double check it.",
                         file_name, section, name
                     )
-                    value = config.get(section, name)
+                    value = raw_value
 
                 self.sections[section][name] = value
 

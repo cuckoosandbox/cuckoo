@@ -302,3 +302,26 @@ def test_temppath():
         "[cuckoo]\ntmppath = /custom/directory"
     )
     assert temppath() == "/custom/directory"
+
+def test_bool():
+    assert utils.parse_bool("true") is True
+    assert utils.parse_bool("True") is True
+    assert utils.parse_bool("yes") is True
+    assert utils.parse_bool("on") is True
+    assert utils.parse_bool("1") is True
+
+    assert utils.parse_bool("false") is False
+    assert utils.parse_bool("False") is False
+    assert utils.parse_bool("None") is False
+    assert utils.parse_bool("no") is False
+    assert utils.parse_bool("off") is False
+    assert utils.parse_bool("0") is False
+
+    assert utils.parse_bool("2") is True
+    assert utils.parse_bool("3") is True
+
+    assert utils.parse_bool(True) is True
+    assert utils.parse_bool(1) is True
+    assert utils.parse_bool(2) is True
+    assert utils.parse_bool(False) is False
+    assert utils.parse_bool(0) is False

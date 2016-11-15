@@ -132,7 +132,7 @@ class TestConfigType:
 
     def test_integer_parse(self):
         """Testing the integer parsing in the configuration file parsing."""
-        assert self.virtualbox.get("virtualbox")["machines"] == "7,8,machine1"
+        assert self.virtualbox.get("virtualbox")["machines"] == ["7", "8", "machine1"]
         assert self.virtualbox.get("7") is not None
         assert self.virtualbox.get("7")["label"] is "7"
         assert self.virtualbox.get("7")["resultserver_port"] == 2042

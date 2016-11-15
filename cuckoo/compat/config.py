@@ -218,10 +218,7 @@ def _060_100(c):
     c["reporting"]["mongodb"]["host"] = "127.0.0.1"
     c["reporting"]["mongodb"]["port"] = 27017
 
-    for machine in c["vmware"]["vmware"]["machines"].split(","):
-        if not machine.strip():
-            continue
-
+    for machine in c["vmware"]["vmware"]["machines"]:
         label, snapshot = c["vmware"][machine]["label"].split(",", 1)
         c["vmware"][machine]["label"] = label
         c["vmware"][machine]["snapshot"] = snapshot
@@ -269,10 +266,7 @@ def _110_120(c):
     c["reporting"]["mongodb"]["store_memdump"] = True
     c["reporting"].pop("hpfclient")
 
-    for machine in c["vmware"]["vmware"]["machines"].split(","):
-        if not machine.strip():
-            continue
-
+    for machine in c["vmware"]["vmware"]["machines"]:
         c["vmware"][machine]["vmx_path"] = c["vmware"][machine].pop("label")
 
     c["xenserver"] = {

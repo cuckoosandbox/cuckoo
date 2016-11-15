@@ -7,8 +7,9 @@ import pytest
 import shutil
 import tempfile
 
+from cuckoo.common.files import Folders
 from cuckoo.common.utils import Singleton
-from cuckoo.core.init import write_supervisor_conf
+from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.main import main
 from cuckoo.misc import set_cwd, cwd
@@ -61,6 +62,7 @@ class TestInit(object):
             )
 
         assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
+        assert os.path.exists(os.path.join(self.dirpath, "conf"))
         assert os.path.exists(os.path.join(self.dirpath, "storage"))
         assert os.path.exists(os.path.join(self.dirpath, "storage", "binaries"))
         assert os.path.exists(os.path.join(self.dirpath, "storage", "analyses"))
@@ -101,3 +103,8 @@ class TestInit(object):
         )
 
         assert ResultServer not in Singleton._instances
+
+    def test_cuckoo_conf(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()

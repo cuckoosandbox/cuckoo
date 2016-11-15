@@ -5,11 +5,10 @@
 import responses
 import tempfile
 
-from cuckoo.core.plugins import RunReporting
-from cuckoo.common.config import Config
 from cuckoo.common.files import Folders, Files
+from cuckoo.core.init import write_cuckoo_conf
+from cuckoo.core.plugins import RunReporting
 from cuckoo.misc import set_cwd, cwd
-from cuckoo.reporting.jsondump import JsonDump
 
 def task(task_id, options, conf, results):
     Folders.create(cwd(), ["conf", "storage"])
@@ -19,21 +18,9 @@ def task(task_id, options, conf, results):
         "reports"
     ])
 
-    defaults = Config(
-        "reporting", strict=True,
-        cfg=cwd("cwd", "conf", "reporting.conf", private=True)
-    )
-
-    reporting_conf = []
-    for section, values in defaults.sections.items():
-        reporting_conf.append("[%s]" % section)
-        for key, value in values.items():
-            raw = conf.get(section, values).get(key, value)
-            reporting_conf.append("%s = %s" % (key, {
-                True: "yes", False: "no", None: "",
-            }.get(raw, raw)))
-
-    Files.create(cwd("conf"), "reporting.conf", "\n".join(reporting_conf))
+    write_cuckoo_conf({
+        "reporting": conf,
+    })
 
     task = {
         "id": task_id,

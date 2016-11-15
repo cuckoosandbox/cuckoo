@@ -228,18 +228,3 @@ class TestAPI(object):
             "url": url,
         })
         return json.loads(r.data)["task_id"]
-
-def test_bool():
-    assert api.parse_bool("true") is True
-    assert api.parse_bool("True") is True
-    assert api.parse_bool("yes") is True
-    assert api.parse_bool("1") is True
-
-    assert api.parse_bool("false") is False
-    assert api.parse_bool("False") is False
-    assert api.parse_bool("None") is False
-    assert api.parse_bool("no") is False
-    assert api.parse_bool("0") is False
-
-    assert api.parse_bool("2") is True
-    assert api.parse_bool("3") is True
