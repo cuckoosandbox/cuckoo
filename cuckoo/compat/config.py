@@ -12,7 +12,7 @@ def _041_042(c):
         "vmware": {
             "mode": "gui",
             "path": "/usr/bin/vmrun",
-            "machines": "cuckoo1",
+            "machines": ["cuckoo1"],
         },
         "cuckoo1": {
             "label": "../vmware-xp3.vmx,Snapshot1",
@@ -45,6 +45,8 @@ def _042_050(c):
     sniffer = c["cuckoo"]["cuckoo"].pop("use_sniffer")
     c["cuckoo"]["sniffer"] = {
         "enabled": sniffer,
+        "tcpdump": "/usr/sbin/tcpdump",
+        "interface": "vboxnet0",
     }
     c["cuckoo"]["graylog"] = {
         "enabled": False,
@@ -110,7 +112,7 @@ def _060_100(c):
             "dsn": "esx://127.0.0.1/?no_verify=1",
             "username": "username_goes_here",
             "password": "password_goes_here",
-            "machines": "analysis1",
+            "machines": ["analysis1"],
         },
         "analysis1": {
             "label": "cuckoo1",
@@ -246,7 +248,7 @@ def _110_120(c):
     }
     c["physical"] = {
         "physical": {
-            "machines": "physical1",
+            "machines": ["physical1"],
             "user": "username",
             "password": "password",
         },
@@ -274,7 +276,7 @@ def _110_120(c):
             "user": "root",
             "password": "changeme",
             "url": "https://xenserver",
-            "machines": "cuckoo1",
+            "machines": ["cuckoo1"],
         },
         "cuckoo1": {
             "uuid": "00000000-0000-0000-0000-000000000000",
@@ -305,7 +307,7 @@ def _120_20c1(c):
             "adb_path": "/home/cuckoo/android-sdk-linux/platform-tools/adb",
             "avd_path": "/home/cuckoo/.android/avd",
             "reference_machine": "cuckoo-bird",
-            "machines": "cuckoo1",
+            "machines": ["cuckoo1"],
         },
         "cuckoo1": {
             "label": "cuckoo1",
@@ -377,7 +379,7 @@ def _120_20c1(c):
     c["qemu"] = {
         "qemu": {
             "path": "/usr/bin/qemu-system-x86_64",
-            "machines": "vm1,vm2",
+            "machines": ["vm1", "vm2"],
             "interface": "qemubr",
         },
         "vm1": {
@@ -435,7 +437,7 @@ def _120_20c1(c):
             "port": 443,
             "user": "username_goes_here",
             "pwd": "password_goes_here",
-            "machines": "analysis1",
+            "machines": ["analysis1"],
             "interface": "eth0",
         },
         "analysis1": {
@@ -496,7 +498,7 @@ def _20c1_20c2(c):
         if not vpn.strip():
             continue
 
-        c["vpn"][vpn]["rt_table"] = c["vpn"][vpn]["interface"]
+        c["vpn"][vpn.strip()]["rt_table"] = c["vpn"][vpn.strip()]["interface"]
 
     return c
 
@@ -532,8 +534,19 @@ def _20c2_200(c):
         "dnsport": 5353,
         "proxyport": 9040,
     }
-    # Merges the main VPN settings and all of the defined VPN entries.
-    c["routing"].update(c.pop("vpn"))
+    c["routing"]["vpn"] = {
+        "enabled": c["vpn"]["vpn"].pop("enabled"),
+        "vpns": [],
+    }
+
+    for vpn in c["vpn"]["vpn"]["vpns"].split(","):
+        if not vpn.strip():
+            continue
+
+        c["routing"]["vpn"]["vpns"].append(vpn.strip())
+        c["routing"][vpn.strip()] = c["vpn"].pop(vpn.strip())
+
+    c.pop("vpn")
     c["vsphere"]["vsphere"]["unverified_ssl"] = False
     return c
 
@@ -550,9 +563,9 @@ migrations = {
     "2.0-rc2": ("2.0.0", _20c2_200),
 }
 
-def migrate(c, current, to):
+def migrate(c, current, to=None):
     """Upgrade the configuration 'c' from 'current' to 'to'."""
-    while current != to:
+    while current != to and current in migrations:
         current, migration = migrations[current]
         c = migration(c)
     return c

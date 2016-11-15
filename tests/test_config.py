@@ -224,7 +224,7 @@ def test_confdir():
     assert cfg["cuckoo"]["cuckoo"]["delete_original"] is True
     assert cfg["virtualbox"]["virtualbox"]["path"] == "/usr/bin/VBoxManage"
 
-    # Test an "unknown" section.
+def test_unknown_section():
     Files.create(
         cwd("conf"), "cuckoo.conf",
         "[virtualbox]\npath = /usr/bin/VBoxManage"
@@ -235,7 +235,7 @@ def test_confdir():
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert cfg["cuckoo"]["virtualbox"]["path"] == "/usr/bin/VBoxManage"
 
-    # Test an "unknown" configuration file.
+def test_unknown_conf_file():
     Files.create(
         cwd("conf"), "foobar.conf",
         "[derp]\nfoo = bar"
@@ -263,7 +263,7 @@ def test_migration_041_042():
     assert cfg["virtualbox"]["virtualbox"]["timeout"] == 300
     assert cfg["vmware"]["vmware"]["mode"] == "gui"
     assert cfg["vmware"]["vmware"]["path"] == "/usr/bin/vmrun"
-    assert cfg["vmware"]["vmware"]["machines"] == "cuckoo1"
+    assert cfg["vmware"]["vmware"]["machines"] == ["cuckoo1"]
     assert cfg["vmware"]["cuckoo1"]["label"] == "../vmware-xp3.vmx,Snapshot1"
     assert cfg["vmware"]["cuckoo1"]["platform"] == "windows"
     assert cfg["vmware"]["cuckoo1"]["ip"] == "192.168.54.111"
@@ -299,6 +299,8 @@ timeout = 1337
     assert cfg["cuckoo"]["timeouts"]["vm_state"] == "1337"
     assert "use_sniffer" not in cfg["cuckoo"]["cuckoo"]
     assert cfg["cuckoo"]["sniffer"]["enabled"] == "no"
+    assert cfg["cuckoo"]["sniffer"]["tcpdump"] == "/usr/sbin/tcpdump"
+    assert cfg["cuckoo"]["sniffer"]["interface"] == "vboxnet0"
     assert cfg["cuckoo"]["graylog"]["enabled"] is False
     assert cfg["cuckoo"]["graylog"]["host"] == "localhost"
     assert cfg["cuckoo"]["graylog"]["port"] == 12201
@@ -392,7 +394,7 @@ label = label,snapshot
     assert cfg["esx"]["esx"]["dsn"] == "esx://127.0.0.1/?no_verify=1"
     assert cfg["esx"]["esx"]["username"] == "username_goes_here"
     assert cfg["esx"]["esx"]["password"] == "password_goes_here"
-    assert cfg["esx"]["esx"]["machines"] == "analysis1"
+    assert cfg["esx"]["esx"]["machines"] == ["analysis1"]
     assert cfg["esx"]["analysis1"]["label"] == "cuckoo1"
     assert cfg["esx"]["analysis1"]["platform"] == "windows"
     assert cfg["esx"]["analysis1"]["snapshot"] == "clean_snapshot"
@@ -449,6 +451,7 @@ label = label,snapshot
     assert cfg["reporting"]["maec40"]["virustotal"] is True
     assert cfg["reporting"]["mongodb"]["host"] == "127.0.0.1"
     assert cfg["reporting"]["mongodb"]["port"] == 27017
+    assert cfg["vmware"]["vmware"]["machines"] == ["hello"]
     assert cfg["vmware"]["hello"]["label"] == "label"
     assert cfg["vmware"]["hello"]["snapshot"] == "snapshot"
 
@@ -514,7 +517,7 @@ snapshot = snapshot
     assert cfg["memory"]["ssdt"]["filter"] is True
     assert cfg["memory"]["gdt"]["enabled"] is True
     assert cfg["memory"]["gdt"]["filter"] is True
-    assert cfg["physical"]["physical"]["machines"] == "physical1"
+    assert cfg["physical"]["physical"]["machines"] == ["physical1"]
     assert cfg["physical"]["physical"]["user"] == "username"
     assert cfg["physical"]["physical"]["password"] == "password"
     assert cfg["physical"]["physical1"]["label"] == "physical1"
@@ -531,7 +534,7 @@ snapshot = snapshot
     assert cfg["xenserver"]["xenserver"]["user"] == "root"
     assert cfg["xenserver"]["xenserver"]["password"] == "changeme"
     assert cfg["xenserver"]["xenserver"]["url"] == "https://xenserver"
-    assert cfg["xenserver"]["xenserver"]["machines"] == "cuckoo1"
+    assert cfg["xenserver"]["xenserver"]["machines"] == ["cuckoo1"]
     assert cfg["xenserver"]["cuckoo1"]["uuid"] == "00000000-0000-0000-0000-000000000000"
     assert cfg["xenserver"]["cuckoo1"]["platform"] == "windows"
     assert cfg["xenserver"]["cuckoo1"]["ip"] == "192.168.54.111"
@@ -630,7 +633,7 @@ machines = cuckoo1
     assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/android-sdk-linux/platform-tools/adb"
     assert cfg["avd"]["avd"]["avd_path"] == "/home/cuckoo/.android/avd"
     assert cfg["avd"]["avd"]["reference_machine"] == "cuckoo-bird"
-    assert cfg["avd"]["avd"]["machines"] == "cuckoo1"
+    assert cfg["avd"]["avd"]["machines"] == ["cuckoo1"]
     assert cfg["avd"]["cuckoo1"]["label"] == "cuckoo1"
     assert cfg["avd"]["cuckoo1"]["platform"] == "android"
     assert cfg["avd"]["cuckoo1"]["ip"] == "127.0.0.1"
@@ -669,7 +672,7 @@ machines = cuckoo1
     assert cfg["processing"]["suricata"]["enabled"] is False
     assert cfg["processing"]["virustotal"]["scan"] == 0
     assert cfg["qemu"]["qemu"]["path"] == "/usr/bin/qemu-system-x86_64"
-    assert cfg["qemu"]["qemu"]["machines"] == "vm1,vm2"
+    assert cfg["qemu"]["qemu"]["machines"] == ["vm1", "vm2"]
     assert cfg["qemu"]["qemu"]["interface"] == "qemubr"
     assert cfg["qemu"]["vm1"]["label"] == "vm1"
     assert cfg["qemu"]["vm1"]["image"] == "/home/rep/vms/qvm_wheezy64_1.qcow2"
@@ -845,7 +848,7 @@ interface = eth0
     assert cfg["routing"]["tor"]["dnsport"] == 5353
     assert cfg["routing"]["tor"]["proxyport"] == 9040
     assert cfg["routing"]["vpn"]["enabled"] == "yes"
-    assert cfg["routing"]["vpn"]["vpns"] == "vpn0,vpn1"
+    assert cfg["routing"]["vpn"]["vpns"] == ["vpn0", "vpn1"]
     assert cfg["routing"]["vpn0"]["name"] == "vpn0"
     assert cfg["routing"]["vpn0"]["description"] == "foobar"
     assert cfg["routing"]["vpn0"]["interface"] == "tun42"
@@ -856,3 +859,7 @@ interface = eth0
     assert cfg["routing"]["vpn1"]["rt_table"] == "internet"
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
+
+def test_full_migration_040():
+    cfg = Config.from_confdir("tests/files/conf/040_plain", loose=True)
+    cfg = migrate(cfg, "0.4")
