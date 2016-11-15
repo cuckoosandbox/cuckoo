@@ -9,6 +9,7 @@ import threading
 
 from ctypes import create_string_buffer, c_uint, byref, sizeof
 
+from lib.api.process import Process
 from lib.common.defines import KERNEL32, PIPE_ACCESS_INBOUND, ERROR_MORE_DATA
 from lib.common.defines import PIPE_TYPE_BYTE, PIPE_WAIT, ERROR_PIPE_CONNECTED
 from lib.common.defines import PIPE_UNLIMITED_INSTANCES, INVALID_HANDLE_VALUE
@@ -30,6 +31,9 @@ class PipeForwarder(threading.Thread):
         threading.Thread.__init__(self)
         self.pipe_handle = pipe_handle
         self.destination = destination
+
+    def _is_pid_terminated(self, pid):
+        return not Process(pid=pid).is_alive()
 
     def run(self):
         buf = create_string_buffer(BUFSIZE)
@@ -84,6 +88,10 @@ class PipeForwarder(threading.Thread):
                 break
 
         self.active[pid.value] = False
+
+        if self._is_pid_terminated(pid.value):
+            self.sockets.pop(pid.value)
+            sock.close()
 
 class PipeDispatcher(threading.Thread):
     """Receives commands through a local pipe, forwards them to the

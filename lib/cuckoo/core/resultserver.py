@@ -134,7 +134,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
     """
 
     def setup(self):
-        self.rawlogfd = None
+        self.process_log_path = ""
         self.protocol = None
         self.startbuf = ""
         self.end_request = threading.Event()
@@ -152,8 +152,6 @@ class ResultHandler(SocketServer.BaseRequestHandler):
 
         if self.protocol:
             self.protocol.close()
-        if self.rawlogfd:
-            self.rawlogfd.close()
 
     def wait_sock_or_end(self):
         while True:
@@ -164,9 +162,11 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 if self.poll.poll(1000):
                     return True
             else:
-                rs, _, _ = select.select([self.request], [], [], 1)
+                rs, _, xs = select.select([self.request], [], [], 1)
                 if rs:
                     return True
+                if xs:
+                    return False
 
     def seek(self, pos):
         pass
@@ -182,8 +182,9 @@ class ResultHandler(SocketServer.BaseRequestHandler):
             buf += tmp
 
         if isinstance(self.protocol, BsonParser):
-            if self.rawlogfd:
-                self.rawlogfd.write(buf)
+            if self.process_log_path:
+                with open(self.process_log_path, "a+b") as rawlogfd:
+                    rawlogfd.write(buf)
             else:
                 self.startbuf += buf
 
@@ -264,7 +265,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 "CuckooResultError: %s.", e
             )
         except (Disconnect, socket.error):
-            pass
+            self.request.close()
+            self.end_request.set()
         except:
             log.exception("FIXME - exception in resultserver connection %s",
                           self.client_address)
@@ -276,7 +278,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         ppid = event["ppid"]
         procname = event["process_name"]
 
-        if self.rawlogfd:
+        self.process_log_path = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
+        if os.path.exists(self.process_log_path):
             log.debug(
                 "ResultServer got a new process message but already "
                 "has pid %d ppid %s procname %s.", pid, ppid, procname
@@ -298,9 +301,8 @@ class ResultHandler(SocketServer.BaseRequestHandler):
                 pid, ppid, procname
             )
 
-        filepath = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
-        self.rawlogfd = open(filepath, "wb")
-        self.rawlogfd.write(self.startbuf)
+        with open(self.process_log_path, "wb") as rawlogfd:
+            rawlogfd.write(self.startbuf)
 
     def create_folders(self):
         folders = "shots", "files", "logs", "buffer"
@@ -320,7 +322,6 @@ class FileUpload(ProtocolHandler):
         self.upload_max_size = \
             self.handler.server.cfg.resultserver.upload_max_size
         self.storagepath = self.handler.storagepath
-        self.fd = None
 
         self.filelog = os.path.join(self.handler.storagepath, "files.json")
 
@@ -371,23 +372,24 @@ class FileUpload(ProtocolHandler):
             )
             return
 
-        self.fd = open(file_path, "wb")
-        chunk = self.handler.read_any()
-        while chunk:
-            self.fd.write(chunk)
+        with open(file_path, "a+b") as fd:
+            chunk = self.handler.read_any()
+            while chunk:
+                fd.write(chunk)
 
-            if self.fd.tell() >= self.upload_max_size:
-                log.warning(
-                    "Uploaded file length larger than upload_max_size, "
-                    "stopping upload."
-                )
-                self.fd.write("... (truncated)")
-                break
+                if fd.tell() >= self.upload_max_size:
+                    log.warning(
+                        "Uploaded file length larger than upload_max_size, "
+                        "stopping upload."
+                    )
+                    fd.write("... (truncated)")
+                    break
 
-            try:
-                chunk = self.handler.read_any()
-            except:
-                break
+                try:
+                    chunk = self.handler.read_any()
+                except:
+                    break
+            log.debug("Uploaded file length: %s", fd.tell())
 
         self.lock.acquire()
 
@@ -400,24 +402,18 @@ class FileUpload(ProtocolHandler):
 
         self.lock.release()
 
-        log.debug("Uploaded file length: %s", self.fd.tell())
         return
         yield
 
     def close(self):
-        if self.fd:
-            self.fd.close()
+        pass
 
 class LogHandler(ProtocolHandler):
     def init(self):
         self.logpath = os.path.join(self.handler.storagepath, "analysis.log")
-        self.fd = self._open()
         log.debug("LogHandler for live analysis.log initialized.")
 
     def __iter__(self):
-        if not self.fd:
-            return
-
         while True:
             try:
                 buf = self.handler.read_newline(strip=False)
@@ -427,29 +423,12 @@ class LogHandler(ProtocolHandler):
             if not buf:
                 break
 
-            self.fd.write(buf)
-            self.fd.flush()
+            with open(self.logpath, "a+") as fd:
+                fd.write(buf)
+                fd.flush()
 
         return
         yield
 
     def close(self):
-        if self.fd:
-            self.fd.close()
-
-    def _open(self):
-        if not os.path.exists(self.logpath):
-            return open(self.logpath, "wb")
-
-        log.debug("Log analysis.log already existing, appending data.")
-        fd = open(self.logpath, "ab")
-
-        # add a fake log entry, saying this had to be re-opened
-        #  use the same format as the default logger, in case anyone wants to parse this
-        #  2015-02-23 12:05:05,092 [lib.api.process] DEBUG: Using QueueUserAPC injection.
-        now = datetime.datetime.now()
-        print >>fd, "\n%s,%03.0f [lib.core.resultserver] WARNING: This log file was re-opened, log entries will be appended." % (
-            now.strftime("%Y-%m-%d %H:%M:%S"), now.microsecond / 1000.0
-        )
-
-        return fd
+        pass
