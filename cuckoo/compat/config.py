@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from cuckoo.common.config import cast
+
 def _040_041(c):
     return c
 
@@ -38,15 +40,16 @@ def _042_050(c):
     }
     timeout = c["virtualbox"]["virtualbox"].pop("timeout")
     c["cuckoo"]["timeouts"] = {
-        "default": analysis_timeout,
-        "critical": critical_timeout,
-        "vm_state": timeout,
+        "default": cast("cuckoo:timeouts:default", analysis_timeout),
+        "critical": cast("cuckoo:timeouts:critical", critical_timeout),
+        "vm_state": cast("cuckoo:timeouts:vm_state", timeout),
     }
     sniffer = c["cuckoo"]["cuckoo"].pop("use_sniffer")
     c["cuckoo"]["sniffer"] = {
         "enabled": sniffer,
         "tcpdump": "/usr/sbin/tcpdump",
         "interface": "vboxnet0",
+        "bpf": None,
     }
     c["cuckoo"]["graylog"] = {
         "enabled": False,
@@ -97,8 +100,17 @@ def _050_060(c):
 
 def _060_100(c):
     c["auxiliary"] = {
-        "sniffer": c["cuckoo"].pop("sniffer"),
+        "sniffer": {
+            "enabled": cast(
+                "auxiliary:sniffer:enabled",
+                c["cuckoo"]["sniffer"]["enabled"]
+            ),
+            "tcpdump": c["cuckoo"]["sniffer"]["tcpdump"],
+            "interface": c["cuckoo"]["sniffer"]["interface"],
+            "bpf": c["cuckoo"]["sniffer"].get("bpf"),
+        },
     }
+    c["cuckoo"].pop("sniffer")
     c["cuckoo"]["cuckoo"]["delete_bin_copy"] = False
     machinery = c["cuckoo"]["cuckoo"].pop("machine_manager")
     c["cuckoo"]["cuckoo"]["machinery"] = machinery
@@ -345,6 +357,7 @@ def _120_20c1(c):
     }
     c["processing"]["apkinfo"] = {
         "enabled": False,
+        "decompilation_threshold": 5000000,
     }
     c["processing"]["baseline"] = {
         "enabled": False,
@@ -371,11 +384,19 @@ def _120_20c1(c):
     }
     c["processing"]["snort"] = {
         "enabled": False,
+        "snort": "/usr/local/bin/snort",
+        "conf": "/etc/snort/snort.conf",
     }
     c["processing"]["suricata"] = {
         "enabled": False,
+        "suricata": "/usr/bin/suricata",
+        "conf": "/etc/suricata/suricata.yaml",
+        "eve_log": "eve.json",
+        "files_log": "files-json.log",
+        "files_dir": "files",
+        "socket": None,
     }
-    c["processing"]["virustotal"]["scan"] = 0
+    c["processing"]["virustotal"]["scan"] = False
     c["qemu"] = {
         "qemu": {
             "path": "/usr/bin/qemu-system-x86_64",
@@ -409,6 +430,10 @@ def _120_20c1(c):
     c["reporting"]["mongodb"]["paginate"] = 100
     c["reporting"]["moloch"] = {
         "enabled": False,
+        "host": None,
+        "moloch_capture": "/data/moloch/bin/moloch-capture",
+        "conf": "/data/moloch/etc/config.ini",
+        "instance": "cuckoo",
     }
     c["virtualbox"]["virtualbox"]["mode"] = "headless"
     c["virtualbox"]["virtualbox"]["interface"] = interface
@@ -478,11 +503,15 @@ def _20c1_20c2(c):
         "timeout": 60,
         "scan": False,
         "force": False,
+        "url": None,
     }
     c["reporting"]["elasticsearch"] = {
         "enabled": False,
         "hosts": "127.0.0.1",
         "calls": False,
+        "index": "cuckoo",
+        "index_time_pattern": "yearly",
+        "cuckoo_node": None,
     }
     c["reporting"]["notification"] = {
         "enabled": False,
@@ -492,6 +521,12 @@ def _20c1_20c2(c):
     c["reporting"]["mattermost"] = {
         "enabled": False,
         "username": "cuckoo",
+        "url": None,
+        "myurl": None,
+        "show-virustotal": True,
+        "show-signatures": True,
+        "show-urls": True,
+        "hash-filename": True,
     }
 
     for vpn in c["vpn"]["vpn"]["vpns"].split(","):
@@ -513,31 +548,47 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns")
     )
-    c["routing"] = {
-        "routing": c["cuckoo"].pop("routing"),
-    }
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,
         "apikey": None,
         "mode": "maldoc ipaddr",
     }
+    for old_item in ("show-virustotal", "show-signatures", "show-urls", "hash-filename"):
+        new_item = old_item.replace("-", "_")
+        c["reporting"]["mattermost"][new_item] = cast(
+            "reporting:mattermost:%s" % new_item,
+            c["reporting"]["mattermost"].pop(old_item)
+        )
+
     if "url" not in c["reporting"]["notification"]:
         c["reporting"]["notification"]["url"] = None
-    c["routing"]["routing"]["drop"] = False
-    c["routing"]["inetsim"] = {
-        "enabled": False,
-        "server": "192.168.56.1",
+
+    c["routing"] = {
+        "routing": {
+            "drop": False,
+        },
+        "inetsim": {
+            "enabled": False,
+            "server": "192.168.56.1",
+        },
+        "tor": {
+            "enabled": False,
+            "dnsport": 5353,
+            "proxyport": 9040,
+        },
+        "vpn": {
+            "enabled": cast(
+                "routing:vpn:enabled", c["vpn"]["vpn"].pop("enabled")
+            ),
+            "vpns": [],
+        },
     }
-    c["routing"]["tor"] = {
-        "enabled": False,
-        "dnsport": 5353,
-        "proxyport": 9040,
-    }
-    c["routing"]["vpn"] = {
-        "enabled": c["vpn"]["vpn"].pop("enabled"),
-        "vpns": [],
-    }
+
+    for item in ("route", "internet", "rt_table", "auto_rt"):
+        c["routing"]["routing"][item] = cast(
+            "routing:routing:%s" % item, c["cuckoo"]["routing"].pop(item)
+        )
 
     for vpn in c["vpn"]["vpn"]["vpns"].split(","):
         if not vpn.strip():

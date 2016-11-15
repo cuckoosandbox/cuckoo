@@ -60,7 +60,7 @@ class String(Type):
     """String Type Definition class."""
 
     def parse(self, value):
-        return (value or "").strip()
+        return value.strip() if value else None
 
     def check(self, value):
         return isinstance(value, basestring)
@@ -157,6 +157,12 @@ class List(Type):
     def parse(self, value):
         try:
             ret = []
+
+            if isinstance(value, (tuple, list)):
+                for entry in value:
+                    ret.append(self.subclass().parse(entry))
+                return ret
+
             for entry in value.split(self.sep):
                 if self.strip:
                     entry = entry.strip()
@@ -253,7 +259,7 @@ class Config(object):
                     "/usr/sbin/tcpdump",
                     exists=True, writable=False, readable=True
                 ),
-                "bpf": String(required=False),
+                "bpf": String(),
             },
             "mitm": {
                 "enabled": Boolean(False),
@@ -468,7 +474,7 @@ class Config(object):
             },
             "apkinfo": {
                 "enabled": Boolean(False),
-                "decompilation_threshold": Int(5000000, required=False),
+                "decompilation_threshold": Int(5000000),
             },
             "baseline": {
                 "enabled": Boolean(False),
@@ -526,8 +532,14 @@ class Config(object):
             },
             "snort": {
                 "enabled": Boolean(False),
-                "snort": Path(exists=False, writable=False, readable=True),
-                "conf": Path(exists=False, writable=False, readable=True),
+                "snort": Path(
+                    "/usr/local/bin/snort",
+                    exists=False, writable=False, readable=True
+                ),
+                "conf": Path(
+                    "/etc/snort/snort.conf",
+                    exists=False, writable=False, readable=True
+                ),
             },
             "static": {
                 "enabled": Boolean(True),
@@ -538,10 +550,26 @@ class Config(object):
             },
             "suricata": {
                 "enabled": Boolean(False),
-                "suricata": Path(exists=True, writable=False, readable=True),
-                "eve_log": Path(exists=False, writable=True, readable=False),
-                "files_log": Path(exists=False, writable=True, readable=False),
-                "files_dir": Path(exists=False, writable=False, readable=True),
+                "suricata": Path(
+                    "/usr/bin/suricata",
+                    exists=True, writable=False, readable=True
+                ),
+                "conf": Path(
+                    "/etc/suricata/suricata.yaml",
+                    exists=True, writable=False, readable=True
+                ),
+                "eve_log": Path(
+                    "eve.json",
+                    exists=False, writable=True, readable=False
+                ),
+                "files_log": Path(
+                    "files-json.log",
+                    exists=False, writable=True, readable=False
+                ),
+                "files_dir": Path(
+                    "files",
+                    exists=False, writable=False, readable=True
+                ),
                 "socket": Path(exists=True, writable=False, readable=True),
             },
             "targetinfo": {
@@ -600,7 +628,9 @@ class Config(object):
                     "resultserver_ip": String("192.168.55.1"),
                     "resultserver_port": Int(),
                     "tags": String("debian_wheezy,mipsel"),
-                    "kernel_path": String("{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"),
+                    "kernel_path": String(
+                        "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
+                    ),
                 },
             ],
         },
@@ -634,13 +664,20 @@ class Config(object):
                 "calls": Boolean(False),
                 "index": String(),
                 "index_time_pattern": String(),
+                "cuckoo_node": String(),
             },
             "moloch": {
                 "enabled": Boolean(False),
                 "host": String(),
-                "moloch_capture": Path(exists=True, writable=False, readable=True),
-                "conf": Path(exists=True, writable=False, readable=True),
-                "instance": String(),
+                "moloch_capture": Path(
+                    "/data/moloch/bin/moloch-capture",
+                    exists=True, writable=False, readable=True
+                ),
+                "conf": Path(
+                    "/data/moloch/etc/config.ini",
+                    exists=True, writable=False, readable=True
+                ),
+                "instance": String("cuckoo"),
             },
             "notification": {
                 "enabled": Boolean(False),
@@ -652,10 +689,10 @@ class Config(object):
                 "username": String("cuckoo"),
                 "url": String(),
                 "myurl": String(),
-                "show-virustotal": Boolean(),
-                "show-signatures": Boolean(),
-                "show-urls": Boolean(),
-                "hash-filename": Boolean(),
+                "show_virustotal": Boolean(True),
+                "show_signatures": Boolean(True),
+                "show_urls": Boolean(True),
+                "hash_filename": Boolean(True),
             },
         },
         "routing": {
@@ -812,12 +849,13 @@ class Config(object):
                 if name in types:
                     value = types[name].parse(raw_value)
                 else:
-                    log.error(
-                        "Type of config parameter %s:%s:%s not found! This "
-                        "may indicate that you've incorrectly filled out the "
-                        "Cuckoo configuration, please double check it.",
-                        file_name, section, name
-                    )
+                    if not loose:
+                        log.error(
+                            "Type of config parameter %s:%s:%s not found! "
+                            "This may indicate that you've incorrectly filled "
+                            "out the Cuckoo configuration, please double "
+                            "check it.", file_name, section, name
+                        )
                     value = raw_value
 
                 self.sections[section][name] = value
@@ -870,7 +908,7 @@ def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
     return ",".join("%s=%s" % (k, v) for k, v in options.items())
 
-def config(s, default=None, cfg=None, strict=False):
+def config(s, cfg=None, strict=False):
     """Fetch a configuration value, denoted as file:section:key."""
     if s.count(":") != 2:
         raise RuntimeError("Invalid configuration entry: %s" % s)
@@ -909,4 +947,19 @@ def config(s, default=None, cfg=None, strict=False):
             "please double check it." % s
         )
 
-    return section.get(key, default)
+    return section.get(key, type_.default if type_ else None)
+
+def cast(s, value):
+    """Cast a configuration value as per its type."""
+    if s.count(":") != 2:
+        raise RuntimeError("Invalid configuration entry: %s" % s)
+
+    file_name, section, key = s.split(":")
+
+    type_ = Config.configuration.get(file_name, {}).get(section, {}).get(key)
+    if type_ is None:
+        raise CuckooConfigurationError(
+            "No such configuration value exists: %s" % s
+        )
+
+    return type_.parse(value)

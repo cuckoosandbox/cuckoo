@@ -27,23 +27,23 @@ class Mattermost(Report):
         )
 
         filename = results.get("target", {}).get("file", {}).get("name", "")
-        if self.options.get("hash-filename"):
+        if self.options.get("hash_filename"):
             filename = hashlib.sha256(filename).hexdigest()
 
         post += "File : {0} ::: Score : **{1}** ::: ".format(
             filename, results.get("info", {}).get("score")
         )
 
-        if self.options.get("show-virustotal"):
+        if self.options.get("show_virustotal"):
             post += "**VT : {0} / {1}**\n".format(
                 results.get("virustotal", {}).get("positives"),
                 results.get("virustotal", {}).get("total"),
             )
 
-        if self.options.get("show-signatures"):
+        if self.options.get("show_signatures"):
             post += "**Signatures** ::: {0} \n".format(" : ".join(sigs))
 
-        if self.options.get("show-urls"):
+        if self.options.get("show_urls"):
             post += "**URLS**\n`{0}`".format(
                 "\n".join(urls).replace(".", "[.]")
             )
@@ -53,7 +53,9 @@ class Mattermost(Report):
             "text": post,
         }
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+        }
 
         try:
             requests.post(

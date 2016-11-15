@@ -294,13 +294,14 @@ timeout = 1337
     assert cfg["cuckoo"]["processing"]["resolve_dns"] is True
     assert cfg["cuckoo"]["database"]["connection"] is None
     assert cfg["cuckoo"]["database"]["timeout"] is None
-    assert cfg["cuckoo"]["timeouts"]["default"] == "122"
-    assert cfg["cuckoo"]["timeouts"]["critical"] == "601"
-    assert cfg["cuckoo"]["timeouts"]["vm_state"] == "1337"
+    assert cfg["cuckoo"]["timeouts"]["default"] == 122
+    assert cfg["cuckoo"]["timeouts"]["critical"] == 601
+    assert cfg["cuckoo"]["timeouts"]["vm_state"] == 1337
     assert "use_sniffer" not in cfg["cuckoo"]["cuckoo"]
     assert cfg["cuckoo"]["sniffer"]["enabled"] == "no"
     assert cfg["cuckoo"]["sniffer"]["tcpdump"] == "/usr/sbin/tcpdump"
     assert cfg["cuckoo"]["sniffer"]["interface"] == "vboxnet0"
+    assert cfg["cuckoo"]["sniffer"]["bpf"] is None
     assert cfg["cuckoo"]["graylog"]["enabled"] is False
     assert cfg["cuckoo"]["graylog"]["host"] == "localhost"
     assert cfg["cuckoo"]["graylog"]["port"] == 12201
@@ -320,14 +321,30 @@ def test_migration_050_060():
         "upload_max_size": 10485760,
     }
     assert cfg["processing"] == {
-        "analysisinfo": {"enabled": True},
-        "behavior": {"enabled": True},
-        "debug": {"enabled": True},
-        "dropped": {"enabled": True},
-        "network": {"enabled": True},
-        "static": {"enabled": True},
-        "strings": {"enabled": True},
-        "targetinfo": {"enabled": True},
+        "analysisinfo": {
+            "enabled": True,
+        },
+        "behavior": {
+            "enabled": True,
+        },
+        "debug": {
+            "enabled": True,
+        },
+        "dropped": {
+            "enabled": True,
+        },
+        "network": {
+            "enabled": True,
+        },
+        "static": {
+            "enabled": True,
+        },
+        "strings": {
+            "enabled": True,
+        },
+        "targetinfo": {
+            "enabled": True,
+        },
         "virustotal": {
             "enabled": True,
             "key": "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088",
@@ -379,7 +396,7 @@ label = label,snapshot
     assert "metadata" in cfg["reporting"]
     assert "maec11" in cfg["reporting"]
     cfg = migrate(cfg, "0.6.0", "1.0.0")
-    assert cfg["auxiliary"]["sniffer"]["enabled"] == "no"
+    assert cfg["auxiliary"]["sniffer"]["enabled"] is False
     assert cfg["auxiliary"]["sniffer"]["tcpdump"] == "/wow/path"
     assert cfg["auxiliary"]["sniffer"]["interface"] == "vboxnet0"
     assert cfg["cuckoo"]["cuckoo"]["delete_bin_copy"] is False
@@ -657,6 +674,7 @@ machines = cuckoo1
     assert cfg["physical"]["fog"]["username"] == "fog"
     assert cfg["physical"]["fog"]["password"] == "password"
     assert cfg["processing"]["apkinfo"]["enabled"] is False
+    assert cfg["processing"]["apkinfo"]["decompilation_threshold"] == 5000000
     assert cfg["processing"]["baseline"]["enabled"] is False
     assert cfg["processing"]["buffer"]["enabled"] is True
     assert cfg["processing"]["droidmon"]["enabled"] is False
@@ -669,8 +687,16 @@ machines = cuckoo1
     assert cfg["processing"]["screenshots"]["enabled"] is False
     assert cfg["processing"]["screenshots"]["tesseract"] == "/usr/bin/tesseract"
     assert cfg["processing"]["snort"]["enabled"] is False
+    assert cfg["processing"]["snort"]["snort"] == "/usr/local/bin/snort"
+    assert cfg["processing"]["snort"]["conf"] == "/etc/snort/snort.conf"
     assert cfg["processing"]["suricata"]["enabled"] is False
-    assert cfg["processing"]["virustotal"]["scan"] == 0
+    assert cfg["processing"]["suricata"]["suricata"] == "/usr/bin/suricata"
+    assert cfg["processing"]["suricata"]["conf"] == "/etc/suricata/suricata.yaml"
+    assert cfg["processing"]["suricata"]["eve_log"] == "eve.json"
+    assert cfg["processing"]["suricata"]["files_log"] == "files-json.log"
+    assert cfg["processing"]["suricata"]["files_dir"] == "files"
+    assert cfg["processing"]["suricata"]["socket"] is None
+    assert cfg["processing"]["virustotal"]["scan"] is False
     assert cfg["qemu"]["qemu"]["path"] == "/usr/bin/qemu-system-x86_64"
     assert cfg["qemu"]["qemu"]["machines"] == ["vm1", "vm2"]
     assert cfg["qemu"]["qemu"]["interface"] == "qemubr"
@@ -748,6 +774,7 @@ enabled = yes
 """)
     Files.create(cwd("conf"), "vpn.conf", """
 [vpn]
+enabled = yes
 vpns = vpn0
 [vpn0]
 interface = hehe
@@ -780,6 +807,7 @@ interface = hehe
     assert cfg["reporting"]["notification"]["identifier"] is None
     assert cfg["reporting"]["mattermost"]["enabled"] is False
     assert cfg["reporting"]["mattermost"]["username"] == "cuckoo"
+    assert cfg["vpn"]["vpn"]["enabled"] == "yes"
     assert cfg["vpn"]["vpn0"]["rt_table"] == "hehe"
 
 def test_migration_20c2_200():
@@ -804,6 +832,11 @@ whitelist-dns = wow
 allowed-dns = 8.8.8.8
 """)
     Files.create(cwd("conf"), "reporting.conf", """
+[mattermost]
+show-virustotal = no
+show-signatures = yes
+show-urls = no
+hash-filename = yes
 [notification]
 enabled = no
 """)
@@ -837,17 +870,22 @@ interface = eth0
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
+    assert cfg["reporting"]["notification"]["url"] is None
+    assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
+    assert cfg["reporting"]["mattermost"]["show_signatures"] is True
+    assert cfg["reporting"]["mattermost"]["show_urls"] is False
+    assert cfg["reporting"]["mattermost"]["hash_filename"] is True
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"
-    assert cfg["routing"]["routing"]["auto_rt"] == "no"
+    assert cfg["routing"]["routing"]["auto_rt"] is False
     assert cfg["routing"]["routing"]["drop"] is False
     assert cfg["routing"]["inetsim"]["enabled"] is False
     assert cfg["routing"]["inetsim"]["server"] == "192.168.56.1"
     assert cfg["routing"]["tor"]["enabled"] is False
     assert cfg["routing"]["tor"]["dnsport"] == 5353
     assert cfg["routing"]["tor"]["proxyport"] == 9040
-    assert cfg["routing"]["vpn"]["enabled"] == "yes"
+    assert cfg["routing"]["vpn"]["enabled"] is True
     assert cfg["routing"]["vpn"]["vpns"] == ["vpn0", "vpn1"]
     assert cfg["routing"]["vpn0"]["name"] == "vpn0"
     assert cfg["routing"]["vpn0"]["description"] == "foobar"
@@ -863,3 +901,40 @@ interface = eth0
 def test_full_migration_040():
     cfg = Config.from_confdir("tests/files/conf/040_plain", loose=True)
     cfg = migrate(cfg, "0.4")
+
+    # Ensure that all values exist and that have the correct types.
+    for filename, sections in Config.configuration.items():
+        assert filename in cfg
+        for section, entries in sections.items():
+            # We check machines and VPNs manually later on.
+            if section == "*":
+                continue
+            assert section in cfg[filename]
+            for key, value in entries.items():
+                assert key in cfg[filename][section]
+                actual_value = cfg[filename][section][key]
+                assert actual_value == value.parse(actual_value)
+
+    machineries = (
+        "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
+        "vmware", "vsphere", "xenserver",
+    )
+
+    for machinery in machineries:
+        for machine in config("%s:%s:machines" % (machinery, machinery)):
+            assert machine in cfg[machinery]
+            type_ = Config.configuration[machinery]["*"]
+            if isinstance(type_, (tuple, list)):
+                type_ = type_[0]
+
+            for key, value in cfg[machinery][machine].items():
+                assert value == type_[key].parse(value)
+
+    for vpn in config("routing:vpn:vpns"):
+        assert vpn in cfg["routing"]
+        type_ = Config.configuration["routing"]["*"]
+        if isinstance(type_, (tuple, list)):
+            type_ = type_[0]
+
+        for key, value in cfg["routing"][vpn].items():
+            assert value == type_[key].parse(value)
