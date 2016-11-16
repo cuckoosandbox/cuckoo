@@ -16,11 +16,10 @@ from cuckoo.misc import set_cwd, cwd
 
 class TestInit(object):
     def setup(self):
-        self.dirpath = tempfile.mkdtemp()
-        set_cwd(self.dirpath)
+        set_cwd(tempfile.mkdtemp())
 
     def teardown(self):
-        shutil.rmtree(self.dirpath)
+        shutil.rmtree(cwd())
 
     def test_exists(self):
         filepath = cwd("supervisord.conf")
@@ -43,12 +42,12 @@ class TestInit(object):
     @pytest.mark.skipif("sys.platform != 'linux2'")
     def test_venv_new(self):
         venv = os.environ.pop("VIRTUAL_ENV", None)
-        os.environ["VIRTUAL_ENV"] = self.dirpath
+        os.environ["VIRTUAL_ENV"] = cwd()
 
         write_supervisor_conf(None)
         buf = open(cwd("supervisord.conf"), "rb").read()
 
-        cuckoo_path = "%s/bin/cuckoo" % self.dirpath
+        cuckoo_path = "%s/bin/cuckoo" % cwd()
         assert "command = %s -d -m 10000" % cuckoo_path in buf
 
         os.environ["VIRTUAL_ENV"] = venv
@@ -57,31 +56,31 @@ class TestInit(object):
         """Tests that 'cuckoo init' works with a new CWD."""
         with pytest.raises(SystemExit):
             main.main(
-                ("--cwd", self.dirpath, "--nolog", "init"),
+                ("--cwd", cwd(), "--nolog", "init"),
                 standalone_mode=False
             )
 
-        assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
-        assert os.path.exists(os.path.join(self.dirpath, "conf"))
-        assert os.path.exists(os.path.join(self.dirpath, "storage"))
-        assert os.path.exists(os.path.join(self.dirpath, "storage", "binaries"))
-        assert os.path.exists(os.path.join(self.dirpath, "storage", "analyses"))
-        assert os.path.exists(os.path.join(self.dirpath, "storage", "baseline"))
-        assert os.path.exists(os.path.join(self.dirpath, "log"))
+        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
+        assert os.path.exists(os.path.join(cwd(), "conf"))
+        assert os.path.exists(os.path.join(cwd(), "storage"))
+        assert os.path.exists(os.path.join(cwd(), "storage", "binaries"))
+        assert os.path.exists(os.path.join(cwd(), "storage", "analyses"))
+        assert os.path.exists(os.path.join(cwd(), "storage", "baseline"))
+        assert os.path.exists(os.path.join(cwd(), "log"))
 
     def test_cuckoo_init_main(self):
         """Tests that 'cuckoo' works with a new CWD."""
         main.main(
-            ("--cwd", self.dirpath, "--nolog"),
+            ("--cwd", cwd(), "--nolog"),
             standalone_mode=False
         )
-        assert os.path.exists(os.path.join(self.dirpath, "mitm.py"))
+        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
 
     def test_cuckoo_init_no_resultserver(self):
         """Tests that 'cuckoo init' doesn't launch the ResultServer."""
         with pytest.raises(SystemExit):
             main.main(
-                ("--cwd", self.dirpath, "--nolog", "init"),
+                ("--cwd", cwd(), "--nolog", "init"),
                 standalone_mode=False
             )
 
@@ -89,16 +88,16 @@ class TestInit(object):
         # also present in the Travis CI environment, etc) as otherwise the
         # following call will raise an exception about not having found the
         # monitoring binaries.
-        shutil.rmtree(os.path.join(self.dirpath, "monitor"))
+        shutil.rmtree(os.path.join(cwd(), "monitor"))
         shutil.copytree(
             os.path.expanduser("~/.cuckoo/monitor"),
-            os.path.join(self.dirpath, "monitor")
+            os.path.join(cwd(), "monitor")
         )
 
         # Raises CuckooCriticalError if ResultServer can't bind (which no
         # longer happens now, naturally).
         main.main(
-            ("--cwd", self.dirpath, "--nolog", "init"),
+            ("--cwd", cwd(), "--nolog", "init"),
             standalone_mode=False
         )
 

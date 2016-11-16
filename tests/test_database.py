@@ -14,7 +14,7 @@ class DatabaseEngine(object):
     """Tests database stuff."""
     URI = None
 
-    def setup(self):
+    def setup_class(self):
         set_cwd(tempfile.mkdtemp())
 
         self.d = Database()
