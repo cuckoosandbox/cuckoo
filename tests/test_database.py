@@ -7,7 +7,7 @@ import os
 import pytest
 import tempfile
 
-from cuckoo.core.database import Database, Task
+from cuckoo.core.database import Database, Task, AlembicVersion
 from cuckoo.misc import set_cwd
 
 class DatabaseEngine(object):
@@ -68,6 +68,13 @@ class DatabaseEngine(object):
         self.d.add_error("A"*1024, 1)
         err = self.d.view_errors(1)
         assert err and len(err[0].message) == 1024
+
+    def test_connect_no_create(self):
+        AlembicVersion.__table__.drop(self.d.engine)
+        self.d.connect(dsn=self.URI, create=False)
+        assert "alembic_version" not in self.d.engine.table_names()
+        self.d.connect(dsn=self.URI)
+        assert "alembic_version" in self.d.engine.table_names()
 
 class TestSqlite3Memory(DatabaseEngine):
     URI = "sqlite:///:memory:"

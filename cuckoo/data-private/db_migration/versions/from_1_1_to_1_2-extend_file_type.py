@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""Extend sample's file-type field (from Cuckoo 0.6 to 1.1)
+"""Extend sample's file-type field (from Cuckoo 1.1 to 1.2)
 
 Revision ID: 18eee46c6f81
 Revises: 263a45963c72

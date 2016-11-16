@@ -384,7 +384,7 @@ class Database(object):
         self.schema_check = schema_check
         self.echo = echo
 
-    def connect(self, schema_check=None, dsn=None):
+    def connect(self, schema_check=None, dsn=None, create=True):
         """Connect to the database backend."""
         cfg = Config()
 
@@ -412,14 +412,20 @@ class Database(object):
             log.warning("It appears you don't have a valid `database` "
                         "section in conf/cuckoo.conf, using sqlite3 instead.")
 
-        # Create schema.
+        # Get db session.
+        self.Session = sessionmaker(bind=self.engine)
+
+        if create:
+            self._create_tables()
+
+    def _create_tables(self):
+        """Creates all the database tables etc."""
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
-
-        # Get db session.
-        self.Session = sessionmaker(bind=self.engine)
+            raise CuckooDatabaseError(
+                "Unable to create or connect to database: %s" % e
+            )
 
         # Deal with schema versioning.
         # TODO: it's a little bit dirty, needs refactoring.
@@ -430,7 +436,9 @@ class Database(object):
             try:
                 tmp_session.commit()
             except SQLAlchemyError as e:
-                raise CuckooDatabaseError("Unable to set schema version: {0}".format(e))
+                raise CuckooDatabaseError(
+                    "Unable to set schema version: %s" % e
+                )
                 tmp_session.rollback()
             finally:
                 tmp_session.close()
