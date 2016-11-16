@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""taken route
+"""taken route for a task (from Cuckoo 1.2 to 2.0-rc1)
 
 Revision ID: 1070cd314621
 Revises: 4a04f40d4ab4

@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""machine options
+"""machine options (from Cuckoo 1.2 to 2.0-rc1)
 
 Revision ID: cd31654d187
 Revises: 1583656cb935

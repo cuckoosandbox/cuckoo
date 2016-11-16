@@ -3,8 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""Database migration from Cuckoo 1.1 to Cuckoo 1.2.
-Added failed statuses to tasks.
+"""Added failed statuses to tasks (from Cuckoo 1.1 to 1.2)
 
 Revision ID: 495d5a6edef3
 Revises: 18eee46c6f81
