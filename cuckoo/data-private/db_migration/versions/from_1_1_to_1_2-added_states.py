@@ -24,7 +24,7 @@ from dateutil.parser import parse
 
 import cuckoo.core.database as db
 
-def _perform(upgrade):
+def upgrade():
     conn = op.get_bind()
 
     # Deal with Alembic shit.
@@ -34,10 +34,7 @@ def _perform(upgrade):
         # This shit of raw SQL is here because alembic doesn't deal well with alter_colum of ENUM type.
         # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
         op.execute('COMMIT')
-        if upgrade:
-            conn.execute("ALTER TYPE status_type ADD VALUE 'failed_reporting'")
-        else:
-            conn.execute("ALTER TYPE status_type DROP ATTRIBUTE IF EXISTS failed_reporting")
+        conn.execute("ALTER TYPE status_type ADD VALUE 'failed_reporting'")
     else:
         # Read data.
         tasks_data = []
@@ -99,52 +96,28 @@ def _perform(upgrade):
             # Drop old Enum.
             sa.Enum(name="status_type").drop(op.get_bind(), checkfirst=False)
             # Create table with 1.2 schema.
-            if upgrade:
-                op.create_table(
-                    "tasks",
-                    sa.Column("id", sa.Integer(), nullable=False),
-                    sa.Column("target", sa.String(length=255), nullable=False),
-                    sa.Column("category", sa.String(length=255), nullable=False),
-                    sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
-                    sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
-                    sa.Column("custom", sa.String(length=255), nullable=True),
-                    sa.Column("machine", sa.String(length=255), nullable=True),
-                    sa.Column("package", sa.String(length=255), nullable=True),
-                    sa.Column("options", sa.String(length=255), nullable=True),
-                    sa.Column("platform", sa.String(length=255), nullable=True),
-                    sa.Column("memory", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
-                    sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
-                    sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", "failed_reporting", name="status_type"), server_default="pending", nullable=False),
-                    sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
-                    sa.PrimaryKeyConstraint("id")
-                )
-            else:
-                op.create_table(
-                    "tasks",
-                    sa.Column("id", sa.Integer(), nullable=False),
-                    sa.Column("target", sa.String(length=255), nullable=False),
-                    sa.Column("category", sa.String(length=255), nullable=False),
-                    sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
-                    sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
-                    sa.Column("custom", sa.String(length=255), nullable=True),
-                    sa.Column("machine", sa.String(length=255), nullable=True),
-                    sa.Column("package", sa.String(length=255), nullable=True),
-                    sa.Column("options", sa.String(length=255), nullable=True),
-                    sa.Column("platform", sa.String(length=255), nullable=True),
-                    sa.Column("memory", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
-                    sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
-                    sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", name="status_type"), server_default="pending", nullable=False),
-                    sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
-                    sa.PrimaryKeyConstraint("id")
-                )
+            op.create_table(
+                "tasks",
+                sa.Column("id", sa.Integer(), nullable=False),
+                sa.Column("target", sa.String(length=255), nullable=False),
+                sa.Column("category", sa.String(length=255), nullable=False),
+                sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
+                sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
+                sa.Column("custom", sa.String(length=255), nullable=True),
+                sa.Column("machine", sa.String(length=255), nullable=True),
+                sa.Column("package", sa.String(length=255), nullable=True),
+                sa.Column("options", sa.String(length=255), nullable=True),
+                sa.Column("platform", sa.String(length=255), nullable=True),
+                sa.Column("memory", sa.Boolean(), nullable=False, default=False),
+                sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
+                sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
+                sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
+                sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
+                sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
+                sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", "failed_reporting", name="status_type"), server_default="pending", nullable=False),
+                sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
+                sa.PrimaryKeyConstraint("id")
+            )
             op.execute('COMMIT')
 
             # Insert data.
@@ -156,58 +129,31 @@ def _perform(upgrade):
             op.drop_table("tasks")
 
             # Create table with 1.2 schema.
-            if upgrade:
-                op.create_table(
-                    "tasks",
-                    sa.Column("id", sa.Integer(), nullable=False),
-                    sa.Column("target", sa.String(length=255), nullable=False),
-                    sa.Column("category", sa.String(length=255), nullable=False),
-                    sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
-                    sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
-                    sa.Column("custom", sa.String(length=255), nullable=True),
-                    sa.Column("machine", sa.String(length=255), nullable=True),
-                    sa.Column("package", sa.String(length=255), nullable=True),
-                    sa.Column("options", sa.String(length=255), nullable=True),
-                    sa.Column("platform", sa.String(length=255), nullable=True),
-                    sa.Column("memory", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
-                    sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
-                    sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", "failed_reporting", name="status_type"), server_default="pending", nullable=False),
-                    sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
-                    sa.PrimaryKeyConstraint("id")
-                )
-            else:
-                op.create_table(
-                    "tasks",
-                    sa.Column("id", sa.Integer(), nullable=False),
-                    sa.Column("target", sa.String(length=255), nullable=False),
-                    sa.Column("category", sa.String(length=255), nullable=False),
-                    sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
-                    sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
-                    sa.Column("custom", sa.String(length=255), nullable=True),
-                    sa.Column("machine", sa.String(length=255), nullable=True),
-                    sa.Column("package", sa.String(length=255), nullable=True),
-                    sa.Column("options", sa.String(length=255), nullable=True),
-                    sa.Column("platform", sa.String(length=255), nullable=True),
-                    sa.Column("memory", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
-                    sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
-                    sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
-                    sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                    sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", name="status_type"), server_default="pending", nullable=False),
-                    sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
-                    sa.PrimaryKeyConstraint("id")
-                )
+            op.create_table(
+                "tasks",
+                sa.Column("id", sa.Integer(), nullable=False),
+                sa.Column("target", sa.String(length=255), nullable=False),
+                sa.Column("category", sa.String(length=255), nullable=False),
+                sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
+                sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
+                sa.Column("custom", sa.String(length=255), nullable=True),
+                sa.Column("machine", sa.String(length=255), nullable=True),
+                sa.Column("package", sa.String(length=255), nullable=True),
+                sa.Column("options", sa.String(length=255), nullable=True),
+                sa.Column("platform", sa.String(length=255), nullable=True),
+                sa.Column("memory", sa.Boolean(), nullable=False, default=False),
+                sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
+                sa.Column("clock", sa.DateTime(timezone=False), default=datetime.now, nullable=False),
+                sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
+                sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
+                sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
+                sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", "failed_analysis", "failed_processing", "failed_reporting", name="status_type"), server_default="pending", nullable=False),
+                sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
+                sa.PrimaryKeyConstraint("id")
+            )
 
             # Insert data.
             op.bulk_insert(db.Task.__table__, tasks_data)
 
-def upgrade():
-    _perform(upgrade=True)
-
 def downgrade():
-    _perform(upgrade=False)
+    pass

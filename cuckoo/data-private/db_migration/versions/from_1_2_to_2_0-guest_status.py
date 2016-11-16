@@ -22,4 +22,4 @@ def upgrade():
     op.add_column("guests", sa.Column("status", sa.String(length=16), nullable=False, server_default="stopped"))
 
 def downgrade():
-    op.drop_column("guests", "status")
+    pass

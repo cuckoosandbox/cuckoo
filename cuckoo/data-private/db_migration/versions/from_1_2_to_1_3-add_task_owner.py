@@ -16,10 +16,8 @@ down_revision = "495d5a6edef3"
 from alembic import op
 import sqlalchemy as sa
 
-
 def upgrade():
     op.add_column("tasks", sa.Column("owner", sa.String(length=64), nullable=True))
 
-
 def downgrade():
-    op.drop_column("tasks", "owner")
+    pass

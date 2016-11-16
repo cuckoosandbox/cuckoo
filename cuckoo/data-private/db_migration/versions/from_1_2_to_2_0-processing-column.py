@@ -22,4 +22,4 @@ def upgrade():
     op.add_column("tasks", sa.Column("processing", sa.String(length=16), nullable=True))
 
 def downgrade():
-    op.drop_column("tasks", "processing")
+    pass

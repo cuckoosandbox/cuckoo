@@ -294,5 +294,4 @@ def mongo_upgrade():
         print "Mongo reporting module not enabled, skipping mongo migration."
 
 def downgrade():
-    # We don"t support downgrade.
     pass

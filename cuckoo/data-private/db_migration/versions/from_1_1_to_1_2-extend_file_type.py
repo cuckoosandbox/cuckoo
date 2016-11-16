@@ -20,7 +20,7 @@ import sqlalchemy as sa
 
 import cuckoo.core.database as db
 
-def _perform(upgrade):
+def upgrade():
     conn = op.get_bind()
 
     sample_list = conn.execute("SELECT id, file_size, file_type, md5, crc32, "
@@ -60,15 +60,7 @@ def _perform(upgrade):
     # Drop old table.
     op.drop_table("old_samples")
 
-    if upgrade:
-        file_type = sa.Text()
-    else:
-        file_type = sa.String(255)
-
-        # As downgrading implies trimming file_type's to 255 bytes we force
-        # this for every available record.
-        for sample in samples:
-            sample["file_type"] = sample["file_type"][:255]
+    file_type = sa.Text()
 
     # Create the new table with 1.2 schema.
     # Changelog:
@@ -99,8 +91,5 @@ def _perform(upgrade):
     if fkey:
         op.create_foreign_key(fkey, "tasks", "samples", ["sample_id"], ["id"])
 
-def upgrade():
-    _perform(upgrade=True)
-
 def downgrade():
-    _perform(upgrade=False)
+    pass

@@ -22,4 +22,4 @@ def upgrade():
     op.add_column("machines", sa.Column("options", sa.String(length=255), nullable=True))
 
 def downgrade():
-    op.drop_column("machines", "options")
+    pass
