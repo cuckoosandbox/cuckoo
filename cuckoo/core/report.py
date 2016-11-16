@@ -9,34 +9,47 @@ from django.conf import settings
 
 from controllers.analysis.analysis import AnalysisController
 
-class Report:
+class AbstractReport:
     def __init__(self, analysis_id):
-        self.analysis_id = analysis_id
         self.mongo = settings.MONGO
-        self.report = AnalysisController.get_report(analysis_id)
+        self.src = AnalysisController.get_report(analysis_id)
 
-    def analaysis_id(self):
-        return self.safe_lookup("analysis", "id")
+    @property
+    def analysis(self):
+        return self.get("analysis")
 
+    @property
+    def analysis_info(self):
+        return self.get("analysis", "info")
+
+    @property
+    def analysis_id(self):
+        return self.get("analysis", "info", "id")
+
+    @property
     def analysis_path(self):
-        return self.safe_lookup("analysis", "path")
+        return self.get("analysis", "path")
 
     @property
     def test(self):
-        return self.safe_lookup("analysis", "path")
+        return self.get("analysis", "info", "id")
 
+    @property
     def analysis_feedback(self):
-        return self.safe_lookup("analysis", "feedback")
+        return self.get("analysis", "feedback")
 
+    @property
     def analysis_target(self):
-        return self.safe_lookup("analysis", "target")
+        return self.get("analysis", "target")
 
-    def analysis_errors(self, report):
-        pass
+    @property
+    def analysis_errors(self):
+        return self.get("analysis", "debug", "errors")
 
-    def safe_lookup(self, key, *keys):
+    def get(self, key, *keys):
+        """Safe report.json dict lookup"""
         def _inner(dic, _key, *_keys):
             if _keys:
                 return _inner(dic.get(_key, {}), *_keys)
-            return dic.get(_key)
-        return _inner(self.report, key, *keys)
+            return dic.get(_key, {})
+        return _inner(self.src, key, *keys)

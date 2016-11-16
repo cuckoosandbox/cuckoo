@@ -15,6 +15,7 @@ from django.template import TemplateSyntaxError, TemplateDoesNotExist
 from django.conf import settings
 
 from cuckoo.misc import cwd
+from cuckoo.core.report import AbstractReport
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooFeedbackError
@@ -158,46 +159,39 @@ class CuckooFeedback(object):
 
 class CuckooFeedbackObject:
     def __init__(self, name=None, company=None, email=None, message=None, was_automated=False):
-        self.message = message
-        self.exportdump = None
         self.was_automated = was_automated
+        self.message = message
         self.errors = []
         self.cfg = None
-        self.cfg_cuckoo = Config("cuckoo")
+        self.include_config()
         self.contact = {
-            "name": self.cfg_cuckoo.feedback.name if not name else name,
-            "company": self.cfg_cuckoo.feedback.company if not company else company,
-            "email": self.cfg_cuckoo.feedback.email if not email else email,
+            "name": self.cfg["cuckoo"]["feedback"]["name"] if not name else name,
+            "company": self.cfg["cuckoo"]["feedback"]["company"] if not company else company,
+            "email": self.cfg["cuckoo"]["feedback"]["email"] if not email else email,
         }
-
+        self.export = None
         self.report_info = {}
         self.report = None
 
     def include_report(self, analysis_id):
-        report = AnalysisController.get_report(analysis_id)
-        self.report = report
-
-        from cuckoo.core.report import Report
-        r = Report(analysis_id=analysis_id)
-        print r.test
-        v = ""
-
-        if "debug" in report["analysis"] and "errors" in report["analysis"]["debug"]:
-            for error in report["analysis"]["debug"]["errors"]:
+        report = AbstractReport(analysis_id=analysis_id)
+        if report.analysis_errors:
+            for error in report.analysis_errors:
                 self.add_error(error)
 
         # attach additional analysis information
-        if "file" in r.analysis_target():
+        if "file" in report.analysis_target:
             self.report_info["file"] = {
-                k: v for k, v in report["analysis"]["target"]["file"].items()
+                k: v for k, v in report.analysis_target["file"].items()
                 if isinstance(v, (str, unicode, int, float))}
             self.report_info["file"]["task_id"] = analysis_id
         else:
-            self.report_info["url"] = {"url": report["analysis"]["target"]["url"]}
+            self.report_info["url"] = {"url": report.analysis_target["url"]}
             self.report_info["url"]["task_id"] = analysis_id
 
-        self.report_info["analysis_id"] = report["analysis"]["info"]["id"]
-        self.report_info["analysis_path"] = report["analysis"]["info"]["analysis_path"]
+        self.report_info["analysis_id"] = report.analysis_id
+        self.report_info["analysis_path"] = report.analysis_info["analysis_path"]
+        self.report = report
 
     def include_config(self):
         """Reads config files and includes them in the
@@ -252,28 +246,25 @@ class CuckooFeedbackObject:
         self.cfg = data
 
     def include_analysis(self, include_memdump=False):
-        if not self.report:
+        if not self.report.src:
             raise CuckooFeedbackError(
                 "Report must first be included in order to include the analysis")
-        analysis_path = self.report_info["analysis_path"]
+        analysis_path = self.report.analysis_info["analysis_path"]
         taken_dirs, taken_files = ExportController.get_files(analysis_path)
 
         if not include_memdump:
             taken_dirs = [z for z in taken_dirs if z[0] != "memory"]
 
-        export = ExportController.create(task_id=self.report["analysis"]["info"]["id"],
+        export = ExportController.create(task_id=self.report.analysis_id,
                                          taken_dirs=taken_dirs,
                                          taken_files=taken_files)
         export.seek(0)
-        self.exportdump = base64.b64encode(export.read())
+        self.export = base64.b64encode(export.read())
 
     @staticmethod
     def already_submitted(analysis_id):
-        report = AnalysisController.get_report(analysis_id)
-        if not "analysis" in report:
-            return
-        elif "feedback" in report["analysis"] and \
-                isinstance(report["analysis"]["feedback"], dict):
+        report = AbstractReport(analysis_id=analysis_id)
+        if report.analysis_feedback:
             return True
 
     def add_error(self, error):
@@ -286,16 +277,16 @@ class CuckooFeedbackObject:
             "automated": self.was_automated,
             "message": self.message,
             "cuckoo": {
-                "cuckoo_cwd": self.cfg_cuckoo.cuckoo.cuckoo_cwd,
-                "cuckoo_app": self.cfg_cuckoo.cuckoo.cuckoo_app
+                "cuckoo_cwd": "",
+                "cuckoo_app": ""
             }
         }
 
         if self.report:
             data["analysis_info"] = self.report_info
 
-        if self.exportdump:
-            data["export"] = self.exportdump
+        if self.export:
+            data["export"] = self.export
 
         if self.cfg:
             data["cfg"] = self.cfg
