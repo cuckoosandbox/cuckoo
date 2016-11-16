@@ -29,7 +29,7 @@ class Report:
         return self.safe_lookup("analysis", "feedback")
 
     def analysis_target(self):
-        return self.lookup("analysis", "target")
+        return self.safe_lookup("analysis", "target")
 
     def analysis_errors(self, report):
         pass

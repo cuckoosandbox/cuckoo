@@ -60,7 +60,7 @@ from cuckoo.core.startup import init_rooter, init_routing
 init_rooter()
 init_routing()
 
-DEBUG = True
+DEBUG = False
 
 # Database settings. We don't need it.
 DATABASES = {}
@@ -126,6 +126,7 @@ MIDDLEWARE_CLASSES = (
     "django.contrib.messages.middleware.MessageMiddleware",
     # Cuckoo headers.
     "web.headers.CuckooHeaders",
+    "web.errors.ExceptionMiddleware"
 )
 
 TEMPLATES = [

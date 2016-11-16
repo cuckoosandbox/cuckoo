@@ -3,18 +3,39 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
 import logging
 import base64
 import json
 import requests
+import traceback
+from glob import glob
 
+from django.template import TemplateSyntaxError, TemplateDoesNotExist
 from django.conf import settings
 
+from cuckoo.misc import cwd
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooFeedbackError
 from controllers.analysis.analysis import AnalysisController
 from controllers.analysis.export.export import ExportController
+
+from cuckoo.common.exceptions import (
+    CuckooCriticalError,
+    CuckooStartupError,
+    CuckooDatabaseError,
+    CuckooDependencyError,
+    CuckooOperationalError,
+    CuckooMachineError,
+    CuckooAnalysisError,
+    CuckooProcessingError,
+    CuckooReportError,
+    CuckooGuestError,
+    CuckooResultError,
+    CuckooDisableModule,
+    CuckooFeedbackError
+)
 
 log = logging.getLogger(__name__)
 results_db = settings.MONGO
@@ -25,17 +46,54 @@ class CuckooFeedback(object):
     def __init__(self):
         self.cfg = Config("cuckoo")
 
+    def send_exception(self, exception, request=None):
+        traceback_data = traceback.format_exc()
+        feedback = CuckooFeedbackObject(was_automated=True)
+        feedback.add_error(traceback_data)
+        feedback_options = {
+            "include_analysis": False,
+            "include_json_report": False,
+            "include_memdump": False,
+            "include_config": True
+        }
+
+        if request and hasattr(request, "resolver_match"):
+            request_kwargs = request.resolver_match.kwargs
+
+            if "task_id" in request_kwargs:
+                try:
+                    task_id = int(request_kwargs.get("task_id"))
+                    feedback_options["analysis_id"] = task_id
+                    feedback_options["include_analysis"] = True
+                    feedback_options["include_json_report"] = True
+                    feedback_options["include_memdump"] = False
+                except:
+                    pass
+
+        if request.path.startswith("/analysis/"):
+            pass
+        elif isinstance(exception, (TemplateDoesNotExist,
+                                    TemplateSyntaxError)):
+            pass
+
+        if feedback_options["include_json_report"]:
+            feedback.include_report(analysis_id=feedback_options["analysis_id"])
+
+        if feedback_options["include_analysis"]:
+            feedback.include_analysis(include_memdump=feedback_options["include_memdump"])
+
+        if feedback_options["include_config"]:
+            feedback.include_config()
+
+        feedback_options["message"] = "Exception `%s` encountered" % str(type(exception))
+
+        self._send(feedback)
+
     def send(self, analysis_id=None, name="", email="", message="", company="",
              include_json_report=False, include_analysis=False,
              include_memdump=False, was_automated=False):
         if not self.cfg.feedback.enabled:
             return
-        if not name:
-            name = self.cfg.feedback.name
-        if not email:
-            email = self.cfg.feedback.email
-        if not company:
-            company = self.cfg.feedback.company
 
         feedback = CuckooFeedbackObject(
             name=name,
@@ -101,13 +159,15 @@ class CuckooFeedback(object):
 class CuckooFeedbackObject:
     def __init__(self, name=None, company=None, email=None, message=None, was_automated=False):
         self.message = message
-        self.memdump = None
+        self.exportdump = None
         self.was_automated = was_automated
         self.errors = []
+        self.cfg = None
+        self.cfg_cuckoo = Config("cuckoo")
         self.contact = {
-            "name": name,
-            "company": company,
-            "email": email,
+            "name": self.cfg_cuckoo.feedback.name if not name else name,
+            "company": self.cfg_cuckoo.feedback.company if not company else company,
+            "email": self.cfg_cuckoo.feedback.email if not email else email,
         }
 
         self.report_info = {}
@@ -117,12 +177,17 @@ class CuckooFeedbackObject:
         report = AnalysisController.get_report(analysis_id)
         self.report = report
 
+        from cuckoo.core.report import Report
+        r = Report(analysis_id=analysis_id)
+        print r.test
+        v = ""
+
         if "debug" in report["analysis"] and "errors" in report["analysis"]["debug"]:
             for error in report["analysis"]["debug"]["errors"]:
                 self.add_error(error)
 
         # attach additional analysis information
-        if "file" in report["analysis"]["target"]:
+        if "file" in r.analysis_target():
             self.report_info["file"] = {
                 k: v for k, v in report["analysis"]["target"]["file"].items()
                 if isinstance(v, (str, unicode, int, float))}
@@ -134,8 +199,57 @@ class CuckooFeedbackObject:
         self.report_info["analysis_id"] = report["analysis"]["info"]["id"]
         self.report_info["analysis_path"] = report["analysis"]["info"]["analysis_path"]
 
-    def add_error(self, error):
-        self.errors.append(error)
+    def include_config(self):
+        """Reads config files and includes them in the
+        current feedback object. Respects privacy by blanking
+        out passwords and other sensitive information.
+        """
+        data = {}
+        blacklist_defs = ["password", "pwd", "credentials", "api_key",
+                          "apikey", "pass", "cuckoo_cwd", "cuckoo_app"]
+        blacklist = {
+            "cuckoo": {
+                "database": ["connection"]
+            },
+            "processing": {
+                "virustotal": ["key"],
+                "googleplay": ["google_password"]
+            },
+        }
+
+        # iterate config files
+        for cfg_path in glob(cwd("conf", "*.conf")):
+            cfg_basename = os.path.basename(cfg_path)
+            cfg_name = os.path.splitext(cfg_basename)[0]
+
+            # read config, fetch sections
+            cfg = Config(cfg_name)
+            cfg = {z: getattr(cfg, z) for z in dir(cfg) if isinstance(getattr(cfg, z), dict)}
+
+            # iterate sections and their values
+            for section, values in cfg.iteritems():
+                for k, v in values.iteritems():
+                    # block blacklisted entries
+                    if k in blacklist_defs:
+                        v = "[removed]"
+                    elif cfg_name in blacklist:
+                        if section in blacklist[cfg_name]:
+                            if k in blacklist[cfg_name][section]:
+                                v = "[removed]"
+
+                    if cfg_name not in data:
+                        data[cfg_name] = {}
+
+                    if section not in data[cfg_name]:
+                        data[cfg_name][section] = {}
+
+                    if k not in data[cfg_name][section]:
+                        data[cfg_name][section][k] = {}
+
+                    # build return dict
+                    data[cfg_name][section][k] = v
+
+        self.cfg = data
 
     def include_analysis(self, include_memdump=False):
         if not self.report:
@@ -151,7 +265,7 @@ class CuckooFeedbackObject:
                                          taken_dirs=taken_dirs,
                                          taken_files=taken_files)
         export.seek(0)
-        self.memdump = base64.b64encode(export.read())
+        self.exportdump = base64.b64encode(export.read())
 
     @staticmethod
     def already_submitted(analysis_id):
@@ -162,16 +276,26 @@ class CuckooFeedbackObject:
                 isinstance(report["analysis"]["feedback"], dict):
             return True
 
+    def add_error(self, error):
+        self.errors.append(error)
+
     def to_dict(self):
         data = {
             "errors": self.errors,
             "contact": self.contact,
             "automated": self.was_automated,
-            "message": self.message
+            "message": self.message,
+            "cuckoo": {
+                "cuckoo_cwd": self.cfg_cuckoo.cuckoo.cuckoo_cwd,
+                "cuckoo_app": self.cfg_cuckoo.cuckoo.cuckoo_app
+            }
         }
 
         if self.report:
             data["analysis_info"] = self.report_info
 
-        if self.memdump:
-            data["export"] = self.memdump
+        if self.exportdump:
+            data["export"] = self.exportdump
+
+        if self.cfg:
+            data["cfg"] = self.cfg

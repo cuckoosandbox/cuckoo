@@ -73,6 +73,9 @@ class AnalysisRoutes:
             "feedback": "feedback/index"
         }
 
+        # from cuckoo.common.exceptions import CuckooAnalysisError
+        # raise CuckooAnalysisError("failed loading analysis")
+
         if page in pages.keys():
             return render(request, "analysis/pages/%s.html" % pages[page],
                           {"report": report, "page": page})
