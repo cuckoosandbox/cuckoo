@@ -11,7 +11,7 @@ from cuckoo.common.files import Folders
 from cuckoo.common.utils import Singleton
 from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
-from cuckoo.main import main
+from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
 class TestInit(object):
@@ -107,3 +107,22 @@ class TestInit(object):
         set_cwd(tempfile.mkdtemp())
         Folders.create(cwd(), "conf")
         write_cuckoo_conf()
+
+    def test_cuckoo_create(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create("derpy")
+        assert os.path.exists(cwd(".cwd"))
+        assert os.path.exists(cwd("conf", "esx.conf"))
+        assert os.path.exists(cwd("analyzer", "windows", "analyzer.py"))
+
+    def test_cuckoo_create2(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "auxiliary": {
+                "sniffer": {
+                    "tcpdump": "dumping.elf",
+                }
+            }
+        })
+        buf = open(cwd("conf", "auxiliary.conf"), "rb").read()
+        assert "tcpdump = dumping.elf" in buf

@@ -8,7 +8,8 @@ import pytest
 import tempfile
 
 from cuckoo.core.database import Database, Task, AlembicVersion
-from cuckoo.misc import set_cwd
+from cuckoo.main import main, cuckoo_create
+from cuckoo.misc import set_cwd, cwd
 
 class DatabaseEngine(object):
     """Tests database stuff."""
@@ -87,3 +88,64 @@ class TestPostgreSQL(DatabaseEngine):
 
 class TestMySQL(DatabaseEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest"
+
+class DatabaseMigrationEngine(object):
+    """Tests database migration(s)."""
+    URI = None
+    SRC = None
+
+    def setup_class(self):
+        set_cwd(tempfile.mkdtemp())
+
+        self.d = Database()
+        self.d.connect(dsn=self.URI, create=False)
+
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "database": {
+                    "connection": self.URI,
+                },
+            },
+        })
+        self.d.drop()
+
+        s = self.d.Session()
+        s.execute(open(self.SRC, "rb").read())
+        s.commit()
+
+class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
+    URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
+    SRC = "tests/files/sql/060pg.sql"
+
+    def test_migrations(self):
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failure"
+        assert tasks[1][0] == "success"
+        assert tasks[2][0] == "processing"
+
+        main.main(
+            ("--cwd", cwd(), "migrate", "--revision", "263a45963c72"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failed_analysis"
+        assert tasks[1][0] == "completed"
+        assert tasks[2][0] == "running"
+
+        main.main(
+            ("--cwd", cwd(), "migrate"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status, owner FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failed_analysis"
+        assert tasks[0][1] is None
+        assert tasks[1][0] == "completed"
+        assert tasks[2][0] == "running"

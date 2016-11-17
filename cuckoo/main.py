@@ -35,7 +35,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(ctx):
+def cuckoo_create(username=None, cfg=None):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -75,8 +75,8 @@ def cuckoo_create(ctx):
     open(cwd(".cwd"), "wb").write(our_version)
 
     # Write the supervisord.conf configuration file.
-    write_supervisor_conf(ctx.user or getuser())
-    write_cuckoo_conf()
+    write_supervisor_conf(username or getuser())
+    write_cuckoo_conf(cfg=cfg)
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
@@ -91,7 +91,7 @@ def cuckoo_init(level, ctx):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(ctx)
+        cuckoo_create(ctx.user)
         sys.exit(0)
 
     # Determine if this is a proper CWD.
@@ -521,9 +521,10 @@ def machine(debug, vmname, ip, add, delete, platform, options, tags,
                    interface, snapshot, resultserver)
 
 @main.command()
-def migrate():
+@click.option("--revision", default="head", help="Migrate to a certain revision")
+def migrate(revision):
     args = [
-        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head",
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", revision,
     ]
     try:
         subprocess.check_call(args, cwd=cwd("db_migration", private=True))
