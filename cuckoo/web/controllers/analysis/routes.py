@@ -15,7 +15,7 @@ from cuckoo.core.database import Database, TASK_PENDING
 
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
-from bin.utils import view_error
+from bin.utils import view_error, render_template
 
 results_db = settings.MONGO
 
@@ -51,10 +51,9 @@ class AnalysisRoutes:
 
                 analyses_urls.append(new)
 
-        return render(request, "analysis/index.html", {
-            "files": analyses_files,
-            "urls": analyses_urls,
-        })
+        return render_template(request, "analysis/index.html",
+                               files=analyses_files,
+                               urls=analyses_urls)
 
     @staticmethod
     def detail(request, task_id, page):
@@ -74,8 +73,8 @@ class AnalysisRoutes:
         }
 
         if page in pages.keys():
-            return render(request, "analysis/pages/%s.html" % pages[page],
-                          {"report": report, "page": page})
+            return render_template(request, "analysis/pages/%s.html" % pages[page],
+                                   report=report, page=page)
 
     @staticmethod
     def redirect_default(request, task_id):
