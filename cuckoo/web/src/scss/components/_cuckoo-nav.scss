@@ -1,0 +1,62 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.cuckoo-nav {
+
+	display: flex;
+	flex-direction: column;
+	list-style: none;
+	margin: 0;
+	padding: 10px 0 0;
+
+	& > li {
+
+		margin: 0 0;
+		overflow: hidden;
+
+		& > a {
+
+			display: flex;
+			width: 280px;
+			align-items: center;
+			padding: 7px 15px;
+			color: #eee;
+
+			& > i {
+				width: 28px;
+				height: 28px;
+				background-color: #eee;
+				color: #444;
+				border-radius: 50%;
+				font-size: 16px;
+				text-align: center;
+				padding-top: 6px;
+				margin-right: 10px;
+			}
+
+			& > em {
+				margin-left: auto;
+				padding: 3px 10px;
+				font-size: 10px;
+				border-radius: 5px;
+				border: 1px solid #ccc;
+				font-style: normal;
+			}
+
+			& > span {
+				font-size: 11px;
+			}
+
+			&:hover,
+			&.active {
+				background-color: #222;
+				text-decoration: none !important;
+			}
+
+		}
+	}
+
+}

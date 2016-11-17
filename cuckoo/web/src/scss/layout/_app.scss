@@ -5,9 +5,11 @@
  */
 
 .app {
-    padding-left: 0;
-    padding-right: 0;
-    margin-top: -30px;
+    padding: 30px;
+    
+    #analysis & {
+        padding: 0;
+    }
 }
 
 .content {

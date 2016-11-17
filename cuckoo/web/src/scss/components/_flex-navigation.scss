@@ -13,8 +13,30 @@
 	height: -webkit-calc(100vh - 30px);
 
 	&__nav {
-		flex-basis: 220px;
-		background-color: #ccc;
+		background-color: #444;
+		overflow: hidden;
+		width: 65px;
+		transition: width 200ms ease-in-out;
+
+		.cuckoo-nav {
+			em, span { 
+				opacity: 0; 
+				transition: opacity 100ms linear;
+			}
+		}
+
+		&:hover,
+		&.open {
+			width: 360px;
+
+			.cuckoo-nav {
+				em, span {
+					opacity: 1;
+				}
+			}
+
+		}
+
 	}
 
 	&__body {
