@@ -36,5 +36,3 @@ class ExceptionMiddleware(object):
             feedback.send_exception(exception, request)
 
         traceback.print_exc()  # to stderr
-
-        #log.error()

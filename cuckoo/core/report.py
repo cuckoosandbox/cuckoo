@@ -3,8 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from functools import wraps
-
 from django.conf import settings
 
 from controllers.analysis.analysis import AnalysisController
@@ -28,11 +26,7 @@ class AbstractReport:
 
     @property
     def analysis_path(self):
-        return self.get("analysis", "path")
-
-    @property
-    def test(self):
-        return self.get("analysis", "info", "id")
+        return self.get("analysis", "info", "analysis_path")
 
     @property
     def analysis_feedback(self):

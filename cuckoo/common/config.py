@@ -19,6 +19,7 @@ class Config:
         @param cfg: configuration file path.
         """
         env = {}
+        self.file_name = file_name
         for key, value in os.environ.items():
             if key.startswith("CUCKOO_"):
                 env[key] = value
@@ -62,6 +63,50 @@ class Config:
             raise CuckooOperationalError("Option %s is not found in "
                                          "configuration, error: %s" %
                                          (section, e))
+
+    def to_dict(self, privacy=True):
+        from glob import glob
+
+        data = {}
+        blacklist_defs = ["password", "pwd", "credentials", "api_key", "apikey", "pass"]
+        blacklist = {
+            "cuckoo": {
+                "database": ["connection"]
+            },
+            "processing": {
+                "virustotal": ["key"],
+                "googleplay": ["google_password"]
+            },
+        }
+
+
+        # read config, fetch sections
+        cfg = {z: getattr(self, z) for z in dir(self) if isinstance(getattr(self, z), dict)}
+
+        # iterate sections and their values
+        for section, values in cfg.iteritems():
+            for k, v in values.iteritems():
+                if privacy:  # block blacklisted entries
+                    if k in ["cuckoo_cwd", "cuckoo_app"]:
+                        continue
+                    elif k in blacklist_defs:
+                        v = "[removed]"
+                    elif cfg_name in blacklist:
+                        if section in blacklist[cfg_name] and \
+                                        k in blacklist[cfg_name][section]:
+                            v = "[removed]"
+
+                if cfg_name not in data:
+                    data[cfg_name] = {}
+                if section not in data[cfg_name]:
+                    data[cfg_name][section] = {}
+                if k not in data[cfg_name][section]:
+                    data[cfg_name][section][k] = {}
+
+                # build return dict
+                data[cfg_name][section][k] = v
+
+        return data
 
 def parse_options(options):
     """Parse the analysis options field to a dictionary."""

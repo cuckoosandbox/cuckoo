@@ -10,6 +10,8 @@ from datetime import datetime
 from functools import wraps
 from StringIO import StringIO
 
+from cuckoo.common.config import Config
+
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.servers.basehttp import FileWrapper
@@ -17,9 +19,7 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 
 def view_error(request, msg):
-    return render(request, "errors/error.html", {
-        "error": msg
-    })
+    return render_template(request, "errors/error.html", error=msg)
 
 def get_directory_size(path):
     """recursive"""
@@ -66,6 +66,20 @@ class JsonSerialize(json.JSONEncoder):
                 obj = obj - obj.utcoffset()
             return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
         raise TypeError("%r is not JSON serializable" % obj)
+
+def render_template(request, template_name, **kwargs):
+    env = {}
+    config = Config()
+    if hasattr(request, "resolver_match"):
+        resolver_match = request.resolver_match
+        env["view_name"] = resolver_match.view_name
+        env["view_kwargs"] = resolver_match.kwargs
+        env["url_name"] = resolver_match.url_name
+
+
+    kwargs["env"] = env
+
+    return render(request, template_name, kwargs)
 
 def json_response(message, status=200):
     return JsonResponse({

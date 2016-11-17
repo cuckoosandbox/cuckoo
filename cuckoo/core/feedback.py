@@ -49,6 +49,12 @@ class CuckooFeedback(object):
         self.cfg = Config("cuckoo")
 
     def send_exception(self, exception, request=None):
+        """
+        To be used during exception handling.
+        @param exception: The exception class
+        @param request: Django request object
+        @return:
+        """
         feedback = CuckooFeedbackObject(was_automated=True)
         feedback.message = "Exception `%s` encountered" % str(type(exception))
 
@@ -58,9 +64,8 @@ class CuckooFeedback(object):
                                     TemplateSyntaxError)):
             feedback.add_error("Django templating error")
 
-        traceback_data = traceback.format_exc()
-        feedback.add_error(traceback_data)
-        feedback_options = { # deepcopy local var
+        feedback.add_error(traceback.format_exc())
+        feedback_options = {
             "include_analysis": False,
             "include_json_report": False,
             "include_memdump": False,
