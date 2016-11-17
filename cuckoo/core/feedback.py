@@ -13,6 +13,7 @@ from glob import glob
 
 from django.template import TemplateSyntaxError, TemplateDoesNotExist
 from django.conf import settings
+from django.http import Http404
 
 from cuckoo.misc import cwd
 from cuckoo.core.report import AbstractReport
@@ -48,10 +49,18 @@ class CuckooFeedback(object):
         self.cfg = Config("cuckoo")
 
     def send_exception(self, exception, request=None):
-        traceback_data = traceback.format_exc()
         feedback = CuckooFeedbackObject(was_automated=True)
+        feedback.message = "Exception `%s` encountered" % str(type(exception))
+
+        if isinstance(exception, (CuckooFeedbackError, Http404)):
+            return
+        elif isinstance(exception, (TemplateDoesNotExist,
+                                    TemplateSyntaxError)):
+            feedback.add_error("Django templating error")
+
+        traceback_data = traceback.format_exc()
         feedback.add_error(traceback_data)
-        feedback_options = {
+        feedback_options = { # deepcopy local var
             "include_analysis": False,
             "include_json_report": False,
             "include_memdump": False,
@@ -59,34 +68,29 @@ class CuckooFeedback(object):
         }
 
         if request and hasattr(request, "resolver_match"):
-            request_kwargs = request.resolver_match.kwargs
+            if request.method == "POST" and request.is_ajax():
+                request_kwargs = json.loads(request.body)
+            else:
+                request_kwargs = request.resolver_match.kwargs
 
             if "task_id" in request_kwargs:
-                try:
-                    task_id = int(request_kwargs.get("task_id"))
-                    feedback_options["analysis_id"] = task_id
-                    feedback_options["include_analysis"] = True
-                    feedback_options["include_json_report"] = True
-                    feedback_options["include_memdump"] = False
-                except:
-                    pass
+                task_id = int(request_kwargs["task_id"])
+            elif "analysis_id" in request_kwargs:
+                task_id = int(request_kwargs["analysis_id"])
+            else:
+                task_id = None
 
-        if request.path.startswith("/analysis/"):
-            pass
-        elif isinstance(exception, (TemplateDoesNotExist,
-                                    TemplateSyntaxError)):
-            pass
+            if task_id:
+                feedback_options["analysis_id"] = task_id
+                feedback_options["include_analysis"] = True
+                feedback_options["include_json_report"] = True
+                feedback_options["include_memdump"] = False
 
         if feedback_options["include_json_report"]:
             feedback.include_report(analysis_id=feedback_options["analysis_id"])
 
         if feedback_options["include_analysis"]:
             feedback.include_analysis(include_memdump=feedback_options["include_memdump"])
-
-        if feedback_options["include_config"]:
-            feedback.include_config()
-
-        feedback_options["message"] = "Exception `%s` encountered" % str(type(exception))
 
         self._send(feedback)
 
@@ -120,6 +124,9 @@ class CuckooFeedback(object):
         return feedback_id
 
     def _send(self, feedback):
+        if not feedback.validate():
+            raise CuckooFeedbackError("Feedback object could not be validated")
+
         feedback = feedback.to_dict()
         headers = {
             "Content-type": "application/json",
@@ -133,11 +140,11 @@ class CuckooFeedback(object):
                 json=feedback,
                 headers=headers)
             if not resp.status_code == 200:
-                raise Exception("the remote server did not respond correctly")
+                raise CuckooFeedbackError("the remote server did not respond correctly")
 
             resp = json.loads(resp.content)
             if not resp["status"]:
-                raise Exception(resp["message"])
+                raise CuckooFeedbackError(resp["message"])
 
             feedback_id = resp["feedback_id"]
             if feedback.report_info.haskey("analysis_id"):
@@ -146,7 +153,11 @@ class CuckooFeedback(object):
                                     analysis_id=feedback.report_info["analysis_id"])
             return feedback_id
         except requests.exceptions.RequestException as e:
-            log.error("Invalid response from Cuckoo feedback server: %s", e)
+            log.error("Invalid response from Cuckoo feedback server: %s", str(e))
+        except CuckooFeedbackError as e:
+            log.error("Cuckoo feedback error while sending: %s", str(e))
+        except Exception as e:
+            log.error("Unknown feedback error while sending: %s" % str(e))
 
     def _register_sent(self, feedback, feedback_id, analysis_id):
         data = feedback.to_dict()
@@ -158,7 +169,7 @@ class CuckooFeedback(object):
             {"$set": {"feedback": data, "feedback_id": feedback_id}})
 
 class CuckooFeedbackObject:
-    def __init__(self, name=None, company=None, email=None, message=None, was_automated=False):
+    def __init__(self, message=None, email=None, name=None, company=None, was_automated=False):
         self.was_automated = was_automated
         self.message = message
         self.errors = []
@@ -167,7 +178,7 @@ class CuckooFeedbackObject:
         self.contact = {
             "name": self.cfg["cuckoo"]["feedback"]["name"] if not name else name,
             "company": self.cfg["cuckoo"]["feedback"]["company"] if not company else company,
-            "email": self.cfg["cuckoo"]["feedback"]["email"] if not email else email,
+            "email": self.cfg["cuckoo"]["feedback"]["email"] if not email else email
         }
         self.export = None
         self.report_info = {}
@@ -199,8 +210,7 @@ class CuckooFeedbackObject:
         out passwords and other sensitive information.
         """
         data = {}
-        blacklist_defs = ["password", "pwd", "credentials", "api_key",
-                          "apikey", "pass", "cuckoo_cwd", "cuckoo_app"]
+        blacklist_defs = ["password", "pwd", "credentials", "api_key", "apikey", "pass"]
         blacklist = {
             "cuckoo": {
                 "database": ["connection"]
@@ -224,19 +234,18 @@ class CuckooFeedbackObject:
             for section, values in cfg.iteritems():
                 for k, v in values.iteritems():
                     # block blacklisted entries
-                    if k in blacklist_defs:
+                    if k in ["cuckoo_cwd", "cuckoo_app"]:
+                        continue
+                    elif k in blacklist_defs:
                         v = "[removed]"
                     elif cfg_name in blacklist:
-                        if section in blacklist[cfg_name]:
-                            if k in blacklist[cfg_name][section]:
-                                v = "[removed]"
+                        if section in blacklist[cfg_name] and k in blacklist[cfg_name][section]:
+                            v = "[removed]"
 
                     if cfg_name not in data:
                         data[cfg_name] = {}
-
                     if section not in data[cfg_name]:
                         data[cfg_name][section] = {}
-
                     if k not in data[cfg_name][section]:
                         data[cfg_name][section][k] = {}
 
@@ -270,6 +279,14 @@ class CuckooFeedbackObject:
     def add_error(self, error):
         self.errors.append(error)
 
+    def validate(self):
+        if not self.contact["email"]:
+            return
+        if not self.message:
+            return
+
+        return True
+
     def to_dict(self):
         data = {
             "errors": self.errors,
@@ -290,3 +307,5 @@ class CuckooFeedbackObject:
 
         if self.cfg:
             data["cfg"] = self.cfg
+
+        return data

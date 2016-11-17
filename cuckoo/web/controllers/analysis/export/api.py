@@ -5,6 +5,8 @@
 
 from django.http import JsonResponse
 
+from cuckoo.common.exceptions import CuckooApiError
+
 from bin.utils import api_post, json_error_response
 from controllers.analysis.export.export import ExportController
 from controllers.analysis.analysis import AnalysisController
@@ -37,7 +39,7 @@ class ExportApi:
 
         report = AnalysisController.get_report(task_id)
         if not report["analysis"].get("info", {}).get("analysis_path"):
-            raise Exception("old-style analysis")
+            raise CuckooApiError("old-style analysis")
 
         analysis_path = report["analysis"]["info"]["analysis_path"]
 
