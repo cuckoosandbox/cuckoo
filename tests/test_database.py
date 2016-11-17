@@ -41,6 +41,17 @@ class DatabaseEngine(object):
         assert self.d.Session().query(Task).count() == count + 2
 
     def test_processing_get_task(self):
+        # First reset all existing rows so that earlier exceptions don't affect
+        # this unit test run.
+        null, session = None, self.d.Session()
+
+        session.query(Task).filter(
+            Task.status == "completed", Task.processing == null
+        ).update({
+            "processing": "something",
+        })
+        session.commit()
+
         t1 = self.add_url("http://google.com/1", priority=1, status="completed")
         t2 = self.add_url("http://google.com/2", priority=2, status="completed")
         t3 = self.add_url("http://google.com/3", priority=1, status="completed")
