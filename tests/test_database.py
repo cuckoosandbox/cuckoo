@@ -94,28 +94,32 @@ class DatabaseMigrationEngine(object):
     URI = None
     SRC = None
 
-    def setup_class(self):
+    def setup_class(cls):
         set_cwd(tempfile.mkdtemp())
+        print "CWD", cwd()
 
-        self.d = Database()
-        self.d.connect(dsn=self.URI, create=False)
+        cls.d = Database()
+        cls.d.connect(dsn=cls.URI, create=False)
 
         cuckoo_create(cfg={
             "cuckoo": {
                 "database": {
-                    "connection": self.URI,
+                    "connection": cls.URI,
                 },
             },
         })
-        self.d.drop()
+        cls.d.drop()
 
-        s = self.d.Session()
-        s.execute(open(self.SRC, "rb").read())
+        s = cls.d.Session()
+        cls.execute_script(cls(), s, open(cls.SRC, "rb").read())
         s.commit()
 
 class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
+
+    def execute_script(self, s, script):
+        s.execute(script)
 
     def test_migrations(self):
         tasks = self.d.engine.execute(
@@ -149,3 +153,46 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
         assert tasks[0][1] is None
         assert tasks[1][0] == "completed"
         assert tasks[2][0] == "running"
+
+class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
+    URI = "sqlite:///%s" % tempfile.mktemp()
+    SRC = "tests/files/sql/060sq.sql"
+
+    def execute_script(self, s, script):
+        s.connection().connection.cursor().executescript(script)
+
+    def test_migrations(self):
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failure"
+        assert tasks[1][0] == "processing"
+        assert tasks[2][0] == "success"
+        assert tasks[3][0] == "pending"
+
+        main.main(
+            ("--cwd", cwd(), "migrate", "--revision", "263a45963c72"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failed_analysis"
+        assert tasks[1][0] == "running"
+        assert tasks[2][0] == "completed"
+        assert tasks[3][0] == "pending"
+
+        main.main(
+            ("--cwd", cwd(), "migrate"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status, owner FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "failed_analysis"
+        assert tasks[0][1] is None
+        assert tasks[1][0] == "running"
+        assert tasks[2][0] == "completed"
+        assert tasks[3][0] == "pending"

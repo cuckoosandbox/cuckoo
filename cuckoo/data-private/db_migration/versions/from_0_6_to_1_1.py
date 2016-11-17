@@ -204,9 +204,6 @@ def upgrade():
             # Insert data.
             op.bulk_insert(db.Task.__table__, tasks_data)
         elif conn.engine.driver == "pysqlite":
-            # Edit task status enumeration in Task.
-            # NOTE: To workaround limitations in SQLite we have to create a temporary table, create the new schema and copy data.
-            # Read data.
             tasks_data = []
             old_tasks = conn.execute(
                 "SELECT id, target, category, timeout, priority, custom, "
@@ -229,27 +226,29 @@ def upgrade():
                 d["platform"] = item[9]
                 d["memory"] = item[10]
                 d["enforce_timeout"] = item[11]
+
                 if isinstance(item[12], datetime):
                     d["added_on"] = item[12]
                 else:
-                    d["added_on"] = parse(item[12])
+                    d["added_on"] = parse(item[12]) if item[12] else None
+
                 if isinstance(item[13], datetime):
                     d["started_on"] = item[13]
                 else:
-                    d["started_on"] = parse(item[13])
+                    d["started_on"] = parse(item[13]) if item[13] else None
+
                 if isinstance(item[14], datetime):
                     d["completed_on"] = item[14]
                 else:
-                    d["completed_on"] = parse(item[14])
-                d["status"] = item[15]
+                    d["completed_on"] = parse(item[14]) if item[14] else None
+
+                d["status"] = mapping.get(item[15], item[15])
                 d["sample_id"] = item[16]
 
                 # Force clock.
-                # NOTE: We added this new column so we force clock time to the added_on for old analyses.
+                # NOTE: We added this new column so we force clock time to
+                # the added_on for old analyses.
                 d["clock"] = d["added_on"]
-                # Enum migration, "success" isn"t a valid state now.
-                if d["status"] == "success":
-                    d["status"] = "completed"
                 tasks_data.append(d)
 
             # Rename original table.
