@@ -196,3 +196,44 @@ class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
         assert tasks[1][0] == "running"
         assert tasks[2][0] == "completed"
         assert tasks[3][0] == "pending"
+
+class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
+    URI = "mysql://cuckoo:cuckoo@localhost/cuckootest060"
+    SRC = "tests/files/sql/060my.sql"
+
+    def execute_script(self, s, script):
+        s.execute(script)
+
+    def test_migrations(self):
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "success"
+        assert tasks[1][0] == "processing"
+        assert tasks[2][0] == "pending"
+
+        main.main(
+            ("--cwd", cwd(), "migrate", "--revision", "263a45963c72"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status FROM tasks ORDER BY id"
+        ).fetchall()
+        print tasks
+        assert tasks[0][0] == "completed"
+        assert tasks[1][0] == "running"
+        assert tasks[2][0] == "pending"
+
+        main.main(
+            ("--cwd", cwd(), "migrate"),
+            standalone_mode=False
+        )
+
+        tasks = self.d.engine.execute(
+            "SELECT status, owner FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "completed"
+        assert tasks[0][1] is None
+        assert tasks[1][0] == "running"
+        assert tasks[2][0] == "pending"
