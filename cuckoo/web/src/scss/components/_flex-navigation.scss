@@ -1,0 +1,22 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.flex-nav {
+
+	display: flex;
+	width: 100%;
+	height: 100%;
+
+	&__nav {
+		flex-basis: 220px;
+	}
+
+	&__body {
+		flex-basis: 100%;
+		overflow-y: auto;
+	}
+
+}
