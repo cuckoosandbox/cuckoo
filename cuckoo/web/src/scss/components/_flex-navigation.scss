@@ -7,16 +7,20 @@
 .flex-nav {
 
 	display: flex;
-	width: 100%;
-	height: 100%;
+	position: relative;
+
+	width: 100vw;
+	height: -webkit-calc(100vh - 30px);
 
 	&__nav {
 		flex-basis: 220px;
+		background-color: #ccc;
 	}
 
 	&__body {
 		flex-basis: 100%;
 		overflow-y: auto;
+		padding: 15px 0;
 	}
 
 }
