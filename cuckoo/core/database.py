@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "cd31654d187"
+SCHEMA_VERSION = "1f28e0e5aa6b"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -72,7 +72,7 @@ class Machine(Base):
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
-    resultserver_port = Column(String(255), nullable=False)
+    resultserver_port = Column(Integer(), nullable=False)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)

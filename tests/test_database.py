@@ -131,6 +131,14 @@ class DatabaseMigrationEngine(object):
         assert version and len(version) == 1
         assert version[0][0] == SCHEMA_VERSION
 
+    def test_machine_resultserver_port_is_int(self):
+        machines = self.s.execute(
+            "SELECT resultserver_ip, resultserver_port FROM machines"
+        ).fetchall()
+        assert machines and len(machines) == 1
+        assert machines[0][0] == "192.168.56.1"
+        assert machines[0][1] == 2042
+
 class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
