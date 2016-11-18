@@ -263,15 +263,35 @@ section#screenshots .minified {
   background-color: #fafafa;
 }
 .cuckoo-analysis__header {
+  display: flex;
+  align-items: center;
   box-shadow: 0px 1px 0px #fff;
   text-shadow: 0px 1px 0px #fff;
   margin: 0 0 15px 0;
   padding: 15px;
 }
-.cuckoo-analysis__title {
+.cuckoo-analysis__header > h2 {
   color: #ccc;
   font-weight: 200;
   margin: 0;
+}
+.cuckoo-analysis__header .header-right {
+  margin-left: auto;
+}
+.cuckoo-analysis__header .file-name {
+  display: inline-block;
+  font-family: monospace;
+  border: 1px solid #ccc;
+  font-size: 11px;
+  border-radius: 20px;
+  overflow: hidden;
+  padding-right: 10px;
+}
+.cuckoo-analysis__header .file-name > i {
+  color: #eee;
+  background-color: #888;
+  padding: 5px 5px 5px 7px;
+  text-shadow: none;
 }
 
 /* 

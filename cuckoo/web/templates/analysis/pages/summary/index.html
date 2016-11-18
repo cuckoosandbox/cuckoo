@@ -7,11 +7,15 @@
         {% include "analysis/pages/nav-sidebar.html" %}
         <section class="flex-nav__body cuckoo-analysis">
 
-            <!-- snaps back to default bootstrap layout inside flex frame -->
+            <!-- common analysis page header -->
             <header class="page-header cuckoo-analysis__header">
-                <h2 class="cuckoo-analysis__title"><i class="fa fa-home"></i> Summary</h2>
+                <h2><i class="fa fa-home"></i> Summary </h2>
+                <div class="header-right">
+                    <span class="file-name"><i class="fa fa-file-o"></i> {{ report.analysis.target.file.name }}</span>
+                </div>
             </header>
             
+            <!-- snaps back to default bootstrap layout inside flex frame -->            
             <div class="container-fluid">
 
                 <!-- this row breaks into 2 sides -->
