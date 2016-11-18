@@ -259,6 +259,26 @@ section#screenshots .minified {
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
+.cuckoo-analysis {
+  background-color: #fafafa;
+}
+.cuckoo-analysis__header {
+  box-shadow: 0px 1px 0px #fff;
+  text-shadow: 0px 1px 0px #fff;
+  margin: 0 0 15px 0;
+  padding: 15px;
+}
+.cuckoo-analysis__title {
+  color: #ccc;
+  font-weight: 200;
+  margin: 0;
+}
+
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
 .flex-nav {
   display: flex;
   position: relative;

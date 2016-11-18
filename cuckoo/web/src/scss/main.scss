@@ -20,6 +20,7 @@ body#analysis { padding-top: 30px; }
 
 // components
 @import "components/analysis-sidebar";
+@import "components/cuckoo-analysis";
 @import "components/flex-navigation";
 @import "components/network-http-request";
 @import "components/dndupload";
