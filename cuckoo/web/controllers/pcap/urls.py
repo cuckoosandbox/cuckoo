@@ -5,7 +5,7 @@
 
 from django.conf.urls import url
 
-from controllers.pcap.api import PcapApi
+from cuckoo.web.controllers.pcap.api import PcapApi
 
 urlpatterns = [
     url(r"^api/get/(?P<task_id>\d+)/$", PcapApi.get)

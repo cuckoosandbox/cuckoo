@@ -5,7 +5,7 @@
 
 from django.conf.urls import url
 
-from controllers.files.api import FilesApi
+from cuckoo.web.controllers.files.api import FilesApi
 
 urlpatterns = [
     url(r"^api/view/md5/(?P<md5>\w+)/$", FilesApi.view),

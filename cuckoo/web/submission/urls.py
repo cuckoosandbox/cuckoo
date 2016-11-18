@@ -5,8 +5,8 @@
 
 from . import views
 from django.conf.urls import url
-from controllers.submission.routes import SubmissionRoutes
-from controllers.submission.api import SubmissionApi
+from cuckoo.web.controllers.submission.routes import SubmissionRoutes
+from cuckoo.web.controllers.submission.api import SubmissionApi
 
 urlpatterns = [
     url(r"^$", SubmissionRoutes.submit, name="submission/index"),

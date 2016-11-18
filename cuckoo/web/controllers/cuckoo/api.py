@@ -14,7 +14,7 @@ from cuckoo.core.rooter import rooter
 from cuckoo.core.database import Database
 from cuckoo.common.constants import CUCKOO_VERSION
 
-from bin.utils import json_fatal_response, api_get
+from cuckoo.web.bin.utils import json_fatal_response, api_get
 
 db = Database()
 

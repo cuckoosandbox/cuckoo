@@ -6,7 +6,6 @@
 import os
 
 from django.conf import settings
-from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 
 from cuckoo.common.config import Config, parse_options, emit_options
@@ -15,8 +14,8 @@ from cuckoo.core.database import Database
 from cuckoo.core.rooter import vpns
 from cuckoo.misc import cwd
 
-from bin.utils import view_error
-from controllers.analysis.routes import AnalysisRoutes
+from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 
 results_db = settings.MONGO
 cfg = Config(file_name="routing")
@@ -86,7 +85,7 @@ def render_index(request, kwargs={}):
     }
 
     values.update(kwargs)
-    return render(request, "submission/index.html", values)
+    return render_template(request, "submission/index.html", **values)
 
 def index(request, task_id=None, sha1=None):
     if request.method == "GET":
@@ -220,7 +219,7 @@ def index(request, task_id=None, sha1=None):
 
     tasks_count = len(task_ids)
     if tasks_count > 0:
-        return render(request, "submission/complete.html", {
+        return render_template(request, "submission/complete.html", **{
             "tasks": task_ids,
             "tasks_count": tasks_count,
             "baseurl": request.build_absolute_uri('/')[:-1],
@@ -232,14 +231,11 @@ def status(request, task_id):
     task = Database().view_task(task_id)
     if not task:
         return view_error(request, "The specified task doesn't seem to exist.")
-
     if task.status == "reported":
         return AnalysisRoutes.redirect_default(request, task_id)
 
-    return render(request, "submission/status.html", {
-        "status": task.status,
-        "task_id": task_id,
-    })
+    return render_template(request, "submission/status.html",
+                           status=task.status, task_id=task_id)
 
 def resubmit(request, task_id):
     task = Database().view_task(task_id)

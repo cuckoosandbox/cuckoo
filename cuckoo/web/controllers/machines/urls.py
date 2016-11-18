@@ -5,7 +5,7 @@
 
 from django.conf.urls import url
 
-from controllers.machines.api import MachinesApi
+from cuckoo.web.controllers.machines.api import MachinesApi
 
 urlpatterns = [
     url(r"^api/list/$", MachinesApi.list),

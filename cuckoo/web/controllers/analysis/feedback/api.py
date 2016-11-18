@@ -5,8 +5,8 @@
 
 from django.http import JsonResponse
 
-from bin.utils import api_post, json_error_response
-from controllers.analysis.feedback.feedback import AnalysisFeedBackController
+from cuckoo.web.bin.utils import api_post, json_error_response
+from cuckoo.web.controllers.analysis.feedback.feedback import AnalysisFeedBackController
 
 class FeedbackApi:
     @api_post

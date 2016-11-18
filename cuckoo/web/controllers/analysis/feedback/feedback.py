@@ -11,8 +11,8 @@ from datetime import datetime
 from django.conf import settings
 
 from cuckoo.common.constants import CUCKOO_VERSION
-from controllers.analysis.analysis import AnalysisController
-from controllers.analysis.export.export import ExportController
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
+from cuckoo.web.controllers.analysis.export.export import ExportController
 
 results_db = settings.MONGO
 

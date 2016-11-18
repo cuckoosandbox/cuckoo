@@ -6,12 +6,12 @@
 from . import views
 from django.conf.urls import url
 
-from controllers.analysis.routes import AnalysisRoutes
-from controllers.analysis.compare.routes import AnalysisCompareRoutes
-from controllers.analysis.api import AnalysisApi
-from controllers.analysis.export.api import ExportApi
-from controllers.analysis.feedback.api import FeedbackApi
-from controllers.analysis.network.api import AnalysisNetworkApi
+from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
+from cuckoo.web.controllers.analysis.compare.routes import AnalysisCompareRoutes
+from cuckoo.web.controllers.analysis.api import AnalysisApi
+from cuckoo.web.controllers.analysis.export.api import ExportApi
+from cuckoo.web.controllers.analysis.feedback.api import FeedbackApi
+from cuckoo.web.controllers.analysis.network.api import AnalysisNetworkApi
 
 urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name="analysis/recent"),

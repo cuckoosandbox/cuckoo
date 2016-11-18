@@ -89,7 +89,7 @@ def json_response(message, status=200):
     }, encoder=JsonSerialize, status=status)
 
 def json_error_response(message):
-    return json_response(message, 404)
+    return json_response(message, 501)
 
 def json_fatal_response(message):
     return json_response(message, 500)

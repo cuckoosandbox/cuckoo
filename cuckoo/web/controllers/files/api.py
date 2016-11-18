@@ -11,7 +11,7 @@ from wsgiref.util import FileWrapper
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
-from bin.utils import json_error_response, json_fatal_response, api_get
+from cuckoo.web.bin.utils import json_error_response, json_fatal_response, api_get
 
 db = Database()
 

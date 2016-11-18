@@ -29,9 +29,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
-from cuckoo.web.bin.utils import view_error
-
-from bin.utils import view_error
+from cuckoo.web.bin.utils import view_error, render_template
 
 results_db = settings.MONGO
 fs = GridFS(results_db)
@@ -67,7 +65,7 @@ def index(request):
 
             analyses_urls.append(new)
 
-    return render(request, "analysis/index.html", {
+    return render_template(request, "analysis/index.html", **{
         "files": analyses_files,
         "urls": analyses_urls,
     })
@@ -81,7 +79,7 @@ def pending(request):
     for task in tasks:
         pending.append(task.to_dict())
 
-    return render(request, "analysis/pending.html", {
+    return render_template(request, "analysis/pending.html", **{
         "tasks": pending,
     })
 
@@ -125,7 +123,7 @@ def chunk(request, task_id, pid, pagenum):
     else:
         chunk = dict(calls=[])
 
-    return render(request, "analysis/pages/behavior/_chunk.html", {
+    return render_template(request, "analysis/pages/behavior/_chunk.html", **{
         "chunk": chunk,
     })
 
@@ -176,7 +174,7 @@ def filtered_chunk(request, task_id, pid, category):
             if call["category"] == category:
                 filtered_process["calls"].append(call)
 
-    return render(request, "analysis/pages/behavior/_chunk.html", {
+    return render_template(request, "analysis/pages/behavior/_chunk.html", **{
         "chunk": filtered_process,
     })
 
@@ -244,7 +242,7 @@ def search_behavior(request, task_id):
                 "signs": process_results
             })
 
-    return render(request, "analysis/pages/behavior/_search_results.html", {
+    return render_template(request, "analysis/pages/behavior/_search_results.html", **{
         "results": results,
     })
 
@@ -267,7 +265,7 @@ def summary(request, task_id):
         domainlookups = dict()
         iplookups = dict()
 
-    return render(request, "analysis/pages/summary/index.html", {
+    return render_template(request, "analysis/pages/summary/index.html", **{
         "analysis": report,
         "domainlookups": domainlookups,
         "iplookups": iplookups,
@@ -381,7 +379,7 @@ def search(request):
                                    "is not possible to do a global search.")
 
     if request.method == "GET":
-        return render(request, "analysis/search.html")
+        return render_template(request, "analysis/search.html")
 
     value = request.POST["search"]
 
@@ -412,12 +410,12 @@ def search(request):
         })
 
     if request.POST.get("raw"):
-        return render(request, "analysis/search_results.html", {
+        return render_template(request, "analysis/search_results.html", **{
             "analyses": analyses,
             "term": request.POST["search"],
         })
 
-    return render(request, "analysis/search.html", {
+    return render_template(request, "analysis/search.html", **{
         "analyses": analyses,
         "term": request.POST["search"],
         "error": None,
@@ -483,7 +481,7 @@ def remove(request, task_id):
     db = Database()
     db.delete_task(task_id)
 
-    return render(request, "success.html", {
+    return render_template(request, "success.html", **{
         "message": message,
     })
 
@@ -507,9 +505,7 @@ def pcapstream(request, task_id, conntuple):
         sort=[("_id", pymongo.DESCENDING)])
 
     if not conndata:
-        return render(request, "errors/error.html", {
-            "error": "The specified analysis does not exist",
-        })
+        return view_error(request, "The specified analysis does not exist")
 
     try:
         if proto == "udp":
@@ -521,17 +517,13 @@ def pcapstream(request, task_id, conntuple):
         stream = conns[0]
         offset = stream["offset"]
     except:
-        return render(request, "errors/error.html", {
-            "error": "Could not find the requested stream",
-        })
+        return view_error(request, "Could not find the requested stream")
 
     try:
         fobj = fs.get(conndata["network"]["sorted_pcap_id"])
         setattr(fobj, "fileno", lambda: -1)
     except:
-        return render(request, "errors/error.html", {
-            "error": "The required sorted PCAP does not exist",
-        })
+        return view_error("The required sorted PCAP does not exist")
 
     packets = list(network.packets_for_stream(fobj, offset))
     # TODO: starting from django 1.7 we should use JsonResponse.
@@ -564,7 +556,7 @@ def export_analysis(request, task_id):
         else:
             files.append(filename)
 
-    return render(request, "analysis/export.html", {
+    return render_template(request, "analysis/export.html", **{
         "analysis": report,
         "dirs": dirs,
         "files": files,
@@ -618,7 +610,7 @@ def export(request, task_id):
 
 def import_analysis(request):
     if request.method == "GET":
-        return render(request, "analysis/import.html")
+        return render_template(request, "analysis/import.html")
 
     db = Database()
     task_ids = []
@@ -628,7 +620,7 @@ def import_analysis(request):
             return view_error(request, "You uploaded an empty analysis.")
 
         # if analysis.size > settings.MAX_UPLOAD_SIZE:
-            # return render(request, "errors/error.html", {
+            # return render_template(request, "errors/error.html", **{
             #     "error": "You uploaded a file that exceeds that maximum allowed upload size.",
             # })
 
@@ -725,7 +717,7 @@ def import_analysis(request):
         db.set_status(task_id, TASK_COMPLETED)
 
     if task_ids:
-        return render(request, "submission/complete.html", {
+        return render_template(request, "submission/complete.html", **{
             "tasks": task_ids,
             "baseurl": request.build_absolute_uri("/")[:-1],
         })
@@ -733,7 +725,7 @@ def import_analysis(request):
 def reboot_analysis(request, task_id):
     task_id = Database().add_reboot(task_id=task_id)
 
-    return render(request, "submission/reboot.html", {
+    return render_template(request, "submission/reboot.html", **{
         "task_id": task_id,
         "baseurl": request.build_absolute_uri("/")[:-1],
     })
