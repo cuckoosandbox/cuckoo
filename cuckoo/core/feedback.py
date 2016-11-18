@@ -117,9 +117,6 @@ class CuckooFeedback(object):
             if not analysis_id or not isinstance(analysis_id, int):
                 raise CuckooFeedbackError("analysis_id cannot be empty while including the json_report")
 
-            if feedback.already_submitted(analysis_id):
-                raise CuckooFeedbackError("Feedback has already been submitted for this analysis")
-
             feedback.include_report(analysis_id=analysis_id)
 
         if include_analysis:
@@ -163,15 +160,6 @@ class CuckooFeedback(object):
             log.error("Cuckoo feedback error while sending: %s", str(e))
         except Exception as e:
             log.error("Unknown feedback error while sending: %s" % str(e))
-
-    def _register_sent(self, feedback, feedback_id, analysis_id):
-        data = feedback.to_dict()
-        if "export" in data:
-            data.pop("export", None)
-
-        return results_db.analysis.update_one(
-            {"info.id": int(analysis_id)},
-            {"$set": {"feedback": data, "feedback_id": feedback_id}})
 
 class CuckooFeedbackObject:
     def __init__(self, message=None, email=None, name=None, company=None, was_automated=False):
@@ -234,12 +222,6 @@ class CuckooFeedbackObject:
                                          taken_files=taken_files)
         export.seek(0)
         self.export = base64.b64encode(export.read())
-
-    @staticmethod
-    def already_submitted(analysis_id):
-        report = AbstractReport(analysis_id=analysis_id)
-        if report.analysis_feedback:
-            return True
 
     def add_error(self, error):
         self.errors.append(error)
