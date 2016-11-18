@@ -1,6 +1,7 @@
 <nav class="flex-nav__nav" id="analysis-nav">
 	
 	<ul class="cuckoo-nav">
+		{% comment %}
 		<li class="cuckoo-nav__search">
 			<div>
 				<i class="fa fa-search"></i>
@@ -8,6 +9,7 @@
 				<button>Search</button>
 			</div>
 		</li>
+		{% endcomment %}
 		<li>
 			<a href="{% url "analysis" report.analysis.info.id "summary" %}"
 			{% if env.view_kwargs.page == 'summary' %} class="active" {% endif %}>
