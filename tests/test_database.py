@@ -70,11 +70,12 @@ class DatabaseEngine(object):
         assert self.d.processing_get_task("foo") is None
 
     def test_error_exists(self):
-        self.add_url("http://google.com/")
-        self.d.add_error("A"*1024, 1)
-        assert self.d.view_errors(1)
+        task_id = self.add_url("http://google.com/")
+        self.d.add_error("A"*1024, task_id)
+        assert len(self.d.view_errors(task_id)) == 1
+        self.d.add_error("A"*1024, task_id)
+        assert len(self.d.view_errors(task_id)) == 2
 
-    @pytest.mark.xfail(strict=True)
     def test_long_error(self):
         self.add_url("http://google.com/")
         self.d.add_error("A"*1024, 1)
@@ -138,6 +139,12 @@ class DatabaseMigrationEngine(object):
         assert machines and len(machines) == 1
         assert machines[0][0] == "192.168.56.1"
         assert machines[0][1] == 2042
+
+    def test_long_error(self):
+        task_id = self.d.add_url("http://google.com/")
+        self.d.add_error("A"*1024, task_id)
+        err = self.d.view_errors(task_id)
+        assert err and len(err[0].message) == 1024
 
 class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"

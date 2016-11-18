@@ -38,6 +38,7 @@ CREATE TABLE `errors` (
 
 LOCK TABLES `errors` WRITE;
 /*!40000 ALTER TABLE `errors` DISABLE KEYS */;
+INSERT INTO `errors` VALUES (1,'hello world',1);
 /*!40000 ALTER TABLE `errors` ENABLE KEYS */;
 UNLOCK TABLES;
 

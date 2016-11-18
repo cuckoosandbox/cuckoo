@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1f28e0e5aa6b"
+SCHEMA_VERSION = "796174689511"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -242,7 +242,7 @@ class Error(Base):
     __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
-    message = Column(String(255), nullable=False)
+    message = Column(Text(), nullable=False)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
     def to_dict(self):
@@ -911,7 +911,7 @@ class Database(object):
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message[:255], task_id=task_id)
+        error = Error(message=message, task_id=task_id)
         session.add(error)
         try:
             session.commit()

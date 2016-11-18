@@ -63,6 +63,7 @@ CREATE TABLE errors (
 	UNIQUE (task_id),
 	FOREIGN KEY(task_id) REFERENCES tasks (id)
 );
+INSERT INTO "errors" VALUES(1,'hello world',1);
 CREATE TABLE guests (
 	id INTEGER NOT NULL,
 	name VARCHAR(255) NOT NULL,
