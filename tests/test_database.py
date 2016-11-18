@@ -7,7 +7,7 @@ import os
 import pytest
 import tempfile
 
-from cuckoo.core.database import Database, Task, AlembicVersion
+from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
@@ -100,6 +100,7 @@ class TestPostgreSQL(DatabaseEngine):
 class TestMySQL(DatabaseEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest"
 
+@pytest.mark.skipif("sys.platform != 'linux2'")
 class DatabaseMigrationEngine(object):
     """Tests database migration(s)."""
     URI = None
@@ -107,7 +108,6 @@ class DatabaseMigrationEngine(object):
 
     def setup_class(cls):
         set_cwd(tempfile.mkdtemp())
-        print "CWD", cwd()
 
         cls.d = Database()
         cls.d.connect(dsn=cls.URI, create=False)
@@ -119,21 +119,30 @@ class DatabaseMigrationEngine(object):
                 },
             },
         })
-        cls.d.drop()
 
-        s = cls.d.Session()
-        cls.execute_script(cls(), s, open(cls.SRC, "rb").read())
-        s.commit()
+        cls.s = cls.d.Session()
+        cls.execute_script(cls, open(cls.SRC, "rb").read())
+        cls.migrate(cls)
+
+    def test_alembic_version(self):
+        version = self.s.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall()
+        assert version and len(version) == 1
+        assert version[0][0] == SCHEMA_VERSION
 
 class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
 
-    def execute_script(self, s, script):
-        s.execute(script)
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
+        cls.s.commit()
 
-    def test_migrations(self):
-        tasks = self.d.engine.execute(
+    @staticmethod
+    def migrate(cls):
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failure"
@@ -145,7 +154,7 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failed_analysis"
@@ -157,7 +166,7 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status, owner FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failed_analysis"
@@ -166,14 +175,16 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
         assert tasks[2][0] == "running"
 
 class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
-    URI = "sqlite:///%s" % tempfile.mktemp()
+    URI = "sqlite:///%s.sqlite3" % tempfile.mktemp()
     SRC = "tests/files/sql/060sq.sql"
 
-    def execute_script(self, s, script):
-        s.connection().connection.cursor().executescript(script)
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.connection().connection.cursor().executescript(script)
 
-    def test_migrations(self):
-        tasks = self.d.engine.execute(
+    @staticmethod
+    def migrate(cls):
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failure"
@@ -186,7 +197,7 @@ class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failed_analysis"
@@ -199,7 +210,7 @@ class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status, owner FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "failed_analysis"
@@ -212,11 +223,13 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060my.sql"
 
-    def execute_script(self, s, script):
-        s.execute(script)
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
 
-    def test_migrations(self):
-        tasks = self.d.engine.execute(
+    @staticmethod
+    def migrate(cls):
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "success"
@@ -228,10 +241,9 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status FROM tasks ORDER BY id"
         ).fetchall()
-        print tasks
         assert tasks[0][0] == "completed"
         assert tasks[1][0] == "running"
         assert tasks[2][0] == "pending"
@@ -241,7 +253,7 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
             standalone_mode=False
         )
 
-        tasks = self.d.engine.execute(
+        tasks = cls.d.engine.execute(
             "SELECT status, owner FROM tasks ORDER BY id"
         ).fetchall()
         assert tasks[0][0] == "completed"

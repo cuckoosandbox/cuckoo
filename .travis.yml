@@ -21,8 +21,10 @@ before_install:
   - sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"
   - sudo mysql -e "FLUSH PRIVILEGES"
   - sudo mysql -e "CREATE DATABASE cuckootest"
+  - sudo mysql -e "CREATE DATABASE cuckootest060"
   - psql -U postgres -c "CREATE USER cuckoo WITH PASSWORD 'cuckoo'"
   - psql -U postgres -c "CREATE DATABASE cuckootest"
+  - psql -U postgres -c "CREATE DATABASE cuckootest060"
 
 install:
   - python setup.py develop

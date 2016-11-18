@@ -117,6 +117,11 @@ def upgrade():
                 "USING status::text::status_type"
             )
             tmp_type.drop(op.get_bind(), checkfirst=False)
+
+            op.execute(
+                "ALTER TABLE tasks ALTER COLUMN status "
+                "SET DEFAULT 'pending'::status_type"
+            )
         elif conn.engine.driver == "mysqldb":
             op.alter_column(
                 "tasks", "status", existing_type=old_type, type_=tmp_type
