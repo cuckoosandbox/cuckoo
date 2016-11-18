@@ -17,19 +17,22 @@
 		overflow: hidden;
 		width: 65px;
 		transition: width 200ms ease-in-out;
+		overflow-y: auto;
 
 		.cuckoo-nav {
-			em, span { 
+			transition: transform 0 linear;
+			em, span, button { 
 				opacity: 0; 
 				transition: opacity 100ms linear;
 			}
 		}
 
-		&.open {
+		&.open,
+		&.locked {
 			width: 360px;
 
 			.cuckoo-nav {
-				em, span {
+				em, span, input, button {
 					opacity: 1;
 				}
 			}

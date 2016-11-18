@@ -1,6 +1,13 @@
 <nav class="flex-nav__nav" id="analysis-nav">
 	
 	<ul class="cuckoo-nav">
+		<li class="cuckoo-nav__search">
+			<div>
+				<i class="fa fa-search"></i>
+				<span><input type="text" name="sidebar_search" placeholder="Search" /></span>
+				<button>Search</button>
+			</div>
+		</li>
 		<li>
 			<a href="{% url "analysis" report.analysis.info.id "summary" %}"
 			{% if env.view_kwargs.page == 'summary' %} class="active" {% endif %}>
@@ -100,6 +107,14 @@
 				<span>Feedback</span>
 			</a>
 		</li>
+
+		<li class="lock-sidebar">
+			<a href="sidebar:toggle-lock" title="Click to disable collapsing">
+				<i class="fa"></i>
+				<span></span>
+			</a>
+		</li>
+
 	</ul>
 
 </nav>

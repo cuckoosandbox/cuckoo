@@ -17,7 +17,8 @@
 		margin: 0 0;
 		overflow: hidden;
 
-		& > a {
+		& > a,
+		&.cuckoo-nav__search > div  {
 
 			display: flex;
 			width: 280px;
@@ -37,7 +38,8 @@
 				margin-right: 10px;
 			}
 
-			& > em {
+			& > em,
+			& > button {
 				margin-left: auto;
 				padding: 3px 10px;
 				font-size: 10px;
@@ -46,8 +48,32 @@
 				font-style: normal;
 			}
 
+			& > button {
+				background-color: transparent;
+				text-transform: uppercase;
+				font-weight: 700;
+
+				&:hover {
+					color: #444;
+					background-color: #ccc;
+				}
+			}
+
 			& > span {
 				font-size: 11px;
+
+				input {
+					background-color: transparent;
+					border: 0;
+					border-bottom: 1px solid #ccc;
+					width: 135px;
+					padding: 5px 0;
+
+					&:focus {
+						outline: none;
+					}
+				}
+
 			}
 
 			&:hover,
@@ -57,6 +83,25 @@
 			}
 
 		}
+
+	}
+
+	li.cuckoo-nav__search > div:hover {
+		background-color: #444;
+	}
+
+	.lock-sidebar {
+
+		& > a { text-decoration: none; }
+
+		// icon
+		.fa:before { content: "\f13e"; }
+		.locked & .fa:before { content: "\f023"; }
+
+		// text
+		span:before { content: "Lock sidebar"; }
+		.locked & span:before { content: "Unlock sidebar"; }
+
 	}
 
 }
