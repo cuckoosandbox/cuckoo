@@ -96,11 +96,11 @@
 
 		// icon
 		.fa:before { content: "\f13e"; }
-		.locked & .fa:before { content: "\f023"; }
+		.locked:not(.locked-silent) & .fa:before { content: "\f023"; }
 
 		// text
 		span:before { content: "Lock sidebar"; }
-		.locked & span:before { content: "Unlock sidebar"; }
+		.locked:not(.locked-silent) & span:before { content: "Unlock sidebar"; }
 
 	}
 

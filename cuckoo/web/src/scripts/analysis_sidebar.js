@@ -3,10 +3,11 @@ class AnalysisSidebar {
 	constructor(_$) {
 
 		this.$ = _$;
-		this.searchbar = this.$.find('input[name="sidebar_search"]');
+		this.searchInput = this.$.find('input[name="sidebar_search"]');
 
 		this.open = false;
 		this.locked = false;
+		this.search_active = false;
 
 		if(!window.localStorage.getItem('cuckoo-sidebar-locked')) {
 			window.localStorage.setItem('cuckoo-sidebar-locked', 'false');
@@ -45,6 +46,11 @@ class AnalysisSidebar {
 					self.toggleLock();
 				break;
 			}
+
+		});
+
+		this.searchInput.bind('keyup', function(e) {
+			self.searchHandler(e, $(this).val());
 		});
 
 	}
@@ -55,8 +61,10 @@ class AnalysisSidebar {
 	}
 
 	onMouseOut(e) {
-		this.open = false;
-		this.$.removeClass('open');
+		if(!this.search_active) {
+			this.open = false;
+			this.$.removeClass('open');
+		}
 	}
 
 	scrollHandler(e) {
@@ -82,6 +90,16 @@ class AnalysisSidebar {
 		} else {
 			this.lock();
 		}
+	}
+
+	searchHandler(e, value) {
+
+		if(value.length > 0) {
+			this.search_active = true;
+		} else {
+			this.search_active = false;
+		}
+
 	}
 
 }

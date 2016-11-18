@@ -28,7 +28,8 @@
 		}
 
 		&.open,
-		&.locked {
+		&.locked,
+		&.locked-silent {
 			width: 360px;
 
 			.cuckoo-nav {
