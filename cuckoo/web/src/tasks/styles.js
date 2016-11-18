@@ -34,7 +34,7 @@ module.exports = function() {
 		// 	return "/* \n\n\t Copyright (C) "+ new Date().getFullYear() +" Cuckoo Foundation.\n\t This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org \n\t see the file 'docs/LICENSE' for copying permission \n\n */ \n\n " + contents;
 		// }))
 		// writes the sourcemap
-		.pipe(sourcemaps.write())
+		.pipe(sourcemaps.write('./'))
 		// output file to static web dir
 		.pipe(gulp.dest('../static/css'));
 
