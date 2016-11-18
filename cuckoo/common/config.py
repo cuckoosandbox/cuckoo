@@ -65,8 +65,10 @@ class Config:
                                          (section, e))
 
     def to_dict(self, privacy=True):
-        from glob import glob
-
+        """The current config object as a dictionary.
+        Respects privacy by blanking out passwords and
+        other sensitive information.
+        """
         data = {}
         blacklist_defs = ["password", "pwd", "credentials", "api_key", "apikey", "pass"]
         blacklist = {
@@ -79,7 +81,6 @@ class Config:
             },
         }
 
-
         # read config, fetch sections
         cfg = {z: getattr(self, z) for z in dir(self) if isinstance(getattr(self, z), dict)}
 
@@ -91,20 +92,20 @@ class Config:
                         continue
                     elif k in blacklist_defs:
                         v = "[removed]"
-                    elif cfg_name in blacklist:
-                        if section in blacklist[cfg_name] and \
-                                        k in blacklist[cfg_name][section]:
+                    elif self.file_name in blacklist:
+                        if section in blacklist[self.file_name] and \
+                                        k in blacklist[self.file_name][section]:
                             v = "[removed]"
 
-                if cfg_name not in data:
-                    data[cfg_name] = {}
-                if section not in data[cfg_name]:
-                    data[cfg_name][section] = {}
-                if k not in data[cfg_name][section]:
-                    data[cfg_name][section][k] = {}
+                if self.file_name not in data:
+                    data[self.file_name] = {}
+                if section not in data[self.file_name]:
+                    data[self.file_name][section] = {}
+                if k not in data[self.file_name][section]:
+                    data[self.file_name][section][k] = {}
 
                 # build return dict
-                data[cfg_name][section][k] = v
+                data[self.file_name][section][k] = v
 
         return data
 

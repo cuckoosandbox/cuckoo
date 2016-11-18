@@ -31,7 +31,8 @@ def handler500(request):
 class ExceptionMiddleware(object):
     def process_exception(self, request, exception):
         cfg = Config("cuckoo")
-        if cfg.feedback.enabled:
+
+        if cfg.get("feedback") and cfg.feedback.enabled:
             feedback = CuckooFeedback()
             feedback.send_exception(exception, request)
 

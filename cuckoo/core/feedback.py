@@ -215,16 +215,6 @@ class CuckooFeedbackObject:
         out passwords and other sensitive information.
         """
         data = {}
-        blacklist_defs = ["password", "pwd", "credentials", "api_key", "apikey", "pass"]
-        blacklist = {
-            "cuckoo": {
-                "database": ["connection"]
-            },
-            "processing": {
-                "virustotal": ["key"],
-                "googleplay": ["google_password"]
-            },
-        }
 
         # iterate config files
         for cfg_path in glob(cwd("conf", "*.conf")):
@@ -233,29 +223,7 @@ class CuckooFeedbackObject:
 
             # read config, fetch sections
             cfg = Config(cfg_name)
-            cfg = {z: getattr(cfg, z) for z in dir(cfg) if isinstance(getattr(cfg, z), dict)}
-
-            # iterate sections and their values
-            for section, values in cfg.iteritems():
-                for k, v in values.iteritems():
-                    # block blacklisted entries
-                    if k in ["cuckoo_cwd", "cuckoo_app"]:
-                        continue
-                    elif k in blacklist_defs:
-                        v = "[removed]"
-                    elif cfg_name in blacklist:
-                        if section in blacklist[cfg_name] and k in blacklist[cfg_name][section]:
-                            v = "[removed]"
-
-                    if cfg_name not in data:
-                        data[cfg_name] = {}
-                    if section not in data[cfg_name]:
-                        data[cfg_name][section] = {}
-                    if k not in data[cfg_name][section]:
-                        data[cfg_name][section][k] = {}
-
-                    # build return dict
-                    data[cfg_name][section][k] = v
+            data[cfg_name] = cfg.to_dict()
 
         self.cfg = data
 
