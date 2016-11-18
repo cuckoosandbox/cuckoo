@@ -3,19 +3,21 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
 import os
 import logging
+import requests
 
 from cuckoo.core.database import Database, Submit
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
 from cuckoo.common.utils import validate_url, validate_hash
-from cuckoo.common.virustotal import VirusTotalAPI
 
-from sflock import unpack
+from sflock import unpack, zipify
 
 log = logging.getLogger(__name__)
 
+_cfg = Config("processing")
 db = Database()
 
 class SubmitManager(object):
@@ -27,88 +29,79 @@ class SubmitManager(object):
     """
     def __init__(self):
         self._submit_urlschemes = ["http", "https"]
-        self.cfg = Config("processing")
 
-    def pre(self, submit_type, files):
+    def pre(self, submit_type, data):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
-        @param files: a list of dicts containing "name" (file name) and "data" (file data)
-        or a list of strings (urls OR hashes)
+        @param data: a list of dicts containing "name" (file name) and "data" (file data)
+        or a list of strings (urls or hashes)
         @return: submit id
         """
+        global _cfg
+
         if not isinstance(submit_type, (str, unicode)) or \
                         submit_type not in ["strings", "files"]:
             log.error("Bad parameter \"%s\" for submit_type" % submit_type)
-            return
+            return False
 
         path_tmp = Folders.create_temp()
-        data = {"data": [], "errors": []}
+        submit_data = {
+            "data": [],
+            "errors": []
+        }
 
         if submit_type == "strings":
-            for line in files:
+            for line in data:
                 if not line:
                     continue
 
                 try:
-                    _url = validate_url(line, schemes=self._submit_urlschemes)
-                    _hash = validate_hash(line)
+                    validate_url(line)
+                    submit_data["data"].append({
+                        "type": "url",
+                        "data": line
+                    })
 
-                    if _url:
-                        data["data"].append({
-                            "type": "url",
-                            "data": line
-                        })
-
-                        continue
-                    elif _hash:
-                        vt = self.cfg.get("virustotal")
-                        vt_api_key = vt["key"]
-                        vt_timeout = vt["timeout"]
-                        vt_scan = vt["scan"]
-
-                        vt_api = VirusTotalAPI(
-                            apikey=vt_api_key,
-                            timeout=vt_timeout,
-                            scan=vt_scan
-                        )
-
-                        file_data = vt_api.hash_fetch(file_hash=_hash)
-                        file_path = Files.create(path_tmp, _hash, file_data)
-
-                        data["data"].append({
-                            "type": "file",
-                            "data": file_path
-                        })
-
-                        continue
-                    else:
-                        raise Exception("neither a valid url or hash")
+                    continue
                 except Exception as e:
-                    data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
+                    pass
+
+                try:
+                    validate_hash(line)
+                    filedata = VirusTotal(api_version="v2").fetch(file_hash=line)
+                    filepath = Files.create(path_tmp, line, filedata)
+
+                    submit_data["data"].append({
+                        "type": "file",
+                        "data": filepath
+                    })
+                    continue
+                except Exception as e:
+                    submit_data["errors"].append("\"%s\" was neither a valid hash or url" % line)
                     continue
 
         if submit_type == "files":
-            for entry in files:
-                file_name = Storage.get_filename_from_path(entry["name"])
-                file_path = Files.create(path_tmp, file_name, entry["data"])
-
-                data["data"].append({
+            for entry in data:
+                filename = Storage.get_filename_from_path(entry["name"])
+                filepath = Files.create(path_tmp, filename, entry["data"])
+                submit_data["data"].append({
                     "type": "file",
-                    "data": file_path
+                    "data": filepath
                 })
 
-        if not data["data"]:
-            data["errors"].insert(0, "None of the submitted data could be processed")
+        if not submit_data["data"]:
+            raise Exception("Unknown submit type or no data could be processed")
+        else:
+            submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
+            submit.data = submit_data
 
-        submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-        submit.data = data
+            session = db.Session()
 
-        session = db.Session()
-        session.add(submit)
-        session.commit()
+            session.add(submit)
+            session.commit()
 
-        return submit.id
+            return submit.id
 
     @staticmethod
     def get_files(submit_id, password=None, astree=False):
@@ -166,7 +159,6 @@ class SubmitManager(object):
     def submit(submit_id, selected_files, timeout=0, package="", options="",
                priority=1, custom="", owner="", machine="", platform="",
                tags=None, memory=False, enforce_timeout=False, **kwargs):
-        """Creates tasks, returns a list of `Task` id's"""
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
 
@@ -223,15 +215,12 @@ class SubmitManager(object):
                 submit.data["errors"].append("")
                 continue
 
-            # let sflock decide the package if option 'package' is set to 'automatically detect'
-            if package:
-                _package = package
-            else:
-                _package = entry.get("package", "")
+            if not package:
+                package = entry.get("package", "")
 
             ret.append(db.add_path(
                 file_path=filepath,
-                package=_package,
+                package=package,  # user-defined package comes first, else let sflock decide
                 timeout=timeout,
                 options=options,
                 priority=int(priority),
@@ -244,3 +233,30 @@ class SubmitManager(object):
             ))
 
         return ret
+
+
+class VirusTotal:
+    global _cfg
+
+    def __init__(self, api_version="v2"):
+        self._apikey = _cfg.virustotal.key
+        self._version = {
+            "v2": {
+                "endpoint": "https://www.virustotal.com/vtapi/v2/file/download"
+            }
+        }[api_version]
+
+    def fetch(self, file_hash):
+        invalid_hash = re.search("[^\\w]+", file_hash)
+        if invalid_hash:
+            raise Exception("bad character \"%s\"" % invalid_hash.group(0))
+
+        if self._version == "v2":
+            resp = requests.get(self._version["endpoint"], timeout=60, params={
+                "apikey": self._apikey,
+                "hash": file_hash
+            })
+            if not resp.status_code == 200:
+                raise Exception("Hash not found")
+            #TODO check for content-type 'stream'
+            return resp.content
