@@ -210,20 +210,12 @@ class CuckooFeedbackObject:
         self.report = report
 
     def include_config(self):
-        """Reads config files and includes them in the
-        current feedback object. Respects privacy by blanking
-        out passwords and other sensitive information.
-        """
+        from cuckoo.common.config import get_all
+
         data = {}
 
-        # iterate config files
-        for cfg_path in glob(cwd("conf", "*.conf")):
-            cfg_basename = os.path.basename(cfg_path)
-            cfg_name = os.path.splitext(cfg_basename)[0]
-
-            # read config, fetch sections
-            cfg = Config(cfg_name)
-            data[cfg_name] = cfg.to_dict()
+        for cfg in get_all():
+            data[cfg["name"]] = cfg["data"].to_dict()
 
         self.cfg = data
 

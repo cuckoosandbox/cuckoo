@@ -10,7 +10,7 @@ from datetime import datetime
 from functools import wraps
 from StringIO import StringIO
 
-from cuckoo.common.config import Config
+import cuckoo.common.config
 
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -69,13 +69,14 @@ class JsonSerialize(json.JSONEncoder):
 
 def render_template(request, template_name, **kwargs):
     env = {}
-    config = Config()
+
     if hasattr(request, "resolver_match"):
+        config = cuckoo.common.config.get_all()
         resolver_match = request.resolver_match
         env["view_name"] = resolver_match.view_name
         env["view_kwargs"] = resolver_match.kwargs
         env["url_name"] = resolver_match.url_name
-
+        env["cfg"] = {z["name"]: z["data"] for z in config}
 
     kwargs["env"] = env
 

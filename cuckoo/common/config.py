@@ -6,6 +6,8 @@
 import ConfigParser
 import os
 
+from glob import glob
+
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import Dictionary
 from cuckoo.misc import cwd
@@ -123,3 +125,18 @@ def parse_options(options):
 def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
     return ",".join("%s=%s" % (k, v) for k, v in options.items())
+
+def get_all():
+    data = []
+    for cfg_path in glob(cwd("conf", "*.conf")):
+        cfg_basename = os.path.basename(cfg_path)
+        cfg_name = os.path.splitext(cfg_basename)[0]
+
+        # read config, fetch sections
+        cfg = Config(cfg_name)
+        data.append({
+            "name": cfg_name,
+            "data": cfg
+        })
+
+    return data

@@ -21,6 +21,11 @@ function feedback_send(task_id, firstname, email, company, message, include_anal
 
     CuckooWeb.api_post("/analysis/api/task/feedback_send/", params, function (data) {
         callback(data);
+    }, function (err) {
+        if (err.responseJSON.hasOwnProperty("message")) {
+            var _message = err.responseJSON.message;
+            $("#modal_feedback").find("#result").html(_message);
+        }
     });
 }
 //# sourceMappingURL=analysis_feedback.js.map
