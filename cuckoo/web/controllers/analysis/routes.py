@@ -72,11 +72,11 @@ class AnalysisRoutes:
             "feedback": "feedback/index"
         }
 
-        raise Exception("test")
-
         if page in pages.keys():
             return render_template(request, "analysis/pages/%s.html" % pages[page],
                                    report=report, page=page)
+        else:
+            return view_error(request, msg="Analysis subpage not found", status=404)
 
     @staticmethod
     def redirect_default(request, task_id):

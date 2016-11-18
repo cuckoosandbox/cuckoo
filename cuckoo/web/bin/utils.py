@@ -18,8 +18,8 @@ from django.core.servers.basehttp import FileWrapper
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 
-def view_error(request, msg):
-    return render_template(request, "errors/error.html", error=msg)
+def view_error(request, msg, status=500):
+    return render(request, "errors/error.html", {"error": msg}, status=status)
 
 def get_directory_size(path):
     """recursive"""
