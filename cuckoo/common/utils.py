@@ -22,8 +22,9 @@ import warnings
 from cStringIO import StringIO
 from datetime import datetime
 
+# TODO We probably have to get rid of this import as it requires things like
+# the Django environment being all setup for usage.
 from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
@@ -68,7 +69,6 @@ def validate_hash(hash):
         return
 
     _hash = "".join([char for char in hash if re.match(r'\w', char)])
-
     if not _hash:
         return
 
@@ -76,14 +76,13 @@ def validate_hash(hash):
 
 def validate_url(url, schemes=None):
     """Validates an URL using Django's built-in URL validator"""
-
     val = URLValidator(schemes=schemes)
 
     try:
         val(url)
         return True
     except:
-        return
+        pass
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.

@@ -3,21 +3,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import re
-import os
 import logging
-import requests
+import os
+import sflock
 
-from cuckoo.core.database import Database, Submit
-from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
-
-from sflock import unpack, zipify
+from cuckoo.common.virustotal import VirusTotalAPI
+from cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
-_cfg = Config("processing")
 db = Database()
 
 class SubmitManager(object):
@@ -38,11 +36,8 @@ class SubmitManager(object):
         or a list of strings (urls or hashes)
         @return: submit id
         """
-        global _cfg
-
-        if not isinstance(submit_type, (str, unicode)) or \
-                        submit_type not in ["strings", "files"]:
-            log.error("Bad parameter \"%s\" for submit_type" % submit_type)
+        if submit_type not in ("strings", "files"):
+            log.error("Bad parameter '%s' for submit_type", submit_type)
             return False
 
         path_tmp = Folders.create_temp()
@@ -56,20 +51,18 @@ class SubmitManager(object):
                 if not line:
                     continue
 
-                try:
-                    validate_url(line)
-                    submit_data["data"].append({
-                        "type": "url",
-                        "data": line
-                    })
+                if validate_hash(line):
+                    try:
+                        filedata = VirusTotalAPI(
+                            Config("processing").virustotal.apikey,
+                            Config("processing").virustotal.timeout
+                        ).hash_fetch(line)
+                    except CuckooOperationalError as e:
+                        submit_data["errors"].append(
+                            "Error retrieving file hash: %s" % e
+                        )
+                        continue
 
-                    continue
-                except Exception as e:
-                    pass
-
-                try:
-                    validate_hash(line)
-                    filedata = VirusTotal(api_version="v2").fetch(file_hash=line)
                     filepath = Files.create(path_tmp, line, filedata)
 
                     submit_data["data"].append({
@@ -77,9 +70,17 @@ class SubmitManager(object):
                         "data": filepath
                     })
                     continue
-                except Exception as e:
-                    submit_data["errors"].append("\"%s\" was neither a valid hash or url" % line)
+
+                if validate_url(line):
+                    submit_data["data"].append({
+                        "type": "url",
+                        "data": line
+                    })
                     continue
+
+                submit_data["errors"].append(
+                    "'%s' was neither a valid hash or url" % line
+                )
 
         if submit_type == "files":
             for entry in data:
@@ -92,16 +93,8 @@ class SubmitManager(object):
 
         if not submit_data["data"]:
             raise Exception("Unknown submit type or no data could be processed")
-        else:
-            submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-            submit.data = submit_data
 
-            session = db.Session()
-
-            session.add(submit)
-            session.commit()
-
-            return submit.id
+        return Database().add_submit(path_tmp, submit_type, submit_data)
 
     @staticmethod
     def get_files(submit_id, password=None, astree=False):
@@ -120,7 +113,7 @@ class SubmitManager(object):
                 filename = Storage.get_filename_from_path(data["data"])
                 filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
 
-                unpacked = unpack(
+                unpacked = sflock.unpack(
                     filepath=filename, contents=filedata,
                     password=password, duplicates=duplicates
                 )
@@ -202,7 +195,7 @@ class SubmitManager(object):
                     os.path.basename(entry["filepath"][-1])
                 )
 
-                content = unpack(path).read(entry["filepath"][1:])
+                content = sflock.unpack(path).read(entry["filepath"][1:])
                 filename = entry["filepath"][-1]
 
                 # Write extracted file to disk
@@ -233,30 +226,3 @@ class SubmitManager(object):
             ))
 
         return ret
-
-
-class VirusTotal:
-    global _cfg
-
-    def __init__(self, api_version="v2"):
-        self._apikey = _cfg.virustotal.key
-        self._version = {
-            "v2": {
-                "endpoint": "https://www.virustotal.com/vtapi/v2/file/download"
-            }
-        }[api_version]
-
-    def fetch(self, file_hash):
-        invalid_hash = re.search("[^\\w]+", file_hash)
-        if invalid_hash:
-            raise Exception("bad character \"%s\"" % invalid_hash.group(0))
-
-        if self._version == "v2":
-            resp = requests.get(self._version["endpoint"], timeout=60, params={
-                "apikey": self._apikey,
-                "hash": file_hash
-            })
-            if not resp.status_code == 200:
-                raise Exception("Hash not found")
-            #TODO check for content-type 'stream'
-            return resp.content

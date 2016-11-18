@@ -185,14 +185,15 @@ class Submit(Base):
     __tablename__ = "submit"
 
     id = Column(Integer(), primary_key=True)
-    tmp_path = Column(String(), nullable=False)
+    tmp_path = Column(Text(), nullable=False)
     added = Column(DateTime, nullable=False, default=datetime.utcnow)
     submit_type = Column(String(16), nullable=False)  # "file", "virustotal" or "url"
     data = Column(JSONType)
 
-    def __init__(self, tmp_path, submit_type):
+    def __init__(self, tmp_path, submit_type, data):
         self.tmp_path = tmp_path
         self.submit_type = submit_type
+        self.data = data
 
 class Sample(Base):
     """Submitted files details."""
@@ -1167,29 +1168,34 @@ class Database(object):
                         memory, enforce_timeout, clock, "file")
 
     @classlock
-    def add_submit(self, tmp_path, submit_type):
+    def add_submit(self, tmp_path, submit_type, data):
         session = self.Session()
-        submit = Submit(tmp_path=tmp_path, submit_type=submit_type)
+        submit = Submit(tmp_path=tmp_path, submit_type=submit_type, data=data)
         submit_id = None
         session.add(submit)
 
         try:
             session.commit()
+            session.refresh(submit)
+            submit_id = submit.id
         except SQLAlchemyError as e:
-            log.debug("Database error adding error log: {0}".format(e))
+            log.debug("Database error adding submit entry: %s", e)
             session.rollback()
         finally:
-            submit_id = submit.id
             session.close()
 
         return submit_id
 
+    @classlock
     def view_submit(self, submit_id):
         session = self.Session()
-        submit = session.query(Submit).get(submit_id)
-
-        session.close()
-
+        try:
+            submit = session.query(Submit).get(submit_id)
+        except SQLAlchemyError as e:
+            log.debug("Database error viewing submit: %s", e)
+            return
+        finally:
+            session.close()
         return submit
 
     @classlock
