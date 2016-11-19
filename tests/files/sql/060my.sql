@@ -101,6 +101,7 @@ CREATE TABLE `machines` (
 LOCK TABLES `machines` WRITE;
 /*!40000 ALTER TABLE `machines` DISABLE KEYS */;
 INSERT INTO `machines` VALUES (2,'cuckoo1','cuckoo7','192.168.56.101','windows',1,'2016-11-17 02:45:17','poweroff','2016-11-17 02:46:44');
+INSERT INTO `machines` VALUES (3,'cuckoo2','cuckoo8','192.168.56.102','windows',1,null,'poweroff',null);
 /*!40000 ALTER TABLE `machines` ENABLE KEYS */;
 UNLOCK TABLES;
 

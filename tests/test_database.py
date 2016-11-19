@@ -152,9 +152,11 @@ class DatabaseMigrationEngine(object):
         machines = self.s.execute(
             "SELECT resultserver_ip, resultserver_port FROM machines"
         ).fetchall()
-        assert machines and len(machines) == 1
+        assert machines and len(machines) == 2
         assert machines[0][0] == "192.168.56.1"
         assert machines[0][1] == 2042
+        assert machines[1][0] == "192.168.56.1"
+        assert machines[1][1] == 2042
 
     def test_long_error(self):
         task_id = self.d.add_url("http://google.com/")

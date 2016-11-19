@@ -14,6 +14,7 @@ CREATE TABLE machines (
 	CHECK (locked IN (0, 1))
 );
 INSERT INTO "machines" VALUES(1,'cuckoo1','cuckoo7','192.168.56.101','windows',1,'2016-11-17 01:42:30.645297','poweroff','2016-11-17 01:42:48.149600');
+INSERT INTO "machines" VALUES(2,'cuckoo2','cuckoo8','192.168.56.102','windows',1,null,'poweroff',null);
 CREATE TABLE samples (
 	id INTEGER NOT NULL,
 	file_size INTEGER NOT NULL,

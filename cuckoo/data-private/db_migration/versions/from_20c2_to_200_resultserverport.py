@@ -61,12 +61,15 @@ def upgrade():
         machines = []
         for machine in old_machines:
             machines.append(dict(zip(machine_columns, machine)))
-            machines[-1]["locked_changed_on"] = dateutil.parser.parse(
-                machines[-1]["locked_changed_on"]
-            )
-            machines[-1]["status_changed_on"] = dateutil.parser.parse(
-                machines[-1]["status_changed_on"]
-            )
+
+            if machines[-1]["locked_changed_on"]:
+                machines[-1]["locked_changed_on"] = dateutil.parser.parse(
+                    machines[-1]["locked_changed_on"]
+                )
+            if machines[-1]["status_changed_on"]:
+                machines[-1]["status_changed_on"] = dateutil.parser.parse(
+                    machines[-1]["status_changed_on"]
+                )
 
         op.rename_table("machines", "old_machines")
         op.drop_table("old_machines")

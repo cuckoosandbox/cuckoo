@@ -312,6 +312,7 @@ SELECT pg_catalog.setval('guests_id_seq', 3, true);
 --
 
 INSERT INTO machines VALUES (3, 'cuckoo1', 'cuckoo7', '192.168.56.101', 'windows', true, '2016-11-15 19:24:20.453466', 'poweroff', '2016-11-15 19:24:30.862315');
+INSERT INTO machines VALUES (4, 'cuckoo2', 'cuckoo8', '192.168.56.102', 'windows', true, null, 'poweroff', null);
 
 
 --
