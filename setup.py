@@ -53,6 +53,14 @@ def githash():
 cwd_path = os.path.join("cuckoo", "data-private", ".cwd")
 open(cwd_path, "wb").write(githash() or "")
 
+install_requires = []
+
+# M2Crypto relies on swig being installed. We also don't support the latest
+# version of SWIG. We should be replacing M2Crypto by something else when
+# the time allows us to do so.
+if os.path.exists("/usr/bin/swig"):
+    install_requires.append("m2crypto==0.24.0")
+
 setuptools.setup(
     name="Cuckoo",
     version="2.0.0",
@@ -88,31 +96,32 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        "alembic==0.8.0",
+        "alembic==0.8.8",
         "androguard==3.0",
         "beautifulsoup4==4.4.1",
         "chardet==2.3.0",
         "click==6.6",
-        "Django==1.8.4",
+        "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "Flask==0.10.1",
-        "HTTPReplay==0.1.17",
+        "flask==0.10.1",
+        "httpreplay==0.1.17",
+        "jinja2==2.8",
         "jsbeautifier==1.6.2",
         "lxml==3.6.0",
         "oletools==0.42",
         "peepdf==0.3.2",
         "pefile2==1.2.11",
-        "Pillow==3.2",
+        "pillow==3.2",
         "pymisp==2.4.50",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
         "sflock==0.2.2",
-        "SQLAlchemy==1.0.8",
+        "sqlalchemy==1.0.8",
+        "sqlalchemy-utils==0.32.9",
         "wakeonlan==0.2.2",
-        "SQLAlchemy-Utils==0.32.9"
-    ],
+    ] + install_requires,
     extras_require={
         ":sys_platform == 'win32'": [
             "requests==2.7.0",

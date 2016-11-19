@@ -31,8 +31,10 @@ before_test:
   - "mysql -u root -e \"GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost\""
   - "mysql -u root -e \"FLUSH PRIVILEGES\""
   - "mysql -u root -e \"CREATE DATABASE cuckootest\""
+  - "mysql -u root -e \"CREATE DATABASE cuckootest060\""
   - "psql -c \"CREATE USER cuckoo WITH PASSWORD 'cuckoo'\""
   - "psql -c \"CREATE DATABASE cuckootest\""
+  - "psql -c \"CREATE DATABASE cuckootest060\""
 
 test_script:
   - "cuckoo.exe -d"

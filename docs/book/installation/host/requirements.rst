@@ -18,7 +18,8 @@ The following software packages from the apt repositories are required to get
 Cuckoo to install and run properly::
 
     $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
-    $ sudo apt-get install python-virtualenv libxml2-dev libxslt1-dev libjpeg-dev
+    $ sudo apt-get install python-virtualenv libxml2-dev libxslt1-dev
+    $ sudo apt-get install libjpeg-dev swig
 
 In order to use the Django-based Web Interface, MongoDB is required::
 
@@ -160,3 +161,16 @@ download it from their `official repository`_.
 See the volatility documentation for detailed instructions on how to install it.
 
 .. _official repository: https://github.com/volatilityfoundation
+
+Installing M2Crypto
+===================
+
+Currently the ``M2Crypto`` library is only supported when `SWIG`_ has been
+installed. On Ubuntu/Debian-like systems this may be done as follows::
+
+    $ sudo apt-get install swig
+
+If ``SWIG`` is present on the system, Cuckoo will automatically install the
+``M2Crypto`` dependency upon installation.
+
+.. _SWIG: http://www.swig.org/

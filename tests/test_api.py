@@ -55,7 +55,7 @@ class TestAPI(object):
         assert len(r["tasks"]) == 1
         assert r["tasks"][0]["id"] == 2
 
-        # Offest 1, limit 2.
+        # Offset 1, limit 2.
         r = json.loads(self.app.get("/tasks/list/2/1").data)
         assert len(r["tasks"]) == 2
         assert r["tasks"][0]["id"] == 2
@@ -125,10 +125,15 @@ class TestAPI(object):
     def test_files_view(self):
         task_id = self.create_task()
 
-        # Fetch by id.
-        r = self.app.get("/files/view/id/%s" % task_id)
+        t = json.loads(self.app.get("/tasks/view/%s" % task_id).data)
+
+        # Fetch by sample id.
+        r = self.app.get(
+            "/files/view/id/%s" % t["task"]["sample_id"]
+        )
+        assert r.status_code == 200
         sample = json.loads(r.data)
-        assert sample["sample"]["id"] == 1
+        assert sample["sample"]["id"] == t["task"]["sample_id"]
 
         # Fetch by md5.
         r = self.app.get("/files/view/md5/f2d886558b2866065c3da842bfe13ce6")
@@ -228,18 +233,3 @@ class TestAPI(object):
             "url": url,
         })
         return json.loads(r.data)["task_id"]
-
-def test_bool():
-    assert api.parse_bool("true") is True
-    assert api.parse_bool("True") is True
-    assert api.parse_bool("yes") is True
-    assert api.parse_bool("1") is True
-
-    assert api.parse_bool("false") is False
-    assert api.parse_bool("False") is False
-    assert api.parse_bool("None") is False
-    assert api.parse_bool("no") is False
-    assert api.parse_bool("0") is False
-
-    assert api.parse_bool("2") is True
-    assert api.parse_bool("3") is True

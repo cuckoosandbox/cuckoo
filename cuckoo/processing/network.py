@@ -104,7 +104,7 @@ class Pcap(object):
 
     def _build_whitelist_conf(self):
         """Check if whitelisting is enabled."""
-        if not self.options.get("whitelist-dns"):
+        if not self.options.get("whitelist_dns"):
             log.debug("Whitelisting Disabled.")
             return False
 
@@ -134,7 +134,7 @@ class Pcap(object):
     def _build_known_dns(self):
         """Build known DNS list."""
         result = []
-        _known_dns = self.options.get("allowed-dns")
+        _known_dns = self.options.get("allowed_dns")
         if _known_dns is not None:
             for r in _known_dns.split(","):
                 result.append(r.strip())

@@ -23,11 +23,10 @@ from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
 from cuckoo.core.database import Database
-from cuckoo.core.init import write_supervisor_conf
+from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
-from cuckoo.core.startup import check_configs, init_modules
-from cuckoo.core.startup import check_version, create_structure
+from cuckoo.core.startup import check_configs, init_modules, check_version
 from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
@@ -36,7 +35,7 @@ from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(ctx):
+def cuckoo_create(username=None, cfg=None):
     """Create a new Cuckoo Working Directory."""
 
     print "="*71
@@ -76,7 +75,8 @@ def cuckoo_create(ctx):
     open(cwd(".cwd"), "wb").write(our_version)
 
     # Write the supervisord.conf configuration file.
-    write_supervisor_conf(ctx.user or getuser())
+    write_supervisor_conf(username or getuser())
+    write_cuckoo_conf(cfg=cfg)
 
     print "Cuckoo has finished setting up the default configuration."
     print "Please modify the default settings where required and"
@@ -91,7 +91,7 @@ def cuckoo_init(level, ctx):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(ctx)
+        cuckoo_create(ctx.user)
         sys.exit(0)
 
     # Determine if this is a proper CWD.
@@ -109,7 +109,6 @@ def cuckoo_init(level, ctx):
 
     check_configs()
     check_version()
-    create_structure()
 
     if ctx.log:
         init_logging(level)
@@ -216,6 +215,7 @@ def init(ctx):
 
     # Write the supervisord.conf configuration file (if needed).
     write_supervisor_conf(ctx.parent.user or getuser())
+    write_cuckoo_conf()
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
@@ -521,9 +521,10 @@ def machine(debug, vmname, ip, add, delete, platform, options, tags,
                    interface, snapshot, resultserver)
 
 @main.command()
-def migrate():
+@click.option("--revision", default="head", help="Migrate to a certain revision")
+def migrate(revision):
     args = [
-        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head",
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", revision,
     ]
     try:
         subprocess.check_call(args, cwd=cwd("db_migration", private=True))

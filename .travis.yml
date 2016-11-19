@@ -14,15 +14,17 @@ services:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
-  - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev
+  - sudo apt-get install libxml2-dev libxslt1-dev libjpeg-dev swig
   - sudo apt-get install libpq-dev libmysqlclient-dev
 
   - sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"
   - sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"
   - sudo mysql -e "FLUSH PRIVILEGES"
   - sudo mysql -e "CREATE DATABASE cuckootest"
+  - sudo mysql -e "CREATE DATABASE cuckootest060"
   - psql -U postgres -c "CREATE USER cuckoo WITH PASSWORD 'cuckoo'"
   - psql -U postgres -c "CREATE DATABASE cuckootest"
+  - psql -U postgres -c "CREATE DATABASE cuckootest060"
 
 install:
   - python setup.py develop

@@ -238,9 +238,11 @@ class PortableExecutable(object):
             return []
 
         if not HAVE_MCRYPTO:
-            log.critical("You do not have the m2crypto library installed "
-                         "preventing certificate extraction: "
-                         "pip install m2crypto")
+            log.critical(
+                "You do not have the m2crypto library installed preventing "
+                "certificate extraction. Please read the Cuckoo "
+                "documentation on installing m2crypto!"
+            )
             return []
 
         signatures = self.pe.write()[dir_entry.VirtualAddress+8:]

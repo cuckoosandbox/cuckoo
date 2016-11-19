@@ -30,7 +30,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "cd31654d187"
+SCHEMA_VERSION = "796174689511"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -73,7 +73,7 @@ class Machine(Base):
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
-    resultserver_port = Column(String(255), nullable=False)
+    resultserver_port = Column(Integer(), nullable=False)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
@@ -247,7 +247,7 @@ class Error(Base):
     __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
-    message = Column(String(255), nullable=False)
+    message = Column(Text(), nullable=False)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
     def to_dict(self):
@@ -389,7 +389,7 @@ class Database(object):
         self.schema_check = schema_check
         self.echo = echo
 
-    def connect(self, schema_check=None, dsn=None):
+    def connect(self, schema_check=None, dsn=None, create=True):
         """Connect to the database backend."""
         cfg = Config()
 
@@ -417,14 +417,20 @@ class Database(object):
             log.warning("It appears you don't have a valid `database` "
                         "section in conf/cuckoo.conf, using sqlite3 instead.")
 
-        # Create schema.
+        # Get db session.
+        self.Session = sessionmaker(bind=self.engine)
+
+        if create:
+            self._create_tables()
+
+    def _create_tables(self):
+        """Creates all the database tables etc."""
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
-
-        # Get db session.
-        self.Session = sessionmaker(bind=self.engine)
+            raise CuckooDatabaseError(
+                "Unable to create or connect to database: %s" % e
+            )
 
         # Deal with schema versioning.
         # TODO: it's a little bit dirty, needs refactoring.
@@ -435,7 +441,9 @@ class Database(object):
             try:
                 tmp_session.commit()
             except SQLAlchemyError as e:
-                raise CuckooDatabaseError("Unable to set schema version: {0}".format(e))
+                raise CuckooDatabaseError(
+                    "Unable to set schema version: %s" % e
+                )
                 tmp_session.rollback()
             finally:
                 tmp_session.close()
@@ -908,7 +916,7 @@ class Database(object):
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message[:255], task_id=task_id)
+        error = Error(message=message, task_id=task_id)
         session.add(error)
         try:
             session.commit()

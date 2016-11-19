@@ -325,3 +325,11 @@ def json_decode(x):
 def versiontuple(v):
     """Return the version as a tuple for easy comparison."""
     return tuple(int(x) for x in v.split("."))
+
+def parse_bool(value):
+    """Attempt to parse a boolean value."""
+    if value in ("true", "True", "yes", "1", "on"):
+        return True
+    if value in ("false", "False", "None", "no", "0", "off"):
+        return False
+    return bool(int(value))

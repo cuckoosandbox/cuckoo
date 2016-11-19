@@ -108,14 +108,11 @@ class Machinery(object):
         self.module_name = module_name
         mmanager_opts = self.options.get(module_name)
 
-        for machine_id in mmanager_opts["machines"].strip().split(","):
-            if not machine_id.strip():
-                continue
-
+        for machine_id in mmanager_opts["machines"]:
             try:
-                machine_opts = self.options.get(machine_id.strip())
+                machine_opts = self.options.get(machine_id)
                 machine = Dictionary()
-                machine.id = machine_id.strip()
+                machine.id = machine_id
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
                 machine.options = machine_opts.get("options", "")
@@ -164,7 +161,7 @@ class Machinery(object):
                                     resultserver_port=port)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
-                            "are missing: %s", machine_id.strip(), e)
+                            "are missing: %s", machine_id, e)
                 continue
 
     def _initialize_check(self):

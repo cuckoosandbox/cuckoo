@@ -15,35 +15,35 @@ class Mattermost(Report):
 
     def run(self, results):
         sigs, urls = [], []
-        for sig in results.get("signatures", {}):
+        for sig in results.get("signatures", []):
             sigs.append(sig.get("name"))
             if sig.get("name") == "network_http":
                 for http in sig.get("marks"):
                     urls.append(http.get("ioc"))
 
         post = "Finished analyze ::: [{0}]({1}{0}) ::: ".format(
-            results.get("info").get("id"),
+            results.get("info", {}).get("id"),
             self.options.get("myurl")
         )
 
-        filename = results.get("target").get("file").get("name")
-        if self.options.get("hash-filename"):
+        filename = results.get("target", {}).get("file", {}).get("name", "")
+        if self.options.get("hash_filename"):
             filename = hashlib.sha256(filename).hexdigest()
 
         post += "File : {0} ::: Score : **{1}** ::: ".format(
-            filename, results.get("info").get("score")
+            filename, results.get("info", {}).get("score")
         )
 
-        if self.options.get("show-virustotal"):
+        if self.options.get("show_virustotal"):
             post += "**VT : {0} / {1}**\n".format(
-                results.get("virustotal").get("positives"),
-                results.get("virustotal").get("total"),
+                results.get("virustotal", {}).get("positives"),
+                results.get("virustotal", {}).get("total"),
             )
 
-        if self.options.get("show-signatures"):
+        if self.options.get("show_signatures"):
             post += "**Signatures** ::: {0} \n".format(" : ".join(sigs))
 
-        if self.options.get("show-urls"):
+        if self.options.get("show_urls"):
             post += "**URLS**\n`{0}`".format(
                 "\n".join(urls).replace(".", "[.]")
             )
@@ -53,14 +53,16 @@ class Mattermost(Report):
             "text": post,
         }
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+        }
 
         try:
             requests.post(
                 self.options.get("url"),
                 headers=headers,
                 data=json.dumps(data)
-            )
+            ).raise_for_status()
         except Exception as e:
             raise CuckooReportError(
                 "Failed posting message to Mattermost: %s" % e

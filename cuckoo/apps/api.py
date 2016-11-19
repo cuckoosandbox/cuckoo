@@ -14,6 +14,7 @@ import zipfile
 from flask import Flask, request, jsonify, make_response
 
 from cuckoo.common.files import Files, Folders
+from cuckoo.common.utils import parse_bool
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
@@ -51,13 +52,6 @@ def custom_headers(response):
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
-
-def parse_bool(value):
-    if value in ("true", "True", "yes", "1"):
-        return True
-    if value in ("false", "False", "None", "no", "0"):
-        return False
-    return bool(int(value))
 
 @app.route("/tasks/create/file", methods=["POST"])
 @app.route("/v1/tasks/create/file", methods=["POST"])

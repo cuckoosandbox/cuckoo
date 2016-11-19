@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""Database migration from Cuckoo 0.6 to Cuckoo 1.1.
+"""Database migration (from Cuckoo 0.6-1.0 to 1.1)
 
 Revision ID: 263a45963c72
 Revises: None
@@ -16,16 +16,37 @@ revision = "263a45963c72"
 mongo_revision = "1"
 down_revision = None
 
-import os
-import sys
+import pymongo
 import sqlalchemy as sa
+import sys
 
 from alembic import op
 from datetime import datetime
 from dateutil.parser import parse
 
 import cuckoo.core.database as db
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
+
+old_enum = (
+    "pending", "processing", "failure", "success",
+)
+
+new_enum = (
+    "pending", "running", "completed", "recovered", "reported",
+    # These were not actually supported in 1.0 or 1.1, but we have to migrate
+    # them somewhere (and they're not handled later on either).
+    "failed_analysis", "failed_processing",
+)
+
+mapping = {
+    "processing": "running",
+    "failure": "failed_analysis",
+    "success": "completed",
+}
+
+old_type = sa.Enum(*old_enum, name="status_type")
+new_type = sa.Enum(*new_enum, name="status_type")
+tmp_type = sa.Enum(*set(old_enum + new_enum), name="status_type_temp")
 
 def upgrade():
     # BEWARE: be prepared to really spaghetti code. To deal with SQLite limitations in Alembic we coded some workarounds.
@@ -71,104 +92,66 @@ def upgrade():
             # We don"t provide a default value and leave the column as nullable because o further data migration.
             op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False), nullable=True))
             # NOTE: We added this new column so we force clock time to the added_on for old analyses.
-            conn.execute("update tasks set clock=added_on")
+            conn.execute("UPDATE tasks SET clock=added_on")
             # Add the not null constraint.
             op.alter_column("tasks", "clock", nullable=False, existing_nullable=True)
-            # Altering status ENUM.
-            # This shit of raw SQL is here because alembic doesn't deal well with alter_colum of ENUM type.
-            op.execute('COMMIT')  # Commit because SQLAlchemy doesn't support ALTER TYPE in a transaction.
-            conn.execute("ALTER TYPE status_type ADD VALUE 'completed'")
-            conn.execute("ALTER TYPE status_type ADD VALUE 'reported'")
-            conn.execute("ALTER TYPE status_type ADD VALUE 'recovered'")
-            conn.execute("ALTER TYPE status_type ADD VALUE 'running'")
-            conn.execute("ALTER TYPE status_type RENAME ATTRIBUTE success TO completed")
-            conn.execute("ALTER TYPE status_type DROP ATTRIBUTE IF EXISTS failure")
+
+            op.execute("ALTER TABLE tasks ALTER COLUMN status DROP DEFAULT")
+
+            tmp_type.create(op.get_bind(), checkfirst=True)
+            op.execute(
+                "ALTER TABLE tasks ALTER COLUMN status TYPE status_type_temp "
+                "USING status::text::status_type_temp"
+            )
+            old_type.drop(op.get_bind(), checkfirst=False)
+
+            for old_status, new_status in mapping.items():
+                op.execute(
+                    "UPDATE tasks SET status = '%s' WHERE status = '%s'" %
+                    (new_status, old_status)
+                )
+
+            new_type.create(op.get_bind(), checkfirst=False)
+            op.execute(
+                "ALTER TABLE tasks ALTER COLUMN status TYPE status_type "
+                "USING status::text::status_type"
+            )
+            tmp_type.drop(op.get_bind(), checkfirst=False)
+
+            op.execute(
+                "ALTER TABLE tasks ALTER COLUMN status "
+                "SET DEFAULT 'pending'::status_type"
+            )
         elif conn.engine.driver == "mysqldb":
+            op.alter_column(
+                "tasks", "status", existing_type=old_type, type_=tmp_type
+            )
+
+            for old_status, new_status in mapping.items():
+                op.execute(
+                    "UPDATE tasks SET status = '%s' WHERE status = '%s'" %
+                    (new_status, old_status)
+                )
+
+            op.alter_column(
+                "tasks", "status", existing_type=tmp_type, type_=new_type
+            )
+
             # We don"t provide a default value and leave the column as nullable because o further data migration.
             op.add_column("tasks", sa.Column("clock", sa.DateTime(timezone=False), nullable=True))
             # NOTE: We added this new column so we force clock time to the added_on for old analyses.
-            conn.execute("update tasks set clock=added_on")
+            conn.execute("UPDATE tasks SET clock=added_on")
             # Add the not null constraint.
             op.alter_column("tasks", "clock", nullable=False, existing_nullable=True, existing_type=sa.DateTime(timezone=False))
-            # NOTE: To workaround limitations in Alembic and MySQL ALTER statement (cannot remove item from ENUM).
-            # Read data.
-            tasks_data = []
-            old_tasks = conn.execute("select id, target, category, timeout, priority, custom, machine, package, options, platform, memory, enforce_timeout, added_on, started_on, completed_on, status, sample_id from tasks").fetchall()
-            for item in old_tasks:
-                d = {}
-                d["id"] = item[0]
-                d["target"] = item[1]
-                d["category"] = item[2]
-                d["timeout"] = item[3]
-                d["priority"] = item[4]
-                d["custom"] = item[5]
-                d["machine"] = item[6]
-                d["package"] = item[7]
-                d["options"] = item[8]
-                d["platform"] = item[9]
-                d["memory"] = item[10]
-                d["enforce_timeout"] = item[11]
-                if isinstance(item[12], datetime):
-                    d["added_on"] = item[12]
-                else:
-                    d["added_on"] = parse(item[12])
-                if isinstance(item[13], datetime):
-                    d["started_on"] = item[13]
-                else:
-                    d["started_on"] = parse(item[13])
-                if isinstance(item[14], datetime):
-                    d["completed_on"] = item[14]
-                else:
-                    d["completed_on"] = parse(item[14])
-                d["status"] = item[15]
-                d["sample_id"] = item[16]
-
-                # Force clock.
-                # NOTE: We added this new column so we force clock time to the added_on for old analyses.
-                d["clock"] = d["added_on"]
-                # Enum migration, "success" isn"t a valid state now.
-                if d["status"] == "success":
-                    d["status"] = "completed"
-                tasks_data.append(d)
-
-            # Rename original table.
-            op.rename_table("tasks", "old_tasks")
-            # Drop old table.
-            op.drop_table("old_tasks")
-            # Drop old Enum.
-            sa.Enum(name="status_type").drop(op.get_bind(), checkfirst=False)
-            # Create new table with 1.0 schema.
-            op.create_table(
-                "tasks",
-                sa.Column("id", sa.Integer(), nullable=False),
-                sa.Column("target", sa.String(length=255), nullable=False),
-                sa.Column("category", sa.String(length=255), nullable=False),
-                sa.Column("timeout", sa.Integer(), server_default="0", nullable=False),
-                sa.Column("priority", sa.Integer(), server_default="1", nullable=False),
-                sa.Column("custom", sa.String(length=255), nullable=True),
-                sa.Column("machine", sa.String(length=255), nullable=True),
-                sa.Column("package", sa.String(length=255), nullable=True),
-                sa.Column("options", sa.String(length=255), nullable=True),
-                sa.Column("platform", sa.String(length=255), nullable=True),
-                sa.Column("memory", sa.Boolean(), nullable=False, default=False),
-                sa.Column("enforce_timeout", sa.Boolean(), nullable=False, default=False),
-                sa.Column("clock", sa.DateTime(timezone=False), server_default=sa.func.now(), nullable=False),
-                sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
-                sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
-                sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", name="status_type"), server_default="pending", nullable=False),
-                sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
-                sa.PrimaryKeyConstraint("id")
-            )
-
-            # Insert data.
-            op.bulk_insert(db.Task.__table__, tasks_data)
         elif conn.engine.driver == "pysqlite":
-            # Edit task status enumeration in Task.
-            # NOTE: To workaround limitations in SQLite we have to create a temporary table, create the new schema and copy data.
-            # Read data.
             tasks_data = []
-            old_tasks = conn.execute("select id, target, category, timeout, priority, custom, machine, package, options, platform, memory, enforce_timeout, added_on, started_on, completed_on, status, sample_id from tasks").fetchall()
+            old_tasks = conn.execute(
+                "SELECT id, target, category, timeout, priority, custom, "
+                "machine, package, options, platform, memory, "
+                "enforce_timeout, added_on, started_on, completed_on, status, "
+                "sample_id FROM tasks"
+            ).fetchall()
+
             for item in old_tasks:
                 d = {}
                 d["id"] = item[0]
@@ -183,27 +166,29 @@ def upgrade():
                 d["platform"] = item[9]
                 d["memory"] = item[10]
                 d["enforce_timeout"] = item[11]
+
                 if isinstance(item[12], datetime):
                     d["added_on"] = item[12]
                 else:
-                    d["added_on"] = parse(item[12])
+                    d["added_on"] = parse(item[12]) if item[12] else None
+
                 if isinstance(item[13], datetime):
                     d["started_on"] = item[13]
                 else:
-                    d["started_on"] = parse(item[13])
+                    d["started_on"] = parse(item[13]) if item[13] else None
+
                 if isinstance(item[14], datetime):
                     d["completed_on"] = item[14]
                 else:
-                    d["completed_on"] = parse(item[14])
-                d["status"] = item[15]
+                    d["completed_on"] = parse(item[14]) if item[14] else None
+
+                d["status"] = mapping.get(item[15], item[15])
                 d["sample_id"] = item[16]
 
                 # Force clock.
-                # NOTE: We added this new column so we force clock time to the added_on for old analyses.
+                # NOTE: We added this new column so we force clock time to
+                # the added_on for old analyses.
                 d["clock"] = d["added_on"]
-                # Enum migration, "success" isn"t a valid state now.
-                if d["status"] == "success":
-                    d["status"] = "completed"
                 tasks_data.append(d)
 
             # Rename original table.
@@ -231,7 +216,7 @@ def upgrade():
                 sa.Column("added_on", sa.DateTime(timezone=False), nullable=False),
                 sa.Column("started_on", sa.DateTime(timezone=False), nullable=True),
                 sa.Column("completed_on", sa.DateTime(timezone=False), nullable=True),
-                sa.Column("status", sa.Enum("pending", "running", "completed", "reported", "recovered", name="status_type"), server_default="pending", nullable=False),
+                sa.Column("status", sa.Enum(*new_enum, name="status_type"), server_default="pending", nullable=False),
                 sa.Column("sample_id", sa.Integer, sa.ForeignKey("samples.id"), nullable=True),
                 sa.PrimaryKeyConstraint("id")
             )
@@ -244,43 +229,16 @@ def upgrade():
 
 def mongo_upgrade():
     """Migrate mongodb schema and data."""
-    # Read reporting.conf to fetch mongo configuration.
-    config = Config(cfg=os.path.join("..", "..", "conf", "reporting.conf"))
-    # Run migration only if mongo is enabled as reporting module.
-    if config.mongodb.enabled:
-        host = config.mongodb.get("host", "127.0.0.1")
-        port = config.mongodb.get("port", 27017)
-        database = config.mongodb.get("db", "cuckoo")
-        print "Mongo reporting is enabled, strarting mongo data migration."
+    if config("reporting:mongodb:enabled"):
+        host = config("reporting:mongodb:host")
+        port = config("reporting:mongodb:port")
+        database = config("reporting:mongodb:db")
+        print "Starting MongoDB migration."
 
-        if not port.isnumber():
-            print "Port must be an integer"
-            sys.exit()
-
-        # Support old Mongo.
         try:
-            done = False
-            from pymongo.connection import Connection
-            from pymongo.errors import ConnectionFailure
-
-            conn = Connection(host, port)
-            db = conn.cuckoo
-            done = True
-        except ConnectionFailure:
+            db = pymongo.MongoClient(host, port)[database]
+        except pymongo.errors.ConnectionFailure:
             print "Cannot connect to MongoDB"
-            sys.exit()
-
-        try:
-            if not done:
-                import pymongo
-
-                try:
-                    db = pymongo.MongoClient(host, port)[database]
-                except pymongo.errors.ConnectionFailure:
-                    print "Cannot connect to MongoDB"
-                    sys.exit()
-        except ImportError:
-            print "Unable to import pymongo (install with `pip install pymongo`)"
             sys.exit()
 
         # Check for schema version and create it.
@@ -289,10 +247,8 @@ def mongo_upgrade():
             sys.exit()
         else:
             db.cuckoo_schema.save({"version": mongo_revision})
-
     else:
         print "Mongo reporting module not enabled, skipping mongo migration."
 
 def downgrade():
-    # We don"t support downgrade.
     pass

@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import httplib
 import os
 import shutil
 import sys
@@ -18,7 +19,7 @@ from distutils.version import LooseVersion
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
-from cuckoo.common.config import Config
+from cuckoo.common.config import Config, config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -37,49 +38,41 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-def check_python_version():
-    """Checks if Python version is supported by Cuckoo.
-    @raise CuckooStartupError: if version is not supported.
-    """
-    if sys.version_info[:2] != (2, 7):
-        raise CuckooStartupError("You are running an incompatible version "
-                                 "of Python, please use 2.7")
+def check_specific_config(filename):
+    sections = Config.configuration[filename]
+    for section, entries in sections.items():
+        if section == "*":
+            continue
 
+        # If an enabled field is present, check it beforehand.
+        if config("%s:%s:enabled" % (filename, section)) is False:
+            continue
+
+        for key, value in entries.items():
+            config("%s:%s:%s" % (filename, section, key), strict=True)
 
 def check_configs():
     """Checks if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
-        "auxiliary.conf", "avd.conf", "cuckoo.conf", "esx.conf", "kvm.conf",
-        "memory.conf", "physical.conf", "processing.conf", "qemu.conf",
-        "reporting.conf", "virtualbox.conf", "vmware.conf", "routing.conf",
-        "vsphere.conf", "xenserver.conf",
+        "auxiliary", "cuckoo", "memory", "processing", "reporting", "routing",
     )
 
     for filename in configs:
-        if not os.path.exists(cwd("conf", filename)):
+        if not os.path.exists(cwd("conf", "%s.conf" % filename)):
             raise CuckooStartupError(
                 "Config file does not exist at path: %s" %
-                cwd("conf", filename)
+                cwd("conf", "%s.conf" % filename)
             )
 
+        check_specific_config(filename)
+
+    # Also check the specific machinery handler for this instance.
+    machinery = config("cuckoo:cuckoo:machinery")
+    check_specific_config(machinery)
+
     return True
-
-def create_structure():
-    """Creates Cuckoo directories."""
-    folders = [
-        "log",
-        "storage",
-        os.path.join("storage", "analyses"),
-        os.path.join("storage", "binaries"),
-        os.path.join("storage", "baseline"),
-    ]
-
-    try:
-        Folders.create(cwd(), folders)
-    except CuckooOperationalError as e:
-        raise CuckooStartupError(e)
 
 def check_version():
     """Checks version of Cuckoo."""
@@ -96,7 +89,7 @@ def check_version():
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError):
+    except (urllib2.URLError, urllib2.HTTPError, httplib.BadStatusLine):
         print(red(" Failed! ") + "Unable to establish connection.\n")
         return
 
@@ -440,7 +433,6 @@ def cuckoo_clean():
     # Init logging.
     # This need to init a console logger handler, because the standard
     # logger (init_logging()) logs to a file which will be deleted.
-    create_structure()
     init_console_logging()
 
     # Initialize the database connection.
