@@ -19,12 +19,11 @@ from cuckoo.misc import cwd
 
 from sqlalchemy import create_engine, Column, not_, func
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
-from sqlalchemy import ForeignKey, Text, Index, Table
+from sqlalchemy import ForeignKey, Text, Index, Table, TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy.orm import sessionmaker, relationship, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy_utils import JSONType
+from sqlalchemy.orm import sessionmaker, relationship, joinedload
 
 Base = declarative_base()
 
@@ -53,6 +52,16 @@ tasks_tags = Table(
     Column("task_id", Integer, ForeignKey("tasks.id")),
     Column("tag_id", Integer, ForeignKey("tags.id"))
 )
+
+class JsonType(TypeDecorator):
+    """Custom JSON type."""
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        return json.loads(value)
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -188,7 +197,7 @@ class Submit(Base):
     tmp_path = Column(Text(), nullable=False)
     added = Column(DateTime, nullable=False, default=datetime.utcnow)
     submit_type = Column(String(16), nullable=False)
-    data = Column(JSONType)
+    data = Column(JsonType)
 
     def __init__(self, tmp_path, submit_type, data):
         self.tmp_path = tmp_path

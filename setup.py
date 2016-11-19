@@ -119,7 +119,6 @@ setuptools.setup(
         "python-magic==0.4.12",
         "sflock==0.2.2",
         "sqlalchemy==1.0.8",
-        "sqlalchemy-utils==0.32.9",
         "wakeonlan==0.2.2",
     ] + install_requires,
     extras_require={
