@@ -152,13 +152,17 @@ class SubmitManager(object):
     def submit(submit_id, selected_files, timeout=0, package="", options="",
                priority=1, custom="", owner="", machine="", platform="",
                tags=None, memory=False, enforce_timeout=False, **kwargs):
+        # TODO Kwargs contains various analysis options that have to be taken
+        # into account sooner or later.
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
 
         for entry in selected_files:
             for expected in ["filepath", "filename", "type"]:
                 if expected not in entry.keys() or not entry[expected]:
-                    submit.data["errors"].append("")
+                    submit.data["errors"].append(
+                        "Missing or empty argument %s" % expected
+                    )
                     continue
 
             if entry["type"] == "url":
@@ -169,6 +173,7 @@ class SubmitManager(object):
                     options=options,
                     priority=int(priority),
                     custom=custom,
+                    owner=owner,
                     tags=tags,
                     memory=memory,
                     enforce_timeout=enforce_timeout,
@@ -186,43 +191,66 @@ class SubmitManager(object):
                     submit.tmp_path, os.path.basename(entry["filename"])
                 )
 
-                filename = entry["filename"]
                 filepath = Files.copy(path, path_dest=path_dest)
+
+                ret.append(db.add_path(
+                    file_path=filepath,
+                    package=entry.get("package", package),
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    owner=owner,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                    platform=""
+                ))
             elif len(entry["filepath"]) >= 2:
-                path = os.path.join(submit.tmp_path, os.path.basename(entry["filepath"][0]))
-                path_extracted = os.path.join(
-                    submit.tmp_path,
-                    os.path.basename(entry["filepath"][-1])
+                arcpath = os.path.join(
+                    submit.tmp_path, os.path.basename(entry["filepath"][0])
+                )
+                if not os.path.exists(arcpath):
+                    submit.data["errors"].append(
+                        "Unable to find parent archive file: %s" %
+                        os.path.basename(entry["filepath"][0])
+                    )
+                    continue
+
+                # Extract any sub-archives where required.
+                if len(entry["filepath"]) > 2:
+                    content = sflock.unpack(arcpath).read(
+                        entry["filepath"][1:-1]
+                    )
+                else:
+                    content = open(arcpath, "rb").read()
+
+                # Write .zip archive file.
+                filename = entry["filepath"][-2]
+                arcpath = Files.temp_named_put(
+                    sflock.zipify(sflock.unpack(filename, contents=content)),
+                    os.path.basename(filename)
                 )
 
-                content = sflock.unpack(path).read(entry["filepath"][1:])
-                filename = entry["filepath"][-1]
-
-                # Write extracted file to disk
-                f = open(path_extracted, "wb")
-                f.write(content)
-                f.close()
-
-                filepath = path_extracted
+                ret.append(db.add_archive(
+                    file_path=arcpath,
+                    filename=entry["filepath"][-1],
+                    package=entry.get("package", package),
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    owner=owner,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                ))
             else:
-                submit.data["errors"].append("")
+                submit.data["errors"].append(
+                    "Unable to determine type of file.. couldn't submit!"
+                )
                 continue
-
-            if not package:
-                package = entry.get("package", "")
-
-            ret.append(db.add_path(
-                file_path=filepath,
-                package=package,  # user-defined package comes first, else let sflock decide
-                timeout=timeout,
-                options=options,
-                priority=int(priority),
-                custom=custom,
-                tags=tags,
-                memory=memory,
-                enforce_timeout=enforce_timeout,
-                machine=machine,
-                platform=""
-            ))
 
         return ret

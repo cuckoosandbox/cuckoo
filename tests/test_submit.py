@@ -7,6 +7,7 @@ import os
 import ntpath
 import responses
 import tempfile
+import zipfile
 
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.virustotal import VirusTotalAPI
@@ -94,7 +95,7 @@ class TestSubmitManager(object):
 
     @responses.activate
     def test_pre_hash(self):
-        """Tests the submission of a VirusTotal hash"""
+        """Tests the submission of a VirusTotal hash."""
         with responses.RequestsMock(assert_all_requests_are_fired=True) as rsps:
             rsps.add(
                 responses.GET, VirusTotalAPI.HASH_DOWNLOAD, body="A"*1024*1024
@@ -215,3 +216,47 @@ class TestSubmitManager(object):
             assert view_task.memory is False
             assert view_task.id == task_id
             assert view_task.category == "file"
+            assert open(view_task.target, "rb").read() == f["data"]
+
+    def test_nested_archive(self):
+        submit_id = self.submit_manager.pre("files", [{
+            "name": "msg_invoice.msg",
+            "data": open("tests/files/msg_invoice.msg", "rb").read(),
+        }])
+
+        selected_files = [
+            {
+                "package": "doc",
+                "filename": "oledata.mso",
+                "type": "container",
+                "filepath": [
+                    "msg_invoice.msg",
+                    "oledata.mso"
+                ]
+            },
+            {
+                "package": "exe",
+                "filename": "Firefox Setup Stub 43.0.1.exe",
+                "type": "file",
+                "filepath": [
+                    "msg_invoice.msg",
+                    "oledata.mso",
+                    "Firefox Setup Stub 43.0.1.exe"
+                ]
+            }
+        ]
+
+        task_ids = self.submit_manager.submit(submit_id, selected_files)
+        t0, t1 = self.d.view_task(task_ids[0]), self.d.view_task(task_ids[1])
+        assert t0.category == "archive"
+        assert t0.options == {
+            "filename": "oledata.mso",
+        }
+        assert len(zipfile.ZipFile(t0.target).read("oledata.mso")) == 234898
+        assert t1.category == "archive"
+        assert t1.options == {
+            "filename": "Firefox Setup Stub 43.0.1.exe",
+        }
+        assert len(zipfile.ZipFile(t1.target).read(
+            "Firefox Setup Stub 43.0.1.exe"
+        )) == 249336

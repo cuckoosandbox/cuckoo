@@ -187,7 +187,7 @@ class Submit(Base):
     id = Column(Integer(), primary_key=True)
     tmp_path = Column(Text(), nullable=False)
     added = Column(DateTime, nullable=False, default=datetime.utcnow)
-    submit_type = Column(String(16), nullable=False)  # "file", "virustotal" or "url"
+    submit_type = Column(String(16), nullable=False)
     data = Column(JSONType)
 
     def __init__(self, tmp_path, submit_type, data):

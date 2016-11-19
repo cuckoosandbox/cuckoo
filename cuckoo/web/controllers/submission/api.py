@@ -57,9 +57,7 @@ class SubmissionApi:
         password = body.get("password", None)
         astree = body.get("astree", True)
 
-        controller = SubmitManager()
-
-        data = controller.get_files(
+        data = SubmitManager().get_files(
             submit_id=submit_id,
             password=password,
             astree=astree
@@ -72,9 +70,14 @@ class SubmissionApi:
 
     @api_post
     def submit(request, body):
-        if "selected_files" not in body or "form" not in body or \
-                "submit_id" not in body:
-            return json_error_response("Bad parameters")
+        if "selected_files" not in body:
+            return json_error_response("Bad parameter (selected_files)")
+
+        if "form" not in body:
+            return json_error_response("Bad parameters (form)")
+
+        if "submit_id" not in body:
+            return json_error_response("Bad parameters (submit_id)")
 
         data = {
             "selected_files": body["selected_files"],
@@ -112,16 +115,13 @@ class SubmissionApi:
                 else:
                     data["form"][checkbox] = False
 
-        controller = SubmitManager()
-        options = data["form"].copy()
-        selected_files= data["selected_files"]
-
-        tasks = controller.submit(submit_id=body["submit_id"],
-                                  selected_files=selected_files,
-                                  **options)
+        tasks = SubmitManager().submit(
+            submit_id=body["submit_id"],
+            selected_files=data["selected_files"],
+            **data["form"]
+        )
 
         return JsonResponse({
             "status": True,
             "data": tasks,
         }, encoder=JsonSerialize)
-

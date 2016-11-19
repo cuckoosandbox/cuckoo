@@ -26,8 +26,7 @@ from datetime import datetime
 # the Django environment being all setup for usage.
 from django.core.validators import URLValidator
 
-from cuckoo.common.constants import CUCKOO_VERSION
-from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+from cuckoo.common.constants import CUCKOO_VERSION, GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
