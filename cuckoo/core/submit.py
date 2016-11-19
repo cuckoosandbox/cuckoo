@@ -3,16 +3,16 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import logging
+import os
+import sflock
 
-from cuckoo.core.database import Database, Submit
-from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
 from cuckoo.common.virustotal import VirusTotalAPI
-
-from sflock import unpack
+from cuckoo.core.database import Database
 
 log = logging.getLogger(__name__)
 
@@ -27,88 +27,74 @@ class SubmitManager(object):
     """
     def __init__(self):
         self._submit_urlschemes = ["http", "https"]
-        self.cfg = Config("processing")
 
-    def pre(self, submit_type, files):
+    def pre(self, submit_type, data):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
-        @param files: a list of dicts containing "name" (file name) and "data" (file data)
-        or a list of strings (urls OR hashes)
+        @param data: a list of dicts containing "name" (file name) and "data" (file data)
+        or a list of strings (urls or hashes)
         @return: submit id
         """
-        if not isinstance(submit_type, (str, unicode)) or \
-                        submit_type not in ["strings", "files"]:
-            log.error("Bad parameter \"%s\" for submit_type" % submit_type)
-            return
+        if submit_type not in ("strings", "files"):
+            log.error("Bad parameter '%s' for submit_type", submit_type)
+            return False
 
         path_tmp = Folders.create_temp()
-        data = {"data": [], "errors": []}
+        submit_data = {
+            "data": [],
+            "errors": []
+        }
 
         if submit_type == "strings":
-            for line in files:
+            for line in data:
                 if not line:
                     continue
 
-                try:
-                    _url = validate_url(line, schemes=self._submit_urlschemes)
-                    _hash = validate_hash(line)
-
-                    if _url:
-                        data["data"].append({
-                            "type": "url",
-                            "data": line
-                        })
-
-                        continue
-                    elif _hash:
-                        vt = self.cfg.get("virustotal")
-                        vt_api_key = vt["key"]
-                        vt_timeout = vt["timeout"]
-                        vt_scan = vt["scan"]
-
-                        vt_api = VirusTotalAPI(
-                            apikey=vt_api_key,
-                            timeout=vt_timeout,
-                            scan=vt_scan
+                if validate_hash(line):
+                    try:
+                        filedata = VirusTotalAPI(
+                            Config("processing").virustotal.apikey,
+                            Config("processing").virustotal.timeout
+                        ).hash_fetch(line)
+                    except CuckooOperationalError as e:
+                        submit_data["errors"].append(
+                            "Error retrieving file hash: %s" % e
                         )
-
-                        file_data = vt_api.hash_fetch(file_hash=_hash)
-                        file_path = Files.create(path_tmp, _hash, file_data)
-
-                        data["data"].append({
-                            "type": "file",
-                            "data": file_path
-                        })
-
                         continue
-                    else:
-                        raise Exception("neither a valid url or hash")
-                except Exception as e:
-                    data["errors"].append("\"%s\" could not be processed: %s" % (line, str(e)))
+
+                    filepath = Files.create(path_tmp, line, filedata)
+
+                    submit_data["data"].append({
+                        "type": "file",
+                        "data": filepath
+                    })
                     continue
 
-        if submit_type == "files":
-            for entry in files:
-                file_name = Storage.get_filename_from_path(entry["name"])
-                file_path = Files.create(path_tmp, file_name, entry["data"])
+                if validate_url(line):
+                    submit_data["data"].append({
+                        "type": "url",
+                        "data": line
+                    })
+                    continue
 
-                data["data"].append({
+                submit_data["errors"].append(
+                    "'%s' was neither a valid hash or url" % line
+                )
+
+        if submit_type == "files":
+            for entry in data:
+                filename = Storage.get_filename_from_path(entry["name"])
+                filepath = Files.create(path_tmp, filename, entry["data"])
+                submit_data["data"].append({
                     "type": "file",
-                    "data": file_path
+                    "data": filepath
                 })
 
-        if not data["data"]:
-            data["errors"].insert(0, "None of the submitted data could be processed")
+        if not submit_data["data"]:
+            raise Exception("Unknown submit type or no data could be processed")
 
-        submit = Submit(tmp_path=path_tmp, submit_type=submit_type)
-        submit.data = data
-
-        session = db.Session()
-        session.add(submit)
-        session.commit()
-
-        return submit.id
+        return Database().add_submit(path_tmp, submit_type, submit_data)
 
     @staticmethod
     def get_files(submit_id, password=None, astree=False):
@@ -127,7 +113,7 @@ class SubmitManager(object):
                 filename = Storage.get_filename_from_path(data["data"])
                 filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
 
-                unpacked = unpack(
+                unpacked = sflock.unpack(
                     filepath=filename, contents=filedata,
                     password=password, duplicates=duplicates
                 )
@@ -166,14 +152,17 @@ class SubmitManager(object):
     def submit(submit_id, selected_files, timeout=0, package="", options="",
                priority=1, custom="", owner="", machine="", platform="",
                tags=None, memory=False, enforce_timeout=False, **kwargs):
-        """Creates tasks, returns a list of `Task` id's"""
+        # TODO Kwargs contains various analysis options that have to be taken
+        # into account sooner or later.
         ret, db = [], Database()
         submit = db.view_submit(submit_id)
 
         for entry in selected_files:
             for expected in ["filepath", "filename", "type"]:
                 if expected not in entry.keys() or not entry[expected]:
-                    submit.data["errors"].append("")
+                    submit.data["errors"].append(
+                        "Missing or empty argument %s" % expected
+                    )
                     continue
 
             if entry["type"] == "url":
@@ -184,6 +173,7 @@ class SubmitManager(object):
                     options=options,
                     priority=int(priority),
                     custom=custom,
+                    owner=owner,
                     tags=tags,
                     memory=memory,
                     enforce_timeout=enforce_timeout,
@@ -201,46 +191,66 @@ class SubmitManager(object):
                     submit.tmp_path, os.path.basename(entry["filename"])
                 )
 
-                filename = entry["filename"]
                 filepath = Files.copy(path, path_dest=path_dest)
+
+                ret.append(db.add_path(
+                    file_path=filepath,
+                    package=entry.get("package", package),
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    owner=owner,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                    platform=""
+                ))
             elif len(entry["filepath"]) >= 2:
-                path = os.path.join(submit.tmp_path, os.path.basename(entry["filepath"][0]))
-                path_extracted = os.path.join(
-                    submit.tmp_path,
-                    os.path.basename(entry["filepath"][-1])
+                arcpath = os.path.join(
+                    submit.tmp_path, os.path.basename(entry["filepath"][0])
+                )
+                if not os.path.exists(arcpath):
+                    submit.data["errors"].append(
+                        "Unable to find parent archive file: %s" %
+                        os.path.basename(entry["filepath"][0])
+                    )
+                    continue
+
+                # Extract any sub-archives where required.
+                if len(entry["filepath"]) > 2:
+                    content = sflock.unpack(arcpath).read(
+                        entry["filepath"][1:-1]
+                    )
+                else:
+                    content = open(arcpath, "rb").read()
+
+                # Write .zip archive file.
+                filename = entry["filepath"][-2]
+                arcpath = Files.temp_named_put(
+                    sflock.zipify(sflock.unpack(filename, contents=content)),
+                    os.path.basename(filename)
                 )
 
-                content = unpack(path).read(entry["filepath"][1:])
-                filename = entry["filepath"][-1]
-
-                # Write extracted file to disk
-                f = open(path_extracted, "wb")
-                f.write(content)
-                f.close()
-
-                filepath = path_extracted
+                ret.append(db.add_archive(
+                    file_path=arcpath,
+                    filename=entry["filepath"][-1],
+                    package=entry.get("package", package),
+                    timeout=timeout,
+                    options=options,
+                    priority=int(priority),
+                    custom=custom,
+                    owner=owner,
+                    tags=tags,
+                    memory=memory,
+                    enforce_timeout=enforce_timeout,
+                    machine=machine,
+                ))
             else:
-                submit.data["errors"].append("")
+                submit.data["errors"].append(
+                    "Unable to determine type of file.. couldn't submit!"
+                )
                 continue
-
-            # let sflock decide the package if option 'package' is set to 'automatically detect'
-            if package:
-                _package = package
-            else:
-                _package = entry.get("package", "")
-
-            ret.append(db.add_path(
-                file_path=filepath,
-                package=_package,
-                timeout=timeout,
-                options=options,
-                priority=int(priority),
-                custom=custom,
-                tags=tags,
-                memory=memory,
-                enforce_timeout=enforce_timeout,
-                machine=machine,
-                platform=""
-            ))
 
         return ret

@@ -10,6 +10,9 @@ import tempfile
 from cuckoo.core.database import Database, Task
 from cuckoo.misc import set_cwd
 
+# TODO We can get rid of this once we don't use URLValidator anymore.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+
 class DatabaseEngine(object):
     """Tests database stuff."""
     URI = None
@@ -68,6 +71,19 @@ class DatabaseEngine(object):
         self.d.add_error("A"*1024, 1)
         err = self.d.view_errors(1)
         assert err and len(err[0].message) == 1024
+
+    def test_submit(self):
+        dirpath = tempfile.mkdtemp()
+        submit_id = self.d.add_submit(dirpath, "files", {
+            "foo": "bar",
+        })
+        submit = self.d.view_submit(submit_id)
+        assert submit.id == submit_id
+        assert submit.tmp_path == dirpath
+        assert submit.submit_type == "files"
+        assert submit.data == {
+            "foo": "bar",
+        }
 
 class TestSqlite3Memory(DatabaseEngine):
     URI = "sqlite:///:memory:"

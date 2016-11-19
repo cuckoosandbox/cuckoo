@@ -6,14 +6,17 @@
 import os
 import ntpath
 import responses
-import shutil
 import tempfile
+import zipfile
 
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.virustotal import VirusTotalAPI
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
-from cuckoo.misc import cwd, set_cwd
+from cuckoo.misc import set_cwd
+
+# TODO We can get rid of this once we don't use URLValidator anymore.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 CUCKOO_CONF = """
 [cuckoo]
@@ -48,7 +51,8 @@ class TestSubmitManager(object):
         ]
 
         self.hashes = [
-            "ba78410702f0cc8453da1afbb2a8b670"
+            "ba78410702f0cc8453da1afbb2a8b670",
+            "87943278943798784783974893278493",  # invalid hash
         ]
 
         self.files = [{
@@ -60,48 +64,61 @@ class TestSubmitManager(object):
         """Tests the submission of a plaintext file"""
         assert self.submit_manager.pre(
             submit_type="files",
-            files=self.files
+            data=self.files
         ) == 1
 
         submit = self.d.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["errors"]) == 0
         assert os.path.exists(submit.data["data"][0]["data"])
+
         assert submit.data["data"][0]["type"] == "file"
+        filedata = open(submit.data["data"][0]["data"], "rb").read()
+        assert filedata == self.files[0]["data"]
 
     def test_pre_url(self):
         """Tests the submission of URLs (http/https)"""
         assert self.submit_manager.pre(
             submit_type="strings",
-            files=self.urls
+            data=self.urls
         ) == 1
 
         submit = self.d.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["data"]) == 2
 
-        for obj in submit.data["data"]:
-            assert obj["type"] == "url"
+        url0, url1 = submit.data["data"]
+        assert url0["type"] == "url"
+        assert url0["data"] == "http://theguardian.com/"
+        assert url1["type"] == "url"
+        assert url1["data"] == "https://news.ycombinator.com/"
 
     @responses.activate
     def test_pre_hash(self):
-        """Tests the submission of a VirusTotal hash"""
-        responses.add(
-            responses.GET, VirusTotalAPI.HASH_DOWNLOAD, body="A"*1024*1024
-        )
+        """Tests the submission of a VirusTotal hash."""
+        with responses.RequestsMock(assert_all_requests_are_fired=True) as rsps:
+            rsps.add(
+                responses.GET, VirusTotalAPI.HASH_DOWNLOAD, body="A"*1024*1024
+            )
+            rsps.add(
+                responses.GET, VirusTotalAPI.HASH_DOWNLOAD, status=404
+            )
 
-        assert self.submit_manager.pre(
-            submit_type="strings",
-            files=self.hashes
-        ) == 1
+            assert self.submit_manager.pre(
+                submit_type="strings",
+                data=self.hashes
+            ) == 1
 
-        submit = self.d.view_submit(1)
-        assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 1
+            submit = self.d.view_submit(1)
+            assert isinstance(submit.data["data"], list)
+            assert len(submit.data["data"]) == 1
 
-        task0 = submit.data["data"][0]
-        assert task0["type"] == "file"
-        assert open(task0["data"], "rb").read() == "A"*1024*1024
+            task0, = submit.data["data"]
+            assert task0["type"] == "file"
+            assert open(task0["data"], "rb").read() == "A"*1024*1024
+
+            # We couldn't locate the second hash.
+            assert submit.data["errors"][0].startswith("Error retrieving")
 
     def test_pre_url_submit(self):
         """
@@ -110,7 +127,7 @@ class TestSubmitManager(object):
         """
         assert self.submit_manager.pre(
             submit_type="strings",
-            files=self.urls
+            data=self.urls
         ) == 1
 
         submit = self.d.view_submit(1)
@@ -129,7 +146,7 @@ class TestSubmitManager(object):
                 "type": "url"
             })
 
-        tasks = self.submit_manager.pre_submit(
+        tasks = self.submit_manager.submit(
             submit_id=1,
             selected_files=selected_files,
             memory=False,
@@ -159,7 +176,7 @@ class TestSubmitManager(object):
         """
         assert self.submit_manager.pre(
             submit_type="files",
-            files=self.files
+            data=self.files
         ) == 1
 
         submit = self.d.view_submit(1)
@@ -177,7 +194,7 @@ class TestSubmitManager(object):
                 "type": "file"
             })
 
-        tasks = self.submit_manager.pre_submit(
+        tasks = self.submit_manager.submit(
             submit_id=1,
             selected_files=selected_files,
             memory=False,
@@ -199,3 +216,47 @@ class TestSubmitManager(object):
             assert view_task.memory is False
             assert view_task.id == task_id
             assert view_task.category == "file"
+            assert open(view_task.target, "rb").read() == f["data"]
+
+    def test_nested_archive(self):
+        submit_id = self.submit_manager.pre("files", [{
+            "name": "msg_invoice.msg",
+            "data": open("tests/files/msg_invoice.msg", "rb").read(),
+        }])
+
+        selected_files = [
+            {
+                "package": "doc",
+                "filename": "oledata.mso",
+                "type": "container",
+                "filepath": [
+                    "msg_invoice.msg",
+                    "oledata.mso"
+                ]
+            },
+            {
+                "package": "exe",
+                "filename": "Firefox Setup Stub 43.0.1.exe",
+                "type": "file",
+                "filepath": [
+                    "msg_invoice.msg",
+                    "oledata.mso",
+                    "Firefox Setup Stub 43.0.1.exe"
+                ]
+            }
+        ]
+
+        task_ids = self.submit_manager.submit(submit_id, selected_files)
+        t0, t1 = self.d.view_task(task_ids[0]), self.d.view_task(task_ids[1])
+        assert t0.category == "archive"
+        assert t0.options == {
+            "filename": "oledata.mso",
+        }
+        assert len(zipfile.ZipFile(t0.target).read("oledata.mso")) == 234898
+        assert t1.category == "archive"
+        assert t1.options == {
+            "filename": "Firefox Setup Stub 43.0.1.exe",
+        }
+        assert len(zipfile.ZipFile(t1.target).read(
+            "Firefox Setup Stub 43.0.1.exe"
+        )) == 249336

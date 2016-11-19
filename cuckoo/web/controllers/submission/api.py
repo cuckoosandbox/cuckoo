@@ -22,7 +22,7 @@ class SubmissionApi:
     @staticmethod
     @csrf_exempt
     @require_http_methods(["POST"])
-    def pre(request):
+    def presubmit(request):
         files = request.FILES.getlist("files[]")
         data = []
 
@@ -33,7 +33,7 @@ class SubmissionApi:
                     "data": f.file,
                 })
 
-            submit_id = SubmitManager().pre(submit_type="files", files=data)
+            submit_id = SubmitManager().pre(submit_type="files", data=data)
             return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
@@ -44,7 +44,7 @@ class SubmissionApi:
 
             data = body["data"].split("\n")
 
-            submit_id = SubmitManager().pre(submit_type=submit_type, files=data)
+            submit_id = SubmitManager().pre(submit_type=submit_type, data=data)
 
             return JsonResponse({
                 "status": True,
@@ -52,10 +52,32 @@ class SubmissionApi:
             }, encoder=JsonSerialize)
 
     @api_post
-    def pre_submit(request, body):
-        if "selected_files" not in body or "form" not in body or \
-                        "submit_id" not in body:
-            return json_error_response("Bad parameters")
+    def get_files(request, body):
+        submit_id = body.get("submit_id", 0)
+        password = body.get("password", None)
+        astree = body.get("astree", True)
+
+        data = SubmitManager().get_files(
+            submit_id=submit_id,
+            password=password,
+            astree=astree
+        )
+
+        return JsonResponse({
+            "status": True,
+            "data": data,
+        }, encoder=JsonSerialize)
+
+    @api_post
+    def submit(request, body):
+        if "selected_files" not in body:
+            return json_error_response("Bad parameter (selected_files)")
+
+        if "form" not in body:
+            return json_error_response("Bad parameters (form)")
+
+        if "submit_id" not in body:
+            return json_error_response("Bad parameters (submit_id)")
 
         data = {
             "selected_files": body["selected_files"],
@@ -93,50 +115,13 @@ class SubmissionApi:
                 else:
                     data["form"][checkbox] = False
 
-        controller = SubmitManager()
-        options = data["form"].copy()
-        selected_files = data["selected_files"]
-
-        tasks = controller.pre_submit(
+        tasks = SubmitManager().submit(
             submit_id=body["submit_id"],
-            selected_files=selected_files,
-            **options
+            selected_files=data["selected_files"],
+            **data["form"]
         )
 
         return JsonResponse({
             "status": True,
             "data": tasks,
         }, encoder=JsonSerialize)
-
-    @api_post
-    def submit(request, body):
-        data = body.get("data", None)
-
-        try:
-            task_ids = SubmitManager.submit(data)
-            return JsonResponse({
-                "status": True,
-                "data": task_ids,
-            }, encoder=JsonSerialize)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
-    def get_files(request, body):
-        submit_id = body.get("submit_id", 0)
-        password = body.get("password", None)
-        astree = body.get("astree", True)
-
-        controller = SubmitManager()
-
-        data = controller.get_files(
-            submit_id=submit_id,
-            password=password,
-            astree=astree
-        )
-
-        return JsonResponse({
-            "status": True,
-            "data": data,
-        }, encoder=JsonSerialize)
-
