@@ -50,12 +50,13 @@ class ExportController:
         }
 
     @staticmethod
-    def create(task_id, taken_dirs, taken_files):
+    def create(task_id, taken_dirs, taken_files, report=None):
         """
         Returns a zip file as a file like object.
         :param task_id: task id
         :param taken_dirs: directories to include
         :param taken_files: files to include
+        :param report: additional report dict
         :return: zip file
         """
 
@@ -72,9 +73,10 @@ class ExportController:
 
         taken_dirs = taken_dirs_tmp
 
-        report = AnalysisController.get_report(task_id)
-        report = report["analysis"]
+        if not report:
+            report = AnalysisController.get_report(task_id)
 
+        report = report["analysis"]
         path = report["info"]["analysis_path"]
 
         # Creating an analysis.json file with basic information about this

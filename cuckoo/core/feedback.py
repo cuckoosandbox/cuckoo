@@ -11,12 +11,13 @@ import requests
 import traceback
 from glob import glob
 
+from django.core.validators import validate_email, ValidationError
 from django.template import TemplateSyntaxError, TemplateDoesNotExist
 from django.conf import settings
 from django.http import Http404
 
 from cuckoo.misc import cwd
-from cuckoo.core.report import AbstractReport
+from cuckoo.core.report import AbstractReport, AbstractDict
 from cuckoo.common.config import Config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooFeedbackError
@@ -45,7 +46,9 @@ class CuckooFeedback(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
 
     def __init__(self):
-        self.cfg = Config("cuckoo")
+        self.endpoint = "https://cuckoo.sh/feedback/api/submit/"
+        self.cfg = AbstractDict()
+        self.cfg.src = Config("cuckoo").to_dict()
         self.mongo = settings.MONGO
 
     def send_exception(self, exception, request=None):
@@ -105,13 +108,18 @@ class CuckooFeedback(object):
         if feedback_options["include_analysis"]:
             feedback.include_analysis(include_memdump=feedback_options["include_memdump"])
 
-        self._send(feedback)
+        try:
+            feedback.validate()
+        except (CuckooFeedbackError, ValidationError) as ex:
+            raise CuckooFeedbackError("Could not validate feedback object: %s" % str(ex))
+
+        return self._send(feedback)
 
     def send(self, analysis_id=None, name="", email="", message="", company="",
              include_json_report=False, include_analysis=False,
              include_memdump=False, was_automated=False):
-        if not self.cfg.feedback.enabled:
-            return
+        if not self.cfg.get("cuckoo", "feedback", "enabled"):
+            raise CuckooFeedbackError("feedback not enabled in config or feedback options missing")
 
         feedback = CuckooFeedbackObject(
             name=name,
@@ -134,8 +142,10 @@ class CuckooFeedback(object):
         return feedback_id
 
     def _send(self, feedback):
-        if not feedback.validate():
-            raise CuckooFeedbackError("Feedback object could not be validated")
+        try:
+            feedback.validate()
+        except CuckooFeedbackError as ex:
+            raise CuckooFeedbackError("Could not validate feedback object: %s" % str(ex))
 
         feedback = feedback.to_dict()
         headers = {
@@ -146,35 +156,41 @@ class CuckooFeedback(object):
 
         try:
             resp = requests.post(
-                url=self.cfg.feedback.endpoint,
+                url=self.endpoint,
                 json=feedback,
                 headers=headers)
             if not resp.status_code == 200:
                 raise CuckooFeedbackError("the remote server did not respond correctly")
 
             resp = json.loads(resp.content)
-            if not resp["status"]:
+            if not "status" in resp or not resp["status"]:
                 raise CuckooFeedbackError(resp["message"])
 
             return resp["feedback_id"]
         except requests.exceptions.RequestException as e:
-            log.error("Invalid response from Cuckoo feedback server: %s", str(e))
+            msg = "Invalid response from Cuckoo feedback server: %s", str(e)
+            log.error(msg)
+            raise CuckooFeedbackError(msg)
         except CuckooFeedbackError as e:
-            log.error("Cuckoo feedback error while sending: %s", str(e))
+            msg = "Cuckoo feedback error while sending: %s", str(e)
+            log.error(msg)
+            raise CuckooFeedbackError(msg)
         except Exception as e:
-            log.error("Unknown feedback error while sending: %s" % str(e))
+            msg = "Unknown feedback error while sending: %s" % str(e)
+            log.error(msg)
+            raise CuckooFeedbackError(msg)
 
 class CuckooFeedbackObject:
     def __init__(self, message=None, email=None, name=None, company=None, was_automated=False):
         self.was_automated = was_automated
         self.message = message
         self.errors = []
-        self.cfg = None
+        self.cfg = AbstractDict()
         self.include_config()
         self.contact = {
-            "name": self.cfg["cuckoo"]["feedback"]["name"] if not name else name,
-            "company": self.cfg["cuckoo"]["feedback"]["company"] if not company else company,
-            "email": self.cfg["cuckoo"]["feedback"]["email"] if not email else email
+            "name": self.cfg.get("cuckoo", "feedback", "name") if not name else name,
+            "company": self.cfg.get("cuckoo", "feedback", "company") if not company else company,
+            "email": self.cfg.get("cuckoo", "feedback", "email") if not email else email
         }
         self.export = None
         self.report_info = {}
@@ -206,9 +222,9 @@ class CuckooFeedbackObject:
         data = {}
 
         for cfg in get_all():
-            data[cfg["name"]] = cfg["data"].to_dict()
+            data[cfg["name"]] = cfg["data"].to_dict()[cfg["name"]]
 
-        self.cfg = data
+        self.cfg.src = data
 
     def include_analysis(self, include_memdump=False):
         if not self.report.src:
@@ -222,7 +238,8 @@ class CuckooFeedbackObject:
 
         export = ExportController.create(task_id=self.report.analysis_id,
                                          taken_dirs=taken_dirs,
-                                         taken_files=taken_files)
+                                         taken_files=taken_files,
+                                         report=self.report.src)
         export.seek(0)
         self.export = base64.b64encode(export.read())
 
@@ -230,10 +247,14 @@ class CuckooFeedbackObject:
         self.errors.append(error)
 
     def validate(self):
-        if not self.contact["email"]:
-            return
+        for expect in ["email", "name"]:
+            if expect not in self.contact or not self.contact[expect]:
+                raise CuckooFeedbackError("Missing contact information: %s" % expect)
+
+        validate_email(self.contact["email"])
+
         if not self.message:
-            return
+            raise CuckooFeedbackError("Missing feedback message")
 
         return True
 
@@ -255,7 +276,7 @@ class CuckooFeedbackObject:
         if self.export:
             data["export"] = self.export
 
-        if self.cfg:
-            data["cfg"] = self.cfg
+        if self.cfg.src:
+            data["cfg"] = self.cfg.src
 
         return data

@@ -7,8 +7,21 @@ from django.conf import settings
 
 from controllers.analysis.analysis import AnalysisController
 
-class AbstractReport:
+
+class AbstractDict(object):
+    def __init__(self):
+        self.src = {}
+
+    def get(self, *keys):
+        """Safe nested lookup"""
+        return reduce(lambda d, key: d.get(key) if d else None, keys, self.src)
+
+    def __getitem__(self, key):
+        return self.src[key]
+
+class AbstractReport(AbstractDict):
     def __init__(self, analysis_id):
+        super(AbstractReport, self).__init__()
         self.mongo = settings.MONGO
         self.src = AnalysisController.get_report(analysis_id)
 
@@ -39,11 +52,3 @@ class AbstractReport:
     @property
     def analysis_errors(self):
         return self.get("analysis", "debug", "errors")
-
-    def get(self, key, *keys):
-        """Safe report.json dict lookup"""
-        def _inner(dic, _key, *_keys):
-            if _keys:
-                return _inner(dic.get(_key, {}), *_keys)
-            return dic.get(_key, {})
-        return _inner(self.src, key, *keys)

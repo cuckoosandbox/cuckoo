@@ -60,6 +60,12 @@ class Folders(Storage):
                     )
 
     @staticmethod
+    def copy(src, dest):
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+
+    @staticmethod
     def create_temp(path=None):
         if path:
             target_path = path
