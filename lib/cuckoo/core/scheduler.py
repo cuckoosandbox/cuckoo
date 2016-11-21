@@ -70,7 +70,7 @@ class AnalysisManager(threading.Thread):
         # If the analysis storage folder already exists, we need to abort the
         # analysis or previous results will be overwritten and lost.
         if os.path.exists(self.storage):
-            log.error("Analysis results folder already exists at path \"%s\","
+            log.error("Task main: Analysis results folder already exists at path \"%s\","
                       " analysis aborted", self.storage)
             return False
 
@@ -79,7 +79,7 @@ class AnalysisManager(threading.Thread):
         try:
             create_folder(folder=self.storage)
         except CuckooOperationalError:
-            log.error("Unable to create analysis folder %s", self.storage)
+            log.error("Task main: Unable to create analysis folder %s", self.storage)
             return False
 
         return True
@@ -90,7 +90,7 @@ class AnalysisManager(threading.Thread):
             return True
 
         log.error(
-            "Unable to access target file, please check if we have "
+            "Task main: Unable to access target file, please check if we have "
             "permissions to access the file: \"%s\"",
             self.task.target
         )
@@ -102,7 +102,7 @@ class AnalysisManager(threading.Thread):
 
         sha256 = File(self.task.target).get_sha256()
         if sha256 != sample.sha256:
-            log.error("Target file has been modified after submission: \"%s\"", self.task.target)
+            log.error("Task main: Target file has been modified after submission: \"%s\"", self.task.target)
             return False
 
         return True
@@ -110,7 +110,7 @@ class AnalysisManager(threading.Thread):
     def store_file(self):
         """Store a copy of the file being analyzed."""
         if not os.path.exists(self.task.target):
-            log.error("The file to analyze does not exist at path \"%s\", "
+            log.error("Task main: The file to analyze does not exist at path \"%s\", "
                       "analysis aborted", self.task.target)
             return False
 
@@ -118,14 +118,14 @@ class AnalysisManager(threading.Thread):
         self.binary = os.path.join(CUCKOO_ROOT, "storage", "binaries", sha256)
 
         if os.path.exists(self.binary):
-            log.info("File already exists at \"%s\"", self.binary)
+            log.info("Task main: File already exists at \"%s\"", self.binary)
         else:
             # TODO: do we really need to abort the analysis in case we are not
             # able to store a copy of the file?
             try:
                 shutil.copy(self.task.target, self.binary)
             except (IOError, shutil.Error) as e:
-                log.error("Unable to store file from \"%s\" to \"%s\", "
+                log.error("Task main: Unable to store file from \"%s\" to \"%s\", "
                           "analysis aborted", self.task.target, self.binary)
                 return False
 
@@ -137,7 +137,7 @@ class AnalysisManager(threading.Thread):
             else:
                 shutil.copy(self.binary, self.storage_binary)
         except (AttributeError, OSError) as e:
-            log.error("Unable to create symlink/copy from \"%s\" to "
+            log.error("Task main: Unable to create symlink/copy from \"%s\" to "
                       "\"%s\": %s", self.binary, self.storage, e)
 
         return True
@@ -239,7 +239,7 @@ class AnalysisManager(threading.Thread):
             self.interface = vpns[route].interface
             self.rt_table = vpns[route].rt_table
         else:
-            log.warning("Unknown network routing destination specified, "
+            log.warning("Task main: Unknown network routing destination specified, "
                         "ignoring routing for this analysis: %r", route)
             self.interface = None
             self.rt_table = None
@@ -248,7 +248,7 @@ class AnalysisManager(threading.Thread):
         # some reason, its tunX interface will no longer be available.
         if self.interface and not rooter("nic_available", self.interface):
             log.error(
-                "The network interface '%s' configured for this analysis is "
+                "Task main: The network interface '%s' configured for this analysis is "
                 "not available at the moment, switching to route=none mode.",
                 self.interface
             )
@@ -317,8 +317,8 @@ class AnalysisManager(threading.Thread):
         if self.task.category == "file":
             target = os.path.basename(target)
 
-        log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
-                 self.task.category.upper(), target, self.task.id,
+        log.info("Task #%d: Starting analysis of %s \"%s\" (options \"%s\")",
+                 sself.task.id, elf.task.category.upper(), target,
                  emit_options(self.task.options))
 
         # Initialize the analysis folders.
@@ -350,7 +350,7 @@ class AnalysisManager(threading.Thread):
             self.acquire_machine()
         except CuckooOperationalError as e:
             machine_lock.release()
-            log.error("Cannot acquire machine: {0}".format(e))
+            log.error("Task main: Cannot acquire machine: {0}".format(e))
             return False
 
         # At this point we can tell the ResultServer about it.
@@ -405,11 +405,11 @@ class AnalysisManager(threading.Thread):
             if not unlocked:
                 machine_lock.release()
             log.error(
-                "Machinery error: %s",
+                "Task main: Machinery error: %s",
                 e, extra={"task_id": self.task.id}
             )
             log.critical(
-                "A critical error has occurred trying to use the machine "
+                "Task main: A critical error has occurred trying to use the machine "
                 "with name %s during an analysis due to which it is no "
                 "longer in a working state, please report this issue and all "
                 "of the related environment details to the developers so we "
@@ -422,7 +422,7 @@ class AnalysisManager(threading.Thread):
             if not unlocked:
                 machine_lock.release()
             log.error(
-                "Error from the Cuckoo Guest: %s",
+                "Task main: Error from the Cuckoo Guest: %s",
                 e, extra={"task_id": self.task.id}
             )
         finally:
@@ -435,16 +435,16 @@ class AnalysisManager(threading.Thread):
                     dump_path = os.path.join(self.storage, "memory.dmp")
                     machinery.dump_memory(self.machine.label, dump_path)
                 except NotImplementedError:
-                    log.error("The memory dump functionality is not available "
+                    log.error("Task main: The memory dump functionality is not available "
                               "for the current machine manager.")
                 except CuckooMachineError as e:
-                    log.error("Machinery error: %s", e)
+                    log.error("Task main: Machinery error: %s", e)
 
             try:
                 # Stop the analysis machine.
                 machinery.stop(self.machine.label)
             except CuckooMachineError as e:
-                log.warning("Unable to stop machine %s: %s",
+                log.warning("Task main: Unable to stop machine %s: %s",
                             self.machine.label, e)
 
             # Mark the machine in the database as stopped. Unless this machine
@@ -464,7 +464,7 @@ class AnalysisManager(threading.Thread):
                 # not turned dead yet.
                 machinery.release(self.machine.label)
             except CuckooMachineError as e:
-                log.error("Unable to release machine %s, reason %s. "
+                log.error("Task main: Unable to release machine %s, reason %s. "
                           "You might need to restore it manually.",
                           self.machine.label, e)
 
@@ -480,31 +480,31 @@ class AnalysisManager(threading.Thread):
         # delete the original copy.
         if self.task.category == "file" and self.cfg.cuckoo.delete_original:
             if not os.path.exists(self.task.target):
-                log.warning("Original file does not exist anymore: \"%s\": "
+                log.warning("Task main: Original file does not exist anymore: \"%s\": "
                             "File not found.", self.task.target)
             else:
                 try:
                     os.remove(self.task.target)
                 except OSError as e:
-                    log.error("Unable to delete original file at path "
+                    log.error("Task main: Unable to delete original file at path "
                               "\"%s\": %s", self.task.target, e)
 
         # If the target is a file and the user enabled the delete copy of
         # the binary option, then delete the copy.
         if self.task.category == "file" and self.cfg.cuckoo.delete_bin_copy:
             if not os.path.exists(self.binary):
-                log.warning("Copy of the original file does not exist anymore: \"%s\": File not found", self.binary)
+                log.warning("Task main: Copy of the original file does not exist anymore: \"%s\": File not found", self.binary)
             else:
                 try:
                     os.remove(self.binary)
                 except OSError as e:
-                    log.error("Unable to delete the copy of the original file at path \"%s\": %s", self.binary, e)
+                    log.error("Task main: Unable to delete the copy of the original file at path \"%s\": %s", self.binary, e)
             # Check if the binary in the analysis directory is an invalid symlink. If it is, delete it.
             if os.path.islink(self.storage_binary) and not os.path.exists(self.storage_binary):
                 try:
                     os.remove(self.storage_binary)
                 except OSError as e:
-                    log.error("Unable to delete symlink to the binary copy at path \"%s\": %s", self.storage_binary, e)
+                    log.error("Task main: Unable to delete symlink to the binary copy at path \"%s\": %s", self.storage_binary, e)
 
         log.info("Task #%d: reports generation completed (path=%s)",
                  self.task.id, self.storage)
@@ -520,7 +520,7 @@ class AnalysisManager(threading.Thread):
 
             self.db.set_status(self.task.id, TASK_COMPLETED)
 
-            log.debug("Released database task #%d", self.task.id)
+            log.debug("Task main: Released database task #%d", self.task.id)
 
             if self.cfg.cuckoo.process_results:
                 # this updates self.task so processing gets the latest and greatest
@@ -548,7 +548,7 @@ class AnalysisManager(threading.Thread):
 
                     os.symlink(self.storage, latest)
                 except OSError as e:
-                    log.warning("Error pointing latest analysis symlink: %s" % e)
+                    log.warning("Task main: Error pointing latest analysis symlink: %s" % e)
                 finally:
                     latest_symlink_lock.release()
 
@@ -556,7 +556,7 @@ class AnalysisManager(threading.Thread):
             self.store_task_info()
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except:
-            log.exception("Failure in AnalysisManager.run")
+            log.exception("Task main: Failure in AnalysisManager.run")
 
         task_log_stop(self.task.id)
         active_analysis_count -= 1
@@ -590,7 +590,7 @@ class Scheduler(object):
         else:
             machine_lock = threading.Lock()
 
-        log.info("Using \"%s\" as machine manager", machinery_name)
+        log.info("Task main: Using \"%s\" as machine manager", machinery_name)
 
         # Get registered class name. Only one machine manager is imported,
         # therefore there should be only one class in the list.
@@ -622,16 +622,16 @@ class Scheduler(object):
         if not len(machinery.machines()):
             raise CuckooCriticalError("No machines available.")
         else:
-            log.info("Loaded %s machine/s", len(machinery.machines()))
+            log.info("Task main: Loaded %s machine/s", len(machinery.machines()))
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
-            log.warning("As you've configured Cuckoo to execute parallel "
+            log.warning("Task main: As you've configured Cuckoo to execute parallel "
                         "analyses, we recommend you to switch to a MySQL or"
                         "a PostgreSQL database as SQLite might cause some "
                         "issues.")
 
         if len(machinery.machines()) > 4 and self.cfg.cuckoo.process_results:
-            log.warning("When running many virtual machines it is recommended "
+            log.warning("Task main: When running many virtual machines it is recommended "
                         "to process the results in a separate process.py to "
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
@@ -641,7 +641,7 @@ class Scheduler(object):
         # have thus not been dropped yet.
         for machine in machinery.machines():
             if not machine.interface:
-                log.info("Unable to determine the network interface for VM "
+                log.info("Task main: Unable to determine the network interface for VM "
                          "with name %s, Cuckoo will not be able to give it "
                          "full internet access or route it through a VPN! "
                          "Please define a default network interface for the "
@@ -669,7 +669,7 @@ class Scheduler(object):
         """Start scheduler."""
         self.initialize()
 
-        log.info("Waiting for analysis tasks.")
+        log.info("Task main: Waiting for analysis tasks.")
 
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
@@ -709,7 +709,7 @@ class Scheduler(object):
                     space_available /= 1024 * 1024
 
                     if space_available < self.cfg.cuckoo.freespace:
-                        log.error("Not enough free disk space! (Only %d MB!)",
+                        log.error("Task main: Not enough free disk space! (Only %d MB!)",
                                   space_available)
                         continue
 
@@ -728,7 +728,7 @@ class Scheduler(object):
             # file and has been reached.
             if self.maxcount and self.total_analysis_count >= self.maxcount:
                 if active_analysis_count <= 0:
-                    log.debug("Reached max analysis count, exiting.")
+                    log.debug("Task main: Reached max analysis count, exiting.")
                     self.stop()
                 continue
 
@@ -754,7 +754,7 @@ class Scheduler(object):
                 task = self.db.fetch(service=False)
 
             if task:
-                log.debug("Processing task #%s", task.id)
+                log.debug("Task #%d: Processing", task.id)
                 self.total_analysis_count += 1
 
                 # Initialize and start the analysis manager.
@@ -768,4 +768,4 @@ class Scheduler(object):
             except Queue.Empty:
                 pass
 
-        log.debug("End of analyses.")
+        log.debug("Task main: End of analyses.")
