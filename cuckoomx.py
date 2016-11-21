@@ -26,7 +26,7 @@ except ImportError:
 CUCKOO_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
 sys.path.append(CUCKOO_ROOT)
 from lib.cuckoo.common.config import Config
-email_config = Config("cuckoomx")
+
 
 from lib.cuckoo.core.database import Database
 from lib.cuckoo.common.utils import store_temp_file
@@ -38,9 +38,15 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 
-from apscheduler.schedulers.background import BackgroundScheduler
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+except ImportError:
+    print "Missed dependencies, execute 'sudo pip install apscheduler'"
+    sys.exit()
+
 main_db = Database()
 Base = declarative_base()
+email_config = Config("cuckoomx")
 
 class CUCKOOMX(Base):
     __tablename__ = 'cuckoomx'
