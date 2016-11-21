@@ -1,0 +1,143 @@
+2016-08-25 22:44:59,002 [lib.cuckoo.core.scheduler] INFO: File already exists at "/home/test/git/cuckoo/storage/binaries/8a2b54f64d1866ac8c46c99651cadba1597bc5671cf9b4a966c1d23898b19ce6"
+2016-08-25 22:44:59,048 [lib.cuckoo.core.scheduler] INFO: Task #2204: acquired machine cuckoo1 (label=cuckoo7)
+2016-08-25 22:44:59,055 [modules.auxiliary.sniffer] INFO: Started sniffer with PID 11608 (interface=vboxnet0, host=192.168.56.101, pcap=/home/test/git/cuckoo/storage/analyses/2204/dump.pcap)
+2016-08-25 22:44:59,056 [lib.cuckoo.core.plugins] DEBUG: Started auxiliary module: Sniffer
+2016-08-25 22:44:59,101 [modules.machinery.virtualbox] DEBUG: Starting vm cuckoo7
+2016-08-25 22:44:59,101 [modules.machinery.virtualbox] DEBUG: Getting status for cuckoo7
+2016-08-25 22:44:59,156 [modules.machinery.virtualbox] DEBUG: Machine cuckoo7 status poweroff
+2016-08-25 22:44:59,223 [modules.machinery.virtualbox] DEBUG: Using current snapshot for virtual machine cuckoo7
+2016-08-25 22:44:59,481 [modules.machinery.virtualbox] DEBUG: Getting status for cuckoo7
+2016-08-25 22:44:59,550 [modules.machinery.virtualbox] DEBUG: Machine cuckoo7 status saved
+2016-08-25 22:45:04,121 [modules.machinery.virtualbox] DEBUG: Getting status for cuckoo7
+2016-08-25 22:45:04,192 [modules.machinery.virtualbox] DEBUG: Machine cuckoo7 status running
+2016-08-25 22:45:04,332 [lib.cuckoo.core.guest] INFO: Starting analysis on guest (id=cuckoo1, ip=192.168.56.101)
+2016-08-25 22:45:05,335 [lib.cuckoo.core.guest] DEBUG: cuckoo1: not ready yet
+2016-08-25 22:45:06,338 [lib.cuckoo.core.guest] DEBUG: cuckoo1: not ready yet
+2016-08-25 22:45:07,342 [lib.cuckoo.core.guest] DEBUG: cuckoo1: not ready yet
+2016-08-25 22:45:08,345 [lib.cuckoo.core.guest] DEBUG: cuckoo1: not ready yet
+2016-08-25 22:45:09,367 [lib.cuckoo.core.guest] DEBUG: cuckoo1: waiting for status 0x0001
+2016-08-25 22:45:09,380 [lib.cuckoo.core.guest] DEBUG: cuckoo1: status ready
+2016-08-25 22:45:09,392 [lib.cuckoo.core.guest] DEBUG: Uploading analyzer to guest (id=cuckoo1, ip=192.168.56.101, monitor=latest, size=3802748)
+2016-08-25 22:45:09,712 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analyzer started with PID 1184
+2016-08-25 22:45:09,756 [lib.cuckoo.core.guest] DEBUG: cuckoo1: waiting for completion
+2016-08-25 22:45:09,887 [lib.cuckoo.core.resultserver] DEBUG: LogHandler for live analysis.log initialized.
+2016-08-25 22:45:10,762 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:10,818 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=2844, ppid=3000, name=AcroRd32.exe)
+2016-08-25 22:45:11,638 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0001.jpg
+2016-08-25 22:45:11,649 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 58575
+2016-08-25 22:45:11,768 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:12,774 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0002.jpg
+2016-08-25 22:45:12,784 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 71539
+2016-08-25 22:45:12,785 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:13,457 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=752, ppid=2844, name=RTHDCPL.exe)
+2016-08-25 22:45:13,814 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:14,819 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:15,844 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:16,867 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:16,939 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0003.jpg
+2016-08-25 22:45:16,954 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 72142
+2016-08-25 22:45:17,872 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:18,900 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:19,904 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:20,943 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:21,948 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:22,952 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:22,987 [lib.cuckoo.core.resultserver] DEBUG: File upload request for memory/2500-1.dmp
+2016-08-25 22:45:22,998 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 3478296
+2016-08-25 22:45:23,246 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=2500, ppid=752, name=svchost.exe)
+2016-08-25 22:45:23,249 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0004.jpg
+2016-08-25 22:45:23,264 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 59114
+2016-08-25 22:45:23,365 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=576, ppid=2844, name=AcroRd32.exe)
+2016-08-25 22:45:23,511 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/55602e68a3cd1516_A9RFBFB.tmp
+2016-08-25 22:45:23,512 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 358
+2016-08-25 22:45:24,011 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:24,286 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0005.jpg
+2016-08-25 22:45:24,301 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 58790
+2016-08-25 22:45:24,459 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=2136, ppid=2500, name=regedit.exe)
+2016-08-25 22:45:25,015 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:26,019 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:26,153 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/8d1fb16f2139cd48_SharedDataEvents-journal
+2016-08-25 22:45:26,153 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 1024
+2016-08-25 22:45:26,164 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/19386a5ae743b37d_SharedDataEvents-journal
+2016-08-25 22:45:26,164 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 1024
+2016-08-25 22:45:27,023 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:28,027 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:29,059 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:30,064 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:31,068 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:32,073 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:32,379 [lib.cuckoo.core.resultserver] DEBUG: File upload request for shots/0006.jpg
+2016-08-25 22:45:32,389 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 56659
+2016-08-25 22:45:33,077 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:34,082 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:35,086 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:35,926 [lib.cuckoo.core.resultserver] DEBUG: New process (pid=1872, ppid=576, name=Adobe_Updater.exe)
+2016-08-25 22:45:36,133 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:37,138 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:38,142 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:39,149 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:40,152 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:41,156 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:42,161 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:43,166 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:44,170 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:45,174 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:46,179 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:47,183 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:48,188 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:49,192 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:50,196 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:51,201 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:52,206 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:53,214 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:54,218 [lib.cuckoo.core.guest] DEBUG: cuckoo1: analysis not completed yet (status=2)
+2016-08-25 22:45:54,943 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/0987dba0aadedbc7_1.pdf
+2016-08-25 22:45:54,945 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 22284
+2016-08-25 22:45:54,946 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/a2a0fe3569d5b51c_updater.log
+2016-08-25 22:45:54,946 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 284
+2016-08-25 22:45:54,949 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/d5e07709ac6b7ec4_adobeupdaterprefs.dat
+2016-08-25 22:45:54,949 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 270
+2016-08-25 22:45:54,952 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/e7d514c4fbc84d2d_aum.log
+2016-08-25 22:45:54,952 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 830
+2016-08-25 22:45:54,955 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/ec7d15485840c06c_aumlib.log
+2016-08-25 22:45:54,955 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 408
+2016-08-25 22:45:54,958 [lib.cuckoo.core.resultserver] DEBUG: File upload request for files/bea344a8bfaf8a7c_usercache.bin
+2016-08-25 22:45:54,964 [lib.cuckoo.core.resultserver] DEBUG: Uploaded file length: 73934
+2016-08-25 22:45:55,224 [lib.cuckoo.core.guest] INFO: cuckoo1: analysis completed successfully
+2016-08-25 22:45:55,292 [lib.cuckoo.core.plugins] DEBUG: Stopped auxiliary module: Sniffer
+2016-08-25 22:45:55,292 [modules.machinery.virtualbox] DEBUG: Stopping vm cuckoo7
+2016-08-25 22:45:55,292 [modules.machinery.virtualbox] DEBUG: Getting status for cuckoo7
+2016-08-25 22:45:55,348 [modules.machinery.virtualbox] DEBUG: Machine cuckoo7 status running
+2016-08-25 22:46:00,402 [modules.machinery.virtualbox] DEBUG: Getting status for cuckoo7
+2016-08-25 22:46:00,457 [modules.machinery.virtualbox] DEBUG: Machine cuckoo7 status poweroff
+2016-08-25 22:46:05,229 [lib.cuckoo.core.scheduler] DEBUG: Released database task #2204
+2016-08-25 22:46:05,245 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "AnalysisInfo" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,296 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "MetaInfo" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,474 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "BehaviorAnalysis" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,478 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "DroppedBuffer" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,480 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "Debug" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,490 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "Dropped" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,524 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "ProcessMemory" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,525 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "Procmon" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,684 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "Static" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,690 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "Strings" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:05,694 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "TargetInfo" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:07,748 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "NetworkAnalysis" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:07,748 [lib.cuckoo.core.plugins] DEBUG: Executed processing module "TLSMasterSecrets" on analysis at "/home/test/git/cuckoo/storage/analyses/2204"
+2016-08-25 22:46:07,758 [lib.cuckoo.core.plugins] DEBUG: Running 400 signatures
+2016-08-25 22:46:08,600 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: dumped_buffer
+2016-08-25 22:46:08,600 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: dead_host
+2016-08-25 22:46:08,600 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: network_http
+2016-08-25 22:46:08,600 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: allocates_rwx
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: antivm_generic_services
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: persistence_autorun
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: creates_doc
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: creates_exe
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: suspicious_process
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: exploit_heapspray
+2016-08-25 22:46:08,601 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: injection_runpe
+2016-08-25 22:46:08,602 [lib.cuckoo.core.plugins] DEBUG: Analysis matched signature: pidief
+2016-08-25 22:46:10,208 [lib.cuckoo.core.plugins] DEBUG: Executed reporting module "JsonDump"
+2016-08-25 22:46:10,600 [lib.cuckoo.core.plugins] DEBUG: Executed reporting module "MongoDB"
+2016-08-25 22:46:10,600 [lib.cuckoo.core.scheduler] INFO: Task #2204: reports generation completed (path=/home/test/git/cuckoo/storage/analyses/2204)
+2016-08-25 22:46:10,683 [lib.cuckoo.core.scheduler] INFO: Task #2204: analysis procedure completed

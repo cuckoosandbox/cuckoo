@@ -1,0 +1,5 @@
+ : Loading AUM Integration library at path C:\Program Files (x86)\Adobe\Reader 9.0\Reader\AdobeUpdater.dll.
+ : Successfully loaded AUM integration library
+ : Successfully found all library entry points.  Library is valid.
+ : Entering GetAppID()
+ : AUMDoPluginAction returns => 0

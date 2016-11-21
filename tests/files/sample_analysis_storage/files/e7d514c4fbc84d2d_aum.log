@@ -1,0 +1,11 @@
+2016-08-25T22:45:22: >>> Adobe Updater Log Begin >>>
+2016-08-26T05:45:22: cmdline option: -logFile = C:\Users\Administrator\AppData\Local\Adobe\Updater6\aum.log
+2016-08-26T05:45:22: cmdline option: -logLevel = 2
+2016-08-26T05:45:22: Display Language requested = 
+2016-08-26T05:45:22: Valid AppID added from global xml file = reader9rdr-en_US
+2016-08-26T05:45:22: Could not load adobe_aum2pcd.dll
+2016-08-26T05:45:22: No Startup mode specified.
+2016-08-26T05:45:22: GetAppIDUpdates: getting available update info for AppID: reader9rdr-en_US
+2016-08-26T05:45:34: GetAppIDUpdates: getting .upd file: http://swupmf.adobe.com/manifest/60/win/reader9rdr-en_US.upd
+2016-08-26T05:45:34: GetAppIDUpdates: GetManifestProcessingError = 2
+2016-08-26T05:45:34: GetAppIDUpdates: getting available update info for AppID: AdobeUpdater
