@@ -1241,6 +1241,16 @@ body.cyborg {
   /* jstree */
   /* cyborg */
 }
+body[data-theme="cyborg"] .cuckoo-analysis,
+body.cyborg .cuckoo-analysis {
+  background-color: #020e10;
+}
+body[data-theme="cyborg"] .cuckoo-analysis__header,
+body.cyborg .cuckoo-analysis__header {
+  text-shadow: none;
+  box-shadow: none;
+  border-bottom-color: #444;
+}
 body[data-theme="cyborg"] html,
 body.cyborg html {
   background: transparent;
@@ -3367,6 +3377,16 @@ body.night {
   /* jstree */
   /* page errors */
   /* plotly */
+}
+body[data-theme="night"] .cuckoo-analysis,
+body.night .cuckoo-analysis {
+  background: linear-gradient(#313131, #3c3c3c);
+}
+body[data-theme="night"] .cuckoo-analysis__header,
+body.night .cuckoo-analysis__header {
+  text-shadow: none;
+  box-shadow: none;
+  border-bottom-color: #000;
 }
 body[data-theme="night"] hr,
 body.night hr {
