@@ -5,7 +5,6 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from cuckoo.core.feedback import CuckooFeedback
-from cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
 
@@ -30,9 +29,10 @@ def handler500(request):
 
 class ExceptionMiddleware(object):
     def process_exception(self, request, exception):
+        from cuckoo.common.config import Config
         cfg = Config("cuckoo")
 
-        if cfg.get("feedback") and cfg.feedback.enabled:
+        if hasattr(cfg, "feedback") and cfg.feedback.enabled:
             feedback = CuckooFeedback()
             feedback.send_exception(exception, request)
 

@@ -110,7 +110,6 @@ class ExportController:
     @staticmethod
     def get_files(analysis_path):
         """Locate all directories/results available for this analysis"""
-
         if not os.path.exists(analysis_path):
             raise Exception("Analysis path not found: %s" % analysis_path)
 

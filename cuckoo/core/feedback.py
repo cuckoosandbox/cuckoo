@@ -40,13 +40,13 @@ from cuckoo.common.exceptions import (
 )
 
 log = logging.getLogger(__name__)
-results_db = settings.MONGO
 
 class CuckooFeedback(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
 
     def __init__(self):
         self.cfg = Config("cuckoo")
+        self.mongo = settings.MONGO
 
     def send_exception(self, exception, request=None):
         """
@@ -72,24 +72,32 @@ class CuckooFeedback(object):
             "include_config": True
         }
 
-        if request and hasattr(request, "resolver_match"):
-            if request.method == "POST" and request.is_ajax():
-                request_kwargs = json.loads(request.body)
+        if request:
+            if hasattr(request, "resolver_match") and request.resolver_match:
+                if request.method == "POST" and request.is_ajax():
+                    request_kwargs = json.loads(request.body)
+                else:
+                    request_kwargs = request.resolver_match.kwargs
+            elif request.method == "GET":
+                request_kwargs = request.GET
+            elif request.method == "POST":
+                request_kwargs = request.POST
             else:
-                request_kwargs = request.resolver_match.kwargs
+                request_kwargs = None
 
-            if "task_id" in request_kwargs:
-                task_id = int(request_kwargs["task_id"])
-            elif "analysis_id" in request_kwargs:
-                task_id = int(request_kwargs["analysis_id"])
-            else:
-                task_id = None
+            if request_kwargs:
+                if "task_id" in request_kwargs:
+                    task_id = int(request_kwargs["task_id"])
+                elif "analysis_id" in request_kwargs:
+                    task_id = int(request_kwargs["analysis_id"])
+                else:
+                    task_id = None
 
-            if task_id:
-                feedback_options["analysis_id"] = task_id
-                feedback_options["include_analysis"] = True
-                feedback_options["include_json_report"] = True
-                feedback_options["include_memdump"] = False
+                if task_id:
+                    feedback_options["analysis_id"] = task_id
+                    feedback_options["include_analysis"] = True
+                    feedback_options["include_json_report"] = True
+                    feedback_options["include_memdump"] = False
 
         if feedback_options["include_json_report"]:
             feedback.include_report(analysis_id=feedback_options["analysis_id"])
@@ -148,12 +156,7 @@ class CuckooFeedback(object):
             if not resp["status"]:
                 raise CuckooFeedbackError(resp["message"])
 
-            feedback_id = resp["feedback_id"]
-            if feedback.report_info.haskey("analysis_id"):
-                self._register_sent(feedback=feedback,
-                                    feedback_id=feedback_id,
-                                    analysis_id=feedback.report_info["analysis_id"])
-            return feedback_id
+            return resp["feedback_id"]
         except requests.exceptions.RequestException as e:
             log.error("Invalid response from Cuckoo feedback server: %s", str(e))
         except CuckooFeedbackError as e:
