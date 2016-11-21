@@ -38,12 +38,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 
-try:
-    from apscheduler.schedulers.background import BackgroundScheduler
-except ImportError:
-    print "Missed dependencies, execute 'sudo pip install apscheduler'"
-    sys.exit()
-
 main_db = Database()
 Base = declarative_base()
 email_config = Config("cuckoomx")
@@ -148,13 +142,17 @@ def get_new_emails(db):
     conn.logout()
 
 if __name__ == "__main__":
-    scheduler = BackgroundScheduler()
-    scheduler.start()
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     cuckoomx_db = DBSession()
-    scheduler.add_job(send_notification , 'interval', seconds=30, args=[cuckoomx_db])
-    scheduler.add_job(get_new_emails , 'interval', seconds=30, args=[cuckoomx_db])
     while True:
-        pass
+        try:
+            send_notification(cuckoomx_db)
+        except Exception as e:
+            print e
+        try:
+            get_new_emails(cuckoomx_db)
+        except Exception as e:
+            print e
+        sleep(30)
     cuckoomx_db.close()
