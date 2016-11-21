@@ -126,7 +126,6 @@ class TestFeedback(unittest.TestCase):
                 ex = Exception("Mock Exception")
                 feedback_id = feedback.send_exception(ex, self.request)
                 assert feedback_id == 1
-
         self._teardown()
 
     def test_send_exception_faulty_feedback_config(self):
@@ -195,7 +194,6 @@ class TestFeedback(unittest.TestCase):
             assert feedback.report_info["file"]["task_id"] == 1
             assert feedback.report_info["file"]["name"] == "binary"
             assert feedback.report_info["file"]["size"] == 91010
-
         self._teardown()
 
     def test_feedback_include_analysis(self):
@@ -213,7 +211,6 @@ class TestFeedback(unittest.TestCase):
             feedback.include_analysis(include_memdump=True)
 
             assert len(feedback.export) == 659024
-
         self._teardown()
 
     def test_feedback_append_error(self):
@@ -226,6 +223,7 @@ class TestFeedback(unittest.TestCase):
         feedback.add_error("test")
 
         assert feedback.errors[0] == "test"
+        self._teardown()
 
     def test_send(self):
         """tests CuckooFeedback.send_exception with a valid feedback config"""
@@ -245,7 +243,6 @@ class TestFeedback(unittest.TestCase):
                     self.analysis_id, "TestName", "test@email.com", "TestMessage",
                     "TestCompany", True, True, True, False)
                 assert feedback_id == 1
-
         self._teardown()
 
     def _teardown(self):
