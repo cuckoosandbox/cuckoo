@@ -52,11 +52,17 @@
 
     </head>
 
-    <body {% if request.COOKIES.theme == "night" %}
+    <body 
+
+        {% if request.COOKIES.theme == "night" %}
             class="night"
         {% elif request.COOKIES.theme == "cyborg" %}
             class="cyborg"
-        {% endif %}>
+        {% endif %}
+
+        id="{{ env.view_name }}"
+
+    >
 
         <header>
             <nav class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
