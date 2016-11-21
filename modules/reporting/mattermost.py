@@ -27,29 +27,29 @@ class Mattermost(Report):
             )
 
         sigs, urls = [], []
-        for sig in results.get("signatures", {}):
+        for sig in results.get("signatures", []):
             sigs.append(sig.get("name"))
             if sig.get("name") == "network_http":
                 for http in sig.get("marks"):
                     urls.append(http.get("ioc"))
 
         post = "Finished analyze ::: [{0}]({1}{0}) ::: ".format(
-            results.get("info").get("id"),
+            results.get("info", {}).get("id"),
             self.options.get("myurl")
         )
 
-        filename = results.get("target").get("file").get("name")
+        filename = results.get("target", {}).get("file", {}).get("name", "")
         if self.options.get("hash-filename"):
             filename = hashlib.sha256(filename).hexdigest()
 
         post += "File : {0} ::: Score : **{1}** ::: ".format(
-            filename, results.get("info").get("score")
+            filename, results.get("info", {}).get("score")
         )
 
         if self.options.get("show-virustotal"):
             post += "**VT : {0} / {1}**\n".format(
-                results.get("virustotal").get("positives"),
-                results.get("virustotal").get("total"),
+                results.get("virustotal", {}).get("positives"),
+                results.get("virustotal", {}).get("total"),
             )
 
         if self.options.get("show-signatures"):

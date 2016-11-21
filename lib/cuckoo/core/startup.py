@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import httplib
 import os
 import shutil
 import sys
@@ -106,7 +107,7 @@ def check_version():
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError):
+    except (urllib2.URLError, urllib2.HTTPError, httplib.BadStatusLine):
         print(red(" Failed! ") + "Unable to establish connection.\n")
         return
 
