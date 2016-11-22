@@ -318,7 +318,7 @@ class AnalysisManager(threading.Thread):
             target = os.path.basename(target)
 
         log.info("Task #%d: Starting analysis of %s \"%s\" (options \"%s\")",
-                 sself.task.id, elf.task.category.upper(), target,
+                 self.task.id, self.task.category.upper(), target,
                  emit_options(self.task.options))
 
         # Initialize the analysis folders.
