@@ -128,7 +128,7 @@ class ReportHTML(Report):
         """
         return """
             <meta charset="UTF-8">
-            <title>Cuckoo Report #%d</title>
+            <title>Cuckoo Report %d</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="description" content="">
             <meta name="author" content="">
@@ -150,13 +150,13 @@ class ReportHTML(Report):
                self.combine_css(),
                self.combine_fonts(),
                self.combine_js())
-    
+
     def combine_css(self):
         """Scans the `static/css/ directory and concatenates stylesheets"""
         css_includes = ""
         for css_path in glob("%s/static/css/*.css" % self.path_base):
             css_file = open(css_path, "r")
-            css_data = css_file.read()
+            css_data = css_file.read().decode('utf-8')
             css_includes += "%s\n\n" % css_data
             css_file.close()
 
@@ -170,7 +170,7 @@ class ReportHTML(Report):
 
         for js_path in js_paths:
             js_file = open(js_path, "r")
-            js_data = js_file.read()
+            js_data = js_file.read().decode('utf-8')
             js_includes += "%s\n\n" % js_data
             js_file.close()
 
