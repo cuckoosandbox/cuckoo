@@ -1,0 +1,25 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.navbar {
+
+	&-brand,
+	&-nav li a {
+		line-height: 40px;
+	    height: 40px;
+	    padding-top: 0;		
+	}
+
+	&-fixed-top {
+		min-height: 30px;
+
+		li a img {
+			margin: 5px 0px 10px 20px;
+    		height: 34px;
+		}
+	}
+
+}

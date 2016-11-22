@@ -1,0 +1,129 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+ #recent_analysis {
+
+    .nav_container {
+        // clean up
+        margin-bottom: 30px;
+        border-bottom: 1px solid #ddd;
+        padding-left: 0 !important;
+        margin-bottom: 0;
+        list-style: none;
+        margin-top: 0;
+        margin-bottom: 10px;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: block;
+        list-style-type: disc;
+        -webkit-margin-before: 1em;
+        -webkit-margin-after: 1em;
+        -webkit-margin-start: 0px;
+        -webkit-margin-end: 0px;
+        -webkit-padding-start: 40px;
+
+        &:before {
+            display: table;
+            content: " ";
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        &:after {
+            clear: both;
+            display: table;
+            content: " ";
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        a:hover { text-decoration: none; }
+
+        & > #item {
+            display: inline-block;
+            margin-bottom: -1px;
+            position: relative;
+
+            &.item-spacer {
+                float: none;
+                margin: 0 10px;
+            }
+
+            & > a {
+                margin-right: 2px;
+                line-height: 1.42857143;
+                border: 1px solid transparent;
+                border-radius: 4px 4px 0 0;
+                position: relative;
+                display: block;
+                padding: 10px 15px;     
+            }
+
+            &.active {
+                color: #555;
+                background-color: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                border-bottom-color: transparent;
+
+                &:hover,
+                &:focus {
+                    cursor: default;
+                    background-color: white !important;
+                    text-decoration: none !important;
+                }
+
+            }
+
+            &:hover {
+                background-color: #f3f3f3;
+                border-bottom-color: transparent;
+                border-radius: 4px;
+                text-decoration: none;
+            }
+        }
+
+    }
+
+    #no_more_results { display: none; }
+
+    table#recent {
+
+        td {
+            &:first-child { width: 84px; }
+            &:last-child { text-align: right; }
+            &:nth-child(2) { width: 180px; }
+            &:nth-child(5) { 
+                width: 130px; 
+                text-align: right; 
+            }
+        }
+
+        .badge {
+            padding: 4px 8px;
+            font-weight: normal;
+        }
+
+        .badge-default {
+            background-color: #8aa392;
+        }
+
+        .badge-warning {
+            background-color: #edd851;
+            color: #484848;
+        }
+
+        .badge-danger {
+            background-color: #ed5151;
+            color: #ffffff;
+        }
+
+    }
+
+}

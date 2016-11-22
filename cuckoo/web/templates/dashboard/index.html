@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+    {% if report.estimate_hour and report.estimate_day %}
+        <div class="alert alert-info" style="text-align: center;font-size: 22px;">
+            Estimating ~<b>{{ report.estimate_hour }}</b> analysis per hour, <b>{{ report.estimate_day }}</b> per day.
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="jumbotron" style="text-align: center;">
+                <h1>{{ report.total_tasks }}</h1>
+                Total tasks
+            </div>
+        </div>
+        <div class="col-xs-6">
+            <div class="jumbotron" style="text-align: center;">
+                <h1>{{ report.total_samples }}</h1>
+                Total samples
+            </div>
+        </div>
+
+        <div class="col-xs-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">States</div>
+                <table class="table table-striped" style="table-layout: fixed;">
+                    <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for state, count in report.states_count.items %}
+                        <tr>
+                            <td>{{ state }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="stats">
+        <script src="{% static "js/cuckoo/plots.js" %}"></script>
+        <script>
+            $(document).ready(function(){
+                function cb(data){
+                    data = data.data;
+                    var draw = true;
+                    var chart_data = [];
+                    var def = {
+                        "analysis": "rgb(51,122,183)",
+                        "failed": "rgba(237,81,81,0.2)"
+                    };
+
+                    ["analysis", "failed"].forEach(function(type){
+                        var _data = {
+                            "x": [],
+                            "y": [],
+                            "type": "bar",
+                            "name": type.capitalize(),
+                            "marker": {
+                                color: def[type],
+                                opacity: 0.1,
+                                line: {
+                                    color: 'rbg(8,48,107)',
+                                    width: 1
+                                }
+                            }
+                        };
+
+                        // Only show the graph when data of more than 2 months
+                        // is present, to prevent drawing useless graphs
+                        if(data[type].length <= 2){
+                            draw = false;
+                        }
+
+                        data[type].forEach(function(month){
+                            var _month_human = month["month_human"].substring(0,3);
+                            var _year = month["year"].toString().substring(2);
+
+                            _data.x.push(_month_human + "\'" + _year);
+                            _data.y.push(month["num"]);
+                        });
+
+                        chart_data.push(_data);
+                    });
+
+                    var selector = $(".row").first();
+                    if(draw){
+                        selector.append('<div style="height:400px;" id="chart_analysis_count" class="col-xs-4">');
+                        selector.append('</div>');
+
+                        var chart_analysis_count = new BarChart("chart_analysis_count", true);
+                        chart_analysis_count.draw(chart_data, "Analysis per month");
+                    }
+                }
+
+                CuckooWeb.api_post("/analysis/api/tasks/stats/", {}, cb);
+            });
+        </script>
+    </div>
+
+{% endblock %}

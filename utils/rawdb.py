@@ -9,10 +9,15 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
-from lib.cuckoo.core.database import *
+from cuckoo.core.database import *
+from cuckoo.misc import set_cwd
 
 if __name__ == "__main__":
-    db = Database(echo=True)
+    set_cwd(os.path.expanduser("~/.cuckoo"))
+
+    db = Database()
+    db.connect()
+    db.engine.echo = True
     s = db.Session()
 
     IPython.start_ipython(user_ns=locals())

@@ -14,15 +14,20 @@ storage/*
 *.pem
 *.cert
 
+# Ignore .map files (css/js debugging)
+*.map
+
 # Ignore OS generated files
 .DS_Store*
 .AppleDouble
 ehthumbs.db
 Icon?
 Thumbs.db
+.cache
+Cuckoo.egg-info/
 
 # Ignore development files
-docs/book/src/_build/
+docs/book/_build/
 .idea/
 .project
 .pydevproject
@@ -39,3 +44,13 @@ venv
 # Python package stuff
 lib/python2.7/
 build/
+dist/
+local/
+cuckoo/data-private/.cwd
+
+# Frontend compilation services
+node_modules/
+bower_components/
+.sass-cache/
+
+cuckoo/web/manage.py

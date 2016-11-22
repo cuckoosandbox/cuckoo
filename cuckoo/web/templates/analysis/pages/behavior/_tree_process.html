@@ -1,0 +1,13 @@
+<li>
+    <strong><a href="javascript:show_tab('process_{{process.pid}}');">{{process.process_name}} ({{process.pid}})</a></strong>
+    <span class="mono" style="margin-left: 8px;"><small>{{ process.command_line }}</small></span>
+    {% if process.children %}
+        <ul>
+            {% for child in process.children %}
+                {% with process=child template_name="analysis/pages/behavior/_tree_process.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

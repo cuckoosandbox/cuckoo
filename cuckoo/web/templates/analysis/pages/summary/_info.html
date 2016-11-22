@@ -1,0 +1,81 @@
+<h4><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Information on Execution</h4>
+
+<div class="row">
+    <div class="col-md-7">
+        <section id="information">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Analysis
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Started</th>
+                            <th>Completed</th>
+                            <th>Duration</th>
+                            <th>Logs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{report.analysis.info.category|upper}}</td>
+                            <td>{{report.analysis.info.started}}</td>
+                            <td>{{report.analysis.info.ended}}</td>
+                            <td>{{report.analysis.info.duration}} seconds</td>
+                            <td>
+                                <a style="font-size: 12px;" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#info-log">Show Analyzer Log</a><br />
+                                <a style="font-size: 12px;" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#info-cuckoo">Show Cuckoo Log</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+    </div>
+    <div class="col-md-6">
+        {% if report.analysis.info.machine and report.analysis.info.machine.name %}
+            <section id="machine">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Machine</h4>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Label</th>
+                                <th>Started On</th>
+                                <th>Shutdown On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{report.analysis.info.machine.name}}</td>
+                                <td>{{report.analysis.info.machine.label}}</td>
+                                <td>{{report.analysis.info.machine.started_on}}</td>
+                                <td>{{report.analysis.info.machine.shutdown_on}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+            </section>
+        {% endif %}
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="info-log" class="collapse">
+            <h4><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Analyzer Log</h4>
+            <pre>{{report.analysis.debug.log|join:""}}</pre>
+        </div>
+
+        <div id="info-cuckoo" class="collapse">
+            <h4><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Cuckoo Log</h4>
+            <pre>{{report.analysis.debug.cuckoo|join:""}}</pre>
+        </div>
+    </div>
+</div>

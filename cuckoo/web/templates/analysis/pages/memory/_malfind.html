@@ -1,0 +1,20 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Start</th>
+            <th>Tag</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.malfind.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.vad_start}}</span></td>
+            <td class="{{ row.class_ }}">{{row.vad_tag}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

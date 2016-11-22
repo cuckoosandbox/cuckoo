@@ -1,0 +1,66 @@
+<style>
+    section#static_analysis pre{
+        background-color: transparent;
+        border: 0 solid #ccc;
+        border-radius: 0;
+        margin: 0 0 0;
+        padding: 0;
+        display: flex;
+        width: 100%;
+    }
+
+    section#static_analysis .panel-body{
+        padding:0;
+    }
+
+    section#static_analysis pre code{
+        padding: 6px 14px 14px;
+        width: 100%;
+        background-color: white;
+        font-size:12px;
+        margin: 20px 10px 10px;
+    }
+
+    section#static_analysis .panel-body h4{
+        margin-left:12px;
+        margin-bottom:0px;
+        margin-top:20px;
+    }
+</style>
+
+<section id="static_analysis">
+    {% for js in report.analysis.static.pdf %}
+        {% if js.javascript %}
+            {% for code in js.javascript %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                Javascript <small>(original / beautified)</small>
+                            </div>
+
+                            <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                                <div class="panel-body">
+                                    <div class="col-md-5" style="padding-right:0;">
+                                        <pre>
+                                            <code class="js">{{ code.orig_code }}</code>
+                                        </pre>
+                                    </div>
+                                    <div class="col-md-7" style="padding-left:0;border-left: 1px solid #d4d4d4;">
+                                        <pre>
+                                            <code class="js">{{ code.beautified }}</code>
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</section>
+<script>
+    $(document).ready(function() {
+        hljs.initHighlightingOnLoad();
+    });</script>

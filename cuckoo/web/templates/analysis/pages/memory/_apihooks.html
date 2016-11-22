@@ -1,0 +1,22 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Victim Function</th>
+            <th>Hook Type</th>
+            <th>Hooking Module</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.apihooks.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.victim_function}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_type}}</td>
+            <td class="{{ row.class_ }}">{{row.hooking_module}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

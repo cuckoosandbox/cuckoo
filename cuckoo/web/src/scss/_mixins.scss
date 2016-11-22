@@ -1,0 +1,19 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// mixin to include on the varieties of cuckoo boxes
+// @param $color [ANY COLOR TYPE]
+// @param $background-color [ANY COLOR TYPE] 
+// @include cuckoo-input-label($color: #RRGGBB, $background-color: #RRGGBB)
+@mixin cuckoo-input-label($color, $background-color) {
+	input[type="radio"],
+	input[type="checked"] {
+		&:checked ~ label:before {
+			color: $color;
+			background-color: $background-color;
+		}
+	}
+}

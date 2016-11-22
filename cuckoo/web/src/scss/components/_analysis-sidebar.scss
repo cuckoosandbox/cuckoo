@@ -1,0 +1,89 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.analysis {
+
+    &_menu {
+
+        &-userpic img {
+            float: none;
+            margin: 0 auto;
+            width: 50%;
+            height: 50%;
+            -webkit-border-radius: 50% !important;
+            -moz-border-radius: 50% !important;
+            border-radius: 50% !important;
+        }
+
+        &-userbuttons {
+            .btn {
+                text-transform: uppercase;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 6px 15px;
+                margin-right: 5px;
+
+                &:last-child {
+                    margin-right: 0px;                
+                }
+            }
+        }
+
+        &-usermenu {
+
+            ul li {
+
+                border-bottom: 1px solid #f0f4f7;
+                line-height: 0.7; 
+
+                a {
+                    color: #7c8b9c;
+                    font-size: 12px;
+                    font-weight: 400;
+
+                    i {
+                        margin-right: 8px;
+                        font-size: 14px;
+                    }
+
+                    &:hover {
+                        background-color: #fafcfd;
+                        color: #5b9bd1;
+                    }
+                }           
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                &.active {
+                    border-bottom: none;
+
+                    a {
+                         color: #5b9bd1;
+                        background-color: #f6f9fb;
+                        border-left: 2px solid #5b9bd1;
+                        margin-left: -2px;
+                    }
+                }
+
+                .label {
+                    margin-top:4px;
+                    background-color: #eaeaea;
+                    color: #676767;
+                }
+            }        
+        }
+
+        &-content {
+            padding: 20px;
+            background: #fff;
+            min-height: 460px;    
+        }
+
+    }
+
+}

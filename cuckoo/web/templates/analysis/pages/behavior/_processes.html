@@ -1,0 +1,195 @@
+<div class="processes tabbable">
+    <ul class="nav nav-tabs">
+        <li><a href="#search" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
+    {% for process in report.analysis.behavior.processes|filter_key_if_has:"track" %}
+        <li class="{% if forloop.first %}active{% endif %}"><a class="process" href="#process_{{process.pid}}" data-pid="{{process.pid}}" data-toggle="tab"><span class="glyphicon glyphicon-cog"></span> {{process.process_name}} ({{process.pid}})</a></li>
+    {% endfor %}
+    </ul>
+    <div class="tab-content">
+    {% include "analysis/pages/behavior/_search.html" %}
+    {% for process in report.analysis.behavior.processes|filter_key_if_has:"track" %}
+        <div class="tab-pane {% if forloop.first %}active{% endif %}" id="process_{{process.pid}}" data-pid="{{process.pid}}" data-length="{{process.calls|length}}">
+            <div class="alert alert-info" style="text-align: center;"><b>{{process.process_name}}</b>, PID: <b>{{process.pid}}</b>, Parent PID: {{process.ppid}}</div>
+
+            <p style="text-align: center;">
+                <a id="badge_default_{{process.pid}}" class="badge default" style="color:black;">default</a>
+                <a id="badge_registry_{{process.pid}}" class="badge registry" style="color:black;">registry</a>
+                <a id="badge_file_{{process.pid}}" class="badge file" style="color:black;">file</a>
+                <a id="badge_network_{{process.pid}}" class="badge network" style="color:black;">network</a>
+                <a id="badge_process_{{process.pid}}" class="badge process" style="color:black;">process</a>
+                <a id="badge_services_{{process.pid}}" class="badge services" style="color:black;">services</a>
+                <a id="badge_sync_{{process.pid}}" class="badge synchronisation" style="color:black;">synchronisation</a>
+                <a id="badge_iexplore_{{process.pid}}" class="badge iexplore" style="color:black;">iexplore</a>
+                <a id="badge_office_{{process.pid}}" class="badge office" style="color:black;">office</a>
+                <a id="badge_pdf_{{process.pid}}" class="badge pdf" style="color:black;">pdf</a>
+            </p>
+
+            <script type="text/javascript">
+            $(document).ready(function()
+            {
+                $("#badge_default_{{process.pid}}").click(function() { load_chunk({{process.pid}}, 1); });
+                $("#badge_network_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "network"); });
+                $("#badge_file_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "file"); });
+                $("#badge_registry_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "registry"); });
+                $("#badge_process_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "process"); });
+                $("#badge_services_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "services"); });
+                $("#badge_sync_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "synchronisation"); });
+                $("#badge_iexplore_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "iexplore"); });
+                $("#badge_office_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "office"); });
+                $("#badge_pdf_{{process.pid}}").click(function() { load_filtered_chunk({{process.pid}}, "pdf"); });
+
+                $('.tab-content').on('click', '.call-link', function (event) {
+                    cid = $(this).attr('data-cid');
+                    pid = $(this).attr('data-pid');
+                    go_to_api_call(+pid, +cid);
+
+                    event.preventDefault();
+                });
+            });
+            </script>
+
+            <div class="pagination pagination-centered">
+                <ul class="pagination">
+                </ul>
+            </div>
+
+            {% include 'components/loader.html' %}
+
+            <div class="calltable"></div>
+            <div class="pagination pagination-centered pagination_{{process.pid}}">
+                <ul class="pagination">
+                </ul>
+            </div>
+
+        </div>
+
+        {% if forloop.first %}
+            <script type="text/javascript" defer>
+                $(function() {
+                    load_chunk({{ process.pid }}, 1);
+                });
+            </script>
+        {% endif %}
+
+    {% endfor %}
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    var loader = new Loader($('.loading'));
+
+    function paginationbar(pages, page) {
+        if (pages === 0) return "";
+
+        function alert_current_page (i, page) {
+            if (i == page) return " class=\"active\"";
+            return "";
+        }
+
+        var out = "";
+        out += "<li"+alert_current_page(1, page)+"><a href=\"#\">1</a></li>";
+
+        if (page-10 > 2) out += "<li><span>...</span></li>";
+
+        for (i = Math.max(2, page-10); i <= Math.min(pages-1, page+10); i++) {
+            out += "<li"+alert_current_page(i, page)+"><a href=\"#\">" + i + "</a></li>";
+        }
+
+        if (page+10 < pages-1) out += "<li><span>...</span></li>";
+
+        if (pages > 1)
+            out += "<li"+alert_current_page(pages, page)+"><a href=\"#\">"+pages+"</a></li>";
+        return out;
+    }
+
+    function load_chunk(pid, pagenum, callback) {
+
+        if(!loader.loading) {
+            loader.start('loading behavioral analysis');
+        }
+
+        $("#process_"+pid+" div.calltable").load("{% url "analysis/recent" %}chunk/{{report.analysis.info.id}}/"+pid+"/"+pagenum+"/", function(data, status, xhr){
+            if (status == "error") {
+                $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
+            }
+            else {
+                $("#process_"+pid+" div.pagination ul").html(paginationbar(parseInt($("#process_"+pid).data("length")), pagenum));
+                $("#process_"+pid+" div.pagination a").click(function(e) {
+                    var t = $(e.target);
+                    load_chunk(t.parents("#process_"+pid).data("pid"), parseInt(t.text()));
+                });
+
+                loader.stop();
+                typeof callback === 'function' && callback();
+            }
+        });
+        
+    }
+
+    function show_tab(id, callback) {
+        // First, see if tab is already active. If it is, just run the callback
+        if ($('#' + id).hasClass('active')) {
+            typeof callback === 'function' && callback();
+        }
+        // Else, show the tab and run the callback once the tab is shown
+        else {
+            // Wait for tab to be shown
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($(e.target).attr('href') == '#' + id) {
+                    $('a[data-toggle="tab"]').off('shown.bs.tab');
+                    typeof callback === 'function' && callback();
+                }
+            });
+
+            // Show the tab
+            $('a[href="#' + id + '"]').tab('show');
+        }
+    }
+
+    function go_to_api_call(pid, call_id) {
+        // Load corresponding chunk
+        pagenum = Math.floor(call_id / 100) + 1;
+        load_chunk(pid, pagenum, function () {
+            // Show behavior tab
+            show_tab('behavior', function () {
+                // Show process tab
+                show_tab('process_' + pid, function () {
+                    // Scroll to call
+                    $('#call_' + call_id).get(0).scrollIntoView(false);
+                });
+            });
+        });
+    }
+
+    function load_filtered_chunk(pid, category) {
+
+        loader.start('loading ' + category);
+        
+        $("#process_"+pid+" div.calltable").load("{% url "analysis/recent" %}filtered/{{report.analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
+
+            if (status == "error") {
+                $("#process_"+pid+" div.calltable").html("Error loading data. Please reload the page and if the error persists contact us.");
+            }
+
+            else {
+                $("#process_"+pid+" div.pagination ul").html(paginationbar(0, 0));
+                $("#process_"+pid+" div.pagination a").click(function(e) {
+                    var t = $(e.target);
+                    load_chunk(t.parents("#process_"+pid).data("pid"), parseInt(t.text()));
+                });
+            }
+
+            loader.stop();
+
+        });
+    }
+
+    $('div.processes a.process[data-toggle="tab"]').on('show.bs.tab', function (e) {
+        var pid = $(e.target).data("pid");
+        // $("#process_"+pid+" div.calltable").html("Loading..");
+        load_chunk(pid, 1);;
+    });
+
+</script>

@@ -1,0 +1,24 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>CPU</th>
+            <th>Index</th>
+            <th>Selector</th>
+            <th>Address</th>
+            <th>Module</th>
+            <th>Section</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.idt.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.cpu_number}}</td>
+            <td class="{{ row.class_ }}">{{row.index}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.selector}}</span></td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.address}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</td>
+            <td class="{{ row.class_ }}">{{row.section}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,2 @@
+graft cuckoo
+recursive-exclude * *.pyc *.pyo

@@ -1,0 +1,26 @@
+<div class="cuckoo-errors">
+	<h4><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>  Errors</h4>
+
+	<ul class="errors collapse in">
+
+		{% for err in report.analysis.debug.errors %}
+
+			{% if forloop.counter <= 3 %}
+				<li class="error">
+					<p class="text-danger">{{err}}</p>
+					<a href="#" class="expand-error" title="Expand error message"><i class="fa fa-expand"></i> <span>click to expand / collapse this error</span></a>
+				</li>
+			{% endif %}
+
+		{% endfor %}
+
+	</ul>
+
+	<div class="clearfix">
+		<a class="btn btn-default" href="#modal_feedback" data-toggle="modal">Send feedback</a>
+		<div class="pull-right show-all-errors">
+			<span>Showing 3 of {{report.analysis.debug.errors|length}} errors</span>
+		</div>
+	</div>
+
+</div>
