@@ -246,6 +246,23 @@ def test_unknown_conf_file():
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert cfg["foobar"]["derp"]["foo"] == "bar"
 
+def test_sanitize():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(
+        cwd("conf"), "cuckoo.conf",
+        "[database]\n"
+        "timeout = 42\n"
+        "connection = postgresql://user:pass@localhost/cuckoo"
+    )
+    cfg = Config.from_confdir(cwd("conf"))
+    assert cfg["cuckoo"]["database"]["timeout"] == 42
+    assert cfg["cuckoo"]["database"]["connection"] == "postgresql://user:pass@localhost/cuckoo"
+
+    cfg = Config.from_confdir(cwd("conf"), sanitize=True)
+    assert cfg["cuckoo"]["database"]["timeout"] == 42
+    assert cfg["cuckoo"]["database"]["connection"] == "*"*8
+
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")

@@ -41,3 +41,9 @@ class CuckooResultError(CuckooOperationalError):
 
 class CuckooDisableModule(CuckooOperationalError):
     """Exception for disabling a module dynamically."""
+
+class CuckooFeedbackError(CuckooOperationalError):
+    """Error in feedback module."""
+
+class CuckooApiError(CuckooOperationalError):
+    """Error during API usage."""

@@ -76,7 +76,7 @@ class TestWebInterface(object):
         assert client.post("/").status_code == 405
 
     def test_summary_office1(self, request):
-        with mock.patch("controllers.analysis.analysis.AnalysisController") as ac:
+        with mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController") as ac:
             ac._get_report.return_value = {
                 "static": {
                     "office": {
@@ -107,7 +107,7 @@ class TestWebInterface(object):
         })
         s.file_path = "tests/files/createproc1.docm"
 
-        with mock.patch("controllers.analysis.analysis.AnalysisController") as ac:
+        with mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController") as ac:
             ac._get_report.return_value = {
                 "static": s.run(),
             }

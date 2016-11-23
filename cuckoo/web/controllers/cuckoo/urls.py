@@ -5,7 +5,7 @@
 
 from django.conf.urls import url
 
-from controllers.cuckoo.api import CuckooApi
+from cuckoo.web.controllers.cuckoo.api import CuckooApi
 
 urlpatterns = [
     url(r"^api/status/$", CuckooApi.status),

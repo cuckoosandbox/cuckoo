@@ -5,8 +5,8 @@
 
 from django.http import JsonResponse
 
-from bin.utils import api_post, json_error_response
-from controllers.analysis.feedback.feedback import AnalysisFeedBackController
+from cuckoo.web.bin.utils import api_post, json_error_response
+from cuckoo.web.controllers.analysis.feedback.feedback import AnalysisFeedBackController
 
 class FeedbackApi:
     @api_post
@@ -21,11 +21,11 @@ class FeedbackApi:
         include_memdump = body.get("include_memdump", False)
 
         if not task_id or not isinstance(task_id, int):
-            return json_error_response("invalid task_id")
-
-        for required in ["email", "message"]:
-            if required not in body or len(body[required]) <= 5:
-                return json_error_response("%s is required" % required)
+            return json_error_response("Invalid task_id")
+        if "email" not in body:
+            return json_error_response("Email is required")
+        if "message" not in body or len(body["message"]) <= 14:
+            return json_error_response("Message not present or too short")
 
         feedback = AnalysisFeedBackController(task_id)
         feedback.email = email

@@ -1,0 +1,15 @@
+{"category": "create_process", "args": ["C:\\Users\\Administrator\\AppData\\Local\\hkmsvc.exe", [], "explorer.exe"], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\hkmsvc", "REG_SZ", "C:\\Users\\Administrator\\AppData\\Local\\hkmsvc.exe"], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\ConsoleTracingMask", "REG_DWORD", 4294901760], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\EnableConsoleTracing", "REG_DWORD", 0], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\EnableFileTracing", "REG_DWORD", 0], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\FileDirectory", "REG_EXPAND_SZ", "%windir%\\tracing"], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\FileTracingMask", "REG_DWORD", 4294901760], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\Adobe_Updater_RASMANCS\\MaxFileSize", "REG_DWORD", 1048576], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\ConsoleTracingMask", "REG_DWORD", 4294901760], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\EnableConsoleTracing", "REG_DWORD", 0], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\EnableFileTracing", "REG_DWORD", 0], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\FileDirectory", "REG_EXPAND_SZ", "%windir%\\tracing"], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\FileTracingMask", "REG_DWORD", 4294901760], "type": "reboot", "time": 26}
+{"category": "regkey_written", "args": ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Tracing\\svchost_RASMANCS\\MaxFileSize", "REG_DWORD", 1048576], "type": "reboot", "time": 26}
+{"category": "regkey_deleted", "args": "HKEY_LOCAL_MACHINE\\System\\Acrobatviewercpp304", "type": "reboot", "time": 26}

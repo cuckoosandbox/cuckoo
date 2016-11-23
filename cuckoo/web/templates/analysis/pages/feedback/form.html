@@ -29,15 +29,15 @@
                 <form method="post">
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="firstname" name="firstname" placeholder="Your name" type="text" required autofocus />
+                            <input class="form-control" id="firstname" name="firstname" placeholder="Your name" type="text" value="{{ env.cfg.cuckoo.feedback.name }}" required autofocus />
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="company" name="company" placeholder="Company" type="text" required />
+                            <input class="form-control" id="company" name="company" placeholder="Company" type="text" value="{{ env.cfg.cuckoo.feedback.company }}" required />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12" style="padding-bottom: 10px;">
-                            <input class="form-control" id="email" name="email" placeholder="E-mail" type="text" required />
+                            <input class="form-control" id="email" name="email" placeholder="E-mail" type="text" value="{{ env.cfg.cuckoo.feedback.email }}" required />
                         </div>
                     </div>
                     <div class="row">

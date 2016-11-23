@@ -1,7 +1,15 @@
+import logging
+import traceback
+
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from cuckoo.core.feedback import CuckooFeedback
+
+log = logging.getLogger(__name__)
+
 def handler404(request):
+    print "400"
     response = render_to_response(
         'errors/error.html', {
             "code": 404,
@@ -9,7 +17,6 @@ def handler404(request):
         }, context_instance=RequestContext(request))
     response.status_code = 404
     return response
-
 
 def handler500(request):
     response = render_to_response(
@@ -19,3 +26,14 @@ def handler500(request):
         }, context_instance=RequestContext(request))
     response.status_code = 500
     return response
+
+class ExceptionMiddleware(object):
+    def process_exception(self, request, exception):
+        from cuckoo.common.config import Config
+        cfg = Config("cuckoo")
+
+        if hasattr(cfg, "feedback") and cfg.feedback.enabled:
+            feedback = CuckooFeedback()
+            feedback.send_exception(exception, request)
+
+        traceback.print_exc()  # to stderr

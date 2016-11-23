@@ -13,17 +13,19 @@ from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import parse_bool
 from cuckoo.misc import cwd
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+
 log = logging.getLogger(__name__)
 
 _cache = {}
 
-
 class Type(object):
     """Base Class for Type Definitions"""
 
-    def __init__(self, default=None, required=True):
+    def __init__(self, default=None, required=True, sanitize=False):
         self.default = self.parse(default)
         self.required = required
+        self.sanitize = sanitize
 
     def parse(self, value):
         """Parse a raw input value."""
@@ -72,11 +74,11 @@ class Path(String):
     """Path Type Definition class."""
 
     def __init__(self, default=None, exists=False, writable=False,
-                 readable=False, required=True):
+                 readable=False, required=True, sanitize=False):
         self.exists = exists
         self.writable = writable
         self.readable = readable
-        super(Path, self).__init__(default, required)
+        super(Path, self).__init__(default, required, sanitize)
 
     def parse(self, value):
         try:
@@ -208,6 +210,12 @@ class Config(object):
                     exists=False, writable=False, readable=True
                 ),
             },
+            "feedback": {
+                "enabled": Boolean(False),
+                "name": String(),
+                "company": String(),
+                "email": String(),
+            },
             "resultserver": {
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
@@ -220,7 +228,7 @@ class Config(object):
                 "sort_pcap": Boolean(True),
             },
             "database": {
-                "connection": String(),
+                "connection": String(sanitize=True),
                 "timeout": Int(),
             },
             "timeouts": {
@@ -318,7 +326,7 @@ class Config(object):
             "esx": {
                 "dsn": String("esx://127.0.0.1/?no_verify=1"),
                 "username": String("username_goes_here"),
-                "password": String("password_goes_here"),
+                "password": String("password_goes_here", sanitize=True),
                 "machines": List(String, "analysis1"),
                 "interface": String("eth0"),
             },
@@ -453,13 +461,13 @@ class Config(object):
             "physical": {
                 "machines": List(String, "physical1"),
                 "user": String("username"),
-                "password": String("password"),
+                "password": String("password", sanitize=True),
                 "interface": String("eth0"),
             },
             "fog": {
                 "hostname": String("none"),
                 "username": String("fog"),
-                "password": String("password"),
+                "password": String("password", sanitize=True),
             },
             "*": {
                 "__section__": "physical1",
@@ -501,7 +509,7 @@ class Config(object):
                 "enabled": Boolean(False),
                 "android_id": String(),
                 "google_login": String(),
-                "google_password": String(),
+                "google_password": String(sanitize=True),
             },
             "memory": {
                 "enabled": Boolean(False),
@@ -509,7 +517,7 @@ class Config(object):
             "misp": {
                 "enabled": Boolean(False),
                 "url": String(),
-                "apikey": String(),
+                "apikey": String(sanitize=True),
                 "maxioc": Int(100),
             },
             "network": {
@@ -579,7 +587,7 @@ class Config(object):
                 "enabled": Boolean(True),
                 "timeout": Int(60),
                 "scan": Boolean(False),
-                "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088"),
+                "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088", sanitize=True),
             },
             "irma": {
                 "enabled": Boolean(False),
@@ -647,7 +655,7 @@ class Config(object):
             "misp": {
                 "enabled": Boolean(False),
                 "url": String(),
-                "apikey": String(),
+                "apikey": String(sanitize=True),
                 "mode": String("maldoc ipaddr"),
             },
             "mongodb": {
@@ -754,7 +762,7 @@ class Config(object):
                 "host": String("10.0.0.1"),
                 "port": Int(443),
                 "user": String("username_goes_here"),
-                "pwd": String("password_goes_here"),
+                "pwd": String("password_goes_here", sanitize=True),
                 "interface": String("eth0"),
                 "machines": List(String, "analysis1"),
                 "unverified_ssl": Boolean(False),
@@ -774,7 +782,7 @@ class Config(object):
         "xenserver": {
             "xenserver": {
                 "user": String("root"),
-                "password": String("changeme"),
+                "password": String("changeme", sanitize=True),
                 "url": String("https://xenserver"),
                 "interface": String("virbr0"),
                 "machines": List(String, "cuckoo1"),
@@ -792,6 +800,28 @@ class Config(object):
             },
         },
     }
+
+    def get_section_types(self, file_name, section, strict=False, loose=False):
+        """Get types for a section entry."""
+        if section in self.configuration.get(file_name, {}):
+            types = self.configuration[file_name][section]
+        elif "*" in self.configuration.get(file_name, {}):
+            types = self.configuration[file_name]["*"]
+            # If multiple default values have been provided, pick one.
+            if isinstance(types, (tuple, list)):
+                types = types[0]
+        elif loose:
+            types = {}
+        else:
+            log.error(
+                "Config section %s:%s not found!", file_name, section
+            )
+            if strict:
+                raise CuckooConfigurationError(
+                    "Config section %s:%s not found!", file_name, section
+                )
+            return
+        return types
 
     def __init__(self, file_name="cuckoo", cfg=None, strict=False, loose=False):
         """
@@ -817,23 +847,8 @@ class Config(object):
             return
 
         for section in config.sections():
-            if section in self.configuration.get(file_name, {}):
-                types = self.configuration[file_name][section]
-            elif "*" in self.configuration.get(file_name, {}):
-                types = self.configuration[file_name]["*"]
-                # If multiple default values have been provided, pick one.
-                if isinstance(types, (tuple, list)):
-                    types = types[0]
-            elif loose:
-                types = {}
-            else:
-                log.error(
-                    "Config section %s:%s not found!", file_name, section
-                )
-                if strict:
-                    raise CuckooConfigurationError(
-                        "Config section %s:%s not found!", file_name, section
-                    )
+            types = self.get_section_types(file_name, section, strict, loose)
+            if types is None:
                 continue
 
             self.sections[section] = Dictionary()
@@ -874,8 +889,9 @@ class Config(object):
         return self.sections[section]
 
     @staticmethod
-    def from_confdir(dirpath, loose=False):
-        """Reads all the configuration from a configuration directory."""
+    def from_confdir(dirpath, loose=False, sanitize=False):
+        """Reads all the configuration from a configuration directory. If
+        `sanitize` is set, then black out sensitive fields."""
         ret = {}
         for filename in os.listdir(dirpath):
             if not filename.endswith(".conf"):
@@ -889,7 +905,11 @@ class Config(object):
             ret[config_name] = {}
             for section, values in cfg.sections.items():
                 ret[config_name][section] = {}
+                types = cfg.get_section_types(config_name, section) or {}
                 for key, value in values.items():
+                    if sanitize and key in types and types[key].sanitize:
+                        value = "*"*8
+
                     ret[config_name][section][key] = value
         return ret
 

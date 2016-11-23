@@ -41,6 +41,14 @@ class TestCreateFolders:
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "bar"))
 
+    def test_copy_folder(self):
+        """Tests recursive folder copy"""
+        dirpath = tempfile.mkdtemp()
+        set_cwd(dirpath)
+
+        Folders.copy("tests/files/sample_analysis_storage", dirpath)
+        assert os.path.isfile("%s/reports/report.json" % dirpath)
+
     def test_duplicate_folder(self):
         """Tests a duplicate folder creation."""
         Folders.create(self.tmp_dir, "foo")

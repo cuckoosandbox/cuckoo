@@ -12,8 +12,8 @@ from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from cuckoo.common.utils import json_default
-from bin.utils import get_directory_size
-from controllers.analysis.analysis import AnalysisController
+from cuckoo.web.bin.utils import get_directory_size
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 
@@ -50,12 +50,13 @@ class ExportController:
         }
 
     @staticmethod
-    def create(task_id, taken_dirs, taken_files):
+    def create(task_id, taken_dirs, taken_files, report=None):
         """
         Returns a zip file as a file like object.
         :param task_id: task id
         :param taken_dirs: directories to include
         :param taken_files: files to include
+        :param report: additional report dict
         :return: zip file
         """
 
@@ -72,9 +73,10 @@ class ExportController:
 
         taken_dirs = taken_dirs_tmp
 
-        report = AnalysisController.get_report(task_id)
-        report = report["analysis"]
+        if not report:
+            report = AnalysisController.get_report(task_id)
 
+        report = report["analysis"]
         path = report["info"]["analysis_path"]
 
         # Creating an analysis.json file with basic information about this
@@ -110,7 +112,6 @@ class ExportController:
     @staticmethod
     def get_files(analysis_path):
         """Locate all directories/results available for this analysis"""
-
         if not os.path.exists(analysis_path):
             raise Exception("Analysis path not found: %s" % analysis_path)
 

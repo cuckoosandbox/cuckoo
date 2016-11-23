@@ -13,9 +13,9 @@ from django.core.urlresolvers import reverse
 
 from cuckoo.core.database import Database, TASK_PENDING
 
-from controllers.analysis.export.export import ExportController
-from controllers.analysis.analysis import AnalysisController
-from bin.utils import view_error
+from cuckoo.web.controllers.analysis.export.export import ExportController
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
+from cuckoo.web.bin.utils import view_error, render_template
 
 results_db = settings.MONGO
 
@@ -51,10 +51,9 @@ class AnalysisRoutes:
 
                 analyses_urls.append(new)
 
-        return render(request, "analysis/index.html", {
-            "files": analyses_files,
-            "urls": analyses_urls,
-        })
+        return render_template(request, "analysis/index.html",
+                               files=analyses_files,
+                               urls=analyses_urls)
 
     @staticmethod
     def detail(request, task_id, page):
@@ -74,8 +73,10 @@ class AnalysisRoutes:
         }
 
         if page in pages.keys():
-            return render(request, "analysis/pages/%s.html" % pages[page],
-                          {"report": report, "page": page})
+            return render_template(request, "analysis/pages/%s.html" % pages[page],
+                                   report=report, page=page)
+        else:
+            return view_error(request, msg="Analysis subpage not found", status=404)
 
     @staticmethod
     def redirect_default(request, task_id):
@@ -112,19 +113,12 @@ class AnalysisRoutes:
 
         analysis_path = report["analysis"]["info"]["analysis_path"]
         dirs, files = ExportController.get_files(analysis_path)
-
-        return render(request, "analysis/export.html", {
-            "report": report,
-            "dirs": dirs,
-            "files": files,
-        })
+        return render_template(request, "analysis/export.html",
+                               report=report, dirs=dirs, files=files)
 
     @staticmethod
     def reboot(request, task_id):
         task_obj = Database().add_reboot(task_id=task_id)
-
-        return render(request, "submission/reboot.html", {
-            "task_id": task_id,
-            "task_obj": task_obj,
-            "baseurl": request.build_absolute_uri("/")[:-1],
-        })
+        return render_template(request, "submission/reboot.html",
+                               task_id=task_id, task_obj=task_obj,
+                               baseurl=request.build_absolute_uri("/")[:-1])

@@ -21,8 +21,8 @@ from cuckoo.misc import cwd
 from cuckoo.core.database import Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 from cuckoo.common.files import Folders
 
-from bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
-from controllers.analysis.analysis import AnalysisController
+from cuckoo.web.bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
 db = Database()

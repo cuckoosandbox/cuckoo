@@ -7,8 +7,8 @@ import base64
 
 from django.http import JsonResponse
 
-from bin.utils import api_post, json_error_response
-from controllers.analysis.analysis import AnalysisController
+from cuckoo.web.bin.utils import api_post, json_error_response
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 class AnalysisNetworkApi:
     @api_post

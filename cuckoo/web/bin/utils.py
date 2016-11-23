@@ -10,16 +10,17 @@ from datetime import datetime
 from functools import wraps
 from StringIO import StringIO
 
+from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.servers.basehttp import FileWrapper
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 
-def view_error(request, msg):
-    return render(request, "errors/error.html", {
-        "error": msg
-    })
+from cuckoo.misc import cwd
+from cuckoo.common.config import Config
+
+def view_error(request, msg, status=500):
+    return render(request, "errors/error.html", {"error": msg}, status=status)
 
 def get_directory_size(path):
     """recursive"""
@@ -67,6 +68,20 @@ class JsonSerialize(json.JSONEncoder):
             return calendar.timegm(obj.timetuple()) + obj.microsecond / 1000000.0
         raise TypeError("%r is not JSON serializable" % obj)
 
+def render_template(request, template_name, **kwargs):
+    env = {}
+
+    if hasattr(request, "resolver_match"):
+        resolver_match = request.resolver_match
+        env["view_name"] = resolver_match.view_name
+        env["view_kwargs"] = resolver_match.kwargs
+        env["url_name"] = resolver_match.url_name
+        env["cfg"] = Config.from_confdir(cwd("conf"))
+
+    kwargs["env"] = env
+
+    return render(request, template_name, kwargs)
+
 def json_response(message, status=200):
     return JsonResponse({
         "status": True if status == 200 else False,
@@ -74,7 +89,7 @@ def json_response(message, status=200):
     }, encoder=JsonSerialize, status=status)
 
 def json_error_response(message):
-    return json_response(message, 404)
+    return json_response(message, 501)
 
 def json_fatal_response(message):
     return json_response(message, 500)

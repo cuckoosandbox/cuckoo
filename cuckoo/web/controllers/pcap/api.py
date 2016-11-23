@@ -7,7 +7,7 @@ import os
 
 from cuckoo.misc import cwd
 
-from bin.utils import json_error_response, json_fatal_response, file_response, api_get
+from cuckoo.web.bin.utils import json_error_response, json_fatal_response, file_response, api_get
 
 class PcapApi:
     @api_get
