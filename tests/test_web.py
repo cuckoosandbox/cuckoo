@@ -72,6 +72,9 @@ class TestWebInterface(object):
     def test_index(self, client):
         assert client.get("/").status_code == 200
 
+    def test_index_post(self, client):
+        assert client.post("/").status_code == 405
+
     def test_summary_office1(self, request):
         with mock.patch("controllers.analysis.analysis.AnalysisController") as ac:
             ac._get_report.return_value = {
