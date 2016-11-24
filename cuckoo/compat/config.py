@@ -25,26 +25,27 @@ def _041_042(c):
     return c
 
 def _042_050(c):
-    analysis_timeout = c["cuckoo"]["cuckoo"].pop("analysis_timeout")
-    critical_timeout = c["cuckoo"]["cuckoo"].pop("critical_timeout")
+    analysis_timeout = c["cuckoo"]["cuckoo"].pop("analysis_timeout", None)
+    critical_timeout = c["cuckoo"]["cuckoo"].pop("critical_timeout", None)
     c["cuckoo"]["cuckoo"]["version_check"] = True
     c["cuckoo"]["cuckoo"]["memory_dump"] = False
-    analysis_size_limit = c["cuckoo"]["cuckoo"].pop("analysis_size_limit")
     c["cuckoo"]["processing"] = {
-        "analysis_size_limit": analysis_size_limit,
+        "analysis_size_limit": c["cuckoo"]["cuckoo"].pop(
+            "analysis_size_limit", None
+        ),
         "resolve_dns": True,
     }
     c["cuckoo"]["database"] = {
         "connection": None,
         "timeout": None,
     }
-    timeout = c["virtualbox"]["virtualbox"].pop("timeout")
+    timeout = c["virtualbox"]["virtualbox"].pop("timeout", None)
     c["cuckoo"]["timeouts"] = {
         "default": cast("cuckoo:timeouts:default", analysis_timeout),
         "critical": cast("cuckoo:timeouts:critical", critical_timeout),
         "vm_state": cast("cuckoo:timeouts:vm_state", timeout),
     }
-    sniffer = c["cuckoo"]["cuckoo"].pop("use_sniffer")
+    sniffer = c["cuckoo"]["cuckoo"].pop("use_sniffer", None)
     c["cuckoo"]["sniffer"] = {
         "enabled": sniffer,
         "tcpdump": "/usr/sbin/tcpdump",
@@ -110,15 +111,15 @@ def _060_100(c):
             "bpf": c["cuckoo"]["sniffer"].get("bpf"),
         },
     }
-    c["cuckoo"].pop("sniffer")
+    c["cuckoo"].pop("sniffer", None)
     c["cuckoo"]["cuckoo"]["delete_bin_copy"] = False
-    machinery = c["cuckoo"]["cuckoo"].pop("machine_manager")
+    machinery = c["cuckoo"]["cuckoo"].pop("machine_manager", None)
     c["cuckoo"]["cuckoo"]["machinery"] = machinery
     c["cuckoo"]["cuckoo"]["reschedule"] = False
     c["cuckoo"]["cuckoo"]["process_results"] = True
     c["cuckoo"]["cuckoo"]["max_analysis_count"] = 0
     c["cuckoo"]["cuckoo"]["freespace"] = 64
-    c["cuckoo"].pop("graylog")
+    c["cuckoo"].pop("graylog", None)
     c["esx"] = {
         "esx": {
             "dsn": "esx://127.0.0.1/?no_verify=1",
@@ -214,12 +215,12 @@ def _060_100(c):
     c["processing"]["memory"] = {
         "enabled": False,
     }
-    c["reporting"].pop("pickled")
+    c["reporting"].pop("pickled", None)
     c["reporting"]["mmdef"] = {
         "enabled": False,
     }
-    c["reporting"].pop("metadata")
-    c["reporting"].pop("maec11")
+    c["reporting"].pop("metadata", None)
+    c["reporting"].pop("maec11", None)
     c["reporting"]["maec40"] = {
         "enabled": False,
         "mode": "overview",
@@ -278,10 +279,12 @@ def _110_120(c):
     c["reporting"]["jsondump"]["encoding"] = "latin-1"
     c["reporting"]["mongodb"]["db"] = "cuckoo"
     c["reporting"]["mongodb"]["store_memdump"] = True
-    c["reporting"].pop("hpfclient")
+    c["reporting"].pop("hpfclient", None)
 
     for machine in c["vmware"]["vmware"]["machines"]:
-        c["vmware"][machine]["vmx_path"] = c["vmware"][machine].pop("label")
+        c["vmware"][machine]["vmx_path"] = (
+            c["vmware"][machine].pop("label", None)
+        )
 
     c["xenserver"] = {
         "xenserver": {
@@ -299,7 +302,7 @@ def _110_120(c):
     return c
 
 def _120_20c1(c):
-    interface = c["auxiliary"]["sniffer"].pop("interface")
+    interface = c["auxiliary"]["sniffer"].pop("interface", None)
     c["auxiliary"]["mitm"] = {
         "enabled": False,
         "mitmdump": "/usr/local/bin/mitmdump",
@@ -336,7 +339,7 @@ def _120_20c1(c):
         "route": "none",
         "internet": "none",
     }
-    c["cuckoo"]["resultserver"].pop("store_csvs")
+    c["cuckoo"]["resultserver"].pop("store_csvs", None)
     if c["cuckoo"]["timeouts"]["vm_state"] == 300:
         c["cuckoo"]["timeouts"]["vm_state"] = 60
     c["esx"]["esx"]["interface"] = "eth0"
@@ -424,8 +427,8 @@ def _120_20c1(c):
         },
     }
     c["reporting"]["jsondump"]["calls"] = True
-    c["reporting"].pop("mmdef")
-    c["reporting"].pop("maec40")
+    c["reporting"].pop("mmdef", None)
+    c["reporting"].pop("maec40", None)
     c["reporting"]["reporthtml"]["enabled"] = False
     c["reporting"]["mongodb"]["paginate"] = 100
     c["reporting"]["moloch"] = {
@@ -549,10 +552,10 @@ def _20c2_200(c):
         "email": None,
     }
     c["processing"]["network"]["whitelist_dns"] = (
-        c["processing"]["network"].pop("whitelist-dns")
+        c["processing"]["network"].pop("whitelist-dns", None)
     )
     c["processing"]["network"]["allowed_dns"] = (
-        c["processing"]["network"].pop("allowed-dns")
+        c["processing"]["network"].pop("allowed-dns", None)
     )
     c["reporting"]["misp"] = {
         "enabled": False,
@@ -560,11 +563,14 @@ def _20c2_200(c):
         "apikey": None,
         "mode": "maldoc ipaddr",
     }
-    for old_item in ("show-virustotal", "show-signatures", "show-urls", "hash-filename"):
+    old_items = (
+        "show-virustotal", "show-signatures", "show-urls", "hash-filename",
+    )
+    for old_item in old_items:
         new_item = old_item.replace("-", "_")
         c["reporting"]["mattermost"][new_item] = cast(
             "reporting:mattermost:%s" % new_item,
-            c["reporting"]["mattermost"].pop(old_item)
+            c["reporting"]["mattermost"].pop(old_item, None)
         )
 
     if "url" not in c["reporting"]["notification"]:
@@ -585,7 +591,7 @@ def _20c2_200(c):
         },
         "vpn": {
             "enabled": cast(
-                "routing:vpn:enabled", c["vpn"]["vpn"].pop("enabled")
+                "routing:vpn:enabled", c["vpn"]["vpn"].pop("enabled", None)
             ),
             "vpns": [],
         },
@@ -593,7 +599,7 @@ def _20c2_200(c):
 
     for item in ("route", "internet", "rt_table", "auto_rt"):
         c["routing"]["routing"][item] = cast(
-            "routing:routing:%s" % item, c["cuckoo"]["routing"].pop(item)
+            "routing:routing:%s" % item, c["cuckoo"]["routing"].pop(item, None)
         )
 
     for vpn in c["vpn"]["vpn"]["vpns"].split(","):
@@ -601,9 +607,9 @@ def _20c2_200(c):
             continue
 
         c["routing"]["vpn"]["vpns"].append(vpn.strip())
-        c["routing"][vpn.strip()] = c["vpn"].pop(vpn.strip())
+        c["routing"][vpn.strip()] = c["vpn"].pop(vpn.strip(), None)
 
-    c.pop("vpn")
+    c.pop("vpn", None)
     c["vsphere"]["vsphere"]["unverified_ssl"] = False
     return c
 

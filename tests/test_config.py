@@ -883,6 +883,10 @@ interface = eth0
     cfg = migrate(cfg, "2.0-rc2", "2.0.0")
     assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
     assert cfg["cuckoo"]["cuckoo"]["tmppath"] is None
+    assert cfg["cuckoo"]["feedback"]["enabled"] is False
+    assert cfg["cuckoo"]["feedback"]["name"] is None
+    assert cfg["cuckoo"]["feedback"]["company"] is None
+    assert cfg["cuckoo"]["feedback"]["email"] is None
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
