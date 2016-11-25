@@ -13,8 +13,6 @@ from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import parse_bool
 from cuckoo.misc import cwd
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
 log = logging.getLogger(__name__)
 
 _cache = {}
@@ -22,10 +20,12 @@ _cache = {}
 class Type(object):
     """Base Class for Type Definitions"""
 
-    def __init__(self, default=None, required=True, sanitize=False):
-        self.default = self.parse(default)
+    def __init__(self, default=None, required=True, sanitize=False,
+                 allow_empty=False):
         self.required = required
         self.sanitize = sanitize
+        self.allow_empty = allow_empty
+        self.default = self.parse(default)
 
     def parse(self, value):
         """Parse a raw input value."""
@@ -46,9 +46,10 @@ class Int(Type):
         if isinstance(value, basestring) and value.isdigit():
             return int(value)
 
-        log.error("Incorrect Integer %s", value)
-
     def check(self, value):
+        if self.allow_empty and not value:
+            return True
+
         try:
             click.INT(value)
             return True
@@ -65,6 +66,9 @@ class String(Type):
         return value.strip() if value else None
 
     def check(self, value):
+        if self.allow_empty and not value:
+            return True
+
         return isinstance(value, basestring)
 
     def emit(self, value):
@@ -74,13 +78,17 @@ class Path(String):
     """Path Type Definition class."""
 
     def __init__(self, default=None, exists=False, writable=False,
-                 readable=False, required=True, sanitize=False):
+                 readable=False, required=True, allow_empty=False,
+                 sanitize=False):
         self.exists = exists
         self.writable = writable
         self.readable = readable
-        super(Path, self).__init__(default, required, sanitize)
+        super(Path, self).__init__(default, required, sanitize, allow_empty)
 
     def parse(self, value):
+        if self.allow_empty and not value:
+            return
+
         try:
             c = click.Path(
                 exists=self.exists,
@@ -88,11 +96,13 @@ class Path(String):
                 readable=self.readable
             )
             return c.convert(value, None, None)
-        except Exception as e:
-            log.error("Incorrect path: %s, error: %s", value, e)
+        except Exception:
             return value
 
     def check(self, value):
+        if self.allow_empty and not value:
+            return True
+
         try:
             c = click.Path(
                 exists=self.exists,
@@ -204,7 +214,10 @@ class Config(object):
                 "max_machines_count": Int(0),
                 "max_vmstartup_count": Int(10),
                 "freespace": Int(64),
-                "tmppath": Path(exists=True, writable=True, readable=False),
+                "tmppath": Path(
+                    exists=True, writable=True, readable=False,
+                    allow_empty=True
+                ),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=True
@@ -229,7 +242,7 @@ class Config(object):
             },
             "database": {
                 "connection": String(sanitize=True),
-                "timeout": Int(),
+                "timeout": Int(allow_empty=True),
             },
             "timeouts": {
                 "default": Int(120),
@@ -578,7 +591,10 @@ class Config(object):
                     "files",
                     exists=False, writable=False, readable=True
                 ),
-                "socket": Path(exists=True, writable=False, readable=True),
+                "socket": Path(
+                    exists=True, writable=False, readable=True,
+                    allow_empty=True
+                ),
             },
             "targetinfo": {
                 "enabled": Boolean(True),
@@ -823,7 +839,8 @@ class Config(object):
             return
         return types
 
-    def __init__(self, file_name="cuckoo", cfg=None, strict=False, loose=False):
+    def __init__(self, file_name="cuckoo", cfg=None, strict=False,
+                 loose=False, raw=False):
         """
         @param file_name: file name without extension.
         @param cfg: configuration file path.
@@ -834,6 +851,10 @@ class Config(object):
                 env[key] = value
 
         config = ConfigParser.ConfigParser(env)
+
+        self.env_keys = []
+        for key in env.keys():
+            self.env_keys.append(key.lower())
 
         self.sections = {}
 
@@ -861,7 +882,16 @@ class Config(object):
                 raise CuckooConfigurationError(e)
 
             for name, raw_value in items:
-                if name in types:
+                if name in self.env_keys:
+                    continue
+
+                if not raw and name in types:
+                    # TODO Is this the area where we should be checking the
+                    # configuration values?
+                    # if not types[name].check(raw_value):
+                    #     print file_name, section, name, raw_value
+                    #     raise
+
                     value = types[name].parse(raw_value)
                 else:
                     if not loose:
@@ -928,12 +958,15 @@ def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
     return ",".join("%s=%s" % (k, v) for k, v in options.items())
 
-def config(s, cfg=None, strict=False):
+def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
     """Fetch a configuration value, denoted as file:section:key."""
     if s.count(":") != 2:
         raise RuntimeError("Invalid configuration entry: %s" % s)
 
     file_name, section, key = s.split(":")
+
+    if check:
+        strict = raw = loose = True
 
     type_ = Config.configuration.get(file_name, {}).get(section, {}).get(key)
     if strict and type_ is None:
@@ -942,15 +975,14 @@ def config(s, cfg=None, strict=False):
         )
 
     required = type_ is not None and type_.required
+    index = file_name, cfg, cwd(), strict, raw, loose
 
-    # Just have to be careful with caching and unit tests.
-    if not strict and (file_name, cfg, cwd()) not in _cache:
-        _cache[file_name, cfg, cwd()] = Config(file_name, cfg=cfg)
+    if index not in _cache:
+        _cache[index] = Config(
+            file_name, cfg=cfg, strict=strict, raw=raw, loose=loose
+        )
 
-    if strict:
-        config = Config(file_name, cfg=cfg, strict=True)
-    else:
-        config = _cache[file_name, cfg, cwd()]
+    config = _cache[index]
 
     if strict and required and section not in config.sections:
         raise CuckooConfigurationError(
@@ -967,7 +999,15 @@ def config(s, cfg=None, strict=False):
             "please double check it." % s
         )
 
-    return section.get(key, type_.default if type_ else None)
+    value = section.get(key, type_.default if type_ else None)
+
+    if check and not type_.check(value):
+        raise CuckooConfigurationError(
+            "The configuration value %r found for %s is invalid. Please "
+            "update your configuration!" % (value, s)
+        )
+
+    return value
 
 def cast(s, value):
     """Cast a configuration value as per its type."""

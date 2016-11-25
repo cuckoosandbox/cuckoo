@@ -5,16 +5,20 @@
 
 import os
 import pytest
-import shutil
 import tempfile
 
-from cuckoo.common.config import Config, parse_options, emit_options, config
+from cuckoo.common.config import (
+    Config, parse_options, emit_options, config, cast, Path
+)
 from cuckoo.common.exceptions import CuckooConfigurationError
+from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Folders, Files
 from cuckoo.compat.config import migrate
 from cuckoo.core.startup import check_configs
 from cuckoo.main import main
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, mkdir
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 CONF_EXAMPLE = """
 [cuckoo]
@@ -65,12 +69,12 @@ class TestConfig:
 
 ENV_EXAMPLE = """
 [cuckoo]
-tmppath = foo %(CUCKOO_FOOBAR)s bar
+tmppath = /tmp/foo%(CUCKOO_FOOBAR)sbar
 """
 
 ENV2_EXAMPLE = """
 [cuckoo]
-tmppath = foo %(FOOBAR)s bar
+tmppath = /tmp/foo%(FOOBAR)sbar
 """
 
 def test_env():
@@ -79,9 +83,11 @@ def test_env():
     os.environ["CUCKOO_FOOBAR"] = "top"
     os.environ["FOOBAR"] = "kek"
 
+    mkdir("/tmp/footopbar")
+
     open(path, "wb").write(ENV_EXAMPLE)
     c = Config("cuckoo", cfg=path)
-    assert c.get("cuckoo")["tmppath"] == "foo top bar"
+    assert c.get("cuckoo")["tmppath"] == "/tmp/footopbar"
 
     open(path, "wb").write(ENV2_EXAMPLE)
     with pytest.raises(CuckooConfigurationError):
@@ -110,6 +116,7 @@ CUCKOO_CONFIG_EXAMPLE = """
 version_check = on
 max_analysis_count = 0
 rooter = /tmp/cuckoo-rooter
+tmppath =
 [resultserver]
 force_port = no
 [database]
@@ -177,7 +184,7 @@ def test_default_config():
         )
 
     assert config("cuckoo:cuckoo:version_check") is True
-    assert config("cuckoo:cuckoo:tmppath") == ""
+    assert config("cuckoo:cuckoo:tmppath") is None
     assert config("cuckoo:resultserver:ip") == "192.168.56.1"
     assert config("cuckoo:processing:analysis_size_limit") == 104857600
     assert config("cuckoo:timeouts:critical") == 60
@@ -191,11 +198,14 @@ def test_default_config():
 
     assert check_configs()
 
-    Files.create(
-        (dirpath, "conf") , "cuckoo.conf", "[cuckoo]\nversion_check = on"
-    )
-    with pytest.raises(CuckooConfigurationError):
+    os.remove(os.path.join(dirpath, "conf", "cuckoo.conf"))
+    with pytest.raises(CuckooStartupError):
         check_configs()
+
+    Files.create(
+        (dirpath, "conf"), "cuckoo.conf", "[cuckoo]\nversion_check = on"
+    )
+    assert check_configs()
 
 def test_invalid_section():
     set_cwd(tempfile.mkdtemp())
@@ -959,3 +969,20 @@ def test_full_migration_040():
 
         for key, value in cfg["routing"][vpn].items():
             assert value == type_[key].parse(value)
+
+def test_cast():
+    assert cast("cuckoo:cuckoo:version_check", "1") is True
+    assert cast("cuckoo:cuckoo:version_check", "0") is False
+    assert cast("cuckoo:cuckoo:version_check", "on") is True
+    assert cast("cuckoo:cuckoo:version_check", "off") is False
+    assert cast("cuckoo:cuckoo:version_check", "yes") is True
+    assert cast("cuckoo:cuckoo:version_check", "no") is False
+
+    assert cast("cuckoo:cuckoo:machinery", "virtualbox") == "virtualbox"
+    assert cast("cuckoo:cuckoo:machinery", "1") == "1"
+
+    assert cast("cuckoo:cuckoo:freespace", "1234") == 1234
+
+def test_path():
+    assert Path(allow_empty=True).check("") is True
+    assert Path(allow_empty=True).check(None) is True

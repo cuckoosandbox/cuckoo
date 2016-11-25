@@ -178,16 +178,18 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     # Load additional Signatures.
     load_signatures()
 
-    # A subcommand will be invoked, so don't run Cuckoo itself.
-    if ctx.invoked_subcommand:
-        return
-
     if quiet:
         level = logging.WARN
     elif debug:
         level = logging.DEBUG
     else:
         level = logging.INFO
+
+    ctx.level = level
+
+    # A subcommand will be invoked, so don't run Cuckoo itself.
+    if ctx.invoked_subcommand:
+        return
 
     try:
         cuckoo_init(level, ctx)
@@ -253,20 +255,12 @@ def clean():
 @click.option("--pattern", help="Provide a glob-pattern when submitting a directory")
 @click.option("--max", type=int, help="Submit up to X tasks at once")
 @click.option("--unique", is_flag=True, help="Only submit samples that have not been analyzed before")
-@click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
-@click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
-def submit(target, url, options, package, custom, owner, timeout, priority,
-           machine, platform, memory, enforce_timeout, clock, tags, baseline,
-           remote, shuffle, pattern, max, unique, debug, quiet):
+@click.pass_context
+def submit(ctx, target, url, options, package, custom, owner, timeout,
+           priority, machine, platform, memory, enforce_timeout, clock, tags,
+           baseline, remote, shuffle, pattern, max, unique):
     """Submit one or more files or URLs to Cuckoo."""
-    if quiet:
-        level = logging.WARN
-    elif debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    init_console_logging(level=level)
+    init_console_logging(level=ctx.parent.level)
     Database().connect()
 
     l = submit_tasks(
@@ -289,19 +283,10 @@ def submit(target, url, options, package, custom, owner, timeout, priority,
 @click.argument("instance", required=False)
 @click.option("-r", "--report", default=0, help="Re-generate a report")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
-@click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
-@click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 @click.pass_context
-def process(ctx, instance, report, maxcount, debug, quiet):
+def process(ctx, instance, report, maxcount):
     """Process raw task data into reports."""
-    if quiet:
-        level = logging.WARN
-    elif debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    init_console_logging(level=level)
+    init_console_logging(level=ctx.parent.level)
 
     db = Database()
     db.connect()
@@ -334,13 +319,10 @@ def process(ctx, instance, report, maxcount, debug, quiet):
 @click.option("--service", type=click.Path(exists=True), default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
-@click.option("-v", "--verbose", is_flag=True)
 @click.option("--sudo", is_flag=True)
-def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+@click.pass_context
+def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
+    init_console_logging(level=ctx.parent.level)
 
     if sudo:
         args = [
@@ -352,7 +334,7 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
             "--ip", ip,
         ]
 
-        if verbose:
+        if ctx.parent.level == logging.DEBUG:
             args.append("--verbose")
 
         subprocess.call(args)
@@ -362,7 +344,6 @@ def rooter(socket, group, ifconfig, service, iptables, ip, verbose, sudo):
 @main.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
 @click.option("-p", "--port", default=8090, help="Port to bind the API server on")
-@click.option("-d", "--debug", is_flag=True, help="Start the API in debug mode")
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
@@ -398,13 +379,8 @@ def api(ctx, host, port, debug, uwsgi, nginx):
         print "}"
         return
 
+    init_console_logging(level=ctx.parent.level)
     Database().connect()
-
-    if debug:
-        init_console_logging(level=logging.DEBUG)
-    else:
-        init_console_logging(level=logging.INFO)
-
     cuckoo_api(host, port, debug)
 
 @main.command()
@@ -485,6 +461,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
 
     from django.core.management import execute_from_command_line
 
+    init_console_logging(level=ctx.parent.level)
     Database().connect()
 
     if not args:

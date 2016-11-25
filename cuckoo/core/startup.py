@@ -22,8 +22,6 @@ from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config
 from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
-from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.files import Folders
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
@@ -49,7 +47,10 @@ def check_specific_config(filename):
             continue
 
         for key, value in entries.items():
-            config("%s:%s:%s" % (filename, section, key), strict=True)
+            config(
+                "%s:%s:%s" % (filename, section, key),
+                check=True, strict=True
+            )
 
 def check_configs():
     """Checks if config files exist.
@@ -300,28 +301,23 @@ def init_rooter():
         if e.strerror == "No such file or directory":
             raise CuckooStartupError(
                 "The rooter is required but it is either not running or it "
-                "has been configured to a different Unix socket path. "
-                "(In order to disable the use of rooter, please set route "
-                "and internet to none in cuckoo.conf and enabled to no in "
-                "vpn.conf)."
+                "has been configured to a different Unix socket path. Please "
+                "refer to the documentation on working with the rooter."
             )
 
         if e.strerror == "Connection refused":
             raise CuckooStartupError(
                 "The rooter is required but we can't connect to it as the "
-                "rooter is not actually running. "
-                "(In order to disable the use of rooter, please set route "
-                "and internet to none in cuckoo.conf and enabled to no in "
-                "vpn.conf)."
+                "rooter is not actually running. Please refer to the "
+                "documentation on working with the rooter."
             )
 
         if e.strerror == "Permission denied":
             raise CuckooStartupError(
                 "The rooter is required but we can't connect to it due to "
                 "incorrect permissions. Did you assign it the correct group? "
-                "(In order to disable the use of rooter, please set route "
-                "and internet to none in cuckoo.conf and enabled to no in "
-                "vpn.conf)."
+                "Please refer to the documentation on working with the "
+                "rooter."
             )
 
         raise CuckooStartupError("Unknown rooter error: %s" % e)
