@@ -29,7 +29,7 @@ before_install:
 install:
   - python setup.py develop
   - pip install psycopg2 mysql-python
-  - pip install pytest pytest-cov coveralls
+  - pip install pytest pytest-cov codecov coveralls
 
 script:
   # Create the Cuckoo Working Directory.
@@ -46,3 +46,4 @@ script:
 
 after_success:
   - coveralls
+  - codecov
