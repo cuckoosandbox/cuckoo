@@ -20,13 +20,12 @@ import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
 from cuckoo.core.rooter import rooter, vpns
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 try:
     import pwd
@@ -85,7 +84,7 @@ def check_version():
     print(" Checking for updates...")
 
     url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version": CUCKOO_VERSION})
+    data = urllib.urlencode({"version": version})
 
     try:
         request = urllib2.Request(url, data)
@@ -102,11 +101,11 @@ def check_version():
 
     stable_version = response_data["current"]
 
-    if CUCKOO_VERSION.endswith("-dev"):
+    if version.endswith("-dev"):
         print(yellow(" You are running a development version! Current stable is {}.".format(
             stable_version)))
     else:
-        if LooseVersion(CUCKOO_VERSION) < LooseVersion(stable_version):
+        if LooseVersion(version) < LooseVersion(stable_version):
             msg = "Cuckoo Sandbox version {} is available now.".format(
                 stable_version)
 

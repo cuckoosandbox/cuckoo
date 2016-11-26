@@ -10,7 +10,7 @@ from datetime import datetime
 
 from django.conf import settings
 
-from cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.misc import version
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.controllers.analysis.export.export import ExportController
 
@@ -82,7 +82,7 @@ class AnalysisFeedBackController(object):
         headers = {
             "Content-type": "application/json",
             "Accept": "text/plain",
-            "User-Agent": "Cuckoo %s" % CUCKOO_VERSION
+            "User-Agent": "Cuckoo %s" % version
         }
 
         resp = requests.post(url=self._url_feedback, json=data, headers=headers)

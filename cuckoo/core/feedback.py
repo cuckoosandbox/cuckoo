@@ -15,9 +15,9 @@ from django.template import TemplateSyntaxError, TemplateDoesNotExist
 from django.conf import settings
 from django.http import Http404
 
-from cuckoo.core.report import AbstractReport, AbstractDict
+from cuckoo.core.report import AbstractReport
 from cuckoo.common.config import Config, config
-from cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.misc import version
 from cuckoo.web.controllers.analysis.export.export import ExportController
 
 from cuckoo.common.exceptions import CuckooFeedbackError
@@ -133,7 +133,7 @@ class CuckooFeedback(object):
         headers = {
             "Content-type": "application/json",
             "Accept": "text/plain",
-            "User-Agent": "Cuckoo %s" % CUCKOO_VERSION
+            "User-Agent": "Cuckoo %s" % version
         }
 
         try:

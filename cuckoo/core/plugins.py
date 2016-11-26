@@ -13,13 +13,12 @@ from distutils.version import StrictVersion
 import cuckoo
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooDisableModule
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
@@ -292,7 +291,7 @@ class RunSignatures(object):
         # While developing our version is generally something along the lines
         # of "2.0-dev" whereas StrictVersion() does not handle "-dev", so we
         # strip that part off.
-        self.version = CUCKOO_VERSION.split("-")[0]
+        self.version = version
 
         # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []

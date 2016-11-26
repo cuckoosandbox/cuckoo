@@ -26,8 +26,8 @@ from datetime import datetime
 # the Django environment being all setup for usage.
 from django.core.validators import URLValidator
 
-from cuckoo.common.constants import CUCKOO_VERSION, GITHUB_URL, ISSUES_PAGE_URL
-from cuckoo.misc import cwd
+from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
@@ -241,7 +241,7 @@ def exception_message():
     )
 
     msg += "=== Exception details ===\n"
-    msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
+    msg += "Cuckoo version: %s\n" % version
     msg += "OS version: %s\n" % os.name
     msg += "OS release: %s\n" % get_os_release()
     msg += "Python version: %s\n" % platform.python_version()

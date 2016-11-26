@@ -8,11 +8,10 @@ import socket
 
 from django.http import JsonResponse
 
-from cuckoo.misc import cwd
 from cuckoo.common.files import Files
 from cuckoo.core.rooter import rooter
 from cuckoo.core.database import Database
-from cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.misc import cwd, version
 
 from cuckoo.web.bin.utils import json_fatal_response, api_get
 
@@ -70,7 +69,7 @@ class CuckooApi:
             memory = None
 
         data = dict(
-            version=CUCKOO_VERSION,
+            version=version,
             hostname=socket.gethostname(),
             machines=dict(
                 total=len(db.list_machines()),
