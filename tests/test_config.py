@@ -87,7 +87,7 @@ def test_env():
 
     open(path, "wb").write(ENV_EXAMPLE)
     c = Config("cuckoo", cfg=path)
-    assert c.get("cuckoo")["tmppath"] == cwd("footopbar")
+    assert c.get("cuckoo")["tmppath"] == cwd() + "/footopbar"
 
     open(path, "wb").write(ENV2_EXAMPLE)
     with pytest.raises(CuckooConfigurationError):
