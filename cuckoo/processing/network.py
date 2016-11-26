@@ -768,11 +768,17 @@ class Pcap2(object):
                 request = sent.raw.split("\r\n\r\n", 1)[0]
                 response = recv.raw.split("\r\n\r\n", 1)[0]
 
-                md5 = hashlib.md5(recv.body or "").hexdigest()
-                sha1 = hashlib.sha1(recv.body or "").hexdigest()
+                # TODO Don't create empty files (e.g., the sent body for a
+                # GET request or a 301/302 HTTP redirect).
+                req_md5 = hashlib.md5(sent.body or "").hexdigest()
+                req_sha1 = hashlib.sha1(sent.body or "").hexdigest()
+                req_path = os.path.join(self.network_path, req_sha1)
+                open(req_path, "wb").write(sent.body or "")
 
-                filepath = os.path.join(self.network_path, sha1)
-                open(filepath, "wb").write(recv.body or "")
+                resp_md5 = hashlib.md5(recv.body or "").hexdigest()
+                resp_sha1 = hashlib.sha1(recv.body or "").hexdigest()
+                resp_path = os.path.join(self.network_path, resp_sha1)
+                open(resp_path, "wb").write(recv.body or "")
 
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
@@ -781,11 +787,27 @@ class Pcap2(object):
                     "method": sent.method,
                     "host": sent.headers.get("host", dstip),
                     "uri": sent.uri,
+
+                    # We'll keep these fields here for now.
                     "request": request.decode("latin-1"),
                     "response": response.decode("latin-1"),
-                    "md5": md5,
-                    "sha1": sha1,
-                    "path": filepath,
+
+                    # It's not perfect yet, but it'll have to do.
+                    "req": {
+                        "path": req_path,
+                        "md5": req_md5,
+                        "sha1": req_sha1,
+                    },
+                    "resp": {
+                        "path": resp_path,
+                        "md5": resp_md5,
+                        "sha1": resp_sha1,
+                    },
+
+                    # Obsolete fields.
+                    "md5": resp_md5,
+                    "sha1": resp_sha1,
+                    "path": resp_path,
                 })
 
         return results

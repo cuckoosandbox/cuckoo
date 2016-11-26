@@ -56,5 +56,5 @@ urlpatterns = [
     url(r"^api/task/behavior_get_processes/$", AnalysisApi.behavior_get_processes),
     url(r"^api/task/behavior_get_watcher/$", AnalysisApi.behavior_get_watcher),
     url(r"^api/task/behavior_get_watchers/$", AnalysisApi.behavior_get_watchers),
-    url(r"^api/task/network_http_response_data/$", AnalysisNetworkApi.http_response_data),
+    url(r"^api/task/network_http_data/$", AnalysisNetworkApi.http_data),
 ]
