@@ -5,6 +5,16 @@ body.night {
     color: #d7d7d7;
     background: linear-gradient(#313131, #3c3c3c);
 
+    .cuckoo-analysis {
+        background: linear-gradient(#313131, #3c3c3c);
+
+        &__header {
+            text-shadow: none;
+            box-shadow: none;
+            border-bottom-color: #000;
+        }
+    }
+
     hr {
         border-top: 1px solid #434343;
     }

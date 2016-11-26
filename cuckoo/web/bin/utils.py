@@ -50,8 +50,6 @@ api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(
 def _api_get(func):
     @wraps(func)
     def inner(*args, **kwargs):
-        request = args[0]
-
         return func(*args, **kwargs)
     return inner
 

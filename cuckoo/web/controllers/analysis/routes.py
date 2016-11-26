@@ -8,7 +8,7 @@ import re
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
 from cuckoo.core.database import Database, TASK_PENDING
@@ -73,10 +73,14 @@ class AnalysisRoutes:
         }
 
         if page in pages.keys():
-            return render_template(request, "analysis/pages/%s.html" % pages[page],
-                                   report=report, page=page)
+            return render_template(
+                request, "analysis/pages/%s.html" % pages[page],
+                report=report, page=page
+            )
         else:
-            return view_error(request, msg="Analysis subpage not found", status=404)
+            return view_error(
+                request, msg="Analysis subpage not found", status=404
+            )
 
     @staticmethod
     def redirect_default(request, task_id):

@@ -11,6 +11,7 @@
 // general css on the body and the html
 html { background: #1c1c1c; }
 body { padding-top: 70px; }
+body#analysis { padding-top: 30px; }
 
 // layout utils
 @import "layout/typography";
@@ -19,10 +20,13 @@ body { padding-top: 70px; }
 
 // components
 @import "components/analysis-sidebar";
+@import "components/cuckoo-analysis";
+@import "components/flex-navigation";
 @import "components/network-http-request";
 @import "components/dndupload";
 @import "components/nav";
 @import "components/navbar";
+@import "components/cuckoo-nav";
 @import "components/panel";
 @import "components/tcp";
 @import "components/page-error";
