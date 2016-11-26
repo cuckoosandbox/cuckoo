@@ -255,7 +255,7 @@ class Config(object):
                 "mode": String("headless"),
                 "path": Path(
                     "/usr/bin/VBoxManage",
-                    exists=True, writable=False, readable=True
+                    exists=False, writable=False, readable=True
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
@@ -278,7 +278,7 @@ class Config(object):
                 "enabled": Boolean(True),
                 "tcpdump": Path(
                     "/usr/sbin/tcpdump",
-                    exists=True, writable=False, readable=True
+                    exists=False, writable=False, readable=True
                 ),
                 "bpf": String(),
             },
