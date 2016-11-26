@@ -4,14 +4,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import getpass
 import logging
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, getuser
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +28,8 @@ class Sniffer(Auxiliary):
         if "nictrace" in self.machine.options:
             return
 
-        tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
-        bpf = self.options.get("bpf", "")
+        tcpdump = self.options["tcpdump"]
+        bpf = self.options["bpf"] or ""
         file_path = cwd("storage", "analyses", "%s" % self.task.id, "dump.pcap")
 
         if not os.path.exists(tcpdump):
@@ -51,11 +50,9 @@ class Sniffer(Auxiliary):
         ]
 
         # Trying to save pcap with the same user which cuckoo is running.
-        try:
-            user = getpass.getuser()
+        user = getuser()
+        if user:
             pargs.extend(["-Z", user])
-        except:
-            pass
 
         pargs.extend(["-w", file_path])
         pargs.extend(["host", self.machine.ip])
@@ -65,10 +62,10 @@ class Sniffer(Auxiliary):
             pargs.extend([
                 "and", "not", "(",
                 "dst", "host", self.machine.ip, "and",
-                "dst", "port", str(CUCKOO_GUEST_PORT),
+                "dst", "port", "%s" % CUCKOO_GUEST_PORT,
                 ")", "and", "not", "(",
                 "src", "host", self.machine.ip, "and",
-                "src", "port", str(CUCKOO_GUEST_PORT),
+                "src", "port", "%s" % CUCKOO_GUEST_PORT,
                 ")",
             ])
 
@@ -76,10 +73,10 @@ class Sniffer(Auxiliary):
             pargs.extend([
                 "and", "not", "(",
                 "dst", "host", self.machine.resultserver_ip, "and",
-                "dst", "port", self.machine.resultserver_port,
+                "dst", "port", "%s" % self.machine.resultserver_port,
                 ")", "and", "not", "(",
                 "src", "host", self.machine.resultserver_ip, "and",
-                "src", "port", self.machine.resultserver_port,
+                "src", "port", "%s" % self.machine.resultserver_port,
                 ")",
             ])
 

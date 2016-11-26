@@ -29,6 +29,7 @@ class Screenshots(Processing):
         if tesseract and not os.path.exists(tesseract):
             log.error("Could not find tesseract binary, "
                       "screenshot OCR aborted.")
+            tesseract = None
 
         for shot_file in sorted(os.listdir(self.shots_path)):
             if not shot_file.endswith(".jpg"):

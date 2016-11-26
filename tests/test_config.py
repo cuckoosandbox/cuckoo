@@ -69,12 +69,12 @@ class TestConfig:
 
 ENV_EXAMPLE = """
 [cuckoo]
-tmppath = /tmp/foo%(CUCKOO_FOOBAR)sbar
+tmppath = %(CUCKOO_CWD)s/foo%(CUCKOO_FOOBAR)sbar
 """
 
 ENV2_EXAMPLE = """
 [cuckoo]
-tmppath = /tmp/foo%(FOOBAR)sbar
+tmppath = %(CUCKOO_CWD)s/foo%(FOOBAR)sbar
 """
 
 def test_env():
@@ -83,11 +83,11 @@ def test_env():
     os.environ["CUCKOO_FOOBAR"] = "top"
     os.environ["FOOBAR"] = "kek"
 
-    mkdir("/tmp/footopbar")
+    mkdir(cwd("footopbar"))
 
     open(path, "wb").write(ENV_EXAMPLE)
     c = Config("cuckoo", cfg=path)
-    assert c.get("cuckoo")["tmppath"] == "/tmp/footopbar"
+    assert c.get("cuckoo")["tmppath"] == cwd("footopbar")
 
     open(path, "wb").write(ENV2_EXAMPLE)
     with pytest.raises(CuckooConfigurationError):

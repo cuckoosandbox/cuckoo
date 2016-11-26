@@ -850,6 +850,8 @@ class Config(object):
             if key.startswith("CUCKOO_"):
                 env[key] = value
 
+        env["CUCKOO_CWD"] = cwd()
+        env["CUCKOO_APP"] = os.environ.get("CUCKOO_APP", "")
         config = ConfigParser.ConfigParser(env)
 
         self.env_keys = []

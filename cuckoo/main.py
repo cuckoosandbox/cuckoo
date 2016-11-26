@@ -452,7 +452,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
     os.chdir(os.path.join(cuckoo.__path__[0], "web"))
     sys.path.insert(0, ".")
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cuckoo.web.web.settings")
 
     # The Django HTTP server also imports the WSGI module for some reason, so
     # ensure that WSGI is able to load.
