@@ -5,10 +5,12 @@
 import os.path
 import pytest
 import subprocess
+import sys
 import tempfile
 import time
 
-from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, HAVE_PWD
+from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir
+from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx
 
 def return_value(value):
     return value
@@ -59,3 +61,26 @@ def test_mkdir():
     assert not os.path.exists(dirpath)
     mkdir(dirpath)
     assert os.path.isdir(dirpath)
+
+@pytest.mark.skipif("sys.platform != 'win32'")
+def test_is_windows():
+    assert is_windows() is True
+    assert is_linux() is False
+    assert is_macosx() is False
+
+@pytest.mark.skipif("sys.platform != 'darwin'")
+def test_is_macosx():
+    assert is_windows() is False
+    assert is_linux() is False
+    assert is_macosx() is True
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+def test_is_windows():
+    assert is_windows() is False
+    assert is_linux() is True
+    assert is_macosx() is False
+
+def test_platforms():
+    """Ensure that the above unit tests are complete (for our supported
+    platforms)."""
+    assert sys.platform in ("win32", "linux2", "darwin")

@@ -153,3 +153,12 @@ def dispatch(func, args=(), kwargs={}, timeout=60, process=True):
     ret = parent.recv()
     parent.close()
     return ret
+
+def is_windows():
+    return sys.platform == "win32"
+
+def is_linux():
+    return sys.platform == "linux2"
+
+def is_macosx():
+    return sys.platform == "darwin"
