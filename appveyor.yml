@@ -17,7 +17,7 @@ install:
   - "set PATH=%PYTHON%;%PYTHON%/Scripts;%PATH%"
 
   - "python.exe setup.py develop"
-  - "pip.exe install psycopg2 mysqlclient"
+  - "pip.exe install psycopg2 mysqlclient codecov"
   - "pip.exe install pytest pytest-cov pytest-django pytest-pythonpath"
   - "pip.exe install flask-sqlalchemy==2.1 mock==2.0.0 responses==0.5.1"
 
@@ -40,3 +40,6 @@ test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"
   - "pytest.exe --cov=cuckoo"
+
+after_test:
+  - "codecov.exe"
