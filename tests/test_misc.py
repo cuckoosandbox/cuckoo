@@ -10,8 +10,10 @@ import sys
 import tempfile
 import time
 
+from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.files import Files
 from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, Popen
-from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx
+from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
@@ -46,6 +48,7 @@ def test_cwd():
 
     set_cwd("/home/user/.cuckoo", "~/.cuckoo")
     assert cwd(raw=True) == "~/.cuckoo"
+    assert cwd(root=True) == "/home/user/.cuckoo"
 
     assert os.path.exists(cwd("guids.txt", private=True))
 
@@ -123,3 +126,50 @@ def test_popen():
     p = Popen("echo 1234", close_fds=True, stdout=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     assert out.strip() == "1234" and not err
+
+def test_decide_cwd():
+    orig_cuckoo_cwd = os.environ.pop("CUCKOO_CWD", None)
+    orig_cuckoo = os.environ.pop("CUCKOO", None)
+
+    dirpath1 = tempfile.mkdtemp()
+    dirpath2 = tempfile.mkdtemp()
+    dirpath3 = tempfile.mkdtemp()
+
+    assert decide_cwd(dirpath1) == dirpath1
+
+    assert decide_cwd() == os.path.abspath(os.path.expanduser("~/.cuckoo"))
+
+    curdir = os.getcwd()
+    os.chdir(dirpath2)
+    open(".cwd", "wb").write("A"*40)
+
+    assert decide_cwd() == os.path.abspath(".")
+    os.chdir(curdir)
+
+    os.environ["CUCKOO"] = dirpath2
+    assert decide_cwd(dirpath1) == dirpath1
+    assert decide_cwd() == dirpath2
+
+    os.environ["CUCKOO_CWD"] = dirpath3
+    assert decide_cwd(dirpath1) == dirpath1
+    assert decide_cwd() == dirpath3
+
+    with pytest.raises(CuckooStartupError):
+        decide_cwd(tempfile.mktemp(), exists=True)
+
+    with pytest.raises(CuckooStartupError):
+        decide_cwd(dirpath1, exists=True)
+
+    Files.create(dirpath1, ".cwd", "A"*40)
+    assert decide_cwd(dirpath1, exists=True) == dirpath1
+
+    # Cleanup.
+    if orig_cuckoo:
+        os.environ["CUCKOO"] = orig_cuckoo
+    else:
+        os.environ.pop("CUCKOO", None)
+
+    if orig_cuckoo_cwd:
+        os.environ["CUCKOO_CWD"] = orig_cuckoo_cwd
+    else:
+        os.environ.pop("CUCKOO_CWD", None)

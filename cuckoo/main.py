@@ -31,7 +31,7 @@ from cuckoo.core.startup import cuckoo_clean, drop_privileges
 from cuckoo.core.startup import init_logging, init_console_logging
 from cuckoo.core.startup import init_tasks, init_yara, init_binaries
 from cuckoo.core.startup import init_rooter, init_routing
-from cuckoo.misc import cwd, set_cwd, load_signatures, getuser
+from cuckoo.misc import cwd, load_signatures, getuser, decide_cwd
 
 log = logging.getLogger("cuckoo")
 
@@ -141,7 +141,7 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("--nolog", is_flag=True, help="Don't log to file.")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.option("--user", help="Drop privileges to this user")
-@click.option("--cwd", envvar="CUCKOO", help="Cuckoo Working Directory")
+@click.option("--cwd", help="Cuckoo Working Directory")
 @click.pass_context
 def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     """Invokes the Cuckoo daemon or one of its subcommands.
@@ -153,21 +153,12 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
 
     \b
     * Command-line option (--cwd)
-    * Environment option ("CUCKOO")
     * Environment option ("CUCKOO_CWD")
+    * Environment option ("CUCKOO")
     * Current directory (if the ".cwd" file exists)
     * Default value ("~/.cuckoo")
     """
-    if not cwd:
-        cwd = os.environ.get("CUCKOO_CWD")
-
-    if not cwd and os.path.exists(".cwd"):
-        cwd = "."
-
-    if not cwd:
-        cwd = "~/.cuckoo"
-
-    set_cwd(os.path.abspath(os.path.expanduser(cwd)), raw=cwd)
+    decide_cwd(cwd)
 
     # Drop privileges.
     user and drop_privileges(user)

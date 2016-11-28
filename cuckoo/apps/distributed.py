@@ -5,7 +5,7 @@
 import os
 import sys
 
-from cuckoo.misc import set_cwd
+from cuckoo.misc import decide_cwd
 
 try:
     from cuckoo.distributed.app import create_app
@@ -17,19 +17,6 @@ except ImportError:
     HAVE_FLASKSQLA = False
 
 app = None
-
-if os.environ.get("CUCKOO_APP") == "dist":
-    # When run under uWSGI the Cuckoo Working Directory will not have been set
-    # yet and we'll have to do so ourselves.
-    set_cwd(os.environ["CUCKOO_CWD"])
-
-    if not HAVE_FLASKSQLA:
-        sys.exit(
-            "Please install flask-sqlalchemy (through "
-            "`pip install cuckoo[distributed]`)"
-        )
-
-    app = create_app()
 
 def cuckoo_distributed(hostname, port, debug):
     if not HAVE_FLASKSQLA:
@@ -57,3 +44,14 @@ def cuckoo_distributed_instance(name):
             status_caching()
         else:
             handle_node(name)
+
+if os.environ.get("CUCKOO_APP") == "dist":
+    decide_cwd(exists=True)
+
+    if not HAVE_FLASKSQLA:
+        sys.exit(
+            "Please install flask-sqlalchemy (through "
+            "`pip install cuckoo[distributed]`)"
+        )
+
+    app = create_app()

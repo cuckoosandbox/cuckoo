@@ -19,6 +19,8 @@ except ImportError:
 
 import cuckoo
 
+from cuckoo.common.exceptions import CuckooStartupError
+
 log = logging.getLogger(__name__)
 
 # Cuckoo Working Directory base path.
@@ -40,8 +42,41 @@ def cwd(*args, **kwargs):
         return os.path.join(cuckoo.__path__[0], "data-private", *args)
     elif kwargs.pop("raw", False):
         return _raw
+    elif kwargs.pop("root", False):
+        return _root
     else:
         return os.path.join(_root, *args)
+
+def decide_cwd(cwd=None, exists=False):
+    """Decides and sets the CWD, optionally checks if it's a valid CWD."""
+    if not cwd:
+        cwd = os.environ.get("CUCKOO_CWD")
+
+    if not cwd:
+        cwd = os.environ.get("CUCKOO")
+
+    if not cwd and os.path.exists(".cwd"):
+        cwd = "."
+
+    if not cwd:
+        cwd = "~/.cuckoo"
+
+    dirpath = os.path.abspath(os.path.expanduser(cwd))
+    if exists:
+        if not os.path.exists(dirpath):
+            raise CuckooStartupError(
+                "Unable to start this Cuckoo command as the provided CWD (%r) "
+                "is not present!" % dirpath
+            )
+
+        if not os.path.exists(os.path.join(dirpath, ".cwd")):
+            raise CuckooStartupError(
+                "Unable to start this Cuckoo command as the provided CWD (%r) "
+                "is not a proper CWD!" % dirpath
+            )
+
+    set_cwd(dirpath, raw=cwd)
+    return dirpath
 
 def mkdir(*args):
     """Create a directory without throwing exceptions if it already exists."""

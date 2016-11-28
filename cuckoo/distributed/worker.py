@@ -14,7 +14,7 @@ import os
 import time
 import sys
 
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import cwd, decide_cwd
 
 try:
     from cuckoo.distributed.app import create_app
@@ -74,7 +74,7 @@ def spawner():
         time.sleep(5)
 
 if os.environ.get("CUCKOO_APP") == "worker":
-    set_cwd(os.environ["CUCKOO_CWD"])
+    decide_cwd(exists=True)
 
     if not HAVE_GEVENT or not HAVE_FLASKSQLA:
         sys.exit(

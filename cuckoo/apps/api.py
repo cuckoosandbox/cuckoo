@@ -18,7 +18,7 @@ from cuckoo.common.utils import parse_bool
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, set_cwd, version
+from cuckoo.misc import cwd, version, decide_cwd
 
 # Global Database object.
 db = Database()
@@ -574,7 +574,5 @@ def cuckoo_api(hostname, port, debug):
     app.run(host=hostname, port=port, debug=debug)
 
 if os.environ.get("CUCKOO_APP") == "api":
-    # When run under uWSGI the Cuckoo Working Directory will not have been set
-    # yet and we'll have to do so ourselves.
-    set_cwd(os.environ["CUCKOO_CWD"])
+    decide_cwd(exists=True)
     Database().connect()
