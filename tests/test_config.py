@@ -18,8 +18,6 @@ from cuckoo.core.startup import check_configs
 from cuckoo.main import main
 from cuckoo.misc import set_cwd, cwd, mkdir
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
 CONF_EXAMPLE = """
 [cuckoo]
 delete_original = off

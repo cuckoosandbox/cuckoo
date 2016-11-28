@@ -14,7 +14,6 @@ from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
 
 logging.basicConfig(level=logging.DEBUG)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 # These have to be imported after setting the django settings module
 # environment variable as they're using the settings.MONGO variable.

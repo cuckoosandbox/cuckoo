@@ -14,7 +14,6 @@ from cuckoo.misc import cwd, set_cwd
 from cuckoo.common.exceptions import CuckooFeedbackError
 
 logging.basicConfig(level=logging.DEBUG)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 CUCKOO_CONF = """
 [cuckoo]

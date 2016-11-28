@@ -15,8 +15,6 @@ from cuckoo.common.files import Files
 from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, Popen
 from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
 def return_value(value):
     return value
 

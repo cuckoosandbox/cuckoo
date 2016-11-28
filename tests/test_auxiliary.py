@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
-import os
 import pytest
 import subprocess
 import tempfile
@@ -11,8 +10,6 @@ import tempfile
 from cuckoo.auxiliary.sniffer import Sniffer
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import set_cwd, cwd, getuser, is_windows
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 class BasePopen(object):
     pid = 0x4141

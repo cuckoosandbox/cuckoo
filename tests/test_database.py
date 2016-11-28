@@ -11,9 +11,6 @@ from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
-# TODO We can get rid of this once we don't use URLValidator anymore.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
 class DatabaseEngine(object):
     """Tests database stuff."""
     URI = None

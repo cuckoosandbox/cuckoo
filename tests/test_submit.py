@@ -15,9 +15,6 @@ from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import set_cwd
 
-# TODO We can get rid of this once we don't use URLValidator anymore.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
 CUCKOO_CONF = """
 [cuckoo]
 tmppath = /tmp
