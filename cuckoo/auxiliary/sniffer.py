@@ -3,14 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import logging
+import os
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.misc import cwd, getuser
+from cuckoo.misc import cwd, getuser, Popen
 
 log = logging.getLogger(__name__)
 
@@ -22,11 +22,11 @@ class Sniffer(Auxiliary):
     def start(self):
         if not self.machine.interface:
             log.error("Network interface not defined, network capture aborted")
-            return
+            return False
 
         # Handle special pcap dumping options.
         if "nictrace" in self.machine.options:
-            return
+            return True
 
         tcpdump = self.options["tcpdump"]
         bpf = self.options["bpf"] or ""
@@ -35,7 +35,7 @@ class Sniffer(Auxiliary):
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
                       "capture aborted", tcpdump)
-            return
+            return False
 
         # TODO: this isn't working. need to fix.
         # mode = os.stat(tcpdump)[stat.ST_MODE]
@@ -84,7 +84,7 @@ class Sniffer(Auxiliary):
                 pargs.extend(["and", "(", bpf, ")"])
 
         try:
-            self.proc = subprocess.Popen(
+            self.proc = Popen(
                 pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
             )
         except (OSError, ValueError):
@@ -92,12 +92,13 @@ class Sniffer(Auxiliary):
                 "Failed to start sniffer (interface=%s, host=%s, pcap=%s)",
                 self.machine.interface, self.machine.ip, file_path,
             )
-            return
+            return False
 
         log.info(
             "Started sniffer with PID %d (interface=%s, host=%s, pcap=%s)",
             self.proc.pid, self.machine.interface, self.machine.ip, file_path,
         )
+        return True
 
     def _check_output(self, out, err):
         if out:
@@ -106,17 +107,21 @@ class Sniffer(Auxiliary):
                 "standard output, got: %r." % out
             )
 
-        err_whitelist = (
+        err_whitelist_start = (
+            "tcpdump: listening on ",
+        )
+
+        err_whitelist_ends = (
             "packets captured",
             "packets received by filter",
             "packets dropped by kernel",
         )
 
         for line in err.split("\n"):
-            if not line or line.startswith("tcpdump: listening on "):
+            if not line or line.startswith(err_whitelist_start):
                 continue
 
-            if line.endswith(err_whitelist):
+            if line.endswith(err_whitelist_ends):
                 continue
 
             raise CuckooOperationalError(

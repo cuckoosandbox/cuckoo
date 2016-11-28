@@ -2,15 +2,18 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os.path
+import mock
+import os
 import pytest
 import subprocess
 import sys
 import tempfile
 import time
 
-from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir
+from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, Popen
 from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 def return_value(value):
     return value
@@ -84,3 +87,39 @@ def test_platforms():
     """Ensure that the above unit tests are complete (for our supported
     platforms)."""
     assert sys.platform in ("win32", "linux2", "darwin")
+
+def test_popen():
+    """Ensures that Popen is working properly."""
+    with mock.patch("subprocess.Popen") as p:
+        p.return_value = None
+        Popen(["foo", "bar"])
+
+    p.assert_called_once_with(["foo", "bar"])
+
+    with mock.patch("subprocess.Popen") as p:
+        p.return_value = None
+        Popen(
+            ["foo", "bar"], close_fds=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    if is_windows():
+        p.assert_called_once_with(
+            ["foo", "bar"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+    else:
+        p.assert_called_once_with(
+            ["foo", "bar"], close_fds=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    # Test that the method actually works.
+    p = Popen("echo 123", stdout=subprocess.PIPE, shell=True)
+    out, err = p.communicate()
+    assert out.strip() == "123" and not err
+
+    # The following would normally throw an exception on Windows.
+    p = Popen("echo 1234", close_fds=True, stdout=subprocess.PIPE, shell=True)
+    out, err = p.communicate()
+    assert out.strip() == "1234" and not err
