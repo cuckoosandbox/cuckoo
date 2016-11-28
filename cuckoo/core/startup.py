@@ -482,8 +482,10 @@ def drop_privileges(username):
     @param username: drop privileges to this username
     """
     if not HAVE_PWD:
-        sys.exit("Unable to import pwd required for dropping "
-                 "privileges (`pip install pwd`)")
+        sys.exit(
+            "Unable to import pwd required for dropping privileges (note that "
+            "privilege dropping is not supported under Windows)!"
+        )
 
     try:
         user = pwd.getpwnam(username)

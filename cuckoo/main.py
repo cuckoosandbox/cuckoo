@@ -295,7 +295,7 @@ def process(ctx, instance, report, maxcount):
         else:
             task = task.to_dict()
 
-        process_task(task, db)
+        process_task(task)
     elif not instance:
         print ctx.get_help(), "\n"
         sys.exit("In automated mode an instance name is required!")
@@ -338,7 +338,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
-def api(ctx, host, port, debug, uwsgi, nginx):
+def api(ctx, host, port, uwsgi, nginx):
     username = ctx.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
@@ -372,20 +372,16 @@ def api(ctx, host, port, debug, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
-    cuckoo_api(host, port, debug)
+    cuckoo_api(host, port, ctx.parent.level == logging.DEBUG)
 
 @main.command()
 @click.option("-H", "--host", default="0.0.0.0", help="IP address to bind for the DNS server")
 @click.option("-p", "--port", default=53, help="UDP port to bind to for the DNS server")
 @click.option("--nxdomain", help="IP address to return instead of NXDOMAIN")
 @click.option("--hardcode", help="Hardcoded IP address to return instead of actually doing DNS lookups")
-@click.option("-v", "--verbose", is_flag=True)
-def dnsserve(host, port, nxdomain, hardcode, verbose):
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
+@click.pass_context
+def dnsserve(ctx, host, port, nxdomain, hardcode):
+    init_console_logging(ctx.parent.level)
     cuckoo_dnsserve(host, port, nxdomain, hardcode)
 
 @main.command()
@@ -465,7 +461,6 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @main.command()
 @click.argument("vmname")
 @click.argument("ip", default="")
-@click.option("--debug", is_flag=True, help="Enable verbose logging")
 @click.option("--add", is_flag=True, help="Add a Virtual Machine")
 @click.option("--delete", is_flag=True, help="Delete a Virtual Machine")
 @click.option("--platform", default="windows", help="Guest Operating System")
@@ -474,16 +469,13 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.option("--interface", help="Sniffer interface for this Virtual Machine")
 @click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
 @click.option("--resultserver", help="IP:Port of the Result Server")
-def machine(debug, vmname, ip, add, delete, platform, options, tags,
-            interface, snapshot, resultserver):
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
+@click.pass_context
+def machine(ctx, vmname, ip, add, delete, platform, options, tags, interface,
+            snapshot, resultserver):
     if add and not ip:
         sys.exit("You have to specify a legitimate IP address for --add.")
 
+    init_console_logging(level=ctx.parent.level)
     Database().connect()
     cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
                    interface, snapshot, resultserver)
@@ -504,7 +496,7 @@ def migrate(revision):
 
 @main.command("import")
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
-@click.option("-f", "--force", help="Perform non-reversible in-place database migrations")
+@click.option("-f", "--force", is_flag=True, help="Perform non-reversible in-place database migrations")
 @click.option("--database", help="Creation of a new database for a reversible migration")
 def import_(path, force, database):
     if force and database:
@@ -519,11 +511,10 @@ def distributed():
 @distributed.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the Distributed Cuckoo server on")
 @click.option("-p", "--port", default=9003, help="Port to bind the Distributed Cuckoo server on")
-@click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
 @click.option("--uwsgi", is_flag=True, help="Dump uWSGI configuration")
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
-def server(ctx, host, port, debug, uwsgi, nginx):
+def server(ctx, host, port, uwsgi, nginx):
     username = ctx.parent.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
@@ -555,25 +546,16 @@ def server(ctx, host, port, debug, uwsgi, nginx):
         print "}"
         return
 
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
-    cuckoo_distributed(host, port, debug)
+    cuckoo_distributed(host, port, ctx.parent.parent.level == logging.DEBUG)
 
 @distributed.command("instance")
 @click.argument("name")
-@click.option("-d", "--debug", is_flag=True, help="Start the Distributed Cuckoo server in debug mode")
-def dist_instance(name, debug):
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
-
+@click.pass_context
+def dist_instance(ctx, name):
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+    init_console_logging(ctx.parent.parent.level)
     cuckoo_distributed_instance(name)
 
 @distributed.command("migrate")

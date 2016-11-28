@@ -218,7 +218,9 @@ def process(target, copy_path, task, cfg):
                 "path \"%s\": %s", copy_path, e
             )
 
-def process_task(task, db, cfg=None):
+def process_task(task, cfg=None):
+    db = Database()
+    db.connect()
     try:
         if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
