@@ -38,12 +38,20 @@ def cwd(*args, **kwargs):
     """Returns absolute path to this file in the Cuckoo Working Directory or
     optionally - when private=True has been passed along - to our private
     Cuckoo Working Directory which is not configurable."""
-    if kwargs.pop("private", False):
+    if kwargs.get("private"):
         return os.path.join(cuckoo.__path__[0], "data-private", *args)
-    elif kwargs.pop("raw", False):
+    elif kwargs.get("raw"):
         return _raw
-    elif kwargs.pop("root", False):
+    elif kwargs.get("root"):
         return _root
+    elif kwargs.get("analysis"):
+        return os.path.join(
+            _root, "storage", "analyses", "%s" % kwargs["analysis"], *args
+        )
+    elif kwargs:
+        raise RuntimeError(
+            "Invalid arguments provided to cwd(): %r %r" % (args, kwargs)
+        )
     else:
         return os.path.join(_root, *args)
 

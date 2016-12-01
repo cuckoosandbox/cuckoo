@@ -47,8 +47,23 @@ def test_cwd():
     set_cwd("/home/user/.cuckoo", "~/.cuckoo")
     assert cwd(raw=True) == "~/.cuckoo"
     assert cwd(root=True) == "/home/user/.cuckoo"
+    assert cwd("dump.pcap", analysis=1234) == os.path.join(
+        "/home/user/.cuckoo", "storage", "analyses", "1234", "dump.pcap"
+    )
 
     assert os.path.exists(cwd("guids.txt", private=True))
+
+    with pytest.raises(RuntimeError):
+        cwd("foo", private=False)
+
+    with pytest.raises(RuntimeError):
+        cwd("foo", raw=False)
+
+    with pytest.raises(RuntimeError):
+        cwd("foo", root=False)
+
+    with pytest.raises(RuntimeError):
+        cwd("foo", analysis=None)
 
 @pytest.mark.skipif("not HAVE_PWD")
 def test_getuser():
