@@ -14,7 +14,6 @@ from lib.cuckoo.common.abstracts import Report
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.exceptions import CuckooReportError
-from lib.cuckoo.common.utils import convert_to_printable
 
 logging.getLogger("elasticsearch").setLevel(logging.WARNING)
 logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)
@@ -93,7 +92,7 @@ class ElasticSearch(Report):
         if not os.path.exists(template_path):
             return False
 
-        with open(template_path, "rw") as f:
+        with open(template_path, "r") as f:
             try:
                 cuckoo_template = json.loads(f.read())
             except ValueError:
