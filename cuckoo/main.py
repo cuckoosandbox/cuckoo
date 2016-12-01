@@ -16,7 +16,7 @@ import cuckoo
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
     cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
-    cuckoo_dnsserve, cuckoo_machine, import_cuckoo
+    cuckoo_dnsserve, cuckoo_machine, import_cuckoo, migrate_database
 )
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
@@ -201,8 +201,11 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         print message, traceback.format_exc()
 
 @main.command()
+@click.option("-i", "--import-path", type=click.Path(exists=True, file_okay=False, dir_okay=True), help="Import an older Cuckoo Sandbox setup")
+@click.option("-r", "--reference", "mode", flag_value="reference", default=True)
+@click.option("-c", "--copy", "mode", flag_value="copy")
 @click.pass_context
-def init(ctx):
+def init(ctx, import_path, mode):
     """Initializes a Cuckoo instance and checks its configuration/setup."""
     cuckoo_init(logging.INFO, ctx.parent)
 
@@ -483,12 +486,7 @@ def machine(ctx, vmname, ip, add, delete, platform, options, tags, interface,
 @main.command()
 @click.option("--revision", default="head", help="Migrate to a certain revision")
 def migrate(revision):
-    args = [
-        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", revision,
-    ]
-    try:
-        subprocess.check_call(args, cwd=cwd("db_migration", private=True))
-    except subprocess.CalledProcessError:
+    if not migrate_database(revision):
         print red(">>> Error migrating your database..")
         exit(1)
 
@@ -498,11 +496,12 @@ def migrate(revision):
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
 @click.option("-f", "--force", is_flag=True, help="Perform non-reversible in-place database migrations")
 @click.option("--database", help="Creation of a new database for a reversible migration")
-def import_(path, force, database):
+@click.pass_context
+def import_(ctx, path, force, database):
     if force and database:
         sys.exit("Can't have both the --force and the --database parameter.")
 
-    import_cuckoo(path, force, database)
+    import_cuckoo(ctx.parent.user, path, force, database)
 
 @main.group()
 def distributed():

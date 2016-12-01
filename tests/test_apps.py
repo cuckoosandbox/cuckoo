@@ -120,7 +120,7 @@ class TestAppsWithCWD(object):
                 ("--cwd", cwd(), "import", dirpath),
                 standalone_mode=False
             )
-            p.assert_called_once_with(dirpath, False, None)
+            p.assert_called_once_with(None, dirpath, False, None)
 
     def test_dist_server(self):
         with mock.patch("cuckoo.main.cuckoo_distributed") as p:
