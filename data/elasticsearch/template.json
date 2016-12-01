@@ -12,7 +12,49 @@
         "cuckoo": {
             "dynamic_templates": [
                 {
-                    "notanalyzed": {
+                    "not_analyzed": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                },
+                {
+                    "signatures": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string"
+                        },
+                        "path_match": "signatures.marks.call.arguments.*",
+                        "path_unmatch": "signatures.marks.call.arguments.registers.*",
+                        "match": "*",
+                        "match_mapping_type": "long"
+                    }
+                }
+            ],
+            "properties": {
+                "report_time": {
+                    "format": "epoch_second",
+                    "type": "date"
+                },
+                "procmemory": {
+                    "type": "nested",
+                    "include_in_root": "True",
+                    "properties": {
+                        "regions": {
+                           "include_in_root": "True",
+                           "type": "nested"
+                        }
+                    }
+                }
+            }
+        },
+        "call": {
+            "dynamic_templates": [
+                {
+                    "not_analyzed": {
                         "mapping": {
                             "index": "not_analyzed",
                             "type": "string",
@@ -21,26 +63,16 @@
                         "match_mapping_type": "string",
                         "match": "*"
                     }
-                }
-            ],
-            "properties": {
-                "report_time": {
-                    "format": "epoch_second",
-                    "type": "date"
-                }
-            }
-        },
-        "call": {
-            "dynamic_templates": [
+                },
                 {
-                    "notanalyzed": {
+                    "call_arguments": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
-                            "doc_values": "True"
+                            "type": "string"
                         },
-                        "match_mapping_type": "string",
-                        "match": "*"
+                        "path_match": "arguments.*",
+                        "match": "*",
+                        "match_mapping_type": "long"
                     }
                 }
             ],

@@ -66,8 +66,14 @@ class ElasticSearch(Report):
         # ES needs epoch time in seconds per the mapping
         self.report_time = int(time.time())
 
+        self.template_name = self.index + "_template"
+
         try:
-            self.es = Elasticsearch(hosts)
+            # increase the default timeout from 10 seconds to 5 minutes
+            # this will help with indexing huge reports on slower non clustered
+            # elasticsearch instances
+            elasticsearch_timeout = self.options.get("timeout", 60*5)
+            self.es = Elasticsearch(hosts, timeout=elasticsearch_timeout)
         except TypeError:
             raise CuckooReportError(
                 "Elasticsearch connection hosts must be host:port or host"
@@ -76,7 +82,7 @@ class ElasticSearch(Report):
             raise CuckooReportError("Cannot connect to Elasticsearch: %s" % e)
 
         # check to see if the template exists apply it if it does not
-        if not self.es.indices.exists_template("cuckoo_template"):
+        if not self.es.indices.exists_template(self.template_name):
             if not self.apply_template():
                 raise CuckooReportError("Cannot apply Elasticsearch template")
 
@@ -102,7 +108,7 @@ class ElasticSearch(Report):
             cuckoo_template["template"] = self.index + "-*"
 
         self.es.indices.put_template(
-            name="cuckoo_template", body=json.dumps(cuckoo_template)
+            name=self.template_name, body=json.dumps(cuckoo_template)
         )
         return True
 
@@ -124,7 +130,7 @@ class ElasticSearch(Report):
         base_document.update(obj)
 
         try:
-            self.es.create(
+            self.es.index(
                 index=index, doc_type=self.report_type, body=base_document
             )
         except Exception as e:
@@ -142,21 +148,36 @@ class ElasticSearch(Report):
                 "task #%d: %s" % (self.task["id"], e)
             )
 
-    def process_call(self, call):
-        """This function converts all arguments to strings to allow ES to map
-        them properly."""
-        if "arguments" not in call or type(call["arguments"]) != dict:
-            return call
+    def process_signatures(self, signatures):
+        new_signatures = []
 
-        new_arguments = {}
-        for key, value in call["arguments"].iteritems():
-            if type(value) is unicode or type(value) is str:
-                new_arguments[key] = convert_to_printable(value)
-            else:
-                new_arguments[key] = str(value)
+        for signature in signatures:
+            new_signature = signature.copy()
 
-        call["arguments"] = new_arguments
-        return call
+            if "marks" in signature:
+                new_signature["marks"] = []
+                for mark in signature["marks"]:
+                    new_mark = {}
+                    for k, v in mark.iteritems():
+                        if k != "call" and type(v) == dict:
+                            # If marks is a dictionary we need to explicitly define it for the ES mapping
+                            # this is in the case that a key in marks is sometimes a string and sometimes a dictionary
+                            # if the first document indexed into ES is a string it will not accept a signature
+                            # and through a ES mapping exception.  To counter this dicts will be explicitly stated
+                            # in the key except for calls which are always dictionaries.
+                            # This presented itself in testing with signatures.marks.section which would sometimes be a
+                            # PE section string such as "UPX"  and other times full details about the section as a
+                            # dictionary in the case of packer_upx and packer_entropy signatures
+                            new_mark[k+"_dict"] = v
+                        else:
+                            # If it is not a mark it is fine to leave key as is
+                            new_mark[k] = v
+
+                    new_signature["marks"].append(new_mark)
+
+            new_signatures.append(new_signature)
+
+        return new_signatures
 
     def process_behavior(self, results, bulk_submit_size=1000):
         """Index the behavioral data."""
@@ -168,9 +189,10 @@ class ElasticSearch(Report):
                 call_document = {
                     "pid": process["pid"],
                 }
-                call_document.update(self.process_call(call))
+                call_document.update(call)
                 call_document.update(base_document)
                 bulk_index.append({
+                    "_op_type": "index",
                     "_index": self.dated_index,
                     "_type": self.call_type,
                     "_source": call_document
@@ -197,15 +219,37 @@ class ElasticSearch(Report):
 
         # Index target information, the behavioral summary, and
         # VirusTotal results.
-        self.do_index({
-            "cuckoo_node": self.options.get("cuckoo_node"), 
-            "target": results.get("target"),
-            "summary": results.get("behavior", {}).get("summary"),
-            "virustotal": results.get("virustotal"),
-            "irma": results.get("irma"),
-            "signatures": results.get("signatures"),
-            "dropped": results.get("dropped"),
-        })
+        doc = dict()
+
+        # index elements that will never be empty
+        doc["cuckoo_node"] = self.options.get("cuckoo_node")
+        doc["target"] = results.get("target")
+        doc["summary"] = results.get("behavior", {}).get("summary")
+        doc["info"] = results.get("info")
+
+        # index elements that are not empty ES should not index blank fields
+        virustotal = results.get("virustotal")
+        if virustotal:
+            doc["virustotal"] = virustotal
+
+        irma = results.get("irma")
+        if irma:
+            doc["irma"] = irma
+
+        signatures = results.get("signatures")
+        if signatures:
+            signatures = self.process_signatures(signatures)
+            doc["signatures"] = signatures
+
+        dropped = results.get("dropped")
+        if dropped:
+            doc["dropped"] = dropped
+
+        procmemory = results.get("procmemory")
+        if procmemory:
+            doc["procmemory"] = procmemory
+
+        self.do_index(doc)
 
         # Index the API calls.
         if self.options.get("calls"):
