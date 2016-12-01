@@ -221,7 +221,7 @@ def _060_100(c):
     }
     c["reporting"].pop("metadata", None)
     c["reporting"].pop("maec11", None)
-    c["reporting"]["maec40"] = {
+    c["reporting"]["maec41"] = {
         "enabled": False,
         "mode": "overview",
         "processtree": True,
@@ -302,7 +302,7 @@ def _110_120(c):
     return c
 
 def _120_20c1(c):
-    interface = c["auxiliary"]["sniffer"].pop("interface", None)
+    interface = c["auxiliary"]["sniffer"].pop("interface", "vboxnet0")
     c["auxiliary"]["mitm"] = {
         "enabled": False,
         "mitmdump": "/usr/local/bin/mitmdump",
@@ -428,7 +428,7 @@ def _120_20c1(c):
     }
     c["reporting"]["jsondump"]["calls"] = True
     c["reporting"].pop("mmdef", None)
-    c["reporting"].pop("maec40", None)
+    c["reporting"].pop("maec41", None)
     c["reporting"]["reporthtml"]["enabled"] = False
     c["reporting"]["mongodb"]["paginate"] = 100
     c["reporting"]["moloch"] = {
@@ -532,6 +532,7 @@ def _20c1_20c2(c):
         "hash-filename": True,
     }
 
+    c["vpn"]["vpn"].pop("auto_rt", None)
     for vpn in c["vpn"]["vpn"]["vpns"].split(","):
         if not vpn.strip():
             continue
@@ -613,6 +614,9 @@ def _20c2_200(c):
     c["vsphere"]["vsphere"]["unverified_ssl"] = False
     return c
 
+def _20dev(c):
+    return c
+
 migrations = {
     "0.4": ("0.4.1", _040_041),
     "0.4.1": ("0.4.2", _041_042),
@@ -624,6 +628,13 @@ migrations = {
     "1.2.0": ("2.0-rc1", _120_20c1),
     "2.0-rc1": ("2.0-rc2", _20c1_20c2),
     "2.0-rc2": ("2.0.0", _20c2_200),
+
+    # We're also capable of migrating away from 2.0-dev which basically means
+    # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.
+    # TODO Most likely we'll have to work out some tweaks in the migrations.
+    # TODO Provide the option to push out feedback to the Core Developers if
+    # an exception occurs during the configuration migration phase.
+    "2.0-dev": ("1.2.0", _20dev),
 }
 
 def migrate(c, current, to=None):

@@ -181,6 +181,25 @@ CUCKOO_GUEST_COMPLETED = 0x003
 CUCKOO_GUEST_FAILED = 0x004
 """
 
+constants_20dev_py = """
+# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2015 Cuckoo Foundation.
+# This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+# See the file 'docs/LICENSE' for copying permission.
+
+import os
+
+_current_dir = os.path.abspath(os.path.dirname(__file__))
+CUCKOO_ROOT = os.path.normpath(os.path.join(_current_dir, "..", "..", ".."))
+
+CUCKOO_VERSION = "2.0-dev"
+CUCKOO_GUEST_PORT = 8000
+CUCKOO_GUEST_INIT = 0x001
+CUCKOO_GUEST_RUNNING = 0x002
+CUCKOO_GUEST_COMPLETED = 0x003
+CUCKOO_GUEST_FAILED = 0x004
+"""
+
 def drop_constants_py(content):
     dirpath = tempfile.mkdtemp()
     dirpath2 = os.path.join(dirpath, "lib", "cuckoo", "common")
@@ -219,6 +238,9 @@ def test_identify():
 
     dirpath = drop_constants_py(constants_20rc2_py)
     assert identify(dirpath) == "2.0-rc2"
+
+    dirpath = drop_constants_py(constants_20dev_py)
+    assert identify(dirpath) == "2.0-dev"
 
     dirpath = drop_constants_py("hello world")
     assert identify(dirpath) is None

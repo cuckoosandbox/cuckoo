@@ -484,13 +484,13 @@ label = label,snapshot
     assert "metadata" not in cfg["reporting"]
     assert "maec11" not in cfg["reporting"]
     assert cfg["reporting"]["mmdef"]["enabled"] is False
-    assert cfg["reporting"]["maec40"]["enabled"] is False
-    assert cfg["reporting"]["maec40"]["mode"] == "overview"
-    assert cfg["reporting"]["maec40"]["processtree"] is True
-    assert cfg["reporting"]["maec40"]["output_handles"] is False
-    assert cfg["reporting"]["maec40"]["static"] is True
-    assert cfg["reporting"]["maec40"]["strings"] is True
-    assert cfg["reporting"]["maec40"]["virustotal"] is True
+    assert cfg["reporting"]["maec41"]["enabled"] is False
+    assert cfg["reporting"]["maec41"]["mode"] == "overview"
+    assert cfg["reporting"]["maec41"]["processtree"] is True
+    assert cfg["reporting"]["maec41"]["output_handles"] is False
+    assert cfg["reporting"]["maec41"]["static"] is True
+    assert cfg["reporting"]["maec41"]["strings"] is True
+    assert cfg["reporting"]["maec41"]["virustotal"] is True
     assert cfg["reporting"]["mongodb"]["host"] == "127.0.0.1"
     assert cfg["reporting"]["mongodb"]["port"] == 27017
     assert cfg["vmware"]["vmware"]["machines"] == ["hello"]
@@ -630,7 +630,7 @@ enabled = no
 enabled = yes
 [mmdef]
 enabled = no
-[maec40]
+[maec41]
 enabled = no
 [mongodb]
 enabled = no
@@ -659,7 +659,7 @@ machines = cuckoo1
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert "store_csvs" in cfg["cuckoo"]["resultserver"]
     assert "mmdef" in cfg["reporting"]
-    assert "maec40" in cfg["reporting"]
+    assert "maec41" in cfg["reporting"]
     cfg = migrate(cfg, "1.2.0", "2.0-rc1")
     assert "interface" not in cfg["auxiliary"]["sniffer"]
     assert cfg["auxiliary"]["mitm"]["enabled"] is False
@@ -741,7 +741,7 @@ machines = cuckoo1
     assert cfg["qemu"]["vm2"]["interface"] == "qemubr"
     assert cfg["qemu"]["vm2"]["tags"] == "debian_wheezy,mipsel"
     assert "mmdef" not in cfg["reporting"]
-    assert "maec40" not in cfg["reporting"]
+    assert "maec41" not in cfg["reporting"]
     assert cfg["reporting"]["reporthtml"]["enabled"] is False
     assert cfg["reporting"]["mongodb"]["store_memdump"] is False
     assert cfg["reporting"]["mongodb"]["paginate"] == 100
