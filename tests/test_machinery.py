@@ -44,7 +44,7 @@ class TestVirtualbox(object):
                 self.m._initialize_check()
 
     def test_status_vboxmanage_failure(self):
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = ("", "")
             p.return_value.returncode = 42
             assert self.m._status("label") == self.m.ERROR
@@ -60,7 +60,7 @@ class TestVirtualbox(object):
 
     def test_status_vboxmanage_incomplete_info(self):
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.communicate.return_value = ("", "")
                 p.return_value.returncode = 0
                 self.m._status("label")
@@ -83,7 +83,7 @@ class TestVirtualbox(object):
             'vtxux="on"\n'
         )
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = vmstate, ""
             p.return_value.returncode = 0
             assert self.m._status("label") == "poweroff"
@@ -98,7 +98,7 @@ class TestVirtualbox(object):
         )
 
     def test_status_vboxmanage_incomplete_info2(self):
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = OSError("foobar")
             assert self.m._status("label") == self.m.ERROR
 
@@ -113,7 +113,7 @@ class TestVirtualbox(object):
             '"cuckoo1" {83294578-bf54-427c-8fce-502ddbbcc888}\n'
             '"cuckoo7" {92438051-bf54-427c-8fce-abcd78789999}\n'
         )
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = output, ""
             assert self.m._list() == ["cuckoo1", "cuckoo7"]
 
@@ -124,7 +124,7 @@ class TestVirtualbox(object):
 
     def test_list_oserror(self):
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
                 assert self.m._list() == ["cuckoo1", "cuckoo7"]
 
@@ -138,7 +138,7 @@ class TestVirtualbox(object):
             '"<inaccessible>" {83294578-bf54-427c-8fce-502ddbbcc888}\n'
             '"cuckoo7" {92438051-bf54-427c-8fce-abcd78789999}\n'
         )
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = output, ""
             assert self.m._list() == ["cuckoo7"]
 
@@ -167,7 +167,7 @@ class TestVirtualbox(object):
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", ""
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = p1, p2
             self.m.start("label", None)
 
@@ -203,7 +203,7 @@ class TestVirtualbox(object):
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", ""
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = p1, p2
             self.m.start("label", None)
 
@@ -225,7 +225,7 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.wait.return_value = 42
                 self.m.start("label", None)
 
@@ -247,7 +247,7 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
                 self.m.start("label", None)
 
@@ -275,7 +275,7 @@ class TestVirtualbox(object):
         p2.communicate.return_value = "", "error starting"
 
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = p1, p2
                 self.m.start("label", None)
 
@@ -297,7 +297,7 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.wait.return_value = 42
                 self.m.start("label", None)
 
@@ -322,7 +322,7 @@ class TestVirtualbox(object):
         self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
         self.m._wait_status = mock.MagicMock(return_value=None)
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.poll.return_value = True
             p.returncode = 0
             self.m.stop("label")
@@ -340,26 +340,26 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         def poll():
-            return True if p["subprocess"].Popen.return_value.terminate.call_count else None
+            return True if p["Popen"].return_value.terminate.call_count else None
 
         with mock.patch.multiple(
             "cuckoo.machinery.virtualbox",
-            time=mock.DEFAULT, subprocess=mock.DEFAULT
+            time=mock.DEFAULT, Popen=mock.DEFAULT
         ) as p:
             p["time"].sleep.return_value = None
-            p["subprocess"].Popen.return_value.poll.side_effect = poll
-            p["subprocess"].Popen.return_value.terminate.return_value = None
-            p["subprocess"].Popen.return_value.returncode = 0
+            p["Popen"].return_value.poll.side_effect = poll
+            p["Popen"].return_value.terminate.return_value = None
+            p["Popen"].return_value.returncode = 0
             self.m.stop("label")
 
-        p["subprocess"].Popen.assert_called_once_with(
+        p["Popen"].assert_called_once_with(
             [
                 config("virtualbox:virtualbox:path"),
                 "controlvm", "label", "poweroff"
             ],
-            stdout=p["subprocess"].PIPE, stderr=p["subprocess"].PIPE, close_fds=True
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
-        p["subprocess"].Popen.return_value.terminate.assert_called_once()
+        p["Popen"].return_value.terminate.assert_called_once()
 
     def test_dump_pcap(self):
         class task(object):
@@ -401,7 +401,7 @@ class TestVirtualbox(object):
         p2 = mock.MagicMock()
         p2.wait.return_value = None
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = p1, p2
             self.m.dump_memory("label", "memory.dmp")
 
@@ -428,7 +428,7 @@ class TestVirtualbox(object):
         p2 = mock.MagicMock()
         p2.wait.return_value = None
 
-        with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = p1, p2
             self.m.dump_memory("label", "memory.dmp")
 
@@ -449,7 +449,7 @@ class TestVirtualbox(object):
 
     def test_dump_memory_oserror(self):
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
                 self.m.dump_memory("label", "memory.dmp")
 
@@ -458,7 +458,7 @@ class TestVirtualbox(object):
         p1.returncode = 0
 
         with pytest.raises(CuckooMachineError):
-            with mock.patch("cuckoo.machinery.virtualbox.subprocess.Popen") as p:
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = p1, OSError("foobar")
                 self.m.dump_memory("label", "memory.dmp")
 
