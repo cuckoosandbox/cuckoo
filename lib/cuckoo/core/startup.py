@@ -509,7 +509,7 @@ def cuckoo_clean():
                 # also drop the dynamic template
                 es.indices.delete_template(cuckoo_template)
         except:
-            log.warning("Unable to drop ElasticSearch database: %s", index)
+            log.warning("Unable to drop ElasticSearch database %s", cuckoo_index)
 
     # Paths to clean.
     paths = [
