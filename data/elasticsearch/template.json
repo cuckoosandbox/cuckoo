@@ -3,6 +3,7 @@
     "template": "cuckoo-*",
     "settings": {
         "index": {
+            "mapping.coerce": true,
             "number_of_shards": "1",
             "codec": "best_compression",
             "number_of_replicas": "0"
