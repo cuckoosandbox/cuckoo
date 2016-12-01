@@ -107,9 +107,11 @@ class ElasticSearch(Report):
             # template.json.
             cuckoo_template["template"] = self.index + "-*"
 
-        self.es.indices.put_template(
-            name=self.template_name, body=json.dumps(cuckoo_template)
-        )
+        # if the template does not already exist then create it
+        if self.es.indices.exists_template(self.template_name):
+            self.es.indices.put_template(
+                name=self.template_name, body=json.dumps(cuckoo_template)
+            )
         return True
 
     def get_base_document(self):
