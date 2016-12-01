@@ -16,7 +16,8 @@
                     "not_analyzed": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string"
+                            "type": "string",
+                            "ignore_above": 32766
                         },
                         "match_mapping_type": "string",
                         "match": "*"
