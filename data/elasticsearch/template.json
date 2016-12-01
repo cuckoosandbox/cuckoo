@@ -1,5 +1,4 @@
 {
-    "order": 0,
     "template": "cuckoo-*",
     "settings": {
         "index": {
@@ -11,6 +10,7 @@
     },
     "mappings": {
         "cuckoo": {
+            "date_detection": false,
             "dynamic_templates": [
                 {
                     "not_analyzed": {
@@ -27,7 +27,8 @@
                     "signatures": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string"
+                            "type": "string",
+                            "ignore_above": 32766
                         },
                         "path_match": "signatures.marks.call.arguments.*",
                         "path_unmatch": "signatures.marks.call.arguments.registers.*",
@@ -54,13 +55,14 @@
             }
         },
         "call": {
+            "date_detection": false,
             "dynamic_templates": [
                 {
                     "not_analyzed": {
                         "mapping": {
                             "index": "not_analyzed",
                             "type": "string",
-                            "doc_values": "True"
+                            "ignore_above": 32766
                         },
                         "match_mapping_type": "string",
                         "match": "*"
@@ -70,7 +72,8 @@
                     "call_arguments": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string"
+                            "type": "string",
+                            "ignore_above": 32766
                         },
                         "path_match": "arguments.*",
                         "match": "*",
@@ -85,6 +88,5 @@
                 }
             }
         }
-    },
-    "aliases": {}
+    }
 }
