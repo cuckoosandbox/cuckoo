@@ -183,7 +183,7 @@ class VirtualBox(Machinery):
                 "VBoxManage failed powering off the machine: %s" % e
             )
 
-        self._wait_status(label, [self.POWEROFF, self.ABORTED, self.SAVED])
+        self._wait_status(label, self.POWEROFF, self.ABORTED, self.SAVED)
 
     def _list(self):
         """Lists virtual machines installed.

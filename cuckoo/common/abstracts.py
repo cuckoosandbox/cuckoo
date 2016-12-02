@@ -285,7 +285,7 @@ class Machinery(object):
         """
         raise NotImplementedError
 
-    def _wait_status(self, label, state):
+    def _wait_status(self, label, *states):
         """Waits for a vm status.
         @param label: virtual machine name.
         @param state: virtual machine status, accepts multiple states as list.
@@ -298,15 +298,14 @@ class Machinery(object):
         except NameError:
             return
 
-        if isinstance(state, str):
-            state = [state]
-
-        while current not in state:
+        while current not in states:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
-                      "to status %s", waitme, label, state)
+                      "to status %s", waitme, label, states)
             if waitme > int(self.options_globals.timeouts.vm_state):
-                raise CuckooMachineError("Timeout hit while for machine {0} "
-                                         "to change status".format(label))
+                raise CuckooMachineError(
+                    "Timeout hit while for machine %s to change status" % label
+                )
+
             time.sleep(1)
             waitme += 1
             current = self._status(label)
