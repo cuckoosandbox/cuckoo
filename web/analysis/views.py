@@ -349,7 +349,12 @@ def moloch(request, **kwargs):
     else:
         hostname = request.get_host()
 
-    url = "https://%s:8005/?%s" % (
+    if settings.MOLOCH_INSECURE:
+        url = "http://"
+    else:
+        url = "https://"
+
+    url += "%s:8005/?%s" % (
         settings.MOLOCH_HOST or hostname,
         urllib.urlencode({
             "date": "-1",
