@@ -447,24 +447,15 @@ class AnalysisManager(threading.Thread):
             log.error(
                 "Unable to restore to the snapshot for this Virtual Machine! "
                 "Does your VM have a proper Snapshot and can you revert to it "
-                "manually? Error: %s", e, extra={"task_id": self.task.id}
+                "manually? VM: %s, error: %s",
+                self.machine.name, e, extra={"task_id": self.task.id}
             )
         except CuckooMachineError as e:
             if not unlocked:
                 machine_lock.release()
             log.error(
-                "Machinery error: %s",
-                e, extra={"task_id": self.task.id}
-            )
-            log.critical(
-                "A critical error has occurred trying to use the machine "
-                "with name %s during an analysis due to which it is no "
-                "longer in a working state, please report this issue and all "
-                "of the related environment details to the developers so we "
-                "can improve this situation. (Note that before we would "
-                "simply remove this VM from doing any more analyses, but as "
-                "all the VMs will eventually be depleted that way, hopefully "
-                "we'll find a better solution now).", self.machine.name,
+                "Error starting Virtual Machine! VM: %s, error: %s",
+                self.machine.name, e, extra={"task_id": self.task.id}
             )
         except CuckooGuestError as e:
             if not unlocked:

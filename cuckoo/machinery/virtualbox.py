@@ -43,6 +43,14 @@ class VirtualBox(Machinery):
                 self.options.virtualbox.path
             )
 
+        if self.options.virtualbox.mode not in ("gui", "headless"):
+            raise CuckooCriticalError(
+                "VirtualBox has been configured to run in a non-supported "
+                "mode: %s. Please upgrade your configuration to reflect "
+                "either 'gui' or 'headless' mode!" %
+                self.options.virtualbox.mode
+            )
+
         super(VirtualBox, self)._initialize_check()
 
     def start(self, label, task):
@@ -103,10 +111,18 @@ class VirtualBox(Machinery):
             if err:
                 raise OSError(err)
         except OSError as e:
-            raise CuckooMachineError(
-                "VBoxManage failed starting the machine in %s mode: %s" %
-                (self.options.virtualbox.mode.upper(), e)
-            )
+            if self.options.virtualbox.mode == "gui":
+                raise CuckooMachineError(
+                    "VBoxManage failed starting the machine in gui mode! "
+                    "In case you're on a headless server, you should probably "
+                    "try using 'headless' mode. Error: %s" % e
+                )
+            else:
+                raise CuckooMachineError(
+                    "VBoxManage failed starting the machine in headless mode. "
+                    "Are you sure your machine is still functioning correctly "
+                    "when trying to use it manually? Error: %s" % e
+                )
 
         self._wait_status(label, self.RUNNING)
 

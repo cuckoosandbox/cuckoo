@@ -39,7 +39,13 @@ class TestVirtualbox(object):
                 self.m._initialize_check()
 
         with mock.patch.dict(self.m.options.virtualbox.__dict__, {
-            "path": "THIS PATH DOES NOT EXIST 404"
+            "path": "THIS PATH DOES NOT EXIST 404",
+        }):
+            with pytest.raises(CuckooCriticalError):
+                self.m._initialize_check()
+
+        with mock.patch.dict(self.m.options.virtualbox.__dict__, {
+            "mode": "foobar",
         }):
             with pytest.raises(CuckooCriticalError):
                 self.m._initialize_check()
