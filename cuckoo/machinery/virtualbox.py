@@ -9,8 +9,9 @@ import subprocess
 import time
 
 from cuckoo.common.abstracts import Machinery
-from cuckoo.common.exceptions import CuckooCriticalError
-from cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.common.exceptions import (
+    CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError
+)
 from cuckoo.misc import Popen
 
 log = logging.getLogger(__name__)
@@ -31,13 +32,14 @@ class VirtualBox(Machinery):
         """
         if not self.options.virtualbox.path:
             raise CuckooCriticalError(
-                "VirtualBox VBoxManage path missing, please add it to the "
-                "config file"
+                "VirtualBox VBoxManage path is missing, please add it to the "
+                "virtualbox.conf configuration file!"
             )
 
         if not os.path.exists(self.options.virtualbox.path):
             raise CuckooCriticalError(
-                "VirtualBox VBoxManage not found at specified path \"%s\"" %
+                "VirtualBox VBoxManage not found at specified path \"%s\" "
+                "(as specified in virtualbox.conf)" %
                 self.options.virtualbox.path
             )
 
@@ -74,18 +76,17 @@ class VirtualBox(Machinery):
             args.append("restorecurrent")
 
         try:
-            ret = Popen(
+            p = Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 close_fds=True
-            ).wait()
-            if ret:
-                raise CuckooMachineError(
-                    "VBoxManage exited with error trying to restore the "
-                    "machine's snapshot"
-                )
+            )
+            _, err = p.communicate()
+            if p.returncode:
+                raise OSError("error code %d: %s" % (p.returncode, err))
         except OSError as e:
-            raise CuckooMachineError(
-                "VBoxManage failed restoring the machine: %s" % e
+            raise CuckooMachineSnapshotError(
+                "VBoxManage failed trying to restore the snapshot of "
+                "machine: %s" % e
             )
 
         self._wait_status(label, self.SAVED)

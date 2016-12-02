@@ -10,6 +10,7 @@ import tempfile
 
 from cuckoo.common.config import config, Config
 from cuckoo.common.exceptions import CuckooMachineError, CuckooCriticalError
+from cuckoo.common.exceptions import CuckooMachineSnapshotError
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.machinery.virtualbox import VirtualBox
@@ -162,7 +163,8 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         p1 = mock.MagicMock()
-        p1.wait.return_value = 0
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
 
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", ""
@@ -198,7 +200,8 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         p1 = mock.MagicMock()
-        p1.wait.return_value = 0
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
 
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", ""
@@ -226,7 +229,8 @@ class TestVirtualbox(object):
 
         with pytest.raises(CuckooMachineError):
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
-                p.return_value.wait.return_value = 42
+                p.return_value.communicate.return_value = "", "error!"
+                p.return_value.returncode = 42
                 self.m.start("label", None)
 
         p.assert_called_once_with(
@@ -269,7 +273,8 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         p1 = mock.MagicMock()
-        p1.wait.return_value = 0
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
 
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", "error starting"
@@ -298,7 +303,8 @@ class TestVirtualbox(object):
 
         with pytest.raises(CuckooMachineError):
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
-                p.return_value.wait.return_value = 42
+                p.return_value.communicate.return_value = "", "error!"
+                p.return_value.returncode = 42
                 self.m.start("label", None)
 
         p.assert_any_call(
@@ -463,3 +469,45 @@ class TestVirtualbox(object):
                 self.m.dump_memory("label", "memory.dmp")
 
         # TODO Properly handle "vboxmanage -v" returning an error status code.
+
+class TestBrokenMachine(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()
+
+        logging.basicConfig(level=logging.DEBUG)
+
+        with mock.patch("cuckoo.common.abstracts.Database") as p:
+            p.return_value = mock.MagicMock()
+            self.m = VirtualBox()
+
+        self.m.db.clean_machines.assert_called_once()
+        self.m.set_options(Config("virtualbox"))
+
+    def test_missing_snapshot(self):
+        class machine_no_snapshot(object):
+            snapshot = None
+            options = {}
+
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
+
+        p1 = mock.MagicMock()
+        p1.wait.return_value = 0
+
+        p2 = mock.MagicMock()
+        p2.communicate.return_value = "", ""
+
+        with pytest.raises(CuckooMachineSnapshotError):
+            with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+                p.return_value.communicate.return_value = "", "error!"
+                self.m.start("label", None)
+
+        p.assert_called_once_with(
+            [
+               config("virtualbox:virtualbox:path"),
+               "snapshot", "label", "restorecurrent"
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )

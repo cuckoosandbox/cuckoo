@@ -13,9 +13,10 @@ import Queue
 import cuckoo
 
 from cuckoo.common.config import Config, emit_options
-from cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError
-from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import (
+    CuckooMachineError, CuckooGuestError, CuckooOperationalError,
+    CuckooMachineSnapshotError, CuckooCriticalError
+)
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
@@ -442,6 +443,12 @@ class AnalysisManager(threading.Thread):
                 self.wait_finish()
 
             succeeded = True
+        except CuckooMachineSnapshotError as e:
+            log.error(
+                "Unable to restore to the snapshot for this Virtual Machine! "
+                "Does your VM have a proper Snapshot and can you revert to it "
+                "manually? Error: %s", e, extra={"task_id": self.task.id}
+            )
         except CuckooMachineError as e:
             if not unlocked:
                 machine_lock.release()

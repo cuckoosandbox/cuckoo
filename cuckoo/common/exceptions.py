@@ -24,6 +24,9 @@ class CuckooOperationalError(Exception):
 class CuckooMachineError(CuckooOperationalError):
     """Error managing analysis machine."""
 
+class CuckooMachineSnapshotError(CuckooMachineError):
+    """Error restoring snapshot from machine."""
+
 class CuckooAnalysisError(CuckooOperationalError):
     """Error during analysis."""
 
