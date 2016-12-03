@@ -235,13 +235,9 @@ class VirtualBox(Machinery):
             machines.append(label)
         return machines
 
-    def _status(self, label):
-        """Gets current status of a vm.
-        @param label: virtual machine name.
-        @return: status string.
-        """
-        log.debug("Getting status for %s" % label)
-        status = None
+    def vminfo(self, label, field):
+        """Returns False if invoking vboxmanage fails. Otherwise the VM
+        information value, if any."""
         try:
             args = [
                 self.options.virtualbox.path,
@@ -261,19 +257,34 @@ class VirtualBox(Machinery):
                     "VBoxManage returns error checking status for "
                     "machine %s: %s", label, err
                 )
-                status = self.ERROR
+                return False
         except OSError as e:
             log.warning(
                 "VBoxManage failed to check status for machine %s: %s",
                 label, e
             )
-            status = self.ERROR
+            return False
 
-        if not status:
-            for line in output.split("\n"):
-                if line.startswith("VMState=") and line.count('"') == 2:
-                    status = line.split('"')[1].lower()
-                    log.debug("Machine %s status %s" % (label, status))
+        for line in output.split("\n"):
+            if not line.startswith("%s=" % field):
+                continue
+
+            if line.count('"') == 2:
+                return line.split('"')[1].lower()
+            else:
+                return line.split("=", 1)[1]
+
+    def _status(self, label):
+        """Gets current status of a vm.
+        @param label: virtual machine name.
+        @return: status string.
+        """
+        log.debug("Getting status for %s" % label)
+        status = self.vminfo(label, "VMState")
+        log.debug("Machine %s status %s" % (label, status))
+
+        if status is False:
+            status = self.ERROR
 
         # Report back status.
         if status:

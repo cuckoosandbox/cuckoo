@@ -104,6 +104,13 @@ class TestVirtualbox(object):
             "label", "poweroff"
         )
 
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = vmstate, ""
+            p.return_value.returncode = 0
+            assert self.m.vminfo("label", "VMState") == "poweroff"
+            assert self.m.vminfo("label", "biossystemtimeoffset") == "0"
+            assert self.m.vminfo("label", "notanoption") is None
+
     def test_status_vboxmanage_incomplete_info2(self):
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.side_effect = OSError("foobar")
