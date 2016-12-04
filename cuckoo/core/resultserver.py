@@ -418,7 +418,7 @@ class LogHandler(ProtocolHandler):
 
         while True:
             try:
-                buf = self.handler.read_newline(strip=False)
+                buf = self.handler.read_any()
             except Disconnect:
                 break
 
