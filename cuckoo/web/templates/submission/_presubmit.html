@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<style>
+    .btn-file {
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-file input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        font-size: 999px;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        background: red;
+        cursor: inherit;
+        display: block;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if not submit.data.data %}
+            {% include "submission/_errors.html" %}
+        {% else %}
+            <form id="submit_form" role="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <div class="col-md-3">
+                    <div class="panel" id="accordion" style="margin-top: 20px;">
+                        <div class="panel-primary">
+                            <div class="panel-heading">Advanced Options</div>
+                            <div id="options" class="panel-collapse collapse in" style="text-align: left;">
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label for="form_iface">Network routing through</label>
+                                        <select class="form-control" id="form_iface" name="route">
+                                            <option value="none">None (no internet access)</option>
+                                            <option value="drop">Drop all VM traffic</option>
+                                            {% if internet != "none" %}
+                                                <option value="internet"{% if route == "internet" %} selected{% endif %}>Internet (dirty line, {{ internet }})</option>
+                                            {% endif %}
+                                            {% if inetsim %}
+                                                <option value="inetsim">inetsim</option>
+                                            {% endif %}
+                                            {% if tor %}
+                                                <option value="tor">tor</option>
+                                            {% endif %}
+                                            {% for vpn in vpns %}
+                                                <option value="{{ vpn.name }}"{% if route == vpn.name %} selected{% endif %}>{{ vpn.description }} (VPN, {{ vpn.interface }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="form_package">Analysis Package</label>
+                                        <select class="form-control" id="form_package" name="package">
+                                            <option value="" active>Detect Automatically</option>
+                                            {% for package in packages %}
+                                            <option value="{{package}}">{{package}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_timeout">Timeout</label>
+                                        <input type="text" class="form-control" id="form_timeout" name="timeout" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_options">Options</label>
+                                        <input type="text" class="form-control" id="form_options" name="options" value="{{ options }}" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_priority">Priority</label>
+                                        <select class="form-control" id="form_priority" name="priority">
+                                            <option value="1">Low</option>
+                                            <option value="2" selected>Medium</option>
+                                            <option value="3">High</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_machine">Machine</label>
+                                        <select class="form-control" id="form_machine" name="machine">
+                                        {% for id,label in machines %}
+                                            <option value="{{id}}">{{label}}</option>
+                                        {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_custom">Custom</label>
+                                        <input type="text" class="form-control" id="form_custom" name="custom" />
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="free" /> No Injection <span class="text-muted"><small>(disable behavioral analysis)</small></span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="process_memory" checked /> Process Memory Dump
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="memory" /> Full Memory Dump <span class="text-muted"><small>(if the "memory" processing module is enabled, will launch a Volatility analysis)</small></span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="enforce_timeout" /> Enforce Timeout
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="human" checked />Enable Simulated Human Interaction</input>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="services" />Enable Services <span class="text-muted"><small>(enable simulated environment specified in the auxiliary configuration)</small></span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form_tags">Tags</label>
+                                        <input type="text" class="form-control" id="form_tags" name="tags" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="col-md-12">
+                        <div class="panel" style="margin-top: 20px;">
+                            <div id="filetree_container" class="panel-primary">
+                                <div class="panel-heading">
+                                    Files
+                                </div>
+                                <div class="panel-body" style="padding: 0px;">
+                                    <div class="row-fluid" id="filetree_target">
+                                        <h3 style="opacity:0.5" class="text-center">Loading files...</h3>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="row" style="margin-bottom:20px;">
+                                        <div class="col-md-4">
+                                            <div class="cuckoo-box" style="padding: 16px; padding-top: 0px; padding-bottom: 0px;">
+                                                <div class="cuckoo-box-primary">
+                                                    <input type="checkbox" id="cb_simplify" name="cb_simplify" value="cb_simplify" checked="checked">
+                                                    <label for="cb_simplify" style="margin-top: 0px;">Simplify results</label>
+                                                </div>
+                                                <!--
+                                                <div class="cuckoo-box-primary">
+                                                    <input type="checkbox" id="cb_duplicates" name="cb_duplicates" value="cb_duplicates" checked="checked">
+                                                    <label for="cb_duplicates">Deselect duplicates</label>
+                                                </div>
+                                                -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4"></div>
+                                        <div class="col-md-4">
+                                            <style>
+                                                #filetree_container .alert{
+                                                    padding: 4px;
+                                                    padding-left: 10px;
+                                                    margin-bottom: 0px;
+                                                    font-size: 12px;
+                                                    cursor: pointer;
+                                                    border-color: transparent;
+                                                    border-radius:0px;
+                                                }
+                                            </style>
+
+                                            <div id="filetree_messages" style="padding-right: 20px;"></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div style="float:right;">
+                            <div id="btn_analyze" class="btn btn-primary">Analyze</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        {% include "submission/_errors.html" %}
+                    </div>
+                </div>
+            </form>
+
+            <script src="/static/js/cuckoo/filetree.js"></script>
+            <script>
+                $(document).on("change", ".btn-file :file", function() {
+                    var input = $(this),
+                    numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                    label = input.val().replace(/\\/g, "/").replace(/.*\//, '');
+                    input.trigger("fileselect", [numFiles, label]);
+                });
+
+                var submit_id = {{ submit_id }};
+                var filetree = null;
+
+                $("div#btn_analyze").click(function(){
+                    var selected_files = filetree.selected();
+                    var formdata = {};
+                    $('form#submit_form').serializeArray().map(function(x){
+                        formdata[x.name] = x.value;
+                    });
+
+                    CuckooWeb.api_post("/submit/api/submit/", {
+                        "submit_id": submit_id,
+                        "selected_files": selected_files,
+                        "form": formdata
+                    }, function(data){
+                        if(data.status === true){
+                            CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
+                        } else {
+                            alert("Submission failed: " + data.message);
+                        }
+                    });
+                });
+
+                function filetree_drawcallback(){
+                    var sel_target = $("#filetree_messages");
+                    var msgs = [];
+
+                    // Cleanup
+                    sel_target.empty();
+
+                    if(filetree.stats.files >= 0){
+                        msgs.push(alertbox("File/Url count: " + filetree.stats.files,
+                                "info",
+                                "filetree_messages-files"))
+                    }
+
+                    if(filetree.stats.files >= 0){
+                        msgs.push(alertbox("Executables: " + filetree.stats.executables,
+                                "info",
+                                "filetree_messages-exec"))
+                    }
+
+                    if(filetree.stats.urls >= 0){
+                        msgs.push(alertbox("Web: " + filetree.stats.urls,
+                                "info",
+                                "filetree_messages-urls"));
+                    }
+
+                    if(filetree.stats.containers >= 0){
+                        msgs.push(alertbox("Container formats: " + filetree.stats.containers,
+                                "info",
+                                "filetree_messages-containers"));
+                    }
+
+                    if(filetree.stats.duplicates >= 0){
+                        msgs.push(alertbox("Duplicate files: " + filetree.stats.duplicates,
+                                "danger",
+                                "filetree_messages-duplicates"));
+                    }
+
+                    msgs.forEach(function(msg){
+                        sel_target.append(msg);
+                    });
+                }
+
+                $(document).ready(function(){
+                    $("#filetree_container input#cb_simplify").on("click", function(e){
+                        var state = $(this).is(':checked');
+                        filetree.simplify(state);
+                    });
+
+                    $("#filetree_container input#cb_duplicates").on("click", function(e){
+                        var state = $(this).is(':checked');
+                        filetree.duplicates(state);
+                    });
+
+                    $(document.body).on("mouseover mouseout", "#filetree_messages .alert", function(e) {
+                        var file_category = $(this).attr("id").split("-")[1];
+                        var items = $("#filetree_target a.jstree-grid-col-0");
+                        var highlight = e.type == "mouseover";
+
+                        // First un-highlight all items for speed
+                        items.each(function(i, obj) {
+                            $(obj).removeClass("highlight");
+                        });
+
+                        // Loop items, attempt to highlight
+                        items.each(function(i, obj) {
+                            FileTree.highlight($(obj), file_category, highlight);
+                        });
+                    });
+
+                    $(document).ready(function(){
+                        CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": submit_id}, function(data) {
+                            filetree = new FileTree(
+                                "div#filetree_target", data.data["files"],
+                                true, filetree_drawcallback
+                            );
+                            filetree.draw();
+                        });
+
+                        function progressHandlingFunction(data){
+                            console.log("progress");
+                        }
+
+                        $("input#file_select").on("change", function(){
+                            presubmit();
+                        });
+
+                        function presubmit(){
+                            var formData = new FormData($("form")[0]);
+
+                            $.ajax({
+                                url: "/submit/pre",
+                                type: "POST",
+                                xhr: function() {
+                                    var myXhr = $.ajaxSettings.xhr();
+                                    if(myXhr.upload) {
+                                        myXhr.upload.addEventListener(
+                                            "progress", progressHandlingFunction, false
+                                        );
+                                    }
+
+                                    return myXhr;
+                                },
+                                success: function() {
+                                    console.log("successHandler");
+                                },
+                                error: function() {
+                                    console.log("errorHandler");
+                                },
+                                data: formData,
+                                cache: false,
+                                contentType: false,
+                                processData: false
+                            });
+                        }
+
+                        $(".btn-file").on("fileselect", function(event, numFiles, label) {
+                            var input = $(this).parents(".input-group").find(":text");
+                            var log = numFiles > 1 ? numFiles + " files selected" : label;
+
+                            if(input.length) {
+                                input.val(log);
+                            } else {
+                                if(log) alert(log);
+                            }
+                        });
+                    });
+                });
+
+            </script>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
