@@ -292,6 +292,9 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     if not iptables or not os.path.exists(iptables):
         sys.exit("The `iptables` binary is not available, eh?!")
 
+    if not ip or not os.path.exists(ip):
+        sys.exit("The `ip` binary is not available, eh?!")
+
     if os.getuid():
         sys.exit("This utility is supposed to be ran as root user.")
 
@@ -307,9 +310,9 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
         gr = grp.getgrnam(group)
     except KeyError:
         sys.exit(
-            "The group (`%s`) does not exist. Please define the group / user "
+            "The group ('%s') does not exist. Please define the group / user "
             "through which Cuckoo will connect to the rooter, e.g., "
-            "./utils/rooter.py -g myuser" % group
+            "'cuckoo rooter -g myuser'" % group
         )
 
     os.chown(socket_path, 0, gr.gr_gid)
