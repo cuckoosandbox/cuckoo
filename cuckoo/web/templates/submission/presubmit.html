@@ -2,6 +2,29 @@
 {% load staticfiles %}
 {% block content %}
 
+<!-- config -->
+<main class="flex-grid" id="analysis-configuration">
 
+	<header class="flex-grid__header">
+		<ul class="breadcrumbs">
+			<li class="done"><a href="#">submit file</a></li>
+			<li class="active"><a href="#">configure</a></li>
+			<li class="todo"><a href="#">analyze</a></li>
+		</ul>
+		<h3>
+			<i class="fa fa-cogs"></i> Configure your Analysis
+			<div class="pull-right">
+				<button id="start-analysis"><i class="fa fa-check"></i> Analyze</button>
+			</div>
+		</h3>
+	</header>
+
+	<div class="flex-grid__body">	
+		<nav class="flex-grid__nav" id="config-form"></nav>
+		<section class="flex-grid__content"></section>
+		<aside class="flex-grid__detail-panel"></aside>
+	</div>
+
+</main>
 
 {% endblock %}

@@ -4,7 +4,8 @@
 	flex-direction: column;
 
 	width: 100vw;
-	height: 100vh;
+	height: -webkit-calc(100vh - 41px);
+
 
 	&__header { 
 		flex-basis: 57px;

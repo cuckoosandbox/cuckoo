@@ -3067,6 +3067,10 @@ body#analysis {
   padding-top: 30px;
 }
 
+body[id^="submission/"] {
+  padding-top: 41px;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -3094,7 +3098,7 @@ pre {
 .app {
   padding: 30px;
 }
-#analysis .app {
+#analysis .app, [id^="submission/"] .app {
   padding: 0;
 }
 
@@ -4084,7 +4088,7 @@ footer a:hover {
   display: flex;
   flex-direction: column;
   width: 100vw;
-  height: 100vh;
+  height: -webkit-calc(100vh - 41px);
 }
 .flex-grid__header {
   flex-basis: 57px;
