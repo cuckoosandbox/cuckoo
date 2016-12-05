@@ -8,6 +8,9 @@
 @import "variables";
 @import "mixins";
 
+// external libs
+@import "font-awesome";
+
 // general css on the body and the html
 html { background: #1c1c1c; }
 body { padding-top: 70px; }
@@ -35,6 +38,11 @@ body#analysis { padding-top: 30px; }
 @import "components/cuckoo-box";
 @import "components/errors";
 @import "components/footer";
+
+@import "components/flex-grid";
+@import "components/flex-form";
+@import "components/breadcrumbs";
+@import "components/cuckoo-filetree";
 
 // custom plugin css overrides
 @import "plugins/jstree";

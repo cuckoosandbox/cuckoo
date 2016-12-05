@@ -25,7 +25,8 @@ module.exports = function() {
 
 	return sass('./scss/main.scss', { 
 			sourcemap: true, 
-			style: 'expanded' 
+			style: 'expanded',
+			loadPath: ['./bower_components/font-awesome/scss']
 		})
 		// enables verbose logging of SASS errors
 		.on('error', sass.logError)

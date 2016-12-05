@@ -1,0 +1,20 @@
+{
+  "name": "cuckoo-frontend",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Koen Houtman <koenhoutman1991@me.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/jbremer/cuckoo-internal",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "font-awesome": "fontawesome#^4.7.0"
+  }
+}
