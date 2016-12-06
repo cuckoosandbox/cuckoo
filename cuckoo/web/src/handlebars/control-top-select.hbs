@@ -1,0 +1,35 @@
+<legend class="flex-form__field-title">{{title}} <a href="#"><i class="fa fa-info-circle"></i></a></legend>
+
+<ul class="flex-form__toggle-group">
+	{{#each top_items}}
+		<li>
+			<input type="radio" name="{{../name}}" id="{{../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} />
+			<label for="{{../name}}-{{value}}" {{#if className}}class="{{className}}"{{/if}}>{{name}}</label>
+		</li>
+	{{/each}}
+</ul>
+
+{{#if extra_select}}
+	<div class="flex-form__select flex-form__select--horizontal">
+		<label for="{{extra_select.name}}" class="title">{{extra_select.title}}</label>
+		<select name="{{extra_select.name}}" id="{{extra_select.name}}">
+			<option disabled selected>Select</option>
+			{{#each extra_select.options}}
+				<option value="{{value}}">{{name}}</option>
+			{{/each}}
+		</select>
+		<i class="fa fa-chevron-down"></i>
+	</div>
+{{/if}}
+
+{{#if rest_items}}
+	<div class="flex-form__select">
+		<select name="{{name}}-other">
+			<option disabled selected>Or select one here if yours isn't featured above.</option>
+			{{#each rest_items}}
+				<option value="{{value}}">{{name}}</option>
+			{{/each}}
+		</select>
+		<i class="fa fa-chevron-down"></i>
+	</div>
+{{/if}}

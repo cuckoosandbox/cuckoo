@@ -16,6 +16,6 @@
   ],
   "devDependencies": {
     "font-awesome": "fontawesome#^4.7.0",
-    "handlebars": "^4.0.5"
+    "handlebars": "^3.0.0"
   }
 }
