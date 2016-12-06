@@ -4089,6 +4089,7 @@ footer a:hover {
   flex-direction: column;
   width: 100vw;
   height: -webkit-calc(100vh - 41px);
+  font-family: "Roboto", sans-serif;
 }
 .flex-grid__header {
   flex-basis: 57px;
@@ -4206,11 +4207,13 @@ footer a:hover {
   display: block;
   text-align: center;
   padding: 10px 0;
+  margin: 0;
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 700;
   border-left: 1px solid #D0D0D0;
   border-right: 1px solid #D0D0D0;
+  margin-bottom: 0;
 }
 .flex-form__toggle-group > li > label.priority-s {
   background-color: rgba(0, 255, 30, 0.2);
@@ -4277,7 +4280,7 @@ footer a:hover {
   position: relative;
   display: inline-block;
   width: 50px;
-  height: 22px;
+  height: 24px;
   background-color: #E7495C;
   border: 1px solid #D53D50;
   border-radius: 30px;
@@ -4304,7 +4307,7 @@ footer a:hover {
   border-color: #9CC86E;
 }
 .flex-form__toggle-list > li label > input:checked + span:before {
-  left: 28px;
+  left: 27px;
 }
 .flex-form__toggle-list > li label:hover {
   cursor: pointer;
@@ -4426,10 +4429,11 @@ footer a:hover {
 }
 .flex-form__select--horizontal .title {
   flex-basis: 100px;
-  font-size: 14px;
+  font-size: 10px;
   padding: 0 0 0 20px;
   margin: 0;
   color: #999;
+  font-weight: 500;
 }
 .flex-form__select--horizontal select {
   border-left: 1px solid #ccc;
@@ -4561,6 +4565,12 @@ footer a:hover {
 .cuckoo-files {
   display: flex;
   height: calc(100% - 38px);
+  font-family: "Roboto";
+}
+.cuckoo-files * {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 .cuckoo-files > #filetree {
   flex-basis: 100%;
@@ -4592,6 +4602,9 @@ footer a:hover {
   font-size: 10px;
   padding: 3px;
   float: right;
+  background-color: transparent;
+  color: inherit;
+  vertical-align: middle;
 }
 .cuckoo-files ul div a.label {
   font-size: 12px;
@@ -4610,6 +4623,12 @@ footer a:hover {
 .cuckoo-files ul div.no-icon:before {
   content: "";
   margin-right: 0;
+}
+.cuckoo-files ul li {
+  font-weight: 400;
+}
+.cuckoo-files ul li [data-type="folder"] {
+  font-weight: 700;
 }
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";
@@ -4642,6 +4661,9 @@ footer a:hover {
   border: 2px solid #ccc;
   vertical-align: middle;
   margin-right: 9px;
+  box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
 }
 .cuckoo-files ul label input {
   display: none;

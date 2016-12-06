@@ -61,6 +61,7 @@ var CuckooWeb = function () {
                     }
                 }
             }).fail(function (err) {
+
                 if (err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")) {
                     console.log('POST err: ' + err.responseJSON.message);
                 } else {

@@ -2,6 +2,13 @@
 
 	display: flex;
 	height: calc(100% - 38px);
+	font-family: "Roboto";
+
+	* {
+		box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+	}
 
 	& > #filetree {
 		flex-basis: 100%;
@@ -37,6 +44,9 @@
 				font-size: 10px;
 				padding: 3px;
 				float: right;
+				background-color: transparent;
+				color: inherit;
+				vertical-align: middle;
 			}
 
 			a.label {
@@ -64,6 +74,12 @@
 		}
 
 		li {
+
+			font-weight: 400;
+
+			[data-type="folder"] {
+				font-weight: 700;
+			}
 
 			strong {
 
@@ -100,6 +116,9 @@
 					border: 2px solid #ccc;
 					vertical-align: middle;
 					margin-right: 9px;
+					box-sizing: content-box;
+					-webkit-box-sizing: content-box;
+					-moz-box-sizing: content-box;
 				}
 
 			}

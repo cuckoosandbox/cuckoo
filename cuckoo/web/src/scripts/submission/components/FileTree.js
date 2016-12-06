@@ -472,30 +472,7 @@ class FileTree {
 		if(!properties) {
 			$.get(url).done(handleResponse);
 		} else {
-
-			if(typeof properties === 'object') {
-				properties = JSON.stringify(properties);
-			}
-
-			// $.post(url, properties).done(handleResponse).fail(function(response) {
-			// 	console.log(response);
-			// });
-
-			CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": window.submit_id}, handleResponse);
-
-			// $.ajax({
-			// 	method: "POST",
-	  //           contentType: "application/json",
-	  //           url: url,
-	  //           dataType: "json",
-	  //           data: properties,
-	  //           timeout: 20000,
-	  //           success: handleResponse,
-	  //           fail: function(response) {
-			// 		console.log(response);
-	  //           }
-			// });
-
+			CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse);
 		}
 
 		return this;

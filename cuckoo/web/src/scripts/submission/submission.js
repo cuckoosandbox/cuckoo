@@ -28,7 +28,7 @@ $(function() {
 					url: '/submit/api/filetree',
 					method: 'POST',
 					params: {
-						submit_id: window.submit_id
+						"submit_id": window.submit_id
 					},
 					serialize: function(response) {
 						console.log(response);

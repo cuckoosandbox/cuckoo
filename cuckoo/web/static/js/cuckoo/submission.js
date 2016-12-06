@@ -60,8 +60,6 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -539,29 +537,7 @@ var FileTree = function () {
 			if (!properties) {
 				$.get(url).done(handleResponse);
 			} else {
-
-				if ((typeof properties === 'undefined' ? 'undefined' : _typeof(properties)) === 'object') {
-					properties = JSON.stringify(properties);
-				}
-
-				// $.post(url, properties).done(handleResponse).fail(function(response) {
-				// 	console.log(response);
-				// });
-
-				CuckooWeb.api_post("/submit/api/filetree/", { "submit_id": window.submit_id }, handleResponse);
-
-				// $.ajax({
-				// 	method: "POST",
-				//           contentType: "application/json",
-				//           url: url,
-				//           dataType: "json",
-				//           data: properties,
-				//           timeout: 20000,
-				//           success: handleResponse,
-				//           fail: function(response) {
-				// 		console.log(response);
-				//           }
-				// });
+				CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse);
 			}
 
 			return this;
@@ -1377,7 +1353,7 @@ $(function () {
 					url: '/submit/api/filetree',
 					method: 'POST',
 					params: {
-						submit_id: window.submit_id
+						"submit_id": window.submit_id
 					},
 					serialize: function serialize(response) {
 						console.log(response);
