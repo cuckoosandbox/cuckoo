@@ -21,7 +21,7 @@ $(function() {
 					sidebar: document.getElementById('filetree-detail'),
 					nameKey: 'filename', // name of the file name property
 					isDirectory: function(item) {
-						return item.type === 'directory';
+						return item.type === 'directory' || item.type === 'container';
 					}
 				},
 				load: {
