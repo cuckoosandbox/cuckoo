@@ -19,6 +19,9 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-bower-assets": "0.0.3",
+    "gulp-concat": "^2.6.1",
+    "gulp-declare": "^0.3.0",
+    "gulp-handlebars": "^4.0.0",
     "gulp-insert": "^0.5.0",
     "gulp-rename": "^1.2.2",
     "gulp-ruby-sass": "^2.1.0",
@@ -26,7 +29,9 @@
     "gulp-task-loader": "^1.4.4",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.10",
+    "gulp-wrap": "^0.13.0",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "handlebars": "^4.0.5"
   }
 }

@@ -28,6 +28,7 @@ class CuckooWeb {
     }
 
     static api_post(url, params, callback, errback, beforesend){
+        
         let data = JSON.stringify(params);
 
         $.ajax({

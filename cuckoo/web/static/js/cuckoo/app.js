@@ -40,6 +40,7 @@ var CuckooWeb = function () {
     }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
+
             var data = JSON.stringify(params);
 
             $.ajax({

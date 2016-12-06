@@ -76,8 +76,8 @@ const DEFAULT_FILETREE_CONFIG = {
 }
 
 let itemIndex = 0; // global item index
-let detailTemplate = Handlebars.compile(document.getElementById('hbs-detail').innerHTML);
-let selectionTemplate = Handlebars.compile(document.getElementById('hbs-selection-list').innerHTML);
+let detailTemplate = HANDLEBARS_TEMPLATES['submission-file-detail'];
+let selectionTemplate = HANDLEBARS_TEMPLATES['submission-selection-list'];
 
 // returns name of the item
 function getItemName(item) {
@@ -472,7 +472,30 @@ class FileTree {
 		if(!properties) {
 			$.get(url).done(handleResponse);
 		} else {
-			$.post(url, properties).done(handleResponse);
+
+			if(typeof properties === 'object') {
+				properties = JSON.stringify(properties);
+			}
+
+			// $.post(url, properties).done(handleResponse).fail(function(response) {
+			// 	console.log(response);
+			// });
+
+			CuckooWeb.api_post("/submit/api/filetree/", {"submit_id": window.submit_id}, handleResponse);
+
+			// $.ajax({
+			// 	method: "POST",
+	  //           contentType: "application/json",
+	  //           url: url,
+	  //           dataType: "json",
+	  //           data: properties,
+	  //           timeout: 20000,
+	  //           success: handleResponse,
+	  //           fail: function(response) {
+			// 		console.log(response);
+	  //           }
+			// });
+
 		}
 
 		return this;

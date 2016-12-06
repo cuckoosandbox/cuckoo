@@ -60,6 +60,8 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -142,8 +144,8 @@ var DEFAULT_FILETREE_CONFIG = {
 };
 
 var itemIndex = 0; // global item index
-var detailTemplate = Handlebars.compile(document.getElementById('hbs-detail').innerHTML);
-var selectionTemplate = Handlebars.compile(document.getElementById('hbs-selection-list').innerHTML);
+var detailTemplate = HANDLEBARS_TEMPLATES['submission-file-detail'];
+var selectionTemplate = HANDLEBARS_TEMPLATES['submission-selection-list'];
 
 // returns name of the item
 function getItemName(item) {
@@ -537,7 +539,29 @@ var FileTree = function () {
 			if (!properties) {
 				$.get(url).done(handleResponse);
 			} else {
-				$.post(url, properties).done(handleResponse);
+
+				if ((typeof properties === 'undefined' ? 'undefined' : _typeof(properties)) === 'object') {
+					properties = JSON.stringify(properties);
+				}
+
+				// $.post(url, properties).done(handleResponse).fail(function(response) {
+				// 	console.log(response);
+				// });
+
+				CuckooWeb.api_post("/submit/api/filetree/", { "submit_id": window.submit_id }, handleResponse);
+
+				// $.ajax({
+				// 	method: "POST",
+				//           contentType: "application/json",
+				//           url: url,
+				//           dataType: "json",
+				//           data: properties,
+				//           timeout: 20000,
+				//           success: handleResponse,
+				//           fail: function(response) {
+				// 		console.log(response);
+				//           }
+				// });
 			}
 
 			return this;
@@ -742,9 +766,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // TEMPLATES
 var TEMPLATES = {
-	TopSelect: Handlebars.compile(document.getElementById('hbs-top-select').innerHTML),
-	SimpleSelect: Handlebars.compile(document.getElementById('hbs-simple-select').innerHTML),
-	ToggleList: Handlebars.compile(document.getElementById('hbs-toggle-list').innerHTML)
+	TopSelect: HANDLEBARS_TEMPLATES['control-top-select'],
+	SimpleSelect: HANDLEBARS_TEMPLATES['control-simple-select'],
+	ToggleList: HANDLEBARS_TEMPLATES['control-toggle-list']
 };
 
 // renders two interface controllers onto one row
@@ -1220,6 +1244,8 @@ var Form = function () {
 		this.fields = {};
 		this.container = this.config.container || null;
 
+		console.log(this.config);
+
 		this.config.configure.call({
 			TopSelect: TopSelect,
 			SimpleSelect: SimpleSelect,
@@ -1331,143 +1357,147 @@ Handlebars.registerHelper('file_size', function (text) {
 
 $(function () {
 
-	// collects the entire ui of this page
-	var analysis_ui = new Analysis.AnalysisInterface({
-		container: document.getElementById('analysis-configuration'),
-		// specifies the file tree configuration
-		filetree: {
-			config: {
-				label: 'filetree',
-				autoExpand: true,
-				sidebar: document.getElementById('filetree-detail'),
-				nameKey: 'filename', // name of the file name property
-				isDirectory: function isDirectory(item) {
-					return item.type === 'directory';
-				}
-			},
-			load: {
-				url: '/api/real-file-structure',
-				method: 'POST',
-				params: {
-					submit_id: 52
+	if (document.getElementById('analysis-configuration') !== null) {
+
+		// collects the entire ui of this page
+		var analysis_ui = new Analysis.AnalysisInterface({
+			container: document.getElementById('analysis-configuration'),
+			// specifies the file tree configuration
+			filetree: {
+				config: {
+					label: 'filetree',
+					autoExpand: true,
+					sidebar: document.getElementById('filetree-detail'),
+					nameKey: 'filename', // name of the file name property
+					isDirectory: function isDirectory(item) {
+						return item.type === 'directory';
+					}
 				},
-				serialize: function serialize(response) {
-					return response.data.files[0];
+				load: {
+					url: '/submit/api/filetree',
+					method: 'POST',
+					params: {
+						submit_id: window.submit_id
+					},
+					serialize: function serialize(response) {
+						console.log(response);
+						return response.data.files[0];
+					}
+				},
+				transform: {
+					file: function file(el, controller) {
+
+						var self = this;
+
+						// this = item
+						var _$d = $(el).find('div');
+						var size = FileTree.Label('size', FileTree.humanizeBytes(this.size));
+						var info = FileTree.Label('info', '<i class="fa fa-info-circle"></i>', 'a');
+
+						// adds the meta data
+						_$d.append(info, size);
+
+						$(info).on('click', function (e) {
+							e.stopImmediatePropagation();
+							controller.detailView(self);
+						});
+
+						return el;
+					},
+
+					folder: function folder(el, controller) {
+
+						var _$d = $(el).find('div');
+						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
+						_$d.append(size);
+
+						return el;
+					}
 				}
 			},
-			transform: {
-				file: function file(el, controller) {
 
-					var self = this;
+			// specifies the form configuration
+			form: {
+				container: document.getElementById('submission-config'),
+				configure: function configure(form) {
 
-					// this = item
-					var _$d = $(el).find('div');
-					var size = FileTree.Label('size', FileTree.humanizeBytes(this.size));
-					var info = FileTree.Label('info', '<i class="fa fa-info-circle"></i>', 'a');
+					// this configuration allows for dynamic (yes, dynamic) forms
 
-					// adds the meta data
-					_$d.append(info, size);
-
-					$(info).on('click', function (e) {
-						e.stopImmediatePropagation();
-						controller.detailView(self);
+					var network = new this.TopSelect({
+						name: 'network-routing',
+						title: 'Network Routing',
+						options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet', selected: true }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+						extra_select: {
+							title: 'VPN via',
+							name: 'vpn',
+							options: [{ name: 'France', value: 'FR-fr' }]
+						}
 					});
 
-					return el;
-				},
+					var pkg = new this.SimpleSelect({
+						name: 'package',
+						title: 'Package',
+						default: 'python',
+						options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
+					});
 
-				folder: function folder(el, controller) {
+					var priority = new this.TopSelect({
+						name: 'piority',
+						title: 'Priority',
+						options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
+					});
 
-					var _$d = $(el).find('div');
-					var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
-					_$d.append(size);
+					var config = new this.ToggleList({
+						name: 'options',
+						title: 'Options',
+						extraOptions: true,
+						options: [{
+							name: 'no-injection',
+							label: 'No Injection',
+							description: 'Disable behavioral analysis.'
+						}, {
+							name: 'process-memory-dump',
+							label: 'Process Memory Dump',
+							selected: true
+						}, {
+							name: 'full-memory-dump',
+							label: 'Full Memory Dump',
+							description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+						}, {
+							name: 'enforce-timeout',
+							label: 'Enforce Timeout'
+						}, {
+							name: 'simulated-human-interaction',
+							label: 'Enable Simulated Human Interaction',
+							selected: true
+						}, {
+							name: 'enable-services',
+							label: 'Enable Services',
+							description: 'Enable simulated environment specified in the auxiliary configuration.',
+							selected: true
+						}]
+					});
 
-					return el;
+					var machine = new this.SimpleSelect({
+						name: 'machine',
+						title: 'Machine',
+						default: 'default',
+						options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
+					});
+
+					// an array inside this array will render the elements in a split view
+					form.add([network, [pkg, priority], config, machine]);
+					form.draw();
 				}
 			}
-		},
+		});
 
-		// specifies the form configuration
-		form: {
-			container: document.getElementById('submission-config'),
-			configure: function configure(form) {
-
-				// this configuration allows for dynamic (yes, dynamic) forms
-
-				var network = new this.TopSelect({
-					name: 'network-routing',
-					title: 'Network Routing',
-					options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet', selected: true }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
-					extra_select: {
-						title: 'VPN via',
-						name: 'vpn',
-						options: [{ name: 'France', value: 'FR-fr' }]
-					}
-				});
-
-				var pkg = new this.SimpleSelect({
-					name: 'package',
-					title: 'Package',
-					default: 'python',
-					options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
-				});
-
-				var priority = new this.TopSelect({
-					name: 'piority',
-					title: 'Priority',
-					options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
-				});
-
-				var config = new this.ToggleList({
-					name: 'options',
-					title: 'Options',
-					extraOptions: true,
-					options: [{
-						name: 'no-injection',
-						label: 'No Injection',
-						description: 'Disable behavioral analysis.'
-					}, {
-						name: 'process-memory-dump',
-						label: 'Process Memory Dump',
-						selected: true
-					}, {
-						name: 'full-memory-dump',
-						label: 'Full Memory Dump',
-						description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
-					}, {
-						name: 'enforce-timeout',
-						label: 'Enforce Timeout'
-					}, {
-						name: 'simulated-human-interaction',
-						label: 'Enable Simulated Human Interaction',
-						selected: true
-					}, {
-						name: 'enable-services',
-						label: 'Enable Services',
-						description: 'Enable simulated environment specified in the auxiliary configuration.',
-						selected: true
-					}]
-				});
-
-				var machine = new this.SimpleSelect({
-					name: 'machine',
-					title: 'Machine',
-					default: 'default',
-					options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
-				});
-
-				// an array inside this array will render the elements in a split view
-				form.add([network, [pkg, priority], config, machine]);
-				form.draw();
-			}
-		}
-	});
-
-	$('#start-analysis').bind('click', function (e) {
-		e.preventDefault();
-		var json = analysis_ui.getData();
-		console.log(json);
-	});
+		$('#start-analysis').bind('click', function (e) {
+			e.preventDefault();
+			var json = analysis_ui.getData();
+			console.log(json);
+		});
+	}
 });
 
 },{"./components/Analysis":1,"./components/FileTree":2}]},{},[4])

@@ -1,8 +1,8 @@
 // TEMPLATES
 const TEMPLATES = {
-	TopSelect: Handlebars.compile(document.getElementById('hbs-top-select').innerHTML),
-	SimpleSelect: Handlebars.compile(document.getElementById('hbs-simple-select').innerHTML),
-	ToggleList: Handlebars.compile(document.getElementById('hbs-toggle-list').innerHTML)
+	TopSelect: HANDLEBARS_TEMPLATES['control-top-select'],
+	SimpleSelect: HANDLEBARS_TEMPLATES['control-simple-select'],
+	ToggleList: HANDLEBARS_TEMPLATES['control-toggle-list']
 }
 
 // renders two interface controllers onto one row
@@ -415,6 +415,8 @@ class Form {
 		this.config = config;
 		this.fields = {};
 		this.container = this.config.container || null;
+
+		console.log(this.config);
 
 		this.config.configure.call({
 			TopSelect: TopSelect,
