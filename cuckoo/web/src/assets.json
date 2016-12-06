@@ -1,0 +1,11 @@
+{
+	"main": {
+		"js/vendor.js@concat": [
+			"handlebars/handlebars.js"
+		],
+		"css/vendor.css@concat": [],
+		"fonts@copy": [
+			"font-awesome/fonts/*"
+		]
+	}
+}

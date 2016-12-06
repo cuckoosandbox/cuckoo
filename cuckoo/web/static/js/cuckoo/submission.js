@@ -1,10 +1,1317 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
+'use strict';
 
-},{}],2:[function(require,module,exports){
-"use strict";
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.AnalysisInterface = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _InterfaceControllers = require('./InterfaceControllers');
+
+var InterfaceControllers = _interopRequireWildcard(_InterfaceControllers);
+
+var _FileTree = require('./FileTree');
+
+var FileTree = _interopRequireWildcard(_FileTree);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var DEFAULT_ANALYSIS_CONFIG = {
+	container: null,
+	filetree: FileTree.DEFAULT_FILETREE_CONFIG
+};
+
+function createFileTree(element, config) {
+	var filetree = new FileTree.FileTree(element, config);
+	return filetree;
+}
+
+var AnalysisInterface = function () {
+	function AnalysisInterface(options) {
+		_classCallCheck(this, AnalysisInterface);
+
+		this.options = $.extend(true, DEFAULT_ANALYSIS_CONFIG, options);
+		this.filetree = createFileTree(this.options.container.querySelector('#filetree'), this.options.filetree);
+		this.form = new InterfaceControllers.Form(this.options.form);
+	}
+
+	_createClass(AnalysisInterface, [{
+		key: 'getData',
+		value: function getData() {
+			var form_values = this.form.serialize();
+			form_values.file_selection = this.filetree.serialize();
+			return form_values;
+		}
+	}]);
+
+	return AnalysisInterface;
+}();
+
+exports.AnalysisInterface = AnalysisInterface;
+
+},{"./FileTree":2,"./InterfaceControllers":3}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+	@param Object config (filetree configuration):
+	{
+		config: {
+			label: String, => namespace of this filetree
+			autoExpand: Boolean, => expands filetree on init
+			nameKey: String, => key of the filename
+			isDirectory: Function (returns Boolean) => test function for determining directories from files
+		},
+		load: {
+			serialize: Function (returns Object) => serializes / formats incoming JSON
+		},
+		transform: {
+			file: Function (returns DOM), => transforms a rendered file
+			folder: Function (returns DOM) => transforms a rendered folder
+		},
+		events: {
+			folder_click: Function (callback), => dispatched when user clicks a folder
+			file_click: Function (callback), => dispatched when user clicks a file
+			select: Function (callback) => dispatched when user selects a file
+		}
+	}
+
+ */
+
+var DEFAULT_FILETREE_CONFIG = {
+	// global config
+	config: {
+		// namespace of this filetree (identifier) - String
+		label: 'ft',
+		// auto expansion of files on init - Boolean
+		autoExpand: false,
+		// reference to the sidebar wrapper - DOM
+		sidebar: null,
+		// name of the key containing the file name - String
+		nameKey: 'filename',
+		// function determining a file from a folder using object properties - Function (ret Boolean)
+		isDirectory: function isDirectory(item) {
+			return item.type === 'directory';
+		}
+	},
+	// options for retrieving HTTP data, like files
+	load: {
+		url: null,
+		method: null,
+		params: {},
+		// function formatting incoming responses from HTTP request - Function (ret ResponseObject)
+		serialize: function serialize(response) {
+			return response;
+		}
+	},
+	// options for custom formatting of drawn elements
+	transform: {
+		// function that transform a drawn file element - Function (ret DOM)
+		file: function file(el, controller) {
+			return el;
+		},
+		// function that transforms a drawn folder element - Function (ret DOM)
+		folder: function folder(el, controller) {
+			return el;
+		}
+	},
+	// custom event hooks
+	events: {
+		// gets fired when clicked on a folder
+		folder_click: function folder_click(expanded) {},
+		// gets fired when clicked on a file
+		file_click: function file_click() {},
+		// gets fired when selected an item
+		select: function select(item, selection) {},
+		// gets fired when JSON is done loading
+		ready: function ready() {}
+	},
+	// handlebars templates
+	templates: {}
+};
+
+var itemIndex = 0; // global item index
+var detailTemplate = Handlebars.compile(document.getElementById('hbs-detail').innerHTML);
+var selectionTemplate = Handlebars.compile(document.getElementById('hbs-selection-list').innerHTML);
+
+// returns name of the item
+function getItemName(item) {
+	var name = item.name;
+	if (this.options.config.nameKey) {
+		name = item[this.options.config.nameKey];
+	}
+	return name;
+}
+
+function createSelectable(item, name, text) {
+
+	var id = name + '-' + item.filetree.index;
+	var _$c = document.createElement('input');
+	var _$l = document.createElement('label');
+	var _$s = document.createElement('span');
+
+	_$s.innerHTML = text;
+
+	_$c.setAttribute('type', 'checkbox');
+	_$c.setAttribute('id', name + '-' + item.filetree.index);
+	_$l.setAttribute('for', name + '-' + item.filetree.index);
+	_$l.setAttribute('data-index', item.filetree.index);
+	_$c.setAttribute('value', item.filetree.index);
+
+	if (item.selected) {
+		_$c.setAttribute('checked', true);
+	}
+
+	_$l.appendChild(_$c);
+	_$l.appendChild(_$s);
+
+	return _$l;
+}
+
+// creates a folder (list) item
+function createFolder(item, controller) {
+
+	var _$ = document.createElement('li');
+	var _$s = document.createElement('strong');
+	var _$d = document.createElement('div');
+	var _$c = createSelectable(item, controller.options.config.label, getItemName.call(controller, item));
+
+	_$.appendChild(_$s);
+	_$d.appendChild(_$c);
+	_$s.appendChild(_$d);
+
+	_$d.setAttribute('data-type', 'folder');
+
+	return controller.transform('folder', _$, item);
+}
+
+// creates a file (list) item
+function createFile(item, controller) {
+
+	var _$ = document.createElement('li');
+	var _$d = document.createElement('div');
+	var _$c = createSelectable(item, controller.options.config.label, getItemName.call(controller, item));
+
+	_$.appendChild(_$d);
+	_$d.appendChild(_$c);
+	_$d.setAttribute('data-type', 'file');
+
+	return controller.transform('file', _$, item);
+}
+
+// takes an array of items, and constructs a child list item
+// decides kind of checking towards a defined property ('children')
+// passes along entire item object for custom hooks
+function build(items, parent) {
+
+	var self = this;
+	var folder;
+	var file;
+	var list;
+
+	// directory / file detection logics
+	// this function decides whether it is or isn't a directory
+	function isDirectory(item) {
+		if (!self.options.config.isDirectory) {
+			return item.hasOwnProperty('children');
+		} else {
+			return self.options.config.isDirectory(item);
+		}
+	}
+
+	for (var i in items) {
+
+		var item = items[i];
+		itemIndex += 1;
+
+		item.filetree = {
+			index: itemIndex,
+			is_directory: isDirectory(item),
+			el: null
+		};
+
+		if (isDirectory.call(this, item)) {
+			folder = createFolder(item, this);
+			list = build.call(this, item.children, document.createElement('ul'));
+			parent.appendChild(folder);
+			var ref = folder.getElementsByTagName('strong')[0];
+			ref.parentNode.insertBefore(list, ref.nextSibling);
+			item.filetree.el = folder;
+		} else {
+			file = createFile(item, this);
+			parent.appendChild(file);
+			item.filetree.el = file;
+		}
+	}
+
+	return parent;
+}
+
+// iterates over the dom
+function iterateDOM(ul, level, transform) {
+
+	ul.contents('li').each(function () {
+		if ($(this).children('ul').length) {
+			transform.call($(this).children('ul'), level);
+			iterateDOM($(this).children('ul'), level + 1, transform);
+		}
+	});
+}
+
+// folder click handler
+function onFolderClick(e, fileTree) {
+
+	var isExpanded = false;
+
+	if ($(this).parent().hasClass('expanded')) {
+		$(this).parent().removeClass('expanded');
+	} else {
+		$(this).parent().addClass('expanded');
+		isExpanded = true;
+	}
+
+	if (fileTree.options.events['folder_click']) fileTree.options.events['folder_click'](isExpanded);
+}
+
+// file click handler
+function onFileClick(e, fileTree) {
+	// handle link click
+	if (fileTree.options.events['file_click']) fileTree.options.events['file_click']();
+}
+
+// bubbles down a selection, so if you would check a folder,
+// than all files inside that folder would get selected
+// automatically
+function bubbleSelection(arr, checked) {
+
+	arr.forEach(function (item) {
+
+		item.selected = checked;
+		$(item.filetree.el).find('input').prop('checked', checked);
+
+		if (item.children) {
+			bubbleSelection(item.children, checked);
+		}
+	});
+}
+
+// filters out extensions
+function getExtensions(selection) {
+
+	var ignore = ['DS_Store'];
+	var re = /(?:\.([^.]+))?$/;
+	var exts = [];
+	var ext = void 0;
+	var parts = void 0;
+
+	selection.forEach(function (item) {
+		ext = re.exec(item.filename);
+		if (ext.index > 0 && exts.indexOf(ext[1]) == -1) {
+			if (typeof ext[1] !== 'string') return;
+			exts.push(ext[1]);
+		}
+	});
+
+	return exts;
+}
+
+// handles a file / folder selection
+function selectHandler(checked, index, filetree) {
+
+	var item = filetree.getIndex(index);
+
+	item.selected = checked;
+
+	if (item.children) {
+		bubbleSelection(item.children, checked);
+	}
+
+	if (filetree.options.events.select) {
+		filetree.options.events.select.call(filetree, item, filetree.findByProperty('selected', true));
+	}
+
+	if ($(this).parent().hasClass('custom-checkbox')) {
+		$(item.filetree.el).find('input:checkbox').prop('checked', checked);
+	}
+
+	if (filetree.activeIndex && filetree.activeIndex == item.filetree.index) {
+		$(filetree.options.config.sidebar).find('header input:checkbox').prop('checked', checked);
+	}
+
+	filetree.update();
+
+	if (filetree.selectionViewActive) {
+		filetree.selectionView();
+	}
+}
+
+// handles a search (in the selection view)
+function searchHandler(value, selection, filetree) {
+
+	var list = $(this).find('#selection-overview');
+	list.find('[data-index]').removeClass('hidden');
+
+	if (value.length > 0) {
+
+		list.find('[data-index]').addClass('hidden');
+
+		var searched = selection.filter(function (item) {
+			return item.filename.toLowerCase().indexOf(value.toLowerCase()) > -1;
+		}).map(function (item) {
+			return '[data-index=' + item.filetree.index + ']';
+		});
+
+		list.find(searched.join(',')).removeClass('hidden');
+
+		if (!searched.length) {
+			list.find('.no-results').removeClass('hidden');
+		} else {
+			list.find('.no-results').addClass('hidden');
+		}
+	} else {
+		list.find('.no-results').addClass('hidden');
+	}
+}
+
+// utility function couning folder sizes
+function folderSize(folder) {
+
+	var size = 0;
+	if (!folder) return;
+	function countChildren(children) {
+		for (var child in children) {
+			if (children[child].size) {
+				size += parseInt(children[child].size);
+			}
+			if (children[child].children) {
+				countChildren(children[child].children);
+			}
+		}
+	}
+
+	countChildren(folder.children);
+
+	return size;
+}
+
+var FileTree = function () {
+	function FileTree(el, options) {
+		_classCallCheck(this, FileTree);
+
+		this.el = el;
+		this.options = options;
+		this.data = null;
+
+		this.selectionViewActive = false;
+		this.detailViewActive = false;
+		this.activeIndex = null;
+
+		// tiny configuration handlers
+		this.interactionHandlers = {
+			expandAllFolders: function expandAllFolders() {
+				$(this.el).find('[data-type="folder"]').parent().addClass('expanded');
+				this.update();
+			},
+			collapseAllFolders: function collapseAllFolders() {
+				$(this.el).find('.expanded').removeClass('expanded');
+				this.update();
+			},
+			selectAll: function selectAll() {
+				bubbleSelection(this.data.children, true);
+				this.update();
+				this.selectionView();
+			},
+			deselectAll: function deselectAll() {
+				bubbleSelection(this.data.children, false);
+				this.update();
+				this.selectionView();
+			},
+			showSelection: function showSelection() {
+				this.selectionView();
+			}
+		};
+
+		if (this.options.load.url) this.load(this.options.load.url, this.options.load.params);
+
+		if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
+	}
+
+	_createClass(FileTree, [{
+		key: 'initialise',
+		value: function initialise(data) {
+			this.data = data;
+			this.construct();
+			if (this.options.events.ready) {
+				this.options.events['ready'].call(this);
+			}
+		}
+
+		// builds the HTML from the data set
+
+	}, {
+		key: 'construct',
+		value: function construct() {
+
+			itemIndex = 0;
+			this.el.innerHTML = '';
+			var html = build.call(this, this.data.children, document.createElement('ul'));
+
+			this.el.appendChild(html);
+
+			iterateDOM($(this.el).find('ul:first-child'), 1, function (level) {
+				$(this).css('padding-left', level * 10);
+			});
+
+			this.connectListeners();
+			this.update();
+			this.selectionView();
+		}
+
+		// binds event (click) listeners
+
+	}, {
+		key: 'connectListeners',
+		value: function connectListeners() {
+
+			var self = this;
+
+			$(this.el).find('[data-type="folder"]').bind('click', function (e) {
+				e.preventDefault();
+				onFolderClick.call(this, e, self);
+			});
+
+			$(this.el).find('[data-type="file"]').bind('click', function (e) {
+				e.preventDefault();
+				onFileClick.call(this, e, self);
+			});
+
+			$(this.el).find('label').bind('click', function (e) {
+				e.stopPropagation();
+			});
+
+			$(this.el).find('input:checkbox').on('change', function (e) {
+				selectHandler.call(this, $(this).is(':checked'), $(this).parent().data('index'), self);
+			});
+
+			$("*[href^='filetree:']").bind('click', function (e) {
+				e.preventDefault();
+				var controlName = $(this).attr('href').split(':')[1];
+				if (self.interactionHandlers.hasOwnProperty(controlName)) {
+					self.interactionHandlers[controlName].call(self);
+				}
+			});
+		}
+	}, {
+		key: 'update',
+		value: function update() {
+			$('[data-value^="filetree:totalFilesCount"]').text(itemIndex);
+			$('[data-value^="filetree:selectedFilesCount"]').text(this.findByProperty('selected', true).length);
+		}
+
+		// loads file json
+
+	}, {
+		key: 'load',
+		value: function load(url, properties) {
+			var self = this;
+
+			// response handler
+			function handleResponse(response) {
+				if (self.options.load.serialize) {
+					response = self.options.load.serialize(response);
+				}
+				self.initialise(response);
+			}
+
+			if (!properties) {
+				$.get(url).done(handleResponse);
+			} else {
+				$.post(url, properties).done(handleResponse);
+			}
+
+			return this;
+		}
+
+		// applies a custom transform to an element from internal options
+
+	}, {
+		key: 'transform',
+		value: function transform(name, el, item) {
+			if (this.options.transform[name]) {
+				return this.options.transform[name].call(item, el, this);
+			}
+			return el;
+		}
+
+		// returns an item with index [index]
+
+	}, {
+		key: 'getIndex',
+		value: function getIndex(index) {
+
+			var ret = undefined;
+			if (!this.data) return ret;
+
+			function find(arr) {
+				var result;
+
+				arr.forEach(function (item) {
+
+					if (result) return;
+
+					if (item.filetree.index == index) {
+						result = item;
+					} else {
+						if (item.children) {
+							result = find(item.children);
+						}
+					}
+				});
+
+				return result;
+			}
+
+			return find(this.data.children, index);
+		}
+
+		// returns a set of items with property [property] = value [value]
+
+	}, {
+		key: 'findByProperty',
+		value: function findByProperty(property, value, arr) {
+
+			var ret = [];
+
+			if (!this.data) return ret;
+
+			function find(arr) {
+				arr.forEach(function (item) {
+
+					if (item.children) {
+						find(item.children);
+					}
+
+					if (item[property] === value) ret.push(item);
+				});
+			}
+
+			find(this.data.children);
+			return ret;
+		}
+	}, {
+		key: 'detailView',
+		value: function detailView(item) {
+
+			var self = this;
+
+			if (item.filetree.is_directory) return;
+
+			var html = detailTemplate({
+				item: item
+			});
+
+			this.selectionViewActive = false;
+			this.detailViewActive = true;
+			this.activeIndex = item.filetree.index;
+
+			this.options.config.sidebar.innerHTML = html;
+
+			$(this.options.config.sidebar).find('header input:checkbox').bind('change', function () {
+				selectHandler.call(this, $(this).is(':checked'), item.filetree.index, self);
+			});
+		}
+	}, {
+		key: 'selectionView',
+		value: function selectionView() {
+
+			var self = this;
+
+			var selected = this.findByProperty('selected', true);
+			var extensions = getExtensions(selected);
+
+			var html = selectionTemplate({
+				selection: selected,
+				empty: selected.length <= 0,
+				extensions: extensions
+			});
+
+			this.detailViewActive = false;
+			this.activeIndex = null;
+			this.selectionViewActive = true;
+
+			this.options.config.sidebar.innerHTML = html;
+
+			$(this.options.config.sidebar).find('a').bind('click', function (e) {
+				e.preventDefault();
+				var item = self.getIndex(parseInt($(this).attr('href')));
+				self.detailView(item);
+			});
+
+			$(this.options.config.sidebar).find('#search-selection').bind('keyup', function (e) {
+				searchHandler.call(self.options.config.sidebar, this.value, selected, self);
+				$(self.options.config.sidebar).find('.extension-select select').find('option:first-child').prop('selected', true);
+				$(self.options.config.sidebar).find('.extension-select select').addClass('none-selected');
+			});
+
+			$(this.options.config.sidebar).find('.extension-select select').bind('change', function (e) {
+				searchHandler.call(self.options.config.sidebar, '.' + this.value, selected, self);
+				$(self.options.config.sidebar).find('#search-selection').val('');
+				$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
+			});
+		}
+	}, {
+		key: 'serialize',
+		value: function serialize() {
+			var selection = this.findByProperty('selected', true);
+			return selection.map(function (item) {
+				var ret = {};
+				for (var prop in item) {
+					if (prop !== 'filetree') {
+						ret[prop] = item[prop];
+					}
+				}
+				return ret;
+			}).map(function (item) {
+				delete item.filetree;
+				return item;
+			});
+		}
+	}]);
+
+	return FileTree;
+}();
+
+// creates a tiny data label
+
+
+function Label(name, content, elementTagName) {
+	if (!elementTagName) elementTagName = 'span';
+	var _$ = document.createElement(elementTagName);
+	_$.classList.add('label');
+	_$.classList.add('label-' + name);
+	_$.innerHTML = content;
+	return _$;
+}
+
+// utility function for humanizing bytes
+function humanizeBytes(bytes, si) {
+	var thresh = si ? 1000 : 1024;
+	if (Math.abs(bytes) < thresh) {
+		return bytes + ' B';
+	}
+	var units = si ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	var u = -1;
+	do {
+		bytes /= thresh;
+		++u;
+	} while (Math.abs(bytes) >= thresh && u < units.length - 1);
+	return bytes.toFixed(1) + ' ' + units[u];
+}
+
+exports.FileTree = FileTree;
+exports.Label = Label;
+exports.humanizeBytes = humanizeBytes;
+exports.folderSize = folderSize;
+exports.DEFAULT_FILETREE_CONFIG = DEFAULT_FILETREE_CONFIG;
 
 },{}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// TEMPLATES
+var TEMPLATES = {
+	TopSelect: Handlebars.compile(document.getElementById('hbs-top-select').innerHTML),
+	SimpleSelect: Handlebars.compile(document.getElementById('hbs-simple-select').innerHTML),
+	ToggleList: Handlebars.compile(document.getElementById('hbs-toggle-list').innerHTML)
+};
+
+// renders two interface controllers onto one row
+
+var Split = function () {
+	function Split(elements) {
+		_classCallCheck(this, Split);
+
+		this.elements = [];
+
+		for (var el in elements) {
+			this.add(elements[el]);
+		}
+	}
+
+	_createClass(Split, [{
+		key: 'add',
+		value: function add(element) {
+
+			if (!element instanceof UserInputView) {
+				console.error('Split only takes in UserInputControllers');
+				return;
+			}
+
+			element.view.split_view = this;
+			this.elements.push(element);
+		}
+	}, {
+		key: 'draw',
+		value: function draw() {
+
+			var el = document.createElement('div');
+			el.classList.add('fieldset__split');
+
+			for (var element in this.elements) {
+				var html = this.elements[element].view.render();
+				el.appendChild(html);
+			}
+			return el;
+		}
+	}]);
+
+	return Split;
+}();
+
+// USERINPUTVIEW
+
+
+var UserInputView = function () {
+	function UserInputView(controller) {
+		_classCallCheck(this, UserInputView);
+
+		this.controller = controller;
+		this.template = null;
+		this.html = null;
+		this.model = null;
+		this.split_view = null;
+		this.callbacks = {};
+	}
+
+	_createClass(UserInputView, [{
+		key: 'createWrapper',
+		value: function createWrapper() {
+			var wrap = document.createElement('fieldset');
+			wrap.classList.add('flex-form__module');
+			wrap.setAttribute('id', this.controller.name);
+			return wrap;
+		}
+	}, {
+		key: 'setupModel',
+		value: function setupModel(model) {
+
+			if (!this.model) {
+				this.model = model;
+			} else {
+				for (var prop in model) {
+					this.model[prop] = model[prop];
+				}
+			}
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			var html = this.template(this.model);
+			var wrap = this.createWrapper();
+			wrap.innerHTML = html;
+			this.html = wrap;
+			return wrap;
+		}
+	}, {
+		key: 'runCallbacks',
+		value: function runCallbacks() {
+			var self = this;
+			for (var cb in this.callbacks) {
+				if (this.callbacks instanceof Function) this.callbacks[cb].call(this.html, this.controller);
+				if (this.callbacks instanceof Array) {
+					this.callbacks[cb].forEach(function (callback) {
+						if (typeof callback === 'function') callback.call(self.html, self.controller);
+					});
+				}
+			}
+		}
+	}, {
+		key: 'afterRender',
+		value: function afterRender(cb) {
+			if (!cb) return;
+			this.callbacks.afterRender = cb;
+		}
+	}]);
+
+	return UserInputView;
+}();
+
+// USERINPUTCONTROLLER
+
+
+var UserInputController = function () {
+	function UserInputController(config) {
+		_classCallCheck(this, UserInputController);
+
+		if (!config) config = {};
+		this.config = config;
+		this.view = new UserInputView(this);
+		this.name = config.name || '';
+		this.title = config.title || '';
+		this.value = config.value || '';
+		this.type = config.type || '';
+		this.form = config.form || '';
+		this.default = config.default || '';
+
+		// assign default value to value if defined
+		if (this.default.length) {
+			this.value = this.default;
+		}
+
+		this.view.setupModel({
+			name: this.name,
+			title: this.title
+		});
+	}
+
+	_createClass(UserInputController, [{
+		key: 'setValue',
+		value: function setValue(val) {
+			this.value = val;
+			console.log(this.name + ' changed to value ' + this.value);
+		}
+	}, {
+		key: 'getValue',
+		value: function getValue() {
+			return this.value;
+		}
+	}]);
+
+	return UserInputController;
+}();
+
+// SIMPLESELECT CONSTRUCTOR (EXTENDS USERINPUTCONTROLLER)
+
+
+var SimpleSelect = function (_UserInputController) {
+	_inherits(SimpleSelect, _UserInputController);
+
+	function SimpleSelect(config) {
+		_classCallCheck(this, SimpleSelect);
+
+		var _this = _possibleConstructorReturn(this, (SimpleSelect.__proto__ || Object.getPrototypeOf(SimpleSelect)).call(this, config));
+
+		_this.options = config.options;
+		_this.initialise();
+		return _this;
+	}
+
+	_createClass(SimpleSelect, [{
+		key: 'initialise',
+		value: function initialise() {
+
+			this.view.template = TEMPLATES.SimpleSelect;
+
+			this.view.setupModel({
+				options: this.options
+			});
+
+			this.view.afterRender(function (controller) {
+				$(this).find('select').bind('change', function () {
+					controller.setValue(this.value);
+				});
+			});
+		}
+	}]);
+
+	return SimpleSelect;
+}(UserInputController);
+
+// TOPSELECT CONSTRUCTOR (EXTENDS USERINPUTCONTROLLER)
+
+
+var TopSelect = function (_UserInputController2) {
+	_inherits(TopSelect, _UserInputController2);
+
+	function TopSelect(config) {
+		_classCallCheck(this, TopSelect);
+
+		if (!config) config = {};
+
+		var _this2 = _possibleConstructorReturn(this, (TopSelect.__proto__ || Object.getPrototypeOf(TopSelect)).call(this, config));
+
+		_this2.options = _this2.config.options;
+		_this2.extra_select = _this2.config.extra_select;
+		_this2.initialise();
+		return _this2;
+	}
+
+	_createClass(TopSelect, [{
+		key: 'initialise',
+		value: function initialise() {
+
+			var self = this;
+			var extra = this.extra_select;
+			var totalItems = this.options.length;
+			var top_items = [];
+			var rest_items = [];
+
+			if (totalItems >= 5) {
+				top_items = this.options.slice(0, 5);
+				rest_items = this.options.slice(5, totalItems);
+			} else {
+				top_items = this.options;
+			}
+
+			this.options.forEach(function (opt) {
+				if (opt.selected) {
+					self.setValue(opt.value);
+				}
+			});
+
+			// controller configures the view
+			this.view.template = TEMPLATES.TopSelect;
+
+			// create model on view
+			this.view.setupModel({
+				top_items: top_items,
+				rest_items: rest_items,
+				extra_select: this.config.extra_select
+			});
+
+			// hook up interaction things
+			this.view.afterRender(function (controller) {
+
+				// this = html	
+				// controller = interface base controller
+
+				$(this).find('input:radio').bind('change', function (e) {
+					controller.setValue(this.value);
+				});
+
+				$(this).find('select[name="' + controller.name + '-other"]').bind('change', function (e) {
+					controller.setValue(this.value);
+				});
+
+				// to make the extra input a SEPERATE function,
+				// we create a new input controller - without the view -
+				// we already have the view. we just need the controller.
+				if (extra) {
+
+					var inp = new UserInputController({
+						name: extra.name,
+						title: extra.title
+					});
+
+					if (controller.form) controller.form.add(inp);
+
+					$(controller.view.html).find('select#' + extra.name).bind('change', function (e) {
+						inp.setValue($(this).val());
+					});
+				}
+			});
+		}
+	}, {
+		key: 'getValue',
+		value: function getValue() {
+			return this.value;
+		}
+	}]);
+
+	return TopSelect;
+}(UserInputController);
+
+// TOGGLE LIST with support for EXTRA USER INPUT
+
+
+var ToggleList = function (_UserInputController3) {
+	_inherits(ToggleList, _UserInputController3);
+
+	function ToggleList(config) {
+		_classCallCheck(this, ToggleList);
+
+		var _this3 = _possibleConstructorReturn(this, (ToggleList.__proto__ || Object.getPrototypeOf(ToggleList)).call(this, config));
+
+		_this3.options = config.options;
+		_this3.config = config;
+		_this3.value = {};
+		_this3.custom_options = config.custom_options || {};
+		_this3.initialise();
+		return _this3;
+	}
+
+	_createClass(ToggleList, [{
+		key: 'initialise',
+		value: function initialise() {
+
+			var self = this;
+			this.view.template = TEMPLATES.ToggleList;
+
+			this.view.setupModel({
+				options: this.options,
+				extraOptions: this.config.extraOptions
+			});
+
+			for (var opt in this.options) {
+				this.value[this.options[opt].name] = this.options[opt].selected || false;
+			}
+
+			this.view.afterRender(function () {
+
+				$(this).find('input:checkbox').bind('change', function (e) {
+					self.onToggleChange.call(this, e, self);
+				}).each(function () {
+					self.onToggleChange.call(this, null, self);
+				});
+
+				if (self.config.extraOptions) self.initialiseExtraOptions();
+			});
+		}
+	}, {
+		key: 'setOption',
+		value: function setOption(name, val) {
+			this.value[name] = val;
+		}
+	}, {
+		key: 'onToggleChange',
+		value: function onToggleChange(e, self) {
+			var $checkbox = $(this);
+			var optName = $checkbox.data('option');
+			self.setOption(optName, $checkbox.is(':checked'));
+		}
+	}, {
+		key: 'initialiseExtraOptions',
+		value: function initialiseExtraOptions() {
+
+			var self = this;
+
+			var $newOptionName = $(this.view.html).find('table tfoot input[name=new-key]');
+			var $newOptionValue = $(this.view.html).find('table tfoot input[name=new-value]');
+
+			$(this.view.html).find('table tfoot input[name=new-key], table tfoot input[name=new-value]').bind('keydown', function (e) {
+
+				var optName = $newOptionName.val();
+				var optValue = $newOptionValue.val();
+
+				switch (e.keyCode) {
+					case 13:
+						self.commit(optName, optValue);
+						break;
+				}
+			});
+
+			if (self.config.options_extra_predefined) {
+				self.config.options_extra_predefined.forEach(function (item) {
+					self.commit(item.key, item.value);
+				});
+			}
+		}
+	}, {
+		key: 'removeTableRow',
+		value: function removeTableRow(key) {
+			$(this.view.html).find('tr[data-option="' + key + '"]').remove();
+		}
+	}, {
+		key: 'createTableRow',
+		value: function createTableRow(key, value) {
+
+			var $row = document.createElement('tr');
+			var $key = document.createElement('td');
+			var $val = document.createElement('td');
+			var $remove = document.createElement('a');
+			var $icon = document.createElement('i');
+
+			$remove.classList.add('remove');
+			$icon.classList.add('fa');
+			$icon.classList.add('fa-remove');
+
+			$remove.appendChild($icon);
+
+			$key.innerHTML = key;
+			$val.innerHTML = value;
+			$val.appendChild($remove);
+			$row.appendChild($key);
+			$row.appendChild($val);
+
+			$key.classList.add('key');
+			$val.classList.add('value');
+
+			$row.setAttribute('data-option', key);
+
+			return $row;
+		}
+	}, {
+		key: 'commit',
+		value: function commit(key, value) {
+
+			var self = this;
+			var $newOptionName = $(this.view.html).find('table tfoot input[name=new-key]');
+			var $newOptionValue = $(this.view.html).find('table tfoot input[name=new-value]');
+
+			if (this.custom_options.hasOwnProperty(key)) return false;
+			if (!key || !value) return false;
+
+			this.custom_options[key] = value;
+
+			var el = this.createTableRow(key, value);
+			$(this.view.html).find('table tbody').append(el);
+
+			$(el).find('.remove').bind('click', function (e) {
+				e.preventDefault();
+				self.remove($(this).parents('tr').data('option'));
+			});
+
+			// resets and focusses back the input fields
+			$newOptionName.val('');
+			$newOptionValue.val('');
+			$newOptionName.focus();
+		}
+	}, {
+		key: 'remove',
+		value: function remove(key) {
+			if (this.custom_options.hasOwnProperty(key)) {
+				delete this.custom_options[key];
+				this.removeTableRow(key);
+			}
+		}
+	}, {
+		key: 'getValue',
+		value: function getValue() {
+
+			var list = {};
+
+			for (var opt in this.value) {
+				list[opt] = this.value[opt];
+			}
+
+			if (this.config.extraOptions) {
+				for (var o in this.custom_options) {
+					list[o] = this.custom_options[o];
+				}
+			}
+
+			return list;
+		}
+	}]);
+
+	return ToggleList;
+}(UserInputController);
+
+// FORM CONSTRUCTOR
+
+
+var Form = function () {
+	function Form(config) {
+		_classCallCheck(this, Form);
+
+		this.config = config;
+		this.fields = {};
+		this.container = this.config.container || null;
+
+		this.config.configure.call({
+			TopSelect: TopSelect,
+			SimpleSelect: SimpleSelect,
+			Split: Split,
+			ToggleList: ToggleList
+		}, this);
+	}
+
+	_createClass(Form, [{
+		key: 'add',
+		value: function add(element) {
+			var _this4 = this;
+
+			if (element instanceof Array) {
+				(function () {
+					var self = _this4;
+					element.forEach(function (item) {
+						if (item instanceof Array) {
+							var s = new Split(item);
+							self.add(s);
+						} else {
+							self.add(item);
+						}
+					});
+				})();
+			} else {
+				if (element instanceof UserInputController || element instanceof Split) {
+					this.fields[element.name] = element;
+					this.fields[element.name].form = this;
+				} else {
+					console.error('Only elements from instance UserInputController and Split are allowed!');
+				}
+			}
+		}
+	}, {
+		key: 'draw',
+		value: function draw() {
+
+			for (var f in this.fields) {
+				var field = this.fields[f];
+
+				if (field instanceof UserInputController) {
+
+					field.view.html = field.view.render();
+					this.container.appendChild(field.view.html);
+					if (field.view.callbacks.afterRender) field.view.callbacks.afterRender.call(field.view.html, field);
+				} else if (field instanceof Split) {
+					this.container.appendChild(field.draw());
+
+					for (var el in field.elements) {
+						var f = field.elements[el];
+						if (f.view.callbacks.afterRender) {
+							f.view.callbacks.afterRender.call(f.view.html, f);
+						}
+					}
+				}
+			}
+		}
+	}, {
+		key: 'serialize',
+		value: function serialize() {
+			var ret = {};
+
+			function setValue(key, value) {
+				ret[key] = value;
+			}
+
+			for (var f in this.fields) {
+				var field = this.fields[f];
+				if (typeof field.getValue === 'function') {
+					setValue(field.name, field.getValue());
+				}
+				if (field instanceof Split) {
+					field.elements.forEach(function (el) {
+						if (typeof el.getValue === 'function') setValue(el.name, el.getValue());
+					});
+				}
+			}
+			return ret;
+		}
+	}]);
+
+	return Form;
+}();
+
+exports.SimpleSelect = SimpleSelect;
+exports.TopSelect = TopSelect;
+exports.Split = Split;
+exports.ToggleList = ToggleList;
+exports.Form = Form;
+
+},{}],4:[function(require,module,exports){
 'use strict';
 
 var _FileTree = require('./components/FileTree');
@@ -163,5 +1470,7 @@ $(function () {
 	});
 });
 
-},{"./components/Analysis":1,"./components/FileTree":2}]},{},[3])
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9icm93c2VyaWZ5L25vZGVfbW9kdWxlcy9icm93c2VyLXBhY2svX3ByZWx1ZGUuanMiLCJzY3JpcHRzL3N1Ym1pc3Npb24vY29tcG9uZW50cy9BbmFseXNpcy5qcyIsInNjcmlwdHMvc3VibWlzc2lvbi9jb21wb25lbnRzL0ZpbGVUcmVlLmpzIiwic2NyaXB0cy9zdWJtaXNzaW9uL3N1Ym1pc3Npb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7QUNBQTtBQUNBOztBQ0RBO0FBQ0E7Ozs7QUNEQTs7SUFBWSxROztBQUNaOztJQUFZLFE7Ozs7QUFFWjtBQUNBLFdBQVcsY0FBWCxDQUEwQixXQUExQixFQUF1QyxVQUFTLElBQVQsRUFBZTtBQUNyRCxRQUFPLElBQUksV0FBVyxVQUFmLENBQTBCLFNBQVMsYUFBVCxDQUF1QixTQUFTLElBQVQsQ0FBdkIsQ0FBMUIsQ0FBUDtBQUNBLENBRkQ7O0FBSUEsRUFBRSxZQUFXOztBQUVaO0FBQ0EsS0FBSSxjQUFjLElBQUksU0FBUyxpQkFBYixDQUErQjtBQUNoRCxhQUFXLFNBQVMsY0FBVCxDQUF3Qix3QkFBeEIsQ0FEcUM7QUFFaEQ7QUFDQSxZQUFVO0FBQ1QsV0FBUTtBQUNQLFdBQU8sVUFEQTtBQUVQLGdCQUFZLElBRkw7QUFHUCxhQUFTLFNBQVMsY0FBVCxDQUF3QixpQkFBeEIsQ0FIRjtBQUlQLGFBQVMsVUFKRixFQUljO0FBQ3JCLGlCQUFhLHFCQUFTLElBQVQsRUFBZTtBQUMzQixZQUFPLEtBQUssSUFBTCxLQUFjLFdBQXJCO0FBQ0E7QUFQTSxJQURDO0FBVVQsU0FBTTtBQUNMLFNBQUssMEJBREE7QUFFTCxZQUFRLE1BRkg7QUFHTCxZQUFRO0FBQ1AsZ0JBQVc7QUFESixLQUhIO0FBTUwsZUFBVyxtQkFBUyxRQUFULEVBQW1CO0FBQzdCLFlBQU8sU0FBUyxJQUFULENBQWMsS0FBZCxDQUFvQixDQUFwQixDQUFQO0FBQ0E7QUFSSSxJQVZHO0FBb0JULGNBQVc7QUFDVixV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cmF0ZWQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlc0NvbnRlbnQiOlsiKGZ1bmN0aW9uIGUodCxuLHIpe2Z1bmN0aW9uIHMobyx1KXtpZighbltvXSl7aWYoIXRbb10pe3ZhciBhPXR5cGVvZiByZXF1aXJlPT1cImZ1bmN0aW9uXCImJnJlcXVpcmU7aWYoIXUmJmEpcmV0dXJuIGEobywhMCk7aWYoaSlyZXR1cm4gaShvLCEwKTt2YXIgZj1uZXcgRXJyb3IoXCJDYW5ub3QgZmluZCBtb2R1bGUgJ1wiK28rXCInXCIpO3Rocm93IGYuY29kZT1cIk1PRFVMRV9OT1RfRk9VTkRcIixmfXZhciBsPW5bb109e2V4cG9ydHM6e319O3Rbb11bMF0uY2FsbChsLmV4cG9ydHMsZnVuY3Rpb24oZSl7dmFyIG49dFtvXVsxXVtlXTtyZXR1cm4gcyhuP246ZSl9LGwsbC5leHBvcnRzLGUsdCxuLHIpfXJldHVybiBuW29dLmV4cG9ydHN9dmFyIGk9dHlwZW9mIHJlcXVpcmU9PVwiZnVuY3Rpb25cIiYmcmVxdWlyZTtmb3IodmFyIG89MDtvPHIubGVuZ3RoO28rKylzKHJbb10pO3JldHVybiBzfSkiLCJcInVzZSBzdHJpY3RcIjtcbi8vIyBzb3VyY2VNYXBwaW5nVVJMPWRhdGE6YXBwbGljYXRpb24vanNvbjtiYXNlNjQsZXlKMlpYSnphVzl1SWpvekxDSnpiM1Z5WTJWeklqcGJYU3dpYm1GdFpYTWlPbHRkTENKdFlYQndhVzVuY3lJNklpSXNJbVpwYkdVaU9pSkJibUZzZVhOcGN5NXFjeUlzSW5OdmRYSmpaVkp2YjNRaU9pSXVMM05qY21sd2RITXZjM1ZpYldsemMybHZiaUlzSW5OdmRYSmpaWE5EYjI1MFpXNTBJanBiWFgwPSIsIlwidXNlIHN0cmljdFwiO1xuLy8jIHNvdXJjZU1hcHBpbmdVUkw9ZGF0YTphcHBsaWNhdGlvbi9qc29uO2Jhc2U2NCxleUoyWlhKemFXOXVJam96TENKemIzVnlZMlZ6SWpwYlhTd2libUZ0WlhNaU9sdGRMQ0p0WVhCd2FXNW5jeUk2SWlJc0ltWnBiR1VpT2lKR2FXeGxWSEpsWlM1cWN5SXNJbk52ZFhKalpWSnZiM1FpT2lJdUwzTmpjbWx3ZEhNdmMzVmliV2x6YzJsdmJpSXNJbk52ZFhKalpYTkRiMjUwWlc1MElqcGJYWDA9IiwiaW1wb3J0ICogYXMgRmlsZVRyZWUgZnJvbSAnLi9jb21wb25lbnRzL0ZpbGVUcmVlJztcbmltcG9ydCAqIGFzIEFuYWx5c2lzIGZyb20gJy4vY29tcG9uZW50cy9BbmFseXNpcyc7XG5cbi8vIGFwcGVuZHMgYSBoZWxwZXIgdG8gaGFuZGxlYmFycyBmb3IgaHVtYW5pemluZyBzaXplc1xuSGFuZGxlYmFycy5yZWdpc3RlckhlbHBlcignZmlsZV9zaXplJywgZnVuY3Rpb24odGV4dCkge1xuXHRyZXR1cm4gbmV3IEhhbmRsZWJhcnMuU2FmZVN0cmluZyhGaWxlVHJlZS5odW1hbml6ZUJ5dGVzKHBhcnNlSW50KHRleHQpKSk7XG59KTtcblxuJChmdW5jdGlvbigpIHtcblxuXHQvLyBjb2xsZWN0cyB0aGUgZW50aXJlIHVpIG9mIHRoaXMgcGFnZVxuXHR2YXIgYW5hbHlzaXNfdWkgPSBuZXcgQW5hbHlzaXMuQW5hbHlzaXNJbnRlcmZhY2Uoe1xuXHRcdGNvbnRhaW5lcjogZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2FuYWx5c2lzLWNvbmZpZ3VyYXRpb24nKSxcblx0XHQvLyBzcGVjaWZpZXMgdGhlIGZpbGUgdHJlZSBjb25maWd1cmF0aW9uXG5cdFx0ZmlsZXRyZWU6IHtcblx0XHRcdGNvbmZpZzoge1xuXHRcdFx0XHRsYWJlbDogJ2ZpbGV0cmVlJyxcblx0XHRcdFx0YXV0b0V4cGFuZDogdHJ1ZSxcblx0XHRcdFx0c2lkZWJhcjogZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2ZpbGV0cmVlLWRldGFpbCcpLFxuXHRcdFx0XHRuYW1lS2V5OiAnZmlsZW5hbWUnLCAvLyBuYW1lIG9mIHRoZSBmaWxlIG5hbWUgcHJvcGVydHlcblx0XHRcdFx0aXNEaXJlY3Rvcnk6IGZ1bmN0aW9uKGl0ZW0pIHtcblx0XHRcdFx0XHRyZXR1cm4gaXRlbS50eXBlID09PSAnZGlyZWN0b3J5Jztcblx0XHRcdFx0fVxuXHRcdFx0fSxcblx0XHRcdGxvYWQ6IHtcblx0XHRcdFx0dXJsOiAnL2FwaS9yZWFsLWZpbGUtc3RydWN0dXJlJyxcblx0XHRcdFx0bWV0aG9kOiAnUE9TVCcsXG5cdFx0XHRcdHBhcmFtczoge1xuXHRcdFx0XHRcdHN1Ym1pdF9pZDogNTJcblx0XHRcdFx0fSxcblx0XHRcdFx0c2VyaWFsaXplOiBmdW5jdGlvbihyZXNwb25zZSkge1xuXHRcdFx0XHRcdHJldHVybiByZXNwb25zZS5kYXRhLmZpbGVzWzBdO1xuXHRcdFx0XHR9XG5cdFx0XHR9LFxuXHRcdFx0dHJhbnNmb3JtOiB7XG5cdFx0XHRcdGZpbGU6IGZ1bmN0aW9uKGVsLCBjb250cm9sbGVyKSB7XG5cblx0XHRcdFx0XHR2YXIgc2VsZiA9IHRoaXM7XG5cblx0XHRcdFx0XHQvLyB0aGlzID0gaXRlbVxuXHRcdFx0XHRcdHZhciBfJGQgPSAkKGVsKS5maW5kKCdkaXYnKTtcblx0XHRcdFx0XHR2YXIgc2l6ZSA9IEZpbGVUcmVlLkxhYmVsKCdzaXplJywgRmlsZVRyZWUuaHVtYW5pemVCeXRlcyh0aGlzLnNpemUpKTsgXG5cdFx0XHRcdFx0dmFyIGluZm8gPSBGaWxlVHJlZS5MYWJlbCgnaW5mbycsICc8aSBjbGFzcz1cImZhIGZhLWluZm8tY2lyY2xlXCI+PC9pPicsICdhJyk7XG5cblx0XHRcdFx0XHQvLyBhZGRzIHRoZSBtZXRhIGRhdGFcblx0XHRcdFx0XHRfJGQuYXBwZW5kKGluZm8sIHNpemUpO1xuXG5cdFx0XHRcdFx0JChpbmZvKS5vbignY2xpY2snLCBmdW5jdGlvbihlKSB7XG5cdFx0XHRcdFx0XHRlLnN0b3BJbW1lZGlhdGVQcm9wYWdhdGlvbigpO1xuXHRcdFx0XHRcdFx0Y29udHJvbGxlci5kZXRhaWxWaWV3KHNlbGYpO1xuXHRcdFx0XHRcdH0pO1xuXG5cdFx0XHRcdFx0cmV0dXJuIGVsO1xuXHRcdFx0XHR9LFxuXG5cdFx0XHRcdGZvbGRlcjogZnVuY3Rpb24oZWwsIGNvbnRyb2xsZXIpIHtcblxuXHRcdFx0XHRcdHZhciBfJGQgPSAkKGVsKS5maW5kKCdkaXYnKTtcblx0XHRcdFx0XHR2YXIgc2l6ZSA9IEZpbGVUcmVlLkxhYmVsKCdzaXplJywgRmlsZVRyZWUuaHVtYW5pemVCeXRlcyhGaWxlVHJlZS5mb2xkZXJTaXplKHRoaXMpKSk7IFxuXHRcdFx0XHRcdF8kZC5hcHBlbmQoc2l6ZSk7XG5cblx0XHRcdFx0XHRyZXR1cm4gZWw7XG5cdFx0XHRcdH1cblx0XHRcdH1cblx0XHR9LFxuXG5cdFx0Ly8gc3BlY2lmaWVzIHRoZSBmb3JtIGNvbmZpZ3VyYXRpb25cblx0XHRmb3JtOiB7XG5cdFx0XHRjb250YWluZXI6IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdWJtaXNzaW9uLWNvbmZpZycpLFxuXHRcdFx0Y29uZmlndXJlOiBmdW5jdGlvbihmb3JtKSB7XG5cblx0XHRcdFx0Ly8gdGhpcyBjb25maWd1cmF0aW9uIGFsbG93cyBmb3IgZHluYW1pYyAoeWVzLCBkeW5hbWljKSBmb3Jtc1xuXG5cdFx0XHRcdHZhciBuZXR3b3JrID0gbmV3IHRoaXMuVG9wU2VsZWN0KHtcblx0XHRcdFx0XHRuYW1lOiAnbmV0d29yay1yb3V0aW5nJyxcblx0XHRcdFx0XHR0aXRsZTogJ05ldHdvcmsgUm91dGluZycsXG5cdFx0XHRcdFx0b3B0aW9uczogW1xuXHRcdFx0XHRcdFx0eyBuYW1lOidub25lJywgdmFsdWU6J25vbmUnIH0sXG5cdFx0XHRcdFx0XHR7IG5hbWU6J2Ryb3AnLCB2YWx1ZTonZHJvcCcgfSxcblx0XHRcdFx0XHRcdHsgbmFtZTonaW50ZXJuZXQnLCB2YWx1ZTonaW50ZXJuZXQnLCBzZWxlY3RlZDogdHJ1ZSB9LFxuXHRcdFx0XHRcdFx0eyBuYW1lOidpbmV0c2ltJywgdmFsdWU6J2luZXRzaW0nIH0sXG5cdFx0XHRcdFx0XHR7IG5hbWU6J3RvcicsIHZhbHVlOid0b3InIH1cblx0XHRcdFx0XHRdLFxuXHRcdFx0XHRcdGV4dHJhX3NlbGVjdDoge1xuXHRcdFx0XHRcdFx0dGl0bGU6ICdWUE4gdmlhJyxcblx0XHRcdFx0XHRcdG5hbWU6ICd2cG4nLFxuXHRcdFx0XHRcdFx0b3B0aW9uczogW1xuXHRcdFx0XHRcdFx0XHR7IG5hbWU6ICdGcmFuY2UnLCB2YWx1ZTogJ0ZSLWZyJyB9XG5cdFx0XHRcdFx0XHRdXG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9KTtcblxuXHRcdFx0XHR2YXIgcGtnID0gbmV3IHRoaXMuU2ltcGxlU2VsZWN0KHtcblx0XHRcdFx0XHRuYW1lOiAncGFja2FnZScsXG5cdFx0XHRcdFx0dGl0bGU6ICdQYWNrYWdlJyxcblx0XHRcdFx0XHRkZWZhdWx0OiAncHl0aG9uJyxcblx0XHRcdFx0XHRvcHRpb25zOiBbXG5cdFx0XHRcdFx0XHR7IG5hbWU6ICdQeXRob24nLCB2YWx1ZTogJ3B5dGhvbicgfSxcblx0XHRcdFx0XHRcdHsgbmFtZTogJ0phdmFzY3JpcHQnLCB2YWx1ZTogJ2pzJyB9XG5cdFx0XHRcdFx0XVxuXHRcdFx0XHR9KTtcblxuXHRcdFx0XHR2YXIgcHJpb3JpdHkgPSBuZXcgdGhpcy5Ub3BTZWxlY3Qoe1xuXHRcdFx0XHRcdG5hbWU6ICdwaW9yaXR5Jyxcblx0XHRcdFx0XHR0aXRsZTogJ1ByaW9yaXR5Jyxcblx0XHRcdFx0XHRvcHRpb25zOiBbXG5cdFx0XHRcdFx0XHR7IG5hbWU6ICdsb3cnLCB2YWx1ZTogMCwgY2xhc3NOYW1lOiAncHJpb3JpdHktcycgfSxcblx0XHRcdFx0XHRcdHsgbmFtZTogJ21lZGl1bScsIHZhbHVlOiAxLCBjbGFzc05hbWU6ICdwcmlvcml0eS1tJyB9LFxuXHRcdFx0XHRcdFx0eyBuYW1lOiAnaGlnaCcsIHZhbHVlOiAyLCBjbGFzc05hbWU6ICdwcmlvcml0eS1sJyB9XG5cdFx0XHRcdFx0XVxuXHRcdFx0XHR9KTtcblxuXHRcdFx0XHR2YXIgY29uZmlnID0gbmV3IHRoaXMuVG9nZ2xlTGlzdCh7XG5cdFx0XHRcdFx0bmFtZTogJ29wdGlvbnMnLFxuXHRcdFx0XHRcdHRpdGxlOiAnT3B0aW9ucycsXG5cdFx0XHRcdFx0ZXh0cmFPcHRpb25zOiB0cnVlLFxuXHRcdFx0XHRcdG9wdGlvbnM6IFtcblx0XHRcdFx0XHRcdHtcblx0XHRcdFx0XHRcdFx0bmFtZTogJ25vLWluamVjdGlvbicsXG5cdFx0XHRcdFx0XHRcdGxhYmVsOiAnTm8gSW5qZWN0aW9uJyxcblx0XHRcdFx0XHRcdFx0ZGVzY3JpcHRpb246ICdEaXNhYmxlIGJlaGF2aW9yYWwgYW5hbHlzaXMuJ1xuXHRcdFx0XHRcdFx0fSxcblx0XHRcdFx0XHRcdHtcblx0XHRcdFx0XHRcdFx0bmFtZTogJ3Byb2Nlc3MtbWVtb3J5LWR1bXAnLFxuXHRcdFx0XHRcdFx0XHRsYWJlbDogJ1Byb2Nlc3MgTWVtb3J5IER1bXAnLFxuXHRcdFx0XHRcdFx0XHRzZWxlY3RlZDogdHJ1ZVxuXHRcdFx0XHRcdFx0fSxcblx0XHRcdFx0XHRcdHtcblx0XHRcdFx0XHRcdFx0bmFtZTogJ2Z1bGwtbWVtb3J5LWR1bXAnLFxuXHRcdFx0XHRcdFx0XHRsYWJlbDogJ0Z1bGwgTWVtb3J5IER1bXAnLFxuXHRcdFx0XHRcdFx0XHRkZXNjcmlwdGlvbjogJ0lmIHRoZSDigJxtZW1vcnnigJ0gcHJvY2Vzc2luZyBtb2R1bGUgaXMgZW5hYmxlZCwgd2lsbCBsYXVuY2ggYSBWb2xhdGFsaXR5IEFuYWx5c2lzLidcblx0XHRcdFx0XHRcdH0sXG5cdFx0XHRcdFx0XHR7XG5cdFx0XHRcdFx0XHRcdG5hbWU6ICdlbmZvcmNlLXRpbWVvdXQnLFxuXHRcdFx0XHRcdFx0XHRsYWJlbDogJ0VuZm9yY2UgVGltZW91dCdcblx0XHRcdFx0XHRcdH0sXG5cdFx0XHRcdFx0XHR7XG5cdFx0XHRcdFx0XHRcdG5hbWU6ICdzaW11bGF0ZWQtaHVtYW4taW50ZXJhY3Rpb24nLFxuXHRcdFx0XHRcdFx0XHRsYWJlbDogJ0VuYWJsZSBTaW11bGF0ZWQgSHVtYW4gSW50ZXJhY3Rpb24nLFxuXHRcdFx0XHRcdFx0XHRzZWxlY3RlZDogdHJ1ZVxuXHRcdFx0XHRcdFx0fSxcblx0XHRcdFx0XHRcdHtcblx0XHRcdFx0XHRcdFx0bmFtZTogJ2VuYWJsZS1zZXJ2aWNlcycsXG5cdFx0XHRcdFx0XHRcdGxhYmVsOiAnRW5hYmxlIFNlcnZpY2VzJyxcblx0XHRcdFx0XHRcdFx0ZGVzY3JpcHRpb246ICdFbmFibGUgc2ltdWxhdGVkIGVudmlyb25tZW50IHNwZWNpZmllZCBpbiB0aGUgYXV4aWxpYXJ5IGNvbmZpZ3VyYXRpb24uJyxcblx0XHRcdFx0XHRcdFx0c2VsZWN0ZWQ6IHRydWVcblx0XHRcdFx0XHRcdH1cblx0XHRcdFx0XHRdXG5cdFx0XHRcdH0pO1xuXG5cdFx0XHRcdHZhciBtYWNoaW5lID0gbmV3IHRoaXMuU2ltcGxlU2VsZWN0KHtcblx0XHRcdFx0XHRuYW1lOiAnbWFjaGluZScsXG5cdFx0XHRcdFx0dGl0bGU6ICdNYWNoaW5lJyxcblx0XHRcdFx0XHRkZWZhdWx0OiAnZGVmYXVsdCcsXG5cdFx0XHRcdFx0b3B0aW9uczogW1xuXHRcdFx0XHRcdFx0eyBuYW1lOiAnZGVmYXVsdCcsIHZhbHVlOiAnZGVmYXVsdCcgfSxcblx0XHRcdFx0XHRcdHsgbmFtZTogJ0N1Y2tvbzEnLCB2YWx1ZTogJ0N1Y2tvbzEnIH0sXG5cdFx0XHRcdFx0XHR7IG5hbWU6ICdDdWNrb28yJywgdmFsdWU6ICdDdWNrb28yJyB9XG5cdFx0XHRcdFx0XVxuXHRcdFx0XHR9KTtcblxuXHRcdFx0XHQvLyBhbiBhcnJheSBpbnNpZGUgdGhpcyBhcnJheSB3aWxsIHJlbmRlciB0aGUgZWxlbWVudHMgaW4gYSBzcGxpdCB2aWV3XG5cdFx0XHRcdGZvcm0uYWRkKFtuZXR3b3JrLCBbcGtnLCBwcmlvcml0eV0sIGNvbmZpZywgbWFjaGluZV0pO1xuXHRcdFx0XHRmb3JtLmRyYXcoKTtcblxuXHRcdFx0fVxuXHRcdH1cblx0fSk7XG5cblx0JCgnI3N0YXJ0LWFuYWx5c2lzJykuYmluZCgnY2xpY2snLCBmdW5jdGlvbihlKSB7XG5cdFx0ZS5wcmV2ZW50RGVmYXVsdCgpO1xuXHRcdHZhciBqc29uID0gYW5hbHlzaXNfdWkuZ2V0RGF0YSgpO1xuXHRcdGNvbnNvbGUubG9nKGpzb24pO1xuXHR9KTtcblxufSk7Il19
+},{"./components/Analysis":1,"./components/FileTree":2}]},{},[4])
+
+
+//# sourceMappingURL=submission.js.map
