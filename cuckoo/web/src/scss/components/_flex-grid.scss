@@ -49,6 +49,29 @@
 		flex-basis: 100%;
 	}
 
+	&__footer {
+		display: flex;
+		justify-content: center;
+		flex-basis: 50px;
+		background-color: #111;
+		padding: 15px 20px;
+
+		.logo {
+			margin-left: 20px;
+			img {
+				height: 16px;
+			}
+		}
+		.footnote {
+			color: #888;
+
+			a {
+				margin-left: 20px;
+				color: #aaa;
+			}
+		}
+	}
+
 	&__nav { 
 		flex-basis: 350px; 
 		flex-shrink: 0;

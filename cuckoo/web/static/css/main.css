@@ -3071,6 +3071,11 @@ body[id^="submission/"] {
   padding-top: 41px;
 }
 
+body[id="submission/pre"] footer,
+body[id="submission/pre"] #footer-extra {
+  display: none;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -4124,6 +4129,26 @@ footer a:hover {
 .flex-grid__body {
   display: flex;
   flex-basis: 100%;
+}
+.flex-grid__footer {
+  display: flex;
+  justify-content: center;
+  flex-basis: 50px;
+  background-color: #111;
+  padding: 15px 20px;
+}
+.flex-grid__footer .logo {
+  margin-left: 20px;
+}
+.flex-grid__footer .logo img {
+  height: 16px;
+}
+.flex-grid__footer .footnote {
+  color: #888;
+}
+.flex-grid__footer .footnote a {
+  margin-left: 20px;
+  color: #aaa;
 }
 .flex-grid__nav {
   flex-basis: 350px;

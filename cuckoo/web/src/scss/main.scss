@@ -16,7 +16,14 @@ html { background: #1c1c1c; }
 body { padding-top: 70px; }
 
 body#analysis { padding-top: 30px; }
+
 body[id^="submission/"] { padding-top: 41px; }
+body[id="submission/pre"] {
+	footer, 
+	#footer-extra {
+		display: none;
+	}
+}
 
 // layout utils
 @import "layout/typography";
