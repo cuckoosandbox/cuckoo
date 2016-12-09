@@ -76,6 +76,8 @@ class JsonFormatter(logging.Formatter):
             "task_id": task_id,
             "status": status,
             "time": int(time.time()),
+            "message": logging.Formatter.format(self, record),
+            "level": record.levelname.lower(),
         })
 
 def task_log_start(task_id):
