@@ -77,10 +77,16 @@
 </div>
 
 <script>
-    var task_id = {{ report.analysis.info.id }};
+    var task_id = '{{ report.analysis.info.id }}';
     var taken_files = [];
     var taken_dirs = [];
     var cb_analysis = true;
+
+    if(task_id.length) {
+        task_id = parseInt(task_id);
+    } else {
+        task_id = false;
+    }
 
     $(document).ready(function() {
         var sel = $('#modal_feedback');
