@@ -138,7 +138,11 @@ var DEFAULT_FILETREE_CONFIG = {
 		ready: function ready() {}
 	},
 	// handlebars templates
-	templates: {}
+	templates: {},
+	after: {
+		detailView: function detailView() {},
+		selectionView: function selectionView() {}
+	}
 };
 
 var itemIndex = 0; // global item index
@@ -630,6 +634,8 @@ var FileTree = function () {
 			$(this.options.config.sidebar).find('header input:checkbox').bind('change', function () {
 				selectHandler.call(this, $(this).is(':checked'), item.filetree.index, self);
 			});
+
+			this.options.after.detailView.call(item, this.options.config.sidebar, this);
 		}
 	}, {
 		key: 'selectionView',
@@ -669,6 +675,9 @@ var FileTree = function () {
 				$(self.options.config.sidebar).find('#search-selection').val('');
 				$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
 			});
+
+			console.log(this.options);
+			this.options.after.selectionView.call(selected, this.options.config.sidebar, this);
 		}
 	}, {
 		key: 'serialize',
@@ -984,6 +993,21 @@ var TopSelect = function (_UserInputController2) {
 			// controller configures the view
 			this.view.template = TEMPLATES.TopSelect;
 
+			// implement a new method on the view which will deselect radio's
+			this.view.deselectRadios = function () {
+				$(this.html).find('input:radio').prop('checked', false);
+			};
+
+			// implement a new method on the view which will reset the selectbox
+			this.view.resetOtherSelect = function () {
+				$(this.html).find('select[name="' + this.controller.name + '-other"] option:first-child').prop('selected', true);
+			};
+
+			this.view.resetAlternateSelect = function () {
+				if (!extra) return;
+				$(this.html).find('select#' + extra.name + ' option:first-child').prop('selected', true);
+			};
+
 			// create model on view
 			this.view.setupModel({
 				top_items: top_items,
@@ -999,10 +1023,14 @@ var TopSelect = function (_UserInputController2) {
 
 				$(this).find('input:radio').bind('change', function (e) {
 					controller.setValue(this.value);
+					self.view.resetOtherSelect();
+					self.view.resetAlternateSelect();
 				});
 
 				$(this).find('select[name="' + controller.name + '-other"]').bind('change', function (e) {
 					controller.setValue(this.value);
+					self.view.deselectRadios();
+					self.view.resetAlternateSelect();
 				});
 
 				// to make the extra input a SEPERATE function,
@@ -1019,6 +1047,8 @@ var TopSelect = function (_UserInputController2) {
 
 					$(controller.view.html).find('select#' + extra.name).bind('change', function (e) {
 						inp.setValue($(this).val());
+						self.view.deselectRadios();
+						self.view.resetOtherSelect();
 					});
 				}
 			});
@@ -1316,6 +1346,10 @@ exports.Form = Form;
 },{}],4:[function(require,module,exports){
 'use strict';
 
+var _InterfaceControllers = require('./components/InterfaceControllers');
+
+var InterfaceControllers = _interopRequireWildcard(_InterfaceControllers);
+
 var _FileTree = require('./components/FileTree');
 
 var FileTree = _interopRequireWildcard(_FileTree);
@@ -1332,6 +1366,12 @@ Handlebars.registerHelper('file_size', function (text) {
 });
 
 $(function () {
+
+	var debugging = false;
+
+	// if(debugging) {
+	// 	$('.flex-grid__footer').css('display', 'none');
+	// }
 
 	if (document.getElementById('analysis-configuration') !== null) {
 
@@ -1356,7 +1396,6 @@ $(function () {
 						"submit_id": window.submit_id
 					},
 					serialize: function serialize(response) {
-						console.log(response);
 						return response.data.files[0];
 					}
 				},
@@ -1388,6 +1427,90 @@ $(function () {
 						_$d.append(size);
 
 						return el;
+					}
+				},
+				after: {
+					selectionView: function selectionView() {},
+					detailView: function detailView(el, filetree) {
+
+						var item = this;
+						var $per_file_options = $(el).find('.per-file-options')[0];
+
+						if ($per_file_options) {
+
+							var form = new InterfaceControllers.Form({
+								container: $per_file_options,
+								configure: function configure(form) {
+
+									var network = new this.TopSelect({
+										name: 'network-routing-' + item.filetree.index,
+										title: 'Network Routing',
+										options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet', selected: true }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+										extra_select: {
+											title: 'VPN via',
+											name: 'vpn-' + item.filetree.index,
+											options: [{ name: 'France', value: 'FR-fr' }]
+										}
+									});
+
+									var pkg = new this.SimpleSelect({
+										name: 'package',
+										title: 'Package',
+										default: 'python',
+										options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
+									});
+
+									var priority = new this.TopSelect({
+										name: 'piority-' + item.filetree.index,
+										title: 'Priority',
+										options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
+									});
+
+									var config = new this.ToggleList({
+										name: 'options-' + item.filetree.index,
+										title: 'Options',
+										extraOptions: true,
+										options: [{
+											name: 'no-injection',
+											label: 'No Injection',
+											description: 'Disable behavioral analysis.'
+										}, {
+											name: 'process-memory-dump',
+											label: 'Process Memory Dump',
+											selected: true
+										}, {
+											name: 'full-memory-dump',
+											label: 'Full Memory Dump',
+											description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+										}, {
+											name: 'enforce-timeout',
+											label: 'Enforce Timeout'
+										}, {
+											name: 'simulated-human-interaction',
+											label: 'Enable Simulated Human Interaction',
+											selected: true
+										}, {
+											name: 'enable-services',
+											label: 'Enable Services',
+											description: 'Enable simulated environment specified in the auxiliary configuration.',
+											selected: true
+										}]
+									});
+
+									var machine = new this.SimpleSelect({
+										name: 'machine-' + item.filetree.index,
+										title: 'Machine',
+										default: 'default',
+										options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
+									});
+
+									form.add([network, [pkg, priority], config, machine]);
+									form.draw();
+
+									console.log(form);
+								}
+							});
+						}
 					}
 				}
 			},
@@ -1464,6 +1587,8 @@ $(function () {
 					// an array inside this array will render the elements in a split view
 					form.add([network, [pkg, priority], config, machine]);
 					form.draw();
+
+					console.log(form);
 				}
 			}
 		});
@@ -1476,7 +1601,7 @@ $(function () {
 	}
 });
 
-},{"./components/Analysis":1,"./components/FileTree":2}]},{},[4])
+},{"./components/Analysis":1,"./components/FileTree":2,"./components/InterfaceControllers":3}]},{},[4])
 
 
 //# sourceMappingURL=submission.js.map

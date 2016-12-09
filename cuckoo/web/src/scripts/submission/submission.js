@@ -1,3 +1,4 @@
+import * as InterfaceControllers from './components/InterfaceControllers';
 import * as FileTree from './components/FileTree';
 import * as Analysis from './components/Analysis';
 
@@ -7,6 +8,12 @@ Handlebars.registerHelper('file_size', function(text) {
 });
 
 $(function() {
+
+	var debugging = false;
+
+	// if(debugging) {
+	// 	$('.flex-grid__footer').css('display', 'none');
+	// }
 
 	if(document.getElementById('analysis-configuration') !== null) {
 
@@ -31,7 +38,6 @@ $(function() {
 						"submit_id": window.submit_id
 					},
 					serialize: function(response) {
-						console.log(response);
 						return response.data.files[0];
 					}
 				},
@@ -63,6 +69,123 @@ $(function() {
 						_$d.append(size);
 
 						return el;
+					}
+				},
+				after: {
+					selectionView: function() {
+						
+					},
+					detailView: function(el, filetree) {
+
+						var item = this;
+						var $per_file_options = $(el).find('.per-file-options')[0];
+
+						if($per_file_options) {
+
+
+
+							var form = new InterfaceControllers.Form({
+								container: $per_file_options,
+								configure: function(form) {
+									
+									var network = new this.TopSelect({
+										name: 'network-routing-' + item.filetree.index,
+										title: 'Network Routing',
+										options: [
+											{ name:'none', value:'none' },
+											{ name:'drop', value:'drop' },
+											{ name:'internet', value:'internet', selected: true },
+											{ name:'inetsim', value:'inetsim' },
+											{ name:'tor', value:'tor' }
+										],
+										extra_select: {
+											title: 'VPN via',
+											name: 'vpn-' + item.filetree.index,
+											options: [
+												{ name: 'France', value: 'FR-fr' }
+											]
+										}
+									});
+
+									var pkg = new this.SimpleSelect({
+										name: 'package',
+										title: 'Package',
+										default: 'python',
+										options: [
+											{ name: 'Python', value: 'python' },
+											{ name: 'Javascript', value: 'js' }
+										]
+									});
+
+									var priority = new this.TopSelect({
+										name: 'piority-' + item.filetree.index,
+										title: 'Priority',
+										options: [
+											{ name: 'low', value: 0, className: 'priority-s' },
+											{ name: 'medium', value: 1, className: 'priority-m' },
+											{ name: 'high', value: 2, className: 'priority-l' }
+										]
+									});
+
+									var config = new this.ToggleList({
+										name: 'options-' + item.filetree.index,
+										title: 'Options',
+										extraOptions: true,
+										options: [
+											{
+												name: 'no-injection',
+												label: 'No Injection',
+												description: 'Disable behavioral analysis.'
+											},
+											{
+												name: 'process-memory-dump',
+												label: 'Process Memory Dump',
+												selected: true
+											},
+											{
+												name: 'full-memory-dump',
+												label: 'Full Memory Dump',
+												description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+											},
+											{
+												name: 'enforce-timeout',
+												label: 'Enforce Timeout'
+											},
+											{
+												name: 'simulated-human-interaction',
+												label: 'Enable Simulated Human Interaction',
+												selected: true
+											},
+											{
+												name: 'enable-services',
+												label: 'Enable Services',
+												description: 'Enable simulated environment specified in the auxiliary configuration.',
+												selected: true
+											}
+										]
+									});
+
+									var machine = new this.SimpleSelect({
+										name: 'machine-' + item.filetree.index,
+										title: 'Machine',
+										default: 'default',
+										options: [
+											{ name: 'default', value: 'default' },
+											{ name: 'Cuckoo1', value: 'Cuckoo1' },
+											{ name: 'Cuckoo2', value: 'Cuckoo2' }
+										]
+									});
+
+									form.add([network, [pkg, priority], config, machine]);
+									form.draw();
+
+									console.log(form);
+
+								}
+							});
+
+						}
+
 					}
 				}
 			},
@@ -165,6 +288,8 @@ $(function() {
 					// an array inside this array will render the elements in a split view
 					form.add([network, [pkg, priority], config, machine]);
 					form.draw();
+
+					console.log(form);
 
 				}
 			}

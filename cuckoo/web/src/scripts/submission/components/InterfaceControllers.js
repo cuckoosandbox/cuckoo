@@ -195,6 +195,21 @@ class TopSelect extends UserInputController {
 		// controller configures the view
 		this.view.template = TEMPLATES.TopSelect;
 
+		// implement a new method on the view which will deselect radio's
+		this.view.deselectRadios = function() {
+			$(this.html).find('input:radio').prop('checked', false);
+		}
+
+		// implement a new method on the view which will reset the selectbox
+		this.view.resetOtherSelect = function() {
+			$(this.html).find('select[name="'+this.controller.name+'-other"] option:first-child').prop('selected', true);
+		}
+
+		this.view.resetAlternateSelect = function() {
+			if(!extra) return;
+			$(this.html).find('select#' + extra.name + ' option:first-child').prop('selected', true);
+		}
+
 		// create model on view
 		this.view.setupModel({
 			top_items: top_items,
@@ -210,10 +225,14 @@ class TopSelect extends UserInputController {
 
 			$(this).find('input:radio').bind('change', function(e) {
 				controller.setValue(this.value);
+				self.view.resetOtherSelect();
+				self.view.resetAlternateSelect();
 			});
 
 			$(this).find('select[name="'+controller.name+'-other"]').bind('change', function(e) {
 				controller.setValue(this.value);
+				self.view.deselectRadios();
+				self.view.resetAlternateSelect();
 			});
 
 			// to make the extra input a SEPERATE function,
@@ -230,6 +249,8 @@ class TopSelect extends UserInputController {
 
 				$(controller.view.html).find('select#' + extra.name).bind('change', function(e) {
 					inp.setValue($(this).val());
+					self.view.deselectRadios();
+					self.view.resetOtherSelect();
 				});
 
 			}

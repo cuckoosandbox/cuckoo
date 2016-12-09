@@ -29,7 +29,7 @@ this["HANDLEBARS_TEMPLATES"]["control-toggle-list"] = Handlebars.template({"1":f
     + alias3(alias4((depths[1] != null ? depths[1].name : depths[1]), depth0))
     + "-"
     + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
-    + "\">\n				<input type=\"checkbox\" id=\""
+    + "\" class=\"flex-form__toggle-list-switch\">\n				<input type=\"checkbox\" id=\""
     + alias3(alias4((depths[1] != null ? depths[1].name : depths[1]), depth0))
     + "-"
     + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
@@ -152,7 +152,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
     + alias2(alias1(((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.finger : stack1)) != null ? stack1.mime_human : stack1), depth0))
     + "\n	</li>\n	<li>\n		<strong>size</strong>\n		"
     + ((stack1 = (helpers.file_size || (depth0 && depth0.file_size) || helpers.helperMissing).call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.size : stack1),{"name":"file_size","hash":{},"data":data})) != null ? stack1 : "")
-    + "\n	</li>\n</ul>";
+    + "\n	</li>\n</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Advanced options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1;

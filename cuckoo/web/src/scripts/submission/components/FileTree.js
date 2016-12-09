@@ -72,7 +72,11 @@ const DEFAULT_FILETREE_CONFIG = {
 		ready: function() {}
 	},
 	// handlebars templates
-	templates: {}
+	templates: {},
+	after: {
+		detailView: function() {},
+		selectionView: function() {}
+	}
 }
 
 let itemIndex = 0; // global item index
@@ -559,6 +563,8 @@ class FileTree {
 			selectHandler.call(this, $(this).is(':checked'), item.filetree.index, self);
 		});
 
+		this.options.after.detailView.call(item, this.options.config.sidebar, this);
+
 	}
 
 	selectionView() {
@@ -597,6 +603,9 @@ class FileTree {
 			$(self.options.config.sidebar).find('#search-selection').val('');
 			$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
 		});
+
+		console.log(this.options);
+		this.options.after.selectionView.call(selected, this.options.config.sidebar, this);
 
 	}
 
