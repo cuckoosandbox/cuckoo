@@ -3,7 +3,7 @@
 	{{#each options}}
 		<li>
 			<p>{{label}} {{#if description}}<span>{{description}}</span>{{/if}}</p>
-			<label for="{{../name}}-{{name}}">
+			<label for="{{../name}}-{{name}}" class="flex-form__toggle-list-switch">
 				<input type="checkbox" id="{{../name}}-{{name}}" name="{{../name}}" {{#if selected}}checked{{/if}} data-option="{{name}}" />
 				<span></span>
 			</label>
