@@ -96,13 +96,13 @@
 
 			}
 
-			&:first-child { border-top: 1px solid #d0d0d0; }
+			&:first-child { border-top: 1px solid #d0d0d0;  }
 			&:not(:last-child) { border-bottom: 1px solid #d0d0d0; }
 			&:hover { cursor: pointer; }
 
 		}
 
-		label {
+		label:not(.flex-form__toggle-list-switch) {
 
 			span {
 

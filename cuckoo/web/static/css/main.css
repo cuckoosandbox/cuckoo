@@ -3071,7 +3071,7 @@ body[id^="submission/"] {
   padding-top: 41px;
 }
 
-body[id="submission/pre"] footer,
+body[id="submission/pre"] footer:not(.flex-grid__footer),
 body[id="submission/pre"] #footer-extra {
   display: none;
 }
@@ -4186,6 +4186,11 @@ footer a:hover {
 .flex-form__header h4, .flex-form__field-title h4 {
   margin: 30px 0 10px 0;
 }
+.flex-form__header h4 + small, .flex-form__field-title h4 + small {
+  display: block;
+  font-size: .7em;
+  margin: 10px 0;
+}
 .flex-form__header .custom-checkbox {
   display: inline-block;
   margin-right: 10px;
@@ -4224,6 +4229,7 @@ footer a:hover {
 .flex-form__toggle-group > li {
   flex-basis: 100%;
   background-color: #fff;
+  border: 0 !important;
 }
 .flex-form__toggle-group > li > input {
   display: none;
@@ -4237,26 +4243,23 @@ footer a:hover {
   text-transform: uppercase;
   font-weight: 700;
   border-left: 1px solid #D0D0D0;
-  border-right: 1px solid #D0D0D0;
   margin-bottom: 0;
 }
 .flex-form__toggle-group > li > label.priority-s {
   background-color: rgba(0, 255, 30, 0.2);
   color: #009912;
+  border-color: rgba(128, 108, 0, 0.2);
+  border-left-width: 1px !important;
 }
 .flex-form__toggle-group > li > label.priority-m {
   background-color: rgba(255, 215, 0, 0.2);
   color: #998100;
+  border-color: rgba(128, 108, 0, 0.2);
 }
 .flex-form__toggle-group > li > label.priority-l {
   background-color: rgba(215, 88, 111, 0.2);
   color: #a2273d;
-}
-.flex-form__toggle-group > li > label:first-child {
-  border-left: 0;
-}
-.flex-form__toggle-group > li > label:last-child {
-  border-right: 0;
+  border-color: rgba(142, 34, 53, 0.2);
 }
 .flex-form__toggle-group > li > label:hover {
   cursor: pointer;
@@ -4273,6 +4276,12 @@ footer a:hover {
 }
 .flex-form__toggle-group > li > input:checked + label.priority-l {
   background-color: #cb314d;
+}
+.flex-form__toggle-group > li:first-child label {
+  border-left: 0;
+}
+.flex-form__toggle-group > li:last-child label {
+  border-right: 0;
 }
 .flex-form__toggle-list {
   list-style: none;
@@ -4298,10 +4307,10 @@ footer a:hover {
   font-weight: 600;
   margin-top: 5px;
 }
-.flex-form__toggle-list > li label {
+.flex-form__toggle-list-switch {
   margin-left: auto;
 }
-.flex-form__toggle-list > li label span {
+.flex-form__toggle-list-switch span {
   position: relative;
   display: inline-block;
   width: 50px;
@@ -4312,7 +4321,7 @@ footer a:hover {
   transition: all 100ms linear;
   margin: 10px 0 7px 0;
 }
-.flex-form__toggle-list > li label span:before {
+.flex-form__toggle-list-switch span:before {
   content: "";
   position: relative;
   display: block;
@@ -4324,17 +4333,17 @@ footer a:hover {
   background-color: #fff;
   transition: all 100ms ease-in-out;
 }
-.flex-form__toggle-list > li label > input {
+.flex-form__toggle-list-switch > input {
   display: none;
 }
-.flex-form__toggle-list > li label > input:checked + span {
+.flex-form__toggle-list-switch > input:checked + span {
   background-color: #B8E986;
   border-color: #9CC86E;
 }
-.flex-form__toggle-list > li label > input:checked + span:before {
+.flex-form__toggle-list-switch > input:checked + span:before {
   left: 27px;
 }
-.flex-form__toggle-list > li label:hover {
+.flex-form__toggle-list-switch:hover {
   cursor: pointer;
 }
 .flex-form__toggle-list .toggle-list-seperator {
@@ -4676,7 +4685,7 @@ footer a:hover {
 .cuckoo-files ul li:hover {
   cursor: pointer;
 }
-.cuckoo-files ul label span:before {
+.cuckoo-files ul label:not(.flex-form__toggle-list-switch) span:before {
   content: "";
   display: inline-block;
   width: 8px;
@@ -4690,10 +4699,10 @@ footer a:hover {
   -webkit-box-sizing: content-box;
   -moz-box-sizing: content-box;
 }
-.cuckoo-files ul label input {
+.cuckoo-files ul label:not(.flex-form__toggle-list-switch) input {
   display: none;
 }
-.cuckoo-files ul label input:checked + span:before {
+.cuckoo-files ul label:not(.flex-form__toggle-list-switch) input:checked + span:before {
   background-color: #337AB7;
   border-color: #456077;
 }
