@@ -5,7 +5,11 @@
 import datetime
 import logging
 import os.path
-import pymisp
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import pymisp
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError

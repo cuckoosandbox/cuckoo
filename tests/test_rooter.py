@@ -131,7 +131,7 @@ def do_cuckoo_rooter():
     with pytest.raises(SystemExit):
         gr.side_effect = KeyError("foobar")
         r.cuckoo_rooter(
-            socket_path , "group", __file__, __file__, __file__, __file__
+            socket_path, "group", __file__, __file__, __file__, __file__
         )
 
     gr.side_effect = None
@@ -146,7 +146,7 @@ def do_cuckoo_rooter():
     with pytest.raises(SystemExit):
         sock.return_value.recvfrom.side_effect = SystemExit
         r.cuckoo_rooter(
-            socket_path , "group", __file__, __file__, __file__, __file__
+            socket_path, "group", __file__, __file__, __file__, __file__
         )
 
     with pytest.raises(SystemExit):
@@ -154,7 +154,7 @@ def do_cuckoo_rooter():
             ("this is not json", None), SystemExit
         )
         r.cuckoo_rooter(
-            socket_path , "group", __file__, __file__, __file__, __file__
+            socket_path, "group", __file__, __file__, __file__, __file__
         )
 
     with pytest.raises(SystemExit):
@@ -162,7 +162,7 @@ def do_cuckoo_rooter():
             (json.dumps({"a": "b"}), None), SystemExit
         )
         r.cuckoo_rooter(
-            socket_path , "group", __file__, __file__, __file__, __file__
+            socket_path, "group", __file__, __file__, __file__, __file__
         )
 
     nic_available = mock.MagicMock()
@@ -187,7 +187,6 @@ def do_cuckoo_rooter():
     }), None)
 
 def test_cuckoo_rooter():
-    logging.basicConfig(level=logging.DEBUG)
     try:
         if is_linux():
             do_cuckoo_rooter()

@@ -562,7 +562,7 @@ def _20c2_200(c):
         "enabled": False,
         "url": None,
         "apikey": None,
-        "mode": "maldoc ipaddr",
+        "mode": "maldoc ipaddr hashes url",
     }
     old_items = (
         "show-virustotal", "show-signatures", "show-urls", "hash-filename",

@@ -113,7 +113,7 @@ setuptools.setup(
         "peepdf==0.3.2",
         "pefile2==1.2.11",
         "pillow==3.2",
-        "pymisp==2.4.50",
+        "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",

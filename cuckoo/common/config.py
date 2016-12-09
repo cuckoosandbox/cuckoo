@@ -672,7 +672,7 @@ class Config(object):
                 "enabled": Boolean(False),
                 "url": String(),
                 "apikey": String(sanitize=True),
-                "mode": String("maldoc ipaddr"),
+                "mode": String("maldoc ipaddr hashes url"),
             },
             "mongodb": {
                 "enabled": Boolean(False),
