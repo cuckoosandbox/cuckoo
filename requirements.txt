@@ -24,7 +24,7 @@ peepdf==0.3.2
 pefile2==1.2.11
 pyasn1==0.1.8
 pycparser==2.14
-pymisp==2.4.49
+pymisp==2.4.54
 pymongo==3.0.3
 pyOpenSSL==0.15.1
 python-dateutil==2.4.2
