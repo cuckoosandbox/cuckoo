@@ -36,6 +36,16 @@ class Split {
 		}
 		return el;
 	}
+
+	// this is NOT an event handling function.
+	// this method persists an event callback to its elements
+	on(event, fn) {
+		if(!event || typeof event !== 'string') return;
+		if(!fn && typeof fn !== 'function') return;
+		this.elements.forEach(function(element) {
+			element.on(event, fn);
+		});
+	}
 }
 
 // USERINPUTVIEW
@@ -110,6 +120,11 @@ class UserInputController {
 		this.form = config.form || '';
 		this.default = config.default || '';
 
+		this.events = {
+			change: [],
+			render: []
+		}
+
 		// assign default value to value if defined
 		if(this.default.length) {
 			this.value = this.default;
@@ -124,11 +139,29 @@ class UserInputController {
 
 	setValue(val) {
 		this.value = val;
-		console.log(this.name + ' changed to value ' + this.value);
+		this.trigger('change', this.value);
 	}
 
 	getValue() {
 		return this.value;
+	}
+
+	on(event, fn) {
+
+		if(!this.events.hasOwnProperty(event) || !fn) return;
+		this.events[event].push(fn);
+
+		return this;
+	}
+
+	trigger(event, data) {
+		let self = this;
+		if(!this.events.hasOwnProperty(event)) return;	
+		this.events[event].forEach(function(fn) {
+			fn.call(self, data);
+		});	
+
+		return this;
 	}
 
 }
@@ -153,7 +186,7 @@ class SimpleSelect extends UserInputController {
 		this.view.afterRender(function(controller) {
 			$(this).find('select').bind('change', function() {
 				controller.setValue(this.value);
-			})
+			});
 		});
 
 	}
@@ -274,6 +307,11 @@ class ToggleList extends UserInputController {
 		this.config = config;
 		this.value = {};
 		this.custom_options = config.custom_options || {};
+
+		this.events = $.extend(this.events, {
+			remove: []
+		});
+
 		this.initialise();
 	}
 
@@ -308,6 +346,7 @@ class ToggleList extends UserInputController {
 
 	setOption(name, val) {
 		this.value[name] = val;
+		this.trigger('change', this.getValue());
 	}
 
 	onToggleChange(e, self) {
@@ -379,6 +418,7 @@ class ToggleList extends UserInputController {
 	commit(key, value) {
 
 		const self = this;
+
 		let $newOptionName = $(this.view.html).find('table tfoot input[name=new-key]');
 		let $newOptionValue = $(this.view.html).find('table tfoot input[name=new-value]');
 
@@ -393,12 +433,15 @@ class ToggleList extends UserInputController {
 		$(el).find('.remove').bind('click', function(e) {
 			e.preventDefault();
 			self.remove($(this).parents('tr').data('option'));
+			self.trigger('remove', self.getValue());
 		});
 
 		// resets and focusses back the input fields
 		$newOptionName.val('');
 		$newOptionValue.val('');
 		$newOptionName.focus();
+
+		this.trigger('change', this.getValue());
 	}
 
 	remove(key) {
@@ -437,7 +480,10 @@ class Form {
 		this.fields = {};
 		this.container = this.config.container || null;
 
-		console.log(this.config);
+		this.events = {
+			change: [],
+			render: []
+		}
 
 		this.config.configure.call({
 			TopSelect: TopSelect,
@@ -445,11 +491,31 @@ class Form {
 			Split: Split,
 			ToggleList: ToggleList
 		}, this);
+
+	}
+
+	on(event, fn) {
+		if(!this.events.hasOwnProperty(event) || !fn) return;
+		this.events[event].push(fn);
+
+		return this;
+	}
+
+	trigger(event, data) {
+		let self = this;
+		if(!this.events.hasOwnProperty(event)) return;	
+		this.events[event].forEach(function(fn) {
+			fn.call(self, data);
+		});	
+
+		return this;
 	}
 
 	add(element) {
+
+		let self = this;
+
 		if(element instanceof Array) {
-			let self = this;
 			element.forEach(function(item) {
 				if(item instanceof Array) {
 					var s = new Split(item);
@@ -460,12 +526,21 @@ class Form {
 			});
 		} else {
 			if(element instanceof UserInputController || element instanceof Split) {
-				this.fields[element.name] = element;
+				this.fields[element.name] = element;	
 				this.fields[element.name].form = this;
+
+				// this hooks a callback listener to a change event 
+				// from an included field. if it triggers, it will trigger
+				// the form 'change' event. 
+				element.on('change', function() {
+					self.trigger('change');
+				});
+
 			} else {
 				console.error('Only elements from instance UserInputController and Split are allowed!');
 			}
 		}
+
 	}
 
 	draw() {

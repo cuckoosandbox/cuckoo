@@ -82,8 +82,6 @@ $(function() {
 
 						if($per_file_options) {
 
-
-
 							var form = new InterfaceControllers.Form({
 								container: $per_file_options,
 								configure: function(form) {
@@ -178,8 +176,6 @@ $(function() {
 
 									form.add([network, [pkg, priority], config, machine]);
 									form.draw();
-
-									console.log(form);
 
 								}
 							});
@@ -289,7 +285,13 @@ $(function() {
 					form.add([network, [pkg, priority], config, machine]);
 					form.draw();
 
-					console.log(form);
+					// this gets fired EVERY time one of the fields
+					// insdie the form gets updated. it sends 
+					// back an object with all the current values of 
+					// the form instance.
+					form.on('change', function(data) {
+						console.log(data);
+					});
 
 				}
 			}

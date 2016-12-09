@@ -794,6 +794,19 @@ var Split = function () {
 			}
 			return el;
 		}
+
+		// this is NOT an event handling function.
+		// this method persists an event callback to its elements
+
+	}, {
+		key: 'on',
+		value: function on(event, fn) {
+			if (!event || typeof event !== 'string') return;
+			if (!fn && typeof fn !== 'function') return;
+			this.elements.forEach(function (element) {
+				element.on(event, fn);
+			});
+		}
 	}]);
 
 	return Split;
@@ -884,6 +897,11 @@ var UserInputController = function () {
 		this.form = config.form || '';
 		this.default = config.default || '';
 
+		this.events = {
+			change: [],
+			render: []
+		};
+
 		// assign default value to value if defined
 		if (this.default.length) {
 			this.value = this.default;
@@ -899,12 +917,32 @@ var UserInputController = function () {
 		key: 'setValue',
 		value: function setValue(val) {
 			this.value = val;
-			console.log(this.name + ' changed to value ' + this.value);
+			this.trigger('change', this.value);
 		}
 	}, {
 		key: 'getValue',
 		value: function getValue() {
 			return this.value;
+		}
+	}, {
+		key: 'on',
+		value: function on(event, fn) {
+
+			if (!this.events.hasOwnProperty(event) || !fn) return;
+			this.events[event].push(fn);
+
+			return this;
+		}
+	}, {
+		key: 'trigger',
+		value: function trigger(event, data) {
+			var self = this;
+			if (!this.events.hasOwnProperty(event)) return;
+			this.events[event].forEach(function (fn) {
+				fn.call(self, data);
+			});
+
+			return this;
 		}
 	}]);
 
@@ -1078,6 +1116,11 @@ var ToggleList = function (_UserInputController3) {
 		_this3.config = config;
 		_this3.value = {};
 		_this3.custom_options = config.custom_options || {};
+
+		_this3.events = $.extend(_this3.events, {
+			remove: []
+		});
+
 		_this3.initialise();
 		return _this3;
 	}
@@ -1113,6 +1156,7 @@ var ToggleList = function (_UserInputController3) {
 		key: 'setOption',
 		value: function setOption(name, val) {
 			this.value[name] = val;
+			this.trigger('change', this.getValue());
 		}
 	}, {
 		key: 'onToggleChange',
@@ -1187,6 +1231,7 @@ var ToggleList = function (_UserInputController3) {
 		value: function commit(key, value) {
 
 			var self = this;
+
 			var $newOptionName = $(this.view.html).find('table tfoot input[name=new-key]');
 			var $newOptionValue = $(this.view.html).find('table tfoot input[name=new-value]');
 
@@ -1201,12 +1246,15 @@ var ToggleList = function (_UserInputController3) {
 			$(el).find('.remove').bind('click', function (e) {
 				e.preventDefault();
 				self.remove($(this).parents('tr').data('option'));
+				self.trigger('remove', self.getValue());
 			});
 
 			// resets and focusses back the input fields
 			$newOptionName.val('');
 			$newOptionValue.val('');
 			$newOptionName.focus();
+
+			this.trigger('change', this.getValue());
 		}
 	}, {
 		key: 'remove',
@@ -1250,7 +1298,10 @@ var Form = function () {
 		this.fields = {};
 		this.container = this.config.container || null;
 
-		console.log(this.config);
+		this.events = {
+			change: [],
+			render: []
+		};
 
 		this.config.configure.call({
 			TopSelect: TopSelect,
@@ -1261,26 +1312,50 @@ var Form = function () {
 	}
 
 	_createClass(Form, [{
+		key: 'on',
+		value: function on(event, fn) {
+			if (!this.events.hasOwnProperty(event) || !fn) return;
+			this.events[event].push(fn);
+
+			return this;
+		}
+	}, {
+		key: 'trigger',
+		value: function trigger(event, data) {
+			var self = this;
+			if (!this.events.hasOwnProperty(event)) return;
+			this.events[event].forEach(function (fn) {
+				fn.call(self, data);
+			});
+
+			return this;
+		}
+	}, {
 		key: 'add',
 		value: function add(element) {
-			var _this4 = this;
+
+			var self = this;
 
 			if (element instanceof Array) {
-				(function () {
-					var self = _this4;
-					element.forEach(function (item) {
-						if (item instanceof Array) {
-							var s = new Split(item);
-							self.add(s);
-						} else {
-							self.add(item);
-						}
-					});
-				})();
+				element.forEach(function (item) {
+					if (item instanceof Array) {
+						var s = new Split(item);
+						self.add(s);
+					} else {
+						self.add(item);
+					}
+				});
 			} else {
 				if (element instanceof UserInputController || element instanceof Split) {
 					this.fields[element.name] = element;
 					this.fields[element.name].form = this;
+
+					// this hooks a callback listener to a change event 
+					// from an included field. if it triggers, it will trigger
+					// the form 'change' event. 
+					element.on('change', function () {
+						self.trigger('change');
+					});
 				} else {
 					console.error('Only elements from instance UserInputController and Split are allowed!');
 				}
@@ -1506,8 +1581,6 @@ $(function () {
 
 									form.add([network, [pkg, priority], config, machine]);
 									form.draw();
-
-									console.log(form);
 								}
 							});
 						}
@@ -1588,7 +1661,13 @@ $(function () {
 					form.add([network, [pkg, priority], config, machine]);
 					form.draw();
 
-					console.log(form);
+					// this gets fired EVERY time one of the fields
+					// insdie the form gets updated. it sends 
+					// back an object with all the current values of 
+					// the form instance.
+					form.on('change', function (data) {
+						console.log(data);
+					});
 				}
 			}
 		});
