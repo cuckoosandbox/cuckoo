@@ -20,5 +20,6 @@ module.exports = function() {
 	// starts a watcher RECURSIVE on all .scss files in /src/scss and assigns 'styles' as task
 	gulp.watch('./scss/**/*.scss', ['styles']);
 	gulp.watch(['./scripts/**/*.js','!./scripts/submission/**/*.js'], ['scripts']);
-	gulp.watch(['./scripts/submission/**/*.js'], ['scripts-submission']);
+	gulp.watch('./scripts/submission/**/*.js', ['scripts-submission']);
+	gulp.watch('./handlebars/**/*.hbs', ['handlebars']);
 }
