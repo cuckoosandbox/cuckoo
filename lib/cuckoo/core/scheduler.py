@@ -554,7 +554,10 @@ class AnalysisManager(threading.Thread):
 
             # overwrite task.json so we have the latest data inside
             self.store_task_info()
-            log.info("Task #%d: analysis procedure completed", self.task.id)
+            log.info(
+                "Task #%d: analysis procedure completed", self.task.id,
+                extra={"action": "task", "status": "done"}
+            )
         except:
             log.exception("Failure in AnalysisManager.run")
 
@@ -754,7 +757,9 @@ class Scheduler(object):
                 task = self.db.fetch(service=False)
 
             if task:
-                log.debug("Processing task #%s", task.id)
+                log.debug("Processing task #%s", task.id, extra={
+                    "action": "task", "status": "start", "task_id": task.id,
+                })
                 self.total_analysis_count += 1
 
                 # Initialize and start the analysis manager.
