@@ -68,7 +68,7 @@
                 html += "<td><strong>"+data["id"]+"</strong></td>";
 
                 var _reported = data["status"] == "reported";
-                var _href_status = "<a href=\""+data["id"]+"/summary\">";
+                var _href_status = "<a href=\"/analysis/"+data["id"]+"/summary\">";
                 var _status_class = "";
                 if(_reported){ _status_class = "text-success"; }
 
