@@ -113,6 +113,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
         tags=tags,
         memory="1" if memory else "0",
         enforce_timeout="1" if enforce_timeout else "0",
+        clock=clock,
         unique="1" if is_unique else "0",
     )
 
