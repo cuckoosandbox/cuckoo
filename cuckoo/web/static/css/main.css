@@ -3061,6 +3061,7 @@ html {
 
 body {
   padding-top: 70px;
+  -webkit-font-smoothing: antialiased;
 }
 
 body#analysis {
@@ -4122,9 +4123,19 @@ footer a:hover {
   margin-top: -3px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
+.flex-grid__header > h3 button .fa, .flex-grid__header > h3 button .flex-form__header .custom-checkbox > input + span, .flex-form__header .flex-grid__header > h3 button .custom-checkbox > input + span, .flex-grid__header > h3 button .breadcrumbs > li:not(:last-child):after, .flex-grid__header > h3 button .cuckoo-files ul div:before, .cuckoo-files ul .flex-grid__header > h3 button div:before, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:after, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:before {
+  margin-right: 5px;
+}
 .flex-grid__header > h3 button:hover {
   background-color: #2d6da3;
   cursor: pointer;
+}
+.flex-grid__header > h3 button.grey {
+  background-color: #888;
+  color: #fff;
+}
+.flex-grid__header > h3 button.grey:hover {
+  background-color: #7b7b7b;
 }
 .flex-grid__body {
   display: flex;

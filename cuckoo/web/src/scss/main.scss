@@ -13,7 +13,10 @@
 
 // general css on the body and the html
 html { background: #1c1c1c; }
-body { padding-top: 70px; }
+body { 
+	padding-top: 70px; 
+	-webkit-font-smoothing: antialiased;
+}
 
 body#analysis { padding-top: 30px; }
 
