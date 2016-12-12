@@ -392,16 +392,13 @@ class FileTree {
 
 		if(this.options.load.url) this.load(this.options.load.url, this.options.load.params);
 
-		if(this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
-
 	}
 
 	initialise(data) {
 		this.data = data;
 		this.construct();
-		if(this.options.events.ready) {
-			this.options.events['ready'].call(this);
-		}
+		if(this.options.events.ready) this.options.events.ready.call(this);
+		if(this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
 	}
 
 	// builds the HTML from the data set

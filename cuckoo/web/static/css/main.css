@@ -4678,13 +4678,16 @@ footer a:hover {
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";
 }
+.cuckoo-files ul li strong > div.archive-container:before {
+  content: "\f1c6";
+}
 .cuckoo-files ul li strong + ul {
   display: none;
 }
 .cuckoo-files ul li strong.expanded + ul {
   display: block;
 }
-.cuckoo-files ul li strong.expanded > div:before {
+.cuckoo-files ul li strong.expanded > div:not(.archive-container):before {
   content: "\f07c";
 }
 .cuckoo-files ul li:first-child {

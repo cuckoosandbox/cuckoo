@@ -89,6 +89,11 @@ $(function() {
 
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this))); 
+
+						if(this.type === 'container') {
+							_$d.addClass('archive-container');
+						}
+
 						_$d.append(size);
 
 						return el;
@@ -369,7 +374,6 @@ $(function() {
 		$('#start-analysis').bind('click', function(e) {
 			e.preventDefault();
 			var json = analysis_ui.getData();
-			console.log(json);
 		});
 
 	}

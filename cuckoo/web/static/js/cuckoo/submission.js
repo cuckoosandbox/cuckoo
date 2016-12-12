@@ -447,8 +447,6 @@ var FileTree = function () {
 		};
 
 		if (this.options.load.url) this.load(this.options.load.url, this.options.load.params);
-
-		if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
 	}
 
 	_createClass(FileTree, [{
@@ -456,9 +454,8 @@ var FileTree = function () {
 		value: function initialise(data) {
 			this.data = data;
 			this.construct();
-			if (this.options.events.ready) {
-				this.options.events['ready'].call(this);
-			}
+			if (this.options.events.ready) this.options.events.ready.call(this);
+			if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
 		}
 
 		// builds the HTML from the data set
@@ -1595,6 +1592,11 @@ $(function () {
 
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
+
+						if (this.type === 'container') {
+							_$d.addClass('archive-container');
+						}
+
 						_$d.append(size);
 
 						return el;
@@ -1824,7 +1826,6 @@ $(function () {
 		$('#start-analysis').bind('click', function (e) {
 			e.preventDefault();
 			var json = analysis_ui.getData();
-			console.log(json);
 		});
 	}
 });

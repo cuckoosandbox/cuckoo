@@ -83,15 +83,20 @@
 
 			strong {
 
-				& > div:before {
-					content: "\f07b";
+				& > div {
+					&:before {
+						content: "\f07b";
+					}
+					&.archive-container:before {
+						content: "\f1c6";
+					}
 				}
 
 				& + ul { display: none; }
 
 				&.expanded {
 					& + ul { display: block; }
-					& > div:before { content: "\f07c"; }
+					& > div:not(.archive-container):before { content: "\f07c"; }
 				}
 
 			}
