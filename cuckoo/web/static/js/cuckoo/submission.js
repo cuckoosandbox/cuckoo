@@ -676,7 +676,6 @@ var FileTree = function () {
 				$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
 			});
 
-			console.log(this.options);
 			this.options.after.selectionView.call(selected, this.options.config.sidebar, this);
 		}
 	}, {
@@ -695,6 +694,48 @@ var FileTree = function () {
 				delete item.filetree;
 				return item;
 			});
+		}
+
+		// iterator: each'es over the loaded data set
+
+	}, {
+		key: 'each',
+		value: function each(callback) {
+
+			function iterate(arr, cb) {
+
+				arr.forEach(function (item) {
+
+					if (item.children) {
+						iterate(item.children, callback);
+					}
+
+					if (cb && typeof cb === 'function') cb(item);
+				});
+			}
+
+			iterate(this.data.children, callback);
+		}
+
+		// static iterator: throw in any 'children[Array]' nested array (or for this particular case:
+		// a json string representing a file structure) to loop it through
+
+	}], [{
+		key: 'iterateFileStructure',
+		value: function iterateFileStructure(arr, callback) {
+
+			function iterate(arr, cb) {
+				arr.forEach(function (item) {
+
+					if (item.children) {
+						iterate(item.children, callback);
+					}
+
+					if (cb && typeof cb === 'function') cb(item);
+				});
+			}
+
+			iterate(arr);
 		}
 	}]);
 
@@ -915,9 +956,10 @@ var UserInputController = function () {
 
 	_createClass(UserInputController, [{
 		key: 'setValue',
-		value: function setValue(val) {
+		value: function setValue(val, cb) {
 			this.value = val;
 			this.trigger('change', this.value);
+			if (cb) cb();
 		}
 	}, {
 		key: 'getValue',
@@ -969,11 +1011,21 @@ var SimpleSelect = function (_UserInputController) {
 		key: 'initialise',
 		value: function initialise() {
 
+			var self = this;
 			this.view.template = TEMPLATES.SimpleSelect;
 
 			this.view.setupModel({
 				options: this.options
 			});
+
+			if (this.default) {
+				this.options.forEach(function (opt) {
+					if (opt.value == self.default) {
+						opt.selected = true;
+						self.setValue(self.default);
+					}
+				});
+			}
 
 			this.view.afterRender(function (controller) {
 				$(this).find('select').bind('change', function () {
@@ -1022,11 +1074,14 @@ var TopSelect = function (_UserInputController2) {
 				top_items = this.options;
 			}
 
-			this.options.forEach(function (opt) {
-				if (opt.selected) {
-					self.setValue(opt.value);
-				}
-			});
+			if (this.default) {
+				this.options.forEach(function (opt) {
+					if (opt.value == self.default) {
+						opt.selected = true;
+						self.setValue(self.default);
+					}
+				});
+			}
 
 			// controller configures the view
 			this.view.template = TEMPLATES.TopSelect;
@@ -1112,6 +1167,7 @@ var ToggleList = function (_UserInputController3) {
 
 		var _this3 = _possibleConstructorReturn(this, (ToggleList.__proto__ || Object.getPrototypeOf(ToggleList)).call(this, config));
 
+		_this3.initialised = false;
 		_this3.options = config.options;
 		_this3.config = config;
 		_this3.value = {};
@@ -1120,6 +1176,18 @@ var ToggleList = function (_UserInputController3) {
 		_this3.events = $.extend(_this3.events, {
 			remove: []
 		});
+
+		if (_this3.default) {
+			var self = _this3;
+
+			_this3.options = _this3.options.map(function (option) {
+				option.selected = false;
+				if (self.default[option.name] === true) {
+					option.selected = true;
+				}
+				return option;
+			});
+		}
 
 		_this3.initialise();
 		return _this3;
@@ -1150,13 +1218,18 @@ var ToggleList = function (_UserInputController3) {
 				});
 
 				if (self.config.extraOptions) self.initialiseExtraOptions();
+
+				self.initialised = true;
 			});
 		}
 	}, {
 		key: 'setOption',
 		value: function setOption(name, val) {
 			this.value[name] = val;
-			this.trigger('change', this.getValue());
+
+			if (this.initialised) {
+				this.trigger('change', this.getValue());
+			}
 		}
 	}, {
 		key: 'onToggleChange',
@@ -1316,13 +1389,14 @@ var Form = function () {
 		value: function on(event, fn) {
 			if (!this.events.hasOwnProperty(event) || !fn) return;
 			this.events[event].push(fn);
-
 			return this;
 		}
 	}, {
 		key: 'trigger',
 		value: function trigger(event, data) {
+
 			var self = this;
+
 			if (!this.events.hasOwnProperty(event)) return;
 			this.events[event].forEach(function (fn) {
 				fn.call(self, data);
@@ -1354,7 +1428,7 @@ var Form = function () {
 					// from an included field. if it triggers, it will trigger
 					// the form 'change' event. 
 					element.on('change', function () {
-						self.trigger('change');
+						self.trigger('change', self.serialize());
 					});
 				} else {
 					console.error('Only elements from instance UserInputController and Split are allowed!');
@@ -1435,6 +1509,22 @@ var Analysis = _interopRequireWildcard(_Analysis);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
+var default_analysis_options = {
+	'machine': 'default',
+	'network-routing': 'internet',
+	'options': {
+		'enable-services': true,
+		'enforce-timeout': false,
+		'full-memory-dump': false,
+		'no-injection': true,
+		'process-memory-dump': true,
+		'simulated-human-interaction': true
+	},
+	'package': 'python',
+	'priority': 1,
+	'vpn': 'FR-fr'
+};
+
 // appends a helper to handlebars for humanizing sizes
 Handlebars.registerHelper('file_size', function (text) {
 	return new Handlebars.SafeString(FileTree.humanizeBytes(parseInt(text)));
@@ -1471,6 +1561,12 @@ $(function () {
 						"submit_id": window.submit_id
 					},
 					serialize: function serialize(response) {
+
+						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
+							item.per_file_options = $.extend(new Object(), default_analysis_options);
+							item.changed_properties = new Array();
+						});
+
 						return response.data.files[0];
 					}
 				},
@@ -1512,77 +1608,117 @@ $(function () {
 						var $per_file_options = $(el).find('.per-file-options')[0];
 
 						if ($per_file_options) {
+							var form;
 
-							var form = new InterfaceControllers.Form({
-								container: $per_file_options,
-								configure: function configure(form) {
+							(function () {
 
-									var network = new this.TopSelect({
-										name: 'network-routing-' + item.filetree.index,
-										title: 'Network Routing',
-										options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet', selected: true }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
-										extra_select: {
-											title: 'VPN via',
-											name: 'vpn-' + item.filetree.index,
-											options: [{ name: 'France', value: 'FR-fr' }]
-										}
-									});
+								// sets a value on a field
+								var setFieldValue = function setFieldValue(value) {
 
-									var pkg = new this.SimpleSelect({
-										name: 'package',
-										title: 'Package',
-										default: 'python',
-										options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
-									});
+									var field = fieldName(this.name);
 
-									var priority = new this.TopSelect({
-										name: 'piority-' + item.filetree.index,
-										title: 'Priority',
-										options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
-									});
+									if (item.changed_properties.indexOf(field) == -1) {
+										item.changed_properties.push(field);
+									}
 
-									var config = new this.ToggleList({
-										name: 'options-' + item.filetree.index,
-										title: 'Options',
-										extraOptions: true,
-										options: [{
-											name: 'no-injection',
-											label: 'No Injection',
-											description: 'Disable behavioral analysis.'
-										}, {
-											name: 'process-memory-dump',
-											label: 'Process Memory Dump',
-											selected: true
-										}, {
-											name: 'full-memory-dump',
-											label: 'Full Memory Dump',
-											description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
-										}, {
-											name: 'enforce-timeout',
-											label: 'Enforce Timeout'
-										}, {
-											name: 'simulated-human-interaction',
-											label: 'Enable Simulated Human Interaction',
-											selected: true
-										}, {
-											name: 'enable-services',
-											label: 'Enable Services',
-											description: 'Enable simulated environment specified in the auxiliary configuration.',
-											selected: true
-										}]
-									});
+									item.per_file_options[field] = value;
+								};
 
-									var machine = new this.SimpleSelect({
-										name: 'machine-' + item.filetree.index,
-										title: 'Machine',
-										default: 'default',
-										options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
-									});
+								// returns the fieldname as is
 
-									form.add([network, [pkg, priority], config, machine]);
-									form.draw();
-								}
-							});
+
+								var fieldName = function fieldName(str) {
+									var spl = str.split('-');
+									spl.splice(-1, 1);
+									return spl.join('-');
+								};
+
+								form = new InterfaceControllers.Form({
+									container: $per_file_options,
+									configure: function configure(form) {
+
+										var network = new this.TopSelect({
+											name: 'network-routing-' + item.filetree.index,
+											title: 'Network Routing',
+											default: item.per_file_options['network-routing'],
+											options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet' }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+											extra_select: {
+												title: 'VPN via',
+												name: 'vpn-' + item.filetree.index,
+												options: [{ name: 'France', value: 'FR-fr' }]
+											}
+										}).on('change', function (value) {
+											item.per_file_options['network-routing'] = value;
+											setFieldValue.call(this, value);
+										});
+
+										var pkg = new this.SimpleSelect({
+											name: 'package-' + item.filetree.index,
+											title: 'Package',
+											default: item.per_file_options['package'],
+											options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
+										}).on('change', function (value) {
+											item.per_file_options['package'] = value;
+											setFieldValue.call(this, value);
+										});
+
+										var priority = new this.TopSelect({
+											name: 'piority-' + item.filetree.index,
+											title: 'Priority',
+											default: parseInt(item.per_file_options['priority']),
+											options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
+										}).on('change', function (value) {
+											item.per_file_options['priority'] = value;
+											setFieldValue.call(this, parseInt(value));
+										});
+
+										var config = new this.ToggleList({
+											name: 'options-' + item.filetree.index,
+											title: 'Options',
+											extraOptions: true,
+											default: item.per_file_options['options'],
+											options: [{
+												name: 'no-injection',
+												label: 'No Injection',
+												description: 'Disable behavioral analysis.'
+											}, {
+												name: 'process-memory-dump',
+												label: 'Process Memory Dump'
+											}, {
+												name: 'full-memory-dump',
+												label: 'Full Memory Dump',
+												description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+											}, {
+												name: 'enforce-timeout',
+												label: 'Enforce Timeout'
+											}, {
+												name: 'simulated-human-interaction',
+												label: 'Enable Simulated Human Interaction'
+											}, {
+												name: 'enable-services',
+												label: 'Enable Services',
+												description: 'Enable simulated environment specified in the auxiliary configuration.'
+											}]
+										}).on('change', function (value) {
+											item.per_file_options['options'] = value;
+											setFieldValue.call(this, value);
+										});
+
+										var machine = new this.SimpleSelect({
+											name: 'machine-' + item.filetree.index,
+											title: 'Machine',
+											default: item.per_file_options['machine'],
+											options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
+										}).on('change', function (value) {
+											item.per_file_options['machine'] = value;
+											setFieldValue.call(this, value);
+										});
+
+										form.add([network, [pkg, priority], config, machine]);
+										form.draw();
+									}
+								});
+							})();
 						}
 					}
 				}
@@ -1598,7 +1734,8 @@ $(function () {
 					var network = new this.TopSelect({
 						name: 'network-routing',
 						title: 'Network Routing',
-						options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet', selected: true }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+						default: default_analysis_options['network-routing'],
+						options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet' }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
 						extra_select: {
 							title: 'VPN via',
 							name: 'vpn',
@@ -1609,19 +1746,21 @@ $(function () {
 					var pkg = new this.SimpleSelect({
 						name: 'package',
 						title: 'Package',
-						default: 'python',
+						default: default_analysis_options['package'],
 						options: [{ name: 'Python', value: 'python' }, { name: 'Javascript', value: 'js' }]
 					});
 
 					var priority = new this.TopSelect({
-						name: 'piority',
+						name: 'priority',
 						title: 'Priority',
+						default: default_analysis_options['priority'],
 						options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
 					});
 
 					var config = new this.ToggleList({
 						name: 'options',
 						title: 'Options',
+						default: default_analysis_options['options'],
 						extraOptions: true,
 						options: [{
 							name: 'no-injection',
@@ -1629,8 +1768,7 @@ $(function () {
 							description: 'Disable behavioral analysis.'
 						}, {
 							name: 'process-memory-dump',
-							label: 'Process Memory Dump',
-							selected: true
+							label: 'Process Memory Dump'
 						}, {
 							name: 'full-memory-dump',
 							label: 'Full Memory Dump',
@@ -1645,15 +1783,14 @@ $(function () {
 						}, {
 							name: 'enable-services',
 							label: 'Enable Services',
-							description: 'Enable simulated environment specified in the auxiliary configuration.',
-							selected: true
+							description: 'Enable simulated environment specified in the auxiliary configuration.'
 						}]
 					});
 
 					var machine = new this.SimpleSelect({
 						name: 'machine',
 						title: 'Machine',
-						default: 'default',
+						default: default_analysis_options['machine'],
 						options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
 					});
 
@@ -1665,8 +1802,20 @@ $(function () {
 					// insdie the form gets updated. it sends 
 					// back an object with all the current values of 
 					// the form instance.
-					form.on('change', function (data) {
-						console.log(data);
+
+					form.on('change', function (values) {
+
+						function compareAndOverwrite(item) {
+							for (var val in values) {
+								if (item.changed_properties.indexOf(val) == -1) {
+									item.per_file_options[val] = values[val];
+								}
+							}
+						}
+
+						analysis_ui.filetree.each(function (item) {
+							compareAndOverwrite(item);
+						});
 					});
 				}
 			}

@@ -115,45 +115,42 @@
                 </div>
             </div>
         </section>
-    </div>
+    </div> 
 
-    <script>
-        var task_id = '{{report.analysis.info.id}}';
+    {% if report.analysis.info.id %}
+        <script>
+            var task_id = {{report.analysis.info.id}};
 
-        if(task_id.length) {
-            task_id = parseInt(task_id);
-        } else {
-            task_id = false;
-        }
-
-        $( document ).ready(function(){
-            $(".cuckoo-box input").change(function(){
-                estimate_size();
-            });
-
-            function estimate_size() {
-
-                var taken_dirs = [];
-                var taken_files = [];
-
-                $(".cuckoo-box input[id^=export_]").each(function (i, obj) {
-                    var name = $(this).attr("value");
-                    var type = $(this).attr("name");
-                    var checked = $(this).is(":checked");
-
-                    if (type == "dirs") {
-                        if (checked) taken_dirs.push(name)
-                    } else if (type == "files") {
-                        if (checked) taken_files.push(name);
-                    }
+            $( document ).ready(function(){
+                $(".cuckoo-box input").change(function(){
+                    estimate_size();
                 });
 
-                export_estimate_size(task_id, taken_dirs, taken_files, "#options button.btn small#export_estimate_size", "");
+                function estimate_size() {
 
-            }
+                    var taken_dirs = [];
+                    var taken_files = [];
 
-            if(task_id) estimate_size();
-        });
-    </script>
+                    $(".cuckoo-box input[id^=export_]").each(function (i, obj) {
+                        var name = $(this).attr("value");
+                        var type = $(this).attr("name");
+                        var checked = $(this).is(":checked");
+
+                        if (type == "dirs") {
+                            if (checked) taken_dirs.push(name)
+                        } else if (type == "files") {
+                            if (checked) taken_files.push(name);
+                        }
+                    });
+
+                    export_estimate_size(task_id, taken_dirs, taken_files, "#options button.btn small#export_estimate_size", "");
+
+                }
+
+                estimate_size();
+                
+            });
+        </script>
+    {% endif %}
 
 {% endblock %}

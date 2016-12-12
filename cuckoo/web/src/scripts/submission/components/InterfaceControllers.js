@@ -46,6 +46,7 @@ class Split {
 			element.on(event, fn);
 		});
 	}
+
 }
 
 // USERINPUTVIEW
@@ -137,9 +138,10 @@ class UserInputController {
 
 	}
 
-	setValue(val) {
+	setValue(val, cb) {
 		this.value = val;
 		this.trigger('change', this.value);
+		if(cb) cb();
 	}
 
 	getValue() {
@@ -177,11 +179,21 @@ class SimpleSelect extends UserInputController {
 
 	initialise() {
 
+		var self = this;
 		this.view.template = TEMPLATES.SimpleSelect;
 
 		this.view.setupModel({
 			options: this.options
 		});
+
+		if(this.default) {
+			this.options.forEach(function(opt) {
+				if(opt.value == self.default) {
+					opt.selected = true;
+					self.setValue(self.default);
+				}
+			});
+		}
 
 		this.view.afterRender(function(controller) {
 			$(this).find('select').bind('change', function() {
@@ -219,11 +231,14 @@ class TopSelect extends UserInputController {
 			top_items = this.options;
 		}
 
-		this.options.forEach(function(opt) {
-			if(opt.selected) {
-				self.setValue(opt.value);
-			}
-		});
+		if(this.default) {
+			this.options.forEach(function(opt) {
+				if(opt.value == self.default) {
+					opt.selected = true;
+					self.setValue(self.default);
+				}
+			});
+		}
 
 		// controller configures the view
 		this.view.template = TEMPLATES.TopSelect;
@@ -303,6 +318,8 @@ class ToggleList extends UserInputController {
 
 	constructor(config) {
 		super(config);
+
+		this.initialised = false;
 		this.options = config.options;
 		this.config = config;
 		this.value = {};
@@ -311,6 +328,19 @@ class ToggleList extends UserInputController {
 		this.events = $.extend(this.events, {
 			remove: []
 		});
+
+		if(this.default) {
+			var self = this;
+
+			this.options = this.options.map(function(option) {
+				option.selected = false;
+				if(self.default[option.name] === true) {
+					option.selected = true;
+				}
+				return option;
+			});
+
+		}
 
 		this.initialise();
 	}
@@ -339,6 +369,8 @@ class ToggleList extends UserInputController {
 
 			if(self.config.extraOptions) self.initialiseExtraOptions();
 
+			self.initialised = true;
+
 		});
 
 
@@ -346,7 +378,10 @@ class ToggleList extends UserInputController {
 
 	setOption(name, val) {
 		this.value[name] = val;
-		this.trigger('change', this.getValue());
+
+		if(this.initialised) {
+			this.trigger('change', this.getValue());	
+		}
 	}
 
 	onToggleChange(e, self) {
@@ -497,12 +532,13 @@ class Form {
 	on(event, fn) {
 		if(!this.events.hasOwnProperty(event) || !fn) return;
 		this.events[event].push(fn);
-
 		return this;
 	}
 
 	trigger(event, data) {
+
 		let self = this;
+
 		if(!this.events.hasOwnProperty(event)) return;	
 		this.events[event].forEach(function(fn) {
 			fn.call(self, data);
@@ -533,7 +569,7 @@ class Form {
 				// from an included field. if it triggers, it will trigger
 				// the form 'change' event. 
 				element.on('change', function() {
-					self.trigger('change');
+					self.trigger('change', self.serialize());
 				});
 
 			} else {

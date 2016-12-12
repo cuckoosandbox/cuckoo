@@ -172,7 +172,7 @@ function build(items, parent) {
 
 		var item = items[i];
 		itemIndex += 1;
-
+		
 		item.filetree = {
 			index: itemIndex,
 			is_directory: isDirectory(item),
@@ -571,8 +571,8 @@ class FileTree {
 
 		var self = this;
 
-		var selected = this.findByProperty('selected', true);
-		var extensions = getExtensions(selected);
+		var selected 	= this.findByProperty('selected', true);
+		var extensions  = getExtensions(selected);
 
 		var html = selectionTemplate({
 			selection: selected,
@@ -603,8 +603,7 @@ class FileTree {
 			$(self.options.config.sidebar).find('#search-selection').val('');
 			$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
 		});
-
-		console.log(this.options);
+		
 		this.options.after.selectionView.call(selected, this.options.config.sidebar, this);
 
 	}
@@ -623,6 +622,44 @@ class FileTree {
 			delete item.filetree;
 			return item;
 		});
+	}
+
+	// iterator: each'es over the loaded data set
+	each(callback) {
+
+		function iterate(arr, cb) {
+
+			arr.forEach(function(item) {
+
+				if(item.children) {
+					iterate(item.children, callback);
+				}
+
+				if(cb && typeof cb === 'function') cb(item);
+			});
+		}
+
+		iterate(this.data.children, callback);
+
+	}
+
+	// static iterator: throw in any 'children[Array]' nested array (or for this particular case:
+	// a json string representing a file structure) to loop it through
+	static iterateFileStructure(arr, callback) {
+
+		function iterate(arr, cb) {
+			arr.forEach(function(item) {
+
+				if(item.children) {
+					iterate(item.children, callback);
+				}
+
+				if(cb && typeof cb === 'function') cb(item);
+			});
+		}
+
+		iterate(arr);
+
 	}
 
 }

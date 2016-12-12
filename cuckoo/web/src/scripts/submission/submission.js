@@ -2,6 +2,22 @@ import * as InterfaceControllers from './components/InterfaceControllers';
 import * as FileTree from './components/FileTree';
 import * as Analysis from './components/Analysis';
 
+const default_analysis_options = {
+	'machine': 'default',
+	'network-routing': 'internet',
+	'options': {
+		'enable-services': true,
+		'enforce-timeout': false,
+		'full-memory-dump': false,
+		'no-injection': true,
+		'process-memory-dump': true,
+		'simulated-human-interaction': true
+	},
+	'package': 'python',
+	'priority': 1,
+	'vpn': 'FR-fr'
+}
+
 // appends a helper to handlebars for humanizing sizes
 Handlebars.registerHelper('file_size', function(text) {
 	return new Handlebars.SafeString(FileTree.humanizeBytes(parseInt(text)));
@@ -38,7 +54,14 @@ $(function() {
 						"submit_id": window.submit_id
 					},
 					serialize: function(response) {
+
+						FileTree.FileTree.iterateFileStructure(response.data.files, function(item) {
+							item.per_file_options = $.extend(new Object(), default_analysis_options);
+							item.changed_properties = new Array();
+						});
+
 						return response.data.files[0];
+
 					}
 				},
 				transform: {
@@ -72,15 +95,32 @@ $(function() {
 					}
 				},
 				after: {
-					selectionView: function() {
-						
-					},
+					selectionView: function() {},
 					detailView: function(el, filetree) {
 
 						var item = this;
 						var $per_file_options = $(el).find('.per-file-options')[0];
 
 						if($per_file_options) {
+
+							// sets a value on a field
+							function setFieldValue(value) {
+
+								var field = fieldName(this.name);
+
+								if(item.changed_properties.indexOf(field) == -1) {
+									item.changed_properties.push(field);
+								}
+
+								item.per_file_options[field] = value;
+							}
+
+							// returns the fieldname as is
+							function fieldName(str) {
+								var spl = str.split('-');
+								spl.splice(-1, 1);
+								return spl.join('-');
+							}
 
 							var form = new InterfaceControllers.Form({
 								container: $per_file_options,
@@ -89,10 +129,11 @@ $(function() {
 									var network = new this.TopSelect({
 										name: 'network-routing-' + item.filetree.index,
 										title: 'Network Routing',
+										default: item.per_file_options['network-routing'],
 										options: [
 											{ name:'none', value:'none' },
 											{ name:'drop', value:'drop' },
-											{ name:'internet', value:'internet', selected: true },
+											{ name:'internet', value:'internet' },
 											{ name:'inetsim', value:'inetsim' },
 											{ name:'tor', value:'tor' }
 										],
@@ -103,32 +144,43 @@ $(function() {
 												{ name: 'France', value: 'FR-fr' }
 											]
 										}
+									}).on('change', function(value) {
+										item.per_file_options['network-routing'] = value;
+										setFieldValue.call(this, value);
 									});
 
 									var pkg = new this.SimpleSelect({
-										name: 'package',
+										name: 'package-' + item.filetree.index,
 										title: 'Package',
-										default: 'python',
+										default: item.per_file_options['package'],
 										options: [
 											{ name: 'Python', value: 'python' },
 											{ name: 'Javascript', value: 'js' }
 										]
+									}).on('change', function(value) {
+										item.per_file_options['package'] = value;
+										setFieldValue.call(this, value);
 									});
 
 									var priority = new this.TopSelect({
 										name: 'piority-' + item.filetree.index,
 										title: 'Priority',
+										default: parseInt(item.per_file_options['priority']),
 										options: [
 											{ name: 'low', value: 0, className: 'priority-s' },
 											{ name: 'medium', value: 1, className: 'priority-m' },
 											{ name: 'high', value: 2, className: 'priority-l' }
 										]
+									}).on('change', function(value) {
+										item.per_file_options['priority'] = value;
+										setFieldValue.call(this, parseInt(value));
 									});
 
 									var config = new this.ToggleList({
 										name: 'options-' + item.filetree.index,
 										title: 'Options',
 										extraOptions: true,
+										default: item.per_file_options['options'],
 										options: [
 											{
 												name: 'no-injection',
@@ -137,8 +189,7 @@ $(function() {
 											},
 											{
 												name: 'process-memory-dump',
-												label: 'Process Memory Dump',
-												selected: true
+												label: 'Process Memory Dump'
 											},
 											{
 												name: 'full-memory-dump',
@@ -151,27 +202,31 @@ $(function() {
 											},
 											{
 												name: 'simulated-human-interaction',
-												label: 'Enable Simulated Human Interaction',
-												selected: true
+												label: 'Enable Simulated Human Interaction'
 											},
 											{
 												name: 'enable-services',
 												label: 'Enable Services',
-												description: 'Enable simulated environment specified in the auxiliary configuration.',
-												selected: true
+												description: 'Enable simulated environment specified in the auxiliary configuration.'
 											}
 										]
+									}).on('change', function(value) {
+										item.per_file_options['options'] = value;
+										setFieldValue.call(this, value);
 									});
 
 									var machine = new this.SimpleSelect({
 										name: 'machine-' + item.filetree.index,
 										title: 'Machine',
-										default: 'default',
+										default: item.per_file_options['machine'],
 										options: [
 											{ name: 'default', value: 'default' },
 											{ name: 'Cuckoo1', value: 'Cuckoo1' },
 											{ name: 'Cuckoo2', value: 'Cuckoo2' }
 										]
+									}).on('change', function(value) {
+										item.per_file_options['machine'] = value;
+										setFieldValue.call(this, value);
 									});
 
 									form.add([network, [pkg, priority], config, machine]);
@@ -196,10 +251,11 @@ $(function() {
 					var network = new this.TopSelect({
 						name: 'network-routing',
 						title: 'Network Routing',
+						default: default_analysis_options['network-routing'],
 						options: [
 							{ name:'none', value:'none' },
 							{ name:'drop', value:'drop' },
-							{ name:'internet', value:'internet', selected: true },
+							{ name:'internet', value:'internet' },
 							{ name:'inetsim', value:'inetsim' },
 							{ name:'tor', value:'tor' }
 						],
@@ -215,7 +271,7 @@ $(function() {
 					var pkg = new this.SimpleSelect({
 						name: 'package',
 						title: 'Package',
-						default: 'python',
+						default: default_analysis_options['package'],
 						options: [
 							{ name: 'Python', value: 'python' },
 							{ name: 'Javascript', value: 'js' }
@@ -223,8 +279,9 @@ $(function() {
 					});
 
 					var priority = new this.TopSelect({
-						name: 'piority',
+						name: 'priority',
 						title: 'Priority',
+						default: default_analysis_options['priority'],
 						options: [
 							{ name: 'low', value: 0, className: 'priority-s' },
 							{ name: 'medium', value: 1, className: 'priority-m' },
@@ -235,6 +292,7 @@ $(function() {
 					var config = new this.ToggleList({
 						name: 'options',
 						title: 'Options',
+						default: default_analysis_options['options'],
 						extraOptions: true,
 						options: [
 							{
@@ -244,8 +302,7 @@ $(function() {
 							},
 							{
 								name: 'process-memory-dump',
-								label: 'Process Memory Dump',
-								selected: true
+								label: 'Process Memory Dump'
 							},
 							{
 								name: 'full-memory-dump',
@@ -264,8 +321,7 @@ $(function() {
 							{
 								name: 'enable-services',
 								label: 'Enable Services',
-								description: 'Enable simulated environment specified in the auxiliary configuration.',
-								selected: true
+								description: 'Enable simulated environment specified in the auxiliary configuration.'
 							}
 						]
 					});
@@ -273,7 +329,7 @@ $(function() {
 					var machine = new this.SimpleSelect({
 						name: 'machine',
 						title: 'Machine',
-						default: 'default',
+						default: default_analysis_options['machine'],
 						options: [
 							{ name: 'default', value: 'default' },
 							{ name: 'Cuckoo1', value: 'Cuckoo1' },
@@ -289,8 +345,21 @@ $(function() {
 					// insdie the form gets updated. it sends 
 					// back an object with all the current values of 
 					// the form instance.
-					form.on('change', function(data) {
-						console.log(data);
+
+					form.on('change', function(values) {
+						
+						function compareAndOverwrite(item) {
+							for(var val in values) {
+								if(item.changed_properties.indexOf(val) == -1) {
+									item.per_file_options[val] = values[val];
+								}
+							}
+						}
+
+						analysis_ui.filetree.each(function(item) {
+							compareAndOverwrite(item);
+						});
+
 					});
 
 				}

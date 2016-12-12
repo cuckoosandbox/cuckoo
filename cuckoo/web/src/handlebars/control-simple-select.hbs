@@ -2,7 +2,7 @@
 	<div class="flex-form__select">
 		<select name="{{name}}">
 			{{#each options}}
-				<option value="{{value}}">{{name}}</option>
+				<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>
 			{{/each}}
 		</select>
 		<i class="fa fa-chevron-down"></i>
