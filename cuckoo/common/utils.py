@@ -19,6 +19,7 @@ import json
 import multiprocessing
 import warnings
 
+from distutils.version import StrictVersion
 from cStringIO import StringIO
 from datetime import datetime
 
@@ -333,3 +334,14 @@ def parse_bool(value):
     if value in ("false", "False", "None", "no", "0", "off"):
         return False
     return bool(int(value))
+
+def supported_version(version, minimum, maximum):
+    """Checks if a version number is supported as per the minimum and maximum
+    version numbers."""
+    if minimum and StrictVersion(version) < StrictVersion(minimum):
+        return False
+
+    if maximum and StrictVersion(version) > StrictVersion(maximum):
+        return False
+
+    return True

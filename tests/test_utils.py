@@ -333,3 +333,14 @@ def test_bool():
     assert utils.parse_bool(2) is True
     assert utils.parse_bool(False) is False
     assert utils.parse_bool(0) is False
+
+def test_supported_version():
+    assert utils.supported_version("2.0.0", "2.0.0", None) is True
+    assert utils.supported_version("2.0.0", "2.0.0", "2.0.1") is True
+    assert utils.supported_version("2.0.0", "2.0.0", "2.0.0") is True
+
+    assert utils.supported_version("2.0.1a1", "2.0.0", "2.0.1") is True
+    assert utils.supported_version("2.0.1a1", "2.0.1a0", "2.0.1b1") is True
+    assert utils.supported_version("2.0.1b1", "2.0.1", None) is False
+    assert utils.supported_version("2.0.1b1", "2.0.1a1", None) is True
+    assert utils.supported_version("2.0.1b1", "2.0.1a1", "2.0.1") is True

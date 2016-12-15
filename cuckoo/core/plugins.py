@@ -8,8 +8,6 @@ import importlib
 import inspect
 import logging
 
-from distutils.version import StrictVersion
-
 import cuckoo
 
 from cuckoo.common.config import Config
@@ -18,6 +16,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooDisableModule
+from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
@@ -324,62 +323,27 @@ class RunSignatures(object):
 
         return task_platform == signature.platform
 
-    def check_signature_version(self, signature):
+    def check_signature_version(self, sig):
         """Check signature version.
         @param current: signature class/instance to check.
         @return: check result.
         """
-        # Check the minimum Cuckoo version for this signature, if provided.
-        if signature.minimum:
-            try:
-                # If the running Cuckoo is older than the required minimum
-                # version, skip this signature.
-                if StrictVersion(self.version) < StrictVersion(signature.minimum):
-                    log.debug("You are running an older incompatible version "
-                              "of Cuckoo, the signature \"%s\" requires "
-                              "minimum version %s.",
-                              signature.name, signature.minimum)
-                    return False
+        if not supported_version(self.version, sig.minimum, sig.maximum):
+            log.debug(
+                "You are running a version of Cuckoo that's not compatible "
+                "with this signature (either it's too old or too new): "
+                "cuckoo=%s signature=%s minversion=%s maxversion=%s",
+                self.version, sig.name, sig.minimum, sig.maximum
+            )
+            return False
 
-                if StrictVersion("1.2") > StrictVersion(signature.minimum):
-                    log.warn("Cuckoo signature style has been redesigned in "
-                             "cuckoo 1.2. This signature is not "
-                             "compatible: %s.", signature.name)
-                    return False
-
-                if StrictVersion("2.0") > StrictVersion(signature.minimum):
-                    log.warn("Cuckoo version 2.0 features a lot of changes that "
-                             "render old signatures ineffective as they are not "
-                             "backwards-compatible. Please upgrade this "
-                             "signature: %s.", signature.name)
-                    return False
-
-                if hasattr(signature, "run"):
-                    log.warn("This signatures features one or more deprecated "
-                             "functions which indicates that it is very likely "
-                             "an old-style signature. Please upgrade this "
-                             "signature: %s.", signature.name)
-                    return False
-            except ValueError:
-                log.debug("Wrong minor version number in signature %s",
-                          signature.name)
-                return False
-
-        # Check the maximum version of Cuckoo for this signature, if provided.
-        if signature.maximum:
-            try:
-                # If the running Cuckoo is newer than the required maximum
-                # version, skip this signature.
-                if StrictVersion(self.version) > StrictVersion(signature.maximum):
-                    log.debug("You are running a newer incompatible version "
-                              "of Cuckoo, the signature \"%s\" requires "
-                              "maximum version %s.",
-                              signature.name, signature.maximum)
-                    return False
-            except ValueError:
-                log.debug("Wrong major version number in signature %s",
-                          signature.name)
-                return False
+        if hasattr(sig, "run"):
+            log.warning(
+                "This signatures features one or more deprecated functions "
+                "which indicates that it is very likely an old-style "
+                "signature. Please upgrade this signature: %s.", sig.name
+            )
+            return False
 
         return True
 
