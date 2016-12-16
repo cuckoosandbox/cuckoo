@@ -118,9 +118,9 @@ def get_new_emails(db):
                             filename = part.get_filename()
                             content_type = part.get_content_type()
                             attachment = part.get_payload(decode=True)
-                            sha256 = hashlib.sha256(attachment).hexdigest()
-
+                            
                             if attachment:
+                                sha256 = hashlib.sha256(attachment).hexdigest()
                                 #unpack it
                                 z = ZipFile(File(contents=attachment, password=email_config.cuckoomx.get("archive_password")))
                                 files = list(z.unpack(password=email_config.cuckoomx.get("archive_password"), duplicates=[]))
