@@ -14,6 +14,7 @@ from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Folders, Files
 from cuckoo.compat.config import migrate
+from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.startup import check_configs
 from cuckoo.main import main
 from cuckoo.misc import set_cwd, cwd, mkdir
@@ -270,6 +271,20 @@ def test_sanitize():
     cfg = Config.from_confdir(cwd("conf"), sanitize=True)
     assert cfg["cuckoo"]["database"]["timeout"] == 42
     assert cfg["cuckoo"]["database"]["connection"] == "*"*8
+
+def test_invalid_machinery():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    write_cuckoo_conf({
+        "cuckoo": {
+            "cuckoo": {
+                "machinery": "foobar",
+            },
+        },
+    })
+    with pytest.raises(CuckooStartupError) as e:
+        check_configs()
+    e.match("unknown machinery")
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())

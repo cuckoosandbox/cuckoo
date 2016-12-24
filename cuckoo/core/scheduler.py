@@ -636,14 +636,6 @@ class Scheduler(object):
         # Initialize the machine manager.
         machinery = cuckoo.machinery.plugins[machinery_name]()
 
-        # Find its configuration file.
-        conf = cwd("conf", "%s.conf" % machinery_name)
-
-        if not os.path.exists(conf):
-            raise CuckooCriticalError("The configuration file for machine "
-                                      "manager \"{0}\" does not exist at path:"
-                                      " {1}".format(machinery_name, conf))
-
         # Provide a dictionary with the configuration options to the
         # machine manager instance.
         machinery.set_options(Config(machinery_name))

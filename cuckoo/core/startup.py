@@ -71,8 +71,12 @@ def check_configs():
 
     # Also check the specific machinery handler for this instance.
     machinery = config("cuckoo:cuckoo:machinery")
-    check_specific_config(machinery)
+    if machinery not in Config.configuration:
+        raise CuckooStartupError(
+            "An unknown machinery has been chosen (machinery=%s)!" % machinery
+        )
 
+    check_specific_config(machinery)
     return True
 
 def check_version():
