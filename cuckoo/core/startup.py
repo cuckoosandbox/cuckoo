@@ -4,15 +4,15 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import httplib
-import os
-import shutil
-import sys
 import json
-import socket
-import urllib
-import urllib2
 import logging
 import logging.handlers
+import os
+import shutil
+import socket
+import sys
+import urllib
+import urllib2
 
 from distutils.version import LooseVersion
 
@@ -24,6 +24,7 @@ from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
+from cuckoo.core.log import JsonFormatter
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd, version
 
@@ -125,6 +126,10 @@ def init_logging(level):
 
     fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
     fh.setFormatter(formatter)
+    log.addHandler(fh)
+
+    fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.json"))
+    fh.setFormatter(JsonFormatter())
     log.addHandler(fh)
 
     ch = ConsoleHandler()
