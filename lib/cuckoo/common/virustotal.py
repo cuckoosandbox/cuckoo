@@ -18,7 +18,7 @@ except ImportError:
 
 from lib.cuckoo.common.exceptions import CuckooOperationalError
 from lib.cuckoo.common.objects import File
-from modules.cuckooml.cuckooml import Instance
+from modules.processing.cuckooml import Instance
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
