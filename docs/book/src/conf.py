@@ -40,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Cuckoo Sandbox'
-copyright = u'2010-2015, Cuckoo Foundation'
+copyright = u'2010-2016, Cuckoo Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

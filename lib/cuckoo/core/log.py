@@ -3,9 +3,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import copy
+import json
+import logging
 import logging.handlers
 import os.path
 import thread
+import time
 
 from lib.cuckoo.common.colors import red, yellow, cyan
 from lib.cuckoo.core.database import Database
@@ -58,6 +61,24 @@ class ConsoleHandler(logging.StreamHandler):
                 colored.msg = record.msg
 
         logging.StreamHandler.emit(self, colored)
+
+class JsonFormatter(logging.Formatter):
+    """Logging Cuckoo logs to JSON."""
+
+    def format(self, record):
+        action = record.__dict__.get("action")
+        status = record.__dict__.get("status")
+        task_id = _tasks.get(
+            thread.get_ident(), record.__dict__.get("task_id")
+        )
+        return json.dumps({
+            "action": action,
+            "task_id": task_id,
+            "status": status,
+            "time": int(time.time()),
+            "message": logging.Formatter.format(self, record),
+            "level": record.levelname.lower(),
+        })
 
 def task_log_start(task_id):
     """Associate a thread with a task."""

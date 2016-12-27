@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import httplib
 import os
 import shutil
 import sys
@@ -24,6 +25,7 @@ from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.core.database import Database, TASK_RUNNING
 from lib.cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from lib.cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
+from lib.cuckoo.core.log import JsonFormatter
 from lib.cuckoo.core.plugins import import_plugin, import_package, list_plugins
 from lib.cuckoo.core.rooter import rooter, vpns
 
@@ -106,7 +108,7 @@ def check_version():
     try:
         request = urllib2.Request(url, data)
         response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError):
+    except (urllib2.URLError, urllib2.HTTPError, httplib.BadStatusLine):
         print(red(" Failed! ") + "Unable to establish connection.\n")
         return
 
@@ -137,6 +139,10 @@ def init_logging():
 
     fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.log"))
     fh.setFormatter(formatter)
+    log.addHandler(fh)
+
+    fh = logging.handlers.WatchedFileHandler(os.path.join(CUCKOO_ROOT, "log", "cuckoo.json"))
+    fh.setFormatter(JsonFormatter())
     log.addHandler(fh)
 
     ch = ConsoleHandler()

@@ -18,3 +18,10 @@ ieonline.microsoft.com
 api.bing.com
 schemas.microsoft.com
 www.w3.org
+dns.msftncsi.com
+teredo.ipv6.microsoft.com
+time.windows.com
+dns.msftncsi.com
+ocsp.msocsp.com
+ocsp.omniroot.com
+crl.microsoft.com

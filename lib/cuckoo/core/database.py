@@ -18,7 +18,7 @@ from lib.cuckoo.common.utils import create_folder, Singleton, classlock, SuperLo
 
 try:
     from sqlalchemy import create_engine, Column, not_
-    from sqlalchemy import Integer, String, Boolean, DateTime, Enum
+    from sqlalchemy import Integer, String, Boolean, DateTime, Enum, func
     from sqlalchemy import ForeignKey, Text, Index, Table
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -1206,6 +1206,21 @@ class Database(object):
         finally:
             session.close()
 
+    def minmax_tasks(self):
+        """Find tasks minimum and maximum
+        @return: unix timestamps of minimum and maximum
+        """
+        session = self.Session()
+        try:
+            _min = session.query(func.min(Task.started_on).label("min")).first()
+            _max = session.query(func.max(Task.completed_on).label("max")).first()
+            return int(_min[0].strftime("%s")), int(_max[0].strftime("%s"))
+        except SQLAlchemyError as e:
+            log.debug("Database error counting tasks: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+
     @classlock
     def count_tasks(self, status=None):
         """Count tasks in the database
@@ -1393,7 +1408,7 @@ class Database(object):
             WHERE id IN (
                 SELECT id FROM tasks
                 WHERE status = :status AND processing IS NULL
-                LIMIT 1 FOR UPDATE
+                ORDER BY priority DESC, id ASC LIMIT 1 FOR UPDATE
             )
             RETURNING id
         """

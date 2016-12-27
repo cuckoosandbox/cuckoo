@@ -88,7 +88,7 @@ class Sniffer(Auxiliary):
 
         try:
             self.proc = subprocess.Popen(
-                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
             )
         except (OSError, ValueError):
             log.exception(
@@ -143,8 +143,8 @@ class Sniffer(Auxiliary):
                 "Error running tcpdump to sniff the network traffic during "
                 "the analysis; stdout = %r and stderr = %r. Did you enable "
                 "the extra capabilities to allow running tcpdump as non-root "
-                "user and disable AppArmor properly (only applies to Ubuntu)?"
-                % (out, err)
+                "user and disable AppArmor properly (the latter only applies "
+                "to Ubuntu-based distributions with AppArmor)?" % (out, err)
             )
 
         try:
