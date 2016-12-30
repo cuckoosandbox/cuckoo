@@ -21,7 +21,8 @@ class Reboot(Auxiliary):
         log.error(
             "Reboot analysis is not backwards compatible with the Old Agent, "
             "please upgrade your target machine (%s) to the New Agent to use "
-            "the reboot analysis capabilities.", self.machine
+            "the reboot analysis capabilities. Use this agent for reboot analysis "
+            "https://github.com/jbremer/agent", self.machine
         )
         raise CuckooDisableModule
 
