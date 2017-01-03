@@ -63,6 +63,7 @@ this["HANDLEBARS_TEMPLATES"]["control-toggle-list"] = Handlebars.template({"1":f
     + this.escapeExpression(((helper = (helper = helpers.title || (depth0 != null ? depth0.title : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"title","hash":{},"data":data}) : helper)))
     + " <a href=\"#\"><i class=\"fa fa-info-circle\"></i></a></legend>\n<ul class=\"flex-form__toggle-list\">\n"
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.options : depth0),{"name":"each","hash":{},"fn":this.program(1, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "	\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.extraOptions : depth0),{"name":"if","hash":{},"fn":this.program(6, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "</ul>\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.extraOptions : depth0),{"name":"if","hash":{},"fn":this.program(8, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "");
@@ -108,10 +109,32 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.name : stack1), depth0))
     + "\" id=\""
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.name : stack1), depth0))
-    + "\">\n			<option disabled selected>Select</option>\n"
+    + "\">\n			<option selected disabled>Select</option>\n"
     + ((stack1 = helpers.each.call(depth0,((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.options : stack1),{"name":"each","hash":{},"fn":this.program(7, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "		</select>\n		<i class=\"fa fa-chevron-down\"></i>\n	</div>\n";
 },"7":function(depth0,helpers,partials,data) {
+    var stack1, helper, alias1=this.escapeExpression, alias2=helpers.helperMissing, alias3="function";
+
+  return "				"
+    + alias1(helpers.log.call(depth0,(depth0 != null ? depth0.selected : depth0),{"name":"log","hash":{},"data":data}))
+    + "\n				<option value=\""
+    + alias1(((helper = (helper = helpers.value || (depth0 != null ? depth0.value : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(depth0,{"name":"value","hash":{},"data":data}) : helper)))
+    + "\" "
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.selected : depth0),{"name":"if","hash":{},"fn":this.program(8, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ">"
+    + alias1(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + "</option>\n";
+},"8":function(depth0,helpers,partials,data) {
+    return "selected";
+},"10":function(depth0,helpers,partials,data) {
+    var stack1, helper;
+
+  return "	<div class=\"flex-form__select\">\n		<select name=\""
+    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + "-other\">\n			<option disabled selected>Or select one here if yours isn't featured above.</option>\n"
+    + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.rest_items : depth0),{"name":"each","hash":{},"fn":this.program(11, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "		</select>\n		<i class=\"fa fa-chevron-down\"></i>\n	</div>\n";
+},"11":function(depth0,helpers,partials,data) {
     var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
   return "				<option value=\""
@@ -119,14 +142,6 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + "\">"
     + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
     + "</option>\n";
-},"9":function(depth0,helpers,partials,data) {
-    var stack1, helper;
-
-  return "	<div class=\"flex-form__select\">\n		<select name=\""
-    + this.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
-    + "-other\">\n			<option disabled selected>Or select one here if yours isn't featured above.</option>\n"
-    + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.rest_items : depth0),{"name":"each","hash":{},"fn":this.program(7, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "		</select>\n		<i class=\"fa fa-chevron-down\"></i>\n	</div>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data,blockParams,depths) {
     var stack1, helper;
 
@@ -137,7 +152,7 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + "</ul>\n\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.extra_select : depth0),{"name":"if","hash":{},"fn":this.program(6, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rest_items : depth0),{"name":"if","hash":{},"fn":this.program(9, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "");
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rest_items : depth0),{"name":"if","hash":{},"fn":this.program(10, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "");
 },"useData":true,"useDepths":true});
 this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     return "checked";

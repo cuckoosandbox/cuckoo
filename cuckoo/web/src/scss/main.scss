@@ -21,7 +21,8 @@ body {
 body#analysis { padding-top: 30px; }
 
 body[id^="submission/"] { padding-top: 41px; }
-body[id="submission/pre"] {
+body[id="submission/pre"],
+body[id="submission/index"] {
 	footer:not(.flex-grid__footer), 
 	#footer-extra {
 		display: none;

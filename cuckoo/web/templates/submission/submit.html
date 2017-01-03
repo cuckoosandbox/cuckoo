@@ -1,140 +1,36 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-<style>
-    .btn-file {
-        position: relative;
-        overflow: hidden;
-    }
-    .btn-file input[type=file] {
-        position: absolute;
-        top: 0;
-        right: 0;
-        min-width: 100%;
-        min-height: 100%;
-        font-size: 999px;
-        text-align: right;
-        filter: alpha(opacity=0);
-        opacity: 0;
-        background: red;
-        cursor: inherit;
-        display: block;
-    }
+	
+<!-- config -->
+<main class="flex-grid">
 
-    #dndsubmit{
-        height:192px;
-        width:600px;
-        float:left;
-    }
+	<header class="flex-grid__header">
+		<ul class="breadcrumbs">
+			<li class="active"><a href="#">submit file</a></li>
+			<li class="todo"><a href="#">configure</a></li>
+			<li class="todo"><a href="#">analyze</a></li>
+		</ul>
+		<h3>
+			<i class="fa fa-upload"></i> Submit a file
+		</h3>
+	</header>
 
-    #help_files{
-        float:left;
-        height:192px;
-        width:250px;
-        padding-left:8px;
-        padding-top:6px;
-    }
+	<section class="flex-grid__body--center background-grey" id="analysis-configuration">
+		<div class="flex-grid__align-vertical">
+			<div id="dndsubmit"></div>
+		</div>
+	</section>
 
-    #help_url{
-        float:left;
-        height:192px;
-        width:250px;
-        padding-left:8px;
-    }
+	<footer class="flex-grid__footer">
+		<p class="footnote">
+			&copy;2010-2016 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+		</p>
+		<div class="logo">
+			<img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+		</div>
+	</footer>
 
-    #panel_upload>.row>div{
-        float:left;
-        width:852px;
-    }
+</main>
 
-    #urlhashsubmit{
-        width:600px;
-        float:left;
-        padding:10px;
-        padding-left:20px;
-        padding-top: 0px;
-        padding-right:20px;
-    }
-
-    #urlhashsubmit>textarea{
-        min-height: 148px;
-        resize: none;
-        background-color: transparent !important;
-    }
-</style>
-    <script src="{% static "js/cuckoo/dndupload.js" %}"></script>
-
-    <div class="container" style="width:882px;min-height:600px;">
-        <div class="panel panel-primary" id="panel_create-analysis">
-            <div class="panel-heading">Upload File(s)</div>
-            <div id="panel_upload" class="panel-body" style="overflow: hidden;">
-                <div class="row">
-                    <div>
-
-                        <div id="dndsubmit"></div>
-
-                        <div id="help_files">
-                            <h4>Files</h4>
-                            Upload a file for analysis. Many file types are supported; <b>.exe .vbs .js .doc .pdf .xls .zip</b>.
-                            <a href="#link_to_documentation">Full list</a>. You may also upload multiple files at once.
-                        </div>
-                    </div>
-
-                    <div>
-                        <hr />
-
-                        <div id="urlhashsubmit">
-                            <textarea id="presubmit_urlhash" class="form-control" placeholder="URL or file hash - one per line"></textarea>
-
-                            <div class="pull-right" style="padding-top:10px;">
-                                <input id="urlhash" type="submit" class="btn btn-primary" value="Submit"/>
-                            </div>
-                        </div>
-
-                        <div id="help_url">
-                            <h4 style="margin-top:0px;">URL / hash</h4>
-
-                            Analyze an URL or fetch files by their hashes from VirusTotal.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        $(document).ready(function () {
-            $("input#urlhash").click(function () {
-                var urls = $("textarea#presubmit_urlhash").val();
-                if (urls == "") {
-                    return;
-                }
-
-                CuckooWeb.api_post("/submit/api/presubmit", {
-                    "data": urls,
-                    "type": "strings"
-                }, function (data) {
-                    CuckooWeb.redirect("/submit/pre/" + data.submit_id);
-                }, function(data){
-                    console.log("err: " + data);
-                })
-            });
-
-            $(document).on("submit", "#uploader", function (e) {
-                e.preventDefault();
-            });
-
-            function dndsuccess(data) {
-                window.location.href = data.responseURL;
-            }
-
-            var dndupload = new DndUpload(
-                    "div#dndsubmit",
-                    "/submit/api/presubmit",
-                    dndsuccess
-            );
-
-            dndupload.draw();
-        });
-    </script>
 {% endblock %}

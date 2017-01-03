@@ -13,9 +13,10 @@
 	<div class="flex-form__select flex-form__select--horizontal">
 		<label for="{{extra_select.name}}" class="title">{{extra_select.title}}</label>
 		<select name="{{extra_select.name}}" id="{{extra_select.name}}">
-			<option disabled selected>Select</option>
+			<option selected disabled>Select</option>
 			{{#each extra_select.options}}
-				<option value="{{value}}">{{name}}</option>
+				{{log selected}}
+				<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>
 			{{/each}}
 		</select>
 		<i class="fa fa-chevron-down"></i>

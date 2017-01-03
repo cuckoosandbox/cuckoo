@@ -57,6 +57,19 @@
 	&__body {
 		display: flex;
 		flex-basis: 100%;
+
+		&.background-grey {
+			background-color: #f5f5f5;
+		}
+
+		&--center {
+			@extend .flex-grid__body;
+			justify-content: center;
+		}
+	}
+
+	&__align-vertical {
+		align-self: center;
 	}
 
 	&__footer {

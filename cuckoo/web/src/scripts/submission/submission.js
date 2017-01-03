@@ -15,7 +15,7 @@ const default_analysis_options = {
 	},
 	'package': 'python',
 	'priority': 1,
-	'vpn': 'FR-fr'
+	'vpn': 'united-states'
 }
 
 // appends a helper to handlebars for humanizing sizes
@@ -145,8 +145,12 @@ $(function() {
 										extra_select: {
 											title: 'VPN via',
 											name: 'vpn-' + item.filetree.index,
+											default: item.per_file_options['vpn'] || undefined,
 											options: [
-												{ name: 'France', value: 'FR-fr' }
+												{ name: 'France', value: 'france' },
+												{ name: 'Russia', value: 'russia' },
+												{ name: 'United States', value: 'united-states' },
+												{ name: 'China', value: 'china' }
 											]
 										}
 									}).on('change', function(value) {
@@ -214,10 +218,37 @@ $(function() {
 												label: 'Enable Services',
 												description: 'Enable simulated environment specified in the auxiliary configuration.'
 											}
-										]
-									}).on('change', function(value) {
-										item.per_file_options['options'] = value;
-										setFieldValue.call(this, value);
+										],
+										on: {
+											init: function() {	
+
+												/*
+													attach any predefined values to the stack
+												 */
+
+												var custom = [];
+
+												var default_options = this.options.map(function(item) {
+													return item.name;
+												});
+
+												for(var default_option in this.default) {
+													if(default_options.indexOf(default_option) == -1) {
+														custom.push({
+															key: default_option,
+															value: this.default[default_option]
+														});
+													}
+												}
+
+												this.options_extra_predefined = custom;
+
+											},
+											change: function(value) {
+												item.per_file_options['options'] = value;
+												setFieldValue.call(this, value);
+											}
+										}
 									});
 
 									var machine = new this.SimpleSelect({
@@ -267,8 +298,16 @@ $(function() {
 						extra_select: {
 							title: 'VPN via',
 							name: 'vpn',
+							on: {
+								change: function() {
+									console.log('vpn changed');
+								}
+							},
 							options: [
-								{ name: 'France', value: 'FR-fr' }
+								{ name: 'France', value: 'france' },
+								{ name: 'Russia', value: 'russia' },
+								{ name: 'United States', value: 'united-states' },
+								{ name: 'China', value: 'china' }
 							]
 						}
 					});
@@ -368,12 +407,27 @@ $(function() {
 					});
 
 				}
+			},
+			// base configuration for the dnd uploader
+			dndupload: {
+				endpoint: '/submit/api/presubmit',
+				target: 'div#dndsubmit',
+				success: function(data) {
+					window.location.href = data.responseURL;
+				}
 			}
 		});
 
 		$('#start-analysis').bind('click', function(e) {
 			e.preventDefault();
 			var json = analysis_ui.getData();
+			alert('check the console for the output.');
+			console.log(json);
+		});
+
+		$("#reset-options").bind('click', function(e) {
+			e.preventDefault();
+			console.log('reset the form.');
 		});
 
 	}

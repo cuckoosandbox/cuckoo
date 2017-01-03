@@ -3073,7 +3073,9 @@ body[id^="submission/"] {
 }
 
 body[id="submission/pre"] footer:not(.flex-grid__footer),
-body[id="submission/pre"] #footer-extra {
+body[id="submission/pre"] #footer-extra,
+body[id="submission/index"] footer:not(.flex-grid__footer),
+body[id="submission/index"] #footer-extra {
   display: none;
 }
 
@@ -4137,9 +4139,18 @@ footer a:hover {
 .flex-grid__header > h3 button.grey:hover {
   background-color: #7b7b7b;
 }
-.flex-grid__body {
+.flex-grid__body, .flex-grid__body--center {
   display: flex;
   flex-basis: 100%;
+}
+.flex-grid__body.background-grey, .background-grey.flex-grid__body--center {
+  background-color: #f5f5f5;
+}
+.flex-grid__body--center {
+  justify-content: center;
+}
+.flex-grid__align-vertical {
+  align-self: center;
 }
 .flex-grid__footer {
   display: flex;

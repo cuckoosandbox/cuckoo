@@ -112,6 +112,7 @@ class UserInputController {
 	constructor(config) {
 
 		if(!config) config = {};
+
 		this.config = config;
 		this.view = new UserInputView(this);
 		this.name = config.name || '';
@@ -123,7 +124,14 @@ class UserInputController {
 
 		this.events = {
 			change: [],
-			render: []
+			render: [],
+			init: []
+		}
+
+		if(config.on) {
+			for(var prop in config.on) {
+				this.on(prop, config.on[prop]);
+			}
 		}
 
 		// assign default value to value if defined
@@ -290,8 +298,23 @@ class TopSelect extends UserInputController {
 
 				var inp = new UserInputController({
 					name: extra.name,
-					title: extra.title
+					title: extra.title,
+					on: extra.on || {}
 				});
+
+				if(extra.default) {
+
+					extra.options.forEach(function(opt) {
+
+						console.log(opt.value, extra.default);
+
+						if(opt.value == extra.default) {
+							opt.selected = true;
+							inp.setValue(extra.default);
+						}
+					});
+
+				}
 
 				if(controller.form) controller.form.add(inp);
 
@@ -324,6 +347,7 @@ class ToggleList extends UserInputController {
 		this.config = config;
 		this.value = {};
 		this.custom_options = config.custom_options || {};
+		this.options_extra_predefined = config.options_extra_predefined || [];
 
 		this.events = $.extend(this.events, {
 			remove: []
@@ -359,6 +383,8 @@ class ToggleList extends UserInputController {
 			this.value[this.options[opt].name] = this.options[opt].selected || false;
 		}
 
+		this.trigger('init');
+
 		this.view.afterRender(function() {
 
 			$(this).find('input:checkbox').bind('change', function(e) {
@@ -367,12 +393,15 @@ class ToggleList extends UserInputController {
 				self.onToggleChange.call(this, null, self);
 			});
 
-			if(self.config.extraOptions) self.initialiseExtraOptions();
+			if(self.config.extraOptions) {
+				self.initialiseExtraOptions();	
+			}
 
 			self.initialised = true;
 
 		});
 
+		return this;
 
 	}
 
@@ -410,8 +439,8 @@ class ToggleList extends UserInputController {
 
 		});
 
-		if(self.config.options_extra_predefined) {
-			self.config.options_extra_predefined.forEach(function(item) {
+		if(this.options_extra_predefined.length) {
+			this.options_extra_predefined.forEach(function(item) {
 				self.commit(item.key, item.value);
 			});
 		}
