@@ -412,6 +412,7 @@ $(function() {
 			dndupload: {
 				endpoint: '/submit/api/presubmit',
 				target: 'div#dndsubmit',
+				template: HANDLEBARS_TEMPLATES['dndupload'],
 				success: function(data) {
 					window.location.href = data.responseURL;
 				}

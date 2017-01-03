@@ -23,6 +23,7 @@
 const DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
+    template: null,
     success: function() {}
 }
 
@@ -41,6 +42,8 @@ class Uploader {
             "target": _self.options.target
         };
 
+        this.html = null;
+
         this._bound = false;
     }
 
@@ -51,7 +54,7 @@ class Uploader {
     draw(){
         $(this._selectors["target"]).empty();
 
-        let html = `
+        var html = `
             <div class="dndupload" id="${this._selectors["uid"]}">
                 <form id="uploader" action="/submit/api/presubmit" method="POST" enctype="multipart/form-data">
                     <div id="container">
@@ -76,6 +79,14 @@ class Uploader {
             <p id="formdata">XHR2's FormData is not supported</p>
             <p id="progress">XHR2's upload progress isn't supported</p>
         `;
+
+        if(this.options.template) {
+
+            var html = this.options.template({
+                uid: this._selectors["uid"]
+            });
+
+        }
 
         $(this._selectors["target"]).append(html);
         if(!this._bound) this._bind();
