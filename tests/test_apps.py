@@ -7,9 +7,10 @@ import os
 import pytest
 import tempfile
 
+from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.files import Files
-from cuckoo.main import main
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.main import main, cuckoo_create
+from cuckoo.misc import set_cwd, cwd, mkdir, is_windows
 
 def test_init():
     set_cwd(tempfile.mkdtemp())
@@ -18,6 +19,57 @@ def test_init():
             ("--cwd", cwd(), "--nolog", "init"),
             standalone_mode=False
         )
+
+def init_legacy_analyses():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    dirpath = tempfile.mkdtemp()
+    mkdir(dirpath, "storage")
+    mkdir(dirpath, "storage", "analyses")
+
+    mkdir(dirpath, "storage", "analyses", "1")
+    mkdir(dirpath, "storage", "analyses", "1", "logs")
+    Files.create(
+        (dirpath, "storage", "analyses", "1", "logs"), "a.txt", "a"
+    )
+    mkdir(dirpath, "storage", "analyses", "1", "reports")
+    Files.create(
+        (dirpath, "storage", "analyses", "1", "reports"), "b.txt", "b"
+    )
+
+    mkdir(dirpath, "storage", "analyses", "2")
+    Files.create((dirpath, "storage", "analyses", "2"), "cuckoo.log", "log")
+
+    Files.create((dirpath, "storage", "analyses"), "latest", "last!!1")
+    return dirpath
+
+def test_import_legacy_analyses():
+    with pytest.raises(RuntimeError) as e:
+        import_legacy_analyses(None, mode="notamode")
+    e.match("mode should be either")
+
+    dirpath = init_legacy_analyses()
+    assert sorted(import_legacy_analyses(dirpath, mode="copy")) == [1, 2]
+    assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
+    assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
+    assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
+    assert not os.path.exists(cwd(analysis="latest"))
+
+    if not is_windows():
+        assert not os.path.islink(cwd(analysis=1))
+        assert not os.path.islink(cwd(analysis=2))
+
+    dirpath = init_legacy_analyses()
+    assert sorted(import_legacy_analyses(dirpath, mode="symlink")) == [1, 2]
+    assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
+    assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
+    assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
+    assert not os.path.exists(cwd(analysis="latest"))
+
+    if not is_windows():
+        assert os.path.islink(cwd(analysis=1))
+        assert os.path.islink(cwd(analysis=2))
 
 class TestAppsWithCWD(object):
     def setup(self):
