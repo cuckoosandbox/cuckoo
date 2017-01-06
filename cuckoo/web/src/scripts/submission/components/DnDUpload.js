@@ -254,8 +254,9 @@ class Uploader {
         };
 
         xhr.onreadystatechange = function(){
-            if(xhr.readyState === 4){
-                if(xhr.status == 200){
+            if(xhr.readyState === 4) {
+
+                if(xhr.status == 200) {
 
                     // _self.display_text("Done");
 

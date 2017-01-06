@@ -3584,6 +3584,7 @@ section#screenshots .minified {
   overflow: hidden;
   -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
   background-color: #fff;
+  transition: border 300ms linear;
 }
 .dndupload__v2 .text-hovering,
 .dndupload__v2 .text-dropped,
@@ -3615,6 +3616,9 @@ section#screenshots .minified {
 .dndupload__v2.dropped .text-dropped {
   display: block;
 }
+.dndupload__v2.done {
+  border: 0;
+}
 .dndupload__v2.done .text-idle,
 .dndupload__v2.done .text-hovering,
 .dndupload__v2.done .text-error,
@@ -3623,6 +3627,9 @@ section#screenshots .minified {
 }
 .dndupload__v2.done .text-done {
   display: block;
+}
+.dndupload__v2.error {
+  border: 0;
 }
 .dndupload__v2.error .text-idle,
 .dndupload__v2.error .text-hovering,
@@ -3649,6 +3656,10 @@ section#screenshots .minified {
 .dndupload__v2 form#uploader label {
   color: #6297F8;
   text-decoration: none;
+  display: block;
+  width: 100%;
+  padding: 0 20px;
+  white-space: normal;
 }
 .dndupload__v2 form#uploader label strong {
   color: inherit;
@@ -3657,6 +3668,7 @@ section#screenshots .minified {
 .dndupload__v2 form#uploader label small {
   font-weight: 400;
   display: block;
+  margin: 10px 0;
 }
 .dndupload__v2 form#uploader label em {
   font-style: normal;
@@ -3689,6 +3701,7 @@ section#screenshots .minified {
   font-weight: 400;
   font-size: 22px;
   color: #b5b5b5;
+  margin-bottom: 20px;
 }
 .upload-module .allowed-file-types ul {
   display: flex;

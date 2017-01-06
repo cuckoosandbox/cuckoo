@@ -351,6 +351,7 @@ var Uploader = function () {
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
+
                     if (xhr.status == 200) {
 
                         // _self.display_text("Done");
