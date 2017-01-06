@@ -15,8 +15,10 @@
 	&__nav {
 		background-color: #444;
 		overflow: hidden;
-		width: 65px;
-		transition: width 200ms ease-in-out;
+		flex-basis: 65px;
+		flex-shrink: 0;
+		flex-grow: 0;
+		transition: flex-basis 200ms ease-in-out;
 		overflow-y: auto;
 
 		.cuckoo-nav {
@@ -30,7 +32,7 @@
 		&.open,
 		&.locked,
 		&.locked-silent {
-			width: 360px;
+			flex-basis: 280px;
 
 			.cuckoo-nav {
 				em, span, input, button {

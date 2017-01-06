@@ -3453,8 +3453,10 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons a.active 
 .flex-nav__nav {
   background-color: #444;
   overflow: hidden;
-  width: 65px;
-  transition: width 200ms ease-in-out;
+  flex-basis: 65px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  transition: flex-basis 200ms ease-in-out;
   overflow-y: auto;
 }
 .flex-nav__nav .cuckoo-nav {
@@ -3465,7 +3467,7 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons a.active 
   transition: opacity 100ms linear;
 }
 .flex-nav__nav.open, .flex-nav__nav.locked, .flex-nav__nav.locked-silent {
-  width: 360px;
+  flex-basis: 280px;
 }
 .flex-nav__nav.open .cuckoo-nav em, .flex-nav__nav.open .cuckoo-nav span, .flex-nav__nav.open .cuckoo-nav input, .flex-nav__nav.open .cuckoo-nav button, .flex-nav__nav.locked .cuckoo-nav em, .flex-nav__nav.locked .cuckoo-nav span, .flex-nav__nav.locked .cuckoo-nav input, .flex-nav__nav.locked .cuckoo-nav button, .flex-nav__nav.locked-silent .cuckoo-nav em, .flex-nav__nav.locked-silent .cuckoo-nav span, .flex-nav__nav.locked-silent .cuckoo-nav input, .flex-nav__nav.locked-silent .cuckoo-nav button {
   opacity: 1;
