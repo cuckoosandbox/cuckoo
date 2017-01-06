@@ -46,13 +46,15 @@ class TestConfig:
         assert Config("foo")
 
     def test_get_option_not_found(self):
-        with pytest.raises(CuckooConfigurationError):
+        with pytest.raises(CuckooConfigurationError) as e:
             self.c.get("foo")
+        e.match("not found in configuration")
 
     def test_get_option_not_found_in_file_not_found(self):
         self.c = Config("bar")
-        with pytest.raises(CuckooConfigurationError):
+        with pytest.raises(CuckooConfigurationError) as e:
             self.c.get("foo")
+        e.match("not found in configuration")
 
     def test_options(self):
         assert parse_options("a=b") == {"a": "b"}
@@ -89,8 +91,9 @@ def test_env():
     assert c.get("cuckoo")["tmppath"] == cwd() + "/footopbar"
 
     open(path, "wb").write(ENV2_EXAMPLE)
-    with pytest.raises(CuckooConfigurationError):
+    with pytest.raises(CuckooConfigurationError) as e:
         Config("cuckoo", cfg=path)
+    e.match("Missing environment variable")
 
     os.environ.pop("FOOBAR")
     os.environ.pop("CUCKOO_FOOBAR")
@@ -189,17 +192,20 @@ def test_default_config():
     assert config("cuckoo:timeouts:critical") == 60
     assert config("auxiliary:mitm:mitmdump") == "/usr/local/bin/mitmdump"
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as e:
         config("nope")
+    e.match("Invalid configuration entry")
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as e:
         config("nope:nope")
+    e.match("Invalid configuration entry")
 
     assert check_configs()
 
     os.remove(os.path.join(dirpath, "conf", "cuckoo.conf"))
-    with pytest.raises(CuckooStartupError):
+    with pytest.raises(CuckooStartupError) as e:
         check_configs()
+    e.match("Config file does not exist")
 
     Files.create(
         (dirpath, "conf"), "cuckoo.conf", "[cuckoo]\nversion_check = on"
@@ -211,12 +217,14 @@ def test_invalid_section():
     Folders.create(cwd(), "conf")
 
     Files.create(cwd("conf"), "cuckoo.conf", "[invalid_section]\nfoo = bar")
-    with pytest.raises(CuckooConfigurationError):
+    with pytest.raises(CuckooConfigurationError) as e:
         Config("cuckoo", strict=True)
+    e.match("Config section.*not found")
 
-    Files.create(cwd("conf"), "cuckoo.conf", "[cucko]\ninvalid = entry")
-    with pytest.raises(CuckooConfigurationError):
-        Config("cuckoo", strict=True)
+    Files.create(cwd("conf"), "cuckoo.conf", "[cuckoo]\ninvalid = entry")
+    with pytest.raises(CuckooConfigurationError) as e:
+        config("cuckoo:invalid:entry", strict=True)
+    e.match("No such configuration value exists")
 
 def test_confdir():
     set_cwd(tempfile.mkdtemp())

@@ -17,8 +17,9 @@ from cuckoo.misc import set_cwd, cwd
 def test_failed_fetch():
     responses.add(responses.GET, URL % "master", status=404)
 
-    with pytest.raises(CuckooOperationalError):
+    with pytest.raises(CuckooOperationalError) as e:
         fetch_community()
+    e.match("Error fetching")
 
 @responses.activate
 def test_extract():

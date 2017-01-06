@@ -881,7 +881,9 @@ class Config(object):
                 items = config.items(section)
             except ConfigParser.InterpolationMissingOptionError as e:
                 log.error("Missing environment variable(s): %s", e)
-                raise CuckooConfigurationError(e)
+                raise CuckooConfigurationError(
+                    "Missing environment variable: %s" % e
+                )
 
             for name, raw_value in items:
                 if name in self.env_keys:

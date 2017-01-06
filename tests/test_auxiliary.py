@@ -115,16 +115,18 @@ def test_sniffer():
         p.return_value = PopenStdout()
         assert s.start() is True
 
-    with pytest.raises(CuckooOperationalError):
+    with pytest.raises(CuckooOperationalError) as e:
         assert s.stop()
+    e.match("did not expect standard output")
 
     # Test unknown stderr output from tcpdump.
     with mock.patch("subprocess.Popen") as p:
         p.return_value = PopenStderr()
         assert s.start() is True
 
-    with pytest.raises(CuckooOperationalError):
+    with pytest.raises(CuckooOperationalError) as e:
         assert s.stop()
+    e.match("following standard error output")
 
     # Test OSError and/or ValueError exceptions.
     with mock.patch("subprocess.Popen") as p:

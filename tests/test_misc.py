@@ -167,11 +167,13 @@ def test_decide_cwd():
     assert decide_cwd(dirpath1) == dirpath1
     assert decide_cwd() == dirpath3
 
-    with pytest.raises(CuckooStartupError):
+    with pytest.raises(CuckooStartupError) as e:
         decide_cwd(tempfile.mktemp(), exists=True)
+    e.match("is not present")
 
-    with pytest.raises(CuckooStartupError):
+    with pytest.raises(CuckooStartupError) as e:
         decide_cwd(dirpath1, exists=True)
+    e.match("is not a proper CWD")
 
     Files.create(dirpath1, ".cwd", "A"*40)
     assert decide_cwd(dirpath1, exists=True) == dirpath1

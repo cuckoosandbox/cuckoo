@@ -318,7 +318,7 @@ class VirtualBox(Machinery):
                 )
         except OSError as e:
             raise CuckooMachineError(
-                "VBoxManage failed return it's version: %s" % e
+                "VBoxManage failed to return its version: %s" % e
             )
 
         # VirtualBox version 4 and 5.

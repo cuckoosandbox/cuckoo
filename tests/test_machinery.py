@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
-import logging
 import pytest
 import subprocess
 import tempfile
@@ -22,8 +21,6 @@ class TestVirtualbox(object):
         Folders.create(cwd(), "conf")
         write_cuckoo_conf()
 
-        logging.basicConfig(level=logging.DEBUG)
-
         with mock.patch("cuckoo.common.abstracts.Database") as p:
             p.return_value = mock.MagicMock()
             self.m = VirtualBox()
@@ -35,24 +32,27 @@ class TestVirtualbox(object):
         with mock.patch.dict(self.m.options.virtualbox.__dict__, {
             "path": None,
         }):
-            with pytest.raises(CuckooCriticalError):
+            with pytest.raises(CuckooCriticalError) as e:
                 self.m._initialize_check()
+            e.match("VBoxManage path is missing")
 
         with mock.patch.dict(self.m.options.virtualbox.__dict__, {
             "path": "THIS PATH DOES NOT EXIST 404",
         }):
-            with pytest.raises(CuckooCriticalError):
+            with pytest.raises(CuckooCriticalError) as e:
                 self.m._initialize_check()
+            e.match("not found at")
 
         with mock.patch.dict(self.m.options.virtualbox.__dict__, {
-            "mode": "foobar",
+            "mode": "foobar", "path": __file__,
         }):
-            with pytest.raises(CuckooCriticalError):
+            with pytest.raises(CuckooCriticalError) as e:
                 self.m._initialize_check()
+            e.match("run in a non-supported mode")
 
     def test_status_vboxmanage_failure(self):
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
-            p.return_value.communicate.return_value = ("", "")
+            p.return_value.communicate.return_value = "", ""
             p.return_value.returncode = 42
             assert self.m._status("label") == self.m.ERROR
 
@@ -66,11 +66,12 @@ class TestVirtualbox(object):
         )
 
     def test_status_vboxmanage_incomplete_info(self):
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.communicate.return_value = ("", "")
                 p.return_value.returncode = 0
                 self.m._status("label")
+        e.match("Unable to get")
 
         p.assert_called_once()
         p.call_args_list[0] = (
@@ -137,10 +138,11 @@ class TestVirtualbox(object):
         )
 
     def test_list_oserror(self):
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
-                assert self.m._list() == ["cuckoo1", "cuckoo7"]
+                self.m._list()
+        e.match("error listing installed")
 
         p.assert_called_once()
         p.call_args_list[0] = (
@@ -163,8 +165,9 @@ class TestVirtualbox(object):
 
     def test_start_running(self):
         self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             self.m.start("label", None)
+        e.match("Trying to start an")
 
     def test_start_no_snapshot(self):
         class machine_no_snapshot(object):
@@ -240,11 +243,12 @@ class TestVirtualbox(object):
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
         self.m._wait_status = mock.MagicMock(return_value=None)
 
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.communicate.return_value = "", "error!"
                 p.return_value.returncode = 42
                 self.m.start("label", None)
+        e.match("failed trying to restore")
 
         p.assert_called_once_with(
             [
@@ -263,10 +267,11 @@ class TestVirtualbox(object):
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
         self.m._wait_status = mock.MagicMock(return_value=None)
 
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
                 self.m.start("label", None)
+        e.match("failed trying to restore")
 
         p.assert_any_call(
             [
@@ -292,10 +297,11 @@ class TestVirtualbox(object):
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", "error starting"
 
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = p1, p2
                 self.m.start("label", None)
+        e.match("failed starting the machine")
 
         p.assert_any_call(
             [
@@ -314,11 +320,12 @@ class TestVirtualbox(object):
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
         self.m._wait_status = mock.MagicMock(return_value=None)
 
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.communicate.return_value = "", "error!"
                 p.return_value.returncode = 42
                 self.m.start("label", None)
+        e.match("failed trying to restore")
 
         p.assert_any_call(
             [
@@ -330,12 +337,14 @@ class TestVirtualbox(object):
 
     def test_stop_invalid_status(self):
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             self.m.stop("label")
+        e.match("Trying to stop an already stopped")
 
         self.m._status.return_value = self.m.ABORTED
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             self.m.stop("label")
+        e.match("Trying to stop an already stopped")
 
     def test_stop_success(self):
         self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
@@ -467,19 +476,21 @@ class TestVirtualbox(object):
         ])
 
     def test_dump_memory_oserror(self):
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = OSError("foobar")
                 self.m.dump_memory("label", "memory.dmp")
+        e.match("failed to return its version")
 
         p1 = mock.MagicMock()
         p1.communicate.return_value = "5.0.28r111378", ""
         p1.returncode = 0
 
-        with pytest.raises(CuckooMachineError):
+        with pytest.raises(CuckooMachineError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.side_effect = p1, OSError("foobar")
                 self.m.dump_memory("label", "memory.dmp")
+        e.match("failed to take a memory dump")
 
         # TODO Properly handle "vboxmanage -v" returning an error status code.
 
@@ -488,8 +499,6 @@ class TestBrokenMachine(object):
         set_cwd(tempfile.mkdtemp())
         Folders.create(cwd(), "conf")
         write_cuckoo_conf()
-
-        logging.basicConfig(level=logging.DEBUG)
 
         with mock.patch("cuckoo.common.abstracts.Database") as p:
             p.return_value = mock.MagicMock()
@@ -512,10 +521,11 @@ class TestBrokenMachine(object):
         p2 = mock.MagicMock()
         p2.communicate.return_value = "", ""
 
-        with pytest.raises(CuckooMachineSnapshotError):
+        with pytest.raises(CuckooMachineSnapshotError) as e:
             with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
                 p.return_value.communicate.return_value = "", "error!"
                 self.m.start("label", None)
+        e.match("failed trying to restore")
 
         p.assert_called_once_with(
             [
