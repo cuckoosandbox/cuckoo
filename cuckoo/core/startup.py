@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -23,8 +23,7 @@ from cuckoo.common.config import Config, config
 from cuckoo.common.exceptions import CuckooStartupError, CuckooDatabaseError
 from cuckoo.core.database import Database, TASK_RUNNING
 from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
-from cuckoo.core.log import DatabaseHandler, ConsoleHandler, TaskHandler
-from cuckoo.core.log import JsonFormatter
+from cuckoo.core.log import init_logger
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd, version
 
@@ -121,32 +120,14 @@ def check_version():
 
 def init_logging(level):
     """Initializes logging."""
-    formatter = logging.Formatter(
-        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
-    )
-
     # We operate on the root logger.
     log = logging.getLogger()
 
-    fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
-    fh.setFormatter(formatter)
-    log.addHandler(fh)
-
-    fh = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.json"))
-    fh.setFormatter(JsonFormatter())
-    log.addHandler(fh)
-
-    ch = ConsoleHandler()
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
-
-    dh = DatabaseHandler()
-    dh.setLevel(logging.ERROR)
-    log.addHandler(dh)
-
-    th = TaskHandler()
-    th.setFormatter(formatter)
-    log.addHandler(th)
+    init_logger(log, "cuckoo.log")
+    init_logger(log, "cuckoo.json")
+    init_logger(log, "console")
+    init_logger(log, "database")
+    init_logger(log, "task")
 
     log.setLevel(level)
 
@@ -159,13 +140,8 @@ def init_console_logging(level=logging.INFO):
     # We operate on the root logger.
     log = logging.getLogger()
 
-    ch = ConsoleHandler()
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
-
-    dh = DatabaseHandler()
-    dh.setLevel(logging.ERROR)
-    log.addHandler(dh)
+    init_logger(log, "console")
+    init_logger(log, "database")
 
     log.setLevel(level)
 

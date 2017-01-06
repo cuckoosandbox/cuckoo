@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,6 +14,7 @@ from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
 _tasks = {}
+_loggers = {}
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
@@ -75,6 +76,11 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname.lower(),
         })
 
+    def filter(self, record):
+        action = record.__dict__.get("action")
+        status = record.__dict__.get("status")
+        return action and status
+
 def task_log_start(task_id):
     """Associate a thread with a task."""
     _tasks[thread.get_ident()] = task_id
@@ -82,3 +88,46 @@ def task_log_start(task_id):
 def task_log_stop(task_id):
     """Disassociate a thread from a task."""
     _tasks.pop(thread.get_ident(), None)
+
+def init_logger(root, name):
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
+
+    if name == "cuckoo.log":
+        l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
+        l.setFormatter(formatter)
+        root.addHandler(l)
+
+    if name == "cuckoo.json":
+        j = JsonFormatter()
+        l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.json"))
+        l.setFormatter(j)
+        l.addFilter(j)
+        root.addHandler(l)
+
+    if name == "console":
+        l = ConsoleHandler()
+        l.setFormatter(formatter)
+        root.addHandler(l)
+
+    if name == "database":
+        l = DatabaseHandler()
+        l.setLevel(logging.ERROR)
+        root.addHandler(l)
+
+    if name == "task":
+        l = TaskHandler()
+        l.setFormatter(formatter)
+        root.addHandler(l)
+
+    _loggers[name] = l
+
+def logger(name, message, *args, **kwargs):
+    """Log a message to specific logger instance."""
+    record = logging.LogRecord(
+        _loggers[name].name, logging.INFO, None,
+        None, message, args, None, None
+    )
+    record.__dict__.update(kwargs)
+    _loggers[name].handle(record)
