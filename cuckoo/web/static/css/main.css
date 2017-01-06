@@ -3731,6 +3731,10 @@ section#screenshots .minified {
   color: #B5B5B5;
 }
 
+#tab-hash textarea {
+  margin-bottom: 20px;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
