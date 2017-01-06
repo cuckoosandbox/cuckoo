@@ -17,27 +17,46 @@
 	</header>
 
 	<section class="flex-grid__body--center background-grey" id="analysis-configuration">
-		<div class="flex-grid__align-vertical upload-module">
+		<div class="flex-grid__align-horizontal upload-module">
 
-			<h3>Submit a file via:</h3>
-			<nav class="grouped-buttons">
-				<button class="active">File upload</button>
-				<button>URL or file hash</button>
-			</nav>
+			<div class="upload-module__container">
 
-			<div id="dndsubmit"></div>
+				<h3>Submit a file via:</h3>
 
-			<div class="allowed-file-types">
-				<h4>Supported Filetypes:</h4>
-				<ul>
-					<li><i class="fa fa-file-o"></i> <span>ZIP</span></li>
-					<li><i class="fa fa-file-o"></i> <span>VBS</span></li>
-					<li><i class="fa fa-file-o"></i> <span>JS</span></li>
-					<li><i class="fa fa-file-o"></i> <span>DOC</span></li>
-					<li><i class="fa fa-file-o"></i> <span>PDF</span></li>
-					<li><i class="fa fa-file-o"></i> <span>XLS</span></li>
-					<li><i class="fa fa-file-o"></i> <span>ZIP</span></li>
-				</ul>
+				<nav class="grouped-buttons" role="tablist">
+					<a class="active" data-toggle="tab" href="#tab-upload">File upload</a>
+					<a data-toggle="tab" href="#tab-hash">URL or file hash</a>
+				</nav>
+
+				<div class="tab-content">
+
+					<!-- tab for the uploader -->
+					<div class="tab-pane active" role="tabpanel" id="tab-upload">
+						<div id="dndsubmit"></div>
+
+						<div class="allowed-file-types">
+							<h4>Supported Filetypes:</h4>
+							<ul>
+								<li><i class="fa fa-file-o"></i> <span>ZIP</span></li>
+								<li><i class="fa fa-file-o"></i> <span>VBS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>JS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>DOC</span></li>
+								<li><i class="fa fa-file-o"></i> <span>PDF</span></li>
+								<li><i class="fa fa-file-o"></i> <span>XLS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>ZIP</span></li>
+							</ul>
+						</div>
+					</div>
+
+					<!-- tab for the hash -->
+					<div class="tab-pane" role="tabpanel" id="tab-hash">
+							
+					Hash
+
+					</div>
+
+				</div>
+
 			</div>
 
 		</div>

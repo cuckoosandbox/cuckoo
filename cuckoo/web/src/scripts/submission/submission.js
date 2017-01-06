@@ -452,12 +452,17 @@ $(function() {
 			e.preventDefault();
 			var json = analysis_ui.getData();
 			alert('check the console for the output.');
-			console.log(json);
+			console.log(JSON.stringify(json));
 		});
 
 		$("#reset-options").bind('click', function(e) {
 			e.preventDefault();
 			console.log('reset the form.');
+		});
+
+		$(".upload-module .grouped-buttons a").on('shown.bs.tab', function(e) {
+			$(e.target).parent().find('a').removeClass('active');
+			$(this).addClass('active');
 		});
 
 	}

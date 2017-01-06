@@ -3262,6 +3262,8 @@ section#screenshots .minified {
   padding: 10px 0;
   flex-basis: 100%;
   font-weight: 500;
+  text-align: center;
+  text-decoration: none;
 }
 .grouped-buttons button:active, .grouped-buttons a:active {
   background-color: #e5e5e5;
@@ -3691,6 +3693,9 @@ section#screenshots .minified {
   transition: transform 300ms ease-out;
 }
 
+.upload-module__container {
+  width: 325px;
+}
 .upload-module h3 {
   color: #B0B0B0;
   font-weight: 900;

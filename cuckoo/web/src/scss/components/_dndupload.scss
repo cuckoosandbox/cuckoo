@@ -248,6 +248,10 @@
 // this base class is used to style the custom inner elements
 .upload-module {
 
+    &__container {
+        width: 325px;
+    }
+
     h3 {
         color: #B0B0B0;
         font-weight: 900;
