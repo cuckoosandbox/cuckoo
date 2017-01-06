@@ -413,8 +413,37 @@ $(function() {
 				endpoint: '/submit/api/presubmit',
 				target: 'div#dndsubmit',
 				template: HANDLEBARS_TEMPLATES['dndupload'],
-				success: function(data) {
-					window.location.href = data.responseURL;
+				success: function(data, holder) {
+
+					$(holder).removeClass('dropped');
+					$(holder).addClass('done');
+
+					// fake timeout
+					setTimeout(function() {
+						window.location.href = data.responseURL;
+					}, 1000);
+
+				},
+				error: function(uploader, holder) {
+					$(holder).addClass('error');
+				},
+				progress: function(value, holder) {
+					// thisArg is bound to the uploader
+					if(value > 50 && !$(holder).hasClass('progress-half')) {
+						$(holder).addClass('progress-half');
+					}
+
+					$(this.options.target).find(".alternate-progress").css('transform', `translateY(${100-value}%)`);
+				},
+				dragstart: function(uploader, holder) {
+					holder.classList.add('hover');
+				},
+				dragend: function(uploader, holder) {
+					holder.classList.remove('hover');
+				},
+				drop: function(uploader, holder) {
+					holder.classList.remove('hover');
+					holder.classList.add('dropped');
 				}
 			}
 		});

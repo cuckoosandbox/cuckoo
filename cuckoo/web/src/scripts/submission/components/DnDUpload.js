@@ -20,11 +20,18 @@
  *   one page due to OOP.
  */
 
+var debugging = false;
+
 const DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
-    success: function() {}
+    dragstart: function() {},
+    dragend: function() {},
+    drop: function() {},
+    error: function() {},
+    success: function() {},
+    progress: function() {}
 }
 
 class Uploader {
@@ -36,6 +43,12 @@ class Uploader {
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
+        this._progress_callback = this.options.progress;
+
+        this._dragstart_callback = this.options.dragstart;
+        this._dragend_callback = this.options.dragend;
+        this._drop_callback = this.options.drop;
+        this._error_callback = this.options.error;
 
         this._selectors = {
             "uid": `dndupload_${Uploader.generateUUID()}`,
@@ -44,6 +57,7 @@ class Uploader {
 
         this.html = null;
 
+        this._usesTemplate = false;
         this._bound = false;
     }
 
@@ -81,6 +95,8 @@ class Uploader {
         `;
 
         if(this.options.template) {
+
+            this._usesTemplate = true;
 
             var html = this.options.template({
                 uid: this._selectors["uid"]
@@ -150,6 +166,7 @@ class Uploader {
             // change appearance while drag&dropping
             holder.querySelector("form#uploader").ondragover = function(){
                 this.className = "hover";
+                _self._dragstart_callback(_self, holder);
                 return false;
             };
 
@@ -158,10 +175,15 @@ class Uploader {
                 return false;
             };
 
+            // holder.querySelector("form#uploader").ondragstart = function() {
+            //     console.log('drag start');
+            // }
+
             ["dragleave", "dragend", "drop"].forEach(function(event){
                 holder.querySelector("form#uploader").addEventListener(event, function(){
                     //form.classList.remove( "is-dragover" );
                     this.classList.remove("hover");
+                    _self._dragend_callback(_self, holder);
                 });
             });
 
@@ -169,7 +191,7 @@ class Uploader {
             holder.querySelector("form#uploader").ondrop = function(e){
                 this.className = "";
                 e.preventDefault();
-
+                _self._drop_callback(_self, holder);
                 _self._process_files(e.dataTransfer.files);
             };
         } else {
@@ -187,6 +209,9 @@ class Uploader {
      * @return
      */
     _process_files(files) {
+
+        if(debugging) return;
+
         let _self = this;
         let formdata = new FormData();
 
@@ -212,7 +237,8 @@ class Uploader {
         let _self = this;
         let xhr = new XMLHttpRequest();
 
-        this.display_text("Uploading");
+        // this.display_text("Uploading");
+
         formdata["type"] = "files";
 
         xhr.open('POST', this.endpoint);
@@ -220,20 +246,28 @@ class Uploader {
         // update progress bar when server response is received
         xhr.onload = function(){
             _self._selectors["progress"].value = _self._selectors["progress"].innerHTML = 100;
+
+            // fire a callback passing along the progress status
+            if(_self._progress_callback) {
+                _self._progress_callback.bind(_self, 100, document.querySelector(`div#${_self._selectors["uid"]}`))();
+            }
         };
 
         xhr.onreadystatechange = function(){
             if(xhr.readyState === 4){
                 if(xhr.status == 200){
-                    _self.display_text("Done");
+
+                    // _self.display_text("Done");
 
                     setTimeout(function() {
-                        _self._success_callback(xhr)
+                        _self._success_callback(xhr, document.querySelector(`div#${_self._selectors["uid"]}`));
                     }, 600);
+
                 } else if(xhr.status == 0) {
 
                 } else {
                     _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
+                    _self._error_callback(_self, document.querySelector(`div#${_self._selectors["uid"]}`));
                 }
             }
         };
@@ -244,6 +278,11 @@ class Uploader {
                 if(event.lengthComputable){
                     let complete = (event.loaded / event.total*100 | 0);
                     _self._selectors["progress"].value = _self._selectors["progress"].innerHTML = complete;
+
+                    // fire a callback passing along the progress status
+                    if(_self._progress_callback) {
+                        _self._progress_callback.bind(_self, 100, document.querySelector(`div#${_self._selectors["uid"]}`))();
+                    }
                 }
             }
         }
@@ -256,6 +295,7 @@ class Uploader {
      * @return
      */
     display_text(text){
+        return;
         let info = $(this._selectors["form"].querySelector("label#info"));
         info.html(text);
     }

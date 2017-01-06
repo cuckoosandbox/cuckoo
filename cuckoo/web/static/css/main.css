@@ -3244,6 +3244,34 @@ section#screenshots .minified {
   font-size: 12px;
 }
 
+.grouped-buttons button, .grouped-buttons a {
+  -webkit-appearance: none;
+  border: 0;
+}
+.grouped-buttons button:focus, .grouped-buttons a:focus {
+  outline: 0;
+}
+
+.grouped-buttons {
+  display: flex;
+  background-color: #fff;
+}
+.grouped-buttons button, .grouped-buttons a {
+  background-color: #fff;
+  color: #545454;
+  padding: 10px 0;
+  flex-basis: 100%;
+  font-weight: 500;
+}
+.grouped-buttons button:active, .grouped-buttons a:active {
+  background-color: #e5e5e5;
+}
+.grouped-buttons button.active, .grouped-buttons a.active {
+  background-color: #337AB7;
+  font-weight: 700;
+  color: #fff;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -3443,14 +3471,36 @@ section#screenshots .minified {
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-.dndupload {
+@keyframes indicatorBounce {
+  0% {
+    transform: translateY(100%);
+  }
+  50% {
+    transform: translateY(75%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+@-webkit-keyframes indicatorBounce {
+  0% {
+    transform: translateY(100%);
+  }
+  50% {
+    transform: translateY(75%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+.dndupload, .dndupload__v2 {
   margin: 0px auto;
   background-color: transparent;
   position: relative;
   padding: 10px;
   height: 100%;
 }
-.dndupload #uploader {
+.dndupload #uploader, .dndupload__v2 #uploader {
   height: 100%;
   padding: 50px 20px;
   outline-offset: -10px;
@@ -3458,15 +3508,15 @@ section#screenshots .minified {
   -webkit-transition: outline-offset .1s ease-in-out, background-color .1s linear;
   transition: outline-offset .1s ease-in-out, background-color .1s linear;
 }
-.dndupload #uploader.hover {
+.dndupload #uploader.hover, .dndupload__v2 #uploader.hover {
   outline-offset: -20px;
 }
-.dndupload #container {
+.dndupload #container, .dndupload__v2 #container {
   position: relative;
   top: 50%;
   transform: translateY(-50%);
 }
-.dndupload .holder_input {
+.dndupload .holder_input, .dndupload__v2 .holder_input {
   width: 0.1px;
   height: 0.1px;
   opacity: 0;
@@ -3474,18 +3524,18 @@ section#screenshots .minified {
   position: absolute;
   z-index: -1;
 }
-.dndupload .holder_button {
+.dndupload .holder_button, .dndupload__v2 .holder_button {
   display: none;
 }
-.dndupload .fail {
+.dndupload .fail, .dndupload__v2 .fail {
   background: #c00;
   padding: 2px;
   color: #fff;
 }
-.dndupload .hidden {
+.dndupload .hidden, .dndupload__v2 .hidden {
   display: none !important;
 }
-.dndupload label {
+.dndupload label, .dndupload__v2 label {
   width: 100%;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3494,34 +3544,173 @@ section#screenshots .minified {
   text-align: center;
   color: #6e8e91;
 }
-.dndupload label strong {
+.dndupload label strong, .dndupload__v2 label strong {
   color: #4e6658;
   text-decoration: underline;
   cursor: pointer;
 }
-.dndupload svg {
+.dndupload svg, .dndupload__v2 svg {
   width: 100%;
   fill: #cccccc;
   margin-bottom: 20px;
   display: block;
 }
-.dndupload img {
+.dndupload img, .dndupload__v2 img {
   display: block;
   margin: 10px auto;
 }
-.dndupload p {
+.dndupload p, .dndupload__v2 p {
   margin: 10px;
   font-size: 14px;
 }
-.dndupload progress {
+.dndupload progress, .dndupload__v2 progress {
   background: #f3f3f3;
   height: 20px;
   margin: auto;
   width: 50%;
   display: inherit;
 }
-.dndupload progress::-webkit-progress-bar {
+.dndupload progress::-webkit-progress-bar, .dndupload__v2 progress::-webkit-progress-bar {
   background: #f3f3f3;
+}
+.dndupload__v2 {
+  margin-top: 65px;
+  margin-bottom: 55px;
+  border: 5px dashed #ccc;
+  width: 335px;
+  height: 335px;
+  border-radius: 50%;
+  padding: 0;
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+  background-color: #fff;
+}
+.dndupload__v2 .text-hovering,
+.dndupload__v2 .text-dropped,
+.dndupload__v2 .text-done,
+.dndupload__v2 .text-error {
+  display: none;
+}
+.dndupload__v2.hover {
+  border-color: #9F9F9F;
+}
+.dndupload__v2.hover .text-idle,
+.dndupload__v2.hover .text-dropped,
+.dndupload__v2.hover .text-done,
+.dndupload__v2.hover .text-error {
+  display: none;
+}
+.dndupload__v2.hover .text-hovering {
+  display: block;
+}
+.dndupload__v2.hover .alternate-progress {
+  -webkit-animation: indicatorBounce 1s 1;
+}
+.dndupload__v2.dropped .text-idle,
+.dndupload__v2.dropped .text-hovering,
+.dndupload__v2.dropped .text-error,
+.dndupload__v2.dropped .text-done {
+  display: none;
+}
+.dndupload__v2.dropped .text-dropped {
+  display: block;
+}
+.dndupload__v2.done .text-idle,
+.dndupload__v2.done .text-hovering,
+.dndupload__v2.done .text-error,
+.dndupload__v2.done .text-dropped {
+  display: none;
+}
+.dndupload__v2.done .text-done {
+  display: block;
+}
+.dndupload__v2.error .text-idle,
+.dndupload__v2.error .text-hovering,
+.dndupload__v2.error .text-done,
+.dndupload__v2.error .text-dropped {
+  display: none;
+}
+.dndupload__v2.error .text-error {
+  display: block;
+}
+.dndupload__v2.error .alternate-progress {
+  background-image: linear-gradient(-180deg, #FDA19C 0%, #F86262 100%);
+}
+.dndupload__v2 form#uploader {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  outline-offset: 0px;
+  border-radius: 50%;
+  padding: 0;
+  z-index: 2;
+}
+.dndupload__v2 form#uploader label {
+  color: #6297F8;
+  text-decoration: none;
+}
+.dndupload__v2 form#uploader label strong {
+  color: inherit;
+  text-decoration: none;
+}
+.dndupload__v2 form#uploader label small {
+  font-weight: 400;
+  display: block;
+}
+.dndupload__v2 form#uploader label em {
+  font-style: normal;
+  text-decoration: underline;
+}
+.dndupload__v2.progress-half form#uploader label {
+  color: #fff;
+}
+.dndupload__v2 progress {
+  display: none;
+}
+.dndupload__v2 .alternate-progress {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-image: linear-gradient(-180deg, #9CC8FD 0%, #6297F8 100%);
+  transform: translateY(100%);
+  transition: transform 300ms ease-out;
+}
+
+.upload-module h3 {
+  color: #B0B0B0;
+  font-weight: 900;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+.upload-module .allowed-file-types h4 {
+  font-weight: 400;
+  font-size: 22px;
+  color: #b5b5b5;
+}
+.upload-module .allowed-file-types ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+.upload-module .allowed-file-types ul li {
+  position: relative;
+  margin: 0 7px;
+}
+.upload-module .allowed-file-types ul li .fa, .upload-module .allowed-file-types ul li .flex-form__header .custom-checkbox > input + span, .flex-form__header .upload-module .allowed-file-types ul li .custom-checkbox > input + span, .upload-module .allowed-file-types ul li .breadcrumbs > li:not(:last-child):after, .upload-module .allowed-file-types .cuckoo-files ul li div:before, .cuckoo-files .upload-module .allowed-file-types ul li div:before, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:after, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:before {
+  font-size: 41px;
+  color: #B5B5B5;
+}
+.upload-module .allowed-file-types ul li span {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 5px;
+  font-weight: 700;
+  font-size: 10px;
+  color: #B5B5B5;
 }
 
 /* 
@@ -6983,26 +7172,30 @@ body[data-theme="cyborg"] img.opaque,
 body.cyborg img.opaque {
   opacity: 0.8;
 }
-body[data-theme="cyborg"] .dndupload label strong,
-body.cyborg .dndupload label strong {
+body[data-theme="cyborg"] .dndupload label strong, body[data-theme="cyborg"] .dndupload__v2 label strong,
+body.cyborg .dndupload label strong,
+body.cyborg .dndupload__v2 label strong {
   color: #96c1d0;
 }
-body[data-theme="cyborg"] .dndupload progress,
-body.cyborg .dndupload progress {
+body[data-theme="cyborg"] .dndupload progress, body[data-theme="cyborg"] .dndupload__v2 progress,
+body.cyborg .dndupload progress,
+body.cyborg .dndupload__v2 progress {
   background: #152d3d;
   height: 20px;
   margin: auto;
   width: 50%;
   display: inherit;
 }
-body[data-theme="cyborg"] .dndupload progress::-webkit-progress-bar,
-body.cyborg .dndupload progress::-webkit-progress-bar {
+body[data-theme="cyborg"] .dndupload progress::-webkit-progress-bar, body[data-theme="cyborg"] .dndupload__v2 progress::-webkit-progress-bar,
+body.cyborg .dndupload progress::-webkit-progress-bar,
+body.cyborg .dndupload__v2 progress::-webkit-progress-bar {
   background: #152d3d;
   /*border: 1px solid lightgrey;*/
   /*border-radius: 10px;*/
 }
-body[data-theme="cyborg"] .dndupload progress::-webkit-progress-value,
-body.cyborg .dndupload progress::-webkit-progress-value {
+body[data-theme="cyborg"] .dndupload progress::-webkit-progress-value, body[data-theme="cyborg"] .dndupload__v2 progress::-webkit-progress-value,
+body.cyborg .dndupload progress::-webkit-progress-value,
+body.cyborg .dndupload__v2 progress::-webkit-progress-value {
   /*background: #0063a6;*/
 }
 body[data-theme="cyborg"] .jstree-grid-header-regular,
@@ -9043,30 +9236,36 @@ body[data-theme="night"] .hex_address,
 body.night .hex_address {
   color: #f9a55c;
 }
-body[data-theme="night"] .dndupload,
-body.night .dndupload {
+body[data-theme="night"] .dndupload, body[data-theme="night"] .dndupload__v2,
+body.night .dndupload,
+body.night .dndupload__v2 {
   background: #393939;
 }
-body[data-theme="night"] .dndupload label,
-body.night .dndupload label {
+body[data-theme="night"] .dndupload label, body[data-theme="night"] .dndupload__v2 label,
+body.night .dndupload label,
+body.night .dndupload__v2 label {
   color: #cccccc;
 }
-body[data-theme="night"] .dndupload label strong,
-body.night .dndupload label strong {
+body[data-theme="night"] .dndupload label strong, body[data-theme="night"] .dndupload__v2 label strong,
+body.night .dndupload label strong,
+body.night .dndupload__v2 label strong {
   color: white;
 }
-body[data-theme="night"] .dndupload #uploader,
-body.night .dndupload #uploader {
+body[data-theme="night"] .dndupload #uploader, body[data-theme="night"] .dndupload__v2 #uploader,
+body.night .dndupload #uploader,
+body.night .dndupload__v2 #uploader {
   outline: 1px dashed #5c5c5c;
 }
-body[data-theme="night"] .dndupload progress::-webkit-progress-bar,
-body.night .dndupload progress::-webkit-progress-bar {
+body[data-theme="night"] .dndupload progress::-webkit-progress-bar, body[data-theme="night"] .dndupload__v2 progress::-webkit-progress-bar,
+body.night .dndupload progress::-webkit-progress-bar,
+body.night .dndupload__v2 progress::-webkit-progress-bar {
   background: #4b4b4b;
   /*border: 1px solid lightgrey;*/
   /*border-radius: 10px;*/
 }
-body[data-theme="night"] .dndupload progress::-webkit-progress-value,
-body.night .dndupload progress::-webkit-progress-value {
+body[data-theme="night"] .dndupload progress::-webkit-progress-value, body[data-theme="night"] .dndupload__v2 progress::-webkit-progress-value,
+body.night .dndupload progress::-webkit-progress-value,
+body.night .dndupload__v2 progress::-webkit-progress-value {
   /*background: #0063a6;*/
 }
 body[data-theme="night"] #pe_sections > table td:first-child,

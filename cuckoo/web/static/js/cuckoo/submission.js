@@ -129,11 +129,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  *   one page due to OOP.
  */
 
+var debugging = false;
+
 var DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
-    success: function success() {}
+    dragstart: function dragstart() {},
+    dragend: function dragend() {},
+    drop: function drop() {},
+    error: function error() {},
+    success: function success() {},
+    progress: function progress() {}
 };
 
 var Uploader = function () {
@@ -145,6 +152,12 @@ var Uploader = function () {
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
+        this._progress_callback = this.options.progress;
+
+        this._dragstart_callback = this.options.dragstart;
+        this._dragend_callback = this.options.dragend;
+        this._drop_callback = this.options.drop;
+        this._error_callback = this.options.error;
 
         this._selectors = {
             "uid": "dndupload_" + Uploader.generateUUID(),
@@ -153,6 +166,7 @@ var Uploader = function () {
 
         this.html = null;
 
+        this._usesTemplate = false;
         this._bound = false;
     }
 
@@ -170,6 +184,8 @@ var Uploader = function () {
             var html = "\n            <div class=\"dndupload\" id=\"" + this._selectors["uid"] + "\">\n                <form id=\"uploader\" action=\"/submit/api/presubmit\" method=\"POST\" enctype=\"multipart/form-data\">\n                    <div id=\"container\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"43\" viewBox=\"0 0 50 43\">\n                            <path d=\"M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z\"/>\n                        </svg>\n    \n                        <input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\">\n                        <label for=\"file\" id=\"info\">\n                            <strong>Choose files</strong>\n                            <span class=\"box__dragndrop\"> or drag them here</span>.\n                        </label>\n    \n                        <button type=\"submit\" class=\"holder_button\">Upload</button>\n    \n                        <progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n                    </div>\n                </form>\n            </div>\n\n            <p id=\"filereader\">File API &amp; FileReader API not supported</p>\n            <p id=\"formdata\">XHR2's FormData is not supported</p>\n            <p id=\"progress\">XHR2's upload progress isn't supported</p>\n        ";
 
             if (this.options.template) {
+
+                this._usesTemplate = true;
 
                 var html = this.options.template({
                     uid: this._selectors["uid"]
@@ -240,6 +256,7 @@ var Uploader = function () {
                 // change appearance while drag&dropping
                 holder.querySelector("form#uploader").ondragover = function () {
                     this.className = "hover";
+                    _self._dragstart_callback(_self, holder);
                     return false;
                 };
 
@@ -248,10 +265,15 @@ var Uploader = function () {
                     return false;
                 };
 
+                // holder.querySelector("form#uploader").ondragstart = function() {
+                //     console.log('drag start');
+                // }
+
                 ["dragleave", "dragend", "drop"].forEach(function (event) {
                     holder.querySelector("form#uploader").addEventListener(event, function () {
                         //form.classList.remove( "is-dragover" );
                         this.classList.remove("hover");
+                        _self._dragend_callback(_self, holder);
                     });
                 });
 
@@ -259,7 +281,7 @@ var Uploader = function () {
                 holder.querySelector("form#uploader").ondrop = function (e) {
                     this.className = "";
                     e.preventDefault();
-
+                    _self._drop_callback(_self, holder);
                     _self._process_files(e.dataTransfer.files);
                 };
             } else {
@@ -280,6 +302,9 @@ var Uploader = function () {
     }, {
         key: "_process_files",
         value: function _process_files(files) {
+
+            if (debugging) return;
+
             var _self = this;
             var formdata = new FormData();
 
@@ -308,7 +333,8 @@ var Uploader = function () {
             var _self = this;
             var xhr = new XMLHttpRequest();
 
-            this.display_text("Uploading");
+            // this.display_text("Uploading");
+
             formdata["type"] = "files";
 
             xhr.open('POST', this.endpoint);
@@ -316,18 +342,25 @@ var Uploader = function () {
             // update progress bar when server response is received
             xhr.onload = function () {
                 _self._selectors["progress"].value = _self._selectors["progress"].innerHTML = 100;
+
+                // fire a callback passing along the progress status
+                if (_self._progress_callback) {
+                    _self._progress_callback.bind(_self, 100, document.querySelector("div#" + _self._selectors["uid"]))();
+                }
             };
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status == 200) {
-                        _self.display_text("Done");
+
+                        // _self.display_text("Done");
 
                         setTimeout(function () {
-                            _self._success_callback(xhr);
+                            _self._success_callback(xhr, document.querySelector("div#" + _self._selectors["uid"]));
                         }, 600);
                     } else if (xhr.status == 0) {} else {
                         _self.display_text("Error: http.status = " + xhr.status + " OR response.status not OK");
+                        _self._error_callback(_self, document.querySelector("div#" + _self._selectors["uid"]));
                     }
                 }
             };
@@ -338,6 +371,11 @@ var Uploader = function () {
                     if (event.lengthComputable) {
                         var complete = event.loaded / event.total * 100 | 0;
                         _self._selectors["progress"].value = _self._selectors["progress"].innerHTML = complete;
+
+                        // fire a callback passing along the progress status
+                        if (_self._progress_callback) {
+                            _self._progress_callback.bind(_self, 100, document.querySelector("div#" + _self._selectors["uid"]))();
+                        }
                     }
                 };
             }
@@ -353,6 +391,7 @@ var Uploader = function () {
     }, {
         key: "display_text",
         value: function display_text(text) {
+            return;
             var info = $(this._selectors["form"].querySelector("label#info"));
             info.html(text);
         }
@@ -2209,8 +2248,36 @@ $(function () {
 				endpoint: '/submit/api/presubmit',
 				target: 'div#dndsubmit',
 				template: HANDLEBARS_TEMPLATES['dndupload'],
-				success: function success(data) {
-					window.location.href = data.responseURL;
+				success: function success(data, holder) {
+
+					$(holder).removeClass('dropped');
+					$(holder).addClass('done');
+
+					// fake timeout
+					setTimeout(function () {
+						window.location.href = data.responseURL;
+					}, 1000);
+				},
+				error: function error(uploader, holder) {
+					$(holder).addClass('error');
+				},
+				progress: function progress(value, holder) {
+					// thisArg is bound to the uploader
+					if (value > 50 && !$(holder).hasClass('progress-half')) {
+						$(holder).addClass('progress-half');
+					}
+
+					$(this.options.target).find(".alternate-progress").css('transform', 'translateY(' + (100 - value) + '%)');
+				},
+				dragstart: function dragstart(uploader, holder) {
+					holder.classList.add('hover');
+				},
+				dragend: function dragend(uploader, holder) {
+					holder.classList.remove('hover');
+				},
+				drop: function drop(uploader, holder) {
+					holder.classList.remove('hover');
+					holder.classList.add('dropped');
 				}
 			}
 		});

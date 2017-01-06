@@ -1,0 +1,35 @@
+%reset-button {
+	-webkit-appearance: none;
+	border: 0;
+
+	&:focus {
+		outline: 0;
+	}
+}
+
+.grouped-buttons {
+	display: flex;
+	background-color: #fff;
+
+	button, a {
+
+		@extend %reset-button;
+		background-color: #fff;
+		color: #545454;
+		padding: 10px 0;
+		flex-basis: 100%;
+		font-weight: 500;
+
+		&:active {
+			background-color: #e5e5e5;
+		}
+
+		&.active {
+			background-color: #337AB7;
+			font-weight: 700;
+			color: #fff;
+		}
+
+	}
+
+}
