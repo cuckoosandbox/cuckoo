@@ -417,7 +417,8 @@ def cuckoo_clean():
 
     # Initialize the database connection.
     try:
-        db = Database(schema_check=False)
+        db = Database()
+        db.connect(schema_check=False)
     except CuckooDatabaseError as e:
         # If something is screwed due to incorrect database migrations or bad
         # database SqlAlchemy would be unable to connect and operate.
