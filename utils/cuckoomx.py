@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import re
 import sys
 import email
 import imaplib
