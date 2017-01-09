@@ -86,7 +86,7 @@ def send_email(url, id, to):
         server = smtplib.SMTP_SSL(email_config.cuckoomx.get("server"), int(email_config.cuckoomx.get("port")))
         server.login(email_config.cuckoomx.get("user"), email_config.cuckoomx.get("password"))
         #server.set_debuglevel(1)
-        server.sendmail(email_config.cuckoomx.get("from"), to.split(", "), msg.as_string())
+        server.sendmail(email_config.cuckoomx.get("from"), re.findall(r'[\w.-]+@[\w.-]+', to), msg.as_string())
         server.quit()
     except Exception as e:
         print e
