@@ -36,8 +36,7 @@ class TaskHandler(logging.Handler):
         if not task_id:
             return
 
-        logpath = cwd("storage", "analyses", "%s" % task_id, "cuckoo.log")
-        with open(logpath, "a+b") as f:
+        with open(cwd("cuckoo.log", analysis=task_id), "a+b") as f:
             f.write("%s\n" % self.format(record))
 
 class ConsoleHandler(logging.StreamHandler):

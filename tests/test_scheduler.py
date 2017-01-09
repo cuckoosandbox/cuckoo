@@ -10,6 +10,7 @@ import tempfile
 
 from cuckoo.common.abstracts import Dictionary
 from cuckoo.common.files import Folders
+from cuckoo.core.log import task_log_stop
 from cuckoo.core.scheduler import AnalysisManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
@@ -50,9 +51,15 @@ def test_am_init_success():
     assert os.path.exists(cwd("storage", "binaries", sha256_))
     assert os.path.exists(cwd("binary", analysis=1234))
 
+    # Manually disable per-task logging initiated by init().
+    task_log_stop(1234)
+
 def test_am_init_duplicate_analysis():
     sha256_ = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
     am = am_init(sha256_)
 
     Folders.create(cwd(analysis=1234))
     assert am.init() is False
+
+    # Manually disable per-task logging initiated by init().
+    task_log_stop(1234)
