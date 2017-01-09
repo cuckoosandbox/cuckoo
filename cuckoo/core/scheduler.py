@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -65,15 +65,15 @@ class AnalysisManager(threading.Thread):
         self.interface = None
         self.rt_table = None
 
-    def init_storage(self):
-        """Initialize analysis storage folder."""
-        self.storage = cwd("storage", "analyses", "%s" % self.task.id)
+    def init(self):
+        """Initialize the analysis."""
+        self.storage = cwd(analysis=self.task.id)
 
         # If the analysis storage folder already exists, we need to abort the
         # analysis or previous results will be overwritten and lost.
         if os.path.exists(self.storage):
-            log.error("Analysis results folder already exists at path \"%s\","
-                      " analysis aborted", self.storage)
+            log.error("Analysis results folder already exists at path \"%s\", "
+                      "analysis aborted", self.storage)
             return False
 
         # If we're not able to create the analysis storage folder, we have to
@@ -84,63 +84,56 @@ class AnalysisManager(threading.Thread):
             log.error("Unable to create analysis folder %s", self.storage)
             return False
 
-        return True
+        self.store_task_info()
 
-    def check_permissions(self):
-        """Checks if we have permissions to access the file to be analyzed."""
-        if os.access(self.task.target, os.R_OK):
-            return True
-
-        log.error(
-            "Unable to access target file, please check if we have "
-            "permissions to access the file: \"%s\"",
-            self.task.target
-        )
-        return False
-
-    def check_file(self):
-        """Checks the integrity of the file to be analyzed."""
-        sample = self.db.view_sample(self.task.sample_id)
-
-        sha256 = File(self.task.target).get_sha256()
-        if sha256 != sample.sha256:
-            log.error("Target file has been modified after submission: \"%s\"", self.task.target)
-            return False
-
-        return True
-
-    def store_file(self):
-        """Store a copy of the file being analyzed."""
-        if not os.path.exists(self.task.target):
-            log.error("The file to analyze does not exist at path \"%s\", "
-                      "analysis aborted", self.task.target)
-            return False
-
-        sha256 = File(self.task.target).get_sha256()
-        self.binary = cwd("storage", "binaries", sha256)
-
-        if os.path.exists(self.binary):
-            log.info("File already exists at \"%s\"", self.binary)
-        else:
-            # TODO: do we really need to abort the analysis in case we are not
-            # able to store a copy of the file?
-            try:
-                shutil.copy(self.task.target, self.binary)
-            except (IOError, shutil.Error) as e:
-                log.error("Unable to store file from \"%s\" to \"%s\", "
-                          "analysis aborted", self.task.target, self.binary)
+        if self.task.category == "file" or self.task.category == "archive":
+            # Check if we have permissions to access the file.
+            # And fail this analysis if we don't have access to the file.
+            if not os.access(self.task.target, os.R_OK):
+                log.error(
+                    "Unable to access target file, please check if we have "
+                    "permissions to access the file: \"%s\"",
+                    self.task.target
+                )
                 return False
 
-        try:
-            self.storage_binary = os.path.join(self.storage, "binary")
+            # Check whether the file has been changed for some unknown reason.
+            # And fail this analysis if it has been modified.
+            # TODO Absorb the file upon submission.
+            sample = self.db.view_sample(self.task.sample_id)
+            sha256 = File(self.task.target).get_sha256()
+            if sha256 != sample.sha256:
+                log.error(
+                    "Target file has been modified after submission: \"%s\"",
+                    self.task.target
+                )
+                return False
 
-            if hasattr(os, "symlink"):
-                os.symlink(self.binary, self.storage_binary)
-            else:
-                shutil.copy(self.binary, self.storage_binary)
-        except (AttributeError, OSError) as e:
-            log.error("Unable to create symlink/copy from \"%s\" to "
-                      "\"%s\": %s", self.binary, self.storage, e)
+            # Store a copy of the original file if does not exist already.
+            # TODO This should be done at submission time.
+            self.binary = cwd("storage", "binaries", sha256)
+            if not os.path.exists(self.binary):
+                try:
+                    shutil.copy(self.task.target, self.binary)
+                except (IOError, shutil.Error):
+                    log.error(
+                        "Unable to store file from \"%s\" to \"%s\", "
+                        "analysis aborted", self.task.target, self.binary
+                    )
+                    return False
+
+            # Each analysis directory contains a symlink/copy of the binary.
+            try:
+                self.storage_binary = os.path.join(self.storage, "binary")
+
+                if hasattr(os, "symlink"):
+                    os.symlink(self.binary, self.storage_binary)
+                else:
+                    shutil.copy(self.binary, self.storage_binary)
+            except (AttributeError, OSError) as e:
+                log.error("Unable to create symlink/copy from \"%s\" to "
+                          "\"%s\": %s", self.binary, self.storage, e)
+                return False
 
         return True
 
@@ -355,37 +348,23 @@ class AnalysisManager(threading.Thread):
         """Start analysis."""
         succeeded = False
 
-        target = self.task.target
-        if self.task.category == "file" or self.task.category == "archive":
-            target = os.path.basename(target)
-
-        log.info("Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
-                 self.task.category.upper(), target, self.task.id,
-                 emit_options(self.task.options))
-
-        # Initialize the analysis folders.
-        if not self.init_storage():
-            return False
-
         # Initiates per-task logging.
         task_log_start(self.task.id)
 
-        self.store_task_info()
-
         if self.task.category == "file" or self.task.category == "archive":
-            # Check if we have permissions to access the file.
-            # And fail this analysis if we don't have access to the file.
-            if not self.check_permissions():
-                return False
+            target = os.path.basename(self.task.target)
+        else:
+            target = self.task.target
 
-            # Check whether the file has been changed for some unknown reason.
-            # And fail this analysis if it has been modified.
-            if not self.check_file():
-                return False
+        log.info(
+            "Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
+            self.task.category.upper(), target, self.task.id,
+            emit_options(self.task.options)
+        )
 
-            # Store a copy of the original file.
-            if not self.store_file():
-                return False
+        # Initialize the analysis.
+        if not self.init():
+            return False
 
         # Acquire analysis machine.
         try:
