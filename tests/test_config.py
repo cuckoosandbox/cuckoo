@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,7 +8,7 @@ import pytest
 import tempfile
 
 from cuckoo.common.config import (
-    Config, parse_options, emit_options, config, cast, Path
+    Config, parse_options, emit_options, config, cast, Path, read_kv_conf
 )
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.exceptions import CuckooStartupError
@@ -1007,3 +1007,40 @@ def test_cast():
 def test_path():
     assert Path(allow_empty=True).check("") is True
     assert Path(allow_empty=True).check(None) is True
+
+class TestKvConf(object):
+    def test_success(self):
+        filepath = Files.temp_put("""
+        cuckoo.cuckoo.version_check = off
+        auxiliary.sniffer.enabled = no
+        """)
+        assert read_kv_conf(filepath) == {
+            "cuckoo": {
+                "cuckoo": {
+                    "version_check": False,
+                },
+            },
+            "auxiliary": {
+                "sniffer": {
+                    "enabled": False,
+                },
+            },
+        }
+
+    def test_fail1(self):
+        filepath = Files.temp_put("a = b")
+        with pytest.raises(CuckooConfigurationError) as e:
+            read_kv_conf(filepath)
+        e.match("Invalid configuration entry")
+
+    def test_fail2(self):
+        filepath = Files.temp_put("a.b.c : d")
+        with pytest.raises(CuckooConfigurationError) as e:
+            read_kv_conf(filepath)
+        e.match("missing .* character")
+
+    def test_fail3(self):
+        filepath = Files.temp_put("cuckoo.cuckoo.version_check = foo")
+        with pytest.raises(CuckooConfigurationError) as e:
+            read_kv_conf(filepath)
+        e.match("Invalid flat configuration entry")

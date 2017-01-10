@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -1027,3 +1027,37 @@ def cast(s, value):
         )
 
     return type_.parse(value)
+
+def read_kv_conf(filepath):
+    """Reads a flat Cuckoo key/value configuration file."""
+    ret = {}
+    for line in open(filepath, "rb"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if "=" not in line:
+            raise CuckooConfigurationError(
+                "Invalid flat configuration line: %s (missing '=' character)" %
+                line
+            )
+
+        key, raw_value = line.split("=", 1)
+        key, raw_value = key.replace(".", ":").strip(), raw_value.strip()
+        try:
+            value = cast(key, raw_value)
+        except (CuckooConfigurationError, RuntimeError) as e:
+            raise CuckooConfigurationError(
+                "Invalid flat configuration line: %s (error %s)" % (line, e)
+            )
+
+        if raw_value and value is None:
+            raise CuckooConfigurationError(
+                "Invalid flat configuration entry: %s is None" % key
+            )
+
+        a, b, c = key.split(":")
+        ret[a] = ret.get(a, {})
+        ret[a][b] = ret[a].get(b, {})
+        ret[a][b][c] = value
+    return ret

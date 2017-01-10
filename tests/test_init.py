@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,8 @@ import pytest
 import shutil
 import tempfile
 
-from cuckoo.common.files import Folders
+from cuckoo.common.config import config
+from cuckoo.common.files import Folders, Files
 from cuckoo.common.utils import Singleton
 from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
@@ -126,3 +127,16 @@ class TestInit(object):
         })
         buf = open(cwd("conf", "auxiliary.conf"), "rb").read()
         assert "tcpdump = dumping.elf" in buf
+
+    def test_cuckoo_init_kv_conf(self):
+        filepath = Files.temp_put(
+            "cuckoo.cuckoo.version_check = no"
+        )
+
+        with pytest.raises(SystemExit):
+            main.main(
+                ("--cwd", cwd(), "init", "--conf", filepath),
+                standalone_mode=False
+            )
+
+        assert config("cuckoo:cuckoo:version_check") is False

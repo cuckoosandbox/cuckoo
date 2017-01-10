@@ -18,6 +18,7 @@ from cuckoo.apps import (
     cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
     cuckoo_dnsserve, cuckoo_machine, import_cuckoo, migrate_database
 )
+from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
@@ -82,7 +83,7 @@ def cuckoo_create(username=None, cfg=None):
     print "Please modify the default settings where required and"
     print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
 
-def cuckoo_init(level, ctx):
+def cuckoo_init(level, ctx, cfg=None):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
     """
@@ -91,7 +92,7 @@ def cuckoo_init(level, ctx):
     # It would appear this is the first time Cuckoo is being run (on this
     # Cuckoo Working Directory anyway).
     if not os.path.isdir(cwd()) or not os.listdir(cwd()):
-        cuckoo_create(ctx.user)
+        cuckoo_create(ctx.user, cfg)
         sys.exit(0)
 
     # Determine if this is a proper CWD.
@@ -201,17 +202,22 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         print message, traceback.format_exc()
 
 @main.command()
-@click.option("-i", "--import-path", type=click.Path(exists=True, file_okay=False, dir_okay=True), help="Import an older Cuckoo Sandbox setup")
-@click.option("-r", "--reference", "mode", flag_value="reference", default=True)
-@click.option("-c", "--copy", "mode", flag_value="copy")
 @click.pass_context
-def init(ctx, import_path, mode):
+@click.option("--conf", type=click.Path(exists=True, file_okay=True, readable=True), help="Flat key/value configuration file")
+def init(ctx, conf):
     """Initializes a Cuckoo instance and checks its configuration/setup."""
-    cuckoo_init(logging.INFO, ctx.parent)
+    if conf and os.path.exists(conf):
+        cfg = read_kv_conf(conf)
+    else:
+        cfg = None
 
-    # Write the supervisord.conf configuration file (if needed).
+    # If this is a new install, also apply the provided configuration.
+    cuckoo_init(logging.INFO, ctx.parent, cfg)
+
+    # If this is an existing install, overwrite the supervisord.conf
+    # configuration file (if needed) as well as the Cuckoo configuration.
     write_supervisor_conf(ctx.parent.user or getuser())
-    write_cuckoo_conf()
+    write_cuckoo_conf(cfg)
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
@@ -495,11 +501,14 @@ def migrate(revision):
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
 @click.option("-f", "--force", is_flag=True, help="Perform non-reversible in-place database migrations")
 @click.option("--database", help="Creation of a new database for a reversible migration")
+@click.option("-r", "--reference", "mode", flag_value="reference", default=True)
+@click.option("-c", "--copy", "mode", flag_value="copy")
 @click.pass_context
-def import_(ctx, path, force, database):
+def import_(ctx, path, force, database, mode):
     if force and database:
         sys.exit("Can't have both the --force and the --database parameter.")
 
+    # TODO Actually symlink or copy analyses.
     import_cuckoo(ctx.parent.user, path, force, database)
 
 @main.group()
