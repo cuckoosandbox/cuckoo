@@ -31,4 +31,4 @@ stap_.ko should be placed in /root/.cuckoo::
 
 Disable firewall::
     
-    sudo ufw disble
+    sudo ufw disable
