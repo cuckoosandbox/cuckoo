@@ -133,10 +133,6 @@ def init_logging(level):
 
 def init_console_logging(level=logging.INFO):
     """Initializes logging only to console."""
-    formatter = logging.Formatter(
-        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
-    )
-
     # We operate on the root logger.
     log = logging.getLogger()
 

@@ -66,14 +66,18 @@ class JsonFormatter(logging.Formatter):
         task_id = _tasks.get(
             thread.get_ident(), record.__dict__.get("task_id")
         )
-        return json.dumps({
+        d = {
             "action": action,
             "task_id": task_id,
             "status": status,
-            "time": int(time.time()),
-            "message": logging.Formatter.format(self, record),
+            "time": time.time(),
             "level": record.levelname.lower(),
-        })
+        }
+        base = logging.makeLogRecord({})
+        for key, value in record.__dict__.items():
+            if key not in base.__dict__:
+                d[key] = value
+        return json.dumps(d)
 
     def filter(self, record):
         action = record.__dict__.get("action")

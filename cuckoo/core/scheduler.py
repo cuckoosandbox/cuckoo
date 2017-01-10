@@ -874,6 +874,13 @@ class Scheduler(object):
                         "limit": self.total_analysis_count,
                     })
                     self.stop()
+                else:
+                    logger(
+                        "cuckoo.json",
+                        "Maximum analyses hit, awaiting active to finish off",
+                        action="scheduler.max_analysis", status="busy",
+                        active=active_analysis_count
+                    )
                 continue
 
             # Fetch a pending analysis task.
