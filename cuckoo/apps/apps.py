@@ -256,7 +256,7 @@ def process_tasks(instance, maxcount):
 
             log.info("Task #%d: reporting task", task.id)
 
-            process_task(task.to_dict(), db, cfg)
+            process_task(task.to_dict(), cfg)
             count += 1
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)
