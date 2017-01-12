@@ -132,5 +132,10 @@ def logger(name, message, *args, **kwargs):
         _loggers[name].name, logging.INFO, None,
         None, message, args, None, None
     )
+    record.asctime = "%s,%03d" % (
+        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(record.created)),
+        record.msecs
+    )
+    record.message = record.getMessage()
     record.__dict__.update(kwargs)
     _loggers[name].handle(record)
