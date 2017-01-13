@@ -16,6 +16,12 @@ from cuckoo.misc import cwd
 _tasks = {}
 _loggers = {}
 
+# Current GMT+x.
+if time.localtime().tm_isdst:
+    tz = time.altzone / -3600.
+else:
+    tz = time.timezone / -3600.
+
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
     Used to log errors related to tasks in database.
@@ -70,7 +76,7 @@ class JsonFormatter(logging.Formatter):
             "action": action,
             "task_id": task_id,
             "status": status,
-            "time": time.time(),
+            "time": record.created,
             "level": record.levelname.lower(),
         }
         base = logging.makeLogRecord({})
@@ -122,6 +128,13 @@ def init_logger(root, name):
     if name == "task":
         l = TaskHandler()
         l.setFormatter(formatter)
+        root.addHandler(l)
+
+    if name.startswith("process-") and name.endswith(".json"):
+        j = JsonFormatter()
+        l = logging.handlers.WatchedFileHandler(cwd("log", name))
+        l.setFormatter(j)
+        l.addFilter(j)
         root.addHandler(l)
 
     _loggers[name] = l

@@ -27,11 +27,11 @@ from cuckoo.core.database import Database
 from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
-from cuckoo.core.startup import check_configs, init_modules, check_version
-from cuckoo.core.startup import cuckoo_clean, drop_privileges
-from cuckoo.core.startup import init_logging, init_console_logging
-from cuckoo.core.startup import init_tasks, init_yara, init_binaries
-from cuckoo.core.startup import init_rooter, init_routing
+from cuckoo.core.startup import (
+    check_configs, init_modules, check_version, init_logfile, cuckoo_clean,
+    drop_privileges, init_logging, init_console_logging, init_tasks, init_yara,
+    init_binaries, init_rooter, init_routing
+)
 from cuckoo.misc import cwd, load_signatures, getuser, decide_cwd
 
 log = logging.getLogger("cuckoo")
@@ -287,6 +287,9 @@ def process(ctx, instance, report, maxcount):
     """Process raw task data into reports."""
     init_console_logging(level=ctx.parent.level)
 
+    if instance:
+        init_logfile("process-%s.json" % instance)
+
     db = Database()
     db.connect()
 
@@ -308,7 +311,9 @@ def process(ctx, instance, report, maxcount):
         print ctx.get_help(), "\n"
         sys.exit("In automated mode an instance name is required!")
     else:
-        log.info("Initialized instance=%s, ready to process some tasks", instance)
+        log.info(
+            "Initialized instance=%s, ready to process some tasks", instance
+        )
         process_tasks(instance, maxcount)
 
 @main.command()

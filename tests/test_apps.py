@@ -74,7 +74,7 @@ def test_import_legacy_analyses():
 class TestAppsWithCWD(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
-        Files.create(cwd(), ".cwd", "A"*40)
+        cuckoo_create()
 
     def test_api(self):
         with mock.patch("cuckoo.main.cuckoo_api") as p:
