@@ -220,7 +220,6 @@ def process(target, copy_path, task, cfg):
 
 def process_task(task, cfg=None):
     db = Database()
-    db.connect()
     try:
         if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
@@ -241,7 +240,6 @@ def process_tasks(instance, maxcount):
     count = 0
     cfg = Config()
     db = Database()
-    db.connect()
 
     try:
         while not maxcount or count != maxcount:

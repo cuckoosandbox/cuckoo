@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -368,8 +368,10 @@ class Task(Base):
         """
         return json_encode(self.to_dict())
 
-    def __init__(self, target=None):
+    def __init__(self, target=None, id=None, category=None):
         self.target = target
+        self.id = id
+        self.category = category
 
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)

@@ -1,8 +1,9 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import os
 import pytest
 import tempfile
@@ -101,6 +102,43 @@ class DatabaseEngine(object):
         assert "alembic_version" not in self.d.engine.table_names()
         self.d.connect(dsn=self.URI)
         assert "alembic_version" in self.d.engine.table_names()
+
+class TestConnectOnce(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    @mock.patch("cuckoo.main.Database")
+    @mock.patch("cuckoo.apps.apps.Database")
+    @mock.patch("cuckoo.apps.apps.process")
+    def test_process_task(self, q, p1, p2):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1"),
+            standalone_mode=False
+        )
+
+        q.assert_called_once()
+        p2.return_value.connect.assert_called_once()
+        p1.return_value.connect.assert_not_called()
+
+    @mock.patch("cuckoo.main.Database")
+    @mock.patch("cuckoo.apps.apps.Database")
+    @mock.patch("cuckoo.apps.apps.process")
+    def test_process_tasks(self, q, p1, p2):
+        p1.return_value.processing_get_task.side_effect = 1, 2
+        p1.return_value.view_task.side_effect = [
+            Task(id=1, category="url", target="http://google.com/"),
+            Task(id=2, category="url", target="http://google.nl/"),
+        ]
+
+        main.main(
+            ("--cwd", cwd(), "process", "p0"),
+            standalone_mode=False
+        )
+
+        assert q.call_count == 2
+        p2.return_value.connect.assert_called_once()
+        p1.return_value.connect.assert_not_called()
 
 class TestSqlite3Memory(DatabaseEngine):
     URI = "sqlite:///:memory:"
