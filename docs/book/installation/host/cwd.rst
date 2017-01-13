@@ -54,7 +54,7 @@ automatically, this pretty much goes as follows::
 
     Cuckoo Sandbox 2.0-dev
     www.cuckoosandbox.org
-    Copyright (c) 2010-2016
+    Copyright (c) 2010-2017
 
     =======================================================================
         Welcome to Cuckoo Sandbox, this appears to be your first run!

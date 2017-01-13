@@ -16,7 +16,7 @@ You will get an output similar to this::
 
      Cuckoo Sandbox 2.0.0
      www.cuckoosandbox.org
-     Copyright (c) 2010-2016
+     Copyright (c) 2010-2017
 
      Checking for updates...
      Good! You have the latest version available.
