@@ -2,14 +2,18 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import json
+import logging
 import mock
 import os
 import pytest
 import tempfile
 
-from cuckoo.apps.apps import process
+from cuckoo.apps.apps import process, process_task
 from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.files import Files
+from cuckoo.core.log import logger
+from cuckoo.core.startup import init_logfile, init_console_logging
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir, is_windows
 
@@ -246,3 +250,28 @@ def test_process_dodelete(r, s, p):
     process(filepath1, filepath2, 1)
     assert not os.path.exists(filepath1)
     assert not os.path.exists(filepath2)
+
+@mock.patch("cuckoo.apps.apps.process")
+@mock.patch("cuckoo.apps.apps.Database")
+def test_process_log_taskid(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    init_console_logging(logging.DEBUG)
+    init_logfile("process-p0.json")
+
+    def log_something(target, copy_path, task):
+        logger(
+            "process-p0.json", "test message",
+            action="hello.world", status="success"
+        )
+
+    q.side_effect = log_something
+    process_task({
+        "id": 12345,
+        "category": "url",
+        "target": "http://google.com/",
+    })
+
+    obj = json.load(open(cwd("log", "process-p0.json"), "rb"))
+    assert obj["task_id"] == 12345

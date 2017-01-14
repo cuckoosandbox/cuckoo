@@ -18,6 +18,7 @@ from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import Database
 from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
+from cuckoo.core.log import task_log_start, task_log_stop
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.misc import cwd, mkdir
 
@@ -224,6 +225,8 @@ def process_task(task):
     db = Database()
 
     try:
+        task_log_start(task["id"])
+
         if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
             copy_path = cwd("storage", "binaries", sample.sha256)
@@ -238,6 +241,8 @@ def process_task(task):
             db.set_status(task["id"], TASK_FAILED_PROCESSING)
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)
+    finally:
+        task_log_stop(task["id"])
 
 def process_tasks(instance, maxcount):
     count = 0
