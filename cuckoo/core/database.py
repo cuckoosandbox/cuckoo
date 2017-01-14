@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime
 
-from cuckoo.common.config import Config, parse_options, emit_options
+from cuckoo.common.config import config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
@@ -402,31 +402,21 @@ class Database(object):
 
     def connect(self, schema_check=None, dsn=None, create=True):
         """Connect to the database backend."""
-        cfg = Config()
-
         if schema_check is not None:
             self.schema_check = schema_check
 
-        if dsn:
-            self._connect_database(dsn)
-        elif hasattr(cfg, "database") and cfg.database.connection:
-            self._connect_database(cfg.database.connection)
-        else:
-            self._connect_database("sqlite:///%s" % cwd("cuckoo.db"))
+        if not dsn:
+            dsn = config("cuckoo:database:connection")
+        if not dsn:
+            dsn = "sqlite:///%s" % cwd("cuckoo.db")
+
+        self._connect_database(dsn)
 
         # Disable SQL logging. Turn it on for debugging.
         self.engine.echo = self.echo
 
         # Connection timeout.
-        if hasattr(cfg, "database") and cfg.database.timeout:
-            self.engine.pool_timeout = cfg.database.timeout
-        else:
-            self.engine.pool_timeout = 60
-
-        # Let's emit a warning just in case.
-        if not dsn and not hasattr(cfg, "database"):
-            log.warning("It appears you don't have a valid `database` "
-                        "section in conf/cuckoo.conf, using sqlite3 instead.")
+        self.engine.pool_timeout = config("cuckoo:database:timeout")
 
         # Get db session.
         self.Session = sessionmaker(bind=self.engine)
@@ -488,6 +478,8 @@ class Database(object):
             elif connection_string.startswith("postgres"):
                 # Disabling SSL mode to avoid some errors using sqlalchemy and multiprocesing.
                 # See: http://www.postgresql.org/docs/9.0/static/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
+                # TODO Check if this is still relevant. Especially provided the
+                # fact that we're no longer using multiprocessing.
                 self.engine = create_engine(connection_string, connect_args={"sslmode": "disable"})
             else:
                 self.engine = create_engine(connection_string)

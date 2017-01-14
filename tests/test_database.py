@@ -328,3 +328,38 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
         assert tasks[0][1] is None
         assert tasks[1][0] == "running"
         assert tasks[2][0] == "pending"
+
+@mock.patch("cuckoo.core.database.create_engine")
+@mock.patch("cuckoo.core.database.sessionmaker")
+def test_connect_default(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    db = Database()
+    db.connect(create=False)
+    q.assert_called_once_with(
+        "sqlite:///%s" % cwd("cuckoo.db"),
+        connect_args={"check_same_thread": False}
+    )
+    assert db.engine.pool_timeout == 60
+
+@mock.patch("cuckoo.core.database.create_engine")
+@mock.patch("cuckoo.core.database.sessionmaker")
+def test_connect_pg(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "database": {
+                "connection": "postgresql://foo:bar@localhost/foobar",
+                "timeout": 120,
+            }
+        }
+    })
+
+    db = Database()
+    db.connect(create=False)
+    q.assert_called_once_with(
+        "postgresql://foo:bar@localhost/foobar",
+        connect_args={"sslmode": "disable"}
+    )
+    assert db.engine.pool_timeout == 120

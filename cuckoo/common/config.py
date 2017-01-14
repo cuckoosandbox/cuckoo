@@ -242,7 +242,7 @@ class Config(object):
             },
             "database": {
                 "connection": String(sanitize=True),
-                "timeout": Int(allow_empty=True),
+                "timeout": Int(60, allow_empty=True),
             },
             "timeouts": {
                 "default": Int(120),
