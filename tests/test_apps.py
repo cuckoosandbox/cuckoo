@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +7,7 @@ import os
 import pytest
 import tempfile
 
+from cuckoo.apps.apps import process
 from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.files import Files
 from cuckoo.main import main, cuckoo_create
@@ -203,3 +204,45 @@ class TestAppsWithCWD(object):
                 ["alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head"],
                 cwd=cwd("distributed", "migration", private=True)
             )
+
+@mock.patch("cuckoo.apps.apps.RunProcessing")
+@mock.patch("cuckoo.apps.apps.RunSignatures")
+@mock.patch("cuckoo.apps.apps.RunReporting")
+def test_process_nodelete(r, s, p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "delete_original": False,
+                "delete_bin_copy": False,
+            },
+        },
+    })
+
+    filepath1 = Files.temp_put("hello world")
+    filepath2 = Files.create(cwd("storage", "binaries"), "A"*40, "binary")
+
+    process(filepath1, filepath2, 1)
+    assert os.path.exists(filepath1)
+    assert os.path.exists(filepath2)
+
+@mock.patch("cuckoo.apps.apps.RunProcessing")
+@mock.patch("cuckoo.apps.apps.RunSignatures")
+@mock.patch("cuckoo.apps.apps.RunReporting")
+def test_process_dodelete(r, s, p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "delete_original": True,
+                "delete_bin_copy": True,
+            },
+        },
+    })
+
+    filepath1 = Files.temp_put("hello world")
+    filepath2 = Files.create(cwd("storage", "binaries"), "A"*40, "binary")
+
+    process(filepath1, filepath2, 1)
+    assert not os.path.exists(filepath1)
+    assert not os.path.exists(filepath2)

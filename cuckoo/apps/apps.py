@@ -12,7 +12,7 @@ import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
@@ -195,31 +195,34 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
                 )
                 continue
 
-def process(target, copy_path, task, cfg):
+def process(target, copy_path, task):
     results = RunProcessing(task=task).run()
     RunSignatures(results=results).run()
     RunReporting(task=task, results=results).run()
 
-    if cfg.cuckoo.delete_original and os.path.exists(target):
+    if config("cuckoo:cuckoo:delete_original"):
         try:
-            os.remove(target)
+            if target and os.path.exists(target):
+                os.remove(target)
         except OSError as e:
             log.error(
                 "Unable to delete original file at path \"%s\": %s",
                 target, e
             )
 
-    if cfg.cuckoo.delete_bin_copy and copy_path and os.path.exists(copy_path):
+    if config("cuckoo:cuckoo:delete_bin_copy"):
         try:
-            os.remove(copy_path)
+            if copy_path and os.path.exists(copy_path):
+                os.remove(copy_path)
         except OSError as e:
             log.error(
                 "Unable to delete the copy of the original file at "
                 "path \"%s\": %s", copy_path, e
             )
 
-def process_task(task, cfg=None):
+def process_task(task):
     db = Database()
+
     try:
         if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
@@ -228,7 +231,7 @@ def process_task(task, cfg=None):
             copy_path = None
 
         try:
-            process(task["target"], copy_path, task, cfg or Config())
+            process(task["target"], copy_path, task)
             db.set_status(task["id"], TASK_REPORTED)
         except Exception as e:
             log.exception("Task #%d: error reporting: %s", task["id"], e)
@@ -238,7 +241,6 @@ def process_task(task, cfg=None):
 
 def process_tasks(instance, maxcount):
     count = 0
-    cfg = Config()
     db = Database()
 
     try:
@@ -254,7 +256,7 @@ def process_tasks(instance, maxcount):
 
             log.info("Task #%d: reporting task", task.id)
 
-            process_task(task.to_dict(), cfg)
+            process_task(task.to_dict())
             count += 1
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)
