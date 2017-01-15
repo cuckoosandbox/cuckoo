@@ -268,7 +268,14 @@ def test_process_log_taskid(p, q):
         "id": 12345,
         "category": "url",
         "target": "http://google.com/",
+        "package": "ie",
+        "options": {},
     })
 
-    obj = json.load(open(cwd("log", "process-p0.json"), "rb"))
-    assert obj["task_id"] == 12345
+    for line in open(cwd("log", "process-p0.json"), "rb"):
+        obj = json.loads(line)
+        if obj["action"] == "hello.world":
+            assert obj["task_id"] == 12345
+            break
+    else:
+        raise

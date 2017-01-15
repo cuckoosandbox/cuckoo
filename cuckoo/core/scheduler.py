@@ -374,7 +374,14 @@ class AnalysisManager(threading.Thread):
         log.info(
             "Starting analysis of %s \"%s\" (task #%d, options \"%s\")",
             self.task.category.upper(), target, self.task.id,
-            emit_options(self.task.options)
+            emit_options(self.task.options), extra={
+                "action": "task.init",
+                "status": "starting",
+                "task_id": self.task.id,
+                "category": self.task.category,
+                "package": self.task.package,
+                "options": emit_options(self.task.options),
+            }
         )
 
         # Initialize the analysis.

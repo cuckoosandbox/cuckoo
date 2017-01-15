@@ -420,7 +420,12 @@ class RunSignatures(object):
         score = 0
         for signature in self.signatures:
             if signature.matched:
-                log.debug("Analysis matched signature: %s", signature.name)
+                log.debug(
+                    "Analysis matched signature: %s", signature.name, extra={
+                        "action": "signature.match", "status": "success",
+                        "signature": signature.name,
+                    }
+                )
                 self.matched.append(signature.results())
                 score += signature.severity
 

@@ -12,13 +12,13 @@ import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
-from cuckoo.common.config import config
+from cuckoo.common.config import config, emit_options
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import Database
 from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
-from cuckoo.core.log import task_log_start, task_log_stop
+from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.misc import cwd, mkdir
 
@@ -227,6 +227,13 @@ def process_task(task):
     try:
         task_log_start(task["id"])
 
+        logger(
+            "Starting task reporting",
+            action="task.report", status="pending",
+            category=task["category"], package=task["package"],
+            options=emit_options(task["options"])
+        )
+
         if task["category"] == "file" and task.get("sample_id"):
             sample = db.view_sample(task["sample_id"])
             copy_path = cwd("storage", "binaries", sample.sha256)
@@ -239,6 +246,10 @@ def process_task(task):
         except Exception as e:
             log.exception("Task #%d: error reporting: %s", task["id"], e)
             db.set_status(task["id"], TASK_FAILED_PROCESSING)
+
+        log.info("Task #%d: reports generation completed", task["id"], extra={
+            "action": "task.report", "status": "success",
+        })
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)
     finally:
