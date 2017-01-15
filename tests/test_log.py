@@ -24,7 +24,7 @@ def test_logger():
 
     with mock.patch("time.time") as p:
         p.return_value = 1484232001
-        logger("cuckoo.json", "test %s", "message", action="a", status="b")
+        logger("test %s", "message", action="a", status="b")
 
     assert json.load(open(cwd("log", "cuckoo.json"), "rb")) == {
         "asctime": mock.ANY,
@@ -64,10 +64,7 @@ def test_process_json_logging():
     init_logfile("process-p0.json")
 
     def process_tasks(instance, maxcount):
-        logger(
-            "process-p0.json", "foo bar",
-            action="hello.world", status="success"
-        )
+        logger("foo bar", action="hello.world", status="success")
 
     with mock.patch("cuckoo.main.Database") as p0:
         with mock.patch("cuckoo.main.process_tasks") as p1:

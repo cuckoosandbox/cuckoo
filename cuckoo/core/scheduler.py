@@ -379,10 +379,7 @@ class AnalysisManager(threading.Thread):
 
         # Initialize the analysis.
         if not self.init():
-            logger(
-                "cuckoo.json", "Failed to initialize",
-                action="task.init", status="error"
-            )
+            logger("Failed to initialize", action="task.init", status="error")
             return False
 
         # Acquire analysis machine.
@@ -424,7 +421,7 @@ class AnalysisManager(threading.Thread):
                                             self.machine.label,
                                             machinery.__class__.__name__)
             logger(
-                "cuckoo.json", "Starting VM",
+                "Starting VM",
                 action="vm.start", status="pending",
                 vmname=self.machine.name
             )
@@ -433,7 +430,7 @@ class AnalysisManager(threading.Thread):
             machinery.start(self.machine.label, self.task)
 
             logger(
-                "cuckoo.json", "Started VM",
+                "Started VM",
                 action="vm.start", status="success",
                 vmname=self.machine.name
             )
@@ -492,7 +489,7 @@ class AnalysisManager(threading.Thread):
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 logger(
-                    "cuckoo.json", "Taking full memory dump",
+                    "Taking full memory dump",
                     action="vm.memdump", status="pending",
                     vmname=self.machine.name
                 )
@@ -501,7 +498,7 @@ class AnalysisManager(threading.Thread):
                     machinery.dump_memory(self.machine.label, dump_path)
 
                     logger(
-                        "cuckoo.json", "Taken full memory dump",
+                        "Taken full memory dump",
                         action="vm.memdump", status="success",
                         vmname=self.machine.name
                     )
@@ -521,7 +518,7 @@ class AnalysisManager(threading.Thread):
                     })
 
             logger(
-                "cuckoo.json", "Stopping VM",
+                "Stopping VM",
                 action="vm.stop", status="pending",
                 vmname=self.machine.name
             )
@@ -540,7 +537,7 @@ class AnalysisManager(threading.Thread):
                 )
 
             logger(
-                "cuckoo.json", "Stopped VM",
+                "Stopped VM",
                 action="vm.stop", status="success",
                 vmname=self.machine.name
             )
@@ -576,7 +573,7 @@ class AnalysisManager(threading.Thread):
     def process_results(self):
         """Process the analysis results and generate the enabled reports."""
         logger(
-            "cuckoo.json", "Starting task reporting",
+            "Starting task reporting",
             action="task.report", status="pending"
         )
 
@@ -811,7 +808,7 @@ class Scheduler(object):
             # manager or having two analyses pick the same machine.
             if not machine_lock.acquire(False):
                 logger(
-                    "cuckoo.json", "Could not acquire machine lock",
+                    "Could not acquire machine lock",
                     action="scheduler.machine_lock", status="busy"
                 )
                 continue
@@ -850,7 +847,7 @@ class Scheduler(object):
             maxvm = self.cfg.cuckoo.max_machines_count
             if maxvm and len(machinery.running()) >= maxvm:
                 logger(
-                    "cuckoo.json", "Already maxed out on running machines",
+                    "Already maxed out on running machines",
                     action="scheduler.machines", status="maxed"
                 )
                 continue
@@ -859,7 +856,7 @@ class Scheduler(object):
             # pending tasks. Loop over.
             if not machinery.availables():
                 logger(
-                    "cuckoo.json", "No available machines",
+                    "No available machines",
                     action="scheduler.machines", status="none"
                 )
                 continue
@@ -876,7 +873,6 @@ class Scheduler(object):
                     self.stop()
                 else:
                     logger(
-                        "cuckoo.json",
                         "Maximum analyses hit, awaiting active to finish off",
                         action="scheduler.max_analysis", status="busy",
                         active=active_analysis_count

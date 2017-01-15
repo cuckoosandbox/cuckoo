@@ -261,10 +261,7 @@ def test_process_log_taskid(p, q):
     init_logfile("process-p0.json")
 
     def log_something(target, copy_path, task):
-        logger(
-            "process-p0.json", "test message",
-            action="hello.world", status="success"
-        )
+        logger("test message", action="hello.world", status="success")
 
     q.side_effect = log_something
     process_task({

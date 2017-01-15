@@ -139,11 +139,11 @@ def init_logger(root, name):
 
     _loggers[name] = l
 
-def logger(name, message, *args, **kwargs):
+def logger(message, *args, **kwargs):
     """Log a message to specific logger instance."""
+    logfile = kwargs.pop("logfile", None)
     record = logging.LogRecord(
-        _loggers[name].name, logging.INFO, None,
-        None, message, args, None, None
+        None, logging.INFO, None, None, message, args, None, None
     )
     record.asctime = "%s,%03d" % (
         time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(record.created)),
@@ -151,4 +151,9 @@ def logger(name, message, *args, **kwargs):
     )
     record.message = record.getMessage()
     record.__dict__.update(kwargs)
-    _loggers[name].handle(record)
+
+    for key, value in _loggers.items():
+        if logfile and key == logfile:
+            value.handle(record)
+        if logfile is None and key.endswith(".json"):
+            value.handle(record)
