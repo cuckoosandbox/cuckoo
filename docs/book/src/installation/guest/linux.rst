@@ -7,6 +7,9 @@ Add agent to autorun, the easier way is to add it to crontab::
     sudo crontab -e
     @reboot python path_to_agent.py
 
+The following instruction are only for x32/x64 linux guests
+===========================================================
+
 Install dependencies::
 
     sudo apt-get install systemtap gcc linux-headers-$(uname -r) 
