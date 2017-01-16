@@ -1,12 +1,13 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import imp
-import inspect
+import importlib
 import logging
 import multiprocessing
 import os.path
+import types
+
 import pkg_resources
 import subprocess
 import sys
@@ -108,65 +109,38 @@ def load_signatures():
     Signatures which rely on the "lib.cuckoo.common.abstracts" import, one
     that can now be accessed as "cuckoo.common.abstracts".
     """
-    # We need to create each module separately.
-    module_names = (
-        "lib", "lib.cuckoo", "lib.cuckoo.common",
-        "lib.cuckoo.common.abstracts",
-    )
-
-    for module_name in module_names:
-        sys.modules[module_name] = imp.new_module(module_name)
+    # Forward everything from lib.cuckoo to "our" cuckoo module.
+    sys.modules["lib"] = types.ModuleType("lib")
+    sys.modules["lib.cuckoo"] = sys.modules["cuckoo"]
 
     # Import this here in order to avoid recursive import statements.
     from cuckoo.common.abstracts import Signature
+
+    # Define Signature in such a way that it is equal to "our" Signature.
+    sys.modules["lib.cuckoo.common.abstracts"] = types.ModuleType(
+        "lib.cuckoo.common.abstracts"
+    )
     sys.modules["lib.cuckoo.common.abstracts"].Signature = Signature
 
     # Don't clobber the Cuckoo Working Directory with .pyc files.
     dont_write_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
 
-    modules = {
-        "android": dict(platform="android"),
-        "cross": dict(),
-        "darwin": dict(platform="darwin"),
-        "network": dict(),
-        "windows": dict(platform="windows"),
-    }
+    # Trigger an import on $CWD/signatures. This will automatically import
+    # recursively down the various directories through the use of
+    # enumerate_plugins(), which the Cuckoo Community adheres to. For this to
+    # work we temporarily insert the CWD in Python's path.
+    if os.path.exists(cwd("signatures")):
+        sys.path.insert(0, cwd())
+        importlib.import_module("signatures")
+        sys.path.pop(0)
 
-    # Prepare a module for each signature directory.
-    for modname in modules:
-        module_name = "cuckoo.signatures.%s" % modname
-        sys.modules[module_name] = imp.new_module(module_name)
-
-    # Import each Signature that we find in the Cuckoo Working Directory.
-    for dirpath, dirnames, filenames in os.walk(cwd("signatures")):
-        for filename in filenames:
-            if filename.endswith(".pyc") or filename.startswith("__init__"):
-                continue
-
-            # E.g., "cuckoo.signatures.network.network_http".
-            category = os.path.basename(dirpath)
-            module_name = "cuckoo.signatures.%s.%s" % (
-                category, os.path.splitext(filename)[0]
-            )
-            module = imp.load_source(module_name, cwd(dirpath, filename))
-
-            # Locate each Signature in this module and assign the
-            # per-category attributes to it.
-            for entry in module.__dict__.values():
-                if not inspect.isclass(entry):
-                    continue
-
-                if not issubclass(entry, Signature) or entry == Signature:
-                    continue
-
-                for key, value in modules.get(category, {}).items():
-                    setattr(entry, key, value)
+    # Restore bytecode option.
+    sys.dont_write_bytecode = dont_write_bytecode
 
     # Overwrite all Signatures that are in-place by all the Signatures that
     # have been registered at this point, literally.
     cuckoo.signatures.plugins[:] = Signature.__subclasses__()
-    sys.dont_write_bytecode = dont_write_bytecode
 
 def _worker(conn, func, *args, **kwargs):
     conn.send(func(*args, **kwargs))

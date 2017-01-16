@@ -1,8 +1,17 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from cuckoo.core.plugins import RunSignatures
+import shutil
+import sys
+import tempfile
+
+import cuckoo
+
+from cuckoo.common.abstracts import Signature
+from cuckoo.core.plugins import RunSignatures, enumerate_plugins
+from cuckoo.main import cuckoo_create
+from cuckoo.misc import load_signatures, set_cwd, cwd
 
 def test_run_signatures():
     rs = RunSignatures({})
@@ -43,3 +52,32 @@ def test_run_signatures():
 
     rs.version = "2.1.0"
     assert not rs.check_signature_version(sig_obsolete)
+
+def test_enumerate_plugins():
+    sys.path.insert(0, "tests/files")
+    plugins = enumerate_plugins(
+        "tests/files/enumplugins", "enumplugins",
+        globals(), Signature, {"foo": "bar"}
+    )
+    sys.path.pop(0)
+
+    assert len(plugins) == 2
+    assert plugins[0].name == "sig1"
+    assert plugins[1].name == "sig2"
+    assert plugins[0].foo == "bar"
+    assert plugins[1].foo == "bar"
+    assert issubclass(sys.modules["enumplugins"].sig1.Sig1, Signature)
+    assert issubclass(sys.modules["enumplugins"].sig2.Sig2, Signature)
+
+def test_load_signatures():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    shutil.copytree("tests/files/enumplugins", cwd("signatures"))
+    load_signatures()
+
+    names = []
+    for sig in cuckoo.signatures.plugins:
+        names.append(sig.__module__)
+    assert "signatures.sig1" in names
+    assert "signatures.sig2" in names
