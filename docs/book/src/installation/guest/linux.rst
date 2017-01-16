@@ -14,9 +14,9 @@ Install dependencies::
 Compile Kernel extension::
 
     wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/data/strace.stp
-    sudo stap -r $(uname -r) strace.stp -m stap_ -v
+    sudo stap -p4 -r $(uname -r) strace.stp -m stap_ -v
 
-When you will start see **Pass 5: starting run.** Press ctrl+c to stop it You should see stap_.ko in the same folder
+Once finished it you should see stap_.ko in the same folder
 
 Test Kernel extension::
 
