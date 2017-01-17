@@ -87,6 +87,10 @@ class TestAppsWithCWD(object):
     @mock.patch("cuckoo.main.cuckoo_main")
     def test_main(self, p, q):
         p.side_effect = SystemExit(0)
+
+        # Ensure that the "latest" binary value makes sense so that the
+        # "run community command" exception is not thrown.
+        mkdir(cwd("monitor", open(cwd("monitor", "latest")).read().strip()))
         main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
         q.assert_called_once()
 
