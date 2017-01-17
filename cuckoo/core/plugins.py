@@ -294,7 +294,7 @@ class RunSignatures(object):
 
         # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []
-        for signature in cuckoo.signatures.plugins:
+        for signature in cuckoo.signatures:
             if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
 

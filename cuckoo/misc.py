@@ -130,17 +130,16 @@ def load_signatures():
     # recursively down the various directories through the use of
     # enumerate_plugins(), which the Cuckoo Community adheres to. For this to
     # work we temporarily insert the CWD in Python's path.
-    if os.path.exists(cwd("signatures")):
-        sys.path.insert(0, cwd())
-        importlib.import_module("signatures")
-        sys.path.pop(0)
+    sys.path.insert(0, cwd())
+    importlib.import_module("signatures")
+    sys.path.pop(0)
 
     # Restore bytecode option.
     sys.dont_write_bytecode = dont_write_bytecode
 
     # Overwrite all Signatures that are in-place by all the Signatures that
     # have been registered at this point, literally.
-    cuckoo.signatures.plugins[:] = Signature.__subclasses__()
+    cuckoo.signatures[:] = Signature.__subclasses__()
 
 def _worker(conn, func, *args, **kwargs):
     conn.send(func(*args, **kwargs))

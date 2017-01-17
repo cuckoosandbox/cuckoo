@@ -73,11 +73,21 @@ def test_load_signatures():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
+    shutil.rmtree(cwd("signatures"))
     shutil.copytree("tests/files/enumplugins", cwd("signatures"))
+    sys.modules.pop("signatures", None)
     load_signatures()
 
+    # Ensure that the Signatures are loaded in the global list.
     names = []
-    for sig in cuckoo.signatures.plugins:
+    for sig in cuckoo.signatures:
         names.append(sig.__module__)
     assert "signatures.sig1" in names
     assert "signatures.sig2" in names
+
+    # Ensure that the Signatures are loaded in the RunSignatures object.
+    rs, names = RunSignatures({}), []
+    for sig in rs.signatures:
+        names.append(sig.__class__.__name__)
+    assert "Sig1" in names
+    assert "Sig2" in names
