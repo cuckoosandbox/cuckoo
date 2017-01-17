@@ -125,6 +125,9 @@ def cuckoo_init(level, ctx, cfg=None):
     init_rooter()
     init_routing()
 
+    # Load additional Signatures.
+    load_signatures()
+
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
@@ -166,9 +169,6 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     ctx.user = user
 
     ctx.log = not nolog
-
-    # Load additional Signatures.
-    load_signatures()
 
     if quiet:
         level = logging.WARN
@@ -292,6 +292,9 @@ def process(ctx, instance, report, maxcount):
 
     db = Database()
     db.connect()
+
+    # Load additional Signatures.
+    load_signatures()
 
     # Regenerate a report.
     if report:

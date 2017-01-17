@@ -17,13 +17,15 @@ from cuckoo.core.startup import init_logfile, init_console_logging
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir, is_windows
 
-def test_init():
+@mock.patch("cuckoo.main.load_signatures")
+def test_init(p):
     set_cwd(tempfile.mkdtemp())
     with pytest.raises(SystemExit):
         main.main(
             ("--cwd", cwd(), "--nolog", "init"),
             standalone_mode=False
         )
+    p.assert_not_called()
 
 def init_legacy_analyses():
     set_cwd(tempfile.mkdtemp())
@@ -81,6 +83,13 @@ class TestAppsWithCWD(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
 
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.cuckoo_main")
+    def test_main(self, p, q):
+        p.side_effect = SystemExit(0)
+        main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
+        q.assert_called_once()
+
     def test_api(self):
         with mock.patch("cuckoo.main.cuckoo_api") as p:
             p.return_value = None
@@ -108,27 +117,30 @@ class TestAppsWithCWD(object):
                 "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
             ), standalone_mode=False)
 
-    def test_process(self):
-        with mock.patch("cuckoo.main.process_task") as p:
-            p.return_value = None
-            main.main(
-                ("--cwd", cwd(), "process", "-r", "1234"),
-                standalone_mode=False
-            )
-            p.assert_called_once_with({
-                "id": 1234,
-                "category": "file",
-                "target": "",
-                "options": "",
-            })
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_task")
+    def test_process_once(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": "",
+        })
+        q.assert_called_once()
 
-        with mock.patch("cuckoo.main.process_tasks") as p:
-            p.return_value = None
-            main.main(
-                ("--cwd", cwd(), "process", "instance"),
-                standalone_mode=False
-            )
-            p.assert_called_once_with("instance", 0)
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_tasks")
+    def test_process_many(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "instance"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with("instance", 0)
+        q.assert_called_once()
 
     def test_dnsserve(self):
         with mock.patch("cuckoo.main.cuckoo_dnsserve") as p:

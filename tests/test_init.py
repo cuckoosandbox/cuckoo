@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import os
 import pytest
 import shutil
@@ -76,6 +77,16 @@ class TestInit(object):
             standalone_mode=False
         )
         assert os.path.exists(os.path.join(cwd(), "mitm.py"))
+
+    @mock.patch("cuckoo.main.load_signatures")
+    def test_cuckoo_init_main_nosigs(self, p):
+        """Ensure load_signatures() isn't called for 'cuckoo' with new CWD."""
+        main.main(
+            ("--cwd", cwd(), "--nolog"),
+            standalone_mode=False
+        )
+        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
+        p.assert_not_called()
 
     def test_cuckoo_init_no_resultserver(self):
         """Tests that 'cuckoo init' doesn't launch the ResultServer."""
