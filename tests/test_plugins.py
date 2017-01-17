@@ -13,7 +13,7 @@ from cuckoo.core.plugins import RunSignatures, enumerate_plugins
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import load_signatures, set_cwd, cwd
 
-def test_run_signatures():
+def test_signature_version():
     rs = RunSignatures({})
 
     class sig_normal(object):
@@ -52,6 +52,52 @@ def test_run_signatures():
 
     rs.version = "2.1.0"
     assert not rs.check_signature_version(sig_obsolete)
+
+def test_should_enable_signature():
+    rs = RunSignatures({})
+
+    class sig_not_enabled(object):
+        enabled = False
+
+    rs.version = "2.0.0"
+    assert not rs._should_enable_signature(sig_not_enabled)
+
+    class sig_enable_false(object):
+        enabled = True
+        minimum = "2.0.0"
+        maximum = None
+
+        def enable(self):
+            return False
+
+    assert not rs._should_enable_signature(sig_enable_false())
+
+    class sig_enable_true(object):
+        enabled = True
+        minimum = "2.0.0"
+        maximum = None
+        platform = None
+
+        def enable(self):
+            return True
+
+    assert rs._should_enable_signature(sig_enable_true())
+
+    class sig_empty_platform(object):
+        enabled = True
+        minimum = "2.0.0"
+        maximum = None
+        platform = None
+
+    assert rs._should_enable_signature(sig_empty_platform())
+
+    class sig_other_platform(object):
+        enabled = True
+        minimum = "2.0.0"
+        maximum = None
+        platform = "nope"
+
+    assert not rs._should_enable_signature(sig_other_platform())
 
 def test_enumerate_plugins():
     sys.path.insert(0, "tests/files")

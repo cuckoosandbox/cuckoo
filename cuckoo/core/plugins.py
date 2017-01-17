@@ -318,6 +318,10 @@ class RunSignatures(object):
         if not self.check_signature_version(signature):
             return False
 
+        if hasattr(signature, "enable") and callable(signature.enable):
+            if not signature.enable():
+                return False
+
         # Network and/or cross-platform signatures.
         if not signature.platform:
             return True
