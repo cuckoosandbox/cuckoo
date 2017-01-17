@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,9 +38,13 @@ class Screenshots(Auxiliary, Thread):
         if "screenshots" in self.options:
             self.do_run = int(self.options["screenshots"])
 
+        # TODO We should also send the action "pillow" so that the Web
+        # Interface can adequately inform the user about this missing library.
         if not Screenshot().have_pil():
-            log.warning("Python Image Library is not installed, "
-                        "screenshots are disabled")
+            log.info(
+                "Python Image Library (either PIL or Pillow) is not "
+                "installed, screenshots are disabled."
+            )
             return False
 
         img_counter = 0

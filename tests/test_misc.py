@@ -94,7 +94,7 @@ def test_is_macosx():
     assert is_macosx() is True
 
 @pytest.mark.skipif("sys.platform != 'linux2'")
-def test_is_windows():
+def test_is_linux():
     assert is_windows() is False
     assert is_linux() is True
     assert is_macosx() is False
