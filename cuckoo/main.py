@@ -118,15 +118,15 @@ def cuckoo_init(level, ctx, cfg=None):
 
     Database().connect()
 
+    # Load additional Signatures.
+    load_signatures()
+
     init_modules()
     init_tasks()
     init_yara()
     init_binaries()
     init_rooter()
     init_routing()
-
-    # Load additional Signatures.
-    load_signatures()
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.

@@ -6,11 +6,10 @@ import importlib
 import logging
 import multiprocessing
 import os.path
-import types
-
 import pkg_resources
 import subprocess
 import sys
+import types
 
 try:
     import pwd
@@ -131,15 +130,16 @@ def load_signatures():
     # enumerate_plugins(), which the Cuckoo Community adheres to. For this to
     # work we temporarily insert the CWD in Python's path.
     sys.path.insert(0, cwd())
-    importlib.import_module("signatures")
+    mod = importlib.import_module("signatures")
     sys.path.pop(0)
 
     # Restore bytecode option.
     sys.dont_write_bytecode = dont_write_bytecode
 
-    # Overwrite all Signatures that are in-place by all the Signatures that
-    # have been registered at this point, literally.
-    cuckoo.signatures[:] = Signature.__subclasses__()
+    # Index all of the available Signatures that have been located.
+    for key, value in sorted(mod.__dict__.items()):
+        if not key.startswith("_") and hasattr(value, "plugins"):
+            cuckoo.signatures.extend(value.plugins)
 
 def _worker(conn, func, *args, **kwargs):
     conn.send(func(*args, **kwargs))

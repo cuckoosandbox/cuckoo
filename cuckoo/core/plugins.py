@@ -37,8 +37,17 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
             module_name, _ = os.path.splitext(fname)
             importlib.import_module("%s.%s" % (module_prefix, module_name))
 
+    subclasses = class_.__subclasses__()[:]
+
     plugins = []
-    for subclass in class_.__subclasses__():
+    while subclasses:
+        subclass = subclasses.pop(0)
+
+        # Include subclasses of this subclass (there are some subclasses, e.g.,
+        # LibVirtMachinery, that fail the fail the following module namespace
+        # check and as such we perform this logic here).
+        subclasses.extend(subclass.__subclasses__())
+
         # Check whether this subclass belongs to the module namespace that
         # we're currently importing. It should be noted that parent and child
         # namespaces should fail the following if-statement.

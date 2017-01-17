@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from . import sig1, sig2, sig3
+from .sig2 import Sig2
 
-class meta:
-    plugins = sig1.Sig1, sig2.Sig2, sig3.Sig3
+class Sig3(Sig2):
+    name = "sig3"

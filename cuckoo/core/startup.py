@@ -170,7 +170,7 @@ def init_modules():
     log.debug("Imported modules...")
 
     categories = (
-        "auxiliary", "processing", "signatures", "reporting",
+        "auxiliary", "machinery", "processing", "signatures", "reporting",
     )
 
     for category in categories:
