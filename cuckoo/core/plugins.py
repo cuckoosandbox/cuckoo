@@ -367,7 +367,7 @@ class RunSignatures(object):
         """Wrapper to call into 3rd party signatures. This wrapper yields the
         event to the signature and handles matched signatures recursively."""
         try:
-            if handler(*args, **kwargs):
+            if not signature.matched and handler(*args, **kwargs):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)

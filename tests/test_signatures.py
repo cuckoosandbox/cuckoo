@@ -131,3 +131,43 @@ def test_signature_order():
     assert isinstance(rs.signatures[0], sig2)
     assert isinstance(rs.signatures[1], sig3)
     assert isinstance(rs.signatures[2], sig1)
+
+class test_call_signature():
+    class sig(object):
+        enabled = True
+        name = "sig"
+        minimum = "2.0.0"
+        maximum = None
+        platform = "windows"
+        matched = False
+        order = 1
+
+        def __init__(self, caller):
+            pass
+
+        def on_signature(self, sig):
+            pass
+
+    with mock.patch("cuckoo.core.plugins.cuckoo") as p:
+        p.signatures = sig,
+        rs = RunSignatures({})
+
+    s1 = rs.signatures[0]
+
+    # Not a match.
+    f = mock.MagicMock(return_value=False)
+    s1.matched = False
+    rs.call_signature(s1, f, 1, 2, a=3, b=4)
+    assert s1.matched is False
+    f.assert_called_once_with(1, 2, a=3, b=4)
+
+    # It is a match.
+    f = mock.MagicMock(return_value=True)
+    rs.call_signature(s1, f, "foo", "bar")
+    assert s1.matched is True
+    f.assert_called_once_with("foo", "bar")
+
+    # Now it is a match, no longer call the handler.
+    f = mock.MagicMock()
+    rs.call_signature(s1, f, "foo", "bar")
+    f.assert_not_called()
