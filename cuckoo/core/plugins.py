@@ -312,7 +312,7 @@ class RunSignatures(object):
 
     def _should_enable_signature(self, signature):
         """Should the given signature be enabled for this analysis?"""
-        if not signature.enabled:
+        if not signature.enabled or signature.name is None:
             return False
 
         if not self.check_signature_version(signature):

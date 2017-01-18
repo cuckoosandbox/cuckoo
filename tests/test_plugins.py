@@ -55,15 +55,22 @@ def test_signature_version():
 
 def test_should_enable_signature():
     rs = RunSignatures({})
+    rs.version = "2.0.0"
 
     class sig_not_enabled(object):
         enabled = False
 
-    rs.version = "2.0.0"
     assert not rs._should_enable_signature(sig_not_enabled)
+
+    class sig_empty_name(object):
+        enabled = True
+        name = None
+
+    assert not rs._should_enable_signature(sig_empty_name)
 
     class sig_enable_false(object):
         enabled = True
+        name = "enable_false"
         minimum = "2.0.0"
         maximum = None
 
@@ -74,6 +81,7 @@ def test_should_enable_signature():
 
     class sig_enable_true(object):
         enabled = True
+        name = "enable_true"
         minimum = "2.0.0"
         maximum = None
         platform = None
@@ -85,6 +93,7 @@ def test_should_enable_signature():
 
     class sig_empty_platform(object):
         enabled = True
+        name = "empty_platform"
         minimum = "2.0.0"
         maximum = None
         platform = None
@@ -93,6 +102,7 @@ def test_should_enable_signature():
 
     class sig_other_platform(object):
         enabled = True
+        name = "other_platform"
         minimum = "2.0.0"
         maximum = None
         platform = "nope"
