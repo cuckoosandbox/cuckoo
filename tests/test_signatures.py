@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
+
 from cuckoo.core.plugins import RunSignatures
 
 def test_signature_version():
@@ -99,3 +101,33 @@ def test_should_enable_signature():
         platform = "nope"
 
     assert not rs._should_enable_signature(sig_other_platform())
+
+def test_signature_order():
+    class sig(object):
+        enabled = True
+        minimum = "2.0.0"
+        maximum = None
+        platform = "windows"
+
+        def __init__(self, caller):
+            pass
+
+    class sig1(sig):
+        name = "sig1"
+        order = 3
+
+    class sig2(sig):
+        name = "sig2"
+        order = 1
+
+    class sig3(sig):
+        name = "sig3"
+        order = 2
+
+    with mock.patch("cuckoo.core.plugins.cuckoo") as p:
+        p.signatures = sig1, sig2, sig3
+        rs = RunSignatures({})
+
+    assert isinstance(rs.signatures[0], sig2)
+    assert isinstance(rs.signatures[1], sig3)
+    assert isinstance(rs.signatures[2], sig1)

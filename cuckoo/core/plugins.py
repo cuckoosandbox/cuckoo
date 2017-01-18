@@ -307,6 +307,9 @@ class RunSignatures(object):
             if self._should_enable_signature(signature):
                 self.signatures.append(signature(self))
 
+        # Sort Signatures by their order.
+        self.signatures.sort(key=lambda sig: sig.order)
+
         # Signatures to call per API name.
         self.api_sigs = {}
 
