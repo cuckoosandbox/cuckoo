@@ -7,7 +7,7 @@ import logging
 import mock
 import tempfile
 
-from cuckoo.core.log import logger, tz
+from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logging, init_logfile
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import set_cwd, cwd

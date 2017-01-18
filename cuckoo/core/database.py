@@ -3,10 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
+import datetime
 import json
 import logging
-from datetime import datetime
+import os
 
 from cuckoo.common.config import config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
@@ -94,7 +94,7 @@ class Machine(Base):
         d = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            if isinstance(value, datetime):
+            if isinstance(value, datetime.datetime):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
@@ -154,7 +154,7 @@ class Guest(Base):
     label = Column(String(255), nullable=False)
     manager = Column(String(255), nullable=False)
     started_on = Column(DateTime(timezone=False),
-                        default=datetime.now,
+                        default=datetime.datetime.now,
                         nullable=False)
     shutdown_on = Column(DateTime(timezone=False), nullable=True)
     task_id = Column(Integer,
@@ -172,7 +172,7 @@ class Guest(Base):
         d = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            if isinstance(value, datetime):
+            if isinstance(value, datetime.datetime):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
@@ -195,7 +195,7 @@ class Submit(Base):
 
     id = Column(Integer(), primary_key=True)
     tmp_path = Column(Text(), nullable=False)
-    added = Column(DateTime, nullable=False, default=datetime.utcnow)
+    added = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     submit_type = Column(String(16), nullable=False)
     data = Column(JsonType)
 
@@ -301,10 +301,10 @@ class Task(Base):
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
     clock = Column(DateTime(timezone=False),
-                   default=datetime.now,
+                   default=datetime.datetime.now,
                    nullable=False)
     added_on = Column(DateTime(timezone=False),
-                      default=datetime.now,
+                      default=datetime.datetime.now,
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
@@ -343,7 +343,7 @@ class Task(Base):
         d = Dictionary()
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            if dt and isinstance(value, datetime):
+            if dt and isinstance(value, datetime.datetime):
                 d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 d[column.name] = value
@@ -594,9 +594,9 @@ class Database(object):
             row.status = status
 
             if status == TASK_RUNNING:
-                row.started_on = datetime.now()
+                row.started_on = datetime.datetime.now()
             elif status == TASK_COMPLETED:
-                row.completed_on = datetime.now()
+                row.completed_on = datetime.datetime.now()
 
             session.commit()
         except SQLAlchemyError as e:
@@ -737,7 +737,7 @@ class Database(object):
         try:
             guest = session.query(Guest).get(guest_id)
             guest.status = "stopped"
-            guest.shutdown_on = datetime.now()
+            guest.shutdown_on = datetime.datetime.now()
             session.commit()
         except SQLAlchemyError as e:
             log.debug("Database error logging guest stop: {0}".format(e))
@@ -810,7 +810,7 @@ class Database(object):
 
         if machine:
             machine.locked = True
-            machine.locked_changed_on = datetime.now()
+            machine.locked_changed_on = datetime.datetime.now()
             try:
                 session.commit()
                 session.refresh(machine)
@@ -841,7 +841,7 @@ class Database(object):
 
         if machine:
             machine.locked = False
-            machine.locked_changed_on = datetime.now()
+            machine.locked_changed_on = datetime.datetime.now()
             try:
                 session.commit()
                 session.refresh(machine)
@@ -900,7 +900,7 @@ class Database(object):
 
         if machine:
             machine.status = status
-            machine.status_changed_on = datetime.now()
+            machine.status_changed_on = datetime.datetime.now()
             try:
                 session.commit()
                 session.refresh(machine)
@@ -1012,10 +1012,10 @@ class Database(object):
         if clock:
             if isinstance(clock, basestring):
                 try:
-                    task.clock = datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
+                    task.clock = datetime.datetime.strptime(clock, "%m-%d-%Y %H:%M:%S")
                 except ValueError:
                     log.warning("The date you specified has an invalid format, using current timestamp.")
-                    task.clock = datetime.now()
+                    task.clock = datetime.datetime.now()
             else:
                 task.clock = clock
 
