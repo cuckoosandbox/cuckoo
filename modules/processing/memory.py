@@ -529,6 +529,26 @@ class VolatilityAPI(object):
         if not os.path.exists(ypath):
             return dict(config={}, data=[])
 
+        fypath = '"'.join(open(ypath,'r').read().split('"')[1:-1])
+
+        if not os.path.exists(fypath):
+            return dict(config={}, data=[])
+
+        dirypath = '/'.join(fypath.split('/')[:-1])
+
+        tmpfile = dirypath +  '/.tmp_' + fypath.split('/')[-1]
+        ff = open(tmpfile,'w')
+        for root, dir, files in os.walk(dirypath):
+            for filename in files:
+                if filename.startswith('.'): continue
+                filepath = os.path.join(root, filename)
+                if filepath in [fypath,tmpfile]: continue
+                ft = open(filepath,'r')
+                ff.write('\n' + ft.read())
+                ft.close()
+        ff.close()
+        os.rename(tmpfile,fypath)
+
         self.config.update("YARA_FILE", ypath)
 
         command = self.plugins["yarascan"](self.config)
