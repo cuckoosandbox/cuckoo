@@ -53,13 +53,13 @@ def test_should_enable_signature():
     class sig_not_enabled(object):
         enabled = False
 
-    assert not rs._should_enable_signature(sig_not_enabled)
+    assert not rs.should_enable_signature(sig_not_enabled)
 
     class sig_empty_name(object):
         enabled = True
         name = None
 
-    assert not rs._should_enable_signature(sig_empty_name)
+    assert not rs.should_enable_signature(sig_empty_name)
 
     class sig_enable_false(object):
         enabled = True
@@ -70,7 +70,7 @@ def test_should_enable_signature():
         def enable(self):
             return False
 
-    assert not rs._should_enable_signature(sig_enable_false())
+    assert not rs.should_enable_signature(sig_enable_false())
 
     class sig_enable_true(object):
         enabled = True
@@ -82,7 +82,7 @@ def test_should_enable_signature():
         def enable(self):
             return True
 
-    assert rs._should_enable_signature(sig_enable_true())
+    assert rs.should_enable_signature(sig_enable_true())
 
     class sig_empty_platform(object):
         enabled = True
@@ -91,7 +91,7 @@ def test_should_enable_signature():
         maximum = None
         platform = None
 
-    assert rs._should_enable_signature(sig_empty_platform())
+    assert rs.should_enable_signature(sig_empty_platform())
 
     class sig_other_platform(object):
         enabled = True
@@ -100,7 +100,7 @@ def test_should_enable_signature():
         maximum = None
         platform = "nope"
 
-    assert not rs._should_enable_signature(sig_other_platform())
+    assert not rs.should_enable_signature(sig_other_platform())
 
 def test_signature_order():
     class sig(object):

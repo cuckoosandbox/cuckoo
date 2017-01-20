@@ -378,6 +378,7 @@ class AnalysisManager(threading.Thread):
                 "action": "task.init",
                 "status": "starting",
                 "task_id": self.task.id,
+                "target": target,
                 "category": self.task.category,
                 "package": self.task.package,
                 "options": emit_options(self.task.options),

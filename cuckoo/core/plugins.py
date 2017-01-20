@@ -295,16 +295,12 @@ class RunSignatures(object):
     def __init__(self, results):
         self.results = results
         self.matched = []
-
-        # While developing our version is generally something along the lines
-        # of "2.0-dev" whereas StrictVersion() does not handle "-dev", so we
-        # strip that part off.
         self.version = version
 
         # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []
         for signature in cuckoo.signatures:
-            if self._should_enable_signature(signature):
+            if self.should_enable_signature(signature):
                 self.signatures.append(signature(self))
 
         # Sort Signatures by their order.
@@ -313,7 +309,7 @@ class RunSignatures(object):
         # Signatures to call per API name.
         self.api_sigs = {}
 
-    def _should_enable_signature(self, signature):
+    def should_enable_signature(self, signature):
         """Should the given signature be enabled for this analysis?"""
         if not signature.enabled or signature.name is None:
             return False
