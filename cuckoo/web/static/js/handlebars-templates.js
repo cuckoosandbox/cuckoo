@@ -113,16 +113,14 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + ((stack1 = helpers.each.call(depth0,((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.options : stack1),{"name":"each","hash":{},"fn":this.program(7, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "		</select>\n		<i class=\"fa fa-chevron-down\"></i>\n	</div>\n";
 },"7":function(depth0,helpers,partials,data) {
-    var stack1, helper, alias1=this.escapeExpression, alias2=helpers.helperMissing, alias3="function";
+    var stack1, helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
-  return "				"
-    + alias1(helpers.log.call(depth0,(depth0 != null ? depth0.selected : depth0),{"name":"log","hash":{},"data":data}))
-    + "\n				<option value=\""
-    + alias1(((helper = (helper = helpers.value || (depth0 != null ? depth0.value : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(depth0,{"name":"value","hash":{},"data":data}) : helper)))
+  return "				<option value=\""
+    + alias3(((helper = (helper = helpers.value || (depth0 != null ? depth0.value : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"value","hash":{},"data":data}) : helper)))
     + "\" "
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.selected : depth0),{"name":"if","hash":{},"fn":this.program(8, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ">"
-    + alias1(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
     + "</option>\n";
 },"8":function(depth0,helpers,partials,data) {
     return "selected";

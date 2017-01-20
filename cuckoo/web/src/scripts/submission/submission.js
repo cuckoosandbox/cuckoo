@@ -60,7 +60,7 @@ $(function() {
 							item.changed_properties = new Array();
 						});
 
-						return response.data.files[0];
+						return response.data.files;
 
 					}
 				},
@@ -300,7 +300,7 @@ $(function() {
 							name: 'vpn',
 							on: {
 								change: function() {
-									console.log('vpn changed');
+									// console.log('vpn changed');
 								}
 							},
 							options: [
@@ -393,8 +393,9 @@ $(function() {
 					form.on('change', function(values) {
 						
 						function compareAndOverwrite(item) {
+
 							for(var val in values) {
-								if(item.changed_properties.indexOf(val) == -1) {
+								if(item.changed_properties && item.changed_properties.indexOf(val) == -1) {
 									item.per_file_options[val] = values[val];
 								}
 							}
@@ -457,7 +458,6 @@ $(function() {
 
 		$("#reset-options").bind('click', function(e) {
 			e.preventDefault();
-			console.log('reset the form.');
 		});
 
 		$(".upload-module .grouped-buttons a").on('shown.bs.tab', function(e) {

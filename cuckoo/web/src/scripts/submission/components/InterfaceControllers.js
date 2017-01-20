@@ -305,9 +305,6 @@ class TopSelect extends UserInputController {
 				if(extra.default) {
 
 					extra.options.forEach(function(opt) {
-
-						console.log(opt.value, extra.default);
-
 						if(opt.value == extra.default) {
 							opt.selected = true;
 							inp.setValue(extra.default);

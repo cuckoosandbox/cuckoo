@@ -395,7 +395,11 @@ class FileTree {
 	}
 
 	initialise(data) {
-		this.data = data;
+
+		this.data = {
+			children: data
+		};
+
 		this.construct();
 		if(this.options.events.ready) this.options.events.ready.call(this);
 		if(this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
@@ -464,9 +468,11 @@ class FileTree {
 		
 		// response handler
 		function handleResponse(response) {
+
 			if(self.options.load.serialize) {
 				response = self.options.load.serialize(response);
 			}
+
 			self.initialise(response);
 		}
 
@@ -536,6 +542,7 @@ class FileTree {
 		}
 
 		find(this.data.children);
+
 		return ret;
 
 	}
@@ -635,7 +642,7 @@ class FileTree {
 				if(cb && typeof cb === 'function') cb(item);
 			});
 		}
-
+		
 		iterate(this.data.children, callback);
 
 	}

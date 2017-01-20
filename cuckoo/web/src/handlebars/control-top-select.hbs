@@ -15,7 +15,6 @@
 		<select name="{{extra_select.name}}" id="{{extra_select.name}}">
 			<option selected disabled>Select</option>
 			{{#each extra_select.options}}
-				{{log selected}}
 				<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>
 			{{/each}}
 		</select>

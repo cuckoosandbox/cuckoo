@@ -814,7 +814,11 @@ var FileTree = function () {
 	_createClass(FileTree, [{
 		key: 'initialise',
 		value: function initialise(data) {
-			this.data = data;
+
+			this.data = {
+				children: data
+			};
+
 			this.construct();
 			if (this.options.events.ready) this.options.events.ready.call(this);
 			if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
@@ -891,9 +895,11 @@ var FileTree = function () {
 
 			// response handler
 			function handleResponse(response) {
+
 				if (self.options.load.serialize) {
 					response = self.options.load.serialize(response);
 				}
+
 				self.initialise(response);
 			}
 
@@ -970,6 +976,7 @@ var FileTree = function () {
 			}
 
 			find(this.data.children);
+
 			return ret;
 		}
 	}, {
@@ -1507,9 +1514,6 @@ var TopSelect = function (_UserInputController2) {
 					if (extra.default) {
 
 						extra.options.forEach(function (opt) {
-
-							console.log(opt.value, extra.default);
-
 							if (opt.value == extra.default) {
 								opt.selected = true;
 								inp.setValue(extra.default);
@@ -1955,7 +1959,7 @@ $(function () {
 							item.changed_properties = new Array();
 						});
 
-						return response.data.files[0];
+						return response.data.files;
 					}
 				},
 				transform: {
@@ -2161,7 +2165,7 @@ $(function () {
 							name: 'vpn',
 							on: {
 								change: function change() {
-									console.log('vpn changed');
+									// console.log('vpn changed');
 								}
 							},
 							options: [{ name: 'France', value: 'france' }, { name: 'Russia', value: 'russia' }, { name: 'United States', value: 'united-states' }, { name: 'China', value: 'china' }]
@@ -2231,8 +2235,9 @@ $(function () {
 					form.on('change', function (values) {
 
 						function compareAndOverwrite(item) {
+
 							for (var val in values) {
-								if (item.changed_properties.indexOf(val) == -1) {
+								if (item.changed_properties && item.changed_properties.indexOf(val) == -1) {
 									item.per_file_options[val] = values[val];
 								}
 							}
@@ -2292,7 +2297,6 @@ $(function () {
 
 		$("#reset-options").bind('click', function (e) {
 			e.preventDefault();
-			console.log('reset the form.');
 		});
 
 		$(".upload-module .grouped-buttons a").on('shown.bs.tab', function (e) {
