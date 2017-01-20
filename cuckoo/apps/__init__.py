@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from .apps import (
-    fetch_community, submit_tasks, process_tasks, process_task
+    fetch_community, submit_tasks, process_tasks, process_task, cuckoo_clean
 )
 
 from .api import cuckoo_api

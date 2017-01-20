@@ -15,7 +15,7 @@ import cuckoo
 
 from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
+    cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance, cuckoo_clean,
     cuckoo_dnsserve, cuckoo_machine, import_cuckoo, migrate_database
 )
 from cuckoo.common.config import read_kv_conf
@@ -28,9 +28,9 @@ from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
-    check_configs, init_modules, check_version, init_logfile, cuckoo_clean,
-    drop_privileges, init_logging, init_console_logging, init_tasks, init_yara,
-    init_binaries, init_rooter, init_routing
+    check_configs, init_modules, check_version, init_logfile, drop_privileges,
+    init_logging, init_console_logging, init_tasks, init_yara, init_binaries,
+    init_rooter, init_routing
 )
 from cuckoo.misc import cwd, load_signatures, getuser, decide_cwd
 

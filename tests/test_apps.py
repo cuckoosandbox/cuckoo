@@ -9,7 +9,7 @@ import os
 import pytest
 import tempfile
 
-from cuckoo.apps.apps import process, process_task
+from cuckoo.apps.apps import process, process_task, cuckoo_clean
 from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.files import Files
 from cuckoo.core.log import logger
@@ -295,3 +295,65 @@ def test_process_log_taskid(p, q):
             break
     else:
         raise
+
+@mock.patch("cuckoo.apps.apps.Database")
+def test_clean_dropdb(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    cuckoo_clean()
+    p.return_value.connect.assert_called_once()
+    p.return_value.drop.assert_called_once_with()
+
+@mock.patch("cuckoo.apps.apps.Database")
+@mock.patch("cuckoo.apps.apps.pymongo")
+def test_clean_dropmongo(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "reporting": {
+            "mongodb": {
+                "enabled": True,
+                "host": "host",
+                "port": 13337,
+            },
+        },
+    })
+
+    cuckoo_clean()
+    p.MongoClient.assert_called_once_with("host", 13337)
+    p.MongoClient.return_value.drop_database.assert_called_once_with("cuckoo")
+
+@mock.patch("cuckoo.apps.apps.Database")
+def test_clean_keepdirs(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    with open(cwd("log", "cuckoo.log"), "wb") as f:
+        f.write("this is a log file")
+
+    os.mkdir(cwd(analysis=1))
+    with open(cwd("analysis.log", analysis=1), "wb") as f:
+        f.write("this is also a log file")
+
+    with open(cwd("storage", "binaries", "a"*40), "wb") as f:
+        f.write("this is a binary file")
+
+    assert os.path.isdir(cwd("log"))
+    assert os.path.exists(cwd("log", "cuckoo.log"))
+    assert os.path.exists(cwd("storage", "analyses"))
+    assert os.path.exists(cwd("storage", "analyses", "1"))
+    assert os.path.exists(cwd("storage", "analyses", "1", "analysis.log"))
+    assert os.path.exists(cwd("storage", "baseline"))
+    assert os.path.exists(cwd("storage", "binaries"))
+    assert os.path.exists(cwd("storage", "binaries", "a"*40))
+
+    cuckoo_clean()
+
+    assert os.path.isdir(cwd("log"))
+    assert not os.path.exists(cwd("log", "cuckoo.log"))
+    assert os.path.exists(cwd("storage", "analyses"))
+    assert not os.path.exists(cwd("storage", "analyses", "1"))
+    assert not os.path.exists(cwd("storage", "analyses", "1", "analysis.log"))
+    assert os.path.exists(cwd("storage", "baseline"))
+    assert os.path.exists(cwd("storage", "binaries"))
+    assert not os.path.exists(cwd("storage", "binaries", "a"*40))

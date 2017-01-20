@@ -5,21 +5,27 @@
 import fnmatch
 import logging
 import os.path
+import pymongo
 import random
 import requests
+import shutil
 import StringIO
 import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import config, emit_options
-from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.exceptions import (
+    CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
+)
 from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
-from cuckoo.core.database import Database
-from cuckoo.core.database import TASK_FAILED_PROCESSING, TASK_REPORTED
+from cuckoo.core.database import (
+    Database, TASK_FAILED_PROCESSING, TASK_REPORTED
+)
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
+from cuckoo.core.startup import init_console_logging
 from cuckoo.misc import cwd, mkdir
 
 log = logging.getLogger(__name__)
@@ -276,3 +282,61 @@ def process_tasks(instance, maxcount):
             count += 1
     except Exception as e:
         log.exception("Caught unknown exception: %s", e)
+
+def cuckoo_clean():
+    """Clean up cuckoo setup.
+    It deletes logs, all stored data from file system and configured
+    databases (SQL and MongoDB).
+    """
+    # Init logging (without writing to file).
+    init_console_logging()
+
+    try:
+        # Initialize the database connection.
+        db = Database()
+        db.connect(schema_check=False)
+
+        # Drop all tables.
+        db.drop()
+    except (CuckooDependencyError, CuckooDatabaseError) as e:
+        # If something is screwed due to incorrect database migrations or bad
+        # database SqlAlchemy would be unable to connect and operate.
+        log.warning("Error connecting to database: it is suggested to check "
+                    "the connectivity, apply all migrations if needed or purge "
+                    "it manually. Error description: %s", e)
+
+    # Check if MongoDB reporting is enabled and drop that if it is.
+    if config("reporting:mongodb:enabled"):
+        host = config("reporting:mongodb:host")
+        port = config("reporting:mongodb:port")
+        mdb = config("reporting:mongodb:db")
+        try:
+            conn = pymongo.MongoClient(host, port)
+            conn.drop_database(mdb)
+            conn.close()
+        except:
+            log.warning("Unable to drop MongoDB database: %s", mdb)
+
+    # Paths to clean.
+    paths = [
+        cwd("cuckoo.db"),
+        cwd("log"),
+        cwd("storage", "analyses"),
+        cwd("storage", "baseline"),
+        cwd("storage", "binaries"),
+    ]
+
+    # Delete the various files and directories. In case of directories, keep
+    # the parent directories, so to keep the state of the CWD in tact.
+    for path in paths:
+        if os.path.isdir(path):
+            try:
+                shutil.rmtree(path)
+                os.mkdir(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing directory %s: %s", path, e)
+        elif os.path.isfile(path):
+            try:
+                os.unlink(path)
+            except (IOError, OSError) as e:
+                log.warning("Error removing file %s: %s", path, e)

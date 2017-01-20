@@ -518,7 +518,9 @@ class Database(object):
         try:
             Base.metadata.drop_all(self.engine)
         except SQLAlchemyError as e:
-            raise CuckooDatabaseError("Unable to create or connect to database: {0}".format(e))
+            raise CuckooDatabaseError(
+                "Unable to drop all tables of the database: %s" % e
+            )
 
     @classlock
     def clean_machines(self):
