@@ -21,11 +21,17 @@ if not cfg.mongodb.get("enabled"):
 
 # Get connection options from reporting.conf.
 MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
-MONGO_PORT = cfg.mongodb.get("port", 27017)
+MONGO_PORT = int(cfg.mongodb.get("port", 27017))
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
+MONGO_USERNAME = cfg.mongodb.get("username", "")
+MONGO_PASSWORD = cfg.mongodb.get("password", "")
+
 
 try:
-    MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)[MONGO_DB]
+    MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
+    if MONGO_USERNAME:
+        MONGO.admin.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
+    MONGO = MONGO[MONGO_DB]
 except Exception as e:
     raise Exception("Unable to connect to Mongo: %s" % e)
 

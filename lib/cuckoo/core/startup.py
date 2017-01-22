@@ -484,10 +484,14 @@ def cuckoo_clean():
     if cfg.mongodb and cfg.mongodb.enabled:
         from pymongo import MongoClient
         host = cfg.mongodb.get("host", "127.0.0.1")
-        port = cfg.mongodb.get("port", 27017)
+        port = int(cfg.mongodb.get("port", 27017))
+        username = cfg.mongodb.get("username", "")
+        password = cfg.mongodb.get("password", "")
         mdb = cfg.mongodb.get("db", "cuckoo")
         try:
             conn = MongoClient(host, port)
+            if username:
+                conn.admin.authenticate(username, password)
             conn.drop_database(mdb)
             conn.close()
         except:

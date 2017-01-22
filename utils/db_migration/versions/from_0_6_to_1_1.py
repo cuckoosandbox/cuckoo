@@ -262,7 +262,9 @@ def mongo_upgrade():
     # Run migration only if mongo is enabled as reporting module.
     if config.mongodb.enabled:
         host = config.mongodb.get("host", "127.0.0.1")
-        port = config.mongodb.get("port", 27017)
+        port = int(config.mongodb.get("port", 27017))
+        username = config.mongodb.get("username", "")
+        password = config.mongodb.get("password", "")
         database = config.mongodb.get("db", "cuckoo")
         print "Mongo reporting is enabled, strarting mongo data migration."
 
@@ -290,7 +292,10 @@ def mongo_upgrade():
                 import pymongo
 
                 try:
-                    db = pymongo.MongoClient(host, port)[database]
+                    db = pymongo.MongoClient(host, port)
+                    if username:
+                        db.admin.authenticate(username, password)
+                    db = db[database]
                 except pymongo.errors.ConnectionFailure:
                     print "Cannot connect to MongoDB"
                     sys.exit()
