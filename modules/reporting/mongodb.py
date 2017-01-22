@@ -177,6 +177,21 @@ class MongoDB(Report):
 
         report["dropped"] = new_dropped
 
+        # Walk through the dropped buffer files, store them in GridFS and update the
+        # report with the ObjectIds.
+        new_buffer = []
+        if "buffer" in report:
+            for buffer in report["buffer"]:
+                new_buff = dict(buffer)
+                buff = File(buffer["path"])
+                if buff.valid():
+                    buffer_id = self.store_file(buff, filename=buffer["name"])
+                    new_buff["object_id"] = buffer_id
+
+                new_buffer.append(new_buff)
+
+        report["buffer"] = new_buffer
+
         # Add screenshots.
         report["shots"] = []
         if os.path.exists(self.shots_path):
