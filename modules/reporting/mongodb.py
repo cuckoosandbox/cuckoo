@@ -33,12 +33,13 @@ class MongoDB(Report):
         port = int(self.options.get("port", 27017))
         username = self.options.get("username", "")
         password = self.options.get("password", "")
+        authentication_db = self.options.get("authentication_database", "admin")
         db = self.options.get("db", "cuckoo")
 
         try:
             self.conn = MongoClient(host, port)
             if username:
-                self.conn.admin.authenticate(username, password)
+                self.conn[authentication_db].authenticate(username, password)
             self.db = self.conn[db]
             self.fs = GridFS(self.db)
         except TypeError:

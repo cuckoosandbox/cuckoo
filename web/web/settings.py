@@ -25,12 +25,13 @@ MONGO_PORT = int(cfg.mongodb.get("port", 27017))
 MONGO_DB = cfg.mongodb.get("db", "cuckoo")
 MONGO_USERNAME = cfg.mongodb.get("username", "")
 MONGO_PASSWORD = cfg.mongodb.get("password", "")
+MONGO_AUTHENTICATION_DB = cfg.mongodb.get("authentication_database", "admin")
 
 
 try:
     MONGO = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
     if MONGO_USERNAME:
-        MONGO.admin.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
+        MONGO[MONGO_AUTHENTICATION_DB].authenticate(MONGO_USERNAME, MONGO_PASSWORD)
     MONGO = MONGO[MONGO_DB]
 except Exception as e:
     raise Exception("Unable to connect to Mongo: %s" % e)

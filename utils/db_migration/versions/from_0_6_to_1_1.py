@@ -266,6 +266,7 @@ def mongo_upgrade():
         username = config.mongodb.get("username", "")
         password = config.mongodb.get("password", "")
         database = config.mongodb.get("db", "cuckoo")
+        authentication_db = config.mongodb.get("authentication_database", "admin")
         print "Mongo reporting is enabled, strarting mongo data migration."
 
         if not port.isnumber():
@@ -294,7 +295,7 @@ def mongo_upgrade():
                 try:
                     db = pymongo.MongoClient(host, port)
                     if username:
-                        db.admin.authenticate(username, password)
+                        db[authentication_db].authenticate(username, password)
                     db = db[database]
                 except pymongo.errors.ConnectionFailure:
                     print "Cannot connect to MongoDB"
