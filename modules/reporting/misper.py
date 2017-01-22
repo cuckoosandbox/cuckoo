@@ -215,7 +215,7 @@ class MISPER(Report):
 
         except Exception as e:
             raise CuckooReportError(
-                "Failed failed adding registry keys to MISP event: %s" % e
+                "Failed adding registry key to MISP event: %s" % e
             )
 
         try:
@@ -237,5 +237,5 @@ class MISPER(Report):
 
         except Exception as e:
             raise CuckooReportError(
-                "Failed failed adding registry keys to MISP event: %s" % e
+                "Failed adding PDB to MISP event: %s" % e
             )
