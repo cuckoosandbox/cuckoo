@@ -18,7 +18,6 @@
                         {% endif %}
                     </td>
                 </tr>
-            </h4>
                 {% if file.filepath %}
                 <tr>
                     <th class="text-right">Filepath</th>
@@ -80,6 +79,19 @@
                 <tr>
                     <th class="text-right">VirusTotal</th>
                     <td><a href="https://www.virustotal.com/en/file/{{file.sha256}}/analysis/">Search for analysis</a></td>
+                </tr>
+                <tr>
+                    <th class="text-right">Strings</th>
+                    <td>
+                        <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse" data-target=#{{file.md5}} aria-expanded="true">
+                            Show
+                            </button>
+                        <div class="collapse" id={{file.md5}}>
+                        {% for string in file.strings %}
+                        <div>{{string}}</div>
+                        {% endfor %}
+                        </div>
+                    </td>
                 </tr>
             </table>
         </div>
