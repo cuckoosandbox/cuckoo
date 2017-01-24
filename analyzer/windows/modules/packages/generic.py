@@ -18,7 +18,7 @@ class Generic(Package):
         cmd_path = self.get_path("cmd.exe")
 
         # Create random cmd.exe window title.
-        rand_title = random_string(4, 16)
+        rand_title = "\"{0}\"".format(random_string(4, 16))
 
         # START syntax.
         # See: https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/start.mspx?mfr=true
