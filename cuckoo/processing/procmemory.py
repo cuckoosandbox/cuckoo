@@ -207,7 +207,9 @@ class ProcessMemory(Processing):
                     self.create_idapy(proc)
 
                 if self.options.get("extract_img"):
-                    proc["extracted"] = list(self.dump_images(proc))
+                    proc["extracted"] = list(self.dump_images(
+                        proc, self.options.get("extract_dll")
+                    ))
 
                 if self.options.get("dump_delete"):
                     try:

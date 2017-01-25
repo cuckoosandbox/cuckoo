@@ -42,8 +42,9 @@ class Debug(Processing):
         debug = {
             "log": [],
             "cuckoo": [],
-            "errors": [],
             "action": [],
+            "dbgview": [],
+            "errors": [],
         }
 
         if os.path.exists(self.log_path):
@@ -64,6 +65,15 @@ class Debug(Processing):
 
         if os.path.exists(self.action_path):
             debug["action"] = Logfile(self.action_path, is_json=True)
+
+        dbgview_log = os.path.join(self.analysis_path, "logs", "dbgview.log")
+        if os.path.exists(dbgview_log):
+            f = open(dbgview_log, "rb")
+            # Ignore the first line which identifies the machine.
+            f.readline()
+            for line in f:
+                idx, time, message = line.split(None, 2)
+                debug["dbgview"].append(message)
 
         debug["errors"] = []
         for error in Database().view_errors(self.task["id"]):

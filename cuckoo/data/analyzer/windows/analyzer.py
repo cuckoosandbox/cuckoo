@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -28,9 +28,10 @@ from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
+from lib.core.ioctl import zer0m0n
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
-from lib.core.privileges import grant_debug_privilege
+from lib.core.privileges import grant_privilege
 from lib.core.startup import init_logging, set_clock
 from modules import auxiliary
 
@@ -437,7 +438,8 @@ class Analyzer(object):
         """Prepare env for analysis."""
         # Get SeDebugPrivilege for the Python process. It will be needed in
         # order to perform the injections.
-        grant_debug_privilege()
+        grant_privilege("SeDebugPrivilege")
+        grant_privilege("SeLoadDriverPrivilege")
 
         # Initialize logging.
         init_logging()
@@ -458,18 +460,19 @@ class Analyzer(object):
 
         # If a pipe name has not set, then generate a random one.
         if "pipe" in self.config.options:
-            self.config.pipe = "\\\\.\\PIPE\\%s" % self.config.options["pipe"]
+            self.config.pipe = "\\??\\PIPE\\%s" % self.config.options["pipe"]
         else:
-            self.config.pipe = "\\\\.\\PIPE\\%s" % random_string(16, 32)
+            self.config.pipe = "\\??\\PIPE\\%s" % random_string(16, 32)
 
         # Generate a random name for the logging pipe server.
-        self.config.logpipe = "\\\\.\\PIPE\\%s" % random_string(16, 32)
+        self.config.logpipe = "\\??\\PIPE\\%s" % random_string(16, 32)
 
         # Initialize and start the Command Handler pipe server. This is going
         # to be used for communicating with the monitored processes.
-        self.command_pipe = PipeServer(PipeDispatcher, self.config.pipe,
-                                       message=True,
-                                       dispatcher=CommandPipeHandler(self))
+        self.command_pipe = PipeServer(
+            PipeDispatcher, self.config.pipe, message=True,
+            dispatcher=CommandPipeHandler(self)
+        )
         self.command_pipe.daemon = True
         self.command_pipe.start()
 
@@ -477,8 +480,9 @@ class Analyzer(object):
         # open up a pipe that monitored processes will use to send logs to
         # before they head off to the host machine.
         destination = self.config.ip, self.config.port
-        self.log_pipe_server = PipeServer(PipeForwarder, self.config.logpipe,
-                                          destination=destination)
+        self.log_pipe_server = PipeServer(
+            PipeForwarder, self.config.logpipe, destination=destination
+        )
         self.log_pipe_server.daemon = True
         self.log_pipe_server.start()
 
@@ -608,19 +612,27 @@ class Analyzer(object):
             try:
                 aux = module(options=self.config.options, analyzer=self)
                 aux_avail.append(aux)
+                aux.init()
                 aux.start()
             except (NotImplementedError, AttributeError):
-                log.warning("Auxiliary module %s was not implemented",
-                            module.__name__)
+                log.exception(
+                    "Auxiliary module %s was not implemented", module.__name__
+                )
             except CuckooDisableModule:
                 continue
             except Exception as e:
-                log.warning("Cannot execute auxiliary module %s: %s",
-                            module.__name__, e)
+                log.exception(
+                    "Cannot execute auxiliary module %s: %s",
+                    module.__name__, e
+                )
             else:
                 log.debug("Started auxiliary module %s",
                           module.__name__)
                 aux_enabled.append(aux)
+
+        # Forward the command pipe and logpipe names on to zer0m0n.
+        zer0m0n.cmdpipe(self.config.pipe)
+        zer0m0n.channel(self.config.logpipe)
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
