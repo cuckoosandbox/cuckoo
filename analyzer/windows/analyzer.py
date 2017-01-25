@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -27,7 +27,7 @@ from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
 from lib.core.config import Config
-from lib.core.ioctl import ioctl
+from lib.core.ioctl import zer0m0n
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
 from lib.core.privileges import grant_privilege
@@ -601,23 +601,27 @@ class Analyzer(object):
             try:
                 aux = module(options=self.config.options, analyzer=self)
                 aux_avail.append(aux)
+                aux.init()
                 aux.start()
             except (NotImplementedError, AttributeError):
-                log.warning("Auxiliary module %s was not implemented",
-                            module.__name__)
+                log.exception(
+                    "Auxiliary module %s was not implemented", module.__name__
+                )
             except CuckooDisableModule:
                 continue
             except Exception as e:
-                log.warning("Cannot execute auxiliary module %s: %s",
-                            module.__name__, e)
+                log.exception(
+                    "Cannot execute auxiliary module %s: %s",
+                    module.__name__, e
+                )
             else:
                 log.debug("Started auxiliary module %s",
                           module.__name__)
                 aux_enabled.append(aux)
 
         # Forward the command pipe and logpipe names on to zer0m0n.
-        ioctl.cmdpipe(self.config.pipe)
-        ioctl.channel(self.config.logpipe)
+        zer0m0n.cmdpipe(self.config.pipe)
+        zer0m0n.channel(self.config.logpipe)
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.

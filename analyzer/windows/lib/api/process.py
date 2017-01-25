@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,7 +18,7 @@ from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
-from lib.core.ioctl import ioctl
+from lib.core.ioctl import zer0m0n
 
 log = logging.getLogger(__name__)
 
@@ -292,7 +292,7 @@ class Process(object):
             return False
 
         # Report this PID to the kernel driver (if present).
-        ioctl.addpid(self.pid)
+        zer0m0n.addpid(self.pid)
 
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")

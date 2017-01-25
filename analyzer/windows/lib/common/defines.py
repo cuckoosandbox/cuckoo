@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ KERNEL32 = windll.kernel32
 ADVAPI32 = windll.advapi32
 USER32   = windll.user32
 SHELL32  = windll.shell32
+PSAPI    = windll.psapi
 
 BYTE      = c_ubyte
 WORD      = c_ushort
