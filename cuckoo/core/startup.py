@@ -207,13 +207,13 @@ def init_yara():
             continue
 
         # Generate path for the category's index file.
-        index_name = "index_{0}.yar".format(category)
+        index_name = "index_%s.yar" % category
         index_path = cwd("yara", index_name)
 
         # Create index file and populate it.
-        with open(index_path, "w") as index_handle:
+        with open(index_path, "wb") as index_handle:
             for signature in signatures:
-                index_handle.write("include \"{0}\"\n".format(signature))
+                index_handle.write("include \"%s\"\n" % signature)
 
         generated.append(index_name)
 

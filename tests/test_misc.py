@@ -1,7 +1,8 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import ctypes
 import mock
 import os
 import pytest
@@ -12,8 +13,10 @@ import time
 
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
-from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, Popen
-from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
+from cuckoo.misc import (
+    dispatch, cwd, set_cwd, getuser, mkdir, Popen, Structure, HAVE_PWD,
+    is_linux, is_windows, is_macosx, decide_cwd
+)
 
 def return_value(value):
     return value
@@ -65,7 +68,7 @@ def test_cwd():
     with pytest.raises(RuntimeError):
         cwd("foo", analysis=None)
 
-@pytest.mark.skipif("not HAVE_PWD")
+@pytest.mark.skipif(not HAVE_PWD, reason="This test is not for Windows")
 def test_getuser():
     # TODO This probably doesn't work on all platforms.
     assert getuser() == subprocess.check_output(["id", "-un"]).strip()
@@ -188,3 +191,39 @@ def test_decide_cwd():
         os.environ["CUCKOO_CWD"] = orig_cuckoo_cwd
     else:
         os.environ.pop("CUCKOO_CWD", None)
+
+def test_structure():
+    class S1(Structure):
+        _pack_ = 1
+        _fields_ = [
+            ("a", ctypes.c_ubyte),
+            ("b", ctypes.c_ushort),
+            ("c", ctypes.c_uint),
+            ("d", ctypes.c_ubyte * 128),
+        ]
+
+    class S2(Structure):
+        _pack_ = 1
+        _fields_ = [
+            ("a", S1),
+            ("b", ctypes.c_ulonglong),
+            ("c", ctypes.c_char * 32),
+        ]
+
+    a = S2.from_buffer_copy("A"*175)
+    assert a.a.a == 0x41
+    assert a.a.b == 0x4141
+    assert a.a.c == 0x41414141
+    assert a.a.d[:] == [0x41] * 128
+    assert a.b == 0x4141414141414141
+    assert a.c == "A"*32
+    assert a.as_dict() == {
+        "a": {
+            "a": 0x41,
+            "b": 0x4141,
+            "c": 0x41414141,
+            "d": [0x41] * 128,
+        },
+        "b": 0x4141414141414141,
+        "c": "A"*32,
+    }

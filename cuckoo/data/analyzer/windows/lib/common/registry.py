@@ -145,4 +145,6 @@ def query_value(rootkey, subkey, name):
         if type_.value == _winreg.REG_MULTI_SZ:
             value = value.raw[:length.value].decode("utf16")
             return value.rstrip(u"\u0000").split(u"\u0000")
+        if type_.value == _winreg.REG_DWORD:
+            return struct.unpack("I", value.raw[:length.value])[0]
         return value.raw[:length.value]

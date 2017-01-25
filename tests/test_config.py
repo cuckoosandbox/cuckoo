@@ -878,6 +878,9 @@ auto_rt = no
 [network]
 whitelist-dns = wow
 allowed-dns = 8.8.8.8
+[procmemory]
+enabled = yes
+extract_img = yes
 """)
     Files.create(cwd("conf"), "reporting.conf", """
 [mattermost]
@@ -920,6 +923,7 @@ interface = eth0
     assert cfg["cuckoo"]["feedback"]["email"] is None
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
+    assert cfg["processing"]["procmemory"]["extract_dll"] is False
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["reporting"]["notification"]["url"] is None

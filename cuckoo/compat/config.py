@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -558,6 +558,7 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    c["processing"]["procmemory"]["extract_dll"] = False
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,
