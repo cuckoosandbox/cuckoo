@@ -12,7 +12,7 @@ import Queue
 
 import cuckoo
 
-from cuckoo.common.config import Config, emit_options
+from cuckoo.common.config import Config, emit_options, config
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooGuestError, CuckooOperationalError,
     CuckooMachineSnapshotError, CuckooCriticalError
@@ -279,18 +279,25 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
 
         if self.route == "drop":
-            rooter("drop_enable", self.machine.ip, str(cfg.resultserver.port))
+            rooter(
+                "drop_enable", self.machine.ip,
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "inetsim":
-            rooter("inetsim_enable", self.machine.ip,
-                   cfg.inetsim.server,
-                   str(cfg.resultserver.port))
+            rooter(
+                "inetsim_enable", self.machine.ip,
+                config("routing:inetsim:server"),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "tor":
-            rooter("tor_enable", self.machine.ip,
-                   str(cfg.resultserver.port),
-                   str(cfg.tor.dnsport),
-                   str(cfg.tor.proxyport))
+            rooter(
+                "tor_enable", self.machine.ip,
+                str(config("cuckoo:resultserver:port")),
+                str(config("routing:tor:dnsport")),
+                str(config("routing:tor:proxyport"))
+            )
 
         if self.interface:
             rooter("forward_enable", self.machine.interface,

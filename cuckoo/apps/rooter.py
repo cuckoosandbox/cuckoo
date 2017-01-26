@@ -151,7 +151,7 @@ def srcroute_disable(rt_table, ipaddr):
     run(_ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(_ip, "route", "flush", "cache")
 
-def inetsim_enable(ipaddr, inetsim_ip, resultserver_port, interface):
+def inetsim_enable(ipaddr, inetsim_ip, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(_iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
