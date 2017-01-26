@@ -39,3 +39,9 @@ venv
 # Python package stuff
 lib/python2.7/
 build/
+
+# Ignore CuckooML sample data
+sample_data/
+
+# Ignore Jupyter Notebook examples' checkpoints
+examples/.ipynb_checkpoints

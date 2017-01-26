@@ -24,6 +24,7 @@ try:
     from lib.cuckoo.core.startup import init_logging, init_modules
     from lib.cuckoo.core.startup import init_tasks, init_yara, init_binaries
     from lib.cuckoo.core.startup import init_rooter, init_routing
+    from modules.processing.cuckooml import init_cuckooml
 
     import bson
 
@@ -33,12 +34,13 @@ except (CuckooDependencyError, ImportError) as e:
 
 log = logging.getLogger()
 
-def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
+def cuckoo_init(quiet=False, debug=False, artwork=False, test=False, ml=False):
     """Cuckoo initialization workflow.
     @param quiet: if set enable silent mode, it doesn't print anything except warnings
     @param debug: if set enable debug mode, it print all debug messages
     @param artwork: if set it will print only artworks, forever
     @param test: enable integration test mode, used only for testing
+    @param ml: do CuckooML analysis of locally stored samples
     """
     cur_path = os.getcwd()
     os.chdir(CUCKOO_ROOT)
@@ -64,6 +66,10 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
         log.setLevel(logging.WARN)
     elif debug:
         log.setLevel(logging.DEBUG)
+
+    if ml:
+        init_cuckooml()
+        return
 
     init_modules()
     init_tasks()
@@ -105,6 +111,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--test", help="Test startup", action="store_true", required=False)
     parser.add_argument("-m", "--max-analysis-count", help="Maximum number of analyses", type=int, required=False)
     parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
+    parser.add_argument("--ml", help="CuckooML: cluster reports and compare new samples", action="store_true", required=False)
     parser.add_argument("--clean", help="Remove all tasks and samples and their associated data", action='store_true', required=False)
     args = parser.parse_args()
 
@@ -117,7 +124,7 @@ if __name__ == "__main__":
 
     try:
         cuckoo_init(quiet=args.quiet, debug=args.debug, artwork=args.artwork,
-                    test=args.test)
+                    test=args.test, ml=args.ml)
         if not args.artwork and not args.test:
             cuckoo_main(max_analysis_count=args.max_analysis_count)
     except CuckooCriticalError as e:
