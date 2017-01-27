@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -26,9 +26,10 @@ class Screenshots(Processing):
         if not os.path.isdir(self.shots_path):
             return
 
-        if tesseract and not os.path.exists(tesseract):
-            log.error("Could not find tesseract binary, "
-                      "screenshot OCR aborted.")
+        if tesseract and tesseract != "no" and not os.path.exists(tesseract):
+            log.error(
+                "Could not find tesseract binary, screenshot OCR aborted."
+            )
             tesseract = None
 
         for shot_file in sorted(os.listdir(self.shots_path)):

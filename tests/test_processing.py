@@ -1,12 +1,14 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import tempfile
 
 from cuckoo.core.database import Database
 from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
+from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 
 class TestProcessing:
@@ -58,3 +60,26 @@ class TestProcessing:
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    @mock.patch("cuckoo.processing.screenshots.log")
+    def test_screenshot_tesseract(self, p):
+        s = Screenshots()
+        # Use an empty directory so no actual screenshot analysis is done.
+        s.shots_path = tempfile.mkdtemp()
+        s.set_options({
+            "tesseract": None,
+        })
+        assert s.run() == []
+        p.error.assert_not_called()
+
+        s.set_options({
+            "tesseract": "no",
+        })
+        assert s.run() == []
+        p.error.assert_not_called()
+
+        s.set_options({
+            "tesseract": "thispathdoesnotexist",
+        })
+        assert s.run() == []
+        p.error.assert_called_once()
