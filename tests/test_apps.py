@@ -357,3 +357,22 @@ def test_clean_keepdirs(p):
     assert os.path.exists(cwd("storage", "baseline"))
     assert os.path.exists(cwd("storage", "binaries"))
     assert not os.path.exists(cwd("storage", "binaries", "a"*40))
+
+@mock.patch("cuckoo.main.Database")
+@mock.patch("cuckoo.main.submit_tasks")
+def test_submit_unique_with_duplicates(p, q, capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    p.return_value = [
+        ("category", "target", 1),
+        ("category", "target", None),
+    ]
+
+    main.main(
+        ("--cwd", cwd(), "submit", "--unique", "a", "b"),
+        standalone_mode=False
+    )
+    out, err = capsys.readouterr()
+    assert "added as task with" in out
+    assert "skipped as it has" in out

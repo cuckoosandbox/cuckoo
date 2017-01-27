@@ -275,7 +275,7 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
             )
         else:
             print "%s: %s \"%s\" skipped as it has already been analyzed" % (
-                bold(green("Success")), category, target, task_id
+                bold(green("Success")), category, target
             )
 
 @main.command()
