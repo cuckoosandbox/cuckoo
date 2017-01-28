@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os.path
 import tempfile
 
 from cuckoo.core.database import Database
@@ -83,3 +84,36 @@ class TestProcessing:
         })
         assert s.run() == []
         p.error.assert_called_once()
+
+    @mock.patch("cuckoo.processing.screenshots.subprocess")
+    def test_screenshots(self, p):
+        s = Screenshots()
+        s.shots_path = os.path.join(
+            "tests", "files", "sample_analysis_storage", "shots"
+        )
+        s.set_options({
+            "tesseract": __file__,
+        })
+        p.check_output.return_value = "foobar"
+        assert s.run() == [{
+            "path": os.path.join(s.shots_path, "0001.jpg"),
+            "ocr": "foobar",
+        }]
+        p.check_output.assert_called_once_with([
+            __file__, os.path.join(s.shots_path, "0001.jpg"), "stdout"
+        ])
+
+    @mock.patch("cuckoo.processing.screenshots.subprocess")
+    @mock.patch("cuckoo.processing.screenshots.log")
+    def test_ignore_notesseract(self, p, q):
+        s = Screenshots()
+        s.shots_path = os.path.join(
+            "tests", "files", "sample_analysis_storage", "shots"
+        )
+        s.set_options({
+            "tesseract": "no",
+        })
+        assert len(s.run()) == 1
+        p.error.assert_not_called()
+        p.warning.assert_not_called()
+        q.check_output.assert_not_called()
