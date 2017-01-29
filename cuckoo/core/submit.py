@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +6,6 @@ import logging
 import os
 import sflock
 
-from cuckoo.common.config import Config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
@@ -53,10 +51,7 @@ class SubmitManager(object):
 
                 if validate_hash(line):
                     try:
-                        filedata = VirusTotalAPI(
-                            Config("processing").virustotal.apikey,
-                            Config("processing").virustotal.timeout
-                        ).hash_fetch(line)
+                        filedata = VirusTotalAPI().hash_fetch(line)
                     except CuckooOperationalError as e:
                         submit_data["errors"].append(
                             "Error retrieving file hash: %s" % e

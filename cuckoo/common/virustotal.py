@@ -1,20 +1,20 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
 import re
 import requests
-from requests.exceptions import HTTPError
 
 # Disable requests/urllib3 debug & info messages.
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.utils import validate_hash
 from cuckoo.common.objects import File
+from cuckoo.common.utils import validate_hash
 
 class VirusTotalError(CuckooOperationalError):
     """VirusTotal operational error"""
@@ -66,15 +66,11 @@ class VirusTotalAPI(object):
         "patched", "patchfile", "downware", "dropped",
     ]
 
-    def __init__(self, apikey, timeout, scan=0):
-        """Initialize VirusTotal API with the API key and timeout.
-        @param api_key: virustotal api key
-        @param timeout: request and response timeout
-        @param scan: send file to scan or just get report
-        """
-        self.apikey = apikey
-        self.timeout = timeout
-        self.scan = scan
+    def __init__(self):
+        """Initialize VirusTotal API."""
+        self.apikey = config("processing:virustotal:key")
+        self.timeout = config("processing:virustotal:timeout")
+        self.scan = config("processing:virustotal:scan")
 
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
@@ -94,7 +90,7 @@ class VirusTotalAPI(object):
                              timeout=self.timeout, **kwargs)
             r.raise_for_status()  # raise an exception for HTTP error codes
             return r.content
-        except (requests.ConnectionError, ValueError, HTTPError):
+        except (requests.ConnectionError, ValueError, requests.HTTPError):
             raise CuckooOperationalError("Could not fetch hash \"%s\" "
                                          "from VirusTotal" % file_hash)
 

@@ -4,13 +4,17 @@
 
 import mock
 import os.path
+import pytest
 import tempfile
 
+from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.core.database import Database
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
+from cuckoo.processing.virustotal import VirusTotal
 
 class TestProcessing:
     def test_debug(self):
@@ -117,3 +121,27 @@ class TestProcessing:
         p.error.assert_not_called()
         p.warning.assert_not_called()
         q.check_output.assert_not_called()
+
+    def test_virustotal_nokey(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "processing": {
+                "virustotal": {
+                    "key": None,
+                },
+            },
+        })
+        with pytest.raises(CuckooProcessingError) as e:
+            VirusTotal().run()
+        e.match("API key not configured")
+
+    def test_virustotal_invalidcategory(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        with pytest.raises(CuckooProcessingError) as e:
+            v = VirusTotal()
+            v.set_task({
+                "category": "notacategory",
+            })
+            v.run()
+        e.match("Unsupported task category")
