@@ -1045,7 +1045,7 @@ class Signature(object):
         @param pattern: string or expression to check for.
         @return: True/False
         """
-        for alert in self._caller.results.get("suricata", {}).get("alerts", []):
+        for alert in self.get_results("suricata", {}).get("alerts", []):
             if re.findall(pattern, alert.get("signature", ""), re.I):
                 return True
         return False

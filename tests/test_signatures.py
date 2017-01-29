@@ -4,6 +4,7 @@
 
 import mock
 
+from cuckoo.common.abstracts import Signature
 from cuckoo.core.plugins import RunSignatures
 
 def test_signature_version():
@@ -171,3 +172,16 @@ class test_call_signature():
     f = mock.MagicMock()
     rs.call_signature(s1, f, "foo", "bar")
     f.assert_not_called()
+
+def test_check_suricata():
+    class caller(object):
+        results = {
+            "suricata": {
+                "alerts": [{
+                    "signature": "SID_TEST",
+                }],
+            },
+        }
+
+    s = Signature(caller)
+    assert s.check_suricata_alerts(".*TEST.*")
