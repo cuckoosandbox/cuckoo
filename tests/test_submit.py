@@ -9,42 +9,32 @@ import responses
 import tempfile
 import zipfile
 
-from cuckoo.common.files import Folders, Files
 from cuckoo.common.virustotal import VirusTotalAPI
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
-
-CUCKOO_CONF = """
-[cuckoo]
-tmppath = /tmp
-"""
-
-PROCESSING_CONF = """
-[virustotal]
-enabled = yes
-timeout = 60
-scan = 0
-key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
-"""
 
 class TestSubmitManager(object):
     def setup(self):
-        self.dirpath = tempfile.mkdtemp()
-        set_cwd(self.dirpath)
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "processing": {
+                "virustotal": {
+                    "enabled": True,
+                },
+            },
+        })
 
-        self.d = Database()
-        self.d.connect(dsn="sqlite:///:memory:")
-
-        Folders.create(self.dirpath, "conf")
-        Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
-        Files.create(self.dirpath, "conf/processing.conf", PROCESSING_CONF)
+        self.db = Database()
+        self.db.connect()
 
         self.submit_manager = SubmitManager()
 
         self.urls = [
             "http://theguardian.com/",
-            "https://news.ycombinator.com/"
+            "https://news.ycombinator.com/",
+            "google.com",
         ]
 
         self.hashes = [
@@ -64,7 +54,7 @@ class TestSubmitManager(object):
             data=self.files
         ) == 1
 
-        submit = self.d.view_submit(1)
+        submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["errors"]) == 0
         assert os.path.exists(submit.data["data"][0]["data"])
@@ -80,15 +70,23 @@ class TestSubmitManager(object):
             data=self.urls
         ) == 1
 
-        submit = self.d.view_submit(1)
+        submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 2
+        assert len(submit.data["data"]) == 3
 
-        url0, url1 = submit.data["data"]
+        url0, url1, url2 = submit.data["data"]
         assert url0["type"] == "url"
         assert url0["data"] == "http://theguardian.com/"
         assert url1["type"] == "url"
         assert url1["data"] == "https://news.ycombinator.com/"
+        assert url2["type"] == "url"
+        assert url2["data"] == "google.com"
+
+    def test_invalid_strings(self):
+        assert SubmitManager().pre("strings", "thisisnotanurl") == 1
+        submit = self.db.view_submit(1)
+        assert "was neither a valid hash or url" in submit.data["errors"][0]
+        assert not submit.data["data"]
 
     @responses.activate
     def test_pre_hash(self):
@@ -106,7 +104,7 @@ class TestSubmitManager(object):
                 data=self.hashes
             ) == 1
 
-            submit = self.d.view_submit(1)
+            submit = self.db.view_submit(1)
             assert isinstance(submit.data["data"], list)
             assert len(submit.data["data"]) == 1
 
@@ -127,9 +125,9 @@ class TestSubmitManager(object):
             data=self.urls
         ) == 1
 
-        submit = self.d.view_submit(1)
+        submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 2
+        assert len(submit.data["data"]) == 3
 
         for obj in submit.data["data"]:
             assert obj["type"] == "url"
@@ -150,13 +148,14 @@ class TestSubmitManager(object):
             priority=2,
         )
 
-        assert len(tasks) == 2
+        assert len(tasks) == 3
         assert tasks[0] == 1
         assert tasks[1] == 2
+        assert tasks[2] == 3
 
         for task_id in tasks:
             url = self.urls[task_id - 1]
-            view_task = self.d.view_task(task_id=task_id, details=True)
+            view_task = self.db.view_task(task_id=task_id, details=True)
 
             assert view_task.target == url
             assert view_task.status == "pending"
@@ -176,7 +175,7 @@ class TestSubmitManager(object):
             data=self.files
         ) == 1
 
-        submit = self.d.view_submit(1)
+        submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["errors"]) == 0
         assert os.path.exists(submit.data["data"][0]["data"])
@@ -204,7 +203,7 @@ class TestSubmitManager(object):
 
         for task_id in tasks:
             f = self.files[task_id - 1]
-            view_task = self.d.view_task(task_id=task_id, details=True)
+            view_task = self.db.view_task(task_id=task_id, details=True)
 
             assert view_task.target.endswith(ntpath.basename(f["name"]))
             assert view_task.status == "pending"
@@ -244,7 +243,8 @@ class TestSubmitManager(object):
         ]
 
         task_ids = self.submit_manager.submit(submit_id, selected_files)
-        t0, t1 = self.d.view_task(task_ids[0]), self.d.view_task(task_ids[1])
+        t0 = self.db.view_task(task_ids[0])
+        t1 = self.db.view_task(task_ids[1])
         assert t0.category == "archive"
         assert t0.options == {
             "filename": "oledata.mso",

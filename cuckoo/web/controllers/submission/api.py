@@ -42,9 +42,9 @@ class SubmissionApi:
             if submit_type != "strings":
                 return json_error_response("type not \"strings\"")
 
-            data = body["data"].split("\n")
-
-            submit_id = SubmitManager().pre(submit_type=submit_type, data=data)
+            submit_id = SubmitManager().pre(
+                submit_type=submit_type, data=body["data"].split("\n")
+            )
 
             return JsonResponse({
                 "status": True,

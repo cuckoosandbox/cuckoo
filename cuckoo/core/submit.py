@@ -17,21 +17,44 @@ log = logging.getLogger(__name__)
 db = Database()
 
 class SubmitManager(object):
-    """Submit Manager.
+    def _handle_string(self, submit, tmppath, line):
+        if not line:
+            return
 
-    This class handles the submission process for files to be analyzed. It takes
-    care of preparing the temporary storage locations, database registrations and
-    interacting with the submitted files to determine a package.
-    """
-    def __init__(self):
-        self._submit_urlschemes = ["http", "https"]
+        if validate_hash(line):
+            try:
+                filedata = VirusTotalAPI().hash_fetch(line)
+            except CuckooOperationalError as e:
+                submit["errors"].append(
+                    "Error retrieving file hash: %s" % e
+                )
+                return
+
+            filepath = Files.create(tmppath, line, filedata)
+
+            submit["data"].append({
+                "type": "file",
+                "data": filepath
+            })
+            return
+
+        if validate_url(line):
+            submit["data"].append({
+                "type": "url",
+                "data": line
+            })
+            return
+
+        submit["errors"].append(
+            "'%s' was neither a valid hash or url" % line
+        )
 
     def pre(self, submit_type, data):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
-        @param data: a list of dicts containing "name" (file name) and "data" (file data)
-        or a list of strings (urls or hashes)
+        @param data: a list of dicts containing "name" (file name)
+                and "data" (file data) or a list of strings (urls or hashes)
         @return: submit id
         """
         if submit_type not in ("strings", "files"):
@@ -46,36 +69,7 @@ class SubmitManager(object):
 
         if submit_type == "strings":
             for line in data:
-                if not line:
-                    continue
-
-                if validate_hash(line):
-                    try:
-                        filedata = VirusTotalAPI().hash_fetch(line)
-                    except CuckooOperationalError as e:
-                        submit_data["errors"].append(
-                            "Error retrieving file hash: %s" % e
-                        )
-                        continue
-
-                    filepath = Files.create(path_tmp, line, filedata)
-
-                    submit_data["data"].append({
-                        "type": "file",
-                        "data": filepath
-                    })
-                    continue
-
-                if validate_url(line):
-                    submit_data["data"].append({
-                        "type": "url",
-                        "data": line
-                    })
-                    continue
-
-                submit_data["errors"].append(
-                    "'%s' was neither a valid hash or url" % line
-                )
+                self._handle_string(submit_data, path_tmp, line)
 
         if submit_type == "files":
             for entry in data:
@@ -85,9 +79,6 @@ class SubmitManager(object):
                     "type": "file",
                     "data": filepath
                 })
-
-        if not submit_data["data"]:
-            raise Exception("Unknown submit type or no data could be processed")
 
         return Database().add_submit(path_tmp, submit_type, submit_data)
 
@@ -106,7 +97,8 @@ class SubmitManager(object):
         for data in submit.data["data"]:
             if data["type"] == "file":
                 filename = Storage.get_filename_from_path(data["data"])
-                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
+                filepath = os.path.join(submit.tmp_path, data["data"])
+                filedata = open(filepath, "rb").read()
 
                 unpacked = sflock.unpack(
                     filepath=filename, contents=filedata,
@@ -136,7 +128,9 @@ class SubmitManager(object):
                     }
                 })
             else:
-                continue
+                raise RuntimeError(
+                    "Unknown data entry type: %s" % data["type"]
+                )
 
         return {
             "files": files,
@@ -175,7 +169,6 @@ class SubmitManager(object):
                     machine=machine,
                     platform=platform,
                 ))
-
                 continue
 
             # for each selected file entry, create a new temp. folder
