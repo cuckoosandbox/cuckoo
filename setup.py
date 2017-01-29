@@ -105,7 +105,7 @@ setuptools.setup(
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
         "flask==0.10.1",
-        "httpreplay==0.1.17",
+        "httpreplay==0.1.18",
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
         "lxml==3.6.0",
