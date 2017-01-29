@@ -3,10 +3,10 @@
   "description": "",
   "main": "index.js",
   "authors": [
-    "Koen Houtman <koenhoutman1991@me.com>"
+    "Koen Houtman <automagisch@cuckoo.sh>"
   ],
   "license": "ISC",
-  "homepage": "https://github.com/jbremer/cuckoo-internal",
+  "homepage": "https://github.com/cuckoosandbox/cuckoo",
   "ignore": [
     "**/.*",
     "node_modules",
