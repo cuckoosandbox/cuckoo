@@ -4358,6 +4358,7 @@ footer a:hover {
 }
 .flex-grid__body--center {
   justify-content: center;
+  overflow-y: auto;
 }
 .flex-grid__align-vertical {
   align-self: center;

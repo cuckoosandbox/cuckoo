@@ -64,6 +64,7 @@
 		&--center {
 			@extend .flex-grid__body;
 			justify-content: center;
+			overflow-y: auto;
 		}
 	}
 
