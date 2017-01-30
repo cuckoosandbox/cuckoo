@@ -36,7 +36,7 @@
 		div {
 
 			display: block;
-			padding: 10px;
+			padding: 5px 10px;
 			text-decoration: none;
 
 			.label {
@@ -75,10 +75,15 @@
 
 		li {
 
+			font-size: 14px;
 			font-weight: 400;
 
-			[data-type="folder"] {
-				font-weight: 700;
+			[data-type="folder"] { 
+				font-weight: 700; 
+			}
+
+			[data-type="file"] { 
+				font-weight: 500; 
 			}
 
 			strong {
@@ -108,6 +113,9 @@
 		}
 
 		label:not(.flex-form__toggle-list-switch) {
+
+			font-weight: inherit;
+			margin: 0;
 
 			span {
 

@@ -3055,6 +3055,36 @@
   clip: auto;
 }
 
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local("Roboto Light"), local("Roboto-Light"), url("../fonts/Roboto_normal_300_default.woff") format("woff");
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local("Roboto"), local("Roboto-Regular"), url("../fonts/Roboto_normal_400_default.woff") format("woff");
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local("Roboto Medium"), local("Roboto-Medium"), url("../fonts/Roboto_normal_500_default.woff") format("woff");
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local("Roboto Bold"), local("Roboto-Bold"), url("../fonts/Roboto_normal_700_default.woff") format("woff");
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 400;
+  src: local("Roboto Italic"), local("Roboto-Italic"), url("../fonts/Roboto_italic_400_default.woff") format("woff");
+}
 html {
   background: #1c1c1c;
 }
@@ -4861,7 +4891,7 @@ footer a:hover {
 }
 .cuckoo-files ul div {
   display: block;
-  padding: 10px;
+  padding: 5px 10px;
   text-decoration: none;
 }
 .cuckoo-files ul div .label {
@@ -4892,10 +4922,14 @@ footer a:hover {
   margin-right: 0;
 }
 .cuckoo-files ul li {
+  font-size: 14px;
   font-weight: 400;
 }
 .cuckoo-files ul li [data-type="folder"] {
   font-weight: 700;
+}
+.cuckoo-files ul li [data-type="file"] {
+  font-weight: 500;
 }
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";
@@ -4920,6 +4954,10 @@ footer a:hover {
 }
 .cuckoo-files ul li:hover {
   cursor: pointer;
+}
+.cuckoo-files ul label:not(.flex-form__toggle-list-switch) {
+  font-weight: inherit;
+  margin: 0;
 }
 .cuckoo-files ul label:not(.flex-form__toggle-list-switch) span:before {
   content: "";
