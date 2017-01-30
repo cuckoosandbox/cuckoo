@@ -88,6 +88,13 @@ class IE(Package):
             },
         ],
         [
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Ext",
+            {
+                "IgnoreFrameApprovalCheck": 1,
+            },
+        ],
+        [
             HKEY_CURRENT_USER,
             "Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl",
             {
