@@ -31,7 +31,7 @@
 		padding: 0;
 		margin: 0;
 		list-style: none;
-		font-size: 12px;
+		font-size: 14px;
 
 		div {
 
@@ -41,8 +41,8 @@
 
 			.label {
 				display: inline-block;
-				font-size: 10px;
-				padding: 3px;
+				font-size: 12px;
+				padding: 5px 3px 3px 3px;
 				float: right;
 				background-color: transparent;
 				color: inherit;
@@ -50,7 +50,6 @@
 			}
 
 			a.label {
-				font-size: 12px;
 				&:hover {
 					color: #337AB7;
 				}
@@ -75,15 +74,12 @@
 
 		li {
 
-			font-size: 14px;
-			font-weight: 400;
-
 			[data-type="folder"] { 
 				font-weight: 700; 
 			}
 
 			[data-type="file"] { 
-				font-weight: 500; 
+				font-weight: 400; 
 			}
 
 			strong {

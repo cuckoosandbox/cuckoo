@@ -4887,7 +4887,7 @@ footer a:hover {
   padding: 0;
   margin: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 .cuckoo-files ul div {
   display: block;
@@ -4896,15 +4896,12 @@ footer a:hover {
 }
 .cuckoo-files ul div .label {
   display: inline-block;
-  font-size: 10px;
-  padding: 3px;
+  font-size: 12px;
+  padding: 5px 3px 3px 3px;
   float: right;
   background-color: transparent;
   color: inherit;
   vertical-align: middle;
-}
-.cuckoo-files ul div a.label {
-  font-size: 12px;
 }
 .cuckoo-files ul div a.label:hover {
   color: #337AB7;
@@ -4921,15 +4918,11 @@ footer a:hover {
   content: "";
   margin-right: 0;
 }
-.cuckoo-files ul li {
-  font-size: 14px;
-  font-weight: 400;
-}
 .cuckoo-files ul li [data-type="folder"] {
   font-weight: 700;
 }
 .cuckoo-files ul li [data-type="file"] {
-  font-weight: 500;
+  font-weight: 400;
 }
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";
