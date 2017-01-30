@@ -1992,8 +1992,6 @@ $(function () {
 
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
 							if (parentContainer) item.arcname = parentContainer.filename;
-
-							console.log(item);
 						});
 
 						analysis_ui.originalData = response.data;
