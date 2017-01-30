@@ -58,7 +58,15 @@ $(function() {
 						FileTree.FileTree.iterateFileStructure(response.data.files, function(item) {
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = new Array();
+
+							var parentContainer = FileTree.FileTree.getParentContainerName(item);
+							if(parentContainer) item.arcname = parentContainer.filename;
+
+							console.log(item);
+
 						});
+
+						analysis_ui.originalData = response.data;
 
 						return response.data.files;
 
@@ -453,7 +461,8 @@ $(function() {
 			e.preventDefault();
 			var json = analysis_ui.getData();
 			alert('check the console for the output.');
-			console.log(JSON.stringify(json));
+			// console.log(JSON.stringify(json));
+			console.log(json);
 		});
 
 		$("#reset-options").bind('click', function(e) {
@@ -467,6 +476,7 @@ $(function() {
 
 		// taken from the previous submit functionality
 		$("input#urlhash").click(function () {
+
             var urls = $("textarea#presubmit_urlhash").val();
             if (urls == "") {
                 return;

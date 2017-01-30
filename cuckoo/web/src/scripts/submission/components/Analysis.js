@@ -41,6 +41,8 @@ class AnalysisInterface {
 		this.filetree = null;
 		this.form = null;
 
+		this.originalData = null;
+
 		this.initialise();
 	}
 

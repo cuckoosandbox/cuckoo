@@ -651,18 +651,49 @@ class FileTree {
 	// a json string representing a file structure) to loop it through
 	static iterateFileStructure(arr, callback) {
 
-		function iterate(arr, cb) {
-			arr.forEach(function(item) {
+		var level = 0;
+
+		function iterate(arr, cb, parent) {
+
+			arr.forEach(function(item, i) {
+
+				// appends the parent to the item
+				if(parent) {
+					item.parent = parent;
+				}
 
 				if(item.children) {
-					iterate(item.children, callback);
+					iterate(item.children, callback, item);
 				}
 
 				if(cb && typeof cb === 'function') cb(item);
 			});
+
 		}
 
 		iterate(arr);
+
+	}
+
+	static getParentContainerName(item) {
+		// this function will bubble up all 'parent' entities until we reach
+		// the first level. This is considered to be the 'parent' item.
+
+		var ret = {};
+
+		function bubbleUp(parent) {
+			if(parent.parent) {
+				bubbleUp(parent.parent);
+			} else {
+				ret = parent;
+			}
+		}
+
+		if(item.parent) {
+			bubbleUp(item.parent);
+		}
+
+		return ret;
 
 	}
 

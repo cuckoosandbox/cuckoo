@@ -63,6 +63,8 @@ var AnalysisInterface = function () {
 		this.filetree = null;
 		this.form = null;
 
+		this.originalData = null;
+
 		this.initialise();
 	}
 
@@ -1090,11 +1092,19 @@ var FileTree = function () {
 		key: 'iterateFileStructure',
 		value: function iterateFileStructure(arr, callback) {
 
-			function iterate(arr, cb) {
-				arr.forEach(function (item) {
+			var level = 0;
+
+			function iterate(arr, cb, parent) {
+
+				arr.forEach(function (item, i) {
+
+					// appends the parent to the item
+					if (parent) {
+						item.parent = parent;
+					}
 
 					if (item.children) {
-						iterate(item.children, callback);
+						iterate(item.children, callback, item);
 					}
 
 					if (cb && typeof cb === 'function') cb(item);
@@ -1102,6 +1112,28 @@ var FileTree = function () {
 			}
 
 			iterate(arr);
+		}
+	}, {
+		key: 'getParentContainerName',
+		value: function getParentContainerName(item) {
+			// this function will bubble up all 'parent' entities until we reach
+			// the first level. This is considered to be the 'parent' item.
+
+			var ret = {};
+
+			function bubbleUp(parent) {
+				if (parent.parent) {
+					bubbleUp(parent.parent);
+				} else {
+					ret = parent;
+				}
+			}
+
+			if (item.parent) {
+				bubbleUp(item.parent);
+			}
+
+			return ret;
 		}
 	}]);
 
@@ -1957,7 +1989,14 @@ $(function () {
 						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = new Array();
+
+							var parentContainer = FileTree.FileTree.getParentContainerName(item);
+							if (parentContainer) item.arcname = parentContainer.filename;
+
+							console.log(item);
 						});
+
+						analysis_ui.originalData = response.data;
 
 						return response.data.files;
 					}
@@ -2292,7 +2331,8 @@ $(function () {
 			e.preventDefault();
 			var json = analysis_ui.getData();
 			alert('check the console for the output.');
-			console.log(JSON.stringify(json));
+			// console.log(JSON.stringify(json));
+			console.log(json);
 		});
 
 		$("#reset-options").bind('click', function (e) {
@@ -2306,6 +2346,7 @@ $(function () {
 
 		// taken from the previous submit functionality
 		$("input#urlhash").click(function () {
+
 			var urls = $("textarea#presubmit_urlhash").val();
 			if (urls == "") {
 				return;
