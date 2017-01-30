@@ -3762,6 +3762,8 @@ section#screenshots .minified {
 }
 
 #tab-hash textarea {
+  width: 700px;
+  margin-left: -175px;
   margin-bottom: 20px;
 }
 
