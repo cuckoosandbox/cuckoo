@@ -459,8 +459,8 @@ $(function() {
 			e.preventDefault();
 			var json = analysis_ui.getData();
 			alert('check the console for the output.');
-			// console.log(JSON.stringify(json));
 			console.log(json);
+			console.log(JSON.stringify(json));
 		});
 
 		$("#reset-options").bind('click', function(e) {

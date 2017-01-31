@@ -87,22 +87,11 @@ var AnalysisInterface = function () {
 	}, {
 		key: 'getData',
 		value: function getData() {
-
-			// manual fix for grouping 'network' and 'machine' into
-			// one key.
-			function manualObjectFormat(options) {
-
-				return {
-					global: options
-				};
-
-				return options;
-			}
-
-			var form_values = manualObjectFormat(this.form.serialize());
-			form_values.file_selection = this.filetree.serialize();
-
-			return form_values;
+			var _self = this;
+			return {
+				global: _self.form.serialize(),
+				file_selection: _self.filetree.serialize()
+			};
 		}
 	}]);
 
@@ -2459,8 +2448,8 @@ $(function () {
 			e.preventDefault();
 			var json = analysis_ui.getData();
 			alert('check the console for the output.');
-			// console.log(JSON.stringify(json));
 			console.log(json);
+			console.log(JSON.stringify(json));
 		});
 
 		$("#reset-options").bind('click', function (e) {
