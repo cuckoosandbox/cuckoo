@@ -5024,6 +5024,9 @@ footer a:hover {
 .cuckoo-files__controls ul.right a {
   color: inherit;
 }
+.cuckoo-files #selection-overview {
+  padding-left: 0;
+}
 .cuckoo-files #selection-overview .extension-select {
   position: relative;
   margin-left: 10px;

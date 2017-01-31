@@ -203,10 +203,9 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ">\n					<strong>\n"
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
-    + "						"
-    + alias2(alias1((depth0 != null ? depth0.filename : depth0), depth0))
-    + "\n					</strong>\n"
-    + ((stack1 = helpers.unless.call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"unless","hash":{},"fn":this.program(11, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.fname_short : depth0),{"name":"if","hash":{},"fn":this.program(11, data, 0),"inverse":this.program(13, data, 0),"data":data})) != null ? stack1 : "")
+    + "					</strong>\n"
+    + ((stack1 = helpers.unless.call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"unless","hash":{},"fn":this.program(15, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "				</a>\n			</li>\n";
 },"5":function(depth0,helpers,partials,data) {
     return " class=\"disabled\" disabled";
@@ -215,12 +214,30 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
 },"9":function(depth0,helpers,partials,data) {
     return "							<i class=\"fa fa-file-o\"></i>\n";
 },"11":function(depth0,helpers,partials,data) {
-    return "						<small>"
-    + this.escapeExpression(this.lambda((depth0 != null ? depth0.relapath : depth0), depth0))
-    + "</small>\n";
+    return "							"
+    + this.escapeExpression(this.lambda((depth0 != null ? depth0.fname_short : depth0), depth0))
+    + "\n";
 },"13":function(depth0,helpers,partials,data) {
-    return "		<p class=\"description\">These files you selected will be included in your analysis. When ready, click 'analyze' next to the page title.</p>\n";
+    return "							"
+    + this.escapeExpression(this.lambda((depth0 != null ? depth0.filename : depth0), depth0))
+    + "\n";
 },"15":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "						<small>\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rpath_short : depth0),{"name":"if","hash":{},"fn":this.program(16, data, 0),"inverse":this.program(18, data, 0),"data":data})) != null ? stack1 : "")
+    + "						</small>\n";
+},"16":function(depth0,helpers,partials,data) {
+    return "								"
+    + this.escapeExpression(this.lambda((depth0 != null ? depth0.rpath_short : depth0), depth0))
+    + "\n";
+},"18":function(depth0,helpers,partials,data) {
+    return "								"
+    + this.escapeExpression(this.lambda((depth0 != null ? depth0.relapath : depth0), depth0))
+    + "\n";
+},"20":function(depth0,helpers,partials,data) {
+    return "		<p class=\"description\">These files you selected will be included in your analysis. When ready, click 'analyze' next to the page title.</p>\n";
+},"22":function(depth0,helpers,partials,data) {
     return "		<p class=\"description\">You have to select some files before you can analyze. To select, mark the checkboxes before the file/directory names.</p>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
@@ -230,6 +247,6 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + "\n			</div>\n		</li>\n\n"
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.selection : depth0),{"name":"each","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\n		<li class=\"no-results hidden\">\n			<p class=\"description\">Your search returned 0 results</p>\n		</li>\n\n	</ul>\n\n"
-    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(13, data, 0),"inverse":this.program(15, data, 0),"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(20, data, 0),"inverse":this.program(22, data, 0),"data":data})) != null ? stack1 : "")
     + "\n</div>";
 },"useData":true});

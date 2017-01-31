@@ -773,6 +773,16 @@ function folderSize(folder) {
 	return size;
 }
 
+// detects whether strings exceed a certain length
+// and degrades them gracefully so they will not
+// interfere with the exisiting layout.
+function ellipseText(str, treshold) {
+	if (!treshold) {
+		return str;
+	}
+	return S(str).truncate(treshold).s;
+}
+
 var FileTree = function () {
 	function FileTree(el, options) {
 		_classCallCheck(this, FileTree);
@@ -1011,8 +1021,28 @@ var FileTree = function () {
 
 			var self = this;
 
+			// this variable sets a treshold for the max size of a string
+			// before it will break the layout.
+			var str_treshold = 30;
+
 			var selected = this.findByProperty('selected', true);
 			var extensions = getExtensions(selected);
+
+			selected.forEach(function (item) {
+
+				// will only ellipsify text if needed, exposing
+				// a new parameter 'fname_short'. this is checked
+				// conditionally by Handlebars.
+				if (item.filename.length > str_treshold) {
+					item.fname_short = ellipseText(item.filename, str_treshold);
+				}
+
+				// same goes for the relative path
+				if (item.relapath.length > str_treshold) {
+					// allow treshold + 10, since this text has more space.
+					item.rpath_short = ellipseText(item.relapath, str_treshold + 10);
+				}
+			});
 
 			var html = selectionTemplate({
 				selection: selected,
