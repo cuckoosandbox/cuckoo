@@ -4441,6 +4441,9 @@ footer a:hover {
   flex-basis: 100%;
   overflow-y: auto;
 }
+.cuckoo-files > #filetree ul {
+  padding-left: 10px;
+}
 .cuckoo-files > #filetree > .loading {
   position: relative;
   top: 50%;

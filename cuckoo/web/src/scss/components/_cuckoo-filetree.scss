@@ -14,6 +14,10 @@
 		flex-basis: 100%;
 		overflow-y: auto;
 
+		ul {
+			padding-left: 10px;
+		}
+
 		& > .loading {
 			position: relative;
 			top: 50%;
