@@ -597,12 +597,12 @@ class FileTree {
 			// will only ellipsify text if needed, exposing
 			// a new parameter 'fname_short'. this is checked
 			// conditionally by Handlebars.
-			if(item.filename.length > str_treshold) {
+			if(item.filename && item.filename.length > str_treshold) {
 				item.fname_short = ellipseText(item.filename, str_treshold);
 			}
 
 			// same goes for the relative path
-			if(item.relapath.length > str_treshold) {
+			if(item.relapath && item.relapath.length > str_treshold) {
 				// allow treshold + 10, since this text has more space.
 				item.rpath_short = ellipseText(item.relapath, str_treshold + 10);
 			}
