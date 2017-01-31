@@ -4595,6 +4595,10 @@ footer a:hover {
 .cuckoo-files #selection-overview {
   padding-left: 0;
 }
+.cuckoo-files #selection-overview #search-selection,
+.cuckoo-files #selection-overview .extension-select select {
+  font-size: 11px;
+}
 .cuckoo-files #selection-overview .extension-select {
   position: relative;
   margin-left: 10px;

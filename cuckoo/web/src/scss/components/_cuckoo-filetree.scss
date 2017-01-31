@@ -215,6 +215,11 @@
 
 		padding-left: 0;
 
+		#search-selection,
+		.extension-select select {
+			font-size: 11px;
+		}
+
 		.extension-select {
 			position: relative;
 			margin-left: 10px;
