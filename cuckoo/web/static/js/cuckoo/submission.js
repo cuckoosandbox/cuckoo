@@ -2446,10 +2446,27 @@ $(function () {
 
 		$('#start-analysis').bind('click', function (e) {
 			e.preventDefault();
+
 			var json = analysis_ui.getData();
-			alert('check the console for the output.');
-			console.log(json);
-			console.log(JSON.stringify(json));
+			json.submit_id = window.submit_id;
+
+			$.ajax({
+				url: '/submit/api/submit',
+				type: 'POST',
+				dataType: 'json',
+				data: json,
+				success: function success(response) {
+					if (data.status === true) {
+						CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
+					} else {
+						alert("Submission failed: " + data.message);
+					}
+				},
+				error: function error() {
+					console.log(arguments);
+					alert('submission failed! see the console for details.');
+				}
+			});
 		});
 
 		$("#reset-options").bind('click', function (e) {
