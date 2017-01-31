@@ -63,23 +63,11 @@ class AnalysisInterface {
 	}
 
 	getData() {
-
-		// manual fix for grouping 'network' and 'machine' into
-		// one key.
-		function manualObjectFormat(options) {
-
-			return {
-				global: options
-			}
-
-			return options;
-
-		}
-
-		var form_values = manualObjectFormat(this.form.serialize());
-		form_values.file_selection = this.filetree.serialize();
-
-		return form_values;
+		var _self = this;
+		return {
+			global: _self.form.serialize(),
+			file_selection: _self.filetree.serialize()
+		};
 	}
 
 }
