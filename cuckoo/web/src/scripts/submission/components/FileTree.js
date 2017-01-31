@@ -304,10 +304,11 @@ function parentSelectedState(item, checked) {
 	}
 
 	if(checked) {
+
 		bubbleItemParentsUp(item.parent, function(item) {
-			console.log(item);
 			$(item.filetree.el).find('label:first').addClass('has-selected-child');
 		});
+		
 	} else {
 		bubbleItemParentsUp(item.parent, function(item) {
 
