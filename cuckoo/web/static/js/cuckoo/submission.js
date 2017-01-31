@@ -87,8 +87,40 @@ var AnalysisInterface = function () {
 	}, {
 		key: 'getData',
 		value: function getData() {
-			var form_values = this.form.serialize();
+
+			// manual fix for grouping 'network' and 'machine' into
+			// one key.
+			function manualObjectFormat(options) {
+
+				if (options['network-routing'] || options['machine']) {
+					options.global = {};
+
+					if (options['network-routing']) {
+						options.global['network-routing'] = options['network-routing'];
+						delete options['network-routing'];
+					}
+
+					if (options['machine']) {
+						options.global['machine'] = options['machine'];
+						delete options['machine'];
+					}
+				}
+
+				return options;
+			}
+
+			var form_values = manualObjectFormat(this.form.serialize());
 			form_values.file_selection = this.filetree.serialize();
+
+			// formats the per_file_options key in each selected file that has this option,
+			// to follow consistency
+			form_values.file_selection = form_values.file_selection.map(function (selected_file) {
+				if (selected_file.per_file_options) {
+					selected_file.per_file_options = manualObjectFormat(selected_file.per_file_options);
+				}
+				return selected_file;
+			});
+
 			return form_values;
 		}
 	}]);
@@ -1089,7 +1121,27 @@ var FileTree = function () {
 				}
 				return ret;
 			}).map(function (item) {
-				delete item.filetree;
+
+				var per_file_options = {};
+				if (item.changed_properties) {
+					item.changed_properties.forEach(function (prop) {
+						per_file_options[prop] = item.per_file_options[prop];
+					});
+					item.per_file_options = per_file_options;
+				}
+
+				// deletes all filetree specific properties from this item 
+				// (the properties that are sent out as JSON)
+				if (item.filetree) delete item.filetree;
+
+				if (item.changed_properties) delete item.changed_properties;
+
+				if (item.parent) delete item.parent;
+
+				if (item.fname_short) delete item.fname_short;
+
+				if (item.rpath_short) delete item.rpath_short;
+
 				return item;
 			});
 		}
@@ -1933,6 +1985,7 @@ var Form = function () {
 					});
 				}
 			}
+
 			return ret;
 		}
 	}]);

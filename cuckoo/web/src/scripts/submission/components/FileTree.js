@@ -653,7 +653,32 @@ class FileTree {
 			}
 			return ret;
 		}).map(function(item) {
-			delete item.filetree;
+
+			var per_file_options = {};
+			if(item.changed_properties) {
+				item.changed_properties.forEach(function(prop) {
+					per_file_options[prop] = item.per_file_options[prop];
+				});
+				item.per_file_options = per_file_options;
+			}
+
+			// deletes all filetree specific properties from this item 
+			// (the properties that are sent out as JSON)
+			if(item.filetree) 
+				delete item.filetree;
+
+			if(item.changed_properties) 
+				delete item.changed_properties;
+
+			if(item.parent) 
+				delete item.parent;
+
+			if(item.fname_short) 
+				delete item.fname_short;
+
+			if(item.rpath_short) 
+				delete item.rpath_short;
+
 			return item;
 		});
 	}
