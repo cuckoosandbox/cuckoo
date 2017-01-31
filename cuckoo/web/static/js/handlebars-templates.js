@@ -161,16 +161,40 @@ this["HANDLEBARS_TEMPLATES"]["dndupload"] = Handlebars.template({"compiler":[6,"
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     return "checked";
+},"3":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "			"
+    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1), depth0))
+    + "\n";
+},"5":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "			"
+    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filename : stack1), depth0))
+    + "\n";
+},"7":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "			"
+    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.rpath_short : stack1), depth0))
+    + "\n";
+},"9":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "			"
+    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.relapath : stack1), depth0))
+    + "\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
   return "<header class=\"flex-form__header\">\n	<h4>\n		<label class=\"custom-checkbox\" for=\"file-selected\">\n			<input type=\"checkbox\" id=\"file-selected\" "
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.selected : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + " />\n			<span></span>\n		</label>\n\n		<i class=\"fa fa-file-o\"></i> "
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filename : stack1), depth0))
-    + "\n	</h4>\n</header>\n\n<ul class=\"flex-static__summary\">\n	<li>\n		<strong>path</strong>\n		"
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.relapath : stack1), depth0))
-    + "\n	</li>\n	<li>\n		<strong>type</strong>\n		"
+    + " />\n			<span></span>\n		</label>\n\n		<i class=\"fa fa-file-o\"></i> \n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
+    + "	</h4>\n</header>\n\n<ul class=\"flex-static__summary\">\n	<li>\n		<strong>path</strong>\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.rpath_short : stack1),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
+    + "	</li>\n	<li>\n		<strong>type</strong>\n		"
     + alias2(alias1(((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.finger : stack1)) != null ? stack1.magic_human : stack1), depth0))
     + "\n	</li>\n	<li>\n		<strong>mime</strong>\n		"
     + alias2(alias1(((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.finger : stack1)) != null ? stack1.mime_human : stack1), depth0))

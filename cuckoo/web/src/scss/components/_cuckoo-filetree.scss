@@ -38,10 +38,13 @@
 	}
 
 	ul {
-		padding: 0 0 0 10px;
 		margin: 0;
 		list-style: none;
 		font-size: 14px;
+
+		&:not(.flex-static__summary, .flex-form__toggle-list) {
+			padding: 0 0 0 10px;
+		}
 
 		div {
 

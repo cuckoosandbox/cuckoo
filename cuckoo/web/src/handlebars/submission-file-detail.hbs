@@ -5,14 +5,23 @@
 			<span></span>
 		</label>
 
-		<i class="fa fa-file-o"></i> {{item.filename}}
+		<i class="fa fa-file-o"></i> 
+		{{#if item.fname_short}}
+			{{item.fname_short}}
+		{{else}}
+			{{item.filename}}
+		{{/if}}
 	</h4>
 </header>
 
 <ul class="flex-static__summary">
 	<li>
 		<strong>path</strong>
-		{{item.relapath}}
+		{{#if item.rpath_short}}
+			{{item.rpath_short}}
+		{{else}}
+			{{item.relapath}}
+		{{/if}}
 	</li>
 	<li>
 		<strong>type</strong>

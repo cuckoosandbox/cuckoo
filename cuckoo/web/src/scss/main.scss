@@ -55,9 +55,9 @@ body[id="submission/index"] {
 @import "components/footer";
 
 @import "components/flex-grid";
+@import "components/cuckoo-filetree";
 @import "components/flex-form";
 @import "components/breadcrumbs";
-@import "components/cuckoo-filetree";
 
 // custom plugin css overrides
 @import "plugins/jstree";
