@@ -153,6 +153,10 @@
 
 			}
 
+			&.has-selected-child input + span:before {
+				background-color: #ccc;
+			}
+
 			input {
 				display: none;
 
@@ -160,6 +164,7 @@
 					background-color: #337AB7;
 					border-color: #456077;
 				}
+
 			}
 
 		}

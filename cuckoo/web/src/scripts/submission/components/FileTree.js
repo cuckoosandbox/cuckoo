@@ -249,6 +249,25 @@ function bubbleSelection(arr, checked) {
 
 }
 
+// bubbles up a selection, works kind of the same as 
+// bubbleSelection, but then the other direction around.
+function bubbleItemParentsUp(item, cb) {
+
+	function iterate(item) {
+
+		cb(item);
+
+		if(item && item.parent) {
+			iterate(item.parent);
+		}
+
+	}
+
+	if(item)
+		iterate(item);
+
+}
+
 // filters out extensions
 function getExtensions(selection) {
 
@@ -268,6 +287,44 @@ function getExtensions(selection) {
 
 	return exts;
 
+}
+
+// generic function for marking / unmarking parent containers
+// that have selected childs.
+function parentSelectedState(item, checked) {
+
+	// if we have no checked property, assign checked to be the value
+	// of item.selected
+	if(!checked) {
+		checked = item.selected;
+	}
+
+	if(!item) {
+		return;
+	}
+
+	if(checked) {
+		bubbleItemParentsUp(item.parent, function(item) {
+			console.log(item);
+			$(item.filetree.el).find('label:first').addClass('has-selected-child');
+		});
+	} else {
+		bubbleItemParentsUp(item.parent, function(item) {
+
+			var has_selected_child = false;
+
+			if(item.children) {
+				item.children.forEach(function(child) {
+					if(child.selected) has_selected_child = true;
+				});
+			}
+
+			if(!has_selected_child) {
+				$(item.filetree.el).find('label:first').removeClass('has-selected-child');
+			}
+
+		});
+	}
 }
 
 // handles a file / folder selection
@@ -291,6 +348,10 @@ function selectHandler(checked, index, filetree) {
 
 	if(filetree.activeIndex && (filetree.activeIndex == item.filetree.index)) {
 		$(filetree.options.config.sidebar).find('header input:checkbox').prop('checked', checked);
+	}
+
+	if(item.parent) {
+		parentSelectedState(item, checked);
 	}
 
 	filetree.update();
@@ -392,6 +453,7 @@ class FileTree {
 			},
 			deselectAll: function() {
 				bubbleSelection(this.data.children, false);
+				$(this.el).find('.has-selected-child').removeClass('has-selected-child');
 				this.update();
 				this.selectionView();
 			},
@@ -420,13 +482,15 @@ class FileTree {
 
 		itemIndex = 0;
 		this.el.innerHTML = '';
-		var html = build.call(this, this.data.children, document.createElement('ul'));
 
+		var html = build.call(this, this.data.children, document.createElement('ul'));
 		this.el.appendChild(html);
 
-		// iterateDOM($(this.el).find('ul:first-child'), 1, function(level) {
-		// 	$(this).css('padding-left', level * 10);
-		// });
+		this.each(function(item) {
+			if(item.parent) {
+				parentSelectedState(item, item.selected);
+			}
+		});
 
 		this.connectListeners();
 		this.update();
@@ -780,5 +844,11 @@ function humanizeBytes(bytes, si) {
     } while(Math.abs(bytes) >= thresh && u < units.length - 1);
     return bytes.toFixed(1)+' '+units[u];
 }
+
+/*
+	TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30
+	[31/Jan/2017 13:19:47] "GET /submit/pre/25/ HTTP/1.1" 500 10890
+	- Broken pipe from ('127.0.0.1', 60662)
+ */
 
 export { FileTree, Label, humanizeBytes, folderSize, DEFAULT_FILETREE_CONFIG };

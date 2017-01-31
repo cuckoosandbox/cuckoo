@@ -4548,6 +4548,9 @@ footer a:hover {
   -webkit-box-sizing: content-box;
   -moz-box-sizing: content-box;
 }
+.cuckoo-files ul label:not(.flex-form__toggle-list-switch).has-selected-child input + span:before {
+  background-color: #ccc;
+}
 .cuckoo-files ul label:not(.flex-form__toggle-list-switch) input {
   display: none;
 }
