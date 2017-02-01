@@ -465,7 +465,8 @@ $(function() {
 				url: '/submit/api/submit',
 				type: 'POST',
 				dataType: 'json',
-				data: json,
+				contentType: "application/json; charset=utf-8",
+				data: JSON.stringify(json),
 				success: function(response) {
 					if(data.status === true){
 	                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
