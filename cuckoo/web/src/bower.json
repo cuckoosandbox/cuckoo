@@ -1,0 +1,23 @@
+{
+  "name": "cuckoo-frontend",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Koen Houtman <automagisch@cuckoo.sh>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/cuckoosandbox/cuckoo",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "font-awesome": "fontawesome#^4.7.0",
+    "handlebars": "^3.0.0",
+    "font-roboto": "^0.0.2",
+    "string": "stringjs#^3.3.3"
+  }
+}

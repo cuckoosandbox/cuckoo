@@ -7,6 +7,9 @@
  */
 
 function export_estimate_size(task_id, taken_dirs, taken_files, target_div, prefix){
+
+    if(!task_id) return;
+
     var params = {
         "task_id": task_id,
         "dirs": taken_dirs,
@@ -21,6 +24,9 @@ function export_estimate_size(task_id, taken_dirs, taken_files, target_div, pref
 }
 
 function export_get_files(task_id, callback){
+
+    if(!task_id) return;
+
     var params = {
         "task_id": task_id
     };

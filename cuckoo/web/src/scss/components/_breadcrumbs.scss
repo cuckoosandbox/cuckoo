@@ -1,0 +1,35 @@
+.breadcrumbs {
+	display: flex;
+	list-style: none;
+	padding: 0;
+	margin: 0 0 5px;
+	font-size: 11px;
+
+	& > li {
+
+		& > a {
+			text-decoration: none;
+			color: #337AB7;
+		}
+
+		&.done > a {
+			text-decoration: line-through;
+		}
+		&.active > a {
+			font-weight: 700;
+		}
+		&.todo > a,
+		&.done > a {
+			opacity: .36;
+		}
+
+		&:not(:last-child):after {
+			@extend .fa;
+			content: "\f101";
+			margin: 0 15px;
+			color: #337AB7;
+		}
+
+	}
+
+}

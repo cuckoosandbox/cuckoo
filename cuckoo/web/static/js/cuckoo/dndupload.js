@@ -116,6 +116,7 @@ var DndUpload = function () {
                 // change appearance while drag&dropping
                 holder.querySelector("form#uploader").ondragover = function () {
                     this.className = "hover";
+
                     return false;
                 };
 

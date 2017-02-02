@@ -4,6 +4,18 @@
    see the file 'docs/LICENSE' for copying permission.
  */
 
+@keyframes indicatorBounce {
+    0% { transform: translateY(100%); }
+    50% { transform: translateY(75%); }
+    100% { transform: translateY(100%); }
+}
+
+@-webkit-keyframes indicatorBounce {
+    0% { transform: translateY(100%); }
+    50% { transform: translateY(75%); }
+    100% { transform: translateY(100%); }
+}
+
 .dndupload {
 
     margin: 0px auto;
@@ -93,6 +105,206 @@
 
         &::-webkit-progress-bar { background: #f3f3f3; }
 
+    }
+
+    &__v2 {
+
+        @extend .dndupload;
+
+        margin-top: 65px;
+        margin-bottom: 55px;
+
+        border: 5px dashed #ccc;
+        width: 335px;
+        height: 335px;
+        border-radius: 50%;
+        padding: 0;
+        overflow: hidden;
+        -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+        background-color: #fff;
+        transition: border 300ms linear;
+
+        .text-hovering,
+        .text-dropped,
+        .text-done,
+        .text-error { display: none; }
+
+        &.hover {
+            border-color: #9F9F9F;
+
+            .text-idle,
+            .text-dropped,
+            .text-done,
+            .text-error { display: none; }
+
+            .text-hovering { display: block; }
+
+            .alternate-progress {
+                -webkit-animation: indicatorBounce 1s 1;
+            }
+        }
+
+        &.dropped {
+
+            .text-idle,
+            .text-hovering,
+            .text-error,
+            .text-done { display: none; }
+
+            .text-dropped { display: block; }
+        }
+
+        &.done {
+
+            border: 0;
+
+            .text-idle,
+            .text-hovering,
+            .text-error,
+            .text-dropped { display: none; }
+
+            .text-done { display: block; }
+        }
+
+        &.error {
+
+            border: 0;
+
+            .text-idle,
+            .text-hovering,
+            .text-done,
+            .text-dropped { display: none; }
+
+            .text-error { display: block; }
+
+            .alternate-progress {
+                background-image: linear-gradient(-180deg, #FDA19C 0%, #F86262 100%);
+            }
+
+        }
+
+        form#uploader {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            outline: 0;
+            outline-offset: 0px;
+            border-radius: 50%;
+            padding: 0;
+            z-index: 2;
+
+            label {
+                color: #6297F8;
+                text-decoration: none;
+                display: block;
+                width: 100%;
+                padding: 0 20px;
+                white-space: normal;
+
+                strong { 
+                    color: inherit; 
+                    text-decoration: none; 
+                }
+
+                small { 
+                    font-weight: 400;
+                    display: block; 
+                    margin: 10px 0;
+                }
+
+                em {
+                    font-style: normal;
+                    text-decoration: underline;
+                }
+
+            }
+
+        }
+
+        &.progress-half form#uploader label {
+            color: #fff;
+        }
+
+        progress {
+            display: none;
+        }
+
+        .alternate-progress {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: linear-gradient(-180deg, #9CC8FD 0%, #6297F8 100%);
+            transform: translateY(100%);
+            transition: transform 300ms ease-out;
+        }
+
+    }
+
+}
+
+// as an extension to the  current dnd uploader styles,
+// this base class is used to style the custom inner elements
+.upload-module {
+
+    &__container {
+        width: 325px;
+    }
+
+    h3 {
+        color: #B0B0B0;
+        font-weight: 900;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .allowed-file-types {
+
+        h4 {
+            font-weight: 400;
+            font-size: 22px;
+            color: #b5b5b5;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+
+            li {
+                position: relative;
+                margin: 0 7px;
+
+                .fa {
+                    font-size: 41px;
+                    color: #B5B5B5;
+                }
+
+                span {
+                    position: absolute;
+                    width: 100%;
+                    text-align: center;
+                    bottom: 5px;
+                    font-weight: 700;
+                    font-size: 10px;
+                    color: #B5B5B5;
+                }
+
+            }
+        }
+
+    }
+
+}
+
+#tab-hash {
+
+    textarea { 
+        width: 700px;
+        margin-left: -175px;
+        margin-bottom: 20px; 
     }
 
 }
