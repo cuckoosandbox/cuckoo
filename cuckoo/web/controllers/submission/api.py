@@ -5,18 +5,15 @@
 
 import json
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 
-results_db = settings.MONGO
-db = Database()
+submit_manager = SubmitManager()
 
 class SubmissionApi:
     @staticmethod
@@ -33,7 +30,7 @@ class SubmissionApi:
                     "data": f.file,
                 })
 
-            submit_id = SubmitManager().pre(submit_type="files", data=data)
+            submit_id = submit_manager.pre(submit_type="files", data=data)
             return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
@@ -42,7 +39,7 @@ class SubmissionApi:
             if submit_type != "strings":
                 return json_error_response("type not \"strings\"")
 
-            submit_id = SubmitManager().pre(
+            submit_id = submit_manager.pre(
                 submit_type=submit_type, data=body["data"].split("\n")
             )
 
@@ -57,7 +54,7 @@ class SubmissionApi:
         password = body.get("password", None)
         astree = body.get("astree", True)
 
-        data = SubmitManager().get_files(
+        data = submit_manager.get_files(
             submit_id=submit_id,
             password=password,
             astree=astree
@@ -70,14 +67,12 @@ class SubmissionApi:
 
     @api_post
     def submit(request, body):
-        data = json.loads(request.body)
-
-        submit_id = data.pop("submit_id", None)
-        tasks = SubmitManager().submit(
-            submit_id=submit_id, config=data
+        submit_id = body.pop("submit_id", None)
+        tasks = submit_manager.submit(
+            submit_id=submit_id, config=body
         )
 
         return JsonResponse({
             "status": True,
-            "data": tasks,
+            "tasks": tasks,
         }, encoder=JsonSerialize)

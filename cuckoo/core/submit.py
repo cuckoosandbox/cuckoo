@@ -84,8 +84,7 @@ class SubmitManager(object):
 
         return Database().add_submit(path_tmp, submit_type, submit_data)
 
-    @staticmethod
-    def get_files(submit_id, password=None, astree=False):
+    def get_files(self, submit_id, password=None, astree=False):
         """
         Returns files from a submitted analysis.
         @param password: The password to unlock container archives with
