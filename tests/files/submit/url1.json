@@ -1,0 +1,37 @@
+{
+  "submit_id": 2,
+  "file_selection": [
+    {
+      "type": "url",
+      "relapath": "",
+      "mime": "text/html",
+      "finger": {
+        "magic_human": "url",
+        "magic": "url"
+      },
+      "extrpath": [],
+      "children": [],
+      "size": 0,
+      "filepath": "",
+      "package": "ie",
+      "selected": true,
+      "filename": "http://cuckoosandbox.org",
+      "duplicate": false
+    }
+  ],
+  "global": {
+    "vpn": "",
+    "machine": "",
+    "options": {
+      "enable-services": true,
+      "simulated-human-interaction": true,
+      "enforce-timeout": false,
+      "full-memory-dump": false,
+      "process-memory-dump": true,
+      "no-injection": true
+    },
+    "priority": 1,
+    "package": "python",
+    "network-routing": "internet"
+  }
+}

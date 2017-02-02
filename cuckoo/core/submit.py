@@ -2,10 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import copy
 import logging
 import os
 import sflock
 
+from cuckoo.common.config import emit_options
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
@@ -91,7 +93,6 @@ class SubmitManager(object):
         @return: A tree of files
         """
         submit = Database().view_submit(submit_id)
-
         files, duplicates = [], []
 
         for data in submit.data["data"]:
@@ -137,108 +138,106 @@ class SubmitManager(object):
             "path": submit.tmp_path,
         }
 
-    @staticmethod
-    def submit(submit_id, selected_files, timeout=0, package="", options="",
-               priority=1, custom="", owner="", machine="", platform="",
-               tags=None, memory=False, enforce_timeout=False, **kwargs):
-        # TODO Kwargs contains various analysis options that have to be taken
-        # into account sooner or later.
-        ret, db = [], Database()
+    def translate_options(self, info, options):
+        """Translates Web Interface options to Cuckoo database options."""
+        ret = {}
+
+        if not int(options["simulated-human-interaction"]):
+            ret["human"] = int(options["simulated-human-interaction"])
+
+        return emit_options(ret)
+
+    def submit(self, submit_id, config):
+        """Reads, interprets, and converts the JSON configuration provided by
+        the Web Interface into something we insert into the database."""
+        ret = []
         submit = db.view_submit(submit_id)
 
-        for entry in selected_files:
-            for expected in ["filepath", "filename", "type"]:
-                if expected not in entry.keys() or not entry[expected]:
-                    submit.data["errors"].append(
-                        "Missing or empty argument %s" % expected
-                    )
-                    continue
+        for entry in config["file_selection"]:
+            # Merge the global & per-file analysis options.
+            info = copy.deepcopy(config["global"])
+            info.update(entry)
+            options = copy.deepcopy(config["global"]["options"])
+            options.update(entry.get("per_file_options", {}))
+
+            kw = {
+                "package": info.get("package"),
+                "timeout": info.get("timeout", 120),
+                "priority": info.get("priority"),
+                "custom": info.get("custom"),
+                "owner": info.get("owner"),
+                "tags": info.get("tags"),
+                "memory": info.get("memory"),
+                "enforce_timeout": options.get("enforce-timeout"),
+                "machine": info.get("machine"),
+                "platform": info.get("platform"),
+                "options": self.translate_options(info, options),
+            }
 
             if entry["type"] == "url":
                 ret.append(db.add_url(
-                    url=entry["filename"],
-                    package="ie",
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
-                    platform=platform,
+                    url=info["filename"], **kw
                 ))
                 continue
 
             # for each selected file entry, create a new temp. folder
             path_dest = Folders.create_temp()
 
-            if entry["filepath"][0] == "":
+            if not info["extrpath"]:
                 path = os.path.join(
-                    submit.tmp_path, os.path.basename(entry["filename"])
+                    submit.tmp_path, os.path.basename(info["filename"])
                 )
 
                 filepath = Files.copy(path, path_dest=path_dest)
 
                 ret.append(db.add_path(
-                    file_path=filepath,
-                    package=entry.get("package", package),
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
-                    platform=""
+                    file_path=filepath, **kw
                 ))
-            elif len(entry["filepath"]) >= 2:
+            elif len(info["extrpath"]) == 1:
                 arcpath = os.path.join(
-                    submit.tmp_path, os.path.basename(entry["filepath"][0])
+                    submit.tmp_path, os.path.basename(info["arcname"])
                 )
                 if not os.path.exists(arcpath):
                     submit.data["errors"].append(
                         "Unable to find parent archive file: %s" %
-                        os.path.basename(entry["filepath"][0])
+                        os.path.basename(info["arcname"])
                     )
                     continue
 
-                # Extract any sub-archives where required.
-                if len(entry["filepath"]) > 2:
-                    content = sflock.unpack(arcpath).read(
-                        entry["filepath"][1:-1]
-                    )
-                else:
-                    content = open(arcpath, "rb").read()
+                arc = sflock.zipify(sflock.unpack(
+                    info["arcname"], contents=open(arcpath, "rb").read()
+                ))
 
-                # Write .zip archive file.
-                filename = entry["filepath"][-2]
+                # Create a .zip archive out of this container.
                 arcpath = Files.temp_named_put(
-                    sflock.zipify(sflock.unpack(filename, contents=content)),
-                    os.path.basename(filename)
+                    arc, os.path.basename(info["arcname"])
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath,
-                    filename=entry["filepath"][-1],
-                    package=entry.get("package", package),
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
+                    file_path=arcpath, filename=info["filename"], **kw
                 ))
             else:
-                submit.data["errors"].append(
-                    "Unable to determine type of file.. couldn't submit!"
+                arcpath = os.path.join(
+                    submit.tmp_path, os.path.basename(info["arcname"])
                 )
-                continue
+                if not os.path.exists(arcpath):
+                    submit.data["errors"].append(
+                        "Unable to find parent archive file: %s" %
+                        os.path.basename(info["arcname"])
+                    )
+                    continue
+
+                content = sflock.unpack(arcpath).read(info["extrpath"][:-1])
+                subarc = sflock.unpack(info["extrpath"][-2], contents=content)
+
+                # Write intermediate .zip archive file.
+                arcpath = Files.temp_named_put(
+                    sflock.zipify(subarc),
+                    os.path.basename(info["extrpath"][-2])
+                )
+
+                ret.append(db.add_archive(
+                    file_path=arcpath, filename=info["filename"], **kw
+                ))
 
         return ret

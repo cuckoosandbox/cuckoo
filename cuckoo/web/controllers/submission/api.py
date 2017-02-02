@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -70,55 +70,11 @@ class SubmissionApi:
 
     @api_post
     def submit(request, body):
-        if "selected_files" not in body:
-            return json_error_response("Bad parameter (selected_files)")
+        data = json.loads(request.body)
 
-        if "form" not in body:
-            return json_error_response("Bad parameters (form)")
-
-        if "submit_id" not in body:
-            return json_error_response("Bad parameters (submit_id)")
-
-        data = {
-            "selected_files": body["selected_files"],
-            "form": {},
-        }
-
-        options = (
-            "route", "package", "timeout", "options", "priority",
-            "custom", "tags", "machine", "human"
-        )
-
-        for option in options:
-            if option not in body["form"]:
-                return json_error_response(
-                    "Expected %s in parameter \"form\", none found" % option
-                )
-
-            val = body["form"][option].lower()
-            if val == "none" or val == "":
-                body["form"][option] = None
-
-            data["form"][option] = body["form"][option]
-
-        checkboxes = (
-            "free", "process_memory", "memory", "enforce_timeout",
-            "human", "services",
-        )
-
-        for checkbox in checkboxes:
-            if checkbox not in body["form"]:
-                data["form"][checkbox] = False
-            else:
-                if body["form"][checkbox] == "on":
-                    data["form"][checkbox] = True
-                else:
-                    data["form"][checkbox] = False
-
+        submit_id = data.pop("submit_id", None)
         tasks = SubmitManager().submit(
-            submit_id=body["submit_id"],
-            selected_files=data["selected_files"],
-            **data["form"]
+            submit_id=submit_id, config=data
         )
 
         return JsonResponse({

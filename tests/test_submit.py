@@ -3,7 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import ntpath
+import json
 import os
 import responses
 import tempfile
@@ -115,145 +115,58 @@ class TestSubmitManager(object):
             # We couldn't locate the second hash.
             assert submit.data["errors"][0].startswith("Error retrieving")
 
-    def test_pre_url_submit(self):
-        """
-        Tests the submission of URLs (http/https) and
-        submits it as tasks
-        """
+    def test_submit_url1(self):
         assert self.submit_manager.pre(
-            submit_type="strings",
-            data=self.urls
+            "strings", "http://cuckoosandbox.org"
         ) == 1
+        config = json.load(open("tests/files/submit/url1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = self.db.view_task(1)
+        assert t.target == "http://cuckoosandbox.org"
+        assert t.package == "ie"
+        assert t.timeout == 120
+        assert t.category == "url"
+        assert t.status == "pending"
+        assert not t.machine
+        assert t.options == {}
 
-        submit = self.db.view_submit(1)
-        assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 3
-
-        for obj in submit.data["data"]:
-            assert obj["type"] == "url"
-
-        selected_files = []
-        for url in self.urls:
-            selected_files.append({
-                "filename": url,
-                "filepath": [""],
-                "package": "ie",
-                "type": "url"
-            })
-
-        tasks = self.submit_manager.submit(
-            submit_id=1,
-            selected_files=selected_files,
-            memory=False,
-            priority=2,
-        )
-
-        assert len(tasks) == 3
-        assert tasks[0] == 1
-        assert tasks[1] == 2
-        assert tasks[2] == 3
-
-        for task_id in tasks:
-            url = self.urls[task_id - 1]
-            view_task = self.db.view_task(task_id=task_id, details=True)
-
-            assert view_task.target == url
-            assert view_task.status == "pending"
-            assert view_task.package == "ie"
-            assert view_task.priority == 2
-            assert view_task.memory is False
-            assert view_task.id == task_id
-            assert view_task.category == "url"
-
-    def test_pre_file_submit(self):
-        """
-        Tests the submission of a plaintext file and submits
-        it as a task
-        """
-        assert self.submit_manager.pre(
-            submit_type="files",
-            data=self.files
-        ) == 1
-
-        submit = self.db.view_submit(1)
-        assert isinstance(submit.data["data"], list)
-        assert len(submit.data["errors"]) == 0
-        assert os.path.exists(submit.data["data"][0]["data"])
-        assert submit.data["data"][0]["type"] == "file"
-
-        selected_files = []
-        for f in self.files:
-            selected_files.append({
-                "filename": f["name"],
-                "filepath": [""],
-                "package": None,
-                "type": "file"
-            })
-
-        tasks = self.submit_manager.submit(
-            submit_id=1,
-            selected_files=selected_files,
-            memory=False,
-            priority=2,
-            enforce_timeout=False
-        )
-
-        assert len(tasks) == 1
-        assert tasks[0] == 1
-
-        for task_id in tasks:
-            f = self.files[task_id - 1]
-            view_task = self.db.view_task(task_id=task_id, details=True)
-
-            assert view_task.target.endswith(ntpath.basename(f["name"]))
-            assert view_task.status == "pending"
-            assert view_task.package is None
-            assert view_task.priority == 2
-            assert view_task.memory is False
-            assert view_task.id == task_id
-            assert view_task.category == "file"
-            assert open(view_task.target, "rb").read() == f["data"]
-
-    def test_nested_archive(self):
-        submit_id = self.submit_manager.pre("files", [{
-            "name": "msg_invoice.msg",
-            "data": open("tests/files/msg_invoice.msg", "rb").read(),
-        }])
-
-        selected_files = [
+    def test_submit_file1(self):
+        assert self.submit_manager.pre("files", [
             {
-                "package": "doc",
-                "filename": "oledata.mso",
-                "type": "container",
-                "filepath": [
-                    "msg_invoice.msg",
-                    "oledata.mso"
-                ]
+                "name": "icardres.dll",
+                "data": open("tests/files/icardres.dll", "rb").read(),
             },
-            {
-                "package": "exe",
-                "filename": "Firefox Setup Stub 43.0.1.exe",
-                "type": "file",
-                "filepath": [
-                    "msg_invoice.msg",
-                    "oledata.mso",
-                    "Firefox Setup Stub 43.0.1.exe"
-                ]
-            }
-        ]
+        ]) == 1
 
-        task_ids = self.submit_manager.submit(submit_id, selected_files)
-        t0 = self.db.view_task(task_ids[0])
-        t1 = self.db.view_task(task_ids[1])
-        assert t0.category == "archive"
-        assert t0.options == {
+        config = json.load(open("tests/files/submit/file1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = self.db.view_task(1)
+        assert t.target.endswith("icardres.dll")
+        assert t.package == "dll"
+        assert t.timeout == 120
+        assert t.category == "file"
+        assert t.status == "pending"
+        assert not t.machine
+        assert t.options == {}
+
+    def test_submit_arc1(self):
+        assert self.submit_manager.pre("files", [
+            {
+                "name": "msg_invoice.msg",
+                "data": open("tests/files/msg_invoice.msg", "rb").read(),
+            },
+        ]) == 1
+
+        config = json.load(open("tests/files/submit/arc1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = self.db.view_task(1)
+        assert t.target.endswith("msg_invoice.msg")
+        assert t.package == "doc"
+        assert t.timeout == 120
+        assert t.category == "archive"
+        assert t.status == "pending"
+        assert not t.machine
+        assert t.options == {
             "filename": "oledata.mso",
         }
-        assert len(zipfile.ZipFile(t0.target).read("oledata.mso")) == 234898
-        assert t1.category == "archive"
-        assert t1.options == {
-            "filename": "Firefox Setup Stub 43.0.1.exe",
-        }
-        assert len(zipfile.ZipFile(t1.target).read(
-            "Firefox Setup Stub 43.0.1.exe"
-        )) == 249336
+        assert len(zipfile.ZipFile(t.target).read("oledata.mso")) == 234898
