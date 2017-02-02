@@ -26,6 +26,8 @@ def update_conf(machinery, args, action=None):
             # Parse all existing labels.
             labels = line.split("=", 1)[1]
             labels = [label.strip() for label in labels.split(",")]
+            if '' in labels:
+                labels.remove('')
 
             if action == "add":
                 labels.append(args.vmname)
