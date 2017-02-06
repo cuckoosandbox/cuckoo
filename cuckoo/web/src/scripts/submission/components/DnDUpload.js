@@ -218,13 +218,13 @@ class Uploader {
         if(_self._selectors["holder"].querySelector('input[type="file"]').files && !files){
             formdata = new FormData(_self._selectors["form"]);
         } else {
+
             for(var i = 0; i < files.length; i++){
                 formdata.append("files[]", files[i]);
             }
         }
 
         if(formdata){
-            // send the data to the API endpoint
             this._upload(formdata);
         }
     }

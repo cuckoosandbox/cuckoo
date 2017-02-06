@@ -724,7 +724,7 @@ class FileTree {
 				item.changed_properties.forEach(function(prop) {
 					per_file_options[prop] = item.per_file_options[prop];
 				});
-				item.per_file_options = per_file_options;
+				item.options = per_file_options;
 			}
 
 			// deletes all filetree specific properties from this item 

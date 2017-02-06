@@ -70,9 +70,14 @@ $(function () {
 						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = new Array();
+
+							var parentContainer = FileTree.FileTree.getParentContainerName(item);
+							if (parentContainer) item.arcname = parentContainer.filename;
 						});
 
-						return response.data.files[0];
+						analysis_ui.originalData = response.data;
+
+						return response.data.files;
 					}
 				},
 				transform: {
@@ -278,7 +283,7 @@ $(function () {
 							name: 'vpn',
 							on: {
 								change: function change() {
-									console.log('vpn changed');
+									// console.log('vpn changed');
 								}
 							},
 							options: [{ name: 'France', value: 'france' }, { name: 'Russia', value: 'russia' }, { name: 'United States', value: 'united-states' }, { name: 'China', value: 'china' }]
@@ -348,8 +353,9 @@ $(function () {
 					form.on('change', function (values) {
 
 						function compareAndOverwrite(item) {
+
 							for (var val in values) {
-								if (item.changed_properties.indexOf(val) == -1) {
+								if (item.changed_properties && item.changed_properties.indexOf(val) == -1) {
 									item.per_file_options[val] = values[val];
 								}
 							}
@@ -402,14 +408,32 @@ $(function () {
 
 		$('#start-analysis').bind('click', function (e) {
 			e.preventDefault();
+
 			var json = analysis_ui.getData();
-			alert('check the console for the output.');
-			console.log(JSON.stringify(json));
+			json.submit_id = window.submit_id;
+
+			$.ajax({
+				url: '/submit/api/submit',
+				type: 'POST',
+				dataType: 'json',
+				contentType: "application/json; charset=utf-8",
+				data: JSON.stringify(json),
+				success: function success(response) {
+					if (data.status === true) {
+						CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
+					} else {
+						alert("Submission failed: " + data.message);
+					}
+				},
+				error: function error() {
+					console.log(arguments);
+					alert('submission failed! see the console for details.');
+				}
+			});
 		});
 
 		$("#reset-options").bind('click', function (e) {
 			e.preventDefault();
-			console.log('reset the form.');
 		});
 
 		$(".upload-module .grouped-buttons a").on('shown.bs.tab', function (e) {
@@ -419,6 +443,7 @@ $(function () {
 
 		// taken from the previous submit functionality
 		$("input#urlhash").click(function () {
+
 			var urls = $("textarea#presubmit_urlhash").val();
 			if (urls == "") {
 				return;

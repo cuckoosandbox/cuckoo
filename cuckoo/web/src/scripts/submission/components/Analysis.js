@@ -62,12 +62,44 @@ class AnalysisInterface {
 
 	}
 
-	getData() {
+	getData(extra_properties, stringified) {
 		var _self = this;
-		return {
-			global: _self.form.serialize(),
-			file_selection: _self.filetree.serialize()
-		};
+		var ret = {};
+
+		ret.global = this.form.serialize();
+		ret.selected_files = this.filetree.serialize()
+
+		// if we have extra properties, extend the return object
+		// with these properties
+		if(extra_properties) {
+			for(var prop in extra_properties) {
+				ret[prop] = extra_properties[prop];
+			}
+		}
+
+		// filter out properties that are causing the json stringify to fail
+		// and throw circular json errors
+		ret.selected_files = ret.selected_files.map(function(item) {
+
+			if(item.per_file_options) {
+				item.options = item.per_file_options;
+				delete item.per_file_options;
+			}
+
+			if(item.children) {
+				delete item.children;
+			}
+
+			return item;
+
+		});
+
+		console.log(ret);
+
+		// auto stringify using a paremeter flag
+		if(stringified) ret = JSON.stringify(ret);
+
+		return ret;
 	}
 
 }

@@ -62,6 +62,8 @@ var AnalysisInterface = function () {
 		this.filetree = null;
 		this.form = null;
 
+		this.originalData = null;
+
 		this.initialise();
 	}
 
@@ -84,9 +86,11 @@ var AnalysisInterface = function () {
 	}, {
 		key: 'getData',
 		value: function getData() {
-			var form_values = this.form.serialize();
-			form_values.file_selection = this.filetree.serialize();
-			return form_values;
+			var _self = this;
+			return {
+				global: _self.form.serialize(),
+				file_selection: _self.filetree.serialize()
+			};
 		}
 	}]);
 

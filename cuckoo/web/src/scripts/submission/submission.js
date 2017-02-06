@@ -458,15 +458,18 @@ $(function() {
 		$('#start-analysis').bind('click', function(e) {
 			e.preventDefault();
 
-			var json = analysis_ui.getData();
-			json.submit_id = window.submit_id;
+			var json = analysis_ui.getData({
+				submit_id: window.submit_id
+			}, true);
+
+			console.log(json);
 				
 			$.ajax({
 				url: '/submit/api/submit',
 				type: 'POST',
 				dataType: 'json',
 				contentType: "application/json; charset=utf-8",
-				data: JSON.stringify(json),
+				data: json,
 				success: function(response) {
 					if(data.status === true){
 	                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));

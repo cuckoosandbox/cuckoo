@@ -254,6 +254,22 @@ function bubbleSelection(arr, checked) {
 	});
 }
 
+// bubbles up a selection, works kind of the same as 
+// bubbleSelection, but then the other direction around.
+function bubbleItemParentsUp(item, cb) {
+
+	function iterate(item) {
+
+		cb(item);
+
+		if (item && item.parent) {
+			iterate(item.parent);
+		}
+	}
+
+	if (item) iterate(item);
+}
+
 // filters out extensions
 function getExtensions(selection) {
 
@@ -272,6 +288,43 @@ function getExtensions(selection) {
 	});
 
 	return exts;
+}
+
+// generic function for marking / unmarking parent containers
+// that have selected childs.
+function parentSelectedState(item, checked) {
+
+	// if we have no checked property, assign checked to be the value
+	// of item.selected
+	if (!checked) {
+		checked = item.selected;
+	}
+
+	if (!item) {
+		return;
+	}
+
+	if (checked) {
+
+		bubbleItemParentsUp(item.parent, function (item) {
+			$(item.filetree.el).find('label:first').addClass('has-selected-child');
+		});
+	} else {
+		bubbleItemParentsUp(item.parent, function (item) {
+
+			var has_selected_child = false;
+
+			if (item.children) {
+				item.children.forEach(function (child) {
+					if (child.selected) has_selected_child = true;
+				});
+			}
+
+			if (!has_selected_child) {
+				$(item.filetree.el).find('label:first').removeClass('has-selected-child');
+			}
+		});
+	}
 }
 
 // handles a file / folder selection
@@ -295,6 +348,10 @@ function selectHandler(checked, index, filetree) {
 
 	if (filetree.activeIndex && filetree.activeIndex == item.filetree.index) {
 		$(filetree.options.config.sidebar).find('header input:checkbox').prop('checked', checked);
+	}
+
+	if (item.parent) {
+		parentSelectedState(item, checked);
 	}
 
 	filetree.update();
@@ -353,6 +410,16 @@ function folderSize(folder) {
 	return size;
 }
 
+// detects whether strings exceed a certain length
+// and degrades them gracefully so they will not
+// interfere with the exisiting layout.
+function ellipseText(str, treshold) {
+	if (!treshold) {
+		return str;
+	}
+	return S(str).truncate(treshold).s;
+}
+
 var FileTree = function () {
 	function FileTree(el, options) {
 		_classCallCheck(this, FileTree);
@@ -382,6 +449,7 @@ var FileTree = function () {
 			},
 			deselectAll: function deselectAll() {
 				bubbleSelection(this.data.children, false);
+				$(this.el).find('.has-selected-child').removeClass('has-selected-child');
 				this.update();
 				this.selectionView();
 			},
@@ -396,7 +464,11 @@ var FileTree = function () {
 	_createClass(FileTree, [{
 		key: 'initialise',
 		value: function initialise(data) {
-			this.data = data;
+
+			this.data = {
+				children: data
+			};
+
 			this.construct();
 			if (this.options.events.ready) this.options.events.ready.call(this);
 			if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
@@ -410,12 +482,14 @@ var FileTree = function () {
 
 			itemIndex = 0;
 			this.el.innerHTML = '';
-			var html = build.call(this, this.data.children, document.createElement('ul'));
 
+			var html = build.call(this, this.data.children, document.createElement('ul'));
 			this.el.appendChild(html);
 
-			iterateDOM($(this.el).find('ul:first-child'), 1, function (level) {
-				$(this).css('padding-left', level * 10);
+			this.each(function (item) {
+				if (item.parent) {
+					parentSelectedState(item, item.selected);
+				}
 			});
 
 			this.connectListeners();
@@ -473,9 +547,11 @@ var FileTree = function () {
 
 			// response handler
 			function handleResponse(response) {
+
 				if (self.options.load.serialize) {
 					response = self.options.load.serialize(response);
 				}
+
 				self.initialise(response);
 			}
 
@@ -552,6 +628,7 @@ var FileTree = function () {
 			}
 
 			find(this.data.children);
+
 			return ret;
 		}
 	}, {
@@ -584,8 +661,28 @@ var FileTree = function () {
 
 			var self = this;
 
+			// this variable sets a treshold for the max size of a string
+			// before it will break the layout.
+			var str_treshold = 30;
+
 			var selected = this.findByProperty('selected', true);
 			var extensions = getExtensions(selected);
+
+			selected.forEach(function (item) {
+
+				// will only ellipsify text if needed, exposing
+				// a new parameter 'fname_short'. this is checked
+				// conditionally by Handlebars.
+				if (item.filename && item.filename.length > str_treshold) {
+					item.fname_short = ellipseText(item.filename, str_treshold);
+				}
+
+				// same goes for the relative path
+				if (item.relapath && item.relapath.length > str_treshold) {
+					// allow treshold + 10, since this text has more space.
+					item.rpath_short = ellipseText(item.relapath, str_treshold + 10);
+				}
+			});
 
 			var html = selectionTemplate({
 				selection: selected,
@@ -632,7 +729,27 @@ var FileTree = function () {
 				}
 				return ret;
 			}).map(function (item) {
-				delete item.filetree;
+
+				var per_file_options = {};
+				if (item.changed_properties) {
+					item.changed_properties.forEach(function (prop) {
+						per_file_options[prop] = item.per_file_options[prop];
+					});
+					item.per_file_options = per_file_options;
+				}
+
+				// deletes all filetree specific properties from this item 
+				// (the properties that are sent out as JSON)
+				if (item.filetree) delete item.filetree;
+
+				if (item.changed_properties) delete item.changed_properties;
+
+				if (item.parent) delete item.parent;
+
+				if (item.fname_short) delete item.fname_short;
+
+				if (item.rpath_short) delete item.rpath_short;
+
 				return item;
 			});
 		}
@@ -665,11 +782,19 @@ var FileTree = function () {
 		key: 'iterateFileStructure',
 		value: function iterateFileStructure(arr, callback) {
 
-			function iterate(arr, cb) {
-				arr.forEach(function (item) {
+			var level = 0;
+
+			function iterate(arr, cb, parent) {
+
+				arr.forEach(function (item, i) {
+
+					// appends the parent to the item
+					if (parent) {
+						item.parent = parent;
+					}
 
 					if (item.children) {
-						iterate(item.children, callback);
+						iterate(item.children, callback, item);
 					}
 
 					if (cb && typeof cb === 'function') cb(item);
@@ -677,6 +802,28 @@ var FileTree = function () {
 			}
 
 			iterate(arr);
+		}
+	}, {
+		key: 'getParentContainerName',
+		value: function getParentContainerName(item) {
+			// this function will bubble up all 'parent' entities until we reach
+			// the first level. This is considered to be the 'parent' item.
+
+			var ret = {};
+
+			function bubbleUp(parent) {
+				if (parent.parent) {
+					bubbleUp(parent.parent);
+				} else {
+					ret = parent;
+				}
+			}
+
+			if (item.parent) {
+				bubbleUp(item.parent);
+			}
+
+			return ret;
 		}
 	}]);
 
@@ -709,6 +856,12 @@ function humanizeBytes(bytes, si) {
 	} while (Math.abs(bytes) >= thresh && u < units.length - 1);
 	return bytes.toFixed(1) + ' ' + units[u];
 }
+
+/*
+	TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30
+	[31/Jan/2017 13:19:47] "GET /submit/pre/25/ HTTP/1.1" 500 10890
+	- Broken pipe from ('127.0.0.1', 60662)
+ */
 
 exports.FileTree = FileTree;
 exports.Label = Label;

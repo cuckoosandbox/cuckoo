@@ -370,9 +370,6 @@ var TopSelect = function (_UserInputController2) {
 					if (extra.default) {
 
 						extra.options.forEach(function (opt) {
-
-							console.log(opt.value, extra.default);
-
 							if (opt.value == extra.default) {
 								opt.selected = true;
 								inp.setValue(extra.default);
@@ -730,6 +727,7 @@ var Form = function () {
 					});
 				}
 			}
+
 			return ret;
 		}
 	}]);
