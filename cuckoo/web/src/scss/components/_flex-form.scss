@@ -121,6 +121,46 @@
 			&:first-child label { border-left: 0; }
 			&:last-child label { border-right: 0; }
 
+			// styles for a manual input
+			.manual-input {
+				display: flex;
+				width: 150px;
+				align-items: center;
+
+				& > input {
+					flex-basis: 100%;
+					width: 100%;
+					padding: 7px 10px;
+					border: 0; // resets the entire border
+					border-left: 1px solid #D0D0D0; // enables only the left border
+					background: transparent;
+
+					&:focus {
+						outline: 0;
+					}
+				}
+
+				& > span {
+					padding: 0 15px;
+					text-transform: uppercase;
+					font-weight: 700;
+					color: #D0D0D0;
+					font-size: 11px;
+				}
+
+				&.active {
+
+					background-color: #337AB7;
+
+					& > input,
+					& > span {
+						color: #fff;
+					}
+
+				}
+
+			}
+
 		}
 	}
 

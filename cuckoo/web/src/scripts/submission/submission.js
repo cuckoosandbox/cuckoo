@@ -15,6 +15,7 @@ const default_analysis_options = {
 	},
 	'package': 'python',
 	'priority': 1,
+	'timeout': 2,
 	'vpn': 'united-states'
 }
 
@@ -387,8 +388,21 @@ $(function() {
 						]
 					});
 
+					var timeout = new this.TopSelect({
+						name: 'timeout',
+						title: 'Timeout',
+						default: default_analysis_options['timeout'],
+						units: 'minutes',
+						options: [
+							{ name: '1m', value: 0 },
+							{ name: '2m', value: 1 },
+							{ name: '5m', value: 2 },
+							{ name: 'custom', manual: true }
+						]
+					});
+
 					// an array inside this array will render the elements in a split view
-					form.add([network, [pkg, priority], config, machine]);
+					form.add([network, [pkg, priority], timeout, config, machine]);
 					form.draw();
 
 					// this gets fired EVERY time one of the fields
@@ -460,7 +474,10 @@ $(function() {
 
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
-			}, true);
+			}, false);
+
+			console.log(json);
+			return;
 				
 			$.ajax({
 				url: '/submit/api/submit',
@@ -468,7 +485,7 @@ $(function() {
 				dataType: 'json',
 				contentType: "application/json; charset=utf-8",
 				data: json,
-				success: function(response) {
+				success: function(data) {
 					if(data.status === true){
 	                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
 	                } else {

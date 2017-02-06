@@ -4768,6 +4768,35 @@ footer a:hover {
 .flex-form__toggle-group > li:last-child label {
   border-right: 0;
 }
+.flex-form__toggle-group > li .manual-input {
+  display: flex;
+  width: 150px;
+  align-items: center;
+}
+.flex-form__toggle-group > li .manual-input > input {
+  flex-basis: 100%;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-left: 1px solid #D0D0D0;
+  background: transparent;
+}
+.flex-form__toggle-group > li .manual-input > input:focus {
+  outline: 0;
+}
+.flex-form__toggle-group > li .manual-input > span {
+  padding: 0 15px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #D0D0D0;
+  font-size: 11px;
+}
+.flex-form__toggle-group > li .manual-input.active {
+  background-color: #337AB7;
+}
+.flex-form__toggle-group > li .manual-input.active > input, .flex-form__toggle-group > li .manual-input.active > span {
+  color: #fff;
+}
 .flex-form__toggle-list {
   list-style: none;
   padding: 0;

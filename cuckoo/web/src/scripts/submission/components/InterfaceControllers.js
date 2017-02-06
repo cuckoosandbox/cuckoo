@@ -121,6 +121,7 @@ class UserInputController {
 		this.type = config.type || '';
 		this.form = config.form || '';
 		this.default = config.default || '';
+		this.units = config.units || '';
 
 		this.events = {
 			change: [],
@@ -141,7 +142,8 @@ class UserInputController {
 
 		this.view.setupModel({
 			name: this.name,
-			title: this.title
+			title: this.title,
+			controller: this
 		});
 
 	}
@@ -221,6 +223,7 @@ class TopSelect extends UserInputController {
 		super(config);
 		this.options = this.config.options;
 		this.extra_select = this.config.extra_select;
+		this.units = this.config.units;
 		this.initialise();
 	}
 
@@ -256,6 +259,11 @@ class TopSelect extends UserInputController {
 			$(this.html).find('input:radio').prop('checked', false);
 		}
 
+		this.view.unsetCustom = function() {
+			$(this.html).find('.manual-input').removeClass('active');
+			$(this.html).find('.manual-input > input').val('');
+		}
+
 		// implement a new method on the view which will reset the selectbox
 		this.view.resetOtherSelect = function() {
 			$(this.html).find('select[name="'+this.controller.name+'-other"] option:first-child').prop('selected', true);
@@ -283,13 +291,22 @@ class TopSelect extends UserInputController {
 				controller.setValue(this.value);
 				self.view.resetOtherSelect();
 				self.view.resetAlternateSelect();
+				self.view.unsetCustom();
 			});
 
 			$(this).find('select[name="'+controller.name+'-other"]').bind('change', function(e) {
 				controller.setValue(this.value);
 				self.view.deselectRadios();
 				self.view.resetAlternateSelect();
+				self.view.unsetCustom();
 			});
+
+			$(this).find('.manual-input > input').bind('keyup', function(e) {
+				controller.setValue(this.value);
+				$(this).parent().addClass('active');
+				self.view.deselectRadios();
+				self.view.resetAlternateSelect();
+			})
 
 			// to make the extra input a SEPERATE function,
 			// we create a new input controller - without the view -

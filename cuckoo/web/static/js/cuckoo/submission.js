@@ -1483,6 +1483,7 @@ var UserInputController = function () {
 		this.type = config.type || '';
 		this.form = config.form || '';
 		this.default = config.default || '';
+		this.units = config.units || '';
 
 		this.events = {
 			change: [],
@@ -1503,7 +1504,8 @@ var UserInputController = function () {
 
 		this.view.setupModel({
 			name: this.name,
-			title: this.title
+			title: this.title,
+			controller: this
 		});
 	}
 
@@ -1606,6 +1608,7 @@ var TopSelect = function (_UserInputController2) {
 
 		_this2.options = _this2.config.options;
 		_this2.extra_select = _this2.config.extra_select;
+		_this2.units = _this2.config.units;
 		_this2.initialise();
 		return _this2;
 	}
@@ -1644,6 +1647,11 @@ var TopSelect = function (_UserInputController2) {
 				$(this.html).find('input:radio').prop('checked', false);
 			};
 
+			this.view.unsetCustom = function () {
+				$(this.html).find('.manual-input').removeClass('active');
+				$(this.html).find('.manual-input > input').val('');
+			};
+
 			// implement a new method on the view which will reset the selectbox
 			this.view.resetOtherSelect = function () {
 				$(this.html).find('select[name="' + this.controller.name + '-other"] option:first-child').prop('selected', true);
@@ -1671,10 +1679,19 @@ var TopSelect = function (_UserInputController2) {
 					controller.setValue(this.value);
 					self.view.resetOtherSelect();
 					self.view.resetAlternateSelect();
+					self.view.unsetCustom();
 				});
 
 				$(this).find('select[name="' + controller.name + '-other"]').bind('change', function (e) {
 					controller.setValue(this.value);
+					self.view.deselectRadios();
+					self.view.resetAlternateSelect();
+					self.view.unsetCustom();
+				});
+
+				$(this).find('.manual-input > input').bind('keyup', function (e) {
+					controller.setValue(this.value);
+					$(this).parent().addClass('active');
 					self.view.deselectRadios();
 					self.view.resetAlternateSelect();
 				});
@@ -2094,6 +2111,7 @@ var default_analysis_options = {
 	},
 	'package': 'python',
 	'priority': 1,
+	'timeout': 2,
 	'vpn': 'united-states'
 };
 
@@ -2408,8 +2426,16 @@ $(function () {
 						options: [{ name: 'default', value: 'default' }, { name: 'Cuckoo1', value: 'Cuckoo1' }, { name: 'Cuckoo2', value: 'Cuckoo2' }]
 					});
 
+					var timeout = new this.TopSelect({
+						name: 'timeout',
+						title: 'Timeout',
+						default: default_analysis_options['timeout'],
+						units: 'minutes',
+						options: [{ name: '1m', value: 0 }, { name: '2m', value: 1 }, { name: '5m', value: 2 }, { name: 'custom', manual: true }]
+					});
+
 					// an array inside this array will render the elements in a split view
-					form.add([network, [pkg, priority], config, machine]);
+					form.add([network, [pkg, priority], timeout, config, machine]);
 					form.draw();
 
 					// this gets fired EVERY time one of the fields
@@ -2478,7 +2504,10 @@ $(function () {
 
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
-			}, true);
+			}, false);
+
+			console.log(json);
+			return;
 
 			$.ajax({
 				url: '/submit/api/submit',
@@ -2486,7 +2515,7 @@ $(function () {
 				dataType: 'json',
 				contentType: "application/json; charset=utf-8",
 				data: json,
-				success: function success(response) {
+				success: function success(data) {
 					if (data.status === true) {
 						CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
 					} else {
