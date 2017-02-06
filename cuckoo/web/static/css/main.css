@@ -4801,6 +4801,13 @@ footer a:hover {
 .flex-form__toggle-group > li .manual-input.active > input, .flex-form__toggle-group > li .manual-input.active > span {
   color: #fff;
 }
+.flex-form__toggle-group > li.has-description label {
+  padding: 3px 0;
+}
+.flex-form__toggle-group > li.has-description .description {
+  display: block;
+  padding: 0;
+}
 .flex-form__toggle-list {
   list-style: none;
   padding: 0;
