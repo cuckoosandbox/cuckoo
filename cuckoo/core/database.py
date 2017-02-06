@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "796174689511"
+SCHEMA_VERSION = "5aa718cc79e1"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
