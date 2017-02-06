@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -118,7 +118,7 @@ setuptools.setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock==0.2.2",
+        "sflock==0.2.4",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
     ] + install_requires,
