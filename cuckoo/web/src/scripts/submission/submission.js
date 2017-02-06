@@ -461,8 +461,6 @@ $(function() {
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
 			}, true);
-
-			console.log(json);
 				
 			$.ajax({
 				url: '/submit/api/submit',

@@ -91,7 +91,7 @@ var AnalysisInterface = function () {
 			var ret = {};
 
 			ret.global = this.form.serialize();
-			ret.selected_files = this.filetree.serialize();
+			ret.file_selection = this.filetree.serialize();
 
 			// if we have extra properties, extend the return object
 			// with these properties
@@ -103,7 +103,7 @@ var AnalysisInterface = function () {
 
 			// filter out properties that are causing the json stringify to fail
 			// and throw circular json errors
-			ret.selected_files = ret.selected_files.map(function (item) {
+			ret.file_selection = ret.file_selection.map(function (item) {
 
 				if (item.per_file_options) {
 					item.options = item.per_file_options;
@@ -116,8 +116,6 @@ var AnalysisInterface = function () {
 
 				return item;
 			});
-
-			console.log(ret);
 
 			// auto stringify using a paremeter flag
 			if (stringified) ret = JSON.stringify(ret);
@@ -2481,8 +2479,6 @@ $(function () {
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
 			}, true);
-
-			console.log(json);
 
 			$.ajax({
 				url: '/submit/api/submit',
