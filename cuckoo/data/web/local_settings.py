@@ -5,8 +5,8 @@
 
 import web.errors
 
-# Maximum upload size.
-MAX_UPLOAD_SIZE = 26214400
+# Maximum upload size (10GB, so there's basically no limit).
+MAX_UPLOAD_SIZE = 10*1024*1024*1024
 
 # Override default secret key stored in $CWD/web/.secret_key
 # Make this unique, and don't share it with anybody.
