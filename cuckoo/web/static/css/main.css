@@ -4808,6 +4808,9 @@ footer a:hover {
   display: block;
   padding: 0;
 }
+.flex-form__toggle-group > li.has-description .description:before {
+  display: none;
+}
 .flex-form__toggle-list {
   list-style: none;
   padding: 0;

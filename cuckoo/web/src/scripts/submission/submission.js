@@ -198,9 +198,9 @@ $(function() {
 										default: item.per_file_options['timeout'],
 										units: 'seconds',
 										options: [
-											{ name: 'short', value: 60 },
-											{ name: 'medium', value: 120 },
-											{ name: 'long', value: 300 },
+											{ name: 'short', value: 60, description: '60' },
+											{ name: 'medium', value: 120, description: '120' },
+											{ name: 'long', value: 300, description: '300' },
 											{ name: 'custom', manual: true }
 										]
 									}).on('change', function(value) {
