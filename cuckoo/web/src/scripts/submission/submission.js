@@ -498,7 +498,7 @@ $(function() {
 				type: 'POST',
 				dataType: 'json',
 				contentType: "application/json; charset=utf-8",
-				data: json,
+				data: JSON.stringify(json),
 				success: function(data) {
 					if(data.status === true){
 	                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
