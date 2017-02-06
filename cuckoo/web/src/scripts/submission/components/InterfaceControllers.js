@@ -235,6 +235,8 @@ class TopSelect extends UserInputController {
 		let top_items = [];
 		let rest_items = [];
 
+		var snapped = false;
+
 		if(totalItems >= 5) {
 			top_items = this.options.slice(0,5);
 			rest_items = this.options.slice(5, totalItems);
@@ -244,10 +246,13 @@ class TopSelect extends UserInputController {
 
 		if(this.default) {
 			this.options.forEach(function(opt) {
+
 				if(opt.value == self.default) {
 					opt.selected = true;
 					self.setValue(self.default);
+					snapped = true;
 				}
+
 			});
 		}
 
@@ -278,7 +283,8 @@ class TopSelect extends UserInputController {
 		this.view.setupModel({
 			top_items: top_items,
 			rest_items: rest_items,
-			extra_select: this.config.extra_select
+			extra_select: this.config.extra_select,
+			snapped: snapped
 		});
 
 		// hook up interaction things
@@ -306,7 +312,12 @@ class TopSelect extends UserInputController {
 				$(this).parent().addClass('active');
 				self.view.deselectRadios();
 				self.view.resetAlternateSelect();
-			})
+			});
+
+			if(!snapped) {
+				$(this).find('.manual-input').addClass('active');
+				$(this).find('.manual-input > input').val(self.value);
+			}
 
 			// to make the extra input a SEPERATE function,
 			// we create a new input controller - without the view -

@@ -1623,6 +1623,8 @@ var TopSelect = function (_UserInputController2) {
 			var top_items = [];
 			var rest_items = [];
 
+			var snapped = false;
+
 			if (totalItems >= 5) {
 				top_items = this.options.slice(0, 5);
 				rest_items = this.options.slice(5, totalItems);
@@ -1632,9 +1634,11 @@ var TopSelect = function (_UserInputController2) {
 
 			if (this.default) {
 				this.options.forEach(function (opt) {
+
 					if (opt.value == self.default) {
 						opt.selected = true;
 						self.setValue(self.default);
+						snapped = true;
 					}
 				});
 			}
@@ -1666,7 +1670,8 @@ var TopSelect = function (_UserInputController2) {
 			this.view.setupModel({
 				top_items: top_items,
 				rest_items: rest_items,
-				extra_select: this.config.extra_select
+				extra_select: this.config.extra_select,
+				snapped: snapped
 			});
 
 			// hook up interaction things
@@ -1695,6 +1700,11 @@ var TopSelect = function (_UserInputController2) {
 					self.view.deselectRadios();
 					self.view.resetAlternateSelect();
 				});
+
+				if (!snapped) {
+					$(this).find('.manual-input').addClass('active');
+					$(this).find('.manual-input > input').val(self.value);
+				}
 
 				// to make the extra input a SEPERATE function,
 				// we create a new input controller - without the view -
@@ -2111,7 +2121,7 @@ var default_analysis_options = {
 	},
 	'package': 'python',
 	'priority': 1,
-	'timeout': 2,
+	'timeout': 120,
 	'vpn': 'united-states'
 };
 
@@ -2273,6 +2283,17 @@ $(function () {
 											setFieldValue.call(this, parseInt(value));
 										});
 
+										var timeout = new this.TopSelect({
+											name: 'timeout-' + item.filetree.index,
+											title: 'Timeout',
+											default: item.per_file_options['timeout'],
+											units: 'seconds',
+											options: [{ name: 'short', value: 60 }, { name: 'medium', value: 120 }, { name: 'long', value: 300 }, { name: 'custom', manual: true }]
+										}).on('change', function (value) {
+											item.per_file_options['timeout'] = value;
+											setFieldValue.call(this, value);
+										});
+
 										var config = new this.ToggleList({
 											name: 'options-' + item.filetree.index,
 											title: 'Options',
@@ -2341,7 +2362,8 @@ $(function () {
 											setFieldValue.call(this, value);
 										});
 
-										form.add([network, [pkg, priority], config, machine]);
+										form.add([network, [pkg, priority], timeout, config, machine]);
+
 										form.draw();
 									}
 								});
@@ -2430,8 +2452,8 @@ $(function () {
 						name: 'timeout',
 						title: 'Timeout',
 						default: default_analysis_options['timeout'],
-						units: 'minutes',
-						options: [{ name: '1m', value: 0 }, { name: '2m', value: 1 }, { name: '5m', value: 2 }, { name: 'custom', manual: true }]
+						units: 'seconds',
+						options: [{ name: 'short', value: 60 }, { name: 'medium', value: 120 }, { name: 'long', value: 300 }, { name: 'custom', manual: true }]
 					});
 
 					// an array inside this array will render the elements in a split view
@@ -2505,9 +2527,6 @@ $(function () {
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
 			}, false);
-
-			console.log(json);
-			return;
 
 			$.ajax({
 				url: '/submit/api/submit',

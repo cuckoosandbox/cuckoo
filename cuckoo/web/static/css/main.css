@@ -4770,8 +4770,12 @@ footer a:hover {
 }
 .flex-form__toggle-group > li .manual-input {
   display: flex;
-  width: 150px;
+  width: 126px;
   align-items: center;
+  padding: 0;
+}
+.flex-form__toggle-group > li .manual-input:before {
+  display: none;
 }
 .flex-form__toggle-group > li .manual-input > input {
   flex-basis: 100%;

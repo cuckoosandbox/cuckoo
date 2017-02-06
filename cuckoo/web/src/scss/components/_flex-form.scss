@@ -124,8 +124,13 @@
 			// styles for a manual input
 			.manual-input {
 				display: flex;
-				width: 150px;
+				width: 126px;
 				align-items: center;
+				padding: 0;
+
+				&:before {
+					display: none;
+				}
 
 				& > input {
 					flex-basis: 100%;

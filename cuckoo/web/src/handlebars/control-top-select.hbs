@@ -4,8 +4,8 @@
 	{{#each top_items}}
 		<li>
 			{{#unless manual}}
-				<input type="radio" name="{{../../name}}" id="{{../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} />
-				<label for="{{../name}}-{{value}}" {{#if className}}class="{{className}}"{{/if}}>{{name}}</label>
+				<input type="radio" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} />
+				<label for="{{../../name}}-{{value}}" {{#if className}}class="{{className}}"{{/if}}>{{name}}</label>
 			{{else}}	
 				<div class="manual-input">
 					<input type="text" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" placeholder="..." />

@@ -15,7 +15,7 @@ const default_analysis_options = {
 	},
 	'package': 'python',
 	'priority': 1,
-	'timeout': 2,
+	'timeout': 120,
 	'vpn': 'united-states'
 }
 
@@ -192,6 +192,22 @@ $(function() {
 										setFieldValue.call(this, parseInt(value));
 									});
 
+									var timeout = new this.TopSelect({
+										name: 'timeout-' + item.filetree.index,
+										title: 'Timeout',
+										default: item.per_file_options['timeout'],
+										units: 'seconds',
+										options: [
+											{ name: 'short', value: 60 },
+											{ name: 'medium', value: 120 },
+											{ name: 'long', value: 300 },
+											{ name: 'custom', manual: true }
+										]
+									}).on('change', function(value) {
+										item.per_file_options['timeout'] = value;
+										setFieldValue.call(this, value);
+									});
+
 									var config = new this.ToggleList({
 										name: 'options-' + item.filetree.index,
 										title: 'Options',
@@ -272,7 +288,8 @@ $(function() {
 										setFieldValue.call(this, value);
 									});
 
-									form.add([network, [pkg, priority], config, machine]);
+									form.add([network, [pkg, priority], timeout, config, machine]);
+
 									form.draw();
 
 								}
@@ -392,11 +409,11 @@ $(function() {
 						name: 'timeout',
 						title: 'Timeout',
 						default: default_analysis_options['timeout'],
-						units: 'minutes',
+						units: 'seconds',
 						options: [
-							{ name: '1m', value: 0 },
-							{ name: '2m', value: 1 },
-							{ name: '5m', value: 2 },
+							{ name: 'short', value: 60 },
+							{ name: 'medium', value: 120 },
+							{ name: 'long', value: 300 },
 							{ name: 'custom', manual: true }
 						]
 					});
@@ -475,9 +492,6 @@ $(function() {
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
 			}, false);
-
-			console.log(json);
-			return;
 				
 			$.ajax({
 				url: '/submit/api/submit',

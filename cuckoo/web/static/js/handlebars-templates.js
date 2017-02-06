@@ -80,7 +80,7 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
   return "				<input type=\"radio\" name=\""
     + alias2(alias1((depths[2] != null ? depths[2].name : depths[2]), depth0))
     + "\" id=\""
-    + alias2(alias1((depths[1] != null ? depths[1].name : depths[1]), depth0))
+    + alias2(alias1((depths[2] != null ? depths[2].name : depths[2]), depth0))
     + "-"
     + alias2(alias1((depth0 != null ? depth0.value : depth0), depth0))
     + "\" value=\""
@@ -88,7 +88,7 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + "\" "
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.selected : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + " />\n				<label for=\""
-    + alias2(alias1((depths[1] != null ? depths[1].name : depths[1]), depth0))
+    + alias2(alias1((depths[2] != null ? depths[2].name : depths[2]), depth0))
     + "-"
     + alias2(((helper = (helper = helpers.value || (depth0 != null ? depth0.value : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(depth0,{"name":"value","hash":{},"data":data}) : helper)))
     + "\" "
