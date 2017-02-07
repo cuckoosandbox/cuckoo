@@ -68,6 +68,11 @@
 				background-color: transparent;
 				color: inherit;
 				vertical-align: middle;
+
+				&-duplicate {
+					color: #D0D0D0;
+					text-transform: uppercase;
+				}
 			}
 
 			a.label {
@@ -125,6 +130,13 @@
 					& > div:not(.archive-container):before { content: "\f07c"; }
 				}
 
+			}
+
+			&.is-duplicate {
+				color: #cb314d;
+				[data-type="file"]:before {
+					content: "\f0c5";
+				}
 			}
 
 			&:first-child { border-top: 1px solid #d0d0d0;  }

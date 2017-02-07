@@ -511,6 +511,14 @@
 				visibility: none;
 			}
 
+			&.warning {
+				background-color: lighten(#cb314d, 40);
+				color: #cb314d;
+				strong {
+					color: #cb314d;
+				}
+			}
+
 			&:hover {
 				cursor: default !important;
 			}

@@ -223,6 +223,8 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
   return "			"
     + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.relapath : stack1), depth0))
     + "\n";
+},"11":function(depth0,helpers,partials,data) {
+    return "		<li class=\"warning\">\n			<strong>duplicate</strong>\n			This is a duplicate of another submitted file.\n		</li>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
@@ -238,7 +240,9 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
     + alias2(alias1(((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.finger : stack1)) != null ? stack1.mime_human : stack1), depth0))
     + "\n	</li>\n	<li>\n		<strong>size</strong>\n		"
     + ((stack1 = (helpers.file_size || (depth0 && depth0.file_size) || helpers.helperMissing).call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.size : stack1),{"name":"file_size","hash":{},"data":data})) != null ? stack1 : "")
-    + "\n	</li>\n</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Advanced options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>";
+    + "\n	</li>\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.duplicate : stack1),{"name":"if","hash":{},"fn":this.program(11, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Advanced options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1;

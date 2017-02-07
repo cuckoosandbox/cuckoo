@@ -35,6 +35,12 @@
 		<strong>size</strong>
 		{{{file_size item.size}}}
 	</li>
+	{{#if item.duplicate}}
+		<li class="warning">
+			<strong>duplicate</strong>
+			This is a duplicate of another submitted file.
+		</li>
+	{{/if}}
 </ul>
 
 <header class="flex-form__header">

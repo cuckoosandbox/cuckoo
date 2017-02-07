@@ -4485,6 +4485,10 @@ footer a:hover {
   color: inherit;
   vertical-align: middle;
 }
+.cuckoo-files ul div .label-duplicate {
+  color: #D0D0D0;
+  text-transform: uppercase;
+}
 .cuckoo-files ul div a.label:hover {
   color: #337AB7;
 }
@@ -4523,6 +4527,12 @@ footer a:hover {
 }
 .cuckoo-files ul li strong.expanded > div:not(.archive-container):before {
   content: "\f07c";
+}
+.cuckoo-files ul li.is-duplicate {
+  color: #cb314d;
+}
+.cuckoo-files ul li.is-duplicate [data-type="file"]:before {
+  content: "\f0c5";
 }
 .cuckoo-files ul li:first-child {
   border-top: 1px solid #d0d0d0;
@@ -5096,6 +5106,13 @@ footer a:hover {
 .flex-static__summary > li.hidden {
   display: none;
   visibility: none;
+}
+.flex-static__summary > li.warning {
+  background-color: #f5d4da;
+  color: #cb314d;
+}
+.flex-static__summary > li.warning strong {
+  color: #cb314d;
 }
 .flex-static__summary > li:hover {
   cursor: default !important;

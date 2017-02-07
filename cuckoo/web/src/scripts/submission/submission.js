@@ -107,6 +107,11 @@ $(function() {
 						// adds the meta data
 						_$d.append(info, size);
 
+						if(this.duplicate) {
+							var duplicate = FileTree.Label('duplicate', 'duplicate file');
+							_$d.append(duplicate);
+						}
+
 						$(info).on('click', function(e) {
 							e.stopImmediatePropagation();
 							controller.detailView(self);

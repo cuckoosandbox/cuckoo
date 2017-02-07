@@ -652,6 +652,10 @@ function build(items, parent) {
 			parent.appendChild(file);
 			item.filetree.el = file;
 		}
+
+		if (item.duplicate) {
+			item.filetree.el.classList.add('is-duplicate');
+		}
 	}
 
 	return parent;
@@ -2235,6 +2239,11 @@ $(function () {
 
 						// adds the meta data
 						_$d.append(info, size);
+
+						if (this.duplicate) {
+							var duplicate = FileTree.Label('duplicate', 'duplicate file');
+							_$d.append(duplicate);
+						}
 
 						$(info).on('click', function (e) {
 							e.stopImmediatePropagation();

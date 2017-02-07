@@ -192,6 +192,10 @@ function build(items, parent) {
 			item.filetree.el = file;
 		}
 
+		if(item.duplicate) {
+			item.filetree.el.classList.add('is-duplicate');
+		}
+
 	}
 
 	return parent;
