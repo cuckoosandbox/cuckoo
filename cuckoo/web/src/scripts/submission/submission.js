@@ -19,6 +19,11 @@ const default_analysis_options = {
 	'vpn': 'united-states'
 }
 
+// package field contents - hardcoded options vs auto-detected properties
+// gets updated when packages come back that aren;t in this array in the response
+// serialization code.
+var default_package_selection_options = ['python','ie','js','pdf'];
+
 // appends a helper to handlebars for humanizing sizes
 Handlebars.registerHelper('file_size', function(text) {
 	return new Handlebars.SafeString(FileTree.humanizeBytes(parseInt(text)));
@@ -57,8 +62,18 @@ $(function() {
 					serialize: function(response) {
 
 						FileTree.FileTree.iterateFileStructure(response.data.files, function(item) {
+
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = new Array();
+
+							// machine guess: package options
+							// - also preselects the package field if available
+							if(item.package) {
+								item.per_file_options['package'] = item.package
+								if(default_package_selection_options.indexOf(item.package) == -1) {
+									default_package_selection_options.push(item.package);
+								}
+							}
 
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
 							if(parentContainer) item.arcname = parentContainer.filename;
@@ -66,6 +81,15 @@ $(function() {
 						});
 
 						analysis_ui.originalData = response.data;
+
+						default_package_selection_options = default_package_selection_options.map(function(opt) {
+							return {
+								name: opt,
+								value: opt
+							};
+						});
+
+						console.log(default_package_selection_options);
 
 						return response.data.files;
 
@@ -169,10 +193,7 @@ $(function() {
 										name: 'package-' + item.filetree.index,
 										title: 'Package',
 										default: item.per_file_options['package'],
-										options: [
-											{ name: 'Python', value: 'python' },
-											{ name: 'Javascript', value: 'js' }
-										]
+										options: default_package_selection_options
 									}).on('change', function(value) {
 										item.per_file_options['package'] = value;
 										setFieldValue.call(this, value);
@@ -340,10 +361,12 @@ $(function() {
 						name: 'package',
 						title: 'Package',
 						default: default_analysis_options['package'],
-						options: [
-							{ name: 'Python', value: 'python' },
-							{ name: 'Javascript', value: 'js' }
-						]
+						options: default_package_selection_options.map(function(opt) {
+							return {
+								name: opt,
+								value: opt
+							}
+						})
 					});
 
 					var priority = new this.TopSelect({
@@ -492,6 +515,9 @@ $(function() {
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
 			}, false);
+
+			console.log(json);
+			return;
 				
 			$.ajax({
 				url: '/submit/api/submit',
