@@ -89,8 +89,6 @@ $(function() {
 							};
 						});
 
-						console.log(default_package_selection_options);
-
 						return response.data.files;
 
 					}
@@ -513,10 +511,10 @@ $(function() {
 			e.preventDefault();
 
 			var json = analysis_ui.getData({
-				submit_id: window.submit_id
+				'submit_id': window.submit_id
 			}, true);
 
-			console.log(json);
+			// console.log(json);
 			// return;
 				
 			$.ajax({
