@@ -1181,6 +1181,17 @@ var FileTree = function () {
 	}, {
 		key: 'serialize',
 		value: function serialize() {
+
+			function diff(changed_properties, per_file_options) {
+				var ret = {};
+
+				for (var prop in changed_properties) {
+					ret[changed_properties[prop]] = per_file_options[changed_properties[prop]];
+				}
+
+				return ret;
+			}
+
 			var selection = this.findByProperty('selected', true);
 			return selection.map(function (item) {
 				var ret = {};
@@ -1193,12 +1204,15 @@ var FileTree = function () {
 			}).map(function (item) {
 
 				var per_file_options = {};
-				if (item.changed_properties) {
-					item.changed_properties.forEach(function (prop) {
-						per_file_options[prop] = item.per_file_options[prop];
-					});
-					item.options = per_file_options;
-				}
+				// if(item.changed_properties) {
+				// 	item.changed_properties.forEach(function(prop) {
+				// 		per_file_options[prop] = item.per_file_options[prop];
+				// 	});
+				// 	item.options = per_file_options;
+				// }
+
+				item.options = diff(item.changed_properties, item.per_file_options);
+				console.log(item.options);
 
 				// deletes all filetree specific properties from this item 
 				// (the properties that are sent out as JSON)
@@ -2181,7 +2195,7 @@ $(function () {
 						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
-							item.changed_properties = new Array();
+							item.changed_properties = [];
 
 							// machine guess: package options
 							// - also preselects the package field if available
@@ -2190,6 +2204,7 @@ $(function () {
 								if (default_package_selection_options.indexOf(item.package) == -1) {
 									default_package_selection_options.push(item.package);
 								}
+								item.changed_properties.push('package');
 							}
 
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
@@ -2565,9 +2580,6 @@ $(function () {
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
 			}, true);
-
-			// console.log(json);
-			// return;
 
 			$.ajax({
 				url: '/submit/api/submit',

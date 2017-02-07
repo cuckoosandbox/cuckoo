@@ -64,7 +64,7 @@ $(function() {
 						FileTree.FileTree.iterateFileStructure(response.data.files, function(item) {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
-							item.changed_properties = new Array();
+							item.changed_properties = [];
 
 							// machine guess: package options
 							// - also preselects the package field if available
@@ -73,6 +73,7 @@ $(function() {
 								if(default_package_selection_options.indexOf(item.package) == -1) {
 									default_package_selection_options.push(item.package);
 								}
+								item.changed_properties.push('package');
 							}
 
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
@@ -513,9 +514,6 @@ $(function() {
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
 			}, true);
-
-			// console.log(json);
-			// return;
 				
 			$.ajax({
 				url: '/submit/api/submit',

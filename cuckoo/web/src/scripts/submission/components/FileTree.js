@@ -720,6 +720,17 @@ class FileTree {
 	}
 
 	serialize() {
+
+		function diff(changed_properties, per_file_options) {
+			var ret = {};
+
+			for(var prop in changed_properties) {
+				ret[changed_properties[prop]] = per_file_options[changed_properties[prop]];
+			}
+
+			return ret;
+		}
+
 		var selection = this.findByProperty('selected', true);
 		return selection.map(function(item) {
 			var ret = {};
@@ -732,12 +743,15 @@ class FileTree {
 		}).map(function(item) {
 
 			var per_file_options = {};
-			if(item.changed_properties) {
-				item.changed_properties.forEach(function(prop) {
-					per_file_options[prop] = item.per_file_options[prop];
-				});
-				item.options = per_file_options;
-			}
+			// if(item.changed_properties) {
+			// 	item.changed_properties.forEach(function(prop) {
+			// 		per_file_options[prop] = item.per_file_options[prop];
+			// 	});
+			// 	item.options = per_file_options;
+			// }
+
+			item.options = diff(item.changed_properties, item.per_file_options);
+			console.log(item.options);
 
 			// deletes all filetree specific properties from this item 
 			// (the properties that are sent out as JSON)
