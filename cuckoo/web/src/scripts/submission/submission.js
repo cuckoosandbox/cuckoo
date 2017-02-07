@@ -514,10 +514,10 @@ $(function() {
 
 			var json = analysis_ui.getData({
 				submit_id: window.submit_id
-			}, false);
+			}, true);
 
 			console.log(json);
-			return;
+			// return;
 				
 			$.ajax({
 				url: '/submit/api/submit',
