@@ -956,6 +956,17 @@ var FileTree = function () {
 
 			var self = this;
 
+			$(this.el).find('li div').bind('click', function (e) {
+
+				var type = $(this).data('type');
+				var index = $(this).find('[data-index]').data('index');
+				var item = null;
+
+				if (type == 'file') {
+					self.detailView(self.getIndex(index));
+				}
+			});
+
 			$(this.el).find('[data-type="folder"]').bind('click', function (e) {
 				e.preventDefault();
 				onFolderClick.call(this, e, self);

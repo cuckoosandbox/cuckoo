@@ -4506,6 +4506,9 @@ footer a:hover {
 .cuckoo-files ul li [data-type="file"] {
   font-weight: 400;
 }
+.cuckoo-files ul li div:hover {
+  background-color: #eee;
+}
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";
 }
