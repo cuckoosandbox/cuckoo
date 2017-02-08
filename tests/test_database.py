@@ -183,6 +183,13 @@ class DatabaseMigrationEngine(object):
         assert version and len(version) == 1
         assert version[0][0] == SCHEMA_VERSION
 
+    def test_long_error(self):
+        task_id = self.d.add_url("http://google.com/")
+        self.d.add_error("A"*1024, task_id)
+        err = self.d.view_errors(task_id)
+        assert err and len(err[0].message) == 1024
+
+class DatabaseMigration060(DatabaseMigrationEngine):
     def test_machine_resultserver_port_is_int(self):
         machines = self.s.execute(
             "SELECT resultserver_ip, resultserver_port FROM machines"
@@ -193,13 +200,7 @@ class DatabaseMigrationEngine(object):
         assert machines[1][0] == "192.168.56.1"
         assert machines[1][1] == 2042
 
-    def test_long_error(self):
-        task_id = self.d.add_url("http://google.com/")
-        self.d.add_error("A"*1024, task_id)
-        err = self.d.view_errors(task_id)
-        assert err and len(err[0].message) == 1024
-
-class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
+class TestDatabaseMigration060PostgreSQL(DatabaseMigration060):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
 
@@ -242,7 +243,7 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
         assert tasks[1][0] == "completed"
         assert tasks[2][0] == "running"
 
-class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
+class TestDatabaseMigration060SQLite3(DatabaseMigration060):
     URI = "sqlite:///%s.sqlite3" % tempfile.mktemp()
     SRC = "tests/files/sql/060sq.sql"
 
@@ -287,7 +288,7 @@ class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
         assert tasks[2][0] == "completed"
         assert tasks[3][0] == "pending"
 
-class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
+class TestDatabaseMigration060MySQL(DatabaseMigration060):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060my.sql"
 
@@ -328,6 +329,43 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
         assert tasks[0][1] is None
         assert tasks[1][0] == "running"
         assert tasks[2][0] == "pending"
+
+class DatabaseMigration11(DatabaseMigrationEngine):
+    @staticmethod
+    def migrate(cls):
+        main.main(("--cwd", cwd(), "migrate"), standalone_mode=False)
+
+    def test_task_statuses(cls):
+        tasks = cls.d.engine.execute(
+            "SELECT status, owner FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "reported"
+        assert tasks[1][0] == "pending"
+
+class TestDatabaseMigration11PostgreSQL(DatabaseMigration11):
+    URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest11"
+    SRC = "tests/files/sql/11pg.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
+        cls.s.commit()
+
+class TestDatabaseMigration11SQLite3(DatabaseMigration11):
+    URI = "sqlite:///%s.sqlite3" % tempfile.mktemp()
+    SRC = "tests/files/sql/11sq.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.connection().connection.cursor().executescript(script)
+
+class TestDatabaseMigration11MySQL(DatabaseMigration11):
+    URI = "mysql://cuckoo:cuckoo@localhost/cuckootest11"
+    SRC = "tests/files/sql/11my.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
 
 @mock.patch("cuckoo.core.database.create_engine")
 @mock.patch("cuckoo.core.database.sessionmaker")

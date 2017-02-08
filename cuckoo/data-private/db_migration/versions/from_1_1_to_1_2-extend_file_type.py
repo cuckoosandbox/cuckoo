@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,7 +18,7 @@ down_revision = "263a45963c72"
 from alembic import op
 import sqlalchemy as sa
 
-import cuckoo.core.database as db
+from cuckoo.core.database import Database, Sample
 
 def upgrade():
     conn = op.get_bind()
@@ -48,7 +48,7 @@ def upgrade():
         "postgresql": "tasks_sample_id_fkey",
     }
 
-    fkey = fkey_name.get(db.Database(schema_check=False).engine.name)
+    fkey = fkey_name.get(Database(schema_check=False).engine.name)
 
     # First drop the foreign key.
     if fkey:
@@ -80,7 +80,7 @@ def upgrade():
     )
 
     # Insert data.
-    op.bulk_insert(db.Sample.__table__, samples)
+    op.bulk_insert(Sample.__table__, samples)
 
     # Restore the indices.
     op.create_index("hash_index", "samples",

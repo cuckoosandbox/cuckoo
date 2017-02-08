@@ -4,15 +4,15 @@
 
 """tasks tags relation
 
-Revision ID: 5aa718cc79e1
-Revises: af16beb71aa7
+Revision ID: 263a45963c72
+Revises: 5aa718cc79e1
 Create Date: 2017-02-07 00:37:15.017423
 
 """
 
 # Revision identifiers, used by Alembic.
-revision = "5aa718cc79e1"
-down_revision = "af16beb71aa7"
+revision = "263a45963c72"
+down_revision = "5aa718cc79e1"
 
 from alembic import op
 import sqlalchemy as sa

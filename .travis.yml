@@ -22,9 +22,11 @@ before_install:
   - sudo mysql -e "FLUSH PRIVILEGES"
   - sudo mysql -e "CREATE DATABASE cuckootest"
   - sudo mysql -e "CREATE DATABASE cuckootest060"
+  - sudo mysql -e "CREATE DATABASE cuckootest11"
   - psql -U postgres -c "CREATE USER cuckoo WITH PASSWORD 'cuckoo'"
   - psql -U postgres -c "CREATE DATABASE cuckootest"
   - psql -U postgres -c "CREATE DATABASE cuckootest060"
+  - psql -U postgres -c "CREATE DATABASE cuckootest11"
 
 install:
   - python setup.py develop
