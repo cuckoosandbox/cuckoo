@@ -1,11 +1,12 @@
 <section id="static_analysis">
     {% for p in analysis.static.pdf %}
+	{% if p.modification %}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="panel" id="accordion1">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <label class="accordion-toggle">URLs</label>
+                                    <label class="accordion-toggle">Metadata</label>
                                 </div>
 
                                 <div id="pdf_metadata" class="panel-collapse collapse in" style="text-align: left;">
@@ -51,6 +52,7 @@
                         </div>
                     </div>
                 </div>
+	{% endif %}
         {% if p.urls %}
                 <div class="row">
                     <div class="col-md-6">
