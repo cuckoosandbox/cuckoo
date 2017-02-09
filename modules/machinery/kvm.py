@@ -27,5 +27,4 @@ class KVM(LibVirtMachinery):
 
     def start(self, label, task):
         super(KVM, self).start(label, task)
-        if not self.db.view_machine_by_label(label).interface:
-            self.db.set_machine_interface(label, self._get_interface(label))
+        self.db.set_machine_interface(label, self._get_interface(label))
