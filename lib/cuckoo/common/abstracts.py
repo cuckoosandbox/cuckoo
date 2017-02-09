@@ -37,6 +37,7 @@ class Auxiliary(object):
         self.machine = None
         self.guest_manager = None
         self.options = None
+        self.db = Database()
 
     def set_task(self, task):
         self.task = task

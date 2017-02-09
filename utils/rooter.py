@@ -8,17 +8,20 @@ import grp
 import json
 import logging
 import os.path
+from os import listdir
 import re
 import socket
 import stat
 import subprocess
 import sys
 
+
 def run(*args):
     """Wrapper to Popen."""
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
+
 
 def nic_available(interface):
     """Check if specified network interface is available."""
@@ -30,6 +33,7 @@ def nic_available(interface):
     except subprocess.CalledProcessError:
         return False
 
+
 def rt_available(rt_table):
     """Check if specified routing table is defined."""
     try:
@@ -40,38 +44,56 @@ def rt_available(rt_table):
     except subprocess.CalledProcessError:
         return False
 
+
 def vpn_status():
     """Gets current VPN status."""
+    def is_running(vpn):
+        running = False
+        run_path = "/var/run/openvpn/"
+        pid_path = os.path.join(run_path, "{0}.pid".format(vpn))
+        status_path = os.path.join(run_path, "{0}.status".format(vpn))
+
+        if os.path.exists(pid_path) and os.path.exists(status_path):
+            with open(status_path) as status_file:
+                running = len(status_file.read()) > 0
+        return running
+
+    config_path = "/etc/openvpn/"
     ret = {}
-    for line in run(settings.service, "openvpn", "status")[0].split("\n"):
-        x = re.search("'(?P<vpn>\\w+)'\\ is\\ (?P<running>not)?", line)
-        if x:
-            ret[x.group("vpn")] = x.group("running") != "not"
+    for vpn in [f for f in listdir(config_path) if os.path.isfile(os.path.join(config_path, f)) and f.endswith(".conf")]:
+        vpn = vpn.split(".conf")[0]
+        ret[vpn] = is_running(vpn)
 
     return ret
+
 
 def vpn_enable(name):
     """Start a VPN."""
     run(settings.service, "openvpn", "start", name)
 
+
 def vpn_disable(name):
     """Stop a running VPN."""
     run(settings.service, "openvpn", "stop", name)
 
+
 def forward_drop():
     """Disable any and all forwarding unless explicitly said so."""
     run(settings.iptables, "-P", "FORWARD", "DROP")
+
 
 def enable_nat(interface):
     """Enable NAT on this interface."""
     run(settings.iptables, "-t", "nat", "-A", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
+
 def disable_nat(interface):
     """Disable NAT on this interface."""
     while not run(settings.iptables, "-t", "nat", "-D", "POSTROUTING",
                   "-o", interface, "-j", "MASQUERADE")[1]:
         pass
+
 
 def init_rttable(rt_table, interface):
     """Initialise routing table for this interface using routes
@@ -85,12 +107,14 @@ def init_rttable(rt_table, interface):
         args += ["dev", interface, "table", rt_table]
         run(settings.ip, *args)
 
+
 def flush_rttable(rt_table):
     """Flushes specified routing table entries."""
     if rt_table in ["local", "main", "default"]:
         return
 
     run(settings.ip, "route", "flush", "table", rt_table)
+
 
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
@@ -101,6 +125,7 @@ def forward_enable(src, dst, ipaddr):
     run(settings.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
+
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
@@ -110,10 +135,12 @@ def forward_disable(src, dst, ipaddr):
     run(settings.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
+
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
     run(settings.ip, "rule", "add", "from", ipaddr, "table", rt_table)
     run(settings.ip, "route", "flush", "cache")
+
 
 def srcroute_disable(rt_table, ipaddr):
     """Disable routing policy for specified source IP address."""

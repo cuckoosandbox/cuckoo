@@ -33,6 +33,7 @@ latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
 
+
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
 
@@ -43,7 +44,7 @@ class AnalysisManager(threading.Thread):
     """
 
     def __init__(self, task_id, error_queue):
-        """@param task: task object containing the details for the analysis."""
+        """@param task_id: task object containing the details for the analysis."""
         threading.Thread.__init__(self)
 
         self.errors = error_queue
@@ -366,9 +367,6 @@ class AnalysisManager(threading.Thread):
             self.machine.platform, self.task.id, self
         )
 
-        self.aux = RunAuxiliary(self.task, self.machine, self.guest_manager)
-        self.aux.start()
-
         # Generate the analysis configuration file.
         options = self.build_options()
 
@@ -386,6 +384,10 @@ class AnalysisManager(threading.Thread):
 
             # Enable network routing.
             self.route_network()
+
+            # Run auxiliary modules
+            self.aux = RunAuxiliary(self.task, self.machine, self.guest_manager)
+            self.aux.start()
 
             # By the time start returns it will have fully started the Virtual
             # Machine. We can now safely release the machine lock.
