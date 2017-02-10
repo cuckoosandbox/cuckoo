@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -126,6 +126,7 @@ MIDDLEWARE_CLASSES = (
     "django.contrib.messages.middleware.MessageMiddleware",
     # Cuckoo headers.
     "web.headers.CuckooHeaders",
+    # Our custom exception handler.
     "web.errors.ExceptionMiddleware"
 )
 
