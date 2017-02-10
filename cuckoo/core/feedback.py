@@ -53,6 +53,10 @@ class CuckooFeedback(object):
             log.debug("A whitelisted exception occurred: %s", exception)
             return
 
+        # Ignore 404 exceptions regarding ".map" development files.
+        if isinstance(exception, Http404) and ".map" in exception.message:
+            return
+
         if isinstance(exception, self.exc_django):
             feedback.add_error(
                 "A Django-related exception occurred: %s" % exception
