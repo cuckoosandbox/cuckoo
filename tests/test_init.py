@@ -9,12 +9,13 @@ import shutil
 import tempfile
 
 from cuckoo.common.config import config
+from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.utils import Singleton
 from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, mkdir
 
 class TestInit(object):
     def setup(self):
@@ -133,8 +134,8 @@ class TestInit(object):
             "auxiliary": {
                 "sniffer": {
                     "tcpdump": "dumping.elf",
-                }
-            }
+                },
+            },
         })
         buf = open(cwd("conf", "auxiliary.conf"), "rb").read()
         assert "tcpdump = dumping.elf" in buf
@@ -151,3 +152,122 @@ class TestInit(object):
             )
 
         assert config("cuckoo:cuckoo:version_check") is False
+
+class TestWriteCuckooConfiguration(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        mkdir(cwd("conf"))
+        self.h = mock.patch("cuckoo.core.init.jinja2")
+        self.p = self.h.start()
+        self.render().return_value = ""
+
+    def teardown(self):
+        self.h.stop()
+
+    def render(self):
+        return self.p.Environment.return_value.from_string.return_value.render
+
+    def value(self, s):
+        return self.render().call_args[0][0]["config"](s)
+
+    def rawvalue(self, s):
+        a, b, c = s.split(":")
+        return self.render().call_args[0][0][a][b][c]
+
+    def test_simple(self):
+        write_cuckoo_conf(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "version_check": False,
+                },
+            },
+        })
+        assert self.value("cuckoo:cuckoo:version_check") is False
+
+        with pytest.raises(ValueError):
+            self.value("a")
+
+        with pytest.raises(KeyError):
+            self.value("a:b:c")
+
+        with pytest.raises(KeyError):
+            self.value("cuckoo:a:b")
+
+        with pytest.raises(KeyError):
+            self.value("cuckoo:cuckoo:c")
+
+    def test_default_simple(self):
+        write_cuckoo_conf()
+        assert self.value("cuckoo:feedback:name") is None
+        assert self.value("cuckoo:cuckoo:max_vmstartup_count") == 10
+        assert self.rawvalue("cuckoo:cuckoo:max_vmstartup_count") == "10"
+
+    def test_default_star(self):
+        write_cuckoo_conf()
+        assert self.value("routing:vpn0:name") == "vpn0"
+        assert self.rawvalue("routing:vpn0:name") == "vpn0"
+        assert self.value("virtualbox:cuckoo1:ip") == "192.168.56.101"
+        assert self.value("avd:cuckoo1:platform") == "android"
+        assert self.value("esx:analysis1:ip") == "192.168.122.105"
+        assert self.value("physical:physical1:label") == "physical1"
+        assert self.value("qemu:vm1:label") == "vm1"
+        assert self.value("vmware:cuckoo1:vmx_path") == "../cuckoo1/cuckoo1.vmx"
+        assert self.value("vsphere:analysis1:snapshot") == "snapshot_name"
+        assert self.value("xenserver:cuckoo1:uuid") == "00000000-0000-0000-0000-000000000000"
+
+    def test_star_not_found(self):
+        with pytest.raises(CuckooConfigurationError) as e:
+            write_cuckoo_conf(cfg={
+                "routing": {
+                    "vpn": {
+                        "vpns": [
+                            "a",
+                        ],
+                    },
+                },
+            })
+        e.match("A section was defined that")
+
+    def test_star_single(self):
+        write_cuckoo_conf(cfg={
+            "routing": {
+                "vpn": {
+                    "vpns": [
+                        "a"
+                    ],
+                },
+                "a": {
+                    "description": "VPN a",
+                },
+            },
+        })
+        assert self.value("routing:vpn:vpns") == ["a"]
+        assert self.rawvalue("routing:vpn:vpns") == "a"
+
+        assert self.value("routing:a:name") is None
+        assert self.rawvalue("routing:a:name") == ""
+
+        assert self.value("routing:a:description") == "VPN a"
+        assert self.rawvalue("routing:a:description") == "VPN a"
+
+    def test_star_multiple(self):
+        write_cuckoo_conf(cfg={
+            "virtualbox": {
+                "virtualbox": {
+                    "machines": [
+                        "a", "b"
+                    ],
+                },
+                "a": {
+                    "ip": "1.2.3.4",
+                },
+                "b": {
+                    "ip": "5.6.7.8",
+                },
+            },
+        })
+        assert self.value("virtualbox:virtualbox:machines") == ["a", "b"]
+        assert self.rawvalue("virtualbox:virtualbox:machines") == "a, b"
+
+        assert self.value("virtualbox:a:ip") == "1.2.3.4"
+        assert self.rawvalue("virtualbox:a:ip") == "1.2.3.4"

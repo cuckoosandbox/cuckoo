@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,6 +6,7 @@ import jinja2
 import os
 
 from cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.misc import cwd
 
 def write_supervisor_conf(username):
@@ -44,6 +45,9 @@ def write_cuckoo_conf(cfg=None):
         cfg[filename] = cfg.get(filename, {})
         raw[filename] = {}
         for section, entries in sections.items():
+            if section == "__star__":
+                continue
+
             # Process each entry.
             if not isinstance(entries, (tuple, list)):
                 entries = entries,
@@ -59,6 +63,32 @@ def write_cuckoo_conf(cfg=None):
                     raw_value = cfg[filename][real_section].get(key, value.default)
                     cfg[filename][real_section][key] = raw_value
                     raw[filename][real_section][key] = value.emit(raw_value)
+
+        if "__star__" in sections:
+            section, key = sections["__star__"]
+            for entry in cfg[filename][section][key]:
+                if entry not in cfg[filename]:
+                    raise CuckooConfigurationError(
+                        "A section was defined that has not been found: "
+                        "%s:%s" % (section, entry)
+                    )
+
+                if isinstance(sections["*"], (tuple, list)):
+                    section = sections["*"][0]
+                else:
+                    section = sections["*"]
+
+                raw[filename][entry] = {}
+                for key, value in section.items():
+                    if key == "__section__":
+                        continue
+
+                    if key not in cfg[filename][entry]:
+                        raw_value = cfg[filename][entry][key] = None
+                    else:
+                        raw_value = cfg[filename][entry][key]
+
+                    raw[filename][entry][key] = value.emit(raw_value)
 
     def _config(s):
         filename, section, key = s.split(":")
