@@ -2224,6 +2224,13 @@ $(function () {
 							};
 						});
 
+						// set up defaults for form and settings
+						if (response.defaults) {
+							default_analysis_options = response.defaults;
+							// console.log(default_analysis_options);
+							// debugger;
+						}
+
 						return response.data.files;
 					}
 				},

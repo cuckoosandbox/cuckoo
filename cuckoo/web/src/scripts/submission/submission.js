@@ -2,7 +2,7 @@ import * as InterfaceControllers from './components/InterfaceControllers';
 import * as FileTree from './components/FileTree';
 import * as Analysis from './components/Analysis';
 
-const default_analysis_options = {
+var default_analysis_options = {
 	'machine': 'default',
 	'network-routing': 'internet',
 	'options': {
@@ -89,6 +89,13 @@ $(function() {
 								value: opt
 							};
 						});
+
+						// set up defaults for form and settings
+						if(response.defaults) {
+							default_analysis_options = response.defaults;
+							// console.log(default_analysis_options);
+							// debugger;
+						}
 
 						return response.data.files;
 
