@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 def check_specific_config(filename):
     sections = Config.configuration[filename]
     for section, entries in sections.items():
-        if section == "*":
+        if section == "*" or section == "__star__":
             continue
 
         # If an enabled field is present, check it beforehand.

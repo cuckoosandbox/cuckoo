@@ -10,12 +10,31 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from cuckoo.common.config import config
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 
 submit_manager = SubmitManager()
 
-class SubmissionApi:
+def defaults():
+    return {
+        "machine": None,
+        "network-routing": config("routing:routing:route"),
+        "package": None,
+        "priority": 2,
+        "timeout": config("cuckoo:timeouts:default"),
+        "vpns": config("routing:vpn:vpns"),
+        "options": {
+            "enable-services": False,
+            "enforce-timeout": False,
+            "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
+            "no-injection": False,
+            "process-memory-dump": True,
+            "simulated-human-interaction": True,
+        },
+    }
+
+class SubmissionApi(object):
     @staticmethod
     @csrf_exempt
     @require_http_methods(["POST"])
@@ -63,6 +82,7 @@ class SubmissionApi:
         return JsonResponse({
             "status": True,
             "data": data,
+            "defaults": defaults(),
         }, encoder=JsonSerialize)
 
     @api_post

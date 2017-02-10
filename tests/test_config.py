@@ -959,8 +959,9 @@ def test_full_migration_040():
         assert filename in cfg
         for section, entries in sections.items():
             # We check machines and VPNs manually later on.
-            if section == "*":
+            if section == "*" or section == "__star__":
                 continue
+
             assert section in cfg[filename]
             for key, value in entries.items():
                 assert key in cfg[filename][section]

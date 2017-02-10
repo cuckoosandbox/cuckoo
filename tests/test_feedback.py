@@ -209,7 +209,7 @@ class TestFeedback(unittest.TestCase):
             feedback.include_report(self.analysis_id)
             feedback.include_analysis(include_memdump=True)
 
-            assert len(feedback.export) == 235800
+            assert len(feedback.export) > 200000
         self._teardown()
 
     def test_feedback_append_error(self):
