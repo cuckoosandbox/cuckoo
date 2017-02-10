@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -33,6 +33,12 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # "django.contrib.admindocs",
     "analysis",
+)
+
+MIDDLEWARE_CLASSES = (
+    # Cuckoo headers.
+    "web.headers.CuckooHeaders",
+    "web.errors.ExceptionMiddleware",
 )
 
 TEMPLATES = [

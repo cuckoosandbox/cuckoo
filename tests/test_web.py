@@ -6,9 +6,13 @@ import django
 import json
 import mock
 import os
+import pytest
+import responses
 import tempfile
 
+from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.core.database import Database
+from cuckoo.core.feedback import CuckooFeedback
 from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd
@@ -139,3 +143,40 @@ class TestWebInterface(object):
         assert obj["data"]["files"][0]["filename"] == "google.com"
         assert obj["defaults"]["priority"] == 2
         assert obj["defaults"]["options"]["process-memory-dump"] is True
+
+class TestWebInterfaceFeedback(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "mongodb": {
+                    "enabled": True,
+                },
+            },
+            "cuckoo": {
+                "feedback": {
+                    "enabled": True,
+                    "name": "foo bar",
+                    "email": "a@b.com",
+                    "company": "yes",
+                },
+            },
+        })
+
+        django.setup()
+        Database().connect()
+
+        os.environ["CUCKOO_APP"] = "web"
+        os.environ["CUCKOO_CWD"] = cwd()
+
+    @responses.activate
+    @mock.patch("dashboard.views.render_template")
+    def test_index_exception_feedback(self, p, client):
+        responses.add(responses.POST, CuckooFeedback.endpoint, status=403)
+        p.side_effect = Exception("fake exception")
+
+        # Make Cuckoo Feedback throw an exception (by returning failure from
+        # the Cuckoo Feedback backend) and catch it.
+        with pytest.raises(CuckooFeedbackError) as e:
+            client.get("/dashboard/")
+        e.match("Invalid response from.*403")

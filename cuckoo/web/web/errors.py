@@ -33,4 +33,3 @@ class ExceptionMiddleware(object):
     def process_exception(self, request, exception):
         feedback = CuckooFeedback()
         feedback.send_exception(exception, request)
-        traceback.print_exc()
