@@ -1,3 +1,5 @@
+{% load analysis_tags %}
+
 <script src="/static/js/cuckoo/analysis_export.js"></script>
 <script src="/static/js/cuckoo/analysis_feedback.js"></script>
 
@@ -29,15 +31,15 @@
                 <form method="post">
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="name" name="name" placeholder="Your name" type="text" value="{{ env.cfg.cuckoo.feedback.name }}" required autofocus />
+                            <input class="form-control" id="name" name="name" placeholder="Your name" type="text" value="{{ "cuckoo:feedback:name"|config }}" required autofocus />
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="company" name="company" placeholder="Company" type="text" value="{{ env.cfg.cuckoo.feedback.company }}" required />
+                            <input class="form-control" id="company" name="company" placeholder="Company" type="text" value="{{ "cuckoo:feedback:company"|config }}" required />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12" style="padding-bottom: 10px;">
-                            <input class="form-control" id="email" name="email" placeholder="E-mail" type="text" value="{{ env.cfg.cuckoo.feedback.email }}" required />
+                            <input class="form-control" id="email" name="email" placeholder="E-mail" type="text" value="{{ "cuckoo:feedback:email"|config }}" required />
                         </div>
                     </div>
                     <div class="row">

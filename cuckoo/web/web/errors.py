@@ -2,8 +2,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import traceback
-
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 

@@ -144,6 +144,49 @@ class TestWebInterface(object):
         assert obj["defaults"]["priority"] == 2
         assert obj["defaults"]["options"]["process-memory-dump"] is True
 
+    @mock.patch("cuckoo.web.controllers.analysis.api.CuckooFeedback")
+    def test_feedback_form(self, p, client):
+        p.return_value.send_form.return_value = 3
+        r = client.post(
+            "/analysis/api/task/feedback_send/",
+            json.dumps({
+                "task_id": "1",
+                "email": "a@b.com",
+                "message": "msg",
+                "name": "name",
+                "company": "company",
+                "include_memdump": False,
+                "include_analysis": True,
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        assert json.loads(r.content) == {
+            "status": True, "feedback_id": 3
+        }
+
+    def test_feedback_form_invalid_email(self, client):
+        r = client.post(
+            "/analysis/api/task/feedback_send/",
+            json.dumps({
+                "task_id": "1",
+                "email": "a@b.com!",
+                "message": "msg",
+                "name": "name",
+                "company": "company",
+                "include_memdump": False,
+                "include_analysis": True,
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 501
+
+        obj = json.loads(r.content)
+        assert obj["status"] is False
+        assert "Invalid email" in obj["message"]
+
 class TestWebInterfaceFeedback(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())

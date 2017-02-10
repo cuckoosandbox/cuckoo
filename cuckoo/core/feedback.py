@@ -98,9 +98,6 @@ class CuckooFeedback(object):
     def send_form(self, task_id=None, name=None, email=None, message=None,
                   company=None, json_report=False, analysis=False,
                   memdump=False, automated=False):
-        if not self.enabled():
-            return
-
         feedback = CuckooFeedbackObject(
             name=name, company=company, email=email,
             message=message, automated=automated

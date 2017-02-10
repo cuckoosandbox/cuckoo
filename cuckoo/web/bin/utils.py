@@ -16,9 +16,6 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from cuckoo.misc import cwd
-from cuckoo.common.config import Config
-
 def view_error(request, msg, status=500):
     return render(request, "errors/error.html", {"error": msg}, status=status)
 
@@ -74,7 +71,6 @@ def render_template(request, template_name, **kwargs):
         env["view_name"] = resolver_match.view_name
         env["view_kwargs"] = resolver_match.kwargs
         env["url_name"] = resolver_match.url_name
-        env["cfg"] = Config.from_confdir(cwd("conf"))
 
     kwargs["env"] = env
 

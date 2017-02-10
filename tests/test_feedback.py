@@ -33,7 +33,7 @@ class TestFeedback(object):
         os.environ["CUCKOO_CWD"] = cwd()
 
     @responses.activate
-    def test_exception_middleware(self, rf, capsys):
+    def test_exception_middleware(self, rf):
         feedback = CuckooFeedback()
         responses.add(
             responses.POST, feedback.endpoint, json={
@@ -44,15 +44,11 @@ class TestFeedback(object):
 
         try:
             raise Exception("This is an exception!")
-        except Exception as e :
+        except Exception as e:
             em = ExceptionMiddleware()
             assert em.process_exception(
                 rf.get("/analysis/1/summary"), e
             ) is None
-
-        out, err = capsys.readouterr()
-        assert "Traceback" in err
-        assert "test_feedback.py" in err
 
     @responses.activate
     def test_exception_no_analysis(self):
