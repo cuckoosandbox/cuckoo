@@ -460,7 +460,6 @@ $(function() {
 					// insdie the form gets updated. it sends 
 					// back an object with all the current values of 
 					// the form instance.
-
 					form.on('change', function(values) {
 						
 						function compareAndOverwrite(item) {
@@ -475,6 +474,14 @@ $(function() {
 						analysis_ui.filetree.each(function(item) {
 							compareAndOverwrite(item);
 						});
+
+						// update any active detail views, respecting custom presets made
+						// by the user. Actually 're-render' the current detail view to persist
+						// default settings 'asynchonously' - as you would expect.
+						if(analysis_ui.filetree.detailViewActive) {
+							var active_index = analysis_ui.filetree.activeIndex;
+							analysis_ui.filetree.detailView(analysis_ui.filetree.getIndex(active_index));
+						}
 
 					});
 
