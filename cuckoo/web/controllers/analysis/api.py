@@ -1,27 +1,32 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import calendar
+import datetime
+import dateutil.relativedelta
+import io
 import os
 import pymongo
-import calendar
-from datetime import datetime, timedelta
-from StringIO import StringIO
+import sqlalchemy
 import tarfile
-from zipfile import ZipFile, ZIP_STORED
+import zipfile
 
-import dateutil.relativedelta
 from wsgiref.util import FileWrapper
-from sqlalchemy import asc
+
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 
-from cuckoo.misc import cwd
-from cuckoo.core.database import Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 from cuckoo.common.files import Folders
-
-from cuckoo.web.bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
+from cuckoo.core.database import (
+    Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
+)
+from cuckoo.core.feedback import CuckooFeedback
+from cuckoo.misc import cwd
+from cuckoo.web.bin.utils import (
+    api_post, api_get, file_response, json_error_response, json_fatal_response
+)
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 results_db = settings.MONGO
@@ -32,7 +37,9 @@ class AnalysisApi:
     def tasks_list(request, body):
         completed_after = body.get("completed_after")
         if completed_after:
-            completed_after = datetime.fromtimestamp(int(completed_after))
+            completed_after = datetime.datetime.fromtimestamp(
+                int(completed_after)
+            )
 
         data = {
             "tasks": []
@@ -160,10 +167,11 @@ class AnalysisApi:
                 else:
                     return json_error_response("Screenshot not found")
             else:
-                zip_data = StringIO()
-                with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                    for shot_name in os.listdir(folder_path):
-                        zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+                zip_data = io.BytesIO()
+                zip_file = zipfile.ZipFile(zip_data, "w", zipfile.ZIP_STORED)
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+                zip_file.close()
 
                 zip_data.seek(0)
 
@@ -207,7 +215,7 @@ class AnalysisApi:
             srcdir = os.path.join(cwd(), "storage",
                                   "analyses", str(task_id))
 
-            s = StringIO()
+            s = io.BytesIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons).
             if tarmode not in tar_formats:
@@ -342,7 +350,7 @@ class AnalysisApi:
         :param days: integer; the amount of days to go back in time starting from today.
         :return: A list of months and their statistics
         """
-        now = datetime.now()
+        now = datetime.datetime.now()
         days = body.get("days", 365)
 
         if not isinstance(days, int):
@@ -350,8 +358,10 @@ class AnalysisApi:
 
         db = Database()
         q = db.Session().query(Task)
-        q = q.filter(Task.added_on.between(now - timedelta(days=days), now))
-        q = q.order_by(asc(Task.added_on))
+        q = q.filter(Task.added_on.between(
+            now - datetime.timedelta(days=days), now)
+        )
+        q = q.order_by(sqlalchemy.asc(Task.added_on))
         tasks = q.all()
 
         def _rtn_structure(start):
@@ -441,3 +451,30 @@ class AnalysisApi:
             return JsonResponse({"status": True, "data": data}, safe=False)
         except Exception as e:
             return json_error_response(str(e))
+
+    @api_post
+    def feedback_send(request, body):
+        f = CuckooFeedback()
+
+        task_id = body.get("task_id")
+        if task_id and task_id.isdigit():
+            task_id = int(task_id)
+
+        try:
+            feedback_id = f.send_form(
+                task_id=task_id,
+                name=body.get("name"),
+                company=body.get("company"),
+                email=body.get("email"),
+                message=body.get("message"),
+                json_report=body.get("include_analysis", False),
+                memdump=body.get("include_memdump", False),
+                automated=False
+            )
+        except Exception as e:
+            return json_error_response(str(e))
+
+        return JsonResponse({
+            "status": True,
+            "feedback_id": feedback_id,
+        }, safe=False)

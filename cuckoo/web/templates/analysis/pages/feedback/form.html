@@ -29,7 +29,7 @@
                 <form method="post">
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="firstname" name="firstname" placeholder="Your name" type="text" value="{{ env.cfg.cuckoo.feedback.name }}" required autofocus />
+                            <input class="form-control" id="name" name="name" placeholder="Your name" type="text" value="{{ env.cfg.cuckoo.feedback.name }}" required autofocus />
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
                             <input class="form-control" id="company" name="company" placeholder="Company" type="text" value="{{ env.cfg.cuckoo.feedback.company }}" required />
@@ -106,7 +106,7 @@
                 var email = sel.find("input#email").val();
                 var company = sel.find("input#company").val();
                 var message = sel.find("textarea#message").val();
-                var firstname = sel.find("input#firstname").val();
+                var name = sel.find("input#name").val();
 
                 var include_analysis = sel.find("input#analysis").is(":checked");
                 var include_memory = false;
@@ -115,7 +115,7 @@
                     if(sel.find("input#memory").is(":checked")) include_memory = true;
                 }
 
-                feedback_send(task_id, firstname, email, company, message, include_analysis, include_memory, send_feedback_callback)
+                feedback_send(task_id, name, email, company, message, include_analysis, include_memory, send_feedback_callback)
             }
 
             function initFeedbackForm(data){
