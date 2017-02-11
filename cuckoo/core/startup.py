@@ -79,7 +79,11 @@ def check_configs():
     check_specific_config(machinery)
 
     # If Cuckoo Feedback is enabled, ensure its configuration is valid.
-    if config("cuckoo:feedback:enabled"):
+    feedback_enabled = (
+        config("cuckoo:feedback:enabled") or
+        config("reporting:feedback:enabled")
+    )
+    if feedback_enabled:
         try:
             CuckooFeedbackObject(
                 name=config("cuckoo:feedback:name"),

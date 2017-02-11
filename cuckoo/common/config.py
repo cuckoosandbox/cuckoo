@@ -665,6 +665,9 @@ class Config(object):
             "__star__": ("qemu", "machines"),
         },
         "reporting": {
+            "feedback": {
+                "enabled": Boolean(False),
+            },
             "jsondump": {
                 "enabled": Boolean(True),
                 "indent": Int(4),

@@ -92,7 +92,7 @@ class CuckooFeedback(object):
                 options.json_report = True
 
         if options.json_report:
-            feedback.include_report(task_id=task_id)
+            feedback.include_report_web(task_id)
 
         if options.analysis:
             feedback.include_analysis(memdump=options.memdump)
@@ -113,7 +113,7 @@ class CuckooFeedback(object):
                     "An incorrect Task ID has been provided: %s!" % task_id
                 )
 
-            feedback.include_report(task_id=task_id)
+            feedback.include_report_web(task_id)
 
         if analysis:
             feedback.include_analysis(memdump=memdump)
@@ -183,13 +183,7 @@ class CuckooFeedbackObject(object):
         self.info = {}
         self.report = None
 
-    def include_report(self, task_id):
-        try:
-            report = Report(AnalysisController.get_report(task_id)["analysis"])
-        except Http404:
-            # No report available so ignoring the rest of this function.
-            return
-
+    def include_report(self, report):
         # Any and all errors.
         for error in report.errors:
             self.add_error(error)
@@ -202,6 +196,15 @@ class CuckooFeedbackObject(object):
 
         self.info["category"] = report.target["category"]
         self.report = report
+
+    def include_report_web(self, task_id):
+        try:
+            report = Report(AnalysisController.get_report(task_id)["analysis"])
+        except Http404:
+            # No report available so ignoring the rest of this function.
+            return
+
+        return self.include_report(report)
 
     def gather_export_files(self, dirpath):
         """Returns a list of all files of interest from an analysis."""
@@ -232,7 +235,7 @@ class CuckooFeedbackObject(object):
             raise RuntimeError(
                 "Unknown export file defined: %s!" % name
             )
-        return ret
+        self.export = ret
 
     def include_analysis(self, memdump=False):
         if not self.report:
@@ -253,9 +256,7 @@ class CuckooFeedbackObject(object):
             )
 
         # TODO Support for also including memory dumps (should we?)
-        self.export = self.gather_export_files(
-            self.report.info["analysis_path"]
-        )
+        self.gather_export_files(self.report.info["analysis_path"])
 
     def add_error(self, error):
         self.errors.append(error)

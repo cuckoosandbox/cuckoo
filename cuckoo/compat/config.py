@@ -558,6 +558,9 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    c["reporting"]["feedback"] = {
+        "enabled": False,
+    }
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,

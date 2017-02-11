@@ -103,7 +103,7 @@ class TestFeedback(object):
         )
 
         feedback = CuckooFeedbackObject()
-        feedback.include_report(1)
+        feedback.include_report_web(1)
 
         assert feedback.report.target["file"]["name"] == "binary"
         assert feedback.report.target["file"]["size"] == 91010
@@ -115,7 +115,7 @@ class TestFeedback(object):
         )
 
         feedback = CuckooFeedbackObject()
-        feedback.include_report(1)
+        feedback.include_report_web(1)
         feedback.include_analysis(memdump=False)
         assert len(feedback.to_files()) == 1
 
@@ -142,7 +142,7 @@ class TestFeedback(object):
         cf = CuckooFeedbackObject(
             "message", "email@google.com", "name", "company", True
         )
-        cf.include_report(1)
+        cf.include_report_web(1)
         cf.include_analysis()
         assert feedback.send_feedback(cf) == 1
 
