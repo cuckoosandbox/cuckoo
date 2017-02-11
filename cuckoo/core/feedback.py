@@ -94,7 +94,7 @@ class CuckooFeedback(object):
         if options.json_report:
             feedback.include_report_web(task_id)
 
-        if options.analysis:
+        if feedback.report and options.analysis:
             feedback.include_analysis(memdump=options.memdump)
 
         return self.send_feedback(feedback)

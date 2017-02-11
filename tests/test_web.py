@@ -213,13 +213,54 @@ class TestWebInterfaceFeedback(object):
         os.environ["CUCKOO_CWD"] = cwd()
 
     @responses.activate
+    @mock.patch("web.errors.log")
     @mock.patch("dashboard.views.render_template")
-    def test_index_exception_feedback(self, p, client):
+    def test_index_exception_feedback(self, p, q, client):
         responses.add(responses.POST, CuckooFeedback.endpoint, status=403)
         p.side_effect = Exception("fake exception")
 
         # Make Cuckoo Feedback throw an exception (by returning failure from
         # the Cuckoo Feedback backend) and catch it.
-        with pytest.raises(CuckooFeedbackError) as e:
+        with pytest.raises(Exception) as e:
             client.get("/dashboard/")
-        e.match("Invalid response from.*403")
+        e.match("fake exception")
+        assert "Invalid response from" in q.warning.call_args[0][0]
+        assert "403" in q.warning.call_args[0][0]
+
+    @mock.patch("web.errors.log")
+    @mock.patch("cuckoo.core.feedback.CuckooFeedbackObject")
+    @mock.patch("dashboard.views.render_template")
+    def test_index_exception_noanalysis(self, p, q, r, client):
+        p.side_effect = Exception("fake exception")
+        q.return_value.validate.side_effect = CuckooFeedbackError
+
+        with pytest.raises(Exception) as e:
+            client.get("/dashboard/")
+        e.match("fake exception")
+
+        q.return_value.add_traceback.assert_called_once()
+        q.return_value.include_report_web.assert_not_called()
+        q.return_value.include_analysis.assert_not_called()
+        r.warning.assert_called_once()
+
+    @mock.patch("web.errors.log")
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    @mock.patch("cuckoo.core.feedback.CuckooFeedbackObject")
+    @mock.patch("cuckoo.web.controllers.analysis.routes.render_template")
+    def test_summary_exception_withanalysis(self, p, q, r, s, client):
+        r._get_report.return_value = {
+            "info": {
+                "id": 1,
+            },
+        }
+        p.side_effect = Exception("fake exception")
+        q.return_value.validate.side_effect = CuckooFeedbackError
+
+        with pytest.raises(Exception) as e:
+            client.get("/analysis/1/summary/")
+        e.match("fake exception")
+
+        q.return_value.add_traceback.assert_called_once()
+        q.return_value.include_report_web.assert_called_once()
+        q.return_value.include_analysis.assert_called_once()
+        s.warning.assert_called_once()

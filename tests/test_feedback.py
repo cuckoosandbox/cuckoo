@@ -97,7 +97,6 @@ class TestFeedback(object):
 
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_include_report(self, p):
-
         p._get_report.return_value = self.report(
             "tests/files/sample_analysis_storage"
         )
@@ -162,6 +161,28 @@ class TestFeedback(object):
         z = zipfile.ZipFile(files["file"])
         assert "Starting analyzer" in z.read("analysis.log")
         assert len(z.read("cuckoo.log")) == 15274
+
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    @mock.patch("cuckoo.core.feedback.CuckooFeedbackObject")
+    def test_include_404_report(self, p, q):
+        class request(object):
+            method = "GET"
+
+            class resolver_match(object):
+                kwargs = {
+                    "task_id": 1,
+                }
+
+        q._get_report.return_value = {}
+        p.return_value.report = None
+        p.return_value.validate.side_effect = CuckooFeedbackError
+
+        with pytest.raises(CuckooFeedbackError):
+            feedback = CuckooFeedback()
+            feedback.send_exception(Exception, request)
+
+        p.return_value.include_report_web.assert_called_once()
+        p.return_value.include_analysis.assert_not_called()
 
     def report(self, analysis_path):
         return {

@@ -2,10 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.core.feedback import CuckooFeedback
+
+log = logging.getLogger(__name__)
 
 def handler404(request):
     response = render_to_response(
@@ -29,5 +34,10 @@ def handler500(request):
 
 class ExceptionMiddleware(object):
     def process_exception(self, request, exception):
-        feedback = CuckooFeedback()
-        feedback.send_exception(exception, request)
+        try:
+            feedback = CuckooFeedback()
+            feedback.send_exception(exception, request)
+        except CuckooFeedbackError as e:
+            log.warning(
+                "Error providing feedback to the backend: %s" % e
+            )
