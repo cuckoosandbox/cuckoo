@@ -19,9 +19,11 @@ import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config
-from cuckoo.common.exceptions import CuckooStartupError
-from cuckoo.core.database import Database, TASK_RUNNING
-from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
+from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.core.database import (
+    Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
+)
+from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd, version
@@ -75,6 +77,21 @@ def check_configs():
         )
 
     check_specific_config(machinery)
+
+    # If Cuckoo Feedback is enabled, ensure its configuration is valid.
+    if config("cuckoo:feedback:enabled"):
+        try:
+            CuckooFeedbackObject(
+                name=config("cuckoo:feedback:name"),
+                email=config("cuckoo:feedback:email"),
+                company=config("cuckoo:feedback:company"),
+                message="startup"
+            ).validate()
+        except CuckooFeedbackError as e:
+            raise CuckooStartupError(
+                "You have filled out the Cuckoo Feedback configuration, but "
+                "there's an error in it: %s" % e
+            )
     return True
 
 def check_version():
