@@ -343,7 +343,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         ]
 
         if ctx.parent.level == logging.DEBUG:
-            args.append("--verbose")
+            args.insert(2, "--debug")
 
         subprocess.call(args)
     else:

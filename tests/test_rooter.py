@@ -7,8 +7,17 @@ import mock
 import pytest
 import tempfile
 
-import cuckoo.apps.rooter as r
+from cuckoo.apps import rooter as r
+from cuckoo.main import main
 from cuckoo.misc import is_linux
+
+@mock.patch("cuckoo.main.subprocess")
+def test_verbose_mode(p):
+    main.main(("-d", "rooter", "--sudo"), standalone_mode=False)
+    p.call.assert_called_once()
+    assert p.call.call_args[0][0][:4] == [
+        "sudo", mock.ANY, "--debug", "rooter",
+    ]
 
 def test_nic_available():
     assert r.nic_available("!") is False
