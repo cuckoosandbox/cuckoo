@@ -304,7 +304,8 @@ def process(ctx, instance, report, maxcount):
                 "id": report,
                 "category": "file",
                 "target": "",
-                "options": "",
+                "options": {},
+                "package": None,
             }
         else:
             task = task.to_dict()

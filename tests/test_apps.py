@@ -132,8 +132,27 @@ class TestAppsWithCWD(object):
             "id": 1234,
             "category": "file",
             "target": "",
-            "options": "",
+            "options": {},
+            "package": None,
         })
+        q.assert_called_once()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.apps.apps.process")
+    def test_process_once_anonymous(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with(
+            "", None, {
+                "id": 1234,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+            }
+        )
         q.assert_called_once()
 
     @mock.patch("cuckoo.main.load_signatures")
