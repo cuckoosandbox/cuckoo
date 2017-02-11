@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -296,7 +296,12 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
         sys.exit("The `ip` binary is not available, eh?!")
 
     if os.getuid():
-        sys.exit("This utility is supposed to be ran as root user.")
+        sys.exit(
+            "This utility is supposed to be ran as root user. Please invoke "
+            "it with the --sudo flag (e.g., 'cuckoo rooter --sudo') so it "
+            "will automatically prompt for your password (this naturally only "
+            "works for users with sudo capabilities)."
+        )
 
     if os.path.exists(socket_path):
         os.remove(socket_path)

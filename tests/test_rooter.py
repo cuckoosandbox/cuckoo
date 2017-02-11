@@ -1,9 +1,8 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import json
-import logging
 import mock
 import pytest
 import tempfile
@@ -86,32 +85,39 @@ def test_flush_rttable():
     p.assert_not_called()
 
 def do_cuckoo_rooter():
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         with mock.patch.dict(r.__dict__, {"HAVE_GRP": False}):
             r.cuckoo_rooter(None, None, None, None, None, None)
+    e.match("not find the `grp` module")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, None, None, None, None)
+    e.match("service binary is not")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, None, "DOES NOT EXIST", None, None)
+    e.match("The service binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, "DOES NOT EXIST", __file__, None, None)
+    e.match("The `ifconfig` binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, __file__, __file__, "DOES NOT EXIST", None)
+    e.match("The `iptables` binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(
             None, None, __file__, __file__, __file__, "DOES NOT EXIST"
         )
+    e.match("The `ip` binary")
 
     os_getuid = mock.patch("os.getuid").start()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         os_getuid.return_value = 1000
         r.cuckoo_rooter(None, None, __file__, __file__, __file__, __file__)
+    e.match("invoke it with the --sudo flag")
 
     os_getuid.return_value = 0
 
@@ -128,11 +134,12 @@ def do_cuckoo_rooter():
 
     gr = mock.patch("grp.getgrnam").start()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         gr.side_effect = KeyError("foobar")
         r.cuckoo_rooter(
             socket_path, "group", __file__, __file__, __file__, __file__
         )
+    e.match("Please define the group")
 
     gr.side_effect = None
     gr.return_value = gr_obj
