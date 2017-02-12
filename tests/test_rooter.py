@@ -8,8 +8,9 @@ import pytest
 import tempfile
 
 from cuckoo.apps import rooter as r
-from cuckoo.main import main
-from cuckoo.misc import is_linux
+from cuckoo.core.rooter import rooter
+from cuckoo.main import main, cuckoo_create
+from cuckoo.misc import is_linux, set_cwd
 
 @mock.patch("cuckoo.main.subprocess")
 def test_verbose_mode(p):
@@ -210,3 +211,34 @@ def test_cuckoo_rooter():
         raise
     finally:
         mock.patch.stopall()
+
+@mock.patch("cuckoo.core.rooter.lock")
+@mock.patch("cuckoo.core.rooter.socket")
+def test_rooter_client(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    s = p.socket.return_value
+    s.recv.return_value = json.dumps({
+        "exception": None,
+        "output": "thisisoutput",
+    })
+    assert rooter(
+        "command", "arg1", "arg2", arg3="foo", arg4="bar"
+    ) == "thisisoutput"
+
+    s.bind.assert_called_once()
+    s.connect.assert_called_once_with("/tmp/cuckoo-rooter")
+    s.send.assert_called_once_with(json.dumps({
+        "command": "command",
+        "args": (
+            "arg1",
+            "arg2",
+        ),
+        "kwargs": {
+            "arg3": "foo",
+            "arg4": "bar",
+        }
+    }))
+    q.acquire.assert_called_once()
+    q.release.assert_called_once()
