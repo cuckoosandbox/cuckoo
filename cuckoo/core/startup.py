@@ -3,16 +3,13 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import httplib
-import json
 import logging
 import logging.handlers
 import os
+import requests
 import socket
-import urllib
-import urllib2
 
-from distutils.version import LooseVersion
+from distutils.version import StrictVersion
 
 import cuckoo
 
@@ -72,43 +69,42 @@ def check_configs():
 
 def check_version():
     """Checks version of Cuckoo."""
-    cfg = Config()
-
-    if not cfg.cuckoo.version_check:
+    if not config("cuckoo:cuckoo:version_check"):
         return
 
     print(" Checking for updates...")
 
-    url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version": version})
-
     try:
-        request = urllib2.Request(url, data)
-        response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError, httplib.BadStatusLine):
-        print(red(" Failed! ") + "Unable to establish connection.\n")
+        r = requests.post(
+            "http://api.cuckoosandbox.org/checkversion.php",
+            data={"version": version}
+        )
+        r.raise_for_status()
+        r = r.json()
+    except requests.RequestException as e:
+        print(red(" Error checking for the latest Cuckoo version: %s!" % e))
+        return
+
+    if not isinstance(r, dict) or r.get("error"):
+        print(red(" Error checking for the latest Cuckoo version:"))
+        print(yellow(" Response: %s" % r))
+        return
+
+    # Deprecated response.
+    if r.get("response") == "NEW_VERSION" and r.get("current") == "2.0-rc1":
+        print(green(" You're good to go!"))
         return
 
     try:
-        response_data = json.loads(response.read())
+        old = StrictVersion(version) < StrictVersion(r.get("current"))
     except ValueError:
-        print(red(" Failed! ") + "Invalid response.\n")
-        return
+        old = True
 
-    stable_version = response_data["current"]
-
-    if version.endswith("-dev"):
-        print(yellow(" You are running a development version! Current stable is {}.".format(
-            stable_version)))
+    if old:
+        msg = "Cuckoo Sandbox version %s is available now." % r.get("current")
+        print(red(" Outdated! ") + msg),
     else:
-        if LooseVersion(version) < LooseVersion(stable_version):
-            msg = "Cuckoo Sandbox version {} is available now.".format(
-                stable_version)
-
-            print(red(" Outdated! ") + msg)
-        else:
-            print(green(" Good! ") + "You have the latest version "
-                                     "available.\n")
+        print(green(" You're good to go!"))
 
 def init_logging(level):
     """Initializes logging."""
