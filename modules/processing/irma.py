@@ -114,6 +114,11 @@ class Irma(Processing):
 
         self.key = "irma"
 
+        """ Fall off if we don't deal with files """
+        if self.results.get("info").get("category") != "file":
+            log.debug("IRMA supports only file scanning !")
+            return {}
+
         self.url = self.options.get("url")
         self.timeout = int(self.options.get("timeout", 60))
         self.scan = int(self.options.get("scan", 0))
