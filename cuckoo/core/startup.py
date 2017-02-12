@@ -248,18 +248,15 @@ def init_binaries():
         )
 
 def init_rooter():
-    """If required, check whether the rooter is running and whether we can
-    connect to it."""
-    cfg = Config("routing")
-
-    # The default configuration doesn't require the rooter to be ran.
+    """If required, check if the rooter is running and if we can connect
+    to it. The default configuration doesn't require the rooter to be ran."""
     required = (
-        cfg.routing.route != "none" or
-        cfg.routing.internet != "none" or
-        cfg.routing.drop or
-        cfg.inetsim.enabled or
-        cfg.tor.enabled or
-        cfg.vpn.enabled
+        config("routing:routing:route") != "none" or
+        config("routing:routing:internet") != "none" or
+        config("routing:routing:drop") or
+        config("routing:inetsim:enabled") or
+        config("routing:tor:enabled") or
+        config("routing:vpn:enabled")
     )
     if not required:
         return
@@ -267,7 +264,7 @@ def init_rooter():
     s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
     try:
-        s.connect(Config().cuckoo.rooter)
+        s.connect(config("cuckoo:cuckoo:rooter"))
     except socket.error as e:
         if e.strerror == "No such file or directory":
             raise CuckooStartupError(
