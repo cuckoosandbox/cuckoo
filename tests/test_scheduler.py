@@ -71,6 +71,26 @@ def test_am_init_duplicate_analysis():
     task_log_stop(1234)
 
 @mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_default_route(p):
+    am = am_init({
+    }, {
+        "routing": {
+            "routing": {
+                "route": "internet",
+                "internet": "nic0int",
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert "route" not in am.task.options
+    assert am.route == "internet"
+    assert am.interface == "nic0int"
+    assert am.rt_table == "nic0rt"
+    assert p.call_count == 3
+
+@mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_none(p):
     am = am_init({
         "route": "none",
@@ -136,7 +156,7 @@ def test_route_tor(p):
     am.db.set_route.assert_called_once_with(1234, "tor")
 
 @mock.patch("cuckoo.core.scheduler.rooter")
-def test_route_internet(p):
+def test_route_internet_route(p):
     am = am_init({
         "route": "internet",
     }, {
@@ -157,6 +177,46 @@ def test_route_internet(p):
     p.assert_any_call("forward_enable", "vboxnet0", "nic0int", "1.2.3.4")
     p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
     am.db.set_route.assert_called_once_with(1234, "internet")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_internet_route_noconf(p):
+    am = am_init({
+        "route": "internet",
+    }, {
+        "routing": {
+            "routing": {
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "internet"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_not_called()
+    am.db.set_route.assert_called_once_with(1234, "internet")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_internet_unroute(p):
+    am = am_init({
+        "route": "internet",
+    }, {
+        "routing": {
+            "routing": {
+                "internet": "nic0int",
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route = "internet"
+    am.interface = "nic0int"
+    am.rt_table = "nic0rt"
+    am.unroute_network()
+    assert p.call_count == 2
+    p.assert_any_call("forward_disable", "vboxnet0", "nic0int", "1.2.3.4")
+    p.assert_any_call("srcroute_disable", "nic0rt", "1.2.3.4")
 
 """TODO Once a configuration writing tweak for "*" entries has been done.
 @mock.patch("cuckoo.core.scheduler.rooter")

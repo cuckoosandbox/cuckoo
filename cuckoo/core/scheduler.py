@@ -234,7 +234,9 @@ class AnalysisManager(threading.Thread):
         cfg = self.routing_cfg
 
         # Determine the desired routing strategy (none, internet, VPN).
-        self.route = self.task.options.get("route", cfg.routing.route)
+        self.route = self.task.options.get(
+            "route", config("routing:routing:route")
+        )
 
         if self.route == "none" or self.route == "drop":
             self.interface = None
@@ -243,9 +245,21 @@ class AnalysisManager(threading.Thread):
             self.interface = cfg.inetsim.interface
         elif self.route == "tor":
             self.interface = cfg.tor.interface
-        elif self.route == "internet" and cfg.routing.internet != "none":
-            self.interface = cfg.routing.internet
-            self.rt_table = cfg.routing.rt_table
+        elif self.route == "internet":
+            if config("routing:routing:internet") == "none":
+                log.warning(
+                    "Internet network routing has been specified, but not "
+                    "configured, ignoring routing for this analysis", extra={
+                        "action": "network.route",
+                        "status": "error",
+                        "route": self.route,
+                    }
+                )
+                self.interface = None
+                self.rt_table = None
+            else:
+                self.interface = config("routing:routing:internet")
+                self.rt_table = config("routing:routing:rt_table")
         elif self.route in vpns:
             self.interface = vpns[self.route].interface
             self.rt_table = vpns[self.route].rt_table
