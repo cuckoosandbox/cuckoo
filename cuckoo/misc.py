@@ -188,3 +188,24 @@ def Popen(*args, **kwargs):
             kwargs.pop("close_fds")
 
     return subprocess.Popen(*args, **kwargs)
+
+def drop_privileges(username):
+    """Drops privileges to selected user.
+    @param username: drop privileges to this username
+    """
+    if not HAVE_PWD:
+        sys.exit(
+            "Unable to import pwd required for dropping privileges (note that "
+            "privilege dropping is not supported under Windows)!"
+        )
+
+    try:
+        user = pwd.getpwnam(username)
+        os.setgroups((user.pw_gid,))
+        os.setgid(user.pw_gid)
+        os.setuid(user.pw_uid)
+        os.putenv("HOME", user.pw_dir)
+    except KeyError:
+        sys.exit("Invalid user specified to drop privileges to: %s" % username)
+    except OSError as e:
+        sys.exit("Failed to drop privileges to %s: %s" % (username, e))

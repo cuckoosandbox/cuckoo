@@ -9,7 +9,6 @@ import logging
 import logging.handlers
 import os
 import socket
-import sys
 import urllib
 import urllib2
 
@@ -25,12 +24,6 @@ from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
 from cuckoo.core.log import init_logger
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd, version
-
-try:
-    import pwd
-    HAVE_PWD = True
-except ImportError:
-    HAVE_PWD = False
 
 log = logging.getLogger(__name__)
 
@@ -402,24 +395,3 @@ def init_routing():
         if cfg.routing.auto_rt:
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
-
-def drop_privileges(username):
-    """Drops privileges to selected user.
-    @param username: drop privileges to this username
-    """
-    if not HAVE_PWD:
-        sys.exit(
-            "Unable to import pwd required for dropping privileges (note that "
-            "privilege dropping is not supported under Windows)!"
-        )
-
-    try:
-        user = pwd.getpwnam(username)
-        os.setgroups((user.pw_gid,))
-        os.setgid(user.pw_gid)
-        os.setuid(user.pw_uid)
-        os.putenv("HOME", user.pw_dir)
-    except KeyError:
-        sys.exit("Invalid user specified to drop privileges to: %s" % username)
-    except OSError as e:
-        sys.exit("Failed to drop privileges to %s: %s" % (username, e))
