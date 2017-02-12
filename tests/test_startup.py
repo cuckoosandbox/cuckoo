@@ -128,6 +128,19 @@ def test_version_respinvld(capsys):
     assert "Checking for" in out
     assert "Error checking for" in out
 
+@responses.activate
+def test_version_respnotjson(capsys):
+    set_cwd(tempfile.mkdtemp())
+    responses.add(
+        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        status=200, body="thisisnotevenjson"
+    )
+
+    check_version()
+    out, err = capsys.readouterr()
+    assert "Checking for" in out
+    assert "Error checking for" in out
+
 @mock.patch("cuckoo.core.startup.socket")
 def test_init_rooter_no(p):
     set_cwd(tempfile.mkdtemp())

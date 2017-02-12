@@ -81,7 +81,7 @@ def check_version():
         )
         r.raise_for_status()
         r = r.json()
-    except requests.RequestException as e:
+    except (requests.RequestException, ValueError) as e:
         print(red(" Error checking for the latest Cuckoo version: %s!" % e))
         return
 
