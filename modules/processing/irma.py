@@ -128,4 +128,16 @@ class Irma(Processing):
             self._scan_file(self.file_path, self.force)
             return self._get_results(sha256) or {}
 
+        """ FIXME! could use a proper fix here
+            that probably needs changes on IRMA side aswell
+            --
+            related to  https://github.com/elastic/elasticsearch/issues/15377
+            entropy value is sometimes 0 and sometimes like  0.10191042566270775
+            other issue is that results type changes between string and object :/
+            """
+        for idx, result in enumerate(results["probe_results"]):
+            if result["name"] == "PE Static Analyzer":
+                log.debug("Ignoring PE results at index {0}".format(idx))
+                results["probe_results"][idx]["results"] = "... cleaned up ..."
+
         return results
