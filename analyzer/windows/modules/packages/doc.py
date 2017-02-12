@@ -50,6 +50,7 @@ class DOC(Package):
             "Software\\Microsoft\\Office\\Common\\Security",
             {
                 "UFIControls": 1,
+                "DisableAllActiveX": 0,
             },
         ],
         [
