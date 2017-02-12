@@ -126,7 +126,7 @@ class Irma(Processing):
         if self.force or (not results and self.scan):
             log.info("File scan requested: %s", sha256)
             self._scan_file(self.file_path, self.force)
-            return self._get_results(sha256) or {}
+            results = self._get_results(sha256) or {}
 
         """ FIXME! could use a proper fix here
             that probably needs changes on IRMA side aswell
@@ -138,6 +138,6 @@ class Irma(Processing):
         for idx, result in enumerate(results["probe_results"]):
             if result["name"] == "PE Static Analyzer":
                 log.debug("Ignoring PE results at index {0}".format(idx))
-                results["probe_results"][idx]["results"] = "... cleaned up ..."
+                results["probe_results"][idx]["results"] = "... scrapped ..."
 
         return results
