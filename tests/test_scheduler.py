@@ -229,6 +229,12 @@ def test_route_vpn(p):
         "route": "vpn1",
     }, {
         "routing": {
+            "vpn": {
+                "enabled": True,
+                "vpns": [
+                    "vpn1",
+                ],
+            },
             "vpn1": {
                 "name": "vpn1",
                 "description": "this is vpn1",
