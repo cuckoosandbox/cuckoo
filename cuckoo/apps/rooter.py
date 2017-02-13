@@ -133,15 +133,19 @@ def local_dns_forward(ipaddr, dns_port, action):
         "--dport", "53", "--source", ipaddr, "-j", "REDIRECT", "--to-ports",
         dns_port)
 
-def remote_dns_forward(ipaddr, remote_ip, action):
-    """Will route dns to another host as in case of of Inetsim as vm"""
-    run(s.iptables, "-t", "nat", action, "PREROUTING", "-p",
-        "tcp", "--dport", "53", "--source", ipaddr, "-j", "DNAT",
-        "--to-destination", "%s:53" % remote_ip)
+def remote_dns_forward(action, vm_ip, dns_ip, dns_port):
+    """Route DNS requests from the VM to a custom DNS on a separate network."""
+    run(
+        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "tcp",
+        "--dport", "53", "--source", vm_ip, "-j", "DNAT",
+        "--to-destination", "%s:%s" % (dns_ip, dns_port)
+    )
 
-    run(s.iptables, "-t", "nat", action, "PREROUTING", "-p",
-        "udp", "--dport", "53", "--source", ipaddr, "-j", "DNAT",
-        "--to-destination", "%s:53" % remote_ip)
+    run(
+        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "udp",
+        "--dport", "53", "--source", vm_ip, "-j", "DNAT",
+        "--to-destination", "%s:%s" % (dns_ip, dns_port)
+    )
 
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
@@ -199,33 +203,24 @@ def inetsim_disable(ipaddr, inetsim_ip, resultserver_port):
 
     remote_dns_forward(ipaddr, inetsim_ip, "-D")
 
-def tor_enable(ipaddr, resultserver_port, dns_port, proxy_port):
+def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
+    """Toggle Tor iptables routing rules."""
+    remote_dns_forward(action, vm_ip, resultserver_ip, dns_port)
+
+    run(
+        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "tcp",
+        "--source", vm_ip, "!", "--destination", resultserver_ip,
+        "-j", "DNAT", "--to-destination",
+        "%s:%s" % (resultserver_ip, proxy_port)
+    )
+
+def tor_enable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
-        "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
-        "-j", "REDIRECT", "--to-ports", proxy_port)
+    tor_toggle("-A", vm_ip, resultserver_ip, dns_port, proxy_port)
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
-
-    run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
-
-    local_dns_forward(ipaddr, dns_port, "-A")
-
-def tor_disable(ipaddr, resultserver_port, dns_port, proxy_port):
+def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""
-    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
-        "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
-        "-j", "REDIRECT", "--to-ports", proxy_port)
-
-    run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
-
-    run(s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
-
-    local_dns_forward(ipaddr, dns_port, "-D")
+    tor_toggle("-D", vm_ip, resultserver_ip, dns_port, proxy_port)
 
 def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
     """Toggle iptables to allow internal Cuckoo traffic."""

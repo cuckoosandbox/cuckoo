@@ -243,8 +243,6 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
         elif self.route == "inetsim":
             self.interface = cfg.inetsim.interface
-        elif self.route == "tor":
-            self.interface = cfg.tor.interface
         elif self.route == "internet":
             if config("routing:routing:internet") == "none":
                 log.warning(
@@ -255,6 +253,8 @@ class AnalysisManager(threading.Thread):
                         "route": self.route,
                     }
                 )
+                self.route = "none"
+                self.task.options["route"] = "none"
                 self.interface = None
                 self.rt_table = None
             else:
@@ -272,6 +272,8 @@ class AnalysisManager(threading.Thread):
                     "route": self.route,
                 }
             )
+            self.route = "none"
+            self.task.options["route"] = "none"
             self.interface = None
             self.rt_table = None
 
@@ -292,7 +294,7 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
-        if self.route == "drop" or self.interface or self.rt_table:
+        if self.route != "none":
             rooter(
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
@@ -309,7 +311,7 @@ class AnalysisManager(threading.Thread):
         if self.route == "tor":
             rooter(
                 "tor_enable", self.machine.ip,
-                str(config("cuckoo:resultserver:port")),
+                str(config("cuckoo:resultserver:ip")),
                 str(config("routing:tor:dnsport")),
                 str(config("routing:tor:proxyport"))
             )
@@ -335,7 +337,7 @@ class AnalysisManager(threading.Thread):
         if self.rt_table:
             rooter("srcroute_disable", self.rt_table, self.machine.ip)
 
-        if self.route == "drop" or self.interface or self.rt_table:
+        if self.route != "none":
             rooter(
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
@@ -348,10 +350,12 @@ class AnalysisManager(threading.Thread):
                    str(cfg.resultserver.port))
 
         if self.route == "tor":
-            rooter("tor_disable", self.machine.ip,
-                   str(cfg.resultserver.port),
-                   str(cfg.tor.dnsport),
-                   str(cfg.tor.proxyport))
+            rooter(
+                "tor_disable", self.machine.ip,
+                str(config("cuckoo:resultserver:ip")),
+                str(config("routing:tor:dnsport")),
+                str(config("routing:tor:proxyport"))
+            )
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
