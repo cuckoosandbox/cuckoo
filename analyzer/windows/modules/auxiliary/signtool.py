@@ -2,16 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import json
 import logging
 import os
 import subprocess
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
-from cStringIO import StringIO
 
 log = logging.getLogger(__name__)
+
 
 class SignTool(Auxiliary):
     """
