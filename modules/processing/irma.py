@@ -25,8 +25,7 @@ log = logging.getLogger(__name__)
 class Irma(Processing):
     """Gets antivirus signatures from IRMA for various results.
 
-    Currently obtains IRMA results for the target sample or URL and the
-    dropped files.
+    Currently obtains IRMA results for the target sample.
     """
     # IRMA statuses https://github.com/quarkslab/irma-cli/blob/master/irma/apiclient.py
     IRMA_FINISHED_STATUS = 50
