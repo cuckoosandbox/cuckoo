@@ -17,6 +17,8 @@ try:
 except ImportError:
     HAVE_GRP = False
 
+from cuckoo.misc import version as __version__
+
 class s(object):
     ifconfig = None
     service = None
@@ -30,6 +32,12 @@ def run(*args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
+
+def version():
+    return {
+        "version": __version__,
+        "features": [],
+    }
 
 def nic_available(interface):
     """Check if specified network interface is available."""
@@ -100,9 +108,13 @@ def enable_nat(interface):
 
 def disable_nat(interface):
     """Disable NAT on this interface."""
-    while not run(s.iptables, "-t", "nat", "-D", "POSTROUTING",
-                  "-o", interface, "-j", "MASQUERADE")[1]:
-        pass
+    while True:
+        _, err = run(
+            s.iptables, "-t", "nat", "-D", "POSTROUTING",
+            "-o", interface, "-j", "MASQUERADE"
+        )
+        if err:
+            break
 
 def init_rttable(rt_table, interface):
     """Initialise routing table for this interface using routes
@@ -253,6 +265,7 @@ def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     )
 
 handlers = {
+    "version": version,
     "nic_available": nic_available,
     "rt_available": rt_available,
     "vpn_status": vpn_status,

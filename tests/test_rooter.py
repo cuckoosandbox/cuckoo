@@ -10,7 +10,7 @@ import tempfile
 from cuckoo.apps import rooter as r
 from cuckoo.core.rooter import rooter
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import is_linux, set_cwd
+from cuckoo.misc import is_linux, set_cwd, version
 
 @mock.patch("cuckoo.main.subprocess")
 def test_verbose_mode(p):
@@ -19,6 +19,12 @@ def test_verbose_mode(p):
     assert p.call.call_args[0][0][:4] == [
         "sudo", mock.ANY, "--debug", "rooter",
     ]
+
+def test_version():
+    assert r.version() == {
+        "version": version,
+        "features": [],
+    }
 
 def test_nic_available():
     assert r.nic_available("!") is False
@@ -76,11 +82,16 @@ def test_enable_nat():
         None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
     )
 
-def test_disable_nat():
-    with mock.patch("cuckoo.apps.rooter.run") as p:
-        r.enable_nat("foo")
-    p.assert_called_once_with(
-        None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
+@mock.patch("cuckoo.apps.rooter.run")
+def test_disable_nat(p):
+    p.side_effect = [
+        (None, None), (None, "error"),
+    ]
+    r.disable_nat("foo")
+    assert p.call_count == 2
+    assert p.call_list[0] == p.call_list[1]
+    p.assert_any_call(
+        None, "-t", "nat", "-D", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
     )
 
 # TODO init_rttable
