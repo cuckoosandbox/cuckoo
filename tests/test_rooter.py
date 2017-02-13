@@ -1,15 +1,30 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import json
-import logging
 import mock
 import pytest
 import tempfile
 
-import cuckoo.apps.rooter as r
-from cuckoo.misc import is_linux
+from cuckoo.apps import rooter as r
+from cuckoo.core.rooter import rooter
+from cuckoo.main import main, cuckoo_create
+from cuckoo.misc import is_linux, set_cwd, version
+
+@mock.patch("cuckoo.main.subprocess")
+def test_verbose_mode(p):
+    main.main(("-d", "rooter", "--sudo"), standalone_mode=False)
+    p.call.assert_called_once()
+    assert p.call.call_args[0][0][:4] == [
+        "sudo", mock.ANY, "--debug", "rooter",
+    ]
+
+def test_version():
+    assert r.version() == {
+        "version": version,
+        "features": [],
+    }
 
 def test_nic_available():
     assert r.nic_available("!") is False
@@ -67,11 +82,16 @@ def test_enable_nat():
         None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
     )
 
-def test_disable_nat():
-    with mock.patch("cuckoo.apps.rooter.run") as p:
-        r.enable_nat("foo")
-    p.assert_called_once_with(
-        None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
+@mock.patch("cuckoo.apps.rooter.run")
+def test_disable_nat(p):
+    p.side_effect = [
+        (None, None), (None, "error"),
+    ]
+    r.disable_nat("foo")
+    assert p.call_count == 2
+    assert p.call_list[0] == p.call_list[1]
+    p.assert_any_call(
+        None, "-t", "nat", "-D", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
     )
 
 # TODO init_rttable
@@ -86,32 +106,39 @@ def test_flush_rttable():
     p.assert_not_called()
 
 def do_cuckoo_rooter():
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         with mock.patch.dict(r.__dict__, {"HAVE_GRP": False}):
             r.cuckoo_rooter(None, None, None, None, None, None)
+    e.match("not find the `grp` module")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, None, None, None, None)
+    e.match("service binary is not")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, None, "DOES NOT EXIST", None, None)
+    e.match("The service binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, "DOES NOT EXIST", __file__, None, None)
+    e.match("The `ifconfig` binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(None, None, __file__, __file__, "DOES NOT EXIST", None)
+    e.match("The `iptables` binary")
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         r.cuckoo_rooter(
             None, None, __file__, __file__, __file__, "DOES NOT EXIST"
         )
+    e.match("The `ip` binary")
 
     os_getuid = mock.patch("os.getuid").start()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         os_getuid.return_value = 1000
         r.cuckoo_rooter(None, None, __file__, __file__, __file__, __file__)
+    e.match("invoke it with the --sudo flag")
 
     os_getuid.return_value = 0
 
@@ -128,11 +155,12 @@ def do_cuckoo_rooter():
 
     gr = mock.patch("grp.getgrnam").start()
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         gr.side_effect = KeyError("foobar")
         r.cuckoo_rooter(
             socket_path, "group", __file__, __file__, __file__, __file__
         )
+    e.match("Please define the group")
 
     gr.side_effect = None
     gr.return_value = gr_obj
@@ -194,3 +222,35 @@ def test_cuckoo_rooter():
         raise
     finally:
         mock.patch.stopall()
+
+@mock.patch("cuckoo.core.rooter.os")
+@mock.patch("cuckoo.core.rooter.lock")
+@mock.patch("cuckoo.core.rooter.socket")
+def test_rooter_client(p, q, r):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    s = p.socket.return_value
+    s.recv.return_value = json.dumps({
+        "exception": None,
+        "output": "thisisoutput",
+    })
+    assert rooter(
+        "command", "arg1", "arg2", arg3="foo", arg4="bar"
+    ) == "thisisoutput"
+
+    s.bind.assert_called_once()
+    s.connect.assert_called_once_with("/tmp/cuckoo-rooter")
+    s.send.assert_called_once_with(json.dumps({
+        "command": "command",
+        "args": (
+            "arg1",
+            "arg2",
+        ),
+        "kwargs": {
+            "arg3": "foo",
+            "arg4": "bar",
+        }
+    }))
+    q.acquire.assert_called_once()
+    q.release.assert_called_once()

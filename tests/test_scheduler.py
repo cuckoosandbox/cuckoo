@@ -15,15 +15,18 @@ from cuckoo.core.scheduler import AnalysisManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
-def am_init(sha256_):
+sha256_ = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
+
+def am_init(options={}, cfg={}):
     set_cwd(tempfile.mkdtemp())
-    cuckoo_create()
+    cuckoo_create(cfg=cfg)
 
     class task(object):
         def __init__(self):
             self.id = 1234
             self.category = "file"
             self.target = __file__
+            self.options = options
 
         def to_dict(self):
             return Dictionary(self.__dict__)
@@ -34,17 +37,21 @@ def am_init(sha256_):
     class sample(object):
         sha256 = sha256_
 
+    class machine(object):
+        ip = "1.2.3.4"
+        interface = "vboxnet0"
+
     with mock.patch("cuckoo.core.scheduler.Database") as p:
         p.return_value.view_task.return_value = task()
         am = AnalysisManager(1234, None)
+        am.machine = machine
 
         p.return_value.view_sample.return_value = sample()
 
     return am
 
 def test_am_init_success():
-    sha256_ = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
-    am = am_init(sha256_)
+    am = am_init()
 
     assert am.init() is True
     assert os.path.exists(cwd(analysis=1234))
@@ -55,11 +62,195 @@ def test_am_init_success():
     task_log_stop(1234)
 
 def test_am_init_duplicate_analysis():
-    sha256_ = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
-    am = am_init(sha256_)
+    am = am_init()
 
     Folders.create(cwd(analysis=1234))
     assert am.init() is False
 
     # Manually disable per-task logging initiated by init().
     task_log_stop(1234)
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_default_route(p):
+    am = am_init({
+    }, {
+        "routing": {
+            "routing": {
+                "route": "internet",
+                "internet": "nic0int",
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert "route" not in am.task.options
+    assert am.route == "internet"
+    assert am.interface == "nic0int"
+    assert am.rt_table == "nic0rt"
+    assert p.call_count == 4
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_none(p):
+    am = am_init({
+        "route": "none",
+    })
+
+    am.route_network()
+    assert am.route == "none"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_not_called()
+    am.db.set_route.assert_called_once_with(1234, "none")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_drop(p):
+    am = am_init({
+        "route": "drop",
+    })
+
+    am.route_network()
+    assert am.route == "drop"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_called_once_with("drop_enable", "1.2.3.4", "192.168.56.1", "2042")
+    am.db.set_route.assert_called_once_with(1234, "drop")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_inetsim(p):
+    am = am_init({
+        "route": "inetsim",
+    }, {
+        "routing": {
+            "inetsim": {
+                "server": "2.3.4.5",
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "inetsim"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_called_once_with("inetsim_enable", "1.2.3.4", "2.3.4.5", "2042")
+    am.db.set_route.assert_called_once_with(1234, "inetsim")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_tor(p):
+    am = am_init({
+        "route": "tor",
+    }, {
+        "routing": {
+            "tor": {
+                "dnsport": 4242,
+                "proxyport": 4141,
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "tor"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_called_once_with(
+        "tor_enable", "1.2.3.4", "192.168.56.1", "4242", "4141"
+    )
+    am.db.set_route.assert_called_once_with(1234, "tor")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_internet_route(p):
+    am = am_init({
+        "route": "internet",
+    }, {
+        "routing": {
+            "routing": {
+                "internet": "nic0int",
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "internet"
+    assert am.interface == "nic0int"
+    assert am.rt_table == "nic0rt"
+    assert p.call_count == 4
+    p.assert_any_call("nic_available", "nic0int")
+    p.assert_any_call("drop_enable", "1.2.3.4", "192.168.56.1", "2042")
+    p.assert_any_call("forward_enable", "vboxnet0", "nic0int", "1.2.3.4")
+    p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
+    am.db.set_route.assert_called_once_with(1234, "internet")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_internet_route_noconf(p):
+    am = am_init({
+        "route": "internet",
+    }, {
+        "routing": {
+            "routing": {
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "none"
+    assert am.interface is None
+    assert am.rt_table is None
+    p.assert_not_called()
+    am.db.set_route.assert_called_once_with(1234, "none")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_internet_unroute(p):
+    am = am_init({
+        "route": "internet",
+    }, {
+        "routing": {
+            "routing": {
+                "internet": "nic0int",
+                "rt_table": "nic0rt",
+            },
+        },
+    })
+
+    am.route = "internet"
+    am.interface = "nic0int"
+    am.rt_table = "nic0rt"
+    am.unroute_network()
+    assert p.call_count == 3
+    p.assert_any_call("drop_disable", "1.2.3.4", "192.168.56.1", "2042")
+    p.assert_any_call("forward_disable", "vboxnet0", "nic0int", "1.2.3.4")
+    p.assert_any_call("srcroute_disable", "nic0rt", "1.2.3.4")
+
+"""TODO Once a configuration writing tweak for "*" entries has been done.
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_route_vpn(p):
+    am = am_init({
+        "route": "vpn1",
+    }, {
+        "routing": {
+            "vpn": {
+                "enabled": True,
+                "vpns": [
+                    "vpn1",
+                ],
+            },
+            "vpn1": {
+                "name": "vpn1",
+                "description": "this is vpn1",
+                "interface": "tun1",
+                "rt_table": "tun1rt",
+            },
+        },
+    })
+
+    am.route_network()
+    assert am.route == "vpn1"
+    assert am.interface == "tun1"
+    assert am.rt_table == "tun1rt"
+    assert p.call_count == 3
+    p.assert_any_call("nic_available", "nic0int")
+    p.assert_any_call("forward_enable", "vboxnet0", "nic0int", "1.2.3.4")
+    p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
+    am.db.set_route.assert_called_once_with(1234, "internet")
+"""

@@ -293,6 +293,10 @@ def init_rooter():
     # Do not forward any packets unless we have explicitly stated so.
     rooter("forward_drop")
 
+    # Enable stateful connection tracking (but only once).
+    rooter("state_disable")
+    rooter("state_enable")
+
 def init_routing():
     """Initialize and check whether the routing information is correct."""
     cfg = Config("routing")
@@ -331,35 +335,38 @@ def init_routing():
     standard_routes = "none", "drop", "internet", "inetsim", "tor"
 
     # Check whether the default VPN exists if specified.
-    if cfg.routing.route not in standard_routes:
-        if cfg.routing.route not in vpns:
+    if config("routing:routing:route") not in standard_routes:
+        if config("routing:routing:route") not in vpns:
             raise CuckooStartupError(
                 "The default routing target (%s) has not been configured in "
                 "routing.conf, is it supposed to be a VPN?" %
-                cfg.routing.route
+                config("routing:routing:route")
             )
 
-        if not cfg.vpn.enabled:
+        if not config("routing:vpn:enabled"):
             raise CuckooStartupError(
                 "The default route configured is a VPN, but VPNs have "
                 "not been enabled in routing.conf."
             )
 
     # Check whether the dirty line exists if it has been defined.
-    if cfg.routing.internet != "none":
-        if not rooter("nic_available", cfg.routing.internet):
+    if config("routing:routing:internet") != "none":
+        if not rooter("nic_available", config("routing:routing:internet")):
             raise CuckooStartupError(
                 "The network interface that has been configured as dirty "
                 "line is not available."
             )
 
-        if not rooter("rt_available", cfg.routing.rt_table):
+        if not rooter("rt_available", config("routing:routing:rt_table")):
             raise CuckooStartupError(
                 "The routing table that has been configured for dirty "
                 "line interface is not available."
             )
 
-        interfaces.add((cfg.routing.rt_table, cfg.routing.internet))
+        interfaces.add((
+            config("routing:routing:rt_table"),
+            config("routing:routing:internet")
+        ))
 
     # Check if Tor interface exists, if yes then enable NAT.
     if cfg.tor.enabled:
@@ -385,6 +392,6 @@ def init_routing():
         rooter("enable_nat", interface)
 
         # Populate routing table with entries from main routing table.
-        if cfg.routing.auto_rt:
+        if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)

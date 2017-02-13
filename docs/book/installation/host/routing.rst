@@ -245,15 +245,14 @@ requests. For a default ``VirtualBox`` setup, where the host machine has IP
 address ``192.168.56.1``, the following lines will have to be configured in
 the ``/etc/tor/torrc`` file::
 
-    TransListenAddress 192.168.56.1
-    TransPort 9040
-    DNSListenAddress 192.168.56.1
-    DNSPort 5353
+    TransPort 192.168.56.1:9040
+    DNSPort 192.168.56.1:5353
 
-That leaves us with the Tor configuration for Cuckoo, which may be found in
-the ``$CWD/conf/routing.conf`` file. The configuration is pretty
-self-explanatory so we'll leave filling it out as an exercise to the reader
-(in fact, toggling the ``enabled`` field goes a long way)::
+Don't forget to restart Tor (``/etc/init.d/tor restart``). That leaves us with
+the Tor configuration for Cuckoo, which may be found in the
+``$CWD/conf/routing.conf`` file. The configuration is pretty self-explanatory
+so we'll leave filling it out as an exercise to the reader (in fact, toggling
+the ``enabled`` field goes a long way)::
 
     [tor]
     enabled = yes

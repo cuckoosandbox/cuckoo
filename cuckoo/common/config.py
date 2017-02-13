@@ -220,7 +220,7 @@ class Config(object):
                 ),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
-                    exists=False, writable=False, readable=True
+                    exists=False, writable=False, readable=False
                 ),
             },
             "feedback": {
