@@ -212,9 +212,10 @@ def test_cuckoo_rooter():
     finally:
         mock.patch.stopall()
 
+@mock.patch("cuckoo.core.rooter.os")
 @mock.patch("cuckoo.core.rooter.lock")
 @mock.patch("cuckoo.core.rooter.socket")
-def test_rooter_client(p, q):
+def test_rooter_client(p, q, r):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 

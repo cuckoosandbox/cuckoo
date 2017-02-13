@@ -243,6 +243,8 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
         elif self.route == "inetsim":
             self.interface = cfg.inetsim.interface
+        elif self.route == "tor":
+            pass
         elif self.route == "internet":
             if config("routing:routing:internet") == "none":
                 log.warning(
@@ -294,7 +296,8 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
-        if self.route != "none":
+        # For now this doesn't work yet in combination with tor routing.
+        if self.route == "drop" or self.route == "internet":
             rooter(
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
@@ -317,11 +320,15 @@ class AnalysisManager(threading.Thread):
             )
 
         if self.interface:
-            rooter("forward_enable", self.machine.interface,
-                   self.interface, self.machine.ip)
+            rooter(
+                "forward_enable", self.machine.interface,
+                self.interface, self.machine.ip
+            )
 
         if self.rt_table:
-            rooter("srcroute_enable", self.rt_table, self.machine.ip)
+            rooter(
+                "srcroute_enable", self.rt_table, self.machine.ip
+            )
 
         # Propagate the taken route to the database.
         self.db.set_route(self.task.id, self.route)
@@ -331,11 +338,15 @@ class AnalysisManager(threading.Thread):
         cfg = self.routing_cfg
 
         if self.interface:
-            rooter("forward_disable", self.machine.interface,
-                   self.interface, self.machine.ip)
+            rooter(
+                "forward_disable", self.machine.interface,
+                self.interface, self.machine.ip
+            )
 
         if self.rt_table:
-            rooter("srcroute_disable", self.rt_table, self.machine.ip)
+            rooter(
+                "srcroute_disable", self.rt_table, self.machine.ip
+            )
 
         if self.route != "none":
             rooter(
@@ -807,8 +818,10 @@ class Scheduler(object):
 
             # Drop forwarding rule to each VPN.
             for vpn in vpns.values():
-                rooter("forward_disable", machine.interface,
-                       vpn.interface, machine.ip)
+                rooter(
+                    "forward_disable", machine.interface,
+                    vpn.interface, machine.ip
+                )
 
             # Drop forwarding rule to the internet / dirty line.
             if routing_cfg.routing.internet != "none":

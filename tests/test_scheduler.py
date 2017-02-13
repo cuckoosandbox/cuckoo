@@ -152,7 +152,9 @@ def test_route_tor(p):
     assert am.route == "tor"
     assert am.interface is None
     assert am.rt_table is None
-    p.assert_called_once_with("tor_enable", "1.2.3.4", "2042", "4242", "4141")
+    p.assert_called_once_with(
+        "tor_enable", "1.2.3.4", "192.168.56.1", "4242", "4141"
+    )
     am.db.set_route.assert_called_once_with(1234, "tor")
 
 @mock.patch("cuckoo.core.scheduler.rooter")
@@ -192,11 +194,11 @@ def test_route_internet_route_noconf(p):
     })
 
     am.route_network()
-    assert am.route == "internet"
+    assert am.route == "none"
     assert am.interface is None
     assert am.rt_table is None
     p.assert_not_called()
-    am.db.set_route.assert_called_once_with(1234, "internet")
+    am.db.set_route.assert_called_once_with(1234, "none")
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_internet_unroute(p):
