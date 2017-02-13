@@ -76,6 +76,23 @@ def forward_drop():
     """Disable any and all forwarding unless explicitly said so."""
     run(s.iptables, "-P", "FORWARD", "DROP")
 
+def state_enable():
+    """Enable stateful connection tracking."""
+    run(
+        s.iptables, "-A", "INPUT", "-m", "state",
+        "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"
+    )
+
+def state_disable():
+    """Disable stateful connection tracking."""
+    while True:
+        _, err = run(
+            s.iptables, "-D", "INPUT", "-m", "state",
+            "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"
+        )
+        if err:
+            break
+
 def enable_nat(interface):
     """Enable NAT on this interface."""
     run(s.iptables, "-t", "nat", "-A", "POSTROUTING",
@@ -210,43 +227,35 @@ def tor_disable(ipaddr, resultserver_port, dns_port, proxy_port):
 
     local_dns_forward(ipaddr, dns_port, "-D")
 
-def drop_enable(ipaddr, resultserver_port):
-    """Enable completely dropping all non-Cuckoo traffic."""
-    run(s.iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
-        "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
+def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
+    """Toggle iptables to allow internal Cuckoo traffic."""
+    run(
+        s.iptables, action, "INPUT", "--source", vm_ip, "-p", "tcp",
+        "--destination", resultserver_ip, "--dport", "%s" % resultserver_port,
+        "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp",
-        "--dport", "8000", "-j", "ACCEPT")
+    run(
+        s.iptables, action, "OUTPUT", "--source", resultserver_ip,
+        "-p", "tcp", "--destination", vm_ip, "--dport", "%s" % agent_port,
+        "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-A", "INPUT", "--destination", ipaddr, "-p", "tcp",
-        "--sport", resultserver_port, "-j", "ACCEPT")
+    run(
+        s.iptables, action, "INPUT", "--source", vm_ip, "-j", "DROP"
+    )
 
-    run(s.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
-        "--dport", "8000", "-j", "ACCEPT")
+def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
+    """Enable complete dropping of all non-Cuckoo traffic by default."""
+    return drop_toggle(
+        "-A", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
 
-    run(s.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
-        "--sport", resultserver_port, "-j", "ACCEPT")
-
-    run(s.iptables, "-A", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
-
-def drop_disable(ipaddr, resultserver_port):
-    """Disable completely dropping all non-Cuckoo traffic."""
-    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
-        "-p", "tcp", "--syn", "--dport", resultserver_port, "-j", "ACCEPT")
-
-    run(s.iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp",
-        "--dport", "8000", "-j", "ACCEPT")
-
-    run(s.iptables, "-D", "INPUT", "--destination", ipaddr, "-p", "tcp",
-        "--sport", resultserver_port, "-j", "ACCEPT")
-
-    run(s.iptables, "-D", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
-        "--dport", "8000", "-j", "ACCEPT")
-
-    run(s.iptables, "-d", "OUTPUT", "--destination", ipaddr, "-p", "tcp",
-        "--sport", resultserver_port, "-j", "ACCEPT")
-
-    run(s.iptables, "-D", "OUTPUT", "--destination", ipaddr, "-j", "DROP")
+def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
+    """Disable complete dropping of all non-Cuckoo traffic by default."""
+    return drop_toggle(
+        "-D", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
 
 handlers = {
     "nic_available": nic_available,
@@ -255,6 +264,8 @@ handlers = {
     "vpn_enable": vpn_enable,
     "vpn_disable": vpn_disable,
     "forward_drop": forward_drop,
+    "state_enable": state_enable,
+    "state_disable": state_disable,
     "enable_nat": enable_nat,
     "disable_nat": disable_nat,
     "init_rttable": init_rttable,

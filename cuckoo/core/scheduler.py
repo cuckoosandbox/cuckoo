@@ -292,9 +292,10 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
-        if self.route == "drop":
+        if self.route == "drop" or self.interface or self.rt_table:
             rooter(
                 "drop_enable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
                 str(config("cuckoo:resultserver:port"))
             )
 
@@ -334,9 +335,12 @@ class AnalysisManager(threading.Thread):
         if self.rt_table:
             rooter("srcroute_disable", self.rt_table, self.machine.ip)
 
-        if self.route == "drop":
-            rooter("drop_disable", self.machine.ip,
-                   str(cfg.resultserver.port))
+        if self.route == "drop" or self.interface or self.rt_table:
+            rooter(
+                "drop_disable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,

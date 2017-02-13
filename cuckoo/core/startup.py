@@ -307,6 +307,10 @@ def init_rooter():
     # Do not forward any packets unless we have explicitly stated so.
     rooter("forward_drop")
 
+    # Enable stateful connection tracking (but only once).
+    rooter("state_disable")
+    rooter("state_enable")
+
 def init_routing():
     """Initialize and check whether the routing information is correct."""
     cfg = Config("routing")

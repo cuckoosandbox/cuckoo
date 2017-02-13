@@ -88,7 +88,7 @@ def test_route_default_route(p):
     assert am.route == "internet"
     assert am.interface == "nic0int"
     assert am.rt_table == "nic0rt"
-    assert p.call_count == 3
+    assert p.call_count == 4
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_none(p):
@@ -113,7 +113,7 @@ def test_route_drop(p):
     assert am.route == "drop"
     assert am.interface is None
     assert am.rt_table is None
-    p.assert_called_once_with("drop_enable", "1.2.3.4", "2042")
+    p.assert_called_once_with("drop_enable", "1.2.3.4", "192.168.56.1", "2042")
     am.db.set_route.assert_called_once_with(1234, "drop")
 
 @mock.patch("cuckoo.core.scheduler.rooter")
@@ -172,8 +172,9 @@ def test_route_internet_route(p):
     assert am.route == "internet"
     assert am.interface == "nic0int"
     assert am.rt_table == "nic0rt"
-    assert p.call_count == 3
+    assert p.call_count == 4
     p.assert_any_call("nic_available", "nic0int")
+    p.assert_any_call("drop_enable", "1.2.3.4", "192.168.56.1", "2042")
     p.assert_any_call("forward_enable", "vboxnet0", "nic0int", "1.2.3.4")
     p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
     am.db.set_route.assert_called_once_with(1234, "internet")
@@ -214,7 +215,8 @@ def test_route_internet_unroute(p):
     am.interface = "nic0int"
     am.rt_table = "nic0rt"
     am.unroute_network()
-    assert p.call_count == 2
+    assert p.call_count == 3
+    p.assert_any_call("drop_disable", "1.2.3.4", "192.168.56.1", "2042")
     p.assert_any_call("forward_disable", "vboxnet0", "nic0int", "1.2.3.4")
     p.assert_any_call("srcroute_disable", "nic0rt", "1.2.3.4")
 
