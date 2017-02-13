@@ -34,6 +34,12 @@ class SignTool(Auxiliary):
             self.enabled = False
 
     def start(self):
+        """
+        Starts the signtool.exe analysis and saves the results in aux/signtool.txt.
+
+        :return:  True if this function worked, False if it was unable to run.  This is not the same
+            as True or False if the Authenticode verification worked!
+        """
         try:
             # Return False if this is not enabled.
             if not self.enabled:
