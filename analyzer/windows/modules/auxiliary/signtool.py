@@ -55,8 +55,6 @@ class SignTool(Auxiliary):
                 log.info("signtool.exe is not available at {0}, skipping verification.".format(signtool_path))
                 return False
 
-            log.debug("Verifying PE Authenticode.")
-
             filepath = os.path.join(os.environ["TEMP"], self.analyzer.config.file_name)
 
             cmds = [signtool_path]
