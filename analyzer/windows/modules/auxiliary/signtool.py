@@ -36,7 +36,7 @@ class SignTool(Auxiliary):
 
     def start(self):
         """
-        Starts the signtool.exe analysis and saves the results in aux/signtool.txt.
+        Starts the signtool.exe analysis and saves the results in aux/signtool.json.
 
         :return:  True if this function worked, False if it was unable to run.  This is not the same
             as True or False if the Authenticode verification worked!
