@@ -365,10 +365,14 @@ class PortableExecutable(object):
         results["pe_timestamp"] = self._get_timestamp()
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
-        results["signature_verification_verified"] = self._get_signature_verification()['verified']
-        results["signature_verification_output"] = \
-            self._get_signature_verification()["output"].replace('\r','')
+
+        sigverification = self._get_signature_verification()
+        if sigverification is not None:
+            results["signature_verification_verified"] = sigverification['verified']
+            results["signature_verification_output"] = sigverification["output"].replace('\r','')
+
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
+
         return results
 
 

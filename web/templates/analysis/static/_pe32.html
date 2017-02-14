@@ -54,7 +54,7 @@
                             <th>Locality</th>
                             <td>{{cert.locality}}</td>
                         </tr>
-                        {% if analysis.static.signature_verification_verified %}
+                        {% if analysis.static.signature_verification_output %}
                         <tr>
                             <th>Verified</th>
                             {% if analysis.static.signature_verification_verified %}
@@ -63,8 +63,6 @@
                             <td><span class="label label-danger">No</span></td>
                             {% endif %}
                         </tr>
-                        {% endif %}
-                        {% if analysis.static.signature_verification_output %}
                         <tr>
                             <th>Signtool.exe Output</th>
                             <td><pre>{{analysis.static.signature_verification_output}}</pre></td>
