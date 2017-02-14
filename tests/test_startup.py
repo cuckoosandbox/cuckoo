@@ -229,7 +229,10 @@ def test_init_rooter_connect(p, q):
 
     init_rooter()
     p.socket.return_value.connect.assert_called_once_with("/tmp/cuckoo-rooter")
-    q.assert_called_once_with("forward_drop")
+    assert q.call_count == 3
+    q.assert_any_call("forward_drop")
+    q.assert_any_call("state_disable")
+    q.assert_any_call("state_enable")
 
 @mock.patch("cuckoo.core.startup.socket")
 def test_init_rooter_exceptions(p):
