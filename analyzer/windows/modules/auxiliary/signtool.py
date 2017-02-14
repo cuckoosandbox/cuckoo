@@ -5,6 +5,7 @@
 import logging
 import os
 import subprocess
+import json
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
@@ -67,14 +68,18 @@ class SignTool(Auxiliary):
             signtoolproc = subprocess.Popen(cmds, stdout=subprocess.PIPE)
             signtoolproc.wait()
 
+            results = {}
+
             if signtoolproc.returncode == 0:
-                pass
+                results['verified'] = True
             else:
-                pass
+                results['verified'] = False
+
+            results['output'] = "".join(signtoolproc.stdout)
 
             nf = NetlogFile()
-            nf.init("aux/signtool.txt")
-            nf.send("".join(signtoolproc.stdout))
+            nf.init("aux/signtool.json")
+            nf.send(json.dumps(results))
             nf.close()
 
         except:
