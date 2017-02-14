@@ -9,6 +9,7 @@ import os
 import re
 import struct
 import zipfile
+import json
 
 try:
     import bs4
@@ -71,9 +72,11 @@ log = logging.getLogger(__name__)
 class PortableExecutable(object):
     """PE analysis."""
 
-    def __init__(self, file_path):
-        """@param file_path: file path."""
+    def __init__(self, file_path, analysis_path):
+        """@param file_path: file path.
+        @param analysis_path: The path to the analysis."""
         self.file_path = file_path
+        self.analysis_path = analysis_path
         self.pe = None
 
     def _get_filetype(self, data):
@@ -322,6 +325,23 @@ class PortableExecutable(object):
 
         return ret
 
+    def _get_signature_verification(self):
+        """
+        Pulls the signature verification information for Authenticode.
+        :return: None if failure, otherwise a dict with the verification status and the output.
+        """
+        sig_path = os.path.join(self.analysis_path, "aux", "signtool.json")
+
+        if not os.path.exists(sig_path):
+            return None
+
+        with open(sig_path,'r') as sigin:
+            sigtxt = sigin.read()
+
+        sigdata = json.loads(sigtxt)
+
+        return sigdata
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -345,8 +365,10 @@ class PortableExecutable(object):
         results["pe_timestamp"] = self._get_timestamp()
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
+        results["signature_verification"] = self._get_signature_verification()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
         return results
+
 
 class WindowsScriptFile(object):
     """Deobfuscates and interprets Windows Script Files."""
@@ -677,7 +699,7 @@ class Static(Processing):
 
         if ext == "exe" or "PE32" in File(self.file_path).get_type():
             if HAVE_PEFILE:
-                static.update(PortableExecutable(self.file_path).run())
+                static.update(PortableExecutable(self.file_path, self.analysis_path).run())
             static["keys"] = self._get_keys()
 
         if package == "wsf" or ext == "wsf":
