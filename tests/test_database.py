@@ -10,7 +10,7 @@ import tempfile
 
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, mkdir
 
 class DatabaseEngine(object):
     """Tests database stuff."""
@@ -112,6 +112,7 @@ class TestConnectOnce(object):
     @mock.patch("cuckoo.apps.apps.Database")
     @mock.patch("cuckoo.apps.apps.process")
     def test_process_task(self, q, p1, p2):
+        mkdir(cwd(analysis=1))
         main.main(
             ("--cwd", cwd(), "process", "-r", "1"),
             standalone_mode=False

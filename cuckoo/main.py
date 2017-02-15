@@ -14,9 +14,10 @@ import traceback
 import cuckoo
 
 from cuckoo.apps import (
-    fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance, cuckoo_clean,
-    cuckoo_dnsserve, cuckoo_machine, import_cuckoo, migrate_database
+    fetch_community, submit_tasks, process_tasks, process_task_range,
+    cuckoo_rooter, cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
+    cuckoo_clean, cuckoo_dnsserve, cuckoo_machine, import_cuckoo,
+    migrate_database
 )
 from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -282,7 +283,7 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
 
 @main.command()
 @click.argument("instance", required=False)
-@click.option("-r", "--report", default=0, help="Re-generate a report")
+@click.option("-r", "--report", help="Re-generate one or more reports")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.pass_context
 def process(ctx, instance, report, maxcount):
@@ -292,27 +293,14 @@ def process(ctx, instance, report, maxcount):
     if instance:
         init_logfile("process-%s.json" % instance)
 
-    db = Database()
-    db.connect()
+    Database().connect()
 
     # Load additional Signatures.
     load_signatures()
 
-    # Regenerate a report.
+    # Regenerate one or more reports.
     if report:
-        task = db.view_task(report)
-        if not task:
-            task = {
-                "id": report,
-                "category": "file",
-                "target": "",
-                "options": {},
-                "package": None,
-            }
-        else:
-            task = task.to_dict()
-
-        process_task(task)
+        process_task_range(report)
     elif not instance:
         print ctx.get_help(), "\n"
         sys.exit("In automated mode an instance name is required!")

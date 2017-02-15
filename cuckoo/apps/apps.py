@@ -261,6 +261,36 @@ def process_task(task):
     finally:
         task_log_stop(task["id"])
 
+def process_task_range(tasks):
+    db, task_ids = Database(), []
+    for entry in tasks.split(","):
+        if entry.isdigit():
+            task_ids.append(int(entry))
+        elif entry.count("-") == 1:
+            start, end = entry.split("-")
+            if not start.isdigit() or not end.isdigit():
+                log.warning("Invalid range provided: %s", entry)
+                continue
+            task_ids.extend(range(int(start), int(end)+1))
+        elif entry:
+            log.warning("Invalid range provided: %s", entry)
+
+    for task_id in sorted(set(task_ids)):
+        task = db.view_task(task_id)
+        if not task:
+            task = {
+                "id": task_id,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+            }
+        else:
+            task = task.to_dict()
+
+        if os.path.isdir(cwd(analysis=task_id)):
+            process_task(task)
+
 def process_tasks(instance, maxcount):
     count = 0
     db = Database()

@@ -9,7 +9,9 @@ import os
 import pytest
 import tempfile
 
-from cuckoo.apps.apps import process, process_task, cuckoo_clean
+from cuckoo.apps.apps import (
+    process, process_task, cuckoo_clean, process_task_range
+)
 from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.files import Files
 from cuckoo.core.log import logger
@@ -121,50 +123,6 @@ class TestAppsWithCWD(object):
                 "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
             ), standalone_mode=False)
 
-    @mock.patch("cuckoo.main.load_signatures")
-    @mock.patch("cuckoo.main.process_task")
-    def test_process_once(self, p, q):
-        main.main(
-            ("--cwd", cwd(), "process", "-r", "1234"),
-            standalone_mode=False
-        )
-        p.assert_called_once_with({
-            "id": 1234,
-            "category": "file",
-            "target": "",
-            "options": {},
-            "package": None,
-        })
-        q.assert_called_once()
-
-    @mock.patch("cuckoo.main.load_signatures")
-    @mock.patch("cuckoo.apps.apps.process")
-    def test_process_once_anonymous(self, p, q):
-        main.main(
-            ("--cwd", cwd(), "process", "-r", "1234"),
-            standalone_mode=False
-        )
-        p.assert_called_once_with(
-            "", None, {
-                "id": 1234,
-                "category": "file",
-                "target": "",
-                "options": {},
-                "package": None,
-            }
-        )
-        q.assert_called_once()
-
-    @mock.patch("cuckoo.main.load_signatures")
-    @mock.patch("cuckoo.main.process_tasks")
-    def test_process_many(self, p, q):
-        main.main(
-            ("--cwd", cwd(), "process", "instance"),
-            standalone_mode=False
-        )
-        p.assert_called_once_with("instance", 0)
-        q.assert_called_once()
-
     def test_dnsserve(self):
         with mock.patch("cuckoo.main.cuckoo_dnsserve") as p:
             p.return_value = None
@@ -243,6 +201,146 @@ class TestAppsWithCWD(object):
                 ["alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head"],
                 cwd=cwd("distributed", "migration", private=True)
             )
+
+class TestProcessingTasks(TestAppsWithCWD):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_task_range")
+    def test_process_once(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with("1234")
+        q.assert_called_once()
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_single(self, p):
+        mkdir(cwd(analysis=1234))
+        process_task_range("1234")
+        p.assert_called_once_with({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_single_noanal(self, p):
+        process_task_range("1234")
+        p.assert_not_called()
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_single_db(self, p):
+        mkdir(cwd(analysis=1234))
+        p.return_value.view_task.return_value = {}
+        process_task_range("1234")
+        p.return_value.view_task.assert_called_once_with(1234)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_multi(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        process_task_range("1234,2345")
+        assert p.call_count == 2
+        p.assert_any_call({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+        p.assert_any_call({
+            "id": 2345,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_multi_db(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        p.return_value.view_task.return_value = {}
+        process_task_range("2345")
+        p.return_value.view_task.assert_called_once_with(2345)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_range(self, p):
+        mkdir(cwd(analysis=3))
+        for x in xrange(10, 101):
+            mkdir(cwd(analysis=x))
+        process_task_range("3,5,10-100")
+        assert p.call_count == 92  # 101-10+1
+        p.assert_any_call({
+            "id": 3,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+
+        # We did not create an analysis directory for analysis=5.
+        with pytest.raises(AssertionError):
+            p.assert_any_call({
+                "id": 5,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+            })
+
+        for x in xrange(10, 101):
+            p.assert_any_call({
+                "id": x,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+            })
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_duplicate(self, p):
+        process_task_range("3,3,42")
+        assert p.return_value.view_task.call_count == 2
+        p.return_value.view_task.assert_any_call(3)
+        p.return_value.view_task.assert_any_call(42)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_multi(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        process_task_range("1234,2345")
+        assert p.call_count == 2
+        p.assert_any_call({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+        p.assert_any_call({
+            "id": 2345,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+        })
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_tasks")
+    def test_process_many(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "instance"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with("instance", 0)
+        q.assert_called_once()
 
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")
