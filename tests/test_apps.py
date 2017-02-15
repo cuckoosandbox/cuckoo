@@ -202,7 +202,7 @@ class TestAppsWithCWD(object):
                 cwd=cwd("distributed", "migration", private=True)
             )
 
-class TestProcessingTasks(TestAppsWithCWD):
+class TestProcessingTasks(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
@@ -341,6 +341,29 @@ class TestProcessingTasks(TestAppsWithCWD):
         )
         p.assert_called_once_with("instance", 0)
         q.assert_called_once()
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    @mock.patch("cuckoo.apps.apps.process")
+    @mock.patch("cuckoo.apps.apps.logger")
+    def test_logger(self, p, q, r):
+        process_task({
+            "id": 123,
+            "target": "foo",
+            "category": "bar",
+            "package": "baz",
+            "options": {
+                "a": "b",
+            },
+        })
+        p.assert_called_once()
+        assert p.call_args[1] == {
+            "action": "task.report",
+            "status": "pending",
+            "target": "foo",
+            "category": "bar",
+            "package": "baz",
+            "options": "a=b",
+        }
 
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")

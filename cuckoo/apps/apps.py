@@ -236,8 +236,8 @@ def process_task(task):
         logger(
             "Starting task reporting",
             action="task.report", status="pending",
-            category=task["category"], package=task["package"],
-            options=emit_options(task["options"])
+            target=task["target"], category=task["category"],
+            package=task["package"], options=emit_options(task["options"])
         )
 
         if task["category"] == "file" and task.get("sample_id"):
