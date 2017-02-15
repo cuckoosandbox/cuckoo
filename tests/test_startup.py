@@ -368,3 +368,20 @@ def test_init_routing_internet_normal(p):
     p.assert_any_call("enable_nat", "eth0")
     p.assert_any_call("flush_rttable", "table")
     p.assert_any_call("init_rttable", "table", "eth0")
+
+@mock.patch("cuckoo.core.startup.rooter")
+def test_init_routing_tor_inetsim_noint(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "routing": {
+            "tor": {
+                "enabled": True,
+            },
+            "inetsim": {
+                "enabled": True,
+            },
+        },
+    })
+
+    init_routing()
+    p.assert_not_called()

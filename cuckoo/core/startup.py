@@ -368,23 +368,6 @@ def init_routing():
             config("routing:routing:internet")
         ))
 
-    # Check if Tor interface exists, if yes then enable NAT.
-    if cfg.tor.enabled:
-        if not rooter("nic_available", cfg.tor.interface):
-            raise CuckooStartupError(
-                "The network interface that has been configured as Tor "
-                "line is not available."
-            )
-
-    # Check if the InetSim interface exists, if so, enable NAT if the
-    # interface is not the same as the one we use for Tor.
-    if cfg.inetsim.enabled:
-        if not rooter("nic_available", cfg.tor.interface):
-            raise CuckooStartupError(
-                "The network interface that has been configured as InetSim "
-                "line is not available."
-            )
-
     for rt_table, interface in interfaces:
         # Disable & enable NAT on this network interface. Disable it just
         # in case we still had the same rule from a previous run.
