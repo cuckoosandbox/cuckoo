@@ -436,6 +436,7 @@ class RunSignatures(object):
                     "Analysis matched signature: %s", signature.name, extra={
                         "action": "signature.match", "status": "success",
                         "signature": signature.name,
+                        "severity": signature.severity,
                     }
                 )
                 self.matched.append(signature.results())

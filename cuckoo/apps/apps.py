@@ -237,7 +237,8 @@ def process_task(task):
             "Starting task reporting",
             action="task.report", status="pending",
             target=task["target"], category=task["category"],
-            package=task["package"], options=emit_options(task["options"])
+            package=task["package"], options=emit_options(task["options"]),
+            custom=task["custom"]
         )
 
         if task["category"] == "file" and task.get("sample_id"):
@@ -284,6 +285,7 @@ def process_task_range(tasks):
                 "target": "",
                 "options": {},
                 "package": None,
+                "custom": None,
             }
         else:
             task = task.to_dict()

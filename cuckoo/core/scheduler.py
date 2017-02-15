@@ -422,6 +422,7 @@ class AnalysisManager(threading.Thread):
                 "category": self.task.category,
                 "package": self.task.package,
                 "options": emit_options(self.task.options),
+                "custom": self.task.custom,
             }
         )
 

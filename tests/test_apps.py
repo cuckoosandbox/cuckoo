@@ -217,6 +217,19 @@ class TestProcessingTasks(object):
         p.assert_called_once_with("1234")
         q.assert_called_once()
 
+    @mock.patch("cuckoo.apps.apps.process")
+    def test_process_once_deeper(self, p):
+        mkdir(cwd(analysis=1234))
+        process_task_range("1234")
+        p.assert_called_once_with("", None, {
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
     @mock.patch("cuckoo.apps.apps.process_task")
     def test_process_task_range_single(self, p):
         mkdir(cwd(analysis=1234))
@@ -227,6 +240,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
 
     @mock.patch("cuckoo.apps.apps.process_task")
@@ -253,6 +267,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
         p.assert_any_call({
             "id": 2345,
@@ -260,6 +275,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
 
     @mock.patch("cuckoo.apps.apps.Database")
@@ -283,6 +299,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
 
         # We did not create an analysis directory for analysis=5.
@@ -293,6 +310,7 @@ class TestProcessingTasks(object):
                 "target": "",
                 "options": {},
                 "package": None,
+                "custom": None,
             })
 
         for x in xrange(10, 101):
@@ -302,6 +320,7 @@ class TestProcessingTasks(object):
                 "target": "",
                 "options": {},
                 "package": None,
+                "custom": None,
             })
 
     @mock.patch("cuckoo.apps.apps.Database")
@@ -323,6 +342,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
         p.assert_any_call({
             "id": 2345,
@@ -330,6 +350,7 @@ class TestProcessingTasks(object):
             "target": "",
             "options": {},
             "package": None,
+            "custom": None,
         })
 
     @mock.patch("cuckoo.main.load_signatures")
@@ -354,6 +375,7 @@ class TestProcessingTasks(object):
             "options": {
                 "a": "b",
             },
+            "custom": "foobar",
         })
         p.assert_called_once()
         assert p.call_args[1] == {
@@ -363,6 +385,7 @@ class TestProcessingTasks(object):
             "category": "bar",
             "package": "baz",
             "options": "a=b",
+            "custom": "foobar",
         }
 
 @mock.patch("cuckoo.apps.apps.RunProcessing")
@@ -426,6 +449,7 @@ def test_process_log_taskid(p, q):
         "target": "http://google.com/",
         "package": "ie",
         "options": {},
+        "custom": None,
     })
 
     for line in open(cwd("log", "process-p0.json"), "rb"):
