@@ -23,7 +23,8 @@
 				margin-right: 5px;
 			}
 
-			button {
+			button,
+			.flex-grid__button {
 				-webkit-appearance: none;
 				border: 0;
 				font-size: 70%;
@@ -38,6 +39,7 @@
 				.fa { margin-right: 5px; }
 
 				&:hover { 
+					text-decoration: none;
 					background-color: darken(#337AB7, 5);
 					cursor: pointer; 
 				}
@@ -46,6 +48,29 @@
 					background-color: #888;
 					color: #fff;
 					&:hover { background-color: darken(#888, 5); }
+				}
+
+				&.transparent {
+					background-color: transparent;
+					color: #337AB7;
+					box-shadow: none;
+
+					&:hover {
+						background-color: #337AB7;
+						color: #fff;
+					}
+				}
+
+				&--description {
+					@extend .flex-grid__button;
+					background-color: transparent;
+					color: #999;
+					box-shadow: none;
+
+					&:hover {
+						background-color: transparent;
+						cursor: default;
+					}
 				}
 
 			}

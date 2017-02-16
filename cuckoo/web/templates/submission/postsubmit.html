@@ -1,124 +1,27 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-    <style>
-        .btn-file {
-            position: relative;
-            overflow: hidden;
-        }
 
-        .btn-file input[type=file] {
-            position: absolute;
-            top: 0;
-            right: 0;
-            min-width: 100%;
-            min-height: 100%;
-            font-size: 999px;
-            text-align: right;
-            filter: alpha(opacity=0);
-            opacity: 0;
-            background: red;
-            cursor: inherit;
-            display: block;
-        }
-    </style>
+<div class="flex-grid" id="post-submission">
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="alert alert-success"><h4>Submission complete!</h4>
-                The following task id's were added successfully: {% for submit_id in submit_ids %}{{ submit_id }} {% endfor %}<br/>
+    <header class="flex-grid__header">
+        <ul class="breadcrumbs">
+            <li class="done"><a href="#">submit file</a></li>
+            <li class="done"><a href="#">configure</a></li>
+            <li class="done"><a href="#">analyze</a></li>
+            <li class="active"><a href="#">Summary</a></li>
+        </ul>
+        <h3>
+            <i class="fa fa-cogs"></i> Your submission is received and the tasks are being processed!
+            <div class="pull-right">
+                <!-- <button id="start-analysis"><i class="fa fa-check"></i> Analyze</button> -->
+                <a class="flex-grid__button--description">Next: </a>
+                <a class="flex-grid__button transparent" href="/analysis/pending">View pending tasks</a>
+                <a class="flex-grid__button transparent" href="/submit">Submit again</a>
             </div>
-        </div>
+        </h3>
+    </header>
 
-        <div class="col-md-12">
-            <table id="submitted_tasks" class="table table-striped table-responsive">
-                <thead>
-                    <tr>
-                        <th>Task ID</th>
-                        <th>Date</th>
-                        <th>Filename/URL</th>
-                        <th>Package</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-
-            <div id="refresh_text" style="color:grey;">This table refreshes every second</div>
-
-        </div>
-    </div>
-
-    <script type='text/javascript'>
-
-        $(document).ready(function () {
-            var sel_table = $("#submitted_tasks");
-            var sel_table_body = sel_table.find(">tbody");
-            var sel_refresh_text = $("#refresh_text");
-            sel_table.hide();
-            sel_refresh_text.hide();
-
-
-            var submit_ids = [{% for submit_id in submit_ids %}{{ submit_id }}, {% endfor %}];
-
-            function populate_table(data){
-
-                var html = "<tr>";
-                html += "<td><strong>"+data["id"]+"</strong></td>";
-
-                var _reported = data["status"] == "reported";
-                var _href_status = "<a href=\""+data["id"]+"/summary\">";
-                var _status_class = "";
-                if(_reported){ _status_class = "text-success"; }
-
-                // column date
-                html += "<td>";
-                if(_reported){ html += _href_status; }
-                html += "<span class=\"mono\"> " + CuckooWeb.getFormattedDate(data["added_on"]) + "</span>";
-                if(_reported){ html += "</a>";}
-                html += "</td>";
-
-                // column filename
-                html += "<td>";
-                if(_reported){ html += _href_status; }
-                html += "<span class=\"mono\"> " + data["target"].split('/').pop() + "</span>";
-                if(_reported){ html += "</a>";}
-                html += "</td>";
-
-                // column package
-                html += "<td>"+data["package"]+"</td>";
-
-                // column status
-                html += "<td><span class=\""+_status_class+"\">"+data["status"]+"</span></td>";
-
-                sel_table_body.append(html);
-            }
-
-            function check_tasks() {
-                setTimeout(function () {
-                    CuckooWeb.api_post("/analysis/api/tasks/info/", {"task_ids": submit_ids}, function(data){
-                        if(!data.data) {
-                            check_tasks();
-                        }
-
-                        sel_table.show();
-                        sel_refresh_text.show();
-                        sel_table_body.empty();
-
-                        $.each(data.data, function(i, obj){
-                            populate_table(obj);
-                        })
-                    });
-
-                    check_tasks();
-                }, 1000);
-            }
-
-            if(submit_ids) {
-                check_tasks();
-            }
-        });
-    </script>
-
+</div>
+        
 {% endblock %}

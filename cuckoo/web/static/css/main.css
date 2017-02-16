@@ -4355,7 +4355,10 @@ footer a:hover {
 .flex-grid__header > h3 > i {
   margin-right: 5px;
 }
-.flex-grid__header > h3 button {
+.flex-grid__header > h3 button,
+.flex-grid__header > h3 .flex-grid__button,
+.flex-grid__header > h3 button--description,
+.flex-grid__header > h3 .flex-grid__button--description {
   -webkit-appearance: none;
   border: 0;
   font-size: 70%;
@@ -4367,19 +4370,85 @@ footer a:hover {
   margin-top: -3px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
-.flex-grid__header > h3 button .fa, .flex-grid__header > h3 button .cuckoo-files ul div:before, .cuckoo-files ul .flex-grid__header > h3 button div:before, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:after, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:before, .flex-grid__header > h3 button .flex-form__header .custom-checkbox > input + span, .flex-form__header .flex-grid__header > h3 button .custom-checkbox > input + span, .flex-grid__header > h3 button .breadcrumbs > li:not(:last-child):after {
+.flex-grid__header > h3 button .fa, .flex-grid__header > h3 button .cuckoo-files ul div:before, .cuckoo-files ul .flex-grid__header > h3 button div:before, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:after, .flex-grid__header > h3 button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .flex-grid__header > h3 button .extension-select:before, .flex-grid__header > h3 button .flex-form__header .custom-checkbox > input + span, .flex-form__header .flex-grid__header > h3 button .custom-checkbox > input + span, .flex-grid__header > h3 button .breadcrumbs > li:not(:last-child):after,
+.flex-grid__header > h3 .flex-grid__button .fa,
+.flex-grid__header > h3 button--description .fa,
+.flex-grid__header > h3 .flex-grid__button--description .fa,
+.flex-grid__header > h3 .flex-grid__button .cuckoo-files ul div:before,
+.cuckoo-files ul .flex-grid__header > h3 .flex-grid__button div:before,
+.flex-grid__header > h3 button--description .cuckoo-files ul div:before,
+.cuckoo-files ul .flex-grid__header > h3 button--description div:before,
+.flex-grid__header > h3 .flex-grid__button--description .cuckoo-files ul div:before,
+.cuckoo-files ul .flex-grid__header > h3 .flex-grid__button--description div:before,
+.flex-grid__header > h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .flex-grid__header > h3 .flex-grid__button .extension-select:after,
+.flex-grid__header > h3 button--description .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .flex-grid__header > h3 button--description .extension-select:after,
+.flex-grid__header > h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .flex-grid__header > h3 .flex-grid__button--description .extension-select:after,
+.flex-grid__header > h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .flex-grid__header > h3 .flex-grid__button .extension-select:before,
+.flex-grid__header > h3 button--description .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .flex-grid__header > h3 button--description .extension-select:before,
+.flex-grid__header > h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .flex-grid__header > h3 .flex-grid__button--description .extension-select:before,
+.flex-grid__header > h3 .flex-grid__button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .flex-grid__header > h3 .flex-grid__button .custom-checkbox > input + span,
+.flex-grid__header > h3 button--description .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .flex-grid__header > h3 button--description .custom-checkbox > input + span,
+.flex-grid__header > h3 .flex-grid__button--description .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .flex-grid__header > h3 .flex-grid__button--description .custom-checkbox > input + span,
+.flex-grid__header > h3 .flex-grid__button .breadcrumbs > li:not(:last-child):after,
+.flex-grid__header > h3 button--description .breadcrumbs > li:not(:last-child):after,
+.flex-grid__header > h3 .flex-grid__button--description .breadcrumbs > li:not(:last-child):after {
   margin-right: 5px;
 }
-.flex-grid__header > h3 button:hover {
+.flex-grid__header > h3 button:hover,
+.flex-grid__header > h3 .flex-grid__button:hover,
+.flex-grid__header > h3 button--description:hover,
+.flex-grid__header > h3 .flex-grid__button--description:hover {
+  text-decoration: none;
   background-color: #2d6da3;
   cursor: pointer;
 }
-.flex-grid__header > h3 button.grey {
+.flex-grid__header > h3 button.grey,
+.flex-grid__header > h3 .flex-grid__button.grey,
+.flex-grid__header > h3 button--description.grey,
+.flex-grid__header > h3 .grey.flex-grid__button--description {
   background-color: #888;
   color: #fff;
 }
-.flex-grid__header > h3 button.grey:hover {
+.flex-grid__header > h3 button.grey:hover,
+.flex-grid__header > h3 .flex-grid__button.grey:hover,
+.flex-grid__header > h3 button--description.grey:hover,
+.flex-grid__header > h3 .grey.flex-grid__button--description:hover {
   background-color: #7b7b7b;
+}
+.flex-grid__header > h3 button.transparent,
+.flex-grid__header > h3 .flex-grid__button.transparent,
+.flex-grid__header > h3 button--description.transparent,
+.flex-grid__header > h3 .transparent.flex-grid__button--description {
+  background-color: transparent;
+  color: #337AB7;
+  box-shadow: none;
+}
+.flex-grid__header > h3 button.transparent:hover,
+.flex-grid__header > h3 .flex-grid__button.transparent:hover,
+.flex-grid__header > h3 button--description.transparent:hover,
+.flex-grid__header > h3 .transparent.flex-grid__button--description:hover {
+  background-color: #337AB7;
+  color: #fff;
+}
+.flex-grid__header > h3 button--description,
+.flex-grid__header > h3 .flex-grid__button--description {
+  background-color: transparent;
+  color: #999;
+  box-shadow: none;
+}
+.flex-grid__header > h3 button--description:hover,
+.flex-grid__header > h3 .flex-grid__button--description:hover {
+  background-color: transparent;
+  cursor: default;
 }
 .flex-grid__body, .flex-grid__body--center {
   display: flex;
