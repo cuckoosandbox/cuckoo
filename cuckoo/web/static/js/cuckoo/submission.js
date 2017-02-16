@@ -2590,11 +2590,6 @@ $(function () {
 			}
 		});
 
-		// debug
-		$('.page-freeze').bind('click', function () {
-			$(this).removeClass('in');
-		});
-
 		$('#start-analysis').bind('click', function (e) {
 
 			e.preventDefault();
