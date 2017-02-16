@@ -528,6 +528,7 @@ $(function() {
 		});
 
 		$('#start-analysis').bind('click', function(e) {
+
 			e.preventDefault();
 
 			var json = analysis_ui.getData({
@@ -542,7 +543,8 @@ $(function() {
 				data: json,
 				success: function(data) {
 					if(data.status === true){
-	                    CuckooWeb.redirect("/submit/post/?id=" + data.data.join("&id="));
+	                    // redirect to submission success page
+	                    window.location = `/submit/post/?id=${data.tasks.join("&id=")}`;
 	                } else {
 	                    alert("Submission failed: " + data.message);
 	                }

@@ -8,7 +8,7 @@ var sourcemaps = require('gulp-sourcemaps');
 
 module.exports = function(done) {
 
-	return gulp.src(['./scripts/**/*.js', '!./scripts/submission/**/*.js'])
+	return gulp.src(['scripts/**/*.js', '!scripts/submission/**/*.js'])
 		.pipe(sourcemaps.init())
 		.pipe(babel({
 			presets: 'es2015'
