@@ -747,15 +747,8 @@ class FileTree {
 		}).map(function(item) {
 
 			var per_file_options = {};
-			// if(item.changed_properties) {
-			// 	item.changed_properties.forEach(function(prop) {
-			// 		per_file_options[prop] = item.per_file_options[prop];
-			// 	});
-			// 	item.options = per_file_options;
-			// }
 
 			item.options = diff(item.changed_properties, item.per_file_options);
-			console.log(item.options);
 
 			// deletes all filetree specific properties from this item 
 			// (the properties that are sent out as JSON)
