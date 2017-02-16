@@ -6,6 +6,7 @@ import socket
 import logging
 import xmlrpclib
 import subprocess
+import re
 
 log = logging.getLogger(__name__)
 
@@ -183,6 +184,8 @@ class Physical(Machinery):
         data.update({
             "uname": self.options.fog.username,
             "upass": self.options.fog.password,
+            "ulang": "English",
+            "login": "Login",
         })
 
         return requests.post(url, data=data)
@@ -194,7 +197,7 @@ class Physical(Machinery):
             return
 
         # TODO Handle exceptions such as not being able to connect.
-        r = self.fog_query("node=tasks&sub=listhosts")
+        r = self.fog_query("node=task&sub=listhosts")
 
         # Parse the HTML.
         b = bs4.BeautifulSoup(r.content, "html.parser")
@@ -204,13 +207,23 @@ class Physical(Machinery):
                 "to login into FOG, please configure the correct credentials."
             )
 
+    # Pull out the FOG version from the header and raise error if it is not 1.3.4
+    v = b.find("div",{"id": "version"})
+    runningVer = re.match(r"Running Version\s+(([0-9]+\.)+[0-9]+)",v.text).group(1)
+    if runningVer != "1.3.4":   # This may be better suited to go in lib.cuckoo.common.constants
+            raise CuckooCriticalError(
+                "The current version of FOG was detected as %s. "
+                "The only supported version is 1.3.4." % runningVer
+            )
+
         # Mapping for physical machine hostnames to their mac address and uri
         # for "downloading" a safe image onto the host. Great piece of FOG API
         # usage here.
         for row in b.find_all("table")[0].find_all("tr")[1:]:
-            hostname, macaddr, download, upload, advanced = row.find_all("td")
-            self.fog_machines[hostname.text] = (
-                macaddr.text, next(download.children).attrs["href"][1:],
+            hostinfo, imagename, actions = row.find_all("td")
+
+            self.fog_machines[hostinfo.find("a").text] = (
+                hostinfo.find("small").text, actions.find(title="Deploy").parent.attrs["href"][1:],
             )
 
         # Check whether all our machines are available on FOG.
