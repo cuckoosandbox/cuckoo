@@ -2614,7 +2614,7 @@ $(function () {
 				success: function success(data) {
 					if (data.status === true) {
 						// redirect to submission success page
-						window.location = '/submit/post/?id=cuckoo/web/static/graphic/cuckoo_white_transparent.png' + data.tasks.join("&id=");
+						window.location = '/submit/post/?id=' + data.tasks.join("&id=");
 					} else {
 						alert("Submission failed: " + data.message);
 						$('.page-freeze').removeClass('in');
