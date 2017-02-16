@@ -12,7 +12,7 @@
             <li class="active"><a href="#">Summary</a></li>
         </ul>
         <h3>
-            <i class="fa fa-cogs"></i> Your submission is received and the tasks are being processed!
+            <i class="fa fa-check"></i> Your submission is received and the tasks are being processed!
             <div class="pull-right">
                 <!-- <button id="start-analysis"><i class="fa fa-check"></i> Analyze</button> -->
                 <a class="flex-grid__button--description">Next: </a>
@@ -26,7 +26,7 @@
         <div class="flex-grid__container">
             <div class="flex-grid__column two-third">
                 <h2>The following tasks have been created:</h2>
-                <ul class="flex-display divided rounded-off">
+                <ul class="flex-display divided rounded-off monospaced">
                     <li class="highlight-dark">task id</li>
                     {% for submit_id in submit_ids %}
                         <li>{{ submit_id }}</li>
