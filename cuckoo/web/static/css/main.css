@@ -5144,6 +5144,42 @@ footer a:hover {
   color: #337AB7;
 }
 
+.page-freeze {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  top: -100vh;
+  opacity: 0;
+  left: 0;
+  z-index: 2000;
+  background-color: rgba(102, 204, 204, 0.9);
+  transition: opacity 300ms ease-in-out;
+}
+.page-freeze__graphic {
+  width: 500px;
+}
+.page-freeze__graphic > img {
+  width: 100%;
+}
+.page-freeze__message {
+  color: #fff;
+  font-family: "Roboto", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 20px;
+}
+.page-freeze.in {
+  top: 0;
+  opacity: 1;
+}
+.page-freeze.out {
+  opacity: 0;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org

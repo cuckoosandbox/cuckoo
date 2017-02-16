@@ -14,6 +14,14 @@
     <!-- feedback form modal -->
     {% include "analysis/pages/feedback/form.html" %}
 
+    <!-- cuckoo freeze-page loader -->
+    <div class="page-freeze">
+        <div class="page-freeze__graphic">
+            <img src="{% static "graphic/cuckoo_white_transparent.png" %}" alt="Cuckoo" />
+        </div>
+        <p class="page-freeze__message">We're processing your submission... This could take up to a few seconds.</p>
+    </div>
+
     <script src="{% static "js/vendor.js" %}"></script>
     <script src="{% static "js/handlebars-templates.js" %}"></script>
     <script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>

@@ -2590,9 +2590,16 @@ $(function () {
 			}
 		});
 
+		// debug
+		$('.page-freeze').bind('click', function () {
+			$(this).removeClass('in');
+		});
+
 		$('#start-analysis').bind('click', function (e) {
 
 			e.preventDefault();
+
+			$(".page-freeze").addClass('in');
 
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
@@ -2607,14 +2614,16 @@ $(function () {
 				success: function success(data) {
 					if (data.status === true) {
 						// redirect to submission success page
-						window.location = '/submit/post/?id=' + data.tasks.join("&id=");
+						window.location = '/submit/post/?id=cuckoo/web/static/graphic/cuckoo_white_transparent.png' + data.tasks.join("&id=");
 					} else {
 						alert("Submission failed: " + data.message);
+						$('.page-freeze').removeClass('in');
 					}
 				},
 				error: function error() {
 					console.log(arguments);
 					alert('submission failed! see the console for details.');
+					$('.page-freeze').removeClass('in');
 				}
 			});
 		});
