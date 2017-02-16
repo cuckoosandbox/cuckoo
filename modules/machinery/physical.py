@@ -7,6 +7,7 @@ import logging
 import xmlrpclib
 import subprocess
 import re
+import time
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +122,12 @@ class Physical(Machinery):
             # Deploy a clean image through FOG, assuming we're using FOG.
             self.fog_queue_task(label)
 
+            # Hold here until we are certain the physical guest is rebooting
+            while self._status(label) == self.RUNNING:
+                time.sleep(1)
+                continue
+
+
     def _list(self):
         """Lists physical machines installed.
         @return: physical machine names list.
@@ -207,10 +214,10 @@ class Physical(Machinery):
                 "to login into FOG, please configure the correct credentials."
             )
 
-    # Pull out the FOG version from the header and raise error if it is not 1.3.4
-    v = b.find("div",{"id": "version"})
-    runningVer = re.match(r"Running Version\s+(([0-9]+\.)+[0-9]+)",v.text).group(1)
-    if runningVer != "1.3.4":   # This may be better suited to go in lib.cuckoo.common.constants
+        # Pull out the FOG version from the header and raise error if it is not 1.3.4
+        v = b.find("div",{"id": "version"})
+        runningVer = re.match(r"Running Version\s+(([0-9]+\.)+[0-9]+)",v.text).group(1)
+        if runningVer != "1.3.4":   # This may be better suited to go in lib.cuckoo.common.constants
             raise CuckooCriticalError(
                 "The current version of FOG was detected as %s. "
                 "The only supported version is 1.3.4." % runningVer

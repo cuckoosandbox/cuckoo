@@ -64,10 +64,10 @@ Cuckoo Configuration Requirements
 =================================
 Since we are using physical machines to perform our analysis, we must account
 for the reboot/rebuild time of our physical machines in our Cuckoo configuration.
-Spefically, we must modify the critical timeout as specified in conf/cuckoo.conf.
-	critical = 60
+Spefically, we must modify the vm_state timeout as specified in conf/cuckoo.conf.
+	vm_state = 60
 By default, this value is set to 60 (seconds). We need to update it so that it
 reflects the amount of time required to reboot and rebuild the physical guest.
-In testing 10 minutes (i.e., critical = 600) has proven sufficient. However,
+In testing 10 minutes (i.e., vm_state = 600) has proven sufficient. However,
 it is recommended that you analyze the time it takes to reboot/rebuild the 
 phyical machine in your environment before setting this value.
