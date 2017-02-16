@@ -48,24 +48,16 @@ image you created above from the "Host Image" option, when finished click the
 At this point you should be ready to take an image from the guest machine.
 In order to take an image you will need to navigate to the Task Management page
 and list all hosts (\http://<your_fog_server>/fog/management/index.php?node=tasks&sub=listhosts).
-From here you should be able to click the Upload icon (Green up arrow), which
+From here you should be able to click the Capture icon, which
 should instantly add a task to the queue to take an image.
 Now you should reboot your Cuckoo guest image and it should PXE boot into Fog
 and capture the base image from the cuckoo guest.
 
-After you have successfully taken an image of the guest machine, you can use
-that image as one to deploy to the Cuckoo physical sandbox as needed.
-It is recommended to use a scheduled task to accomplish this.
-In order to create a scheduled task to re-image sandboxes, navigate to the Host
-Management page on Fog (http://<your_fog_server>/fog/management/index.php?node=host&sub=list).
-Then click "Download" the machine you wish to schedule the re-image task for.
-From this menu, select "Schedule Cron-style Deployment" and put in the values
-you wish for the schedule to apply to (``*/5 * * * *``) in the case shown in the
-screenshot below, but you may need to tweak these times for your environment.
-
-    .. image:: ../../_images/screenshots/fog_scheduled_job.png
-        :align: center
-
+Now that you have created and capture an image in FOG, Cuckoo will use this image to
+rebuild the guest machine after each analysis task. If you have provided Cuckoo with 
+valid FOG credentials and enabled Remote RPC (as shown in the Network Configuration
+section), Cuckoo will automatically schedule the Deploy Task in FOG and will also
+reboot the guest machine for you.
 
 Setup using VMWare (Bonus!)
 ===========================
