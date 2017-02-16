@@ -22,6 +22,32 @@
         </h3>
     </header>
 
+    <section class="flex-grid__body--center">
+        <div class="flex-grid__container">
+            <div class="flex-grid__column two-third">
+                <h2>The following tasks have been created:</h2>
+                <ul class="flex-display divided rounded-off">
+                    <li class="highlight-dark">task id</li>
+                    {% for submit_id in submit_ids %}
+                        <li>{{ submit_id }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="flex-grid__column one-third">
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="flex-grid__footer">
+        <p class="footnote">
+            &copy;2010-2016 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+        </p>
+        <div class="logo">
+            <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+        </div>
+    </footer>
+
 </div>
         
 {% endblock %}
