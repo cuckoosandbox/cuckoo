@@ -84,3 +84,38 @@ def test_process_json_logging():
         "task_id": None,
         "time": 1484232003,
     }
+
+def test_init_logging_info(capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    init_logging(logging.WARNING)
+
+    log = logging.getLogger("testing")
+    log.debug("debug test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+    log.info("info test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+    log.warning("warning test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+
+    buf = open(cwd("log", "cuckoo.log")).read()
+    assert "debug test" not in buf
+    assert "info test" not in buf
+    assert "warning test" in buf
+
+    buf = open(cwd("log", "cuckoo.json")).read()
+    assert "debug test" in buf
+    assert "info test" in buf
+    assert "warning test" in buf
+
+    _, buf = capsys.readouterr()
+    assert "debug test" not in buf
+    assert "info test" not in buf
+    assert "warning test" in buf

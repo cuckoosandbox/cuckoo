@@ -78,6 +78,7 @@ class JsonFormatter(logging.Formatter):
             "status": status,
             "time": record.created,
             "level": record.levelname.lower(),
+            "message": record.getMessage(),
         }
         base = logging.makeLogRecord({})
         for key, value in record.__dict__.items():
@@ -98,7 +99,7 @@ def task_log_stop(task_id):
     """Disassociate a thread from a task."""
     _tasks.pop(thread.get_ident(), None)
 
-def init_logger(root, name):
+def init_logger(name, level=None):
     formatter = logging.Formatter(
         "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
     )
@@ -106,38 +107,35 @@ def init_logger(root, name):
     if name == "cuckoo.log":
         l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
         l.setFormatter(formatter)
-        root.addHandler(l)
+        l.setLevel(level)
 
     if name == "cuckoo.json":
         j = JsonFormatter()
         l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.json"))
         l.setFormatter(j)
         l.addFilter(j)
-        root.addHandler(l)
 
     if name == "console":
         l = ConsoleHandler()
         l.setFormatter(formatter)
-        root.addHandler(l)
+        l.setLevel(level)
 
     if name == "database":
         l = DatabaseHandler()
         l.setLevel(logging.ERROR)
-        root.addHandler(l)
 
     if name == "task":
         l = TaskHandler()
         l.setFormatter(formatter)
-        root.addHandler(l)
 
     if name.startswith("process-") and name.endswith(".json"):
         j = JsonFormatter()
         l = logging.handlers.WatchedFileHandler(cwd("log", name))
         l.setFormatter(j)
         l.addFilter(j)
-        root.addHandler(l)
 
     _loggers[name] = l
+    logging.getLogger().addHandler(l)
 
 def logger(message, *args, **kwargs):
     """Log a message to specific logger instance."""

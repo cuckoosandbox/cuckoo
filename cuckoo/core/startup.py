@@ -108,29 +108,20 @@ def check_version():
 
 def init_logging(level):
     """Initializes logging."""
-    # We operate on the root logger.
-    log = logging.getLogger()
-
-    init_logger(log, "cuckoo.log")
-    init_logger(log, "cuckoo.json")
-    init_logger(log, "console")
-    init_logger(log, "database")
-    init_logger(log, "task")
-
-    log.setLevel(level)
+    logging.getLogger().setLevel(logging.DEBUG)
+    init_logger("cuckoo.log", level)
+    init_logger("cuckoo.json")
+    init_logger("console", level)
+    init_logger("database")
+    init_logger("task")
 
 def init_console_logging(level=logging.INFO):
     """Initializes logging only to console."""
-    # We operate on the root logger.
-    log = logging.getLogger()
-
-    init_logger(log, "console")
-    init_logger(log, "database")
-
-    log.setLevel(level)
+    init_logger("console", level)
+    init_logger("database")
 
 def init_logfile(logfile):
-    init_logger(logging.getLogger(), logfile)
+    init_logger(logfile, logging.DEBUG)
 
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""
