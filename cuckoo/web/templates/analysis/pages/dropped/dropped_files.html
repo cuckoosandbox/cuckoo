@@ -27,7 +27,7 @@
                                                             <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-xs">
                                                             <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
                                                             </a>
-                                                            <a href="{% url "submission.views.submit_dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
+                                                            <a href="{% url "submission/dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
                                                                 <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Submit file
                                                             </a>
                                                     {% else %}

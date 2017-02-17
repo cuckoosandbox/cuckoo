@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,11 +9,15 @@ import json
 import os
 import StringIO
 
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+results_db = settings.MONGO
 
 def view_error(request, msg, status=500):
     return render(request, "errors/error.html", {"error": msg}, status=status)
@@ -32,14 +35,16 @@ def get_directory_size(path):
 
 def _api_post(func):
     @functools.wraps(func)
-    def inner(*args, **kwargs):
-        request = args[0]
-
+    def inner(request, *args, **kwargs):
         if not request.is_ajax():
             return json_error_response("Request was not ajax")
 
-        args += (json.loads(request.body),)
-        return func(*args, **kwargs)
+        try:
+            kwargs["body"] = json.loads(request.body)
+        except ValueError:
+            return json_error_response("Request data was not JSON")
+
+        return func(request, *args, **kwargs)
     return inner
 
 api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))
@@ -98,3 +103,18 @@ def file_response(data, filename, content_type):
 
     response["Content-Disposition"] = "attachment; filename=%s" % filename
     return response
+
+def dropped_filepath(task_id, sha1):
+    record = results_db.analysis.find_one({
+        "info.id": int(task_id),
+        "dropped.sha1": sha1,
+    })
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    for dropped in record["dropped"]:
+        if dropped["sha1"] == sha1:
+            return dropped["path"]
+
+    raise ObjectDoesNotExist
