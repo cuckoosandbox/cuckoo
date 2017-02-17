@@ -144,6 +144,25 @@ class TestWebInterface(object):
         assert obj["defaults"]["priority"] == 2
         assert obj["defaults"]["options"]["process-memory-dump"] is True
 
+    def test_submission_submit(self, client):
+        r = client.get("/submit/")
+        assert r.status_code == 200
+        assert r.templates[0].name == "submission/submit.html"
+
+    def test_submission_postsubmit(self, client):
+        r = client.get("/submit/post/?id=1")
+        assert r.status_code == 200
+        assert r.templates[0].name == "submission/postsubmit.html"
+
+    def test_submission_presubmit_valid(self, client):
+        SubmitManager().pre("strings", ["google.com"])
+        r = client.get("/submit/pre/1/")
+        assert r.status_code == 200
+        assert r.templates[0].name == "submission/presubmit.html"
+
+    def test_submission_presubmit_invalid(self, client):
+        assert client.get("/submit/pre/1/").status_code == 302
+
     @mock.patch("cuckoo.web.controllers.analysis.api.CuckooFeedback")
     def test_feedback_form(self, p, client):
         p.return_value.send_form.return_value = 3

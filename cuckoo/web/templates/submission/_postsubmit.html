@@ -26,7 +26,7 @@
     <div class="row">
         <div class="col-md-4">
             <div class="alert alert-success"><h4>Submission complete!</h4>
-                The following task id's were added successfully: {% for submit_id in submit_ids %}{{ submit_id }} {% endfor %}<br/>
+                The following task id's were added successfully: {% for task_id in task_ids %}{{ task_id }} {% endfor %}<br/>
             </div>
         </div>
 
@@ -59,8 +59,7 @@
             sel_table.hide();
             sel_refresh_text.hide();
 
-
-            var submit_ids = [{% for submit_id in submit_ids %}{{ submit_id }}, {% endfor %}];
+            var task_ids = [{% for task_id in task_ids %}{{ task_id }}, {% endfor %}];
 
             function populate_table(data){
 
@@ -97,7 +96,7 @@
 
             function check_tasks() {
                 setTimeout(function () {
-                    CuckooWeb.api_post("/analysis/api/tasks/info/", {"task_ids": submit_ids}, function(data){
+                    CuckooWeb.api_post("/analysis/api/tasks/info/", {"task_ids": task_ids}, function(data){
                         if(!data.data) {
                             check_tasks();
                         }
@@ -115,7 +114,7 @@
                 }, 1000);
             }
 
-            if(submit_ids) {
+            if(task_ids) {
                 check_tasks();
             }
         });
