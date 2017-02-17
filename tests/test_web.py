@@ -17,6 +17,7 @@ from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
+from cuckoo.web.bin.utils import view_error
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
 
@@ -226,6 +227,12 @@ class TestWebInterface(object):
         )
         assert r.status_code == 501
         assert "not JSON" in r.content
+
+    def test_view_error_has_envvar(self, client, settings):
+        """Ensure that render_template() is used in view_error()."""
+        settings.DEBUG = True
+        r = client.get("/analysis/search/")
+        assert r.status_code == 500
 
 class TestWebInterfaceFeedback(object):
     def setup(self):

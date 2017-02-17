@@ -20,7 +20,9 @@ from django.views.decorators.http import require_http_methods
 results_db = settings.MONGO
 
 def view_error(request, msg, status=500):
-    return render(request, "errors/error.html", {"error": msg}, status=status)
+    return render_template(
+        request, "errors/error.html", error=msg, status=status
+    )
 
 def get_directory_size(path):
     """recursive"""
@@ -79,7 +81,9 @@ def render_template(request, template_name, **kwargs):
 
     kwargs["env"] = env
 
-    return render(request, template_name, kwargs)
+    return render(
+        request, template_name, kwargs, status=kwargs.pop("status", 200)
+    )
 
 def json_response(message, status=200):
     return JsonResponse({

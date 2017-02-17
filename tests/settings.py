@@ -4,7 +4,15 @@
 
 import pymongo
 
+from django.template.base import TemplateSyntaxError
+
 from cuckoo.misc import cwd
+
+class InvalidString(str):
+    def __mod__(self, other):
+        raise TemplateSyntaxError(
+            "Undefined variable or unknown value for: %s" % other
+        )
 
 SECRET_KEY = "A"*40
 ROOT_URLCONF = "web.urls"
@@ -51,10 +59,17 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": {
                 "django.core.context_processors.request"
-            }
+            },
+            "string_if_invalid": InvalidString("%s"),
         },
     },
 ]
 
 # Test database.
 MONGO = pymongo.MongoClient("localhost", 27017)["cuckootest"]
+
+# No ElasticSearch enabled.
+ELASTIC = None
+
+# Enable debug mode.
+DEBUG = True
