@@ -7,6 +7,7 @@ import logging
 import mock
 import tempfile
 
+from cuckoo.common.config import log_error
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logging, init_logfile
 from cuckoo.main import cuckoo_create, main
@@ -119,3 +120,21 @@ def test_init_logging_info(capsys):
     assert "debug test" not in buf
     assert "info test" not in buf
     assert "warning test" in buf
+
+@mock.patch("cuckoo.common.config.log")
+@mock.patch("cuckoo.common.config.logging")
+def test_config_log_error_nohandler(p, q, capsys):
+    p.getLogger.return_value.handlers = None
+    log_error("%s %s", "foo", "bar")
+    out, err = capsys.readouterr()
+    assert "Configuration error: foo bar" in err
+    q.error.assert_not_called()
+
+@mock.patch("cuckoo.common.config.log")
+@mock.patch("cuckoo.common.config.logging")
+def test_config_log_error_yeshandler(p, q, capsys):
+    p.getLogger.return_value.handlers = [1]
+    log_error("%s %s", "foo", "bar")
+    out, err = capsys.readouterr()
+    assert "Configuration error: foo bar" not in err
+    q.error.assert_called_once_with("%s %s", "foo", "bar")
