@@ -2,10 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os.path
+
 from django.shortcuts import redirect
 
-from cuckoo.core.database import Database, Submit
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.core.database import Database
+from cuckoo.core.submit import SubmitManager
+from cuckoo.web.bin.utils import view_error, render_template, dropped_filepath
+
+submit_manager = SubmitManager()
 
 class SubmissionRoutes(object):
     @staticmethod
@@ -24,8 +29,7 @@ class SubmissionRoutes(object):
 
     @staticmethod
     def presubmit(request, submit_id):
-        session = Database().Session()
-        submit = session.query(Submit).get(submit_id)
+        submit = Database().view_submit(submit_id)
         if not submit:
             # TODO Include an error message regarding the invalid Submit entry.
             return redirect("submission/index")
@@ -33,3 +37,15 @@ class SubmissionRoutes(object):
         return render_template(
             request, "submission/presubmit.html", submit_id=submit_id
         )
+
+    @staticmethod
+    def dropped(request, task_id, sha1):
+        filepath = dropped_filepath(task_id, sha1)
+
+        # TODO Obtain the original name for this file.
+        submit_id = submit_manager.pre("files", [{
+            "name": os.path.basename(filepath),
+            "data": open(filepath, "rb"),
+        }])
+
+        return redirect("submission/pre", submit_id=submit_id)

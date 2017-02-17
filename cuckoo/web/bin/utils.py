@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,11 +9,15 @@ import json
 import os
 import StringIO
 
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+results_db = settings.MONGO
 
 def view_error(request, msg, status=500):
     return render(request, "errors/error.html", {"error": msg}, status=status)
@@ -98,3 +101,18 @@ def file_response(data, filename, content_type):
 
     response["Content-Disposition"] = "attachment; filename=%s" % filename
     return response
+
+def dropped_filepath(task_id, sha1):
+    record = results_db.analysis.find_one({
+        "info.id": int(task_id),
+        "dropped.sha1": sha1,
+    })
+
+    if not record:
+        raise ObjectDoesNotExist
+
+    for dropped in record["dropped"]:
+        if dropped["sha1"] == sha1:
+            return dropped["path"]
+
+    raise ObjectDoesNotExist

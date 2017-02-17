@@ -163,6 +163,17 @@ class TestWebInterface(object):
     def test_submission_presubmit_invalid(self, client):
         assert client.get("/submit/pre/1/").status_code == 302
 
+    @mock.patch("cuckoo.web.controllers.submission.routes.dropped_filepath")
+    def test_submission_dropped(self, p, client):
+        p.return_value = __file__
+        r = client.get("/submit/1234/dropped/" + "a"*40 + "/")
+        assert r.status_code == 302
+
+        r = SubmitManager().get_files(1)
+        assert len(r["files"]) == 1
+        assert os.listdir(r["path"]) == [os.path.basename(__file__)]
+        assert r["files"][0].filesize == os.path.getsize(__file__)
+
     @mock.patch("cuckoo.web.controllers.analysis.api.CuckooFeedback")
     def test_feedback_form(self, p, client):
         p.return_value.send_form.return_value = 3
