@@ -2116,6 +2116,69 @@ exports.Form = Form;
 },{}],5:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var SubmissionTaskTable = function () {
+	function SubmissionTaskTable(options) {
+		_classCallCheck(this, SubmissionTaskTable);
+
+		var self = this;
+
+		this.el = options.el;
+		this.task_ids = options.task_ids;
+		this.interval = null;
+		this.refreshRate = 1000; // ms
+
+		// debug
+		this.stopIntervalling = 10;
+		this.curInterval = 0;
+
+		if (this.task_ids.length) {
+			this.interval = setInterval(function () {
+				self._status(self._data);
+				self.curInterval += 1;
+
+				// debug
+				if (self.curInterval == self.stopIntervalling) {
+					self._clear();
+				}
+			}, this.refreshRate);
+		}
+	}
+
+	_createClass(SubmissionTaskTable, [{
+		key: '_status',
+		value: function _status(callback) {
+			$.post('/analysis/api/tasks/info', JSON.stringify({ task_ids: this.task_ids }), callback);
+		}
+	}, {
+		key: '_data',
+		value: function _data(data) {
+			console.log(data);
+		}
+	}, {
+		key: '_clear',
+		value: function _clear() {
+			if (this.interval) {
+				clearInterval(this.interval);
+			}
+		}
+	}]);
+
+	return SubmissionTaskTable;
+}();
+
+exports.SubmissionTaskTable = SubmissionTaskTable;
+
+},{}],6:[function(require,module,exports){
+'use strict';
+
 var _InterfaceControllers = require('./components/InterfaceControllers');
 
 var InterfaceControllers = _interopRequireWildcard(_InterfaceControllers);
@@ -2127,6 +2190,8 @@ var FileTree = _interopRequireWildcard(_FileTree);
 var _Analysis = require('./components/Analysis');
 
 var Analysis = _interopRequireWildcard(_Analysis);
+
+var _SubmissionTaskTable = require('./components/SubmissionTaskTable');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -2650,9 +2715,24 @@ $(function () {
 			});
 		});
 	}
+
+	// submission task summary init
+	if (document.getElementById('submission-task-table') !== null) {
+		var get_task_ids = function get_task_ids() {
+			return location.search.substr(1).split('&').map(function (item) {
+				return parseInt(item.replace('id=', ''));
+			});
+		};
+
+		var taskTable = new _SubmissionTaskTable.SubmissionTaskTable({
+			el: document.getElementById('submission-task-table'),
+			task_ids: get_task_ids()
+		});
+		console.log(taskTable);
+	}
 });
 
-},{"./components/Analysis":1,"./components/FileTree":3,"./components/InterfaceControllers":4}]},{},[5])
+},{"./components/Analysis":1,"./components/FileTree":3,"./components/InterfaceControllers":4,"./components/SubmissionTaskTable":5}]},{},[6])
 
 
 //# sourceMappingURL=submission.js.map

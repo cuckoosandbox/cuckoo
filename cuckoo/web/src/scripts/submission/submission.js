@@ -1,6 +1,7 @@
 import * as InterfaceControllers from './components/InterfaceControllers';
 import * as FileTree from './components/FileTree';
 import * as Analysis from './components/Analysis';
+import { SubmissionTaskTable } from './components/SubmissionTaskTable';
 
 var default_analysis_options = {
 	'machine': 'default',
@@ -589,6 +590,22 @@ $(function() {
 
         });
 
+	}
+
+	// submission task summary init
+	if(document.getElementById('submission-task-table') !== null) {
+
+		function get_task_ids() {
+			return location.search.substr(1).split('&').map(function(item) {
+				return parseInt(item.replace('id=',''));
+			});
+		}
+
+		var taskTable = new SubmissionTaskTable({
+			el: document.getElementById('submission-task-table'),
+			task_ids: get_task_ids()
+		});
+		console.log(taskTable);
 	}
 
 });
