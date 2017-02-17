@@ -5286,7 +5286,7 @@ footer a:hover {
   transition: opacity 300ms ease-in-out;
 }
 .page-freeze__graphic {
-  width: 500px;
+  width: 125px;
 }
 .page-freeze__graphic > img {
   width: 100%;
