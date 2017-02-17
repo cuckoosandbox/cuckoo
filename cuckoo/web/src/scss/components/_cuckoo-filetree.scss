@@ -33,6 +33,10 @@
 				border-bottom: 1px solid #ccc;
 			}
 		}
+
+		div:hover {
+			background-color: #eee;
+		}
 	}
 
 	& > aside {
@@ -106,10 +110,6 @@
 
 			[data-type="file"] { 
 				font-weight: 400; 
-			}
-
-			div:hover {
-				background-color: #eee;
 			}
 
 			strong {

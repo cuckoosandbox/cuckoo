@@ -66,7 +66,7 @@ class AnalysisInterface {
 		var _self = this;
 		var ret = {};
 
-		ret.global = this.form.serialize();
+		// ret.global = this.form.serialize();
 		ret.file_selection = this.filetree.serialize()
 
 		// if we have extra properties, extend the return object

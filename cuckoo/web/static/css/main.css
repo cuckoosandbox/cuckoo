@@ -4663,6 +4663,9 @@ table.cuckoo-table .loading {
 .cuckoo-files > #filetree > ul > li:last-child {
   border-bottom: 1px solid #ccc;
 }
+.cuckoo-files > #filetree div:hover {
+  background-color: #eee;
+}
 .cuckoo-files > aside {
   flex-basis: 330px;
   flex-shrink: 0;
@@ -4717,9 +4720,6 @@ table.cuckoo-table .loading {
 }
 .cuckoo-files ul li [data-type="file"] {
   font-weight: 400;
-}
-.cuckoo-files ul li div:hover {
-  background-color: #eee;
 }
 .cuckoo-files ul li strong > div:before {
   content: "\f07b";

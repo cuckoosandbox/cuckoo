@@ -32,11 +32,14 @@ Handlebars.registerHelper('file_size', function(text) {
 
 $(function() {
 
-	var debugging = false;
+	var debugging = (window.location.toString().indexOf('#debugging') !== -1);
 
-	// if(debugging) {
-	// 	$('.flex-grid__footer').css('display', 'none');
-	// }
+	if(debugging) {
+		console.debug('You run this module in debug mode. to disable it, remove #debugging from the url.');
+		console.debug('Clicking analyze will output the JSON results to the console.')
+		console.debug('Submitting is unavailable in this mode.');
+		$('.flex-grid__footer').css('display', 'none');
+	}
 
 	if(document.getElementById('analysis-configuration') !== null) {
 
@@ -537,6 +540,11 @@ $(function() {
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
 			}, true);
+
+			if(debugging) {
+				console.log(JSON.parse(json));
+				return;
+			}
 				
 			$.ajax({
 				url: '/submit/api/submit',
