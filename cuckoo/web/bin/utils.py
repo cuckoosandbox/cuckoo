@@ -35,14 +35,16 @@ def get_directory_size(path):
 
 def _api_post(func):
     @functools.wraps(func)
-    def inner(*args, **kwargs):
-        request = args[0]
-
+    def inner(request, *args, **kwargs):
         if not request.is_ajax():
             return json_error_response("Request was not ajax")
 
-        args += (json.loads(request.body),)
-        return func(*args, **kwargs)
+        try:
+            kwargs["body"] = json.loads(request.body)
+        except ValueError:
+            return json_error_response("Request data was not JSON")
+
+        return func(request, *args, **kwargs)
     return inner
 
 api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))

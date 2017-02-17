@@ -217,6 +217,16 @@ class TestWebInterface(object):
         assert obj["status"] is False
         assert "Invalid email" in obj["message"]
 
+    def test_api_post_not_json(self, client):
+        r = client.post(
+            "/analysis/api/tasks/info/",
+            "NOTJSON",
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 501
+        assert "not JSON" in r.content
+
 class TestWebInterfaceFeedback(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
