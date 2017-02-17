@@ -117,6 +117,7 @@ def init_logging(level):
 
 def init_console_logging(level=logging.INFO):
     """Initializes logging only to console."""
+    logging.getLogger().setLevel(logging.DEBUG)
     init_logger("console", level)
     init_logger("database")
 

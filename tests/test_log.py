@@ -9,9 +9,16 @@ import tempfile
 
 from cuckoo.common.config import log_error
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logging, init_logfile
+from cuckoo.core.startup import init_logging, init_logfile, init_console_logging
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import set_cwd, cwd
+
+def reset_logging():
+    """Resets the logging module to its initial state so that we can
+    re-register all kinds of logging logic for unit testing purposes."""
+    logging.root = logging.RootLogger(logging.WARNING)
+    logging.Logger.root = logging.root
+    logging.Logger.manager = logging.Manager(logging.Logger.root)
 
 def test_init_logging():
     set_cwd(tempfile.mkdtemp())
@@ -90,6 +97,7 @@ def test_init_logging_info(capsys):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
+    reset_logging()
     init_logging(logging.WARNING)
 
     log = logging.getLogger("testing")
@@ -120,6 +128,20 @@ def test_init_logging_info(capsys):
     assert "debug test" not in buf
     assert "info test" not in buf
     assert "warning test" in buf
+
+def test_init_console_logging(capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    reset_logging()
+    init_console_logging(logging.DEBUG)
+
+    log = logging.getLogger("console-testing")
+    log.debug("this is a test")
+
+    _, buf = capsys.readouterr()
+    assert "console-testing" in buf
+    assert "this is a test" in buf
 
 @mock.patch("cuckoo.common.config.log")
 @mock.patch("cuckoo.common.config.logging")
