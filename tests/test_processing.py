@@ -102,6 +102,12 @@ class TestProcessing:
         p.check_output.assert_called_once_with([
             __file__, os.path.join(s.shots_path, "0001.jpg"), "stdout"
         ])
+        shotpath = os.path.join(
+            "tests", "files", "sample_analysis_storage",
+            "shots", "0001_small.jpg"
+        )
+        assert os.path.exists(shotpath)
+        os.unlink(shotpath)
 
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     @mock.patch("cuckoo.processing.screenshots.log")
@@ -117,3 +123,9 @@ class TestProcessing:
         p.error.assert_not_called()
         p.warning.assert_not_called()
         q.check_output.assert_not_called()
+        shotpath = os.path.join(
+            "tests", "files", "sample_analysis_storage",
+            "shots", "0001_small.jpg"
+        )
+        assert os.path.exists(shotpath)
+        os.unlink(shotpath)
