@@ -4337,6 +4337,81 @@ footer a:hover {
   text-decoration: underline;
 }
 
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+table.cuckoo-table {
+  width: 100%;
+  background-color: #fff;
+  text-align: left;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+table.cuckoo-table thead {
+  border-bottom: 2px solid #ccc;
+}
+table.cuckoo-table thead th {
+  white-space: nowrap;
+}
+table.cuckoo-table thead tr:not(.table-display-config) th .fa, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:after, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span, table.cuckoo-table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after {
+  margin-right: 10px;
+}
+table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before {
+  content: "\f0dc";
+}
+.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th div:before, .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before {
+  content: "\f0de";
+}
+.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th div:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before {
+  content: "\f0dd";
+}
+table.cuckoo-table thead tr.table-display-config > th {
+  font-weight: 400;
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+}
+table.cuckoo-table tbody tr:not(:last-child) {
+  border-bottom: 1px solid #ccc;
+}
+table.cuckoo-table tbody tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+table.cuckoo-table tbody td:empty:before {
+  content: "-";
+  color: #999;
+}
+table.cuckoo-table thead th, table.cuckoo-table thead td,
+table.cuckoo-table tbody th,
+table.cuckoo-table tbody td {
+  padding: 10px;
+}
+table.cuckoo-table tfoot {
+  text-align: left;
+  border-top: 2px solid #ccc;
+}
+table.cuckoo-table tfoot td {
+  padding: 15px;
+}
+table.cuckoo-table .small-integer {
+  width: 50px;
+}
+table.cuckoo-table .results-per-page {
+  float: right;
+}
+table.cuckoo-table.table-key-value td {
+  width: 50%;
+  border-right: 1px solid #ccc;
+}
+table.cuckoo-table.table-key-value td:last-child {
+  border: 0;
+}
+.col-3 table.cuckoo-table.table-key-value td {
+  width: 33%;
+}
+
 .flex-grid {
   display: flex;
   flex-direction: column;

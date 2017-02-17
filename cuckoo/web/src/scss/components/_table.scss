@@ -3,3 +3,69 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
+
+ table.cuckoo-table {
+	width: 100%;
+	background-color: #fff;
+	text-align: left;
+	font-size: 12px;
+	border-collapse: collapse;
+
+	thead { 
+		border-bottom: 2px solid #ccc; 
+		th { white-space: nowrap; }
+
+		tr:not(.table-display-config) {
+			th {
+				.fa { 
+					margin-right: 10px; 
+					&:before { 
+						content: "\f0dc"; 
+
+						.sorting-asc & { content: "\f0de"; }
+						.sorting-desc & { content: "\f0dd"; }
+					}
+				}
+			}
+		}
+
+		tr.table-display-config > th {
+			font-weight: 400;
+			padding: 15px;
+			border-bottom: 1px solid #ccc;
+			border-top: 1px solid #ccc;
+		}
+	}
+
+	tbody {
+		tr:not(:last-child) { border-bottom: 1px solid #ccc; }
+		tr:nth-child(even) { background-color: #f5f5f5;  }
+		td:empty:before { content: "-"; color: #999; }
+	}
+
+	thead,
+	tbody {
+		th, td { padding: 10px; }
+	}
+
+	tfoot {
+		text-align: left;
+		border-top: 2px solid #ccc;
+		td { padding: 15px; }
+	}
+
+	.small-integer { width: 50px; }
+	.results-per-page { float: right; }
+
+	&.table-key-value {
+		td { 
+			width: 50%; 
+			border-right: 1px solid #ccc;
+
+			&:last-child { border: 0; }
+
+			.col-3 & { width: 33%; }
+		}
+	}
+
+}

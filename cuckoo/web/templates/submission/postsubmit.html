@@ -22,7 +22,7 @@
         </h3>
     </header>
 
-    <section class="flex-grid__body--center">
+    <section class="flex-grid__body--center background-grey">
         <div class="flex-grid__container">
             <div class="flex-grid__column two-third">
                 <h2>The following tasks have been created:</h2>
@@ -32,6 +32,42 @@
                         <li>{{ task_id }}</li>
                     {% endfor %}
                 </ul>
+
+                <table class="cuckoo-table">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Date</th>
+                            <th>Filename / URL</th>
+                            <th>Package</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>46</td>
+                            <td>2017-02-16 14:37</td>
+                            <td>10.zip</td>
+                            <td>ie</td>
+                            <td>Pending</td>
+                        </tr>
+                        <tr>
+                            <td>47</td>
+                            <td>2017-02-16 14:37</td>
+                            <td>10.zip</td>
+                            <td>ie</td>
+                            <td>Pending</td>
+                        </tr>
+                        <tr>
+                            <td>48</td>
+                            <td>2017-02-16 14:37</td>
+                            <td>10.zip</td>
+                            <td>ie</td>
+                            <td>Pending</td>
+                        </tr>
+                    </tbody>
+                </table>
+
             </div>
             <div class="flex-grid__column one-third">
 
