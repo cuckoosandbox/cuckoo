@@ -2,13 +2,14 @@ class SubmissionTaskTable {
 
 	constructor(options) {
 
-		var self         = this;
+		var self             = this;
 
-		this.el          = options.el;
-		this.task_ids    = options.task_ids;
-		this.interval    = null;
-		this.refreshRate = options.refreshRate ? options.refreshRate : 1000; // ms
-		this.debug 		 = options.debug;
+		this.el              = options.el;
+		this.task_ids        = options.task_ids;
+		this.interval        = null;
+		this.refreshRate     = options.refreshRate ? options.refreshRate : 1000; // ms
+		this.debug 		     = options.debug;
+		this.request_pending = false;
 
 		// debug
 		this.stopIntervalling = 10;
@@ -33,6 +34,12 @@ class SubmissionTaskTable {
 	_status(callback) {
 
 		var self = this;
+
+		// this blocks out making requests if we are already doing a request.
+		// this makes every request 'wait' untill all requests did finish.
+		if(this.request_pending) return;
+		this.request_pending = true;
+
 		this.setStatusText('Getting status...');
 
 		$.ajax({
@@ -45,6 +52,7 @@ class SubmissionTaskTable {
 			}),
 			success: function(response) {
 				self._data(response);
+				self.request_pending = false;
 			},
 			error: function(err) {
 				self._clear();
@@ -93,9 +101,8 @@ class SubmissionTaskTable {
 
 	// clears the interval
 	_clear() {
-		if(this.interval) {
-			clearInterval(this.interval);
-		}
+		if(this.interval) clearInterval(this.interval);
+		this.request_pending = false;
 	}
 
 	setStatusText(text) {

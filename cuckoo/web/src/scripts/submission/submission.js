@@ -606,7 +606,7 @@ $(function() {
 			el: document.getElementById('submission-task-table'),
 			task_ids: get_task_ids(),
 			debug: false, // set to true to do 10 calls max and stop
-			refreshRate: 5000
+			refreshRate: 2500
 		});
 		
 	}

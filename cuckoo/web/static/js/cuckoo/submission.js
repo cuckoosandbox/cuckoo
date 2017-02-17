@@ -2135,6 +2135,7 @@ var SubmissionTaskTable = function () {
 		this.interval = null;
 		this.refreshRate = options.refreshRate ? options.refreshRate : 1000; // ms
 		this.debug = options.debug;
+		this.request_pending = false;
 
 		// debug
 		this.stopIntervalling = 10;
@@ -2163,6 +2164,12 @@ var SubmissionTaskTable = function () {
 		value: function _status(callback) {
 
 			var self = this;
+
+			// this blocks out making requests if we are already doing a request.
+			// this makes every request 'wait' untill all requests did finish.
+			if (this.request_pending) return;
+			this.request_pending = true;
+
 			this.setStatusText('Getting status...');
 
 			$.ajax({
@@ -2175,6 +2182,7 @@ var SubmissionTaskTable = function () {
 				}),
 				success: function success(response) {
 					self._data(response);
+					self.request_pending = false;
 				},
 				error: function error(err) {
 					self._clear();
@@ -2231,9 +2239,8 @@ var SubmissionTaskTable = function () {
 	}, {
 		key: '_clear',
 		value: function _clear() {
-			if (this.interval) {
-				clearInterval(this.interval);
-			}
+			if (this.interval) clearInterval(this.interval);
+			this.request_pending = false;
 		}
 	}, {
 		key: 'setStatusText',
@@ -2801,7 +2808,7 @@ $(function () {
 			el: document.getElementById('submission-task-table'),
 			task_ids: get_task_ids(),
 			debug: false, // set to true to do 10 calls max and stop
-			refreshRate: 5000
+			refreshRate: 2500
 		});
 	}
 });
