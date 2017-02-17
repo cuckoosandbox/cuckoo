@@ -12,13 +12,14 @@ from cuckoo.core.rooter import rooter
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import is_linux, set_cwd, version
 
-@mock.patch("cuckoo.main.subprocess")
-def test_verbose_mode(p):
-    main.main(("-d", "rooter", "--sudo"), standalone_mode=False)
-    p.call.assert_called_once()
-    assert p.call.call_args[0][0][:4] == [
-        "sudo", mock.ANY, "--debug", "rooter",
-    ]
+if is_linux():
+    @mock.patch("cuckoo.main.subprocess")
+    def test_verbose_mode(p):
+        main.main(("-d", "rooter", "--sudo"), standalone_mode=False)
+        p.call.assert_called_once()
+        assert p.call.call_args[0][0][:4] == [
+            "sudo", mock.ANY, "--debug", "rooter",
+        ]
 
 def test_version():
     assert r.version() == {
