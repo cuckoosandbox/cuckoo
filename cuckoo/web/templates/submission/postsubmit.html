@@ -14,7 +14,6 @@
         <h3>
             <i class="fa fa-check"></i> Your submission is received and the tasks are being processed!
             <div class="pull-right">
-                <!-- <button id="start-analysis"><i class="fa fa-check"></i> Analyze</button> -->
                 <a class="flex-grid__button--description">Next: </a>
                 <a class="flex-grid__button transparent" href="/analysis/pending">View pending tasks</a>
                 <a class="flex-grid__button transparent" href="/submit">Submit again</a>
@@ -24,8 +23,8 @@
 
     <section class="flex-grid__body--center background-grey">
         <div class="flex-grid__container">
-            <div class="flex-grid__column two-third">
-                <h2>The following tasks have been created:</h2>
+            <div class="flex-grid__column">
+                <h3>The following tasks have been created:</h3>
                 <ul class="flex-display divided rounded-off monospaced">
                     <li class="highlight-dark">task id</li>
                     {% for task_id in task_ids %}
@@ -33,6 +32,7 @@
                     {% endfor %}
                 </ul>
 
+                <h3 class="clearfix">Task status: <small>Refreshes every 5 seconds</small></h3>
                 <table class="cuckoo-table" id="submission-task-table">
                     <thead>
                         <tr>
@@ -44,32 +44,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>46</td>
-                            <td>2017-02-16 14:37</td>
-                            <td>10.zip</td>
-                            <td>ie</td>
-                            <td>Pending</td>
-                        </tr>
-                        <tr>
-                            <td>47</td>
-                            <td>2017-02-16 14:37</td>
-                            <td>10.zip</td>
-                            <td>ie</td>
-                            <td>Pending</td>
-                        </tr>
-                        <tr>
-                            <td>48</td>
-                            <td>2017-02-16 14:37</td>
-                            <td>10.zip</td>
-                            <td>ie</td>
-                            <td>Pending</td>
-                        </tr>
+                        <td colspan="5">
+                            {% include "components/loader.html" %}
+                        </td>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" align="center">
+                                <p class="ajax-status">Loading task info...</p>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
-
-            </div>
-            <div class="flex-grid__column one-third">
 
             </div>
         </div>

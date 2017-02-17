@@ -18,6 +18,7 @@
     "font-awesome": "fontawesome#^4.7.0",
     "handlebars": "^3.0.0",
     "font-roboto": "^0.0.2",
-    "string": "stringjs#^3.3.3"
+    "string": "stringjs#^3.3.3",
+    "moment": "^2.17.1"
   }
 }

@@ -10,6 +10,7 @@
 	text-align: left;
 	font-size: 12px;
 	border-collapse: collapse;
+	border: 1px solid #ccc;	
 
 	thead { 
 		border-bottom: 2px solid #ccc; 
@@ -51,7 +52,13 @@
 	tfoot {
 		text-align: left;
 		border-top: 2px solid #ccc;
-		td { padding: 15px; }
+
+		td { 
+			padding: 5px; 
+			p {
+				margin: 0;
+			}
+		}
 	}
 
 	.small-integer { width: 50px; }
@@ -66,6 +73,10 @@
 
 			.col-3 & { width: 33%; }
 		}
+	}
+
+	.loading {
+		margin: 0;
 	}
 
 }

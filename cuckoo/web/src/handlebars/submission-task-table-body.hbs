@@ -1,0 +1,12 @@
+{{#each tasks}}
+	<tr>
+		<td>{{id}}</td>
+		<td>
+			<i class="fa fa-calendar-o"></i> {{date_added}}
+			<i class="fa fa-clock-o"></i> {{time_added}}
+		</td>
+		<td>{{options.filename}}</td>
+		<td>{{package}}</td>
+		<td>{{status}}</td>
+	</tr>
+{{/each}}

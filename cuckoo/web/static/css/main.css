@@ -4348,6 +4348,7 @@ table.cuckoo-table {
   text-align: left;
   font-size: 12px;
   border-collapse: collapse;
+  border: 1px solid #ccc;
 }
 table.cuckoo-table thead {
   border-bottom: 2px solid #ccc;
@@ -4393,7 +4394,10 @@ table.cuckoo-table tfoot {
   border-top: 2px solid #ccc;
 }
 table.cuckoo-table tfoot td {
-  padding: 15px;
+  padding: 5px;
+}
+table.cuckoo-table tfoot td p {
+  margin: 0;
 }
 table.cuckoo-table .small-integer {
   width: 50px;
@@ -4410,6 +4414,9 @@ table.cuckoo-table.table-key-value td:last-child {
 }
 .col-3 table.cuckoo-table.table-key-value td {
   width: 33%;
+}
+table.cuckoo-table .loading {
+  margin: 0;
 }
 
 .flex-grid {

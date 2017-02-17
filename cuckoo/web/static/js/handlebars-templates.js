@@ -316,3 +316,24 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(20, data, 0),"inverse":this.program(22, data, 0),"data":data})) != null ? stack1 : "")
     + "\n</div>";
 },"useData":true});
+this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+    var stack1, helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "	<tr>\n		<td>"
+    + alias3(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
+    + "</td>\n		<td>\n			<i class=\"fa fa-calendar-o\"></i> "
+    + alias3(((helper = (helper = helpers.date_added || (depth0 != null ? depth0.date_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"date_added","hash":{},"data":data}) : helper)))
+    + "\n			<i class=\"fa fa-clock-o\"></i> "
+    + alias3(((helper = (helper = helpers.time_added || (depth0 != null ? depth0.time_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"time_added","hash":{},"data":data}) : helper)))
+    + "\n		</td>\n		<td>"
+    + alias3(this.lambda(((stack1 = (depth0 != null ? depth0.options : depth0)) != null ? stack1.filename : stack1), depth0))
+    + "</td>\n		<td>"
+    + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
+    + "</td>\n		<td>"
+    + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
+    + "</td>\n	</tr>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.tasks : depth0),{"name":"each","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "");
+},"useData":true});

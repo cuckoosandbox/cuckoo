@@ -595,6 +595,7 @@ $(function() {
 	// submission task summary init
 	if(document.getElementById('submission-task-table') !== null) {
 
+		// returns the task id's from the url
 		function get_task_ids() {
 			return location.search.substr(1).split('&').map(function(item) {
 				return parseInt(item.replace('id=',''));
@@ -603,9 +604,11 @@ $(function() {
 
 		var taskTable = new SubmissionTaskTable({
 			el: document.getElementById('submission-task-table'),
-			task_ids: get_task_ids()
+			task_ids: get_task_ids(),
+			debug: false, // set to true to do 10 calls max and stop
+			refreshRate: 5000
 		});
-		console.log(taskTable);
+		
 	}
 
 });

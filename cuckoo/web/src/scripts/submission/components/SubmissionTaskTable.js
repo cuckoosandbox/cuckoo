@@ -2,12 +2,13 @@ class SubmissionTaskTable {
 
 	constructor(options) {
 
-		let self      = this;
+		var self         = this;
 
-		this.el       = options.el;
-		this.task_ids = options.task_ids;
-		this.interval = null;
-		this.refreshRate = 1000; // ms
+		this.el          = options.el;
+		this.task_ids    = options.task_ids;
+		this.interval    = null;
+		this.refreshRate = options.refreshRate ? options.refreshRate : 1000; // ms
+		this.debug 		 = options.debug;
 
 		// debug
 		this.stopIntervalling = 10;
@@ -15,29 +16,90 @@ class SubmissionTaskTable {
 
 		if(this.task_ids.length) {
 			this.interval = setInterval(function() {
-				self._status(self._data);
+				self._status();
 				self.curInterval += 1;
 
 				// debug
-				if(self.curInterval == self.stopIntervalling) {
+				if(self.debug && (self.curInterval == self.stopIntervalling)) {
 					self._clear();
 				}
 			}, this.refreshRate);
+
+			self._status();
 		}
 	}
 
+	// does a status check
 	_status(callback) {
-		$.post('/analysis/api/tasks/info', JSON.stringify({ task_ids: this.task_ids }), callback);
+
+		var self = this;
+		this.setStatusText('Getting status...');
+
+		$.ajax({
+			url: '/analysis/api/tasks/info/',
+			type: 'POST',
+			dataType: 'json',
+			contentType: "application/json; charset=utf-8",
+			data: JSON.stringify({
+				"task_ids": self.task_ids
+			}),
+			success: function(response) {
+				self._data(response);
+			},
+			error: function(err) {
+				self._clear();
+				alert('status check failed! check your console for more details.');
+				console.log(err);
+			}
+		});
+
 	}
 
-	_data(data) {
-		console.log(data);
+	// processes the data
+	_data(response) {
+
+		this.setStatusText('Done');
+
+		var data = response.data;
+
+		// building the check, but it's always an object,
+		// so do some array formatting here, while keeping
+		// the correct order.
+		if(!(data instanceof Array)) {
+			var arr = [];
+			for(var d in response.data) {
+				arr.push(response.data[d]);
+			}
+			data = arr.sort(function(a, b) {
+				return a.id > b.id;
+			});
+		}
+
+		// humanize the date formats, or any other kind of data
+		data = data.map(function(item) {
+			item.date_added = moment(item.added_on).format('DD/MM/YYYY');
+			item.time_added = moment(item.added_on).format('HH:mm');
+			return item;
+		});
+
+		this._draw(data);
 	}
 
+	// draws the table content from Handlebars into the table
+	_draw(data) {
+		var template = HANDLEBARS_TEMPLATES['submission-task-table-body'];
+		$(this.el).find('tbody').html(template({ tasks: data }));
+	}
+
+	// clears the interval
 	_clear() {
 		if(this.interval) {
 			clearInterval(this.interval);
 		}
+	}
+
+	setStatusText(text) {
+		$(this.el).find('tfoot .ajax-status').text(text);
 	}
 
 }
