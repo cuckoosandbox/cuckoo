@@ -755,8 +755,8 @@ class FileTree {
 			if(item.filetree) 
 				delete item.filetree;
 
-			if(item.changed_properties) 
-				delete item.changed_properties;
+			// if(item.changed_properties) 
+			// 	delete item.changed_properties;
 
 			if(item.parent) 
 				delete item.parent;
