@@ -86,6 +86,23 @@
 		margin: 0;
 	}
 
+	@include cuckoo-theme('cyborg') {
+
+		border-color: $cyborg_border_color;
+		background-color: $cyborg_primary_color;
+
+		thead {
+			@extend %cyborg-heading;
+			border-bottom: 1px solid $cyborg_border_color;
+		}
+
+		tbody tr, 
+		tfoot {
+			border-color: $cyborg_border_color;
+		}
+
+	}
+
 }
 
 #submission-task-table {

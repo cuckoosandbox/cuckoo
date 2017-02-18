@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg .cuckoo-files__controls {
+body.cyborg table.cuckoo-table thead, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -4453,6 +4453,17 @@ table.cuckoo-table.table-key-value td:last-child {
 table.cuckoo-table .loading {
   margin: 0;
 }
+body.cyborg table.cuckoo-table {
+  border-color: #071D25;
+  background-color: #152D3B;
+}
+body.cyborg table.cuckoo-table thead {
+  border-bottom: 1px solid #071D25;
+}
+body.cyborg table.cuckoo-table tbody tr,
+body.cyborg table.cuckoo-table tfoot {
+  border-color: #071D25;
+}
 
 #submission-task-table .status {
   display: inline-block;
@@ -4714,6 +4725,16 @@ body.cyborg .flex-grid__nav {
 }
 .flex-display.monospaced {
   font-family: monospace;
+}
+body.cyborg .flex-display {
+  color: #0ce3ac;
+}
+body.cyborg .flex-display .highlight-dark {
+  color: #152D3B;
+  background-color: #0ce3ac;
+}
+body.cyborg .flex-display > * {
+  border-color: #0ce3ac;
 }
 
 .cuckoo-files {

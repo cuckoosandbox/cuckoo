@@ -224,4 +224,14 @@
 		font-family: monospace;
 	}
 
+	@include cuckoo-theme('cyborg') {
+		color: $cyborg_secundary_color;
+		.highlight-dark { 
+			color: $cyborg_primary_color; 
+			background-color: $cyborg_secundary_color;
+		}
+
+		& > * { border-color: $cyborg_secundary_color; }
+	}
+
 }
