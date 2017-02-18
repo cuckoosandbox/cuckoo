@@ -2302,7 +2302,8 @@ var default_analysis_options = {
 	'priority': 1,
 	'timeout': 120,
 	'vpn': 'united-states',
-	'available_vpns': []
+	'available_vpns': [],
+	'available_machines': []
 };
 
 // package field contents - hardcoded options vs auto-detected properties

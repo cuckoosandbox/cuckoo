@@ -5352,6 +5352,46 @@ table.cuckoo-table .loading {
   color: #337AB7;
 }
 
+@-webkit-keyframes c1 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes c1 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes c2 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes c2 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
 .page-freeze {
   position: fixed;
   display: flex;
@@ -5368,10 +5408,42 @@ table.cuckoo-table .loading {
   transition: opacity 300ms ease-in-out;
 }
 .page-freeze__graphic {
+  position: relative;
   width: 125px;
+  z-index: 2;
 }
 .page-freeze__graphic > img {
   width: 100%;
+}
+.page-freeze__spinner {
+  position: absolute;
+  height: 175px;
+  width: 175px;
+  margin-left: -87px;
+  margin-top: -189px;
+  z-index: 1;
+}
+.page-freeze__spinner--c1 {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  border: 15px solid #d9e8e8;
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  -webkit-animation: c1 2s infinite linear;
+  animation: c1 2s infinite linear;
+  position: absolute;
+}
+.page-freeze__spinner--c2 {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  border: 15px solid #307575;
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  -webkit-animation: c2 2.5s infinite linear;
+  animation: c2 2.5s infinite linear;
+  position: absolute;
 }
 .page-freeze__message {
   color: #fff;
