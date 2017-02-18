@@ -16,7 +16,6 @@ import inspect
 import platform
 import threading
 import json
-import multiprocessing
 import warnings
 
 from distutils.version import StrictVersion
@@ -197,14 +196,11 @@ def classlock(f):
 class SuperLock(object):
     def __init__(self):
         self.tlock = threading.Lock()
-        self.mlock = multiprocessing.Lock()
 
     def __enter__(self):
         self.tlock.acquire()
-        self.mlock.acquire()
 
     def __exit__(self, type, value, traceback):
-        self.mlock.release()
         self.tlock.release()
 
 GUIDS = {}
