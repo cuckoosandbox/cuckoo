@@ -1,29 +1,26 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import re
 import bs4
 import chardet
+import datetime
+import inspect
+import io
 import jsbeautifier
+import json
 import logging
 import os
-import sys
-import string
-import xmlrpclib
-import inspect
 import platform
+import re
+import string
+import sys
 import threading
-import json
 import warnings
+import xmlrpclib
 
 from distutils.version import StrictVersion
-from cStringIO import StringIO
-from datetime import datetime
-
-# TODO We probably have to get rid of this import as it requires things like
-# the Django environment being all setup for usage.
 from django.core.validators import URLValidator
 
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
@@ -33,8 +30,9 @@ log = logging.getLogger(__name__)
 
 # Don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports.
-PRINTABLE_CHARACTERS = \
+PRINTABLE_CHARACTERS = (
     string.letters + string.digits + string.punctuation + " \t\r\n"
+)
 
 def convert_char(c):
     """Escapes characters.
@@ -67,11 +65,7 @@ def validate_hash(hash):
     if len(hash) not in (32, 40, 64, 128):
         return
 
-    _hash = "".join([char for char in hash if re.match(r'\w', char)])
-    if not _hash:
-        return
-
-    return _hash
+    return "".join(ch for ch in hash if re.match("\\w", ch))
 
 def validate_url(url, schemes=None):
     """Validates an URL using Django's built-in URL validator"""
@@ -268,7 +262,7 @@ _jsbeautify_lock = threading.Lock()
 def jsbeautify(javascript):
     """Beautifies Javascript through jsbeautifier and ignore some messages."""
     with _jsbeautify_lock:
-        origout, sys.stdout = sys.stdout, StringIO()
+        origout, sys.stdout = sys.stdout, io.StringIO()
         javascript = jsbeautifier.beautify(javascript)
 
         if sys.stdout.getvalue() not in _jsbeautify_blacklist:
@@ -290,7 +284,7 @@ def json_default(obj):
     if hasattr(obj, "to_dict"):
         return obj.to_dict()
 
-    if isinstance(obj, datetime):
+    if isinstance(obj, datetime.datetime):
         if obj.utcoffset() is not None:
             obj = obj - obj.utcoffset()
         return {"$dt": obj.isoformat()}
@@ -299,7 +293,7 @@ def json_default(obj):
 def json_hook(obj):
     """JSON object hook, deserializing datetimes ($date)"""
     if "$dt" in obj:
-        return datetime.strptime(obj["$dt"], "%Y-%m-%dT%H:%M:%S.%f")
+        return datetime.datetime.strptime(obj["$dt"], "%Y-%m-%dT%H:%M:%S.%f")
     return obj
 
 def json_encode(obj, **kwargs):
@@ -309,10 +303,6 @@ def json_encode(obj, **kwargs):
 def json_decode(x):
     """JSON decoder that does ugly first-level datetime handling"""
     return json.loads(x, object_hook=json_hook)
-
-def versiontuple(v):
-    """Return the version as a tuple for easy comparison."""
-    return tuple(int(x) for x in v.split("."))
 
 def parse_bool(value):
     """Attempt to parse a boolean value."""

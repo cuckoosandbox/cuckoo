@@ -1,10 +1,11 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import cStringIO
 import io
+import mock
 import os
 import pytest
 import shutil
@@ -251,10 +252,6 @@ class TestIsPrintable:
     def test_non_printable(self):
         assert not utils.is_printable(chr(11))
 
-class TestVersiontuple:
-    def test_version_tuple(self):
-        assert (1, 1, 1, 0) == utils.versiontuple("1.1.1.0")
-
 def test_version():
     from cuckoo import __version__
     from cuckoo.misc import version
@@ -278,6 +275,16 @@ def test_jsbeautify():
     }
     for k, v in js.items():
         assert utils.jsbeautify(k) == v
+
+@mock.patch("cuckoo.common.utils.jsbeautifier")
+def test_jsbeautify_packer(p, capsys):
+    def beautify(s):
+        print u"error: Unknown p.a.c.k.e.r. encoding.\n",
+
+    p.beautify.side_effect = beautify
+    utils.jsbeautify("thisisjavascript")
+    out, err = capsys.readouterr()
+    assert not out and not err
 
 def test_htmlprettify():
     html = {
