@@ -3305,6 +3305,17 @@ section#screenshots .minified {
   font-weight: 700;
   color: #fff;
 }
+body.cyborg .grouped-buttons button, body.cyborg .grouped-buttons a {
+  background-color: #152D3B;
+  color: #d7d7d7;
+}
+body.cyborg .grouped-buttons button.active, body.cyborg .grouped-buttons a.active {
+  background-color: #0d1b21;
+  color: #0ce3ac;
+}
+body.cyborg .grouped-buttons button:hover, body.cyborg .grouped-buttons button:focus, body.cyborg .grouped-buttons button:active, body.cyborg .grouped-buttons a:hover, body.cyborg .grouped-buttons a:focus, body.cyborg .grouped-buttons a:active {
+  text-decoration: none;
+}
 
 /* 
    Copyright (C) 2016 Cuckoo Foundation.

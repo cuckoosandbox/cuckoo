@@ -32,6 +32,20 @@
 			color: #fff;
 		}
 
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_primary_color;
+			color: $cyborg_text_color;
+
+			&.active {
+				background-color: $cyborg_panel_color;
+				color: $cyborg_secundary_color;
+			}
+
+			&:hover, &:focus, &:active {
+				text-decoration: none;
+			}
+		}
+
 	}
 
 }
