@@ -73,7 +73,7 @@ CREATE TABLE tasks (
 	CONSTRAINT status_type CHECK (status IN ('pending', 'running', 'completed', 'reported', 'recovered')),
 	FOREIGN KEY(sample_id) REFERENCES samples (id)
 );
-INSERT INTO "tasks" VALUES(1,'/home/jbr/git/samples/msgbox.exe','file',0,1,'','','','','',0,0,'2017-02-07 12:28:29.693550','2017-02-07 12:28:29.693566','2017-02-07 12:28:34.374064','2017-02-07 12:28:56.186526','reported',1);
+INSERT INTO "tasks" VALUES(1,'/home/jbr/git/samples/msgbox.exe','file',0,1,'custom1','','','human=1','',0,0,'2017-02-07 12:28:29.693550','2017-02-07 12:28:29.693566','2017-02-07 12:28:34.374064','2017-02-07 12:28:56.186526','reported',1);
 INSERT INTO "tasks" VALUES(2,'/home/jbr/git/samples/msgbox.exe','file',0,1,'','','','','',0,0,'2017-02-07 12:30:09.118495','2017-02-07 12:30:09.118507',NULL,NULL,'pending',1);
 CREATE TABLE errors (
 	id INTEGER NOT NULL,

@@ -1214,7 +1214,7 @@ class Report(object):
         """
         self.task = task
 
-    def run(self):
+    def run(self, results):
         """Start report processing.
         @raise NotImplementedError: this method is abstract.
         """

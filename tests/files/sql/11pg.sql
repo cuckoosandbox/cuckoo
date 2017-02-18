@@ -434,7 +434,7 @@ SELECT pg_catalog.setval('tags_id_seq', 1, false);
 -- Data for Name: tasks; Type: TABLE DATA; Schema: public; Owner: cuckoo
 --
 
-INSERT INTO tasks VALUES (1, '/tmp/msgbox.exe', 'file', 0, 1, null, null, null, null, null, false, false, '2017-02-07 12:31:08.162074', '2017-02-07 12:31:08.162088', '2017-02-07 12:31:14.90359', '2017-02-07 12:31:32.602948', 'reported', 1);
+INSERT INTO tasks VALUES (1, '/tmp/msgbox.exe', 'file', 0, 1, 'custom1', null, null, 'human=1', null, false, false, '2017-02-07 12:31:08.162074', '2017-02-07 12:31:08.162088', '2017-02-07 12:31:14.90359', '2017-02-07 12:31:32.602948', 'reported', 1);
 INSERT INTO tasks VALUES (2, '/tmp/msgbox.exe', 'file', 0, 1, null, null, null, null, null, false, false, '2017-02-07 12:31:51.831581', '2017-02-07 12:31:51.831595', null, null, 'pending', 1);
 
 --

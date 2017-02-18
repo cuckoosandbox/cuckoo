@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "af16beb71aa7"
+SCHEMA_VERSION = "a1c8aab9598e"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -38,6 +38,12 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 TASK_FAILED_REPORTING = "failed_reporting"
+
+status_type = Enum(
+    TASK_PENDING, TASK_RUNNING, TASK_COMPLETED, TASK_REPORTED, TASK_RECOVERED,
+    TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING,
+    name="status_type"
+)
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table(
@@ -290,13 +296,13 @@ class Task(Base):
     category = Column(String(255), nullable=False)
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
-    custom = Column(String(255), nullable=True)
+    custom = Column(Text(), nullable=True)
     owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
     tags = relationship("Tag", secondary=tasks_tags, single_parent=True,
                         backref="task", lazy="subquery")
-    _options = Column("options", String(255), nullable=True)
+    _options = Column("options", Text(), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
@@ -308,11 +314,7 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum(TASK_PENDING, TASK_RUNNING, TASK_COMPLETED,
-                         TASK_REPORTED, TASK_RECOVERED, TASK_FAILED_ANALYSIS,
-                         TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING, name="status_type"),
-                    server_default=TASK_PENDING,
-                    nullable=False)
+    status = Column(status_type, server_default=TASK_PENDING, nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
     processing = Column(String(16), nullable=True)
     route = Column(String(16), nullable=True)

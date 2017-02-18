@@ -190,6 +190,14 @@ class DatabaseMigrationEngine(object):
         err = self.d.view_errors(task_id)
         assert err and len(err[0].message) == 1024
 
+    def test_long_options_custom(self):
+        task_id = self.d.add_url(
+            "http://google.com/", options="A"*1024, custom="B"*1024
+        )
+        task = self.d.view_task(task_id)
+        assert task._options == "A"*1024
+        assert task.custom == "B"*1024
+
 class DatabaseMigration060(DatabaseMigrationEngine):
     def test_machine_resultserver_port_is_int(self):
         machines = self.s.execute(
@@ -342,6 +350,13 @@ class DatabaseMigration11(DatabaseMigrationEngine):
         ).fetchall()
         assert tasks[0][0] == "reported"
         assert tasks[1][0] == "pending"
+
+    def test_task_options_custom(cls):
+        tasks = cls.d.engine.execute(
+            "SELECT options, custom FROM tasks WHERE id = 1"
+        ).fetchall()
+        assert tasks[0][0] == "human=1"
+        assert tasks[0][1] == "custom1"
 
 class TestDatabaseMigration11PostgreSQL(DatabaseMigration11):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest11"

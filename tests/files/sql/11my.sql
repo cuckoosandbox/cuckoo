@@ -250,7 +250,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'/tmp/msgbox.exe','file',0,1,'','','','','',0,0,'2017-02-07 12:40:24','2017-02-07 12:40:24','2017-02-07 12:40:30','2017-02-07 12:40:49','reported',1),(2,'/tmp/msgbox.exe','file',0,1,'','','','','',0,0,'2017-02-07 12:41:07','2017-02-07 12:41:07',NULL,NULL,'pending',1);
+INSERT INTO `tasks` VALUES (1,'/tmp/msgbox.exe','file',0,1,'custom1','','','human=1','',0,0,'2017-02-07 12:40:24','2017-02-07 12:40:24','2017-02-07 12:40:30','2017-02-07 12:40:49','reported',1),(2,'/tmp/msgbox.exe','file',0,1,'','','','','',0,0,'2017-02-07 12:41:07','2017-02-07 12:41:07',NULL,NULL,'pending',1);
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
