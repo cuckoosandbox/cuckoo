@@ -46,3 +46,11 @@
 	}
 
 }
+
+// mixin for helping theming pages and elements a bit easier! This works as follows, in this mixin you can define the styles 
+// for the themes themselves. This requires a less lot searching and doing this scss thing a bit more efficient.
+@mixin cuckoo-theme($theme_name) {
+	body.#{$theme_name} & {
+		@content;
+	}
+}

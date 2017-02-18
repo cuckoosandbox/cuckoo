@@ -90,6 +90,14 @@
 			justify-content: center;
 			overflow-y: auto;
 		}
+
+		@include cuckoo-theme('night') {
+			background-color: #232323;
+		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_background_color;
+		}
 	}
 
 	&__align-vertical {
