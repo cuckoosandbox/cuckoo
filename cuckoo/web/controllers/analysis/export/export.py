@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,14 +8,11 @@ import json
 import zipfile
 from StringIO import StringIO
 
-from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from cuckoo.common.utils import json_default
 from cuckoo.web.bin.utils import get_directory_size
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
-
-results_db = settings.MONGO
 
 class ExportController:
     """Class for creating task exports"""

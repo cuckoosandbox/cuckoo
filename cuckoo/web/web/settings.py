@@ -1,62 +1,29 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import pymongo
 
-from cuckoo.common.config import Config
+from cuckoo.common.elastic import elastic
+from cuckoo.common.mongo import mongo
+from cuckoo.core.startup import init_rooter, init_routing
 from cuckoo.misc import cwd, decide_cwd
 
 if cwd(root=True) is None:
     decide_cwd(exists=True)
 
-cfg = Config("reporting")
+# Connect to MongoDB (mandatory).
+mongo.init()
+mongo.connect()
 
-# Checks if mongo reporting is enabled in Cuckoo.
-if not cfg.mongodb.get("enabled"):
-    raise Exception("Mongo reporting module is not enabled in cuckoo, aborting!")
-
-# Get connection options from reporting.conf.
-MONGO_HOST = cfg.mongodb.get("host", "127.0.0.1")
-MONGO_PORT = cfg.mongodb.get("port", 27017)
-MONGO_DB = cfg.mongodb.get("db", "cuckoo")
-MONGO_USER = cfg.mongodb.get("user", None)
-MONGO_PASS = cfg.mongodb.get("pass", None)
-
-try:
-    _mongo = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
-    if MONGO_USER and MONGO_PASS:
-        _mongo.cuckoo.authenticate(MONGO_USER, MONGO_PASS)
-    MONGO = _mongo[MONGO_DB]
-except Exception as e:
-    raise Exception("Unable to connect to Mongo: %s" % e)
-
-if cfg.elasticsearch.get("enabled"):
-    try:
-        import elasticsearch
-    except ImportError:
-        raise Exception("ElasticSearch is enabled but not installed, aborting!")
-
-    hosts = []
-    for host in cfg.elasticsearch.get("hosts", "127.0.0.1:9200").split(","):
-        if host.strip():
-            hosts.append(host.strip())
-
-    ELASTIC = elasticsearch.Elasticsearch(hosts)
-    ELASTIC_INDEX = cfg.elasticsearch.get("index", "cuckoo")
-else:
-    ELASTIC = None
-
-MOLOCH_ENABLED = cfg.moloch.get("enabled")
-MOLOCH_HOST = cfg.moloch.get("host")
+# Connect to ElasticSearch (optional).
+elastic.init()
+elastic.connect()
 
 # In case we have VPNs enabled we need to initialize through the following
 # two methods as they verify the interaction with VPNs as well as gather
 # which VPNs are available (for representation upon File/URL submission).
-from cuckoo.core.startup import init_rooter, init_routing
-
 init_rooter()
 init_routing()
 
@@ -80,7 +47,7 @@ USE_L10N = True
 USE_TZ = False
 TIME_ZONE = None
 
-# Unique secret key generator. Secret key will be placed at $CWD/.secret_key.
+# Unique secret key generator. Secret key will be placed at $CWD/web/.secret_key.
 if not os.path.exists(cwd("web", ".secret_key")):
     # Using the same generation schema of Django startproject.
     from django.utils.crypto import get_random_string

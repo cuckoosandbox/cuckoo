@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,7 +15,7 @@ import sflock
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
 
@@ -26,12 +26,13 @@ from gridfs import GridFS
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
 from cuckoo.common.files import Files
+from cuckoo.common.mongo import mongo
 from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
 from cuckoo.web.bin.utils import view_error, render_template
 
-results_db = settings.MONGO
+results_db = mongo.db
 fs = GridFS(results_db)
 
 @require_safe

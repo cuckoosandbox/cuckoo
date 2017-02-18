@@ -1,12 +1,11 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import re
 
-from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
@@ -16,8 +15,6 @@ from cuckoo.core.database import Database, TASK_PENDING
 from cuckoo.web.controllers.analysis.export.export import ExportController
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.bin.utils import view_error, render_template
-
-results_db = settings.MONGO
 
 class AnalysisRoutes:
     @staticmethod

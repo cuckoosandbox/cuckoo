@@ -1,8 +1,6 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
-from django.conf import settings
 
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
@@ -20,7 +18,6 @@ class AbstractDict(object):
 class AbstractReport(AbstractDict):
     def __init__(self, analysis_id):
         super(AbstractReport, self).__init__()
-        self.mongo = settings.MONGO
         self.src = AnalysisController.get_report(analysis_id)
 
     @property

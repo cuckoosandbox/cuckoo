@@ -5,18 +5,22 @@
 import mock
 import pytest
 import responses
-import socket
 import tempfile
 
+from cuckoo.common.abstracts import (
+    Auxiliary, Machinery, Processing, Signature, Report
+)
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.startup import (
-	init_modules, check_version, init_rooter, init_routing
+    init_modules, check_version, init_rooter, init_routing
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures
 
+@mock.patch("cuckoo.reporting.elasticsearch.elastic")
+@mock.patch("cuckoo.reporting.mongodb.mongo")
 @mock.patch("cuckoo.core.startup.log")
-def test_init_modules(p):
+def test_init_modules(p, q, r):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     load_signatures()
@@ -27,6 +31,7 @@ def test_init_modules(p):
         logs.append(fmt % args if args else fmt)
 
     p.debug.side_effect = log
+    r.index_time_pattern = "yearly"
 
     init_modules()
 
@@ -35,6 +40,45 @@ def test_init_modules(p):
     assert "Xen" in logs
     assert "CreatesExe" in logs
     assert "SystemMetrics" in logs
+
+@mock.patch("cuckoo.core.startup.cuckoo")
+def test_modules_init_once(p):
+    class A(Auxiliary):
+        pass
+
+    class B(Machinery):
+        pass
+
+    class C(Processing):
+        pass
+
+    class D(Signature):
+        pass
+
+    class E(Report):
+        pass
+
+    l = []
+    for x in xrange(5):
+        l.append(mock.MagicMock(__name__="name"))
+
+    a, b, c, d, e = l
+
+    p.plugins = {
+        "auxiliary": [A, a],
+        "machinery": [B, b],
+        "processing": [C, c],
+        "signatures": [D, d],
+        "reporting": [E, e],
+    }
+
+    init_modules()
+
+    a.init_once.assert_called_once()
+    b.init_once.assert_called_once()
+    c.init_once.assert_called_once()
+    d.init_once.assert_called_once()
+    e.init_once.assert_called_once()
 
 def test_check_version_disabled(capsys):
     set_cwd(tempfile.mkdtemp())

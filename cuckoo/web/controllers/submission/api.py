@@ -1,11 +1,10 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import json
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -15,7 +14,6 @@ from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 
-results_db = settings.MONGO
 db = Database()
 
 class SubmissionApi:

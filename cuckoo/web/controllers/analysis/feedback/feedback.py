@@ -8,13 +8,10 @@ import json
 import requests
 from datetime import datetime
 
-from django.conf import settings
-
+from cuckoo.common.mongo import mongo
 from cuckoo.misc import version
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.controllers.analysis.export.export import ExportController
-
-results_db = settings.MONGO
 
 class AnalysisFeedBackController(object):
     """Contacts Cuckoo HQ with feedback + optional analysis dump"""
@@ -99,7 +96,7 @@ class AnalysisFeedBackController(object):
         return feedback_id
 
     def _feedback_sent(self, feedback_id):
-        return results_db.analysis.update_one(
+        return mongo.db.analysis.update_one(
             {"info.id": int(self.task_id)},
             {"$set": {"feedback": self.to_dict(), "feedback_id": feedback_id}})
 

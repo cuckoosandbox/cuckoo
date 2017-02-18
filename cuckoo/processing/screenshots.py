@@ -5,7 +5,7 @@
 
 import logging
 import os
-import PIL
+import PIL.Image
 import subprocess
 
 from cuckoo.common.abstracts import Processing

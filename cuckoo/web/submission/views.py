@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,14 +10,13 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from cuckoo.common.config import Config, parse_options, emit_options
 from cuckoo.common.files import Files
+from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.rooter import vpns
 from cuckoo.misc import cwd
-
 from cuckoo.web.bin.utils import view_error, render_template
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 
-results_db = settings.MONGO
 cfg = Config(file_name="routing")
 
 def force_int(value):
@@ -29,7 +28,7 @@ def force_int(value):
         return value
 
 def dropped_filepath(task_id, sha1):
-    record = results_db.analysis.find_one(
+    record = mongo.db.analysis.find_one(
         {
             "info.id": int(task_id),
             "dropped.sha1": sha1,

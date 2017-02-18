@@ -153,6 +153,12 @@ def init_modules():
         "auxiliary", "machinery", "processing", "signatures", "reporting",
     )
 
+    # Call the init_once() static method of each plugin/module. If an exception
+    # is thrown in that initialization call, then a hard error is appropriate.
+    for category in categories:
+        for module in cuckoo.plugins[category]:
+            module.init_once()
+
     for category in categories:
         log.debug("Imported \"%s\" modules:", category)
 

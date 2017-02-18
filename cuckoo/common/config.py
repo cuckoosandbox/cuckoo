@@ -690,13 +690,15 @@ class Config(object):
                 "db": String("cuckoo"),
                 "store_memdump": Boolean(True),
                 "paginate": Int(100),
+                "username": String(),
+                "password": String(),
             },
             "elasticsearch": {
                 "enabled": Boolean(False),
-                "hosts": String("127.0.0.1"),
+                "hosts": List(String, "127.0.0.1"),
                 "calls": Boolean(False),
-                "index": String(),
-                "index_time_pattern": String(),
+                "index": String("cuckoo"),
+                "index_time_pattern": String("yearly"),
                 "cuckoo_node": String(),
             },
             "moloch": {

@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -558,6 +558,10 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    c["reporting"]["elasticsearch"]["hosts"] = cast(
+        "reporting:elasticsearch:hosts",
+        c["reporting"]["elasticsearch"]["hosts"]
+    )
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,
@@ -573,6 +577,9 @@ def _20c2_200(c):
             "reporting:mattermost:%s" % new_item,
             c["reporting"]["mattermost"].pop(old_item, None)
         )
+
+    c["reporting"]["mongodb"]["username"] = None
+    c["reporting"]["mongodb"]["password"] = None
 
     if "url" not in c["reporting"]["notification"]:
         c["reporting"]["notification"]["url"] = None

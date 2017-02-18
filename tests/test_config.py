@@ -880,11 +880,16 @@ whitelist-dns = wow
 allowed-dns = 8.8.8.8
 """)
     Files.create(cwd("conf"), "reporting.conf", """
+[elasticsearch]
+enabled = no
+hosts = 127.0.0.1, 127.0.0.2
 [mattermost]
 show-virustotal = no
 show-signatures = yes
 show-urls = no
 hash-filename = yes
+[mongodb]
+enables = yes
 [notification]
 enabled = no
 """)
@@ -922,11 +927,16 @@ interface = eth0
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
+    assert cfg["reporting"]["elasticsearch"]["hosts"] == [
+        "127.0.0.1", "127.0.0.2"
+    ]
     assert cfg["reporting"]["notification"]["url"] is None
     assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True
     assert cfg["reporting"]["mattermost"]["show_urls"] is False
     assert cfg["reporting"]["mattermost"]["hash_filename"] is True
+    assert cfg["reporting"]["mongodb"]["username"] is None
+    assert cfg["reporting"]["mongodb"]["password"] is None
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"

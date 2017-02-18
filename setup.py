@@ -104,6 +104,7 @@ setuptools.setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
+        "elasticsearch==2.2.0",
         "flask==0.10.1",
         "httpreplay==0.1.18",
         "jinja2==2.8",

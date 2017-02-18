@@ -14,17 +14,16 @@ from zipfile import ZipFile, ZIP_STORED
 import dateutil.relativedelta
 from wsgiref.util import FileWrapper
 from sqlalchemy import asc
-from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 
 from cuckoo.misc import cwd
 from cuckoo.core.database import Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 from cuckoo.common.files import Folders
+from cuckoo.common.mongo import mongo
 
 from cuckoo.web.bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
-results_db = settings.MONGO
 db = Database()
 
 class AnalysisApi:
@@ -282,7 +281,7 @@ class AnalysisApi:
                 return json_error_response("faulty score")
 
         # @TO-DO: Use a mongodb abstraction class if there is one
-        cursor = results_db.analysis.find(
+        cursor = mongo.db.analysis.find(
             filters, sort=[("_id", pymongo.DESCENDING)]
         ).limit(limit).skip(offset)
 

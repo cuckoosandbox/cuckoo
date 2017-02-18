@@ -12,7 +12,6 @@ import traceback
 from cuckoo.misc import cwd
 from django.core.validators import validate_email, ValidationError
 from django.template import TemplateSyntaxError, TemplateDoesNotExist
-from django.conf import settings
 from django.http import Http404
 
 from cuckoo.core.report import AbstractReport
@@ -29,7 +28,6 @@ class CuckooFeedback(object):
 
     def __init__(self):
         self.endpoint = "https://cuckoo.sh/feedback/api/submit/"
-        self.mongo = settings.MONGO
 
     def send_exception(self, exception, request=None):
         """

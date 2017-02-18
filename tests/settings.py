@@ -1,8 +1,6 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
-import pymongo
 
 from cuckoo.misc import cwd
 
@@ -49,6 +47,3 @@ TEMPLATES = [
         },
     },
 ]
-
-# Test database.
-MONGO = pymongo.MongoClient("localhost", 27017)["cuckootest"]

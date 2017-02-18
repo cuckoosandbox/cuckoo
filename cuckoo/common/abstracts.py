@@ -38,6 +38,10 @@ class Auxiliary(object):
         self.guest_manager = None
         self.options = None
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def set_task(self, task):
         self.task = task
 
@@ -74,6 +78,10 @@ class Machinery(object):
         # Machine table is cleaned to be filled from configuration file
         # at each start.
         self.db.clean_machines()
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def pcap_path(self, task_id):
         """Returns the .pcap path for this task id."""
@@ -627,6 +635,10 @@ class Processing(object):
         self.options = None
         self.results = {}
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def set_options(self, options):
         """Set report options.
         @param options: report options dict.
@@ -720,6 +732,10 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -1163,6 +1179,10 @@ class Report(object):
         self.reports_path = ""
         self.task = None
         self.options = None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def _get_analysis_path(self, subpath):
         return os.path.join(self.analysis_path, subpath)

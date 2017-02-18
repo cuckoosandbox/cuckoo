@@ -1,13 +1,12 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-from django.conf import settings
+from cuckoo.common.compare import helper_percentages_mongo
+from cuckoo.common.mongo import mongo
 
-import cuckoo.common.compare as compare
-
-results_db = settings.MONGO
+results_db = mongo.db
 
 class AnalysisCompareController:
     @staticmethod
@@ -84,7 +83,9 @@ class AnalysisCompareController:
         analysis_2 = AnalysisCompareController.get_analysis(compare_with_task_id)
 
         # Execute comparison.
-        counts = compare.helper_percentages_mongo(results_db, task_id, compare_with_task_id)
+        counts = helper_percentages_mongo(
+            results_db, task_id, compare_with_task_id
+        )
 
         return {
             "report": {"analysis": analysis_1},  # TO-DO: dirty hack for url resolve @ sidebar.html
