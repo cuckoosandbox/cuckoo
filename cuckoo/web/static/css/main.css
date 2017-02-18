@@ -3735,6 +3735,16 @@ body.cyborg .grouped-buttons button:hover, body.cyborg .grouped-buttons button:f
   transform: translateY(100%);
   transition: transform 300ms ease-out;
 }
+body.cyborg .dndupload__v2 .alternate-progress {
+  background-image: linear-gradient(-180deg, #0ce3ac 0%, #5fe6c4 100%);
+}
+body.cyborg .dndupload__v2 {
+  background-color: transparent;
+  border-color: #0d1b21;
+}
+body.cyborg .dndupload__v2 form#uploader label {
+  color: #152D3B;
+}
 
 .upload-module__container {
   width: 325px;
@@ -4581,6 +4591,9 @@ table.cuckoo-table .loading {
 .flex-grid__header > h3 .flex-grid__button--description:hover {
   background-color: transparent;
   cursor: default;
+}
+body.cyborg .flex-grid__header {
+  border-bottom: 1px solid #071D25;
 }
 .flex-grid__body, .flex-grid__body--center {
   display: flex;

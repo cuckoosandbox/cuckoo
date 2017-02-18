@@ -75,6 +75,10 @@
 			}
 		}
 
+		@include cuckoo-theme('cyborg') {
+			border-bottom: 1px solid #071D25;
+		}
+
 	}
 
 	&__body {

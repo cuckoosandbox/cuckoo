@@ -238,6 +238,21 @@
             background-image: linear-gradient(-180deg, #9CC8FD 0%, #6297F8 100%);
             transform: translateY(100%);
             transition: transform 300ms ease-out;
+
+            @include cuckoo-theme('cyborg') {
+                background-image: linear-gradient(-180deg, #0ce3ac 0%, #5fe6c4 100%);
+            }
+        }
+
+        @include cuckoo-theme('cyborg') {
+            background-color: transparent;
+            border-color: $cyborg_panel_color;
+
+            form#uploader {
+                label {
+                    color: $cyborg_primary_color;
+                }
+            }
         }
 
     }
