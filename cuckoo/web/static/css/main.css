@@ -5619,8 +5619,8 @@ body.cyborg .flex-static__summary li {
   border: 15px solid #d9e8e8;
   border-bottom-color: transparent;
   border-top-color: transparent;
-  -webkit-animation: c1 2s infinite linear;
-  animation: c1 2s infinite linear;
+  -webkit-animation: c1 3s infinite linear;
+  animation: c1 3s infinite linear;
   position: absolute;
 }
 .page-freeze__spinner--c2 {
@@ -5630,8 +5630,8 @@ body.cyborg .flex-static__summary li {
   border: 15px solid #307575;
   border-bottom-color: transparent;
   border-top-color: transparent;
-  -webkit-animation: c2 2.5s infinite linear;
-  animation: c2 2.5s infinite linear;
+  -webkit-animation: c2 3.5s infinite linear;
+  animation: c2 3.5s infinite linear;
   position: absolute;
 }
 .page-freeze__message {
@@ -5647,6 +5647,9 @@ body.cyborg .flex-static__summary li {
 }
 .page-freeze.out {
   opacity: 0;
+}
+body.cyborg .page-freeze {
+  background-color: rgba(2, 14, 16, 0.9);
 }
 
 /* 
