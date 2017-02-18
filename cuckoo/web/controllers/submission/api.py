@@ -17,8 +17,9 @@ from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 submit_manager = SubmitManager()
 
 def defaults():
+    machinery = config("cuckoo:cuckoo:machinery")
     return {
-        "machine": None,
+        "machine": config("%s:%s:machines" % (machinery, machinery)),
         "network-routing": config("routing:routing:route"),
         "package": None,
         "priority": 2,

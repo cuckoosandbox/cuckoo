@@ -17,7 +17,6 @@ from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
-from cuckoo.web.bin.utils import view_error
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
 
@@ -107,7 +106,9 @@ class TestWebInterface(object):
             },
         })
         assert defaults() == {
-            "machine": None,
+            "machine": [
+                "cuckoo1",
+            ],
             "network-routing": "internet",
             "package": None,
             "priority": 2,
