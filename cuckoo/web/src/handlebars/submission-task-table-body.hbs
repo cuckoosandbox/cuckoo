@@ -1,5 +1,5 @@
 {{#each tasks}}
-	<tr>
+	<tr data-task-id="{{id}}" class="{{#if is_ready}}clickable finished{{/if}}">
 		<td>{{id}}</td>
 		<td>
 			<i class="fa fa-calendar-o"></i> {{date_added}}
@@ -7,6 +7,6 @@
 		</td>
 		<td>{{options.filename}}</td>
 		<td>{{package}}</td>
-		<td>{{status}}</td>
+		<td><span class="status status-{{status}}"></span> {{status}}</td>
 	</tr>
 {{/each}}

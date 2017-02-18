@@ -319,7 +319,11 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
 this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1, helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
-  return "	<tr>\n		<td>"
+  return "	<tr data-task-id=\""
+    + alias3(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
+    + "\" class=\""
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.is_ready : depth0),{"name":"if","hash":{},"fn":this.program(2, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "\">\n		<td>"
     + alias3(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>\n			<i class=\"fa fa-calendar-o\"></i> "
     + alias3(((helper = (helper = helpers.date_added || (depth0 != null ? depth0.date_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"date_added","hash":{},"data":data}) : helper)))
@@ -329,9 +333,13 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + alias3(this.lambda(((stack1 = (depth0 != null ? depth0.options : depth0)) != null ? stack1.filename : stack1), depth0))
     + "</td>\n		<td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
-    + "</td>\n		<td>"
+    + "</td>\n		<td><span class=\"status status-"
+    + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
+    + "\"></span> "
     + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
     + "</td>\n	</tr>\n";
+},"2":function(depth0,helpers,partials,data) {
+    return "clickable finished";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 

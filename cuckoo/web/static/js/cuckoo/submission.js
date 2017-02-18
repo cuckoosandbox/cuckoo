@@ -2150,9 +2150,10 @@ var SubmissionTaskTable = function () {
 		this.refreshRate = options.refreshRate ? options.refreshRate : 1000; // ms
 		this.debug = options.debug;
 		this.request_pending = false;
+		this.onRender = options.onRender ? options.onRender : function () {};
 
 		// debug
-		this.stopIntervalling = 10;
+		this.stopIntervalling = 1;
 		this.curInterval = 0;
 
 		if (this.task_ids.length) {
@@ -2233,6 +2234,7 @@ var SubmissionTaskTable = function () {
 			data = data.map(function (item) {
 				item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 				item.time_added = moment(item.added_on).format('HH:mm');
+				item.is_ready = item.status == 'reported';
 				return item;
 			});
 
@@ -2246,6 +2248,7 @@ var SubmissionTaskTable = function () {
 		value: function _draw(data) {
 			var template = HANDLEBARS_TEMPLATES['submission-task-table-body'];
 			$(this.el).find('tbody').html(template({ tasks: data }));
+			this.onRender($(this.el));
 		}
 
 		// clears the interval
@@ -2833,7 +2836,13 @@ $(function () {
 			el: document.getElementById('submission-task-table'),
 			task_ids: get_task_ids(),
 			debug: false, // set to true to do 10 calls max and stop
-			refreshRate: 2500
+			refreshRate: 2500,
+			onRender: function onRender(el) {
+				el.find('tbody > tr.finished').bind('click', function () {
+					var id = $(this).data('taskId');
+					window.location = '/analysis/' + id;
+				});
+			}
 		});
 	}
 });

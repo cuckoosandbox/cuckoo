@@ -608,7 +608,13 @@ $(function() {
 			el: document.getElementById('submission-task-table'),
 			task_ids: get_task_ids(),
 			debug: false, // set to true to do 10 calls max and stop
-			refreshRate: 2500
+			refreshRate: 2500,
+			onRender: function(el) {
+				el.find('tbody > tr.finished').bind('click', function() {
+					var id = $(this).data('taskId');
+					window.location = `/analysis/${id}`;
+				});
+			}
 		});
 		
 	}

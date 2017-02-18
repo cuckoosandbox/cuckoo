@@ -10,9 +10,10 @@ class SubmissionTaskTable {
 		this.refreshRate     = options.refreshRate ? options.refreshRate : 1000; // ms
 		this.debug 		     = options.debug;
 		this.request_pending = false;
+		this.onRender 		 = options.onRender ? options.onRender : function() {};
 
 		// debug
-		this.stopIntervalling = 10;
+		this.stopIntervalling = 1;
 		this.curInterval = 0;
 
 		if(this.task_ids.length) {
@@ -87,6 +88,7 @@ class SubmissionTaskTable {
 		data = data.map(function(item) {
 			item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 			item.time_added = moment(item.added_on).format('HH:mm');
+			item.is_ready   = (item.status == 'reported');
 			return item;
 		});
 
@@ -97,6 +99,7 @@ class SubmissionTaskTable {
 	_draw(data) {
 		var template = HANDLEBARS_TEMPLATES['submission-task-table-body'];
 		$(this.el).find('tbody').html(template({ tasks: data }));
+		this.onRender($(this.el));
 	}
 
 	// clears the interval
