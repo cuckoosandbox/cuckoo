@@ -19,6 +19,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-bower-assets": "0.0.3",
+    "gulp-clean-css": "^3.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-declare": "^0.3.0",
     "gulp-handlebars": "^4.0.0",
@@ -30,8 +31,8 @@
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.10",
     "gulp-wrap": "^0.13.0",
+    "handlebars": "^4.0.5",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "handlebars": "^4.0.5"
+    "vinyl-source-stream": "^1.1.0"
   }
 }
