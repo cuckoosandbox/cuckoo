@@ -35,19 +35,20 @@
                     </div>
                     <div class="col-md-4">
                         <h4><span class="glyphicon glyphicon-fire" aria-hidden="true"></span> Score</h4>
-                        {% if analysis.info.score < 1 %}
+
+                        {% if report.analysis.info.score < 1 %}
                             <div class="alert alert-success">
                                 This {{ report.analysis.info.category }} appears fairly benign with a score of
                                 <strong>{{ report.analysis.info.score }} out of 10.</strong>
                             </div>
-                        {% elif analysis.info.score < 2 %}
+                        {% elif report.analysis.info.score < 2 %}
                             <div class="alert alert-info">
                                 <p>This {{ report.analysis.info.category }} shows some signs of potential malicious
                                     behavior.</p>
                                 <p>The score of this {{ report.analysis.info.category }} is
                                     <strong>{{ report.analysis.info.score }} out of 10.</strong></p>
                             </div>
-                        {% elif analysis.info.score < 5 %}
+                        {% elif report.analysis.info.score < 5 %}
                             <div class="alert alert-warning">
                                 This {{ report.analysis.info.category }} shows numerous signs of malicious behavior.
                                 <br/><br/>
