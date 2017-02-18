@@ -2301,7 +2301,8 @@ var default_analysis_options = {
 	'package': 'python',
 	'priority': 1,
 	'timeout': 120,
-	'vpn': 'united-states'
+	'vpn': 'united-states',
+	'available_vpns': []
 };
 
 // package field contents - hardcoded options vs auto-detected properties
@@ -2352,16 +2353,17 @@ $(function () {
 						// set up defaults for form and settings
 						if (response.defaults) {
 							default_analysis_options = response.defaults;
+
+							// format the vpns array to work for the form field, using a 'name-value']
+							default_analysis_options.available_vpns = default_analysis_options.vpns.map(function (vpn) {
+								return {
+									name: vpn,
+									value: vpn
+								};
+							});
 						}
 
 						analysis_ui.originalData = response.data;
-
-						default_package_selection_options = default_package_selection_options.map(function (opt) {
-							return {
-								name: opt,
-								value: opt
-							};
-						});
 
 						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
 
@@ -2380,6 +2382,13 @@ $(function () {
 
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
 							if (parentContainer) item.arcname = parentContainer.filename;
+						});
+
+						default_package_selection_options = default_package_selection_options.map(function (opt) {
+							return {
+								name: opt,
+								value: opt
+							};
 						});
 
 						return response.data.files;
@@ -2471,7 +2480,7 @@ $(function () {
 												title: 'VPN via',
 												name: 'vpn-' + item.filetree.index,
 												default: item.per_file_options['vpn'] || undefined,
-												options: [{ name: 'France', value: 'france' }, { name: 'Russia', value: 'russia' }, { name: 'United States', value: 'united-states' }, { name: 'China', value: 'china' }]
+												options: default_analysis_options.available_vpns
 											}
 										}).on('change', function (value) {
 											item.per_file_options['network-routing'] = value;
@@ -2608,7 +2617,7 @@ $(function () {
 									// console.log('vpn changed');
 								}
 							},
-							options: [{ name: 'France', value: 'france' }, { name: 'Russia', value: 'russia' }, { name: 'United States', value: 'united-states' }, { name: 'China', value: 'china' }]
+							options: default_analysis_options.available_vpns
 						}
 					});
 
@@ -2616,12 +2625,7 @@ $(function () {
 						name: 'package',
 						title: 'Package',
 						default: default_analysis_options['package'],
-						options: default_package_selection_options.map(function (opt) {
-							return {
-								name: opt,
-								value: opt
-							};
-						})
+						options: default_package_selection_options
 					});
 
 					var priority = new this.TopSelect({
