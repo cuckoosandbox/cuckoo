@@ -37,6 +37,20 @@
 		div:hover {
 			background-color: #eee;
 		}
+
+		@include cuckoo-theme('cyborg') {
+			color: $cyborg_secundary_color;
+			div:hover {
+				background-color: $cyborg_primary_color;
+			}
+
+			& > ul {
+				& > li:last-child {
+					border-color: $cyborg_border_color;
+				}
+			}
+		}
+
 	}
 
 	& > aside {
@@ -76,6 +90,10 @@
 				&-duplicate {
 					color: #D0D0D0;
 					text-transform: uppercase;
+
+					@include cuckoo-theme('cyborg') {
+						opacity: .2;
+					}
 				}
 			}
 
@@ -143,6 +161,10 @@
 			&:not(:last-child) { border-bottom: 1px solid #d0d0d0; }
 			&:hover { cursor: pointer; }
 
+			@include cuckoo-theme('cyborg') {
+				border-color: $cyborg_border_color;
+			}
+
 		}
 
 		label:not(.flex-form__toggle-list-switch) {
@@ -180,7 +202,19 @@
 					background-color: #337AB7;
 					border-color: #456077;
 				}
+			}
 
+			@include cuckoo-theme('cyborg') {
+
+				input + span:before {
+					border-color: darken($cyborg_secundary_color, 20);
+					opacity: .2;
+				}
+
+				input:checked + span:before {
+					background-color: $cyborg_secundary_color;
+					opacity: 1;
+				}
 			}
 
 		}
@@ -232,6 +266,11 @@
 				}
 			}
 
+		}
+
+		@include cuckoo-theme('cyborg') {
+			@extend %cyborg-heading;
+			color: $cyborg_secundary_color;
 		}
 
 	}
@@ -289,6 +328,20 @@
 			&:before {
 				content: "\f0b0";
 				left: 0;
+			}
+
+			@include cuckoo-theme('cyborg') {
+
+				select,
+				select.none-selected {
+					color: $cyborg_secundary_color;
+				}
+
+				&:after
+				&:before {
+					color: $cyborg_secundary_color;
+				}
+
 			}
 
 		}

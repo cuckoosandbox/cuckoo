@@ -34,6 +34,11 @@
 				margin: 10px 0;
 			}
 		}
+
+		@include cuckoo-theme('cyborg') {
+			border-color: $cyborg_border_color;
+		}
+
 	}
 
 	&__header {
@@ -56,6 +61,17 @@
 			}
 			&:hover {
 				cursor: pointer;
+			}
+		}
+
+		@include cuckoo-theme('cyborg') {
+			.custom-checkbox {
+				input {
+					& + span:before,
+					&:checked + span:before {
+						color: $cyborg_secundary_color;
+					}
+				}
 			}
 		}
 
@@ -111,9 +127,9 @@
 
 			& > input:checked + label {
 				background-color: #337AB7;
-				&.priority-s { background-color: darken($cuckoo_color_priority_low, 10); }
-				&.priority-m { background-color: darken($cuckoo_color_priority_medium, 10); }
-				&.priority-l { background-color: darken($cuckoo_color_priority_high, 10); }
+				&.priority-s { background-color: darken($cuckoo_color_priority_low, 10) !important; }
+				&.priority-m { background-color: darken($cuckoo_color_priority_medium, 10) !important; }
+				&.priority-l { background-color: darken($cuckoo_color_priority_high, 10) !important; }
 
 				color: #fff;
 			}
@@ -181,6 +197,30 @@
 			}
 
 		}
+
+		@include cuckoo-theme('cyborg') {
+			border-color: $cyborg_border_color;
+			
+			& > li {
+				background-color: transparent;
+				label { border-color: $cyborg_border_color; }
+			}
+
+			& > li input:checked + label {
+				background-color: $cyborg_primary_color;
+			}
+
+			& > li > .manual-input > input { 
+				background: $cyborg_background_color; 
+				border-color: $cyborg_border_color;
+			}
+
+			& > li > .manual-input.active,
+			& > li > .manual-input.active input { background-color: $cyborg_primary_color; }
+
+			& > li > input:checked + label { background-color: $cyborg_primary_color; }
+
+		}	
 	}
 
 	&__toggle-list {
@@ -208,6 +248,11 @@
 					font-weight: 600;
 					margin-top: 5px;
 				}
+			}
+
+			@include cuckoo-theme('cyborg') {
+				background-color: transparent;
+				border-color: $cyborg_border_color;
 			}
 		}
 
@@ -238,6 +283,11 @@
 					transition: all 100ms ease-in-out;
 				}
 
+				@include cuckoo-theme('cyborg') {
+					background-color: $cyborg_primary_color;
+					border-color: darken($cyborg_primary_color, 20);
+				}
+
 			}
 
 			& > input { 
@@ -248,6 +298,11 @@
 					border-color: #9CC86E;
 					&:before {
 						left: 27px;
+					}
+
+					@include cuckoo-theme('cyborg') {
+						background-color: darken($cyborg_secundary_color, 10);
+						border-color: darken($cyborg_secundary_color, 20);
 					}
 				}
 			}
@@ -295,6 +350,7 @@
 		table {
 			width: 100%;
 			border-collapse: collapse;
+			border-color: #d0d0d0;
 		}
 
 		thead,
@@ -355,6 +411,11 @@
 			}
 		}
 
+		@include cuckoo-theme('cyborg') {
+			th, td, thead, tr { border-color: $cyborg_border_color; }
+			tfoot td { border-color: rgba($cyborg_border_color, .5); }
+		}
+
 	}
 
 	&__select {
@@ -399,6 +460,10 @@
 			select {
 				border-left: 1px solid #ccc;
 			}
+		}
+
+		@include cuckoo-theme('cyborg') {
+			border-color: $cyborg_border_color;
 		}
 
 	}
@@ -522,6 +587,14 @@
 			&:hover {
 				cursor: default !important;
 			}
+		}
+
+		@include cuckoo-theme('cyborg') {
+
+			li {
+				background-color: $cyborg_background_color;
+			}
+
 		}
 	}
 

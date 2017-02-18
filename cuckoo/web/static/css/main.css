@@ -9,6 +9,16 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
+body.cyborg .cuckoo-files__controls {
+  color: #ffffff;
+  background: linear-gradient(#284f5c, #112c35);
+  border-color: #2b5a6a;
+  border: 0px;
+  border-top: 1px solid #2b5a6a;
+  border-left: 1px solid #003f54;
+  border-right: 1px solid #003f54;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -4480,7 +4490,7 @@ table.cuckoo-table .loading {
 }
 .flex-grid__header {
   padding: 15px 20px;
-  border-bottom: 1px solid #EEEEEE;
+  border-bottom: 1pxs solid #EEEEEE;
 }
 .flex-grid__header > h3 {
   font-size: 20px;
@@ -4642,6 +4652,10 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   border-right: 1px solid #CFCFCF;
   overflow-y: auto;
 }
+body.cyborg .flex-grid__nav {
+  background-color: #020e10;
+  border-color: #071D25;
+}
 .flex-grid__content {
   flex-basis: 100%;
   overflow-y: auto;
@@ -4733,6 +4747,15 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .cuckoo-files > #filetree div:hover {
   background-color: #eee;
 }
+body.cyborg .cuckoo-files > #filetree {
+  color: #0ce3ac;
+}
+body.cyborg .cuckoo-files > #filetree div:hover {
+  background-color: #152D3B;
+}
+body.cyborg .cuckoo-files > #filetree > ul > li:last-child {
+  border-color: #071D25;
+}
 .cuckoo-files > aside {
   flex-basis: 330px;
   flex-shrink: 0;
@@ -4766,6 +4789,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .cuckoo-files ul div .label-duplicate {
   color: #D0D0D0;
   text-transform: uppercase;
+}
+body.cyborg .cuckoo-files ul div .label-duplicate {
+  opacity: .2;
 }
 .cuckoo-files ul div a.label:hover {
   color: #337AB7;
@@ -4818,6 +4844,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .cuckoo-files ul li:hover {
   cursor: pointer;
 }
+body.cyborg .cuckoo-files ul li {
+  border-color: #071D25;
+}
 .cuckoo-files ul label:not(.flex-form__toggle-list-switch) {
   font-weight: inherit;
   margin: 0;
@@ -4845,6 +4874,14 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .cuckoo-files ul label:not(.flex-form__toggle-list-switch) input:checked + span:before {
   background-color: #337AB7;
   border-color: #456077;
+}
+body.cyborg .cuckoo-files ul label:not(.flex-form__toggle-list-switch) input + span:before {
+  border-color: #078263;
+  opacity: .2;
+}
+body.cyborg .cuckoo-files ul label:not(.flex-form__toggle-list-switch) input:checked + span:before {
+  background-color: #0ce3ac;
+  opacity: 1;
 }
 .cuckoo-files__controls {
   display: flex;
@@ -4885,6 +4922,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .cuckoo-files__controls ul.right a {
   color: inherit;
+}
+body.cyborg .cuckoo-files__controls {
+  color: #0ce3ac;
 }
 .cuckoo-files #selection-overview {
   padding-left: 0;
@@ -4934,6 +4974,14 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   content: "\f0b0";
   left: 0;
 }
+body.cyborg .cuckoo-files #selection-overview .extension-select select,
+body.cyborg .cuckoo-files #selection-overview .extension-select select.none-selected {
+  color: #0ce3ac;
+}
+body.cyborg .cuckoo-files #selection-overview .extension-select:after
+body.cyborg .cuckoo-files #selection-overview .extension-select:before {
+  color: #0ce3ac;
+}
 
 .flex-form a {
   color: #337AB7;
@@ -4964,6 +5012,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   font-size: .7em;
   margin: 10px 0;
 }
+body.cyborg .flex-form__header, body.cyborg .flex-form__field-title {
+  border-color: #071D25;
+}
 .flex-form__header .custom-checkbox {
   display: inline-block;
   margin-right: 10px;
@@ -4980,6 +5031,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-form__header .custom-checkbox:hover {
   cursor: pointer;
+}
+body.cyborg .flex-form__header .custom-checkbox input + span:before, body.cyborg .flex-form__header .custom-checkbox input:checked + span:before {
+  color: #0ce3ac;
 }
 .flex-form__field-title {
   width: 100%;
@@ -5042,13 +5096,13 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   color: #fff;
 }
 .flex-form__toggle-group > li > input:checked + label.priority-s {
-  background-color: #00cc18;
+  background-color: #00cc18 !important;
 }
 .flex-form__toggle-group > li > input:checked + label.priority-m {
-  background-color: #ccac00;
+  background-color: #ccac00 !important;
 }
 .flex-form__toggle-group > li > input:checked + label.priority-l {
-  background-color: #cb314d;
+  background-color: #cb314d !important;
 }
 .flex-form__toggle-group > li:first-child label {
   border-left: 0;
@@ -5099,6 +5153,28 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .flex-form__toggle-group > li.has-description .description:before {
   display: none;
 }
+body.cyborg .flex-form__toggle-group {
+  border-color: #071D25;
+}
+body.cyborg .flex-form__toggle-group > li {
+  background-color: transparent;
+}
+body.cyborg .flex-form__toggle-group > li label {
+  border-color: #071D25;
+}
+body.cyborg .flex-form__toggle-group > li input:checked + label {
+  background-color: #152D3B;
+}
+body.cyborg .flex-form__toggle-group > li > .manual-input > input {
+  background: #020e10;
+  border-color: #071D25;
+}
+body.cyborg .flex-form__toggle-group > li > .manual-input.active, body.cyborg .flex-form__toggle-group > li > .manual-input.active input {
+  background-color: #152D3B;
+}
+body.cyborg .flex-form__toggle-group > li > input:checked + label {
+  background-color: #152D3B;
+}
 .flex-form__toggle-list {
   list-style: none;
   padding: 0;
@@ -5122,6 +5198,10 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   color: #6297F8;
   font-weight: 600;
   margin-top: 5px;
+}
+body.cyborg .flex-form__toggle-list > li {
+  background-color: transparent;
+  border-color: #071D25;
 }
 .flex-form__toggle-list-switch {
   margin-left: auto;
@@ -5149,6 +5229,10 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   background-color: #fff;
   transition: all 100ms ease-in-out;
 }
+body.cyborg .flex-form__toggle-list-switch span {
+  background-color: #152D3B;
+  border-color: black;
+}
 .flex-form__toggle-list-switch > input {
   display: none;
 }
@@ -5158,6 +5242,10 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-form__toggle-list-switch > input:checked + span:before {
   left: 27px;
+}
+body.cyborg .flex-form__toggle-list-switch > input:checked + span {
+  background-color: #09b387;
+  border-color: #078263;
 }
 .flex-form__toggle-list-switch:hover {
   cursor: pointer;
@@ -5193,6 +5281,7 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .flex-form__table table {
   width: 100%;
   border-collapse: collapse;
+  border-color: #d0d0d0;
 }
 .flex-form__table thead,
 .flex-form__table tbody > tr {
@@ -5251,6 +5340,12 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 .flex-form__table .remove:hover {
   cursor: pointer;
 }
+body.cyborg .flex-form__table th, body.cyborg .flex-form__table td, body.cyborg .flex-form__table thead, body.cyborg .flex-form__table tr {
+  border-color: #071D25;
+}
+body.cyborg .flex-form__table tfoot td {
+  border-color: rgba(7, 29, 37, 0.5);
+}
 .flex-form__select, .flex-form__select--horizontal {
   position: relative;
   border-bottom: 1px solid #D0D0D0;
@@ -5287,6 +5382,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-form__select--horizontal select {
   border-left: 1px solid #ccc;
+}
+body.cyborg .flex-form__select, body.cyborg .flex-form__select--horizontal {
+  border-color: #071D25;
 }
 .flex-form__tag-select {
   background-color: #fff;
@@ -5391,6 +5489,9 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-static__summary > li:hover {
   cursor: default !important;
+}
+body.cyborg .flex-static__summary li {
+  background-color: #020e10;
 }
 
 .breadcrumbs {
@@ -5812,9 +5913,9 @@ body.cyborg select,
 body.cyborg pre,
 body.cyborg .well,
 body.cyborg .pagination > li > a {
-  background-color: #152d3d !important;
-  border-color: #162c56 !important;
-  color: #e8e8e8 !important;
+  background-color: #152d3d;
+  border-color: #162c56;
+  color: #e8e8e8;
 }
 body[data-theme="cyborg"] .pagination > li.active > a,
 body.cyborg .pagination > li.active > a {

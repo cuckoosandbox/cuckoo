@@ -10,7 +10,7 @@
 
 	&__header {
 		padding: 15px 20px;
-		border-bottom: 1px solid #EEEEEE;
+		border-bottom: 1pxs solid #EEEEEE;
 		
 		& > h3 {
 			font-size: 20px;
@@ -137,6 +137,11 @@
 		background-color: #F5F5F5;
 		border-right: 1px solid #CFCFCF;
 		overflow-y: auto;
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_background_color;
+			border-color: $cyborg_border_color;
+		}
 	}
 
 	&__content { 
