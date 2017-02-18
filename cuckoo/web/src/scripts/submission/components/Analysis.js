@@ -48,6 +48,7 @@ class AnalysisInterface {
 
 	initialise() {
 
+		var self    = this;
 		var context = getModuleContext();
 			
 		if(context == 'index') {
@@ -57,7 +58,10 @@ class AnalysisInterface {
 
 		if(context == 'pre') {
 			this.filetree = createFileTree(this.options.container.querySelector('#filetree'), this.options.filetree);
-			this.form = createForm(this.options.form);
+			
+			this.filetree.loaded = function() {
+				self.form = createForm(self.options.form);
+			}
 		}
 
 	}
@@ -66,7 +70,7 @@ class AnalysisInterface {
 		var _self = this;
 		var ret = {};
 
-		// ret.global = this.form.serialize();
+		ret.global = this.form.serialize();
 		ret.file_selection = this.filetree.serialize()
 
 		// if we have extra properties, extend the return object

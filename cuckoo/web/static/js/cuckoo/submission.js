@@ -72,6 +72,7 @@ var AnalysisInterface = function () {
 		key: 'initialise',
 		value: function initialise() {
 
+			var self = this;
 			var context = getModuleContext();
 
 			if (context == 'index') {
@@ -81,7 +82,10 @@ var AnalysisInterface = function () {
 
 			if (context == 'pre') {
 				this.filetree = createFileTree(this.options.container.querySelector('#filetree'), this.options.filetree);
-				this.form = createForm(this.options.form);
+
+				this.filetree.loaded = function () {
+					self.form = createForm(self.options.form);
+				};
 			}
 		}
 	}, {
@@ -90,7 +94,7 @@ var AnalysisInterface = function () {
 			var _self = this;
 			var ret = {};
 
-			// ret.global = this.form.serialize();
+			ret.global = this.form.serialize();
 			ret.file_selection = this.filetree.serialize();
 
 			// if we have extra properties, extend the return object
@@ -887,6 +891,9 @@ var FileTree = function () {
 		this.detailViewActive = false;
 		this.activeIndex = null;
 
+		// loaded
+		this.loaded = null;
+
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function expandAllFolders() {
@@ -1014,8 +1021,14 @@ var FileTree = function () {
 			// response handler
 			function handleResponse(response) {
 
+				// configurable callback
 				if (self.options.load.serialize) {
 					response = self.options.load.serialize(response);
+				}
+
+				// programmatable callback loaded
+				if (self.loaded && typeof self.loaded === 'function') {
+					self.loaded(response);
 				}
 
 				self.initialise(response);
@@ -2336,6 +2349,20 @@ $(function () {
 					},
 					serialize: function serialize(response) {
 
+						// set up defaults for form and settings
+						if (response.defaults) {
+							default_analysis_options = response.defaults;
+						}
+
+						analysis_ui.originalData = response.data;
+
+						default_package_selection_options = default_package_selection_options.map(function (opt) {
+							return {
+								name: opt,
+								value: opt
+							};
+						});
+
 						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
@@ -2354,22 +2381,6 @@ $(function () {
 							var parentContainer = FileTree.FileTree.getParentContainerName(item);
 							if (parentContainer) item.arcname = parentContainer.filename;
 						});
-
-						analysis_ui.originalData = response.data;
-
-						default_package_selection_options = default_package_selection_options.map(function (opt) {
-							return {
-								name: opt,
-								value: opt
-							};
-						});
-
-						// set up defaults for form and settings
-						if (response.defaults) {
-							default_analysis_options = response.defaults;
-							// console.log(default_analysis_options);
-							// debugger;
-						}
 
 						return response.data.files;
 					}

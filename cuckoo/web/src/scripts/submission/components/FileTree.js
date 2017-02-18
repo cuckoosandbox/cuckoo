@@ -441,6 +441,9 @@ class FileTree {
 		this.detailViewActive = false;
 		this.activeIndex = null;
 
+		// loaded
+		this.loaded = null;
+
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function() {
@@ -560,8 +563,14 @@ class FileTree {
 		// response handler
 		function handleResponse(response) {
 
+			// configurable callback
 			if(self.options.load.serialize) {
 				response = self.options.load.serialize(response);
+			}
+
+			// programmatable callback loaded
+			if(self.loaded && typeof self.loaded === 'function') {
+				self.loaded(response);
 			}
 
 			self.initialise(response);

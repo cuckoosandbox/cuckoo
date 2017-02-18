@@ -65,6 +65,20 @@ $(function() {
 					},
 					serialize: function(response) {
 
+						// set up defaults for form and settings
+						if(response.defaults) {
+							default_analysis_options = response.defaults;
+						}
+
+						analysis_ui.originalData = response.data;
+
+						default_package_selection_options = default_package_selection_options.map(function(opt) {
+							return {
+								name: opt,
+								value: opt
+							};
+						});
+
 						FileTree.FileTree.iterateFileStructure(response.data.files, function(item) {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
@@ -84,22 +98,6 @@ $(function() {
 							if(parentContainer) item.arcname = parentContainer.filename;
 
 						});
-
-						analysis_ui.originalData = response.data;
-
-						default_package_selection_options = default_package_selection_options.map(function(opt) {
-							return {
-								name: opt,
-								value: opt
-							};
-						});
-
-						// set up defaults for form and settings
-						if(response.defaults) {
-							default_analysis_options = response.defaults;
-							// console.log(default_analysis_options);
-							// debugger;
-						}
 
 						return response.data.files;
 
