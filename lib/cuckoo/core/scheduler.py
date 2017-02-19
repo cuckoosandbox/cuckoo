@@ -52,7 +52,7 @@ class AnalysisManager(threading.Thread):
         self.binary = ""
         self.storage_binary = ""
         self.machine = None
-
+        self.route = None
         self.db = Database()
         self.task = self.db.view_task(task_id)
         self.guest_manager = None
