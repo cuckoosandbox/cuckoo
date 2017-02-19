@@ -127,7 +127,9 @@ class Irma(Processing):
 
         results = self._get_results(sha256)
 
-        if self.force or (not results and self.scan):
+        if not self.force and not self.scan and not results:
+            return {}
+        elif self.force or (not results and self.scan):
             log.info("File scan requested: %s", sha256)
             self._scan_file(self.file_path, self.force)
             results = self._get_results(sha256) or {}
