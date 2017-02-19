@@ -222,7 +222,7 @@ class Config(object):
                 "max_analysis_count": Int(0),
                 "max_machines_count": Int(0),
                 "max_vmstartup_count": Int(10),
-                "freespace": Int(64),
+                "freespace": Int(1024),
                 "tmppath": Path(
                     exists=True, writable=True, readable=False,
                     allow_empty=True
@@ -242,10 +242,10 @@ class Config(object):
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
                 "force_port": Boolean(False),
-                "upload_max_size": Int(10485760),
+                "upload_max_size": Int(128 * 1024 * 1024),
             },
             "processing": {
-                "analysis_size_limit": Int(104857600),
+                "analysis_size_limit": Int(128 * 1024 * 1024),
                 "resolve_dns": Boolean(True),
                 "sort_pcap": Boolean(True),
             },

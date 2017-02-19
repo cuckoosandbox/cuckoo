@@ -188,7 +188,7 @@ def test_default_config():
     assert config("cuckoo:cuckoo:version_check") is True
     assert config("cuckoo:cuckoo:tmppath") is None
     assert config("cuckoo:resultserver:ip") == "192.168.56.1"
-    assert config("cuckoo:processing:analysis_size_limit") == 104857600
+    assert config("cuckoo:processing:analysis_size_limit") == 128*1024*1024
     assert config("cuckoo:timeouts:critical") == 60
     assert config("auxiliary:mitm:mitmdump") == "/usr/local/bin/mitmdump"
 
@@ -868,11 +868,16 @@ script = data/mitm.py
     Files.create(cwd("conf"), "cuckoo.conf", """
 [cuckoo]
 tmppath = /tmp
+freespace = 64
 [routing]
 route = foo
 internet = bar
 rt_table = main
 auto_rt = no
+[resultserver]
+upload_max_size = 10485760
+[processing]
+analysis_size_limit = 104857600
 """)
     Files.create(cwd("conf"), "processing.conf", """
 [network]
@@ -918,11 +923,14 @@ interface = eth0
     assert "allowed-dns" in cfg["processing"]["network"]
     cfg = migrate(cfg, "2.0-rc2", "2.0.0")
     assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
+    assert cfg["cuckoo"]["cuckoo"]["freespace"] == 1024
     assert cfg["cuckoo"]["cuckoo"]["tmppath"] is None
     assert cfg["cuckoo"]["feedback"]["enabled"] is False
     assert cfg["cuckoo"]["feedback"]["name"] is None
     assert cfg["cuckoo"]["feedback"]["company"] is None
     assert cfg["cuckoo"]["feedback"]["email"] is None
+    assert cfg["cuckoo"]["processing"]["analysis_size_limit"] == 128*1024*1024
+    assert cfg["cuckoo"]["resultserver"]["upload_max_size"] == 128*1024*1024
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"

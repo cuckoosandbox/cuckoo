@@ -544,8 +544,14 @@ def _20c1_20c2(c):
 def _20c2_200(c):
     if c["auxiliary"]["mitm"]["script"] == "data/mitm.py":
         c["auxiliary"]["mitm"]["script"] = "mitm.py"
+    if c["cuckoo"]["cuckoo"]["freespace"] == 64:
+        c["cuckoo"]["cuckoo"]["freespace"] = 1024
     if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
         c["cuckoo"]["cuckoo"]["tmppath"] = None
+    if c["cuckoo"]["processing"]["analysis_size_limit"] == 100*1024*1024:
+        c["cuckoo"]["processing"]["analysis_size_limit"] = 128*1024*1024
+    if c["cuckoo"]["resultserver"]["upload_max_size"] == 10*1024*1024:
+        c["cuckoo"]["resultserver"]["upload_max_size"] = 128*1024*1024
     c["cuckoo"]["feedback"] = {
         "enabled": False,
         "name": None,
