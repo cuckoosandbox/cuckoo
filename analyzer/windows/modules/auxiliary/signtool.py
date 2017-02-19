@@ -8,6 +8,7 @@ import os
 import subprocess
 
 from lib.common.abstracts import Auxiliary
+from lib.api.process import subprocess_checkoutput
 from lib.common.results import NetlogFile
 
 log = logging.getLogger(__name__)
@@ -65,17 +66,15 @@ class SignTool(Auxiliary):
 
             cmds = [self.signtool_path, "verify", "/pa", "/v", filepath]
 
-            signtoolproc = subprocess.Popen(cmds, stdout=subprocess.PIPE)
-            signtoolproc.wait()
-
             results = {}
 
-            if signtoolproc.returncode == 0:
+            try:
+                signtooloutput = subprocess_checkoutput()
                 results['verified'] = True
-            else:
+            except subprocess.CalledProcessError:
                 results['verified'] = False
 
-            results['output'] = "".join(signtoolproc.stdout)
+            results['output'] = "".join(signtooloutput)
 
             nf = NetlogFile()
             nf.init("aux/signtool.json")
