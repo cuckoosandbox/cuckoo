@@ -39,6 +39,10 @@
 			border-color: $cyborg_border_color;
 		}
 
+		@include cuckoo-theme('night') {
+			border-color: $night_border_color;
+		}
+
 	}
 
 	&__header {
@@ -199,6 +203,7 @@
 		}
 
 		@include cuckoo-theme('cyborg') {
+
 			border-color: $cyborg_border_color;
 			
 			& > li {
@@ -220,7 +225,33 @@
 
 			& > li > input:checked + label { background-color: $cyborg_primary_color; }
 
-		}	
+		}
+
+		@include cuckoo-theme('night') {
+			
+			border-color: $night_border_color;
+			
+			& > li {
+				background-color: transparent;
+				label { border-color: $night_border_color; }
+			}
+
+			& > li input:checked + label {
+				background-color: $night_primary_color;
+			}
+
+			& > li > .manual-input > input { 
+				background: $night_background_color; 
+				border-color: $night_border_color;
+			}
+
+			& > li > .manual-input.active,
+			& > li > .manual-input.active input { background-color: $night_primary_color; }
+
+			& > li > input:checked + label { background-color: $night_primary_color; }
+
+		}
+
 	}
 
 	&__toggle-list {
@@ -254,6 +285,12 @@
 				background-color: transparent;
 				border-color: $cyborg_border_color;
 			}
+
+			@include cuckoo-theme('night') {
+				background-color: transparent;
+				border-color: $night_border_color;
+			}
+
 		}
 
 		&-switch {
@@ -288,6 +325,11 @@
 					border-color: darken($cyborg_primary_color, 20);
 				}
 
+				@include cuckoo-theme('night') {
+					background-color: $night_darker_color;
+					border-color: darken($night_darker_color, 20);
+				}
+
 			}
 
 			& > input { 
@@ -304,6 +346,12 @@
 						background-color: darken($cyborg_secundary_color, 10);
 						border-color: darken($cyborg_secundary_color, 20);
 					}
+
+					@include cuckoo-theme('night') {
+						background-color: darken($cyborg_secundary_color, 10);
+						border-color: darken($cyborg_secundary_color, 20);
+					}
+
 				}
 			}
 
@@ -416,6 +464,11 @@
 			tfoot td { border-color: rgba($cyborg_border_color, .5); }
 		}
 
+		@include cuckoo-theme('night') {
+			th, td, thead, tr { border-color: $night_border_color; }
+			tfoot, td { border-color: rgba($night_border_color, .5); }
+		}
+
 	}
 
 	&__select {
@@ -464,6 +517,10 @@
 
 		@include cuckoo-theme('cyborg') {
 			border-color: $cyborg_border_color;
+		}
+
+		@include cuckoo-theme('night') {
+			border-color: $night_border_color;
 		}
 
 	}
@@ -590,12 +647,13 @@
 		}
 
 		@include cuckoo-theme('cyborg') {
-
-			li {
-				background-color: $cyborg_background_color;
-			}
-
+			li { background-color: $cyborg_background_color; }
 		}
+
+		@include cuckoo-theme('night') {
+			li { background-color: $night_background_color; }
+		}
+
 	}
 
 }

@@ -32,6 +32,10 @@
 			color: #fff;
 		}
 
+		&:hover, &:focus, &:active {
+			text-decoration: none;
+		}
+
 		@include cuckoo-theme('cyborg') {
 			background-color: $cyborg_primary_color;
 			color: $cyborg_text_color;
@@ -40,9 +44,15 @@
 				background-color: $cyborg_panel_color;
 				color: $cyborg_secundary_color;
 			}
+		}
 
-			&:hover, &:focus, &:active {
-				text-decoration: none;
+		@include cuckoo-theme('night') {
+			background-color: $night_accent_color;
+			color: $night_text_color;
+
+			&.active {
+				background-color: $night_darker_color;
+				color: $cyborg_secundary_color;
 			}
 		}
 

@@ -242,6 +242,11 @@
             @include cuckoo-theme('cyborg') {
                 background-image: linear-gradient(-180deg, #0ce3ac 0%, #5fe6c4 100%);
             }
+
+            @include cuckoo-theme('night') {
+                background-image: linear-gradient(-180deg, #324456 0%, #242b38 100%);
+            }
+
         }
 
         @include cuckoo-theme('cyborg') {
@@ -253,6 +258,10 @@
                     color: $cyborg_primary_color;
                 }
             }
+        }
+
+        @include cuckoo-theme('night') {
+            border-color: $night_border_color;
         }
 
     }
