@@ -4,12 +4,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import json
 import logging
 import os
 import re
 import struct
 import zipfile
-import json
 
 try:
     import bs4
@@ -328,7 +328,8 @@ class PortableExecutable(object):
     def _get_signature_verification(self):
         """
         Pulls the signature verification information for Authenticode.
-        :return: None if failure, otherwise a dict with the verification status and the output.
+        :return: None if failure, otherwise a dict with the verification
+        status and the output.
         """
         sig_path = os.path.join(self.analysis_path, "aux", "signtool.json")
 
@@ -338,9 +339,7 @@ class PortableExecutable(object):
         with open(sig_path,'r') as sigin:
             sigtxt = sigin.read()
 
-        sigdata = json.loads(sigtxt)
-
-        return sigdata
+        return json.loads(sigtxt)
 
     def run(self):
         """Run analysis.
@@ -705,7 +704,8 @@ class Static(Processing):
 
         if ext == "exe" or "PE32" in File(self.file_path).get_type():
             if HAVE_PEFILE:
-                static.update(PortableExecutable(self.file_path, self.analysis_path).run())
+                static.update(PortableExecutable(self.file_path,
+                                                 self.analysis_path).run())
             static["keys"] = self._get_keys()
 
         if package == "wsf" or ext == "wsf":

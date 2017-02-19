@@ -1,11 +1,11 @@
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import json
 import logging
 import os
 import subprocess
-import json
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
@@ -15,9 +15,11 @@ log = logging.getLogger(__name__)
 
 class SignTool(Auxiliary):
     """
-    This class contains the information about the signature verification for Microsoft Windows PE files.
-    This class requires signtool.exe in the analyzer/windows/bin directory so it will be copied to the guest VM.
-    Signtool.exe is packaged with Windows SDKs and can be downloaded from Microsoft.
+    This class contains the information about the signature verification
+    for Microsoft Windows PE files.  This class requires signtool.exe in
+    the analyzer/windows/bin directory so it will be copied to the guest VM.
+    Signtool.exe is packaged with Windows SDKs and can be downloaded
+    from Microsoft.
     """
     def __init__(self, options, analyzer):
         """
@@ -27,19 +29,22 @@ class SignTool(Auxiliary):
         :param analyzer:  An analyzer object required by Auxiliary.
         """
         Auxiliary.__init__(self, options, analyzer)
+        self.signtool_path = os.path.join(os.getcwd(), 'bin', 'signtool.exe')
 
         # Check to see if signtool is available...
-        if os.path.isfile(os.path.join(os.getcwd(), 'bin', 'signtool.exe')):
+        if os.path.isfile(self.signtool_path):
             self.enabled = True
         else:
             self.enabled = False
 
     def start(self):
         """
-        Starts the signtool.exe analysis and saves the results in aux/signtool.json.
+        Starts the signtool.exe analysis and saves the results in
+        aux/signtool.json.
 
-        :return:  True if this function worked, False if it was unable to run.  This is not the same
-            as True or False if the Authenticode verification worked!
+        :return:  True if this function worked, False if it was unable to run.
+            This is not the same as True or False if the
+            Authenticode verification worked!
         """
         try:
             # Return False if this is not enabled.
@@ -50,20 +55,15 @@ class SignTool(Auxiliary):
                 log.debug("Can only run signtool.exe on a file.")
                 return False
 
-            signtool_path = os.path.join(os.getcwd(), 'bin', 'signtool.exe')
-
-            if not os.path.isfile(signtool_path):
-                log.info("signtool.exe is not available at {0}, skipping verification.".format(signtool_path))
+            if not os.path.isfile(self.signtool_path):
+                log.info("signtool.exe is not available at {0}, "
+                         "skipping verification.".format(self.signtool_path))
                 return False
 
-            filepath = os.path.join(os.environ["TEMP"], self.analyzer.config.file_name)
+            filepath = os.path.join(os.environ["TEMP"],
+                                    self.analyzer.config.file_name)
 
-            cmds = [signtool_path]
-            cmds.append("verify")
-            cmds.append("/pa")
-            cmds.append("/v")
-
-            cmds.append(filepath)
+            cmds = [self.signtool_path, "verify", "/pa", "/v", filepath]
 
             signtoolproc = subprocess.Popen(cmds, stdout=subprocess.PIPE)
             signtoolproc.wait()
