@@ -4,7 +4,9 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import sys
 
+from cuckoo.common.colors import red
 from cuckoo.common.elastic import elastic
 from cuckoo.common.mongo import mongo
 from cuckoo.core.startup import init_rooter, init_routing
@@ -14,7 +16,13 @@ if cwd(root=True) is None:
     decide_cwd(exists=True)
 
 # Connect to MongoDB (mandatory).
-mongo.init()
+if not mongo.init():
+    sys.exit(red(
+        "In order to use the Cuckoo Web Interface it is required to have "
+        "MongoDB up-and-running and enabled in Cuckoo. Please refer to our "
+        "official documentation as well as the $CWD/conf/reporting.conf file."
+    ))
+
 mongo.connect()
 
 # Connect to ElasticSearch (optional).

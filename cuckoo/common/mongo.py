@@ -31,7 +31,6 @@ class Mongo(object):
         return self.enabled
 
     def connect(self):
-        # TODO Option to throw an exception?
         if not self.enabled:
             return
 

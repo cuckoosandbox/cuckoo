@@ -6,8 +6,10 @@ import django
 import logging
 import mock
 import os
+import pytest
 import tempfile
 
+from cuckoo.main import main, cuckoo_create
 from cuckoo.core.database import Database
 from cuckoo.common.files import Folders, Files
 from cuckoo.misc import cwd, set_cwd
@@ -115,3 +117,17 @@ class TestWebInterface(object):
             assert "Sub AutoOpen" in r
             assert "process.Create" in r
             assert "notepad.exe" in r
+
+def test_mongodb_disabled():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "reporting": {
+            "mongodb": {
+                "enabled": False,
+            },
+        },
+    })
+    with pytest.raises(SystemExit) as e:
+        import cuckoo.web.web.settings
+        cuckoo.web.web.settings.red("...")  # Fake usage.
+    e.match("to have MongoDB up-and-running")
