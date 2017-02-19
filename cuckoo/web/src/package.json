@@ -28,6 +28,7 @@
     "gulp-ruby-sass": "^2.1.0",
     "gulp-sourcemaps": "^2.2.0",
     "gulp-task-loader": "^1.4.4",
+    "gulp-uglify": "^2.0.1",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.10",
     "gulp-wrap": "^0.13.0",
