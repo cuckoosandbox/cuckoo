@@ -446,6 +446,15 @@ class TestProcessingTasks(object):
             "custom": "foobar",
         }
 
+    @mock.patch("cuckoo.main.process_task_range")
+    @mock.patch("cuckoo.main.init_modules")
+    def test_process_init_modules(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1"),
+            standalone_mode=False
+        )
+        p.assert_called_once()
+
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")
 @mock.patch("cuckoo.apps.apps.RunReporting")

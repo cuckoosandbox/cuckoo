@@ -308,6 +308,9 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
+    # Initialize all modules.
+    init_modules()
+
     try:
         # Regenerate one or more reports.
         if report:
