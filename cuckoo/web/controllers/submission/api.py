@@ -18,13 +18,23 @@ submit_manager = SubmitManager()
 
 def defaults():
     machinery = config("cuckoo:cuckoo:machinery")
+
+    if config("routing:vpn:enabled"):
+        vpns = config("routing:vpn:vpns")
+    else:
+        vpns = []
+
     return {
         "machine": config("%s:%s:machines" % (machinery, machinery)),
-        "network-routing": config("routing:routing:route"),
         "package": None,
         "priority": 2,
         "timeout": config("cuckoo:timeouts:default"),
-        "vpns": config("routing:vpn:vpns"),
+        "routing": {
+            "route": config("routing:routing:route"),
+            "inetsim": config("routing:inetsim:enabled"),
+            "tor": config("routing:tor:enabled"),
+            "vpns": vpns,
+        },
         "options": {
             "enable-services": False,
             "enforce-timeout": False,

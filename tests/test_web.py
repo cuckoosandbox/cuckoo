@@ -93,9 +93,16 @@ class TestWebInterface(object):
                     "route": "internet",
                 },
                 "vpn": {
+                    "enabled": True,
                     "vpns": [
                         "france", "italy"
                     ],
+                },
+                "inetsim": {
+                    "enabled": True,
+                },
+                "tor": {
+                    "enabled": True,
                 },
                 "france": {
                     "description": "VPN in France",
@@ -109,13 +116,17 @@ class TestWebInterface(object):
             "machine": [
                 "cuckoo1",
             ],
-            "network-routing": "internet",
             "package": None,
             "priority": 2,
             "timeout": 120,
-            "vpns": [
-                "france", "italy"
-            ],
+            "routing": {
+                "route": "internet",
+                "inetsim": True,
+                "tor": True,
+                "vpns": [
+                    "france", "italy",
+                ],
+            },
             "options": {
                 "enable-services": False,
                 "enforce-timeout": False,
@@ -129,6 +140,30 @@ class TestWebInterface(object):
         assert "[italy]" in buf
         assert "[france]" in buf
         assert "vpns = france, italy" in buf
+
+    def test_submit_defaults_novpn(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "routing": {
+                "vpn": {
+                    "enabled": False,
+                    "vpns": [
+                        "france", "italy"
+                    ],
+                },
+                "france": {
+                    "description": "VPN in France",
+                },
+                "italy": {
+                    "description": "VPN in Italy",
+                },
+            },
+        })
+        obj = defaults()
+        assert obj["routing"]["route"] == "none"
+        assert obj["routing"]["vpns"] == []
+        assert obj["routing"]["inetsim"] is False
+        assert obj["routing"]["tor"] is False
 
     def test_submit_api_filetree(self, client):
         SubmitManager().pre("strings", ["google.com"])
