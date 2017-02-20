@@ -38,18 +38,17 @@ class Mattermost(Report):
             self.options.get("myurl")
         )
 
-        filename, url = None, None
         if results.get("info").get("category") == "file":
-            filename = results.get("target", {}).get("file", {}).get("name", "")
+            target = results.get("target", {}).get("file", {}).get("name", "")
             if self.options.get("hash-filename"):
-                filename = hashlib.sha256(filename).hexdigest()
+                target = hashlib.sha256(target).hexdigest()
         elif results.get("info").get("category") == "url":
-            url = results.get("target", {}).get("url", "")
+            target = results.get("target", {}).get("url", "")
             if self.options.get("hash-url"):
-                url = hashlib.sha256(url).hexdigest()
+                target = hashlib.sha256(target).hexdigest()
 
         post += "Target : {0} ::: Score : **{1}** ::: ".format(
-            filename or url, results.get("info", {}).get("score")
+            target, results.get("info", {}).get("score")
         )
 
         if self.options.get("show-virustotal"):
@@ -74,12 +73,17 @@ class Mattermost(Report):
         headers = {"Content-Type": "application/json"}
 
         try:
-            requests.post(
+            r = requests.post(
                 self.options.get("url"),
                 headers=headers,
                 data=json.dumps(data)
             )
+
+            if r.status_code != 200:
+                raise CuckooReportError (
+                    "Failed posting message due to : {0}".format(r.text)
+                )
         except Exception as e:
             raise CuckooReportError(
-                "Failed posting message to Mattermost: %s" % e
+                "Failed posting message to Mattermost: {0}".format(e)
             )
