@@ -229,13 +229,19 @@ def init(ctx, conf):
 @click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
 def community(force, branch, filepath):
     """Utility to fetch supplies from the Cuckoo Community."""
-    fetch_community(force=force, branch=branch, filepath=filepath)
+    try:
+        fetch_community(force=force, branch=branch, filepath=filepath)
+    except KeyboardInterrupt:
+        print(yellow("Aborting fetching of the Cuckoo Community resources.."))
 
 @main.command()
 def clean():
     """Utility to clean the Cuckoo Working Directory and associated
     databases."""
-    cuckoo_clean()
+    try:
+        cuckoo_clean()
+    except KeyboardInterrupt:
+        print(yellow("Aborting cleaning up of your CWD.."))
 
 @main.command()
 @click.argument("target", nargs=-1)
@@ -266,21 +272,24 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
-    l = submit_tasks(
-        target, options, package, custom, owner, timeout, priority, machine,
-        platform, memory, enforce_timeout, clock, tags, remote, pattern, max,
-        unique, url, baseline, shuffle
-    )
+    try:
+        l = submit_tasks(
+            target, options, package, custom, owner, timeout, priority,
+            machine, platform, memory, enforce_timeout, clock, tags, remote,
+            pattern, max, unique, url, baseline, shuffle
+        )
 
-    for category, target, task_id in l:
-        if task_id:
-            print "%s: %s \"%s\" added as task with ID #%s" % (
-                bold(green("Success")), category, target, task_id
-            )
-        else:
-            print "%s: %s \"%s\" skipped as it has already been analyzed" % (
-                bold(green("Success")), category, target
-            )
+        for category, target, task_id in l:
+            if task_id:
+                print "%s: %s \"%s\" added as task with ID #%s" % (
+                    bold(green("Success")), category, target, task_id
+                )
+            else:
+                print "%s: %s \"%s\" as it has already been analyzed" % (
+                    bold(yellow("Skipped")), category, target
+                )
+    except KeyboardInterrupt:
+        print(red("Aborting submission of samples.."))
 
 @main.command()
 @click.argument("instance", required=False)
@@ -299,17 +308,21 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
-    # Regenerate one or more reports.
-    if report:
-        process_task_range(report)
-    elif not instance:
-        print ctx.get_help(), "\n"
-        sys.exit("In automated mode an instance name is required!")
-    else:
-        log.info(
-            "Initialized instance=%s, ready to process some tasks", instance
-        )
-        process_tasks(instance, maxcount)
+    try:
+        # Regenerate one or more reports.
+        if report:
+            process_task_range(report)
+        elif not instance:
+            print ctx.get_help(), "\n"
+            sys.exit("In automated mode an instance name is required!")
+        else:
+            log.info(
+                "Initialized instance=%s, ready to process some tasks",
+                instance
+            )
+            process_tasks(instance, maxcount)
+    except KeyboardInterrupt:
+        print(red("Aborting (re-)processing of your analyses.."))
 
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
@@ -336,9 +349,15 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         if ctx.parent.level == logging.DEBUG:
             args.insert(2, "--debug")
 
-        subprocess.call(args)
+        try:
+            subprocess.call(args)
+        except KeyboardInterrupt:
+            pass
     else:
-        cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+        try:
+            cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+        except KeyboardInterrupt:
+            print(red("Aborting the Cuckoo Rooter.."))
 
 @main.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
@@ -390,7 +409,10 @@ def api(ctx, host, port, uwsgi, nginx):
 @click.pass_context
 def dnsserve(ctx, host, port, nxdomain, hardcode):
     init_console_logging(ctx.parent.level)
-    cuckoo_dnsserve(host, port, nxdomain, hardcode)
+    try:
+        cuckoo_dnsserve(host, port, nxdomain, hardcode)
+    except KeyboardInterrupt:
+        print(red("Aborting Cuckoo DNS Serve.."))
 
 @main.command()
 @click.argument("args", nargs=-1)
@@ -508,8 +530,11 @@ def import_(ctx, path, force, database, mode):
     if force and database:
         sys.exit("Can't have both the --force and the --database parameter.")
 
-    # TODO Actually symlink or copy analyses.
-    import_cuckoo(ctx.parent.user, path, force, database)
+    try:
+        # TODO Actually symlink or copy analyses.
+        import_cuckoo(ctx.parent.user, path, force, database)
+    except KeyboardInterrupt:
+        print(red("Aborting import of Cuckoo instance.."))
 
 @main.group()
 def distributed():

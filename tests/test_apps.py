@@ -102,6 +102,13 @@ class TestAppsWithCWD(object):
             main.main(("--cwd", cwd(), "api"), standalone_mode=False)
             p.assert_called_once_with("localhost", 8090, False)
 
+    @mock.patch("cuckoo.main.cuckoo_rooter")
+    def test_rooter_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting the Cuckoo Rooter" in out
+
     def test_community(self):
         with mock.patch("cuckoo.main.fetch_community") as p:
             p.return_value = None
@@ -110,11 +117,25 @@ class TestAppsWithCWD(object):
                 force=False, branch="master", filepath=None
             )
 
+    @mock.patch("cuckoo.main.fetch_community")
+    def test_community_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "community"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting fetching of" in out
+
     def test_clean(self):
         with mock.patch("cuckoo.main.cuckoo_clean") as p:
             p.return_value = None
             main.main(("--cwd", cwd(), "clean"), standalone_mode=False)
             p.assert_called_once_with()
+
+    @mock.patch("cuckoo.main.cuckoo_clean")
+    def test_clean_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "clean"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting cleaning up of" in out
 
     def test_submit(self):
         with mock.patch("cuckoo.main.submit_tasks") as p:
@@ -123,11 +144,27 @@ class TestAppsWithCWD(object):
                 "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
             ), standalone_mode=False)
 
+    @mock.patch("cuckoo.main.submit_tasks")
+    def test_submit_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main((
+            "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
+        ), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting submission of" in out
+
     def test_dnsserve(self):
         with mock.patch("cuckoo.main.cuckoo_dnsserve") as p:
             p.return_value = None
             main.main(("--cwd", cwd(), "dnsserve"), standalone_mode=False)
             p.assert_called_once_with("0.0.0.0", 53, None, None)
+
+    @mock.patch("cuckoo.main.cuckoo_dnsserve")
+    def test_dnsserve_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "dnsserve"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting Cuckoo DNS Serve" in out
 
     def test_web(self):
         curdir = os.getcwd()
@@ -171,6 +208,16 @@ class TestAppsWithCWD(object):
                 standalone_mode=False
             )
             p.assert_called_once_with(None, dirpath, False, None)
+
+    @mock.patch("cuckoo.main.import_cuckoo")
+    def test_import_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(
+            ("--cwd", cwd(), "import", tempfile.mkdtemp()),
+            standalone_mode=False
+        )
+        out, _ = capsys.readouterr()
+        assert "Aborting import of Cuckoo instance" in out
 
     def test_dist_server(self):
         with mock.patch("cuckoo.main.cuckoo_distributed") as p:
@@ -216,6 +263,17 @@ class TestProcessingTasks(object):
         )
         p.assert_called_once_with("1234")
         q.assert_called_once()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_task_range")
+    def test_process_abort(self, p, q, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        out, _ = capsys.readouterr()
+        assert "Aborting (re-)processing of your analyses" in out
 
     @mock.patch("cuckoo.apps.apps.process")
     def test_process_once_deeper(self, p):
@@ -539,4 +597,4 @@ def test_submit_unique_with_duplicates(p, q, capsys):
     )
     out, err = capsys.readouterr()
     assert "added as task with" in out
-    assert "skipped as it has" in out
+    assert "Skipped" in out
