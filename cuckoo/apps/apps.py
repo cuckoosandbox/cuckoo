@@ -10,11 +10,12 @@ import random
 import requests
 import shutil
 import StringIO
+import sys
 import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
-from cuckoo.common.config import config, emit_options
+from cuckoo.common.config import config, emit_options, Config
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
 )
@@ -23,6 +24,7 @@ from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
     Database, TASK_FAILED_PROCESSING, TASK_REPORTED
 )
+from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.core.startup import init_console_logging
@@ -372,3 +374,58 @@ def cuckoo_clean():
                 os.unlink(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing file %s: %s", path, e)
+
+def cuckoo_machine(vmname, action, ip, platform, options, tags,
+                   interface, snapshot, resultserver):
+    db = Database()
+
+    cfg = Config.from_confdir(cwd("conf"))
+    machinery = cfg["cuckoo"]["cuckoo"]["machinery"]
+    machines = cfg[machinery][machinery]["machines"]
+
+    if action == "add":
+        if not ip:
+            sys.exit("You have to specify a legitimate IP address for --add.")
+
+        if db.view_machine(vmname):
+            sys.exit("A Virtual Machine with this name already exists!")
+
+        if vmname in machines:
+            sys.exit("A Virtual Machine with this name already exists!")
+
+        if resultserver and resultserver.count(":") == 1:
+            resultserver_ip, resultserver_port = resultserver.split(":")
+            resultserver_port = int(resultserver_port)
+        else:
+            resultserver_ip = cfg["cuckoo"]["resultserver"]["ip"]
+            resultserver_port = cfg["cuckoo"]["resultserver"]["port"]
+
+        machines.append(vmname)
+        cfg[machinery][vmname] = {
+            "label": vmname,
+            "platform": platform,
+            "ip": ip,
+            "options": options,
+            "snapshot": snapshot,
+            "interface": interface,
+            "resultserver_ip": resultserver_ip,
+            "resultserver_port": resultserver_port,
+            "tags": tags,
+        }
+
+        db.add_machine(
+            vmname, vmname, ip, platform, options, tags, interface, snapshot,
+            resultserver_ip, int(resultserver_port)
+        )
+        db.unlock_machine(vmname)
+
+    if action == "delete":
+        # TODO Add a db.del_machine() function for runtime modification.
+
+        if vmname not in machines:
+            sys.exit("A Virtual Machine with this name doesn't exist!")
+
+        machines.remove(vmname)
+        cfg[machinery].pop(vmname)
+
+    write_cuckoo_conf(cfg=cfg)

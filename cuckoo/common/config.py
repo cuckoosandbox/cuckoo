@@ -169,7 +169,7 @@ class UUID(Type):
 class List(Type):
     """List Type Definition class."""
 
-    def __init__(self, subclass, default, sep=",", strip=False):
+    def __init__(self, subclass, default, sep=",", strip=True):
         self.subclass = subclass
         self.sep = sep
         self.strip = strip

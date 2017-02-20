@@ -10,9 +10,11 @@ import pytest
 import tempfile
 
 from cuckoo.apps.apps import (
-    process, process_task, cuckoo_clean, process_task_range
+    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
 )
 from cuckoo.apps.migrate import import_legacy_analyses
+from cuckoo.common.config import config
+from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging
@@ -192,13 +194,35 @@ class TestAppsWithCWD(object):
         with mock.patch("cuckoo.main.cuckoo_machine") as p:
             p.return_value = None
             main.main((
-                "--cwd", cwd(), "machine", "machine", "1.2.3.4", "--add"
+                "--cwd", cwd(), "machine", "cuckoo2", "1.2.3.4", "--add"
             ), standalone_mode=False)
 
             p.assert_called_once_with(
-                "machine", True, False, "1.2.3.4", "windows",
+                "cuckoo2", "add", "1.2.3.4", "windows",
                 None, None, None, None, None
             )
+
+    def test_machine_add(self):
+        cuckoo_machine(
+            "cuckoo2", "add", "1.2.3.4", "windows",
+            None, None, None, None, None
+        )
+        assert config("virtualbox:virtualbox:machines") == [
+            "cuckoo1", "cuckoo2",
+        ]
+        assert config("virtualbox:cuckoo2:ip") == "1.2.3.4"
+        assert config("virtualbox:cuckoo2:platform") == "windows"
+
+    def test_machine_delete(self):
+        cuckoo_machine(
+            "cuckoo1", "delete", None, None, None, None, None, None, None
+        )
+        assert config("virtualbox:virtualbox:machines") == []
+
+        # TODO This might require a little tweak.
+        with pytest.raises(CuckooConfigurationError) as e:
+            config("virtualbox:cuckoo1:label", strict=True)
+        e.match("No such configuration value exists")
 
     def test_import(self):
         with mock.patch("cuckoo.main.import_cuckoo") as p:

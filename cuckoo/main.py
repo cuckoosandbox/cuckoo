@@ -494,8 +494,8 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @main.command()
 @click.argument("vmname")
 @click.argument("ip", default="")
-@click.option("--add", is_flag=True, help="Add a Virtual Machine")
-@click.option("--delete", is_flag=True, help="Delete a Virtual Machine")
+@click.option("--add", "action", flag_value="add", help="Add a Virtual Machine")
+@click.option("--delete", "action", flag_value="delete", help="Delete a Virtual Machine")
 @click.option("--platform", default="windows", help="Guest Operating System")
 @click.option("--options", help="Machine options")
 @click.option("--tags", help="Tags for this Virtual Machine")
@@ -503,15 +503,14 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
 @click.option("--resultserver", help="IP:Port of the Result Server")
 @click.pass_context
-def machine(ctx, vmname, ip, add, delete, platform, options, tags, interface,
+def machine(ctx, vmname, ip, action, platform, options, tags, interface,
             snapshot, resultserver):
-    if add and not ip:
-        sys.exit("You have to specify a legitimate IP address for --add.")
-
     init_console_logging(level=ctx.parent.level)
     Database().connect()
-    cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
-                   interface, snapshot, resultserver)
+    cuckoo_machine(
+        vmname, action, ip, platform, options, tags, interface,
+        snapshot, resultserver
+    )
 
 @main.command()
 @click.option("--revision", default="head", help="Migrate to a certain revision")
