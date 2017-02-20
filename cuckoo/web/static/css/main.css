@@ -5226,6 +5226,13 @@ body.cyborg .flex-form__header .custom-checkbox input + span:before, body.cyborg
 .flex-form__toggle-group > li.has-description .description:before {
   display: none;
 }
+.flex-form__toggle-group > li.disabled {
+  opacity: .2;
+}
+.flex-form__toggle-group > li.disabled input:hover,
+.flex-form__toggle-group > li.disabled label:hover {
+  cursor: not-allowed;
+}
 body.cyborg .flex-form__toggle-group {
   border-color: #133b4a;
 }

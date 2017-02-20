@@ -2,9 +2,9 @@
 
 <ul class="flex-form__toggle-group">
 	{{#each top_items}}
-		<li {{#if description}}class="has-description"{{/if}}>
+		<li class="{{#if description}}has-description{{/if}} {{#if disabled}}disabled{{/if}}">
 			{{#unless manual}}
-				<input type="radio" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} />
+				<input type="radio" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} {{#if disabled}}disabled{{/if}} />
 				<label for="{{../../name}}-{{value}}" {{#if className}}class="{{className}}"{{/if}}>
 					{{name}}
 					{{#if description}}

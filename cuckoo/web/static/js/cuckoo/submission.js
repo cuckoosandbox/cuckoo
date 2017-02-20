@@ -1645,6 +1645,9 @@ var TopSelect = function (_UserInputController2) {
 		_this2.options = _this2.config.options;
 		_this2.extra_select = _this2.config.extra_select;
 		_this2.units = _this2.config.units;
+
+		console.log(_this2.options);
+
 		_this2.initialise();
 		return _this2;
 	}
@@ -2313,6 +2316,7 @@ var default_analysis_options = {
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
 var default_package_selection_options = ['python', 'ie', 'js', 'pdf'];
+var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
 Handlebars.registerHelper('file_size', function (text) {
@@ -2359,7 +2363,7 @@ $(function () {
 							default_analysis_options = response.defaults;
 
 							// extract the routing settings and delete
-							var routing_prefs = default_analysis_options.routing;
+							routing_prefs = default_analysis_options.routing;
 							default_analysis_options.routing = routing_prefs.route;
 
 							// format the vpns array to work for the form field, using a 'name-value']
@@ -2483,7 +2487,7 @@ $(function () {
 											name: 'network-routing-' + item.filetree.index,
 											title: 'Network Routing',
 											default: item.per_file_options['network-routing'],
-											options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet' }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+											options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
 											extra_select: {
 												title: 'VPN via',
 												name: 'vpn-' + item.filetree.index,
@@ -2616,7 +2620,7 @@ $(function () {
 						name: 'network-routing',
 						title: 'Network Routing',
 						default: default_analysis_options['routing'],
-						options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet' }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
+						options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
 						extra_select: {
 							title: 'VPN via',
 							name: 'vpn',

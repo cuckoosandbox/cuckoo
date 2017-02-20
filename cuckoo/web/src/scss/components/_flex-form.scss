@@ -200,6 +200,12 @@
 
 			}
 
+			&.disabled {
+				opacity: .2;
+				input:hover,
+				label:hover { cursor: not-allowed; }
+			}
+
 		}
 
 		@include cuckoo-theme('cyborg') {
