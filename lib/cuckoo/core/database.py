@@ -541,12 +541,12 @@ class Database(object):
         session = self.Session()
         try:
             machine = session.query(Machine).filter_by(label=label).first()
+
             if machine is None:
                 log.debug("Database error setting interface: {0} not found".format(label))
                 return None
             machine.interface = interface
             session.commit()
-
         except SQLAlchemyError as e:
             log.debug("Database error setting interface: {0}".format(e))
             session.rollback()
