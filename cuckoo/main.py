@@ -41,7 +41,6 @@ log = logging.getLogger("cuckoo")
 
 def cuckoo_create(username=None, cfg=None):
     """Create a new Cuckoo Working Directory."""
-
     print "="*71
     print " "*4, yellow(
         "Welcome to Cuckoo Sandbox, this appears to be your first run!"
@@ -63,16 +62,18 @@ def cuckoo_create(username=None, cfg=None):
         """Don't copy .pyc files."""
         return [name for name in names if name.endswith(".pyc")]
 
-    dirpath = os.path.join(cuckoo.__path__[0], "data")
-    for filename in os.listdir(dirpath):
-        filepath = os.path.join(dirpath, filename)
-        if os.path.isfile(filepath):
-            if not filepath.endswith(".pyc"):
-                shutil.copy(filepath, cwd(filename))
-        else:
-            shutil.copytree(
-                filepath, cwd(filename), symlinks=True, ignore=_ignore_pyc
-            )
+    # The following effectively nops the first os.makedirs() call that
+    # shutil.copytree() does as we've already created the destination directory
+    # ourselves (assuming it didn't exist already).
+    orig_makedirs = shutil.os.makedirs
+    def _ignore_first_makedirs(dst):
+        shutil.os.makedirs = orig_makedirs
+    shutil.os.makedirs = _ignore_first_makedirs
+
+    shutil.copytree(
+        os.path.join(cuckoo.__path__[0], "data"),
+        cwd(), symlinks=True, ignore=_ignore_pyc
+    )
 
     # Drop our version of the CWD.
     our_version = open(cwd(".cwd", private=True), "rb").read()

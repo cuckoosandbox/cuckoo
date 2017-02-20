@@ -8,6 +8,8 @@ import pytest
 import shutil
 import tempfile
 
+import cuckoo
+
 from cuckoo.common.config import config
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.utils import Singleton
@@ -19,9 +21,6 @@ from cuckoo.misc import set_cwd, cwd
 class TestInit(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
-
-    def teardown(self):
-        shutil.rmtree(cwd())
 
     def test_exists(self):
         filepath = cwd("supervisord.conf")
@@ -116,25 +115,34 @@ class TestInit(object):
         assert ResultServer not in Singleton._instances
 
     def test_cuckoo_conf(self):
-        set_cwd(tempfile.mkdtemp())
         Folders.create(cwd(), "conf")
         write_cuckoo_conf()
 
     def test_cuckoo_create(self):
-        set_cwd(tempfile.mkdtemp())
+        # Specifically try to create $CWD/signatures/__init__.pyc to ensure
+        # that our .pyc filtering works.
+        initpyc = os.path.join(
+            cuckoo.__path__[0], "data", "signatures", "__init__.pyc"
+        )
+        open(initpyc, "wb").close()
+
         cuckoo_create("derpy")
         assert os.path.exists(cwd(".cwd"))
         assert os.path.exists(cwd("conf", "esx.conf"))
         assert os.path.exists(cwd("analyzer", "windows", "analyzer.py"))
+        assert os.path.exists(cwd("monitor", "latest"))
+        assert os.path.exists(cwd("distributed", "settings.py"))
+        assert not os.path.exists(cwd("signatures", "__init__.pyc"))
+        assert os.path.exists(initpyc)
+        os.unlink(initpyc)
 
     def test_cuckoo_create2(self):
-        set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
             "auxiliary": {
                 "sniffer": {
                     "tcpdump": "dumping.elf",
-                }
-            }
+                },
+            },
         })
         buf = open(cwd("conf", "auxiliary.conf"), "rb").read()
         assert "tcpdump = dumping.elf" in buf
