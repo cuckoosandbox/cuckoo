@@ -38,12 +38,18 @@ class Mattermost(Report):
             self.options.get("myurl")
         )
 
-        filename = results.get("target", {}).get("file", {}).get("name", "")
-        if self.options.get("hash-filename"):
-            filename = hashlib.sha256(filename).hexdigest()
+        filename, url = None, None
+        if results.get("info").get("category") == "file":
+            filename = results.get("target", {}).get("file", {}).get("name", "")
+            if self.options.get("hash-filename"):
+                filename = hashlib.sha256(filename).hexdigest()
+        elif results.get("info").get("category") == "url":
+            url = results.get("target", {}).get("url", "")
+            if self.options.get("hash-url"):
+                url = hashlib.sha256(url).hexdigest()
 
-        post += "File : {0} ::: Score : **{1}** ::: ".format(
-            filename, results.get("info", {}).get("score")
+        post += "Target : {0} ::: Score : **{1}** ::: ".format(
+            filename or url, results.get("info", {}).get("score")
         )
 
         if self.options.get("show-virustotal"):
