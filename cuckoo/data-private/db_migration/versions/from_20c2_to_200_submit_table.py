@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""submit table
+"""submit table (from Cuckoo 2.0-rc2 to 2.0.0)
 
 Revision ID: af16beb71aa7
 Revises: 4384097916c2

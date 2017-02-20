@@ -117,7 +117,7 @@ class TestSubmitManager(object):
 
     def test_submit_url1(self):
         assert self.submit_manager.pre(
-            "strings", "http://cuckoosandbox.org"
+            "strings", ["http://cuckoosandbox.org"]
         ) == 1
         config = json.load(open("tests/files/submit/url1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]
@@ -131,12 +131,10 @@ class TestSubmitManager(object):
         assert t.options == {}
 
     def test_submit_file1(self):
-        assert self.submit_manager.pre("files", [
-            {
-                "name": "icardres.dll",
-                "data": open("tests/files/icardres.dll", "rb").read(),
-            },
-        ]) == 1
+        assert self.submit_manager.pre("files", [{
+            "name": "icardres.dll",
+            "data": open("tests/files/icardres.dll", "rb").read(),
+        }]) == 1
 
         config = json.load(open("tests/files/submit/file1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]
@@ -150,12 +148,10 @@ class TestSubmitManager(object):
         assert t.options == {}
 
     def test_submit_arc1(self):
-        assert self.submit_manager.pre("files", [
-            {
-                "name": "msg_invoice.msg",
-                "data": open("tests/files/msg_invoice.msg", "rb").read(),
-            },
-        ]) == 1
+        assert self.submit_manager.pre("files", [{
+            "name": "msg_invoice.msg",
+            "data": open("tests/files/msg_invoice.msg", "rb").read(),
+        }]) == 1
 
         config = json.load(open("tests/files/submit/arc1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]

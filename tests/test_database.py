@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +6,8 @@ import mock
 import os
 import pytest
 import tempfile
+
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.main import main, cuckoo_create
@@ -103,6 +104,24 @@ class DatabaseEngine(object):
         self.d.connect(dsn=self.URI)
         assert "alembic_version" in self.d.engine.table_names()
 
+    def test_view_submit_tasks(self):
+        submit_id = self.d.add_submit(tempfile.mkdtemp(), "strings", {})
+        t1 = self.d.add_path(__file__, custom="1", submit_id=submit_id)
+        t2 = self.d.add_path(__file__, custom="2", submit_id=submit_id)
+
+        submit = self.d.view_submit(submit_id)
+        assert submit.id == submit_id
+        with pytest.raises(DetachedInstanceError):
+            print submit.tasks
+
+        submit = self.d.view_submit(submit_id, tasks=True)
+        assert len(submit.tasks) == 2
+        tasks = sorted((task.id, task) for task in submit.tasks)
+        assert tasks[0][1].id == t1
+        assert tasks[0][1].custom == "1"
+        assert tasks[1][1].id == t2
+        assert tasks[1][1].custom == "2"
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -197,6 +216,11 @@ class DatabaseMigrationEngine(object):
         task = self.d.view_task(task_id)
         assert task._options == "A"*1024
         assert task.custom == "B"*1024
+
+    def test_empty_submit_id(self):
+        task_id = self.d.add_url("http://google.com/")
+        task = self.d.view_task(task_id)
+        assert task.submit_id is None
 
 class DatabaseMigration060(DatabaseMigrationEngine):
     def test_machine_resultserver_port_is_int(self):

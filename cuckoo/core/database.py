@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "a1c8aab9598e"
+SCHEMA_VERSION = "ef1ecf216392"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -316,9 +316,13 @@ class Task(Base):
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(status_type, server_default=TASK_PENDING, nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    submit_id = Column(
+        Integer, ForeignKey("submit.id"), nullable=True, index=True
+    )
     processing = Column(String(16), nullable=True)
     route = Column(String(16), nullable=True)
     sample = relationship("Sample", backref="tasks")
+    submit = relationship("Submit", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
@@ -938,7 +942,8 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", owner="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None, category=None):
+            memory=False, enforce_timeout=False, clock=None, category=None,
+            submit_id=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -1007,6 +1012,7 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.submit_id = submit_id
 
         if tags:
             for tag in [t.strip() for t in tags.split(",") if t]:
@@ -1039,7 +1045,8 @@ class Database(object):
 
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", owner="", machine="", platform="",
-                 tags=None, memory=False, enforce_timeout=False, clock=None):
+                 tags=None, memory=False, enforce_timeout=False, clock=None,
+                 submit_id=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -1067,12 +1074,12 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "file")
+                        enforce_timeout, clock, "file", submit_id)
 
     def add_archive(self, file_path, filename, package, timeout=0,
                     options=None, priority=1, custom="", owner="", machine="",
                     platform="", tags=None, memory=False,
-                    enforce_timeout=False, clock=None):
+                    enforce_timeout=False, clock=None, submit_id=None):
         """Add a task to the database that's packaged in an archive file."""
         if not file_path or not os.path.exists(file_path):
             log.warning("File does not exist: %s.", file_path)
@@ -1090,11 +1097,12 @@ class Database(object):
         options = emit_options(options)
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "archive")
+                        enforce_timeout, clock, "archive", submit_id)
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
-                memory=False, enforce_timeout=False, clock=None):
+                memory=False, enforce_timeout=False, clock=None,
+                submit_id=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -1119,7 +1127,7 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "url")
+                        enforce_timeout, clock, "url", submit_id)
 
     def add_baseline(self, timeout=0, owner="", machine="", memory=False):
         """Add a baseline task to database.
@@ -1202,10 +1210,13 @@ class Database(object):
         return submit_id
 
     @classlock
-    def view_submit(self, submit_id):
+    def view_submit(self, submit_id, tasks=False):
         session = self.Session()
         try:
-            submit = session.query(Submit).get(submit_id)
+            q = session.query(Submit)
+            if tasks:
+                q = q.options(joinedload("tasks"))
+            submit = q.get(submit_id)
         except SQLAlchemyError as e:
             log.debug("Database error viewing submit: %s", e)
             return

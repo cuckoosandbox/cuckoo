@@ -18,10 +18,20 @@ class SubmissionRoutes(object):
         return render_template(request, "submission/submit.html")
 
     @staticmethod
-    def postsubmit(request):
-        task_ids = request.GET.getlist("id")
+    def postsubmit(request, submit_id):
+        submit = Database().view_submit(submit_id, tasks=True)
+        if not submit:
+            return view_error(request, "Invalid Submit ID specified")
+
+        task_ids = []
+        for task in submit.tasks:
+            task_ids.append(task.id)
+
         if not task_ids:
-            return view_error(request, "No task ids specified")
+            return view_error(
+                request, "This Submit ID is not associated with any tasks. "
+                "Please submit some files before loading this page."
+            )
 
         return render_template(
             request, "submission/postsubmit.html", task_ids=task_ids

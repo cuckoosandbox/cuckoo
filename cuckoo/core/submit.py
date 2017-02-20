@@ -171,6 +171,7 @@ class SubmitManager(object):
                 "machine": info.get("machine"),
                 "platform": info.get("platform"),
                 "options": self.translate_options(info, options),
+                "submit_id": submit_id,
             }
 
             if entry["type"] == "url":

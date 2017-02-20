@@ -187,7 +187,17 @@ class TestWebInterface(object):
         assert r.templates[0].name == "submission/submit.html"
 
     def test_submission_postsubmit(self, client):
-        r = client.get("/submit/post/?id=1")
+        r = client.get("/submit/post/1")
+        assert r.status_code == 500
+        assert "Invalid Submit ID" in r.content
+
+        submit_id = Database().add_submit(tempfile.mkdtemp(), "strings", {})
+        r = client.get("/submit/post/1")
+        assert r.status_code == 500
+        assert "not associated with any tasks" in r.content
+
+        Database().add_path(__file__, submit_id=submit_id)
+        r = client.get("/submit/post/1")
         assert r.status_code == 200
         assert r.templates[0].name == "submission/postsubmit.html"
 

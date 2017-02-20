@@ -554,7 +554,7 @@ $(function() {
 				success: function(data) {
 					if(data.status === true){
 	                    // redirect to submission success page
-	                    window.location = `/submit/post/?id=${data.tasks.join("&id=")}`;
+	                    window.location = `/submit/post/${data.submit_id}`;
 	                } else {
 	                    alert("Submission failed: " + data.message);
 	                    $('.page-freeze').removeClass('in');
@@ -601,17 +601,9 @@ $(function() {
 
 	// submission task summary init
 	if(document.getElementById('submission-task-table') !== null) {
-
-		// returns the task id's from the url
-		function get_task_ids() {
-			return location.search.substr(1).split('&').map(function(item) {
-				return parseInt(item.replace('id=',''));
-			});
-		}
-
 		var taskTable = new SubmissionTaskTable({
 			el: document.getElementById('submission-task-table'),
-			task_ids: get_task_ids(),
+			task_ids: task_ids,
 			debug: false, // set to true to do 10 calls max and stop
 			refreshRate: 2500,
 			onRender: function(el) {
