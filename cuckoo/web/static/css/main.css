@@ -3761,10 +3761,10 @@ body.night .dndupload__v2 .alternate-progress {
 }
 body.cyborg .dndupload__v2 {
   background-color: transparent;
-  border-color: #0d1b21;
+  border-color: #133b4a;
 }
 body.cyborg .dndupload__v2 form#uploader label {
-  color: #152D3B;
+  color: #d7d7d7;
 }
 body.night .dndupload__v2 {
   border-color: #375a7f;
@@ -4468,15 +4468,15 @@ table.cuckoo-table .loading {
   margin: 0;
 }
 body.cyborg table.cuckoo-table {
-  border-color: #071D25;
+  border-color: #133b4a;
   background-color: #152D3B;
 }
 body.cyborg table.cuckoo-table thead {
-  border-bottom: 1px solid #071D25;
+  border-bottom: 1px solid #133b4a;
 }
 body.cyborg table.cuckoo-table tbody tr,
 body.cyborg table.cuckoo-table tfoot {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night table.cuckoo-table {
   border-color: #375a7f;
@@ -4694,7 +4694,7 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 body.cyborg .flex-grid__nav {
   background-color: #020e10;
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .flex-grid__nav {
   background-color: #232323;
@@ -4808,7 +4808,7 @@ body.cyborg .cuckoo-files > #filetree div:hover {
   background-color: #152D3B;
 }
 body.cyborg .cuckoo-files > #filetree > ul > li:last-child {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .cuckoo-files > #filetree {
   color: #0ce3ac;
@@ -4908,7 +4908,7 @@ body.cyborg .cuckoo-files ul div .label-duplicate {
   cursor: pointer;
 }
 body.cyborg .cuckoo-files ul li {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .cuckoo-files ul li {
   border-color: #375a7f;
@@ -5083,7 +5083,7 @@ body.cyborg .cuckoo-files #selection-overview .extension-select:before {
   margin: 10px 0;
 }
 body.cyborg .flex-form__header, body.cyborg .flex-form__field-title {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .flex-form__header, body.night .flex-form__field-title {
   border-color: #375a7f;
@@ -5227,20 +5227,20 @@ body.cyborg .flex-form__header .custom-checkbox input + span:before, body.cyborg
   display: none;
 }
 body.cyborg .flex-form__toggle-group {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.cyborg .flex-form__toggle-group > li {
   background-color: transparent;
 }
 body.cyborg .flex-form__toggle-group > li label {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.cyborg .flex-form__toggle-group > li input:checked + label {
   background-color: #152D3B;
 }
 body.cyborg .flex-form__toggle-group > li > .manual-input > input {
   background: #020e10;
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.cyborg .flex-form__toggle-group > li > .manual-input.active, body.cyborg .flex-form__toggle-group > li > .manual-input.active input {
   background-color: #152D3B;
@@ -5296,7 +5296,7 @@ body.night .flex-form__toggle-group > li > input:checked + label {
 }
 body.cyborg .flex-form__toggle-list > li {
   background-color: transparent;
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .flex-form__toggle-list > li {
   background-color: transparent;
@@ -5448,10 +5448,10 @@ body.night .flex-form__toggle-list-switch > input:checked + span {
   cursor: pointer;
 }
 body.cyborg .flex-form__table th, body.cyborg .flex-form__table td, body.cyborg .flex-form__table thead, body.cyborg .flex-form__table tr {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.cyborg .flex-form__table tfoot td {
-  border-color: rgba(7, 29, 37, 0.5);
+  border-color: rgba(19, 59, 74, 0.5);
 }
 body.night .flex-form__table th, body.night .flex-form__table td, body.night .flex-form__table thead, body.night .flex-form__table tr {
   border-color: #375a7f;
@@ -5497,7 +5497,7 @@ body.night .flex-form__table tfoot, body.night .flex-form__table td {
   border-left: 1px solid #ccc;
 }
 body.cyborg .flex-form__select, body.cyborg .flex-form__select--horizontal {
-  border-color: #071D25;
+  border-color: #133b4a;
 }
 body.night .flex-form__select, body.night .flex-form__select--horizontal {
   border-color: #375a7f;

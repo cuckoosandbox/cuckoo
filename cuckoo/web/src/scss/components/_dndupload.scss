@@ -251,11 +251,11 @@
 
         @include cuckoo-theme('cyborg') {
             background-color: transparent;
-            border-color: $cyborg_panel_color;
+            border-color: $cyborg_border_color;
 
             form#uploader {
                 label {
-                    color: $cyborg_primary_color;
+                    color: $cyborg_text_color;
                 }
             }
         }
