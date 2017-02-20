@@ -79,6 +79,7 @@ class Mattermost(Report):
                 data=json.dumps(data)
             )
 
+            # note that POST max size is 4000 chars by default
             if r.status_code != 200:
                 raise CuckooReportError (
                     "Failed posting message due to : {0}".format(r.text)
