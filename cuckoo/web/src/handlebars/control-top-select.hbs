@@ -1,4 +1,4 @@
-<legend class="flex-form__field-title">{{title}} <a href="#"><i class="fa fa-info-circle"></i></a></legend>
+<legend class="flex-form__field-title">{{title}} {{#if doc_link}}<a href="{{doc_link}}" target="_blank"><i class="fa fa-info-circle"></i></a>{{/if}}</legend>
 
 <ul class="flex-form__toggle-group">
 	{{#each top_items}}

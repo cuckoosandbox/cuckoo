@@ -1606,7 +1606,8 @@ var SimpleSelect = function (_UserInputController) {
 			this.view.template = TEMPLATES.SimpleSelect;
 
 			this.view.setupModel({
-				options: this.options
+				options: this.options,
+				doc_link: this.config.doc_link
 			});
 
 			if (this.default) {
@@ -1707,6 +1708,7 @@ var TopSelect = function (_UserInputController2) {
 				top_items: top_items,
 				rest_items: rest_items,
 				extra_select: this.config.extra_select,
+				doc_link: this.config.doc_link,
 				snapped: snapped
 			});
 
@@ -1830,7 +1832,8 @@ var ToggleList = function (_UserInputController3) {
 
 			this.view.setupModel({
 				options: this.options,
-				extraOptions: this.config.extraOptions
+				extraOptions: this.config.extraOptions,
+				doc_link: this.config.doc_link
 			});
 
 			for (var opt in this.options) {
@@ -2483,6 +2486,7 @@ $(function () {
 										var network = new this.TopSelect({
 											name: 'network-routing-' + item.filetree.index,
 											title: 'Network Routing',
+											doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
 											default: item.per_file_options['network-routing'],
 											options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
 											extra_select: {
@@ -2500,6 +2504,7 @@ $(function () {
 										var pkg = new this.SimpleSelect({
 											name: 'package-' + item.filetree.index,
 											title: 'Package',
+											doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 											default: item.per_file_options['package'],
 											options: default_package_selection_options
 										}).on('change', function (value) {
@@ -2618,6 +2623,7 @@ $(function () {
 						name: 'network-routing',
 						title: 'Network Routing',
 						default: default_analysis_options['routing'],
+						doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
 						options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
 						extra_select: {
 							title: 'VPN via',
@@ -2635,6 +2641,7 @@ $(function () {
 					var pkg = new this.SimpleSelect({
 						name: 'package',
 						title: 'Package',
+						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
 					});

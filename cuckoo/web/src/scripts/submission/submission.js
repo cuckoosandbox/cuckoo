@@ -194,6 +194,7 @@ $(function() {
 									var network = new this.TopSelect({
 										name: 'network-routing-' + item.filetree.index,
 										title: 'Network Routing',
+										doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
 										default: item.per_file_options['network-routing'],
 										options: [
 											{ name:'none', value:'none', disabled: (routing_prefs['none'] === false) },
@@ -217,6 +218,7 @@ $(function() {
 									var pkg = new this.SimpleSelect({
 										name: 'package-' + item.filetree.index,
 										title: 'Package',
+										doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 										default: item.per_file_options['package'],
 										options: default_package_selection_options
 									}).on('change', function(value) {
@@ -358,6 +360,7 @@ $(function() {
 						name: 'network-routing',
 						title: 'Network Routing',
 						default: default_analysis_options['routing'],
+						doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
 						options: [
 							{ name:'none', value:'none', disabled: (routing_prefs['none'] === false) },
 							{ name:'drop', value:'drop', disabled: (routing_prefs['drop'] === false) },
@@ -381,6 +384,7 @@ $(function() {
 					var pkg = new this.SimpleSelect({
 						name: 'package',
 						title: 'Package',
+						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
 					});

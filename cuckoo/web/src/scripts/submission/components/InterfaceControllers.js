@@ -193,7 +193,8 @@ class SimpleSelect extends UserInputController {
 		this.view.template = TEMPLATES.SimpleSelect;
 
 		this.view.setupModel({
-			options: this.options
+			options: this.options,
+			doc_link: this.config.doc_link
 		});
 
 		if(this.default) {
@@ -284,6 +285,7 @@ class TopSelect extends UserInputController {
 			top_items: top_items,
 			rest_items: rest_items,
 			extra_select: this.config.extra_select,
+			doc_link: this.config.doc_link,
 			snapped: snapped
 		});
 
@@ -401,7 +403,8 @@ class ToggleList extends UserInputController {
 
 		this.view.setupModel({
 			options: this.options,
-			extraOptions: this.config.extraOptions
+			extraOptions: this.config.extraOptions,
+			doc_link: this.config.doc_link
 		});
 
 		for(var opt in this.options) {
