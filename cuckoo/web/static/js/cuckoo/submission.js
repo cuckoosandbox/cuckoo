@@ -2358,8 +2358,12 @@ $(function () {
 						if (response.defaults) {
 							default_analysis_options = response.defaults;
 
+							// extract the routing settings and delete
+							var routing_prefs = default_analysis_options.routing;
+							default_analysis_options.routing = routing_prefs.route;
+
 							// format the vpns array to work for the form field, using a 'name-value']
-							default_analysis_options.available_vpns = default_analysis_options.vpns.map(function (vpn) {
+							default_analysis_options.available_vpns = routing_prefs.vpns.map(function (vpn) {
 								return {
 									name: vpn,
 									value: vpn
@@ -2611,7 +2615,7 @@ $(function () {
 					var network = new this.TopSelect({
 						name: 'network-routing',
 						title: 'Network Routing',
-						default: default_analysis_options['network-routing'],
+						default: default_analysis_options['routing'],
 						options: [{ name: 'none', value: 'none' }, { name: 'drop', value: 'drop' }, { name: 'internet', value: 'internet' }, { name: 'inetsim', value: 'inetsim' }, { name: 'tor', value: 'tor' }],
 						extra_select: {
 							title: 'VPN via',
