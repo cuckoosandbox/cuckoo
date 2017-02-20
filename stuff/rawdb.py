@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,13 +7,11 @@ import IPython
 import os.path
 import sys
 
-sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-
 from cuckoo.core.database import *
-from cuckoo.misc import set_cwd
+from cuckoo.misc import decide_cwd
 
 if __name__ == "__main__":
-    set_cwd(os.path.expanduser("~/.cuckoo"))
+    decide_cwd(exists=True)
 
     db = Database()
     db.connect()

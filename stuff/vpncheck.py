@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,8 +9,6 @@ import os
 import socket
 import struct
 import sys
-
-sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.core.startup import init_rooter, init_routing
@@ -49,7 +47,10 @@ if __name__ == "__main__":
 
         ipaddr = get_ip_address(vpns[vpn].interface)
 
-        rooter("forward_enable", vpns[vpn].interface, vpns[vpn].interface, ipaddr)
+        rooter(
+            "forward_enable", vpns[vpn].interface,
+            vpns[vpn].interface, ipaddr
+        )
         rooter("srcroute_enable", vpns[vpn].rt_table, ipaddr)
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,7 +67,10 @@ if __name__ == "__main__":
             print>>sys.stderr, "Unable to connect through VPN", vpn
             error = 1
 
-        rooter("forward_disable", vpns[vpn].interface, vpns[vpn].interface, ipaddr)
+        rooter(
+            "forward_disable", vpns[vpn].interface,
+            vpns[vpn].interface, ipaddr
+        )
         rooter("srcroute_disable", vpns[vpn].rt_table, ipaddr)
 
     exit(error)
