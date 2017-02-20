@@ -17,7 +17,7 @@ from cuckoo.common.files import Files
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd, mkdir, is_windows
+from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
 
 @mock.patch("cuckoo.main.load_signatures")
 def test_init(p):
@@ -102,12 +102,13 @@ class TestAppsWithCWD(object):
             main.main(("--cwd", cwd(), "api"), standalone_mode=False)
             p.assert_called_once_with("localhost", 8090, False)
 
-    @mock.patch("cuckoo.main.cuckoo_rooter")
-    def test_rooter_abort(self, p, capsys):
-        p.side_effect = KeyboardInterrupt
-        main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
-        out, _ = capsys.readouterr()
-        assert "Aborting the Cuckoo Rooter" in out
+    if is_linux():
+        @mock.patch("cuckoo.main.cuckoo_rooter")
+        def test_rooter_abort(self, p, capsys):
+            p.side_effect = KeyboardInterrupt
+            main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
+            out, _ = capsys.readouterr()
+            assert "Aborting the Cuckoo Rooter" in out
 
     def test_community(self):
         with mock.patch("cuckoo.main.fetch_community") as p:

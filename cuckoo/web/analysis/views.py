@@ -3,28 +3,27 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import re
-import os
+import io
 import json
+import os
+import pymongo
+import re
+import sflock
 import urllib
 import zipfile
 
-from cStringIO import StringIO
+from bson.objectid import ObjectId
 
-import sflock
 from django.conf import settings
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
-
-import pymongo
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from bson.objectid import ObjectId
-from gridfs import GridFS
+from django.views.decorators.http import require_safe
 
 from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
+from cuckoo.common.elastic import elastic
 from cuckoo.common.files import Files
 from cuckoo.common.mongo import mongo
 from cuckoo.common.utils import json_default
@@ -33,7 +32,7 @@ from cuckoo.processing import network
 from cuckoo.web.bin.utils import view_error, render_template
 
 results_db = mongo.db
-fs = GridFS(results_db)
+fs = mongo.grid
 
 @require_safe
 def index(request):
@@ -375,7 +374,7 @@ def _search_helper(obj, k, value):
 @csrf_exempt
 def search(request):
     """New Search API using ElasticSearch as backend."""
-    if not settings.ELASTIC:
+    if not elastic.enabled:
         return view_error(request, "ElasticSearch is not enabled and therefore it "
                                    "is not possible to do a global search.")
 
@@ -386,8 +385,8 @@ def search(request):
 
     match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
 
-    r = settings.ELASTIC.search(
-        index=settings.ELASTIC_INDEX + "-*",
+    r = elastic.client.search(
+        index=elastic.index + "-*",
         body={
             "query": {
                 "query_string": {
@@ -588,7 +587,7 @@ def export(request, task_id):
         }
         json.dump(metadata, outfile, indent=4, default=json_default)
 
-    f = StringIO()
+    f = io.StringIO()
 
     # Creates a zip file with the selected files and directories of the task.
     zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED, allowZip64=True)
