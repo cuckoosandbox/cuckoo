@@ -521,6 +521,18 @@
 			}
 		}
 
+		&.disabled {
+
+			&:hover,
+			select:hover {
+				cursor: not-allowed;
+			}	
+
+			select, 
+			i{ opacity: .2; }
+
+		}
+
 		@include cuckoo-theme('cyborg') {
 			border-color: $cyborg_border_color;
 		}

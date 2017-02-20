@@ -5503,6 +5503,16 @@ body.night .flex-form__table tfoot, body.night .flex-form__table td {
 .flex-form__select--horizontal select {
   border-left: 1px solid #ccc;
 }
+.flex-form__select.disabled:hover, .disabled.flex-form__select--horizontal:hover,
+.flex-form__select.disabled select:hover,
+.disabled.flex-form__select--horizontal select:hover {
+  cursor: not-allowed;
+}
+.flex-form__select.disabled select, .disabled.flex-form__select--horizontal select,
+.flex-form__select.disabled i,
+.disabled.flex-form__select--horizontal i {
+  opacity: .2;
+}
 body.cyborg .flex-form__select, body.cyborg .flex-form__select--horizontal {
   border-color: #133b4a;
 }

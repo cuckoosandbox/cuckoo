@@ -224,9 +224,6 @@ class TopSelect extends UserInputController {
 		this.options = this.config.options;
 		this.extra_select = this.config.extra_select;
 		this.units = this.config.units;
-
-		console.log(this.options);
-
 		this.initialise();
 	}
 

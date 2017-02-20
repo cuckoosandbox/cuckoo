@@ -24,9 +24,9 @@
 </ul>
 
 {{#if extra_select}}
-	<div class="flex-form__select flex-form__select--horizontal">
+	<div class="flex-form__select flex-form__select--horizontal {{#if extra_select.disabled}}disabled{{/if}}">
 		<label for="{{extra_select.name}}" class="title">{{extra_select.title}}</label>
-		<select name="{{extra_select.name}}" id="{{extra_select.name}}">
+		<select name="{{extra_select.name}}" id="{{extra_select.name}}" {{#if extra_select.disabled}}disabled{{/if}}>
 			<option selected disabled>Select</option>
 			{{#each extra_select.options}}
 				<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>

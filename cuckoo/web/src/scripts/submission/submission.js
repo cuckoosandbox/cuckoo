@@ -206,6 +206,7 @@ $(function() {
 											title: 'VPN via',
 											name: 'vpn-' + item.filetree.index,
 											default: item.per_file_options['vpn'] || undefined,
+											disabled: (routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0),
 											options: default_analysis_options.available_vpns
 										}
 									}).on('change', function(value) {
@@ -367,6 +368,7 @@ $(function() {
 						extra_select: {
 							title: 'VPN via',
 							name: 'vpn',
+							disabled: (routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0),
 							on: {
 								change: function() {
 									// console.log('vpn changed');

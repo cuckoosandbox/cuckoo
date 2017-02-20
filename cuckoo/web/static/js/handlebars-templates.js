@@ -145,7 +145,9 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
 },"16":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
-  return "	<div class=\"flex-form__select flex-form__select--horizontal\">\n		<label for=\""
+  return "	<div class=\"flex-form__select flex-form__select--horizontal "
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.disabled : stack1),{"name":"if","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "\">\n		<label for=\""
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.name : stack1), depth0))
     + "\" class=\"title\">"
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.title : stack1), depth0))
@@ -153,7 +155,9 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.name : stack1), depth0))
     + "\" id=\""
     + alias2(alias1(((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.name : stack1), depth0))
-    + "\">\n			<option selected disabled>Select</option>\n"
+    + "\" "
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.disabled : stack1),{"name":"if","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ">\n			<option selected disabled>Select</option>\n"
     + ((stack1 = helpers.each.call(depth0,((stack1 = (depth0 != null ? depth0.extra_select : depth0)) != null ? stack1.options : stack1),{"name":"each","hash":{},"fn":this.program(17, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "		</select>\n		<i class=\"fa fa-chevron-down\"></i>\n	</div>\n";
 },"17":function(depth0,helpers,partials,data) {

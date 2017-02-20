@@ -1645,9 +1645,6 @@ var TopSelect = function (_UserInputController2) {
 		_this2.options = _this2.config.options;
 		_this2.extra_select = _this2.config.extra_select;
 		_this2.units = _this2.config.units;
-
-		console.log(_this2.options);
-
 		_this2.initialise();
 		return _this2;
 	}
@@ -2492,6 +2489,7 @@ $(function () {
 												title: 'VPN via',
 												name: 'vpn-' + item.filetree.index,
 												default: item.per_file_options['vpn'] || undefined,
+												disabled: routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0,
 												options: default_analysis_options.available_vpns
 											}
 										}).on('change', function (value) {
@@ -2624,6 +2622,7 @@ $(function () {
 						extra_select: {
 							title: 'VPN via',
 							name: 'vpn',
+							disabled: routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0,
 							on: {
 								change: function change() {
 									// console.log('vpn changed');
