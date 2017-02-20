@@ -1,0 +1,39 @@
+{
+  "submit_id": 5,
+  "file_selection": [
+    {
+      "type": "file",
+      "relapath": null,
+      "finger": {
+        "magic_human": "PE32+ executable (DLL) (console) x86-64 (for MS Windows)",
+        "mime": "application/x-dosexec",
+        "magic": "PE32+ executable (DLL) (console) x86-64, for MS Windows",
+        "mime_human": "dosexec"
+      },
+      "duplicate": false,
+      "package": "dll",
+      "extrpath": [],
+      "password": null,
+      "children": [],
+      "size": 8016,
+      "filepath": "icardres.dll",
+      "selected": true,
+      "filename": "icardres.dll"
+    }
+  ],
+  "global": {
+    "vpn": "",
+    "machine": "",
+    "options": {
+      "enable-services": true,
+      "simulated-human-interaction": true,
+      "enforce-timeout": false,
+      "full-memory-dump": false,
+      "process-memory-dump": true,
+      "no-injection": true
+    },
+    "priority": 1,
+    "package": "python",
+    "network-routing": "internet"
+  }
+}

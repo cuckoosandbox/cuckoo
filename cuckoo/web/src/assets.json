@@ -1,0 +1,14 @@
+{
+	"main": {
+		"js/vendor.js@concat": [
+			"handlebars/handlebars.js",
+			"string/dist/string.js",
+			"moment/moment.js"
+		],
+		"css/vendor.css@concat": [],
+		"fonts@copy": [
+			"font-awesome/fonts/*",
+			"font-roboto/dist/fonts/*"
+		]
+	}
+}

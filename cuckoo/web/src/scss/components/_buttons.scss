@@ -1,0 +1,61 @@
+%reset-button {
+	-webkit-appearance: none;
+	border: 0;
+
+	&:focus {
+		outline: 0;
+	}
+}
+
+.grouped-buttons {
+	display: flex;
+	background-color: #fff;
+
+	button, a {
+
+		@extend %reset-button;
+		background-color: #fff;
+		color: #545454;
+		padding: 10px 0;
+		flex-basis: 100%;
+		font-weight: 500;
+		text-align: center;
+		text-decoration: none;
+
+		&:active {
+			background-color: #e5e5e5;
+		}
+
+		&.active {
+			background-color: #337AB7;
+			font-weight: 700;
+			color: #fff;
+		}
+
+		&:hover, &:focus, &:active {
+			text-decoration: none;
+		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_primary_color;
+			color: $cyborg_text_color;
+
+			&.active {
+				background-color: $cyborg_panel_color;
+				color: $cyborg_secundary_color;
+			}
+		}
+
+		@include cuckoo-theme('night') {
+			background-color: $night_accent_color;
+			color: $night_text_color;
+
+			&.active {
+				background-color: $night_darker_color;
+				color: $cyborg_secundary_color;
+			}
+		}
+
+	}
+
+}

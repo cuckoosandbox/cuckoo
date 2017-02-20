@@ -2,7 +2,15 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from django.template.base import TemplateSyntaxError
+
 from cuckoo.misc import cwd
+
+class InvalidString(str):
+    def __mod__(self, other):
+        raise TemplateSyntaxError(
+            "Undefined variable or unknown value for: %s" % other
+        )
 
 SECRET_KEY = "A"*40
 ROOT_URLCONF = "web.urls"
@@ -33,6 +41,12 @@ INSTALLED_APPS = (
     "analysis",
 )
 
+MIDDLEWARE_CLASSES = (
+    # Cuckoo headers.
+    "web.headers.CuckooHeaders",
+    "web.errors.ExceptionMiddleware",
+)
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -43,7 +57,11 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": {
                 "django.core.context_processors.request"
-            }
+            },
+            "string_if_invalid": InvalidString("%s"),
         },
     },
 ]
+
+# Enable debug mode.
+DEBUG = True

@@ -67,12 +67,18 @@ def validate_hash(hash):
 
     return "".join(ch for ch in hash if re.match("\\w", ch))
 
-def validate_url(url, schemes=None):
+def validate_url(url):
     """Validates an URL using Django's built-in URL validator"""
-    val = URLValidator(schemes=schemes)
+    val = URLValidator(schemes=["http", "https"])
 
     try:
         val(url)
+        return True
+    except:
+        pass
+
+    try:
+        val("http://%s" % url)
         return True
     except:
         pass

@@ -203,7 +203,7 @@ class List(Type):
             return False
 
     def emit(self, value):
-        return self.sep.join(value)
+        return (", " if self.sep == "," else self.sep).join(value)
 
 class Config(object):
     """Configuration file parser."""
@@ -281,6 +281,7 @@ class Config(object):
                 "tags": String(),
                 "options": String(),
             },
+            "__star__": ("virtualbox", "machines"),
         },
         "auxiliary": {
             "sniffer": {
@@ -343,6 +344,7 @@ class Config(object):
                 "resultserver_ip": String("10.0.2.2"),
                 "resultserver_port": Int(2042),
             },
+            "__star__": ("avd", "machines"),
         },
         "esx": {
             "esx": {
@@ -363,6 +365,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("esx", "machines"),
         },
         "kvm": {
             "kvm": {
@@ -380,6 +383,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("kvm", "machines"),
         },
         "memory": {
             "basic": {
@@ -497,6 +501,7 @@ class Config(object):
                 "platform": String("windows"),
                 "ip": String("192.168.56.101"),
             },
+            "__star__": ("physical", "machines"),
         },
         "processing": {
             "analysisinfo": {
@@ -666,8 +671,12 @@ class Config(object):
                     ),
                 },
             ],
+            "__star__": ("qemu", "machines"),
         },
         "reporting": {
+            "feedback": {
+                "enabled": Boolean(False),
+            },
             "jsondump": {
                 "enabled": Boolean(True),
                 "indent": Int(4),
@@ -758,6 +767,7 @@ class Config(object):
                 "interface": String("tun0"),
                 "rt_table": String("tun0"),
             },
+            "__star__": ("vpn", "vpns"),
         },
         "vmware": {
             "vmware": {
@@ -783,6 +793,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("vmware", "machines"),
         },
         "vsphere": {
             "vsphere": {
@@ -805,6 +816,7 @@ class Config(object):
                 "resultserver_port": Int(required=False),
                 "tags": String(required=False),
             },
+            "__star__": ("vsphere", "machines"),
         },
         "xenserver": {
             "xenserver": {
@@ -825,6 +837,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("xenserver", "machines"),
         },
     }
 

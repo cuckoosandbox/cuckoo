@@ -108,7 +108,9 @@
                         $(document).ready(function(){
                             function theme_switch(theme) {
                                 Cookies("theme", theme, {expires: 365 * 10});
-                                location.reload();
+                                // location.reload();
+                                $('body').removeClass('cyborg night');
+                                $('body').addClass(theme);
                             }
 
                             $(".nav .dropdown-menu li a[id^=theme_]").click(function(){

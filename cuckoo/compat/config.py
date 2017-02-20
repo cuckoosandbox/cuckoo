@@ -568,6 +568,9 @@ def _20c2_200(c):
         "reporting:elasticsearch:hosts",
         c["reporting"]["elasticsearch"]["hosts"]
     )
+    c["reporting"]["feedback"] = {
+        "enabled": False,
+    }
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,

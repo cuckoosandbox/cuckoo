@@ -6,6 +6,8 @@
 import os
 import sys
 
+from django.template.base import TemplateSyntaxError
+
 from cuckoo.common.colors import red
 from cuckoo.common.elastic import elastic
 from cuckoo.common.mongo import mongo
@@ -101,6 +103,7 @@ MIDDLEWARE_CLASSES = (
     "django.contrib.messages.middleware.MessageMiddleware",
     # Cuckoo headers.
     "web.headers.CuckooHeaders",
+    # Our custom exception handler.
     "web.errors.ExceptionMiddleware"
 )
 
@@ -189,3 +192,13 @@ LOGGING = {
 
 # Import local settings.
 execfile(cwd("web", "local_settings.py"), globals(), locals())
+
+class InvalidString(str):
+    def __mod__(self, other):
+        raise TemplateSyntaxError(
+            "Undefined variable or unknown value for: %s" % other
+        )
+
+if DEBUG:
+    for templ in TEMPLATES:
+        templ["OPTIONS"]["string_if_invalid"] = InvalidString("%s")

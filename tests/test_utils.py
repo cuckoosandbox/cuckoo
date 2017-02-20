@@ -352,3 +352,10 @@ def test_supported_version():
     assert utils.supported_version("2.0.1b1", "2.0.1", None) is False
     assert utils.supported_version("2.0.1b1", "2.0.1a1", None) is True
     assert utils.supported_version("2.0.1b1", "2.0.1a1", "2.0.1") is True
+
+def test_validate_url():
+    assert utils.validate_url("http://google.com/")
+    assert utils.validate_url("google.com")
+    assert utils.validate_url("google.com/test")
+    assert utils.validate_url("https://google.com/")
+    assert not utils.validate_url("ftp://google.com/")

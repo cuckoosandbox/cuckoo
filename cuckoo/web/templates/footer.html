@@ -1,6 +1,5 @@
 {% load staticfiles %}
-    <!-- Footer
-    ================================================== -->
+    <!-- Footer -->
     <footer>
         <div class="container-fluid center">
             <a href="#">Back to the top</a>
@@ -15,10 +14,28 @@
     <!-- feedback form modal -->
     {% include "analysis/pages/feedback/form.html" %}
 
+    <!-- cuckoo freeze-page loader -->
+    <div class="page-freeze">
+        <div class="page-freeze__graphic">
+            <img src="{% static "graphic/cuckoo-coffee-cup.png" %}" alt="Cuckoo" />
+        </div>
+        <div class="page-freeze__animation">
+            <!-- spinner -->
+            <div class="page-freeze__spinner">
+                <div class="page-freeze__spinner--c1"></div>
+                <div class="page-freeze__spinner--c2"></div>
+            </div>
+        </div>
+        <p class="page-freeze__message">We're processing your submission... This could take a few seconds.</p>
+    </div>
+
+    <script src="{% static "js/vendor.js" %}"></script>
+    <script src="{% static "js/handlebars-templates.js" %}"></script>
     <script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
     <script src="{% static "js/bootstrap/bootstrap-fileupload.js" %}"></script>
     <script src="{% static "js/misc/lightbox.js" %}"></script>
     <script src="{% static "js/cuckoo/analysis_sidebar.js" %}"></script>
+    <script src="{% static "js/cuckoo/submission.js" %}"></script>
     <script src="{% static "js/cuckoo/app.js" %}"></script>
 </body>
 </html>

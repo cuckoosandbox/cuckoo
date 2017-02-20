@@ -1,0 +1,68 @@
+<div class="flex-form">
+
+	<header class="flex-form__header">
+		<h4><i class="fa fa-list"></i> Selection</h4>
+	</header>
+
+	<ul class="flex-static__summary" id="selection-overview">
+
+		<li>
+			<div class="flex-form__simple-inline no-icon">
+				<label for="search-selection"><i class="fa fa-search"></i></label>
+				<input type="text" name="search-selection" id="search-selection" placeholder="Search selection" />
+
+				{{#if extensions}}
+					<span class="extension-select">
+						<select class="none-selected">
+							<option disabled selected>Extension</option>
+							{{#each extensions}}
+								<option value="{{this}}">{{this}}</option>
+							{{/each}}
+						</select>
+					</span>
+				{{/if}}
+
+			</div>
+		</li>
+
+		{{#each selection}}
+			<li data-index="{{this.filetree.index}}">
+				<a href="{{this.filetree.index}}" {{#if this.filetree.is_directory}} class="disabled" disabled{{/if}}>
+					<strong>
+						{{#if this.filetree.is_directory}}
+							<i class="fa fa-folder-o"></i>
+						{{else}}
+							<i class="fa fa-file-o"></i>
+						{{/if}}	
+						{{#if this.fname_short}}
+							{{this.fname_short}}
+						{{else}}
+							{{this.filename}}
+						{{/if}}
+					</strong>
+					{{#unless this.filetree.is_directory}}
+						<small>
+							{{#if this.rpath_short}}
+								{{this.rpath_short}}
+							{{else}}
+								{{this.relapath}}
+							{{/if}}
+						</small>
+					{{/unless}}
+				</a>
+			</li>
+		{{/each}}
+
+		<li class="no-results hidden">
+			<p class="description">Your search returned 0 results</p>
+		</li>
+
+	</ul>
+
+	{{#unless empty}}
+		<p class="description">These files you selected will be included in your analysis. When ready, click 'analyze' next to the page title.</p>
+	{{else}}
+		<p class="description">You have to select some files before you can analyze. To select, mark the checkboxes before the file/directory names.</p>
+	{{/unless}}
+
+</div>

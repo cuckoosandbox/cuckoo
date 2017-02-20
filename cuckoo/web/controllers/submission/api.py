@@ -10,13 +10,42 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from cuckoo.core.database import Database
+from cuckoo.common.config import config
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
 
-db = Database()
+submit_manager = SubmitManager()
 
-class SubmissionApi:
+def defaults():
+    machinery = config("cuckoo:cuckoo:machinery")
+
+    if config("routing:vpn:enabled"):
+        vpns = config("routing:vpn:vpns")
+    else:
+        vpns = []
+
+    return {
+        "machine": config("%s:%s:machines" % (machinery, machinery)),
+        "package": None,
+        "priority": 2,
+        "timeout": config("cuckoo:timeouts:default"),
+        "routing": {
+            "route": config("routing:routing:route"),
+            "inetsim": config("routing:inetsim:enabled"),
+            "tor": config("routing:tor:enabled"),
+            "vpns": vpns,
+        },
+        "options": {
+            "enable-services": False,
+            "enforce-timeout": False,
+            "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
+            "no-injection": False,
+            "process-memory-dump": True,
+            "simulated-human-interaction": True,
+        },
+    }
+
+class SubmissionApi(object):
     @staticmethod
     @csrf_exempt
     @require_http_methods(["POST"])
@@ -31,7 +60,7 @@ class SubmissionApi:
                     "data": f.file,
                 })
 
-            submit_id = SubmitManager().pre(submit_type="files", data=data)
+            submit_id = submit_manager.pre(submit_type="files", data=data)
             return redirect("submission/pre", submit_id=submit_id)
         else:
             body = json.loads(request.body)
@@ -40,9 +69,9 @@ class SubmissionApi:
             if submit_type != "strings":
                 return json_error_response("type not \"strings\"")
 
-            data = body["data"].split("\n")
-
-            submit_id = SubmitManager().pre(submit_type=submit_type, data=data)
+            submit_id = submit_manager.pre(
+                submit_type=submit_type, data=body["data"].split("\n")
+            )
 
             return JsonResponse({
                 "status": True,
@@ -55,7 +84,7 @@ class SubmissionApi:
         password = body.get("password", None)
         astree = body.get("astree", True)
 
-        data = SubmitManager().get_files(
+        data = submit_manager.get_files(
             submit_id=submit_id,
             password=password,
             astree=astree
@@ -64,62 +93,17 @@ class SubmissionApi:
         return JsonResponse({
             "status": True,
             "data": data,
+            "defaults": defaults(),
         }, encoder=JsonSerialize)
 
     @api_post
     def submit(request, body):
-        if "selected_files" not in body:
-            return json_error_response("Bad parameter (selected_files)")
-
-        if "form" not in body:
-            return json_error_response("Bad parameters (form)")
-
-        if "submit_id" not in body:
-            return json_error_response("Bad parameters (submit_id)")
-
-        data = {
-            "selected_files": body["selected_files"],
-            "form": {},
-        }
-
-        options = (
-            "route", "package", "timeout", "options", "priority",
-            "custom", "tags", "machine", "human"
-        )
-
-        for option in options:
-            if option not in body["form"]:
-                return json_error_response(
-                    "Expected %s in parameter \"form\", none found" % option
-                )
-
-            val = body["form"][option].lower()
-            if val == "none" or val == "":
-                body["form"][option] = None
-
-            data["form"][option] = body["form"][option]
-
-        checkboxes = (
-            "free", "process_memory", "memory", "enforce_timeout",
-            "human", "services",
-        )
-
-        for checkbox in checkboxes:
-            if checkbox not in body["form"]:
-                data["form"][checkbox] = False
-            else:
-                if body["form"][checkbox] == "on":
-                    data["form"][checkbox] = True
-                else:
-                    data["form"][checkbox] = False
-
-        tasks = SubmitManager().submit(
-            submit_id=body["submit_id"],
-            selected_files=data["selected_files"],
-            **data["form"]
+        submit_id = body.pop("submit_id", None)
+        tasks = submit_manager.submit(
+            submit_id=submit_id, config=body
         )
 
         return JsonResponse({
             "status": True,
-            "data": tasks,
+            "tasks": tasks,
         }, encoder=JsonSerialize)

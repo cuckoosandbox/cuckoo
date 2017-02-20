@@ -27,23 +27,6 @@ def force_int(value):
     finally:
         return value
 
-def dropped_filepath(task_id, sha1):
-    record = mongo.db.analysis.find_one(
-        {
-            "info.id": int(task_id),
-            "dropped.sha1": sha1,
-        }
-    )
-
-    if not record:
-        raise ObjectDoesNotExist
-
-    for dropped in record["dropped"]:
-        if dropped["sha1"] == sha1:
-            return dropped["path"]
-
-    raise ObjectDoesNotExist
-
 def render_index(request, kwargs={}):
     files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
 

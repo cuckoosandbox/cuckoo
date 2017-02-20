@@ -10,13 +10,14 @@ import tempfile
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf
 )
-from cuckoo.common.exceptions import CuckooConfigurationError
-from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.exceptions import (
+    CuckooConfigurationError, CuckooStartupError
+)
 from cuckoo.common.files import Folders, Files
 from cuckoo.compat.config import migrate
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.startup import check_configs
-from cuckoo.main import main
+from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
 CONF_EXAMPLE = """
@@ -293,6 +294,21 @@ def test_invalid_machinery():
     with pytest.raises(CuckooStartupError) as e:
         check_configs()
     e.match("unknown machinery")
+
+def test_invalid_feedback():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "feedback": {
+                "enabled": True,
+                "name": "foo",
+                "email": "a@b.com!",
+            }
+        }
+    })
+    with pytest.raises(CuckooStartupError) as e:
+        check_configs()
+    e.match("Cuckoo Feedback configuration")
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
@@ -977,8 +993,9 @@ def test_full_migration_040():
         assert filename in cfg
         for section, entries in sections.items():
             # We check machines and VPNs manually later on.
-            if section == "*":
+            if section == "*" or section == "__star__":
                 continue
+
             assert section in cfg[filename]
             for key, value in entries.items():
                 assert key in cfg[filename][section]
