@@ -819,11 +819,12 @@ class FileTree {
 				}
 
 				if(cb && typeof cb === 'function') cb(item);
+
 			});
 
 		}
 
-		iterate(arr);
+		iterate(arr, callback);
 
 	}
 

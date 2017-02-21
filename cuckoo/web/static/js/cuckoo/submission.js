@@ -1288,7 +1288,7 @@ var FileTree = function () {
 				});
 			}
 
-			iterate(arr);
+			iterate(arr, callback);
 		}
 	}, {
 		key: 'getParentContainerName',
