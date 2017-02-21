@@ -7,10 +7,11 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
+var debug = require('gulp-debug');
 
 module.exports = function(done) {
 
-	var stream = gulp.src(['scripts/**/*.js', '!scripts/submission/**'])
+	gulp.src(['scripts/*.js'])
 		.pipe(sourcemaps.init())
 		.pipe(babel({
 			presets: 'es2015'
@@ -18,5 +19,7 @@ module.exports = function(done) {
 		.pipe(gutil.env.production ? uglify() : gutil.noop())
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('../static/js/cuckoo'));
+
+	done();
 
 }
