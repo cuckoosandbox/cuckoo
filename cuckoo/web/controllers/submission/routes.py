@@ -34,7 +34,7 @@ class SubmissionRoutes(object):
             )
 
         return render_template(
-            request, "submission/postsubmit.html", task_ids=task_ids
+            request, "submission/postsubmit.html", task_ids=sorted(task_ids)
         )
 
     @staticmethod
