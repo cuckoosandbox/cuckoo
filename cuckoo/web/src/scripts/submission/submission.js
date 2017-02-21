@@ -84,6 +84,23 @@ $(function() {
 								}
 							});
 
+							// parse the available machines
+							default_analysis_options.available_machines = default_analysis_options.machine.map(function(machine) {
+								return {
+									name: machine,
+									value: machine
+								}
+							});
+
+							// create a 'default=null' value
+							default_analysis_options.available_machines.unshift({
+								name: 'default',
+								value: null
+							});
+
+							// set the value to 'default' (or null in this case)
+							default_analysis_options.machine = default_analysis_options.available_machines[0].value;
+
 						}
 
 						analysis_ui.originalData = response.files;
@@ -326,11 +343,7 @@ $(function() {
 										name: 'machine-' + item.filetree.index,
 										title: 'Machine',
 										default: item.per_file_options['machine'],
-										options: [
-											{ name: 'default', value: 'default' },
-											{ name: 'Cuckoo1', value: 'Cuckoo1' },
-											{ name: 'Cuckoo2', value: 'Cuckoo2' }
-										]
+										options: default_analysis_options.available_machines
 									}).on('change', function(value) {
 										item.per_file_options['machine'] = value;
 										setFieldValue.call(this, value);
@@ -441,11 +454,7 @@ $(function() {
 						name: 'machine',
 						title: 'Machine',
 						default: default_analysis_options['machine'],
-						options: [
-							{ name: 'default', value: 'default' },
-							{ name: 'Cuckoo1', value: 'Cuckoo1' },
-							{ name: 'Cuckoo2', value: 'Cuckoo2' }
-						]
+						options: default_analysis_options['available_machines']
 					});
 
 					var timeout = new this.TopSelect({
