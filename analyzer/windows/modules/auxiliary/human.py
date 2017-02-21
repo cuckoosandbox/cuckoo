@@ -50,7 +50,7 @@ def foreach_child(hwnd, lparam):
         "remind me later",
         "save", "sauvegarder"
     ]
-    
+
     # List of buttons labels to not click.
     dontclick = [
         "don't run",
