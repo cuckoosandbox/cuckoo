@@ -83,11 +83,35 @@ class CuckooWeb {
     static redirect(location){
         window.location.href = location;
     }
+
+    static toggle_page_freeze(open, text) {
+
+        if(open) {
+            $('.page-freeze__message').text(text);
+            $('.page-freeze').addClass('in');
+        } else {
+            $('.page-freeze').removeClass('in');
+            $('.page-freeze__options').addClass('hidden');
+        }
+    }
+
+    static error_page_freeze(text) {
+        $('.page-freeze').addClass('error');
+        $('.page-freeze__message').text(text);
+        $('.page-freeze__options').removeClass('hidden');
+    }
+
 }
 
 $(document).ready(function() {
-
     $("[data-toggle=popover]").popover();
+
+    $('.close-page-freeze').bind('click', function() {
+        CuckooWeb.toggle_page_freeze(false);
+        setTimeout(function() {
+            $('.page-freeze').removeClass('error');
+        }, 300);
+    });
 
 });
 

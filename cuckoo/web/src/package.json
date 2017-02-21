@@ -21,6 +21,7 @@
     "gulp-bower-assets": "0.0.3",
     "gulp-clean-css": "^3.0.2",
     "gulp-concat": "^2.6.1",
+    "gulp-debug": "^3.1.0",
     "gulp-declare": "^0.3.0",
     "gulp-handlebars": "^4.0.0",
     "gulp-insert": "^0.5.0",

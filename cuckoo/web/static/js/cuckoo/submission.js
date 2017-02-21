@@ -2791,7 +2791,8 @@ $(function () {
 
 			e.preventDefault();
 
-			$(".page-freeze").addClass('in');
+			// $(".page-freeze").addClass('in');
+			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
 
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
@@ -2813,14 +2814,14 @@ $(function () {
 						// redirect to submission success page
 						window.location = '/submit/post/' + data.submit_id;
 					} else {
-						alert("Submission failed: " + data.message);
-						$('.page-freeze').removeClass('in');
+						// alert("Submission failed: " + data.message);
+						CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 					}
 				},
 				error: function error() {
 					console.log(arguments);
-					alert('submission failed! see the console for details.');
-					$('.page-freeze').removeClass('in');
+					// alert('submission failed! see the console for details.');
+					CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 				}
 			});
 		});

@@ -15,7 +15,7 @@
     {% include "analysis/pages/feedback/form.html" %}
 
     <!-- cuckoo freeze-page loader -->
-    <div class="page-freeze">
+    <div class="page-freeze" id="page-freeze-container">
         <div class="page-freeze__graphic">
             <img src="{% static "graphic/cuckoo-coffee-cup.png" %}" alt="Cuckoo" />
         </div>
@@ -26,7 +26,12 @@
                 <div class="page-freeze__spinner--c2"></div>
             </div>
         </div>
-        <p class="page-freeze__message">We're processing your submission... This could take a few seconds.</p>
+        <div class="page-freeze__context">
+            <p class="page-freeze__message">We're processing your submission... This could take a few seconds.</p>
+            <div class="page-freeze__options hidden">
+                <button class="btn btn-default btn-lg close-page-freeze">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="{% static "js/vendor.js" %}"></script>

@@ -58,6 +58,11 @@
 	left: 0;
 	z-index: 2000;
 	background-color: rgba(#66CCCC, .9);
+	font-family: "Roboto", sans-serif;
+
+	&.error {
+		background-color: rgba(70, 6, 11, 0.9); 
+	}
 
 	&__graphic {
 		position: relative;
@@ -67,6 +72,15 @@
 		& > img {
 			width: 100%;
 		}
+
+		*::selection {
+			background: transparent;
+		}
+
+		.error & {
+			display: none;
+		}
+
 	}
 
 	&__spinner {
@@ -101,14 +115,35 @@
 			position: absolute;
 		}
 
+		.error & {
+			display: none;
+		}
+
 	} 
 
 	&__message {
 		color: #fff;
-		font-family: "Roboto", sans-serif;
 		font-size: 18px;
 		font-weight: 700;
 		margin: 20px;
+	}
+
+	&__context {
+		text-align: center;
+	}
+
+	&__close {
+		position: absolute;
+		right: 20px;
+		top: 10px;
+		color: #fff;
+		font-size: 40px;
+	}
+
+	&__options {
+		.btn {
+			&:focus { outline: none !important; }
+		}
 	}
 
 	&.in {
@@ -124,6 +159,10 @@
 
 	@include cuckoo-theme('cyborg') {
 		background-color: rgba($cyborg_background_color, .9);
+
+		&.error {
+			background-color: rgba(70, 6, 11, 0.9);
+		}
 	}
 
 }

@@ -5709,7 +5709,11 @@ body.night .flex-static__summary li {
   left: 0;
   z-index: 2000;
   background-color: rgba(102, 204, 204, 0.9);
+  font-family: "Roboto", sans-serif;
   transition: opacity 300ms ease-in-out;
+}
+.page-freeze.error {
+  background-color: rgba(70, 6, 11, 0.9) !important;
 }
 .page-freeze__graphic {
   position: relative;
@@ -5718,6 +5722,12 @@ body.night .flex-static__summary li {
 }
 .page-freeze__graphic > img {
   width: 100%;
+}
+.page-freeze__graphic *::selection {
+  background: transparent;
+}
+.error .page-freeze__graphic {
+  display: none;
 }
 .page-freeze__spinner {
   position: absolute;
@@ -5749,12 +5759,27 @@ body.night .flex-static__summary li {
   animation: c2 3.5s infinite linear;
   position: absolute;
 }
+.error .page-freeze__spinner {
+  display: none;
+}
 .page-freeze__message {
   color: #fff;
-  font-family: "Roboto", sans-serif;
   font-size: 18px;
   font-weight: 700;
   margin: 20px;
+}
+.page-freeze__context {
+  text-align: center;
+}
+.page-freeze__close {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  color: #fff;
+  font-size: 40px;
+}
+.page-freeze__options .btn:focus {
+  outline: none !important;
 }
 .page-freeze.in {
   top: 0;
@@ -5765,6 +5790,9 @@ body.night .flex-static__summary li {
 }
 body.cyborg .page-freeze {
   background-color: rgba(2, 14, 16, 0.9);
+}
+body.cyborg .page-freeze.error {
+  background-color: rgba(70, 6, 11, 0.9);
 }
 
 /* 
