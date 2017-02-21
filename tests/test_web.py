@@ -194,7 +194,7 @@ class TestWebInterface(object):
 
         obj = json.loads(r.content)
         assert obj["status"] is True
-        assert obj["data"]["files"][0]["filename"] == "google.com"
+        assert obj["files"][0]["filename"] == "google.com"
         assert obj["defaults"]["priority"] == 2
         assert obj["defaults"]["options"]["process-memory-dump"] is True
 
@@ -234,9 +234,8 @@ class TestWebInterface(object):
         assert r.status_code == 302
 
         r = SubmitManager().get_files(1)
-        assert len(r["files"]) == 1
-        assert os.listdir(r["path"]) == [os.path.basename(__file__)]
-        assert r["files"][0].filesize == os.path.getsize(__file__)
+        assert len(r) == 1
+        assert r[0].filesize == os.path.getsize(__file__)
 
     @mock.patch("cuckoo.web.controllers.analysis.api.CuckooFeedback")
     def test_feedback_form(self, p, client):
@@ -270,7 +269,7 @@ class TestWebInterface(object):
                 "name": "name",
                 "company": "company",
                 "include_memdump": False,
-                "include_analysis": True,
+                "include_analysis": False,
             }),
             "application/json",
             HTTP_X_REQUESTED_WITH="XMLHttpRequest"

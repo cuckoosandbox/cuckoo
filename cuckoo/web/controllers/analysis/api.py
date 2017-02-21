@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,9 +12,10 @@ import sqlalchemy
 import tarfile
 import zipfile
 
-from wsgiref.util import FileWrapper
 from django.http import JsonResponse, HttpResponse
+from wsgiref.util import FileWrapper
 
+from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import (
@@ -469,7 +469,7 @@ class AnalysisApi:
                 memdump=body.get("include_memdump", False),
                 automated=False
             )
-        except Exception as e:
+        except CuckooFeedbackError as e:
             return json_error_response(str(e))
 
         return JsonResponse({
