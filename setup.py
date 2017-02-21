@@ -24,7 +24,9 @@ if not os.path.isdir(os.path.join(monitor, latest)) and \
         not os.environ.get("ONLYINSTALL"):
     sys.exit(
         "Failure locating the monitoring binaries that belong to the latest "
-        "monitor release. Please include those to create a distribution."
+        "monitor release. Please include those to create a distribution. "
+        "You may easily obtain the monitoring binaries by running one of our "
+        "helper scripts: 'python stuff/monitor.py'."
     )
 
 manifest = []
