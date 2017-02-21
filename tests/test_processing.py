@@ -14,6 +14,7 @@ from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
+from cuckoo.processing.strings import Strings
 from cuckoo.processing.virustotal import VirusTotal
 
 class TestProcessing:
@@ -65,6 +66,30 @@ class TestProcessing:
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    def test_strings(self):
+        s = Strings()
+        s.set_task({
+            "category": "file",
+        })
+
+        fd, filepath = tempfile.mkstemp()
+        os.write(fd, "ABCDEFGH\n"*0x1000)
+        os.close(fd)
+
+        s.file_path = filepath
+        assert len(s.run()) == s.MAX_STRINGCNT
+
+        fd, filepath = tempfile.mkstemp()
+        os.write(fd, ("%s\n" % ("A"*0x1000)) * 200)
+        os.close(fd)
+
+        s.file_path = filepath
+        strings = s.run()
+        assert len(strings) == 200
+        assert len(strings[0]) == s.MAX_STRINGLEN
+        assert len(strings[42]) == s.MAX_STRINGLEN
+        assert len(strings[199]) == s.MAX_STRINGLEN
 
     @mock.patch("cuckoo.processing.screenshots.log")
     def test_screenshot_tesseract(self, p):
