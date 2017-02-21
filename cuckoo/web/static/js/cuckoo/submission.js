@@ -2204,8 +2204,7 @@ var SubmissionTaskTable = function () {
 				},
 				error: function error(err) {
 					self._clear();
-					alert('status check failed! check your console for more details.');
-					console.log(err);
+					self.setStatusText('There was an error!');
 				}
 			});
 		}

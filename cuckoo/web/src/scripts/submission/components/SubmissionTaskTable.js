@@ -57,8 +57,7 @@ class SubmissionTaskTable {
 			},
 			error: function(err) {
 				self._clear();
-				alert('status check failed! check your console for more details.');
-				console.log(err);
+				self.setStatusText('There was an error!');
 			}
 		});
 
