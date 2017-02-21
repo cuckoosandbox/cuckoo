@@ -336,7 +336,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + "\n			<i class=\"fa fa-clock-o\"></i> "
     + alias3(((helper = (helper = helpers.time_added || (depth0 != null ? depth0.time_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"time_added","hash":{},"data":data}) : helper)))
     + "\n		</td>\n		<td>"
-    + alias3(this.lambda(((stack1 = (depth0 != null ? depth0.options : depth0)) != null ? stack1.filename : stack1), depth0))
+    + alias3(((helper = (helper = helpers['target'] || (depth0 != null ? depth0['target'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"target","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
     + "</td>\n		<td><span class=\"status status-"

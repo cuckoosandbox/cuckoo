@@ -2375,9 +2375,9 @@ $(function () {
 							});
 						}
 
-						analysis_ui.originalData = response.data;
+						analysis_ui.originalData = response.files;
 
-						FileTree.FileTree.iterateFileStructure(response.data.files, function (item) {
+						FileTree.FileTree.iterateFileStructure(response.files, function (item) {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = [];
@@ -2403,7 +2403,7 @@ $(function () {
 							};
 						});
 
-						return response.data.files;
+						return response.files;
 					}
 				},
 				transform: {

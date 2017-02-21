@@ -195,8 +195,10 @@ class TestStorage:
     def test_basename(self):
         assert Storage.get_filename_from_path("C:\\a.txt") == "a.txt"
         assert Storage.get_filename_from_path("C:/a.txt") == "a.txt"
-        # ???
         assert Storage.get_filename_from_path("C:\\\x00a.txt") == "\x00a.txt"
+        assert Storage.get_filename_from_path("/tmp/a.txt") == "a.txt"
+        assert Storage.get_filename_from_path("../../b.txt") == "b.txt"
+        assert Storage.get_filename_from_path("..\\..\\c.txt") == "c.txt"
 
 class TestConvertChar:
     def test_utf(self):

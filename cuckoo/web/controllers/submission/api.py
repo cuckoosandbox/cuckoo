@@ -84,7 +84,7 @@ class SubmissionApi(object):
         password = body.get("password", None)
         astree = body.get("astree", True)
 
-        data = submit_manager.get_files(
+        files = submit_manager.get_files(
             submit_id=submit_id,
             password=password,
             astree=astree
@@ -92,7 +92,7 @@ class SubmissionApi(object):
 
         return JsonResponse({
             "status": True,
-            "data": data,
+            "files": files,
             "defaults": defaults(),
         }, encoder=JsonSerialize)
 

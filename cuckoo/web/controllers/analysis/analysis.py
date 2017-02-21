@@ -9,8 +9,8 @@ import pymongo
 
 from django.http import Http404
 
-from cuckoo.core.database import Database, TASK_PENDING
 from cuckoo.common.mongo import mongo
+from cuckoo.core.database import Database, TASK_PENDING
 
 db = Database()
 
@@ -19,33 +19,32 @@ class AnalysisController:
     def task_info(task_id):
         if not isinstance(task_id, int):
             raise Exception("Task ID should be integer")
-        data = {}
 
         task = db.view_task(task_id, details=True)
-        if task:
-            entry = task.to_dict()
-            entry["guest"] = {}
-            if task.guest:
-                entry["guest"] = task.guest.to_dict()
+        if not task:
+            return Http404("Task not found")
 
-            entry["errors"] = []
-            for error in task.errors:
-                entry["errors"].append(error.message)
+        entry = task.to_dict()
+        entry["guest"] = {}
+        if task.guest:
+            entry["guest"] = task.guest.to_dict()
 
-            entry["sample"] = {}
-            if task.sample_id:
-                sample = db.view_sample(task.sample_id)
-                entry["sample"] = sample.to_dict()
+        entry["errors"] = []
+        for error in task.errors:
+            entry["errors"].append(error.message)
 
-            data["task"] = entry
-        else:
-            return Exception("Task not found")
+        entry["sample"] = {}
+        if task.sample_id:
+            sample = db.view_sample(task.sample_id)
+            entry["sample"] = sample.to_dict()
 
-        return data
+        entry["target"] = os.path.basename(entry["target"])
+        return {
+            "task": entry,
+        }
 
     @staticmethod
     def get_recent(limit=50, offset=0):
-        db = Database()
         tasks_files = db.list_tasks(
             limit=limit,
             offset=offset,

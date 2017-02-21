@@ -97,16 +97,14 @@ class SubmitManager(object):
         for data in submit.data["data"]:
             if data["type"] == "file":
                 filename = Storage.get_filename_from_path(data["data"])
-                filepath = os.path.join(submit.tmp_path, data["data"])
-                filedata = open(filepath, "rb").read()
+                filepath = os.path.join(submit.tmp_path, filename)
 
                 unpacked = sflock.unpack(
-                    filepath=filename, contents=filedata,
-                    password=password, duplicates=duplicates
+                    filepath=filepath, password=password, duplicates=duplicates
                 )
 
                 if astree:
-                    unpacked = unpacked.astree()
+                    unpacked = unpacked.astree(sanitize=True)
 
                 files.append(unpacked)
             elif data["type"] == "url":
@@ -132,10 +130,7 @@ class SubmitManager(object):
                     "Unknown data entry type: %s" % data["type"]
                 )
 
-        return {
-            "files": files,
-            "path": submit.tmp_path,
-        }
+        return files
 
     def translate_options(self, info, options):
         """Translates Web Interface options to Cuckoo database options."""
@@ -157,7 +152,7 @@ class SubmitManager(object):
             info = copy.deepcopy(config["global"])
             info.update(entry)
             options = copy.deepcopy(config["global"]["options"])
-            options.update(entry.get("per_file_options", {}))
+            options.update(entry.get("options", {}))
 
             kw = {
                 "package": info.get("package"),
