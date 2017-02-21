@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -31,6 +30,8 @@ def defaults():
         "timeout": config("cuckoo:timeouts:default"),
         "routing": {
             "route": config("routing:routing:route"),
+            "drop": config("routing:routing:drop"),
+            "internet": config("routing:routing:internet") != "none",
             "inetsim": config("routing:inetsim:enabled"),
             "tor": config("routing:tor:enabled"),
             "vpns": vpns,

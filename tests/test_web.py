@@ -91,6 +91,8 @@ class TestWebInterface(object):
             "routing": {
                 "routing": {
                     "route": "internet",
+                    "drop": True,
+                    "internet": "eth0",
                 },
                 "vpn": {
                     "enabled": True,
@@ -121,6 +123,8 @@ class TestWebInterface(object):
             "timeout": 120,
             "routing": {
                 "route": "internet",
+                "drop": True,
+                "internet": True,
                 "inetsim": True,
                 "tor": True,
                 "vpns": [
@@ -140,6 +144,19 @@ class TestWebInterface(object):
         assert "[italy]" in buf
         assert "[france]" in buf
         assert "vpns = france, italy" in buf
+
+    def test_submit_routing_defaults(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        obj = defaults()
+        assert obj["routing"] == {
+            "route": "none",
+            "drop": False,
+            "internet": False,
+            "inetsim": False,
+            "tor": False,
+            "vpns": [],
+        }
 
     def test_submit_defaults_novpn(self):
         set_cwd(tempfile.mkdtemp())
