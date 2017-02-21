@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -30,7 +30,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-FILE_CHUNK_SIZE = 16 * 1024
+FILE_CHUNK_SIZE = 16*1024*1024
 
 URL_REGEX = (
     # HTTP/HTTPS.
