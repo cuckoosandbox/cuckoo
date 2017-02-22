@@ -163,6 +163,7 @@ def main():
     parser.add_argument("-p", "--parallel", help="Number of parallel threads to use (auto mode only).", type=int, required=False, default=1)
     parser.add_argument("-u", "--user", type=str, help="Drop user privileges to this user")
     parser.add_argument("-m", "--modules", help="Path to signature and reporting modules - overrides default modules path.", type=str, required=False)
+    parser.add_argument("-e", "--misper", help="Create MISP event from report", action="store_true", required=False)
 
     args = parser.parse_args()
 
@@ -194,7 +195,12 @@ def main():
             }
             process(task=task, report=args.report)
         else:
-            process(task=task.to_dict(), report=args.report)
+            task = task.to_dict()
+
+            if args.misper:
+                task["options"].update({"misper": "yes"})
+
+            process(task=task, report=args.report)
 
 if __name__ == "__main__":
     cfg = Config()

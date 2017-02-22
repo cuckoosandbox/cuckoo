@@ -4,7 +4,16 @@
             <table class="table table-striped table-condensed">
                 <tr>
                     <th class="col-md-1 text-right">Name</th>
-                    <td><b>{{file.name}}</b></td>
+                    <td>
+                        <b>{{file.name}}</b>
+                        {% if file.object_id %}
+                            <div class="pull-right">
+                                <a href="{% url "analysis.views.file" "buffer" file.object_id %}" class="btn btn-primary btn-xs">
+                                <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
+                                </a>
+                            </div>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="text-right">Size</th>
@@ -52,12 +61,19 @@
                     <th class="text-right">VirusTotal</th>
                     <td><a href="https://www.virustotal.com/en/file/{{file.sha256}}/analysis/">Search for analysis</a></td>
                 </tr>
-                {% if file.object_id %}
-                    <tr>
-                        <th class="text-right"></th>
-                        <td><a href="{% url "analysis.views.file" "buffer" file.object_id %}" class="btn btn-primary btn-small">Download</a></td>
-                    </tr>
-                {% endif %}
+                <tr>
+                    <th class="text-right">Strings</th>
+                    <td>
+                        <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse" data-target=#{{file.md5}} aria-expanded="true">
+                            Show
+                        </button>
+                        <div class="collapse" id={{file.md5}}>
+                        {% for string in file.strings %}
+                        <div>{{string}}</div>
+                        {% endfor %}
+                            </div>
+                    </td>
+                </tr>
             </table>
         </div>
     {% endfor %}

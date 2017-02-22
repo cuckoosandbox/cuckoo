@@ -61,6 +61,15 @@ class PUB(Package):
                 "AccessVBOM": 1,
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\Common\\Security",
+            {
+                # Enable ActiveX controls.
+                "DisableAllActiveX": 0,
+                "UFIControls": 1,
+            },
+        ],
     ]
 
     def start(self, path):
