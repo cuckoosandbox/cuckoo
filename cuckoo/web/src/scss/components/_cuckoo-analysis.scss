@@ -1,5 +1,5 @@
 /* 
-   Copyright (C) 2016 Cuckoo Foundation.
+   Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
@@ -10,6 +10,7 @@
 
 	&__header {
 		display: flex;
+		flex-shrink: 0;
 		align-items: center;
 		box-shadow: 0px 1px 0px #fff;
 		text-shadow: 0px 1px 0px #fff;
@@ -22,7 +23,29 @@
 			margin: 0;	
 		}
 
-		.header-right { margin-left: auto; }
+		.header-right {
+			margin-left: auto;
+			vertical-align: middle;
+			text-shadow: none;
+
+			.btn-circle {
+				text-align: center;
+				font-size: 14px;
+				box-shadow: none;
+
+				i {
+					margin-right: 5px;
+				}
+
+				&.active {
+					color: #3c763d;
+					i:before {
+						content: "\f070";
+					}
+				}
+			}
+
+		}
 
 		.file-name {
 			display: inline-block;

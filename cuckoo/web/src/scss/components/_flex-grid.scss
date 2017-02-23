@@ -110,6 +110,7 @@
 
 	&__footer {
 		display: flex;
+		flex-shrink: 0;
 		justify-content: center;
 		flex-basis: 50px;
 		background-color: #111;
@@ -119,6 +120,10 @@
 			margin-left: 20px;
 			img {
 				height: 16px;
+
+				& + a {
+					margin-left: 15px;
+				}
 			}
 		}
 		.footnote {
@@ -129,6 +134,11 @@
 				color: #aaa;
 			}
 		}
+
+		&.spread-alignment {
+			justify-content: space-between;
+		}
+
 	}
 
 	&__nav { 

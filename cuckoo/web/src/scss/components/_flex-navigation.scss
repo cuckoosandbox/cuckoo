@@ -45,9 +45,18 @@
 	}
 
 	&__body {
+		display: flex;
+		flex-direction: column;
 		flex-basis: 100%;
 		overflow-y: auto;
-		padding: 15px 0;
+		padding: 15px 0 0 0;
+
+		// this is for now only applicable to analysis
+		#analysis & > .container-fluid {
+			width: 100%;
+			flex-basis: 100%;
+		}
+
 	}
 
 }

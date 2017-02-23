@@ -115,6 +115,7 @@ $(document).ready(function() {
 
 });
 
+// show/hide errors
 $(function() {
 
     var $container = $('.cuckoo-errors');
@@ -152,8 +153,17 @@ $(function() {
 
     });
 
-
 });
+
+// back-to-top replacement for the analysis pages
+$(function() {
+
+    $("#analysis .flex-grid__footer .logo a").bind('click', function(e) {
+        e.preventDefault();
+        $(this).parents('.flex-nav__body').scrollTop(0);
+    });
+
+})
 
 function alertbox(msg, context, attr_id){
     if(context) { context = `alert-${context}`; }
