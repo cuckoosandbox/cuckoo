@@ -140,15 +140,14 @@ class DatabaseEngine(object):
     def test_task_tags_str(self):
         task = self.d.add_path(__file__, tags="foo,,bar")
         tag0, tag1 = self.d.view_task(task).tags
-        assert tag0.name == "foo"
-        assert tag1.name == "bar"
+        assert sorted((tag0.name, tag1.name)) == ["bar", "foo"]
 
     def test_task_tags_list(self):
         task = self.d.add_path(__file__, tags=["tag1", "tag2", "", 1, "tag3"])
         tag0, tag1, tag2 = self.d.view_task(task).tags
-        assert tag0.name == "tag1"
-        assert tag1.name == "tag2"
-        assert tag2.name == "tag3"
+        assert sorted((tag0.name, tag1.name, tag2.name)) == [
+            "tag1", "tag2", "tag3"
+        ]
 
 class TestConnectOnce(object):
     def setup(self):
