@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -26,7 +26,7 @@ from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.rooter import rooter, vpns
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 

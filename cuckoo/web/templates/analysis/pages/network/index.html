@@ -29,8 +29,18 @@
                                 </a></li>
                                 <li><a href="#network_icmp_tab" data-toggle="tab">ICMP ({{ report.analysis.network.icmp|length }})</a></li>
                                 <li><a href="#network_irc_tab" data-toggle="tab">IRC ({{ report.analysis.network.irc|length }})</a></li>
-                                <li><a href="#network_suricata_tab" data-toggle="tab">Suricata ({{ report.analysis.suricata|custom_length:"alerts tls" }})</a></li>
-                                <li><a href="#network_snort_tab" data-toggle="tab">Snort ({{ report.analysis.snort.alerts|length }})</a></li>
+                                <li><a href="#network_suricata_tab" data-toggle="tab">
+                                    Suricata
+                                    {% if report.analysis.suricata %}
+                                        ({{ report.analysis.suricata|custom_length:"alerts tls" }})
+                                    {% endif %}
+                                </a></li>
+                                <li><a href="#network_snort_tab" data-toggle="tab">
+                                    Snort
+                                    {% if report.analysis.snort %}
+                                        ({{ report.analysis.snort.alerts|length }})
+                                    {% endif %}
+                                    </a></li>
                                 <li class="pull-right">
                         {% if report.analysis.network.pcap_id or report.analysis.network.mitmproxy_id %}
                             {% if report.analysis.network.pcap_id %}

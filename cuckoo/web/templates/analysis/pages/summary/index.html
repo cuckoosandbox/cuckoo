@@ -10,9 +10,13 @@
             <!-- common analysis page header -->
             <header class="page-header cuckoo-analysis__header">
                 <h2><i class="fa fa-home"></i> Summary </h2>
+                {% if report.analysis.target.category == "file" %}
                 <div class="header-right">
-                    <span class="file-name"><i class="fa fa-file-o"></i> {{ report.analysis.target.file.name }}</span>
+                    <span class="file-name"><i class="fa fa-file-o"></i>
+                        {{ report.analysis.target.file.name }}
+                    </span>
                 </div>
+                {% endif %}
             </header>
             
             <!-- snaps back to default bootstrap layout inside flex frame -->            

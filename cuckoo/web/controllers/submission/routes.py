@@ -2,14 +2,17 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os.path
 
 from django.shortcuts import redirect
 
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.web.bin.utils import view_error, render_template, dropped_filepath
 
+log = logging.getLogger(__name__)
 submit_manager = SubmitManager()
 
 class SubmissionRoutes(object):
@@ -51,6 +54,8 @@ class SubmissionRoutes(object):
     @staticmethod
     def dropped(request, task_id, sha1):
         filepath = dropped_filepath(task_id, sha1)
+        if not filepath:
+            return view_error(request, "No such dropped file was found!")
 
         # TODO Obtain the original name for this file.
         submit_id = submit_manager.pre("files", [{
@@ -59,3 +64,60 @@ class SubmissionRoutes(object):
         }])
 
         return redirect("submission/pre", submit_id=submit_id)
+
+    @staticmethod
+    def resubmit(request, task_id):
+        task = Database().view_task(task_id)
+        if not task:
+            return view_error(request, "No Task was found with this ID")
+
+        if task.category == "url":
+            # TODO This most certainly needs to be improved.
+            submit_id = submit_manager.pre("strings", [
+                task.target,
+            ], submit_manager.translate_options_to(task.options))
+        else:
+            # TODO There's a very good chance this won't work properly for
+            # analyses of type "archive".
+            submit_id = submit_manager.pre("files", [{
+                "name": os.path.basename(task.target),
+                "data": open(task.target, "rb"),
+            }], submit_manager.translate_options_to(task.options))
+
+        return redirect("submission/pre", submit_id=submit_id)
+
+    @staticmethod
+    def reboot(request, task_id):
+        # TODO Dummy usage, should probably be improved.
+        submit_id = Database().add_submit("", "", {})
+
+        task_id = Database().add_reboot(task_id=task_id, submit_id=submit_id)
+        if not task_id:
+            return view_error(request, "Error adding reboot analysis!")
+
+        return redirect("submission/post", submit_id=submit_id)
+
+    @staticmethod
+    def import_(request):
+        if request.method == "GET":
+            return render_template(request, "analysis/import.html")
+
+        if request.method != "POST":
+            return view_error(request, "Import analysis request must be POST!")
+
+        submit_id = Database().add_submit("", "", {})
+        task_ids = []
+
+        for analysis in request.FILES.getlist("analyses"):
+            if not analysis.size:
+                continue
+
+            try:
+                task_ids.append(submit_manager.import_(analysis, submit_id))
+            except CuckooOperationalError as e:
+                log.warning(
+                    "Error importing analysis (%s): %s", analysis.name, e
+                )
+                continue
+
+        return redirect("submission/post", submit_id=submit_id)

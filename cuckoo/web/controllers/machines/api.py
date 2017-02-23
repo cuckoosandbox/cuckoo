@@ -6,7 +6,6 @@
 from django.http import JsonResponse
 
 from cuckoo.core.database import Database
-
 from cuckoo.web.bin.utils import json_error_response, api_get
 
 db = Database()

@@ -1,39 +1,67 @@
 {
-  "submit_id": 5,
-  "file_selection": [
-    {
-      "type": "file",
-      "relapath": null,
-      "finger": {
-        "magic_human": "PE32+ executable (DLL) (console) x86-64 (for MS Windows)",
-        "mime": "application/x-dosexec",
-        "magic": "PE32+ executable (DLL) (console) x86-64, for MS Windows",
-        "mime_human": "dosexec"
-      },
-      "duplicate": false,
-      "package": "dll",
-      "extrpath": [],
-      "password": null,
-      "children": [],
-      "size": 8016,
-      "filepath": "icardres.dll",
-      "selected": true,
-      "filename": "icardres.dll"
-    }
-  ],
-  "global": {
-    "vpn": "",
-    "machine": "",
-    "options": {
-      "enable-services": true,
-      "simulated-human-interaction": true,
-      "enforce-timeout": false,
-      "full-memory-dump": false,
-      "process-memory-dump": true,
-      "no-injection": true
+    "file_selection": [
+        {
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [],
+            "filename": "icardres.dll",
+            "finger": {
+                "magic": "PE32+ executable (DLL) (console) x86-64, for MS Windows",
+                "magic_human": "PE32+ executable (DLL) (console) x86-64 (for MS Windows)",
+                "mime": "application/x-dosexec",
+                "mime_human": "dosexec"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": null,
+                "options": {
+                    "enable-services": false,
+                    "enforce-timeout": true,
+                    "full-memory-dump": false,
+                    "no-injection": false,
+                    "process-memory-dump": false,
+                    "simulated-human-interaction": true
+                },
+                "package": "dll",
+                "priority": 2,
+                "routing": "internet",
+                "timeout": 120
+            },
+            "package": "dll",
+            "password": null,
+            "relapath": null,
+            "selected": true,
+            "size": 8016,
+            "type": "file"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "internet",
+        "options": {
+            "enable-services": false,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "no-injection": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": ""
     },
-    "priority": 1,
-    "package": "python",
-    "network-routing": "internet"
-  }
+    "submit_id": 5
 }

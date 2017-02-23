@@ -339,7 +339,10 @@ class Task(Base):
 
     @options.setter
     def options(self, value):
-        self._options = value
+        if isinstance(value, dict):
+            self._options = emit_options(value)
+        else:
+            self._options = value
 
     def to_dict(self, dt=False):
         """Converts object to dict.
@@ -1015,9 +1018,19 @@ class Database(object):
         task.submit_id = submit_id
 
         if tags:
-            for tag in [t.strip() for t in tags.split(",") if t]:
-                tag = self._get_or_create(session, Tag, name=tag)
-                task.tags.append(tag)
+            if isinstance(tags, basestring):
+                for tag in tags.split(","):
+                    if tag.strip():
+                        task.tags.append(self._get_or_create(
+                            session, Tag, name=tag.strip()
+                        ))
+
+            if isinstance(tags, (tuple, list)):
+                for tag in tags:
+                    if isinstance(tag, basestring) and tag.strip():
+                        task.tags.append(self._get_or_create(
+                            session, Tag, name=tag.strip()
+                        ))
 
         if clock:
             if isinstance(clock, basestring):
@@ -1152,7 +1165,7 @@ class Database(object):
 
     def add_reboot(self, task_id, timeout=0, options="", priority=1,
                    owner="", machine="", platform="", tags=None, memory=False,
-                   enforce_timeout=False, clock=None):
+                   enforce_timeout=False, clock=None, submit_id=None):
         """Add a reboot task to database from an existing analysis.
         @param task_id: task id of existing analysis.
         @param timeout: selected timeout.
@@ -1188,15 +1201,14 @@ class Database(object):
 
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
-                        memory, enforce_timeout, clock, "file")
+                        memory, enforce_timeout, clock, "file", submit_id)
 
     @classlock
     def add_submit(self, tmp_path, submit_type, data):
         session = self.Session()
         submit = Submit(tmp_path=tmp_path, submit_type=submit_type, data=data)
-        submit_id = None
-        session.add(submit)
 
+        session.add(submit)
         try:
             session.commit()
             session.refresh(submit)
@@ -1206,7 +1218,6 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-
         return submit_id
 
     @classlock

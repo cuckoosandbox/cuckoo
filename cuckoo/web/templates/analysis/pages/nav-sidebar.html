@@ -52,7 +52,9 @@
 			{% if env.view_kwargs.page == 'dropped_buffers' %} class="active" {% endif %}>
 				<i class="fa fa-server"></i> 
 				<span>Dropped Buffers</span>
+                {% if report.analysis.buffer %}
 				<em>{{ report.analysis.buffer|length }}</em>
+                {% endif %}
 			</a>
 		</li>
 
@@ -72,7 +74,9 @@
 			{% if env.view_kwargs.page == 'procmemory' %} class="active" {% endif %}>
 				<i class="fa fa-qrcode"></i> 
 				<span>Process Memory</span>
+                {% if report.analysis.procmemory %}
 				<em>{{ report.analysis.procmemory|length }}</em>
+                {% endif %}
 			</a>
 		</li>
 		<li>

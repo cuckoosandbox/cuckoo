@@ -32,13 +32,21 @@
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}">
                         <i class="glyphicon glyphicon-download-alt"></i>Dropped Buffers
-                        <span class="label label-primary pull-right">{{ report.analysis.buffer|length }}</span>
+                        {% if report.analysis.buffer %}
+                        <span class="label label-primary pull-right">
+                            {{ report.analysis.buffer|length }}
+                        </span>
+                        {% endif %}
                     </a>
                 </li>
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "procmemory" %}">
                         <i class="glyphicon glyphicon-barcode"></i>Process Memory
-                        <span class="label label-primary pull-right">{{ report.analysis.procmemory|length }}</span>
+                        {% if report.analysis.procmemory %}
+                        <span class="label label-primary pull-right">
+                            {{ report.analysis.procmemory|length }}
+                        </span>
+                        {% endif %}
                     </a>
                 </li>
 

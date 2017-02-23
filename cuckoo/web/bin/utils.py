@@ -9,7 +9,6 @@ import json
 import os
 import StringIO
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import render
@@ -97,7 +96,9 @@ def json_fatal_response(message):
     return json_response(message, 500)
 
 def file_response(data, filename, content_type):
-    response = StreamingHttpResponse(FileWrapper(data), content_type=content_type)
+    response = StreamingHttpResponse(
+        FileWrapper(data), content_type=content_type
+    )
 
     if isinstance(data, file) and hasattr(data, "name"):
         response["Content-Length"] = os.path.getsize(data.name)
@@ -114,10 +115,8 @@ def dropped_filepath(task_id, sha1):
     })
 
     if not record:
-        raise ObjectDoesNotExist
+        return
 
     for dropped in record["dropped"]:
         if dropped["sha1"] == sha1:
             return dropped["path"]
-
-    raise ObjectDoesNotExist

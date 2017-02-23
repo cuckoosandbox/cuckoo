@@ -122,6 +122,34 @@ class DatabaseEngine(object):
         assert tasks[1][1].id == t2
         assert tasks[1][1].custom == "2"
 
+    def test_add_reboot(self):
+        t0 = self.d.add_path(__file__)
+        s0 = self.d.add_submit("", "", {})
+        t1 = self.d.add_reboot(task_id=t0, submit_id=s0)
+
+        t = self.d.view_task(t1)
+        assert t.custom == "%s" % t0
+        assert t.submit_id == s0
+
+    def test_task_set_options(self):
+        t0 = self.d.add_path(__file__, options={"foo": "bar"})
+        t1 = self.d.add_path(__file__, options="foo=bar")
+        assert self.d.view_task(t0).options == {"foo": "bar"}
+        assert self.d.view_task(t1).options == {"foo": "bar"}
+
+    def test_task_tags_str(self):
+        task = self.d.add_path(__file__, tags="foo,,bar")
+        tag0, tag1 = self.d.view_task(task).tags
+        assert tag0.name == "foo"
+        assert tag1.name == "bar"
+
+    def test_task_tags_list(self):
+        task = self.d.add_path(__file__, tags=["tag1", "tag2", "", 1, "tag3"])
+        tag0, tag1, tag2 = self.d.view_task(task).tags
+        assert tag0.name == "tag1"
+        assert tag1.name == "tag2"
+        assert tag2.name == "tag3"
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())

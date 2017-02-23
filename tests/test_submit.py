@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -31,28 +30,12 @@ class TestSubmitManager(object):
 
         self.submit_manager = SubmitManager()
 
-        self.urls = [
-            "http://theguardian.com/",
-            "https://news.ycombinator.com/",
-            "google.com",
-        ]
-
-        self.hashes = [
-            "ba78410702f0cc8453da1afbb2a8b670",
-            "87943278943798784783974893278493",  # invalid hash
-        ]
-
-        self.files = [{
-            "name": "foo.txt",
-            "data": open("tests/files/foo.txt", "rb").read()
-        }]
-
     def test_pre_file(self):
         """Tests the submission of a plaintext file"""
-        assert self.submit_manager.pre(
-            submit_type="files",
-            data=self.files
-        ) == 1
+        assert self.submit_manager.pre(submit_type="files", data=[{
+            "name": "foo.txt",
+            "data": open("tests/files/foo.txt", "rb").read()
+        }]) == 1
 
         submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
@@ -61,14 +44,15 @@ class TestSubmitManager(object):
 
         assert submit.data["data"][0]["type"] == "file"
         filedata = open(submit.data["data"][0]["data"], "rb").read()
-        assert filedata == self.files[0]["data"]
+        assert filedata == open("tests/files/foo.txt", "rb").read()
 
     def test_pre_url(self):
         """Tests the submission of URLs (http/https)"""
-        assert self.submit_manager.pre(
-            submit_type="strings",
-            data=self.urls
-        ) == 1
+        assert self.submit_manager.pre(submit_type="strings", data=[
+            "http://theguardian.com/",
+            "https://news.ycombinator.com/",
+            "google.com",
+        ]) == 1
 
         submit = self.db.view_submit(1)
         assert isinstance(submit.data["data"], list)
@@ -83,8 +67,9 @@ class TestSubmitManager(object):
         assert url2["data"] == "google.com"
 
     def test_invalid_strings(self):
-        assert SubmitManager().pre("strings", "thisisnotanurl") == 1
+        assert SubmitManager().pre("strings", ["thisisnotanurl"]) == 1
         submit = self.db.view_submit(1)
+        assert len(submit.data["errors"]) == 1
         assert "was neither a valid hash or url" in submit.data["errors"][0]
         assert not submit.data["data"]
 
@@ -99,10 +84,10 @@ class TestSubmitManager(object):
                 responses.GET, VirusTotalAPI.HASH_DOWNLOAD, status=404
             )
 
-            assert self.submit_manager.pre(
-                submit_type="strings",
-                data=self.hashes
-            ) == 1
+            assert self.submit_manager.pre(submit_type="strings", data=[
+                "ba78410702f0cc8453da1afbb2a8b670",
+                "87943278943798784783974893278493",  # invalid hash
+            ]) == 1
 
             submit = self.db.view_submit(1)
             assert isinstance(submit.data["data"], list)
@@ -127,8 +112,11 @@ class TestSubmitManager(object):
         assert t.timeout == 120
         assert t.category == "url"
         assert t.status == "pending"
+        assert not t.enforce_timeout
         assert not t.machine
-        assert t.options == {}
+        assert t.options == {
+            "procmemdump": "yes",
+        }
 
     def test_submit_file1(self):
         assert self.submit_manager.pre("files", [{
@@ -144,6 +132,7 @@ class TestSubmitManager(object):
         assert t.timeout == 120
         assert t.category == "file"
         assert t.status == "pending"
+        assert t.enforce_timeout is True
         assert not t.machine
         assert t.options == {}
 
@@ -161,8 +150,55 @@ class TestSubmitManager(object):
         assert t.timeout == 120
         assert t.category == "archive"
         assert t.status == "pending"
-        assert not t.machine
+        assert t.machine == "cuckoo1"
+        assert not t.enforce_timeout
         assert t.options == {
             "filename": "oledata.mso",
         }
         assert len(zipfile.ZipFile(t.target).read("oledata.mso")) == 234898
+
+    def test_pre_options(self):
+        assert self.submit_manager.pre(
+            "strings", ["google.com"], {"foo": "bar"}
+        ) == 1
+        assert self.db.view_submit(1).data["options"] == {"foo": "bar"}
+
+def test_option_translations_from():
+    sm = SubmitManager()
+
+    assert sm.translate_options_from({}) == {}
+
+    assert sm.translate_options_from({
+        "simulated-human-interaction": True,
+    }) == {}
+    assert sm.translate_options_from({
+        "simulated-human-interaction": False,
+    }) == {
+        "human": 0,
+    }
+
+    assert sm.translate_options_from({
+        "no-injection": True,
+    }) == {
+        "free": "yes",
+    }
+    assert sm.translate_options_from({
+        "no-injection": False,
+    }) == {}
+
+def test_option_translations_to():
+    sm = SubmitManager()
+
+    assert sm.translate_options_to({}) == {}
+
+    assert sm.translate_options_to({
+        "human": "0",
+    }) == {
+        "simulated-human-interaction": False,
+    }
+
+    assert sm.translate_options_to({
+        "free": "yes",
+    }) == {
+        "no-injection": True,
+    }

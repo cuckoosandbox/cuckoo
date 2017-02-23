@@ -1,37 +1,66 @@
 {
-  "submit_id": 2,
-  "file_selection": [
-    {
-      "type": "url",
-      "relapath": "",
-      "mime": "text/html",
-      "finger": {
-        "magic_human": "url",
-        "magic": "url"
-      },
-      "extrpath": [],
-      "children": [],
-      "size": 0,
-      "filepath": "",
-      "package": "ie",
-      "selected": true,
-      "filename": "http://cuckoosandbox.org",
-      "duplicate": false
-    }
-  ],
-  "global": {
-    "vpn": "",
-    "machine": "",
-    "options": {
-      "enable-services": true,
-      "simulated-human-interaction": true,
-      "enforce-timeout": false,
-      "full-memory-dump": false,
-      "process-memory-dump": true,
-      "no-injection": true
+    "file_selection": [
+        {
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [],
+            "filename": "http://cuckoosandbox.org",
+            "filepath": "",
+            "finger": {
+                "magic": "url",
+                "magic_human": "url"
+            },
+            "mime": "text/html",
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": null,
+                "options": {
+                    "enable-services": false,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "no-injection": false,
+                    "process-memory-dump": true,
+                    "simulated-human-interaction": true
+                },
+                "package": "ie",
+                "priority": 2,
+                "routing": "internet",
+                "timeout": 120
+            },
+            "package": "ie",
+            "relapath": "",
+            "selected": true,
+            "size": 0,
+            "type": "url"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "internet",
+        "options": {
+            "enable-services": false,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "no-injection": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": ""
     },
-    "priority": 1,
-    "package": "python",
-    "network-routing": "internet"
-  }
+    "submit_id": 2
 }

@@ -3,16 +3,18 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import copy
+import json
 import logging
 import os
 import sflock
+import zipfile
 
-from cuckoo.common.config import emit_options
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
 from cuckoo.common.virustotal import VirusTotalAPI
-from cuckoo.core.database import Database
+from cuckoo.core.database import Database, TASK_COMPLETED
+from cuckoo.misc import cwd, mkdir
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +53,37 @@ class SubmitManager(object):
             "'%s' was neither a valid hash or url" % line
         )
 
-    def pre(self, submit_type, data):
+    def translate_options_from(self, options):
+        """Translates from Web Interface options to Cuckoo database options."""
+        ret = {}
+
+        if not options.get("simulated-human-interaction", True):
+            ret["human"] = int(options.get("simulated-human-interaction", True))
+
+        if options.get("no-injection"):
+            ret["free"] = "yes"
+
+        if options.get("process-memory-dump"):
+            ret["procmemdump"] = "yes"
+
+        return ret
+
+    def translate_options_to(self, options):
+        """Translates from Cuckoo database options to Web Interface options."""
+        ret = {}
+
+        if not int(options.get("human", "1")):
+            ret["simulated-human-interaction"] = False
+
+        if options.get("free") == "yes":
+            ret["no-injection"] = True
+
+        if options.get("procmemdump") == "yes":
+            ret["process-memory-dump"] = True
+
+        return ret
+
+    def pre(self, submit_type, data, options=None):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
@@ -66,7 +98,8 @@ class SubmitManager(object):
         path_tmp = Folders.create_temp()
         submit_data = {
             "data": [],
-            "errors": []
+            "errors": [],
+            "options": options or {},
         }
 
         if submit_type == "strings":
@@ -79,14 +112,17 @@ class SubmitManager(object):
                 filepath = Files.create(path_tmp, filename, entry["data"])
                 submit_data["data"].append({
                     "type": "file",
-                    "data": filepath
+                    "data": filepath,
+                    "options": self.translate_options_to(
+                        entry.get("options", {})
+                    ),
                 })
 
         return Database().add_submit(path_tmp, submit_type, submit_data)
 
     def get_files(self, submit_id, password=None, astree=False):
         """
-        Returns files from a submitted analysis.
+        Returns files or URLs from a submitted analysis.
         @param password: The password to unlock container archives with
         @param astree: sflock option; determines the format in which the files are returned
         @return: A tree of files
@@ -130,16 +166,7 @@ class SubmitManager(object):
                     "Unknown data entry type: %s" % data["type"]
                 )
 
-        return files
-
-    def translate_options(self, info, options):
-        """Translates Web Interface options to Cuckoo database options."""
-        ret = {}
-
-        if not int(options["simulated-human-interaction"]):
-            ret["human"] = int(options["simulated-human-interaction"])
-
-        return emit_options(ret)
+        return files, submit.data["errors"], submit.data["options"]
 
     def submit(self, submit_id, config):
         """Reads, interprets, and converts the JSON configuration provided by
@@ -151,8 +178,9 @@ class SubmitManager(object):
             # Merge the global & per-file analysis options.
             info = copy.deepcopy(config["global"])
             info.update(entry)
+            info.update(entry.get("options", {}))
             options = copy.deepcopy(config["global"]["options"])
-            options.update(entry.get("options", {}))
+            options.update(entry.get("options", {}).get("options", {}))
 
             kw = {
                 "package": info.get("package"),
@@ -165,7 +193,7 @@ class SubmitManager(object):
                 "enforce_timeout": options.get("enforce-timeout"),
                 "machine": info.get("machine"),
                 "platform": info.get("platform"),
-                "options": self.translate_options(info, options),
+                "options": self.translate_options_from(options),
                 "submit_id": submit_id,
             }
 
@@ -236,3 +264,88 @@ class SubmitManager(object):
                 ))
 
         return ret
+
+    def import_(self, f, submit_id):
+        """Import an analysis identified by the file(-like) object f."""
+        try:
+            z = zipfile.ZipFile(f)
+        except zipfile.BadZipfile:
+            raise CuckooOperationalError(
+                "Imported analysis is not a proper .zip file."
+            )
+
+        # Ensure there are no files with illegal or potentially insecure names.
+        for filename in z.namelist():
+            if filename.startswith("/") or ".." in filename or ":" in filename:
+                raise CuckooOperationalError(
+                    "The .zip file contains a file with a potentially "
+                    "incorrect filename: %s" % filename
+                )
+
+        if "task.json" not in z.namelist():
+            raise CuckooOperationalError(
+                "The task.json file is required in order to be able to import "
+                "an analysis! This file contains metadata about the analysis."
+            )
+
+        required_fields = {
+            "options": dict, "route": basestring, "package": basestring,
+            "target": basestring, "category": basestring, "memory": bool,
+            "timeout": (int, long), "priority": (int, long),
+            "custom": basestring, "tags": (tuple, list),
+        }
+
+        try:
+            info = json.loads(z.read("task.json"))
+            for key, type_ in required_fields.items():
+                if key not in info:
+                    raise ValueError("missing %s" % key)
+                if info[key] is not None and not isinstance(info[key], type_):
+                    raise ValueError("%s => %s" % (key, info[key]))
+        except ValueError as e:
+            raise CuckooOperationalError(
+                "The provided task.json file, required for properly importing "
+                "the analysis, is incorrect or incomplete (%s)." % e
+            )
+
+        if info["category"] == "url":
+            task_id = db.add_url(
+                url=info["target"], package=info["package"],
+                timeout=info["timeout"], options=info["options"],
+                priority=info["priority"], custom=info["custom"],
+                memory=info["memory"], tags=info["tags"], submit_id=submit_id
+            )
+        else:
+            # Users may have the "delete_bin_copy" enabled and in such cases
+            # the binary file won't be included in the .zip file.
+            if "binary" in z.namelist():
+                filepath = Files.temp_named_put(
+                    z.read("binary"), os.path.basename(info["target"])
+                )
+            else:
+                filepath = __file__
+
+            # We'll be updating the target shortly.
+            task_id = db.add_path(
+                file_path=filepath, package=info["package"],
+                timeout=info["timeout"], options=info["options"],
+                priority=info["priority"], custom=info["custom"],
+                memory=info["memory"], tags=info["tags"], submit_id=submit_id
+            )
+
+        if not task_id:
+            raise CuckooOperationalError(
+                "There was an error creating a task for the to-be imported "
+                "analysis in our database.. Can't proceed."
+            )
+
+        # The constructors currently don't accept this argument.
+        db.set_route(task_id, info["route"])
+
+        mkdir(cwd(analysis=task_id))
+        z.extractall(cwd(analysis=task_id))
+
+        # We set this analysis as completed so that it will be processed
+        # automatically (assuming 'cuckoo process' is running).
+        db.set_status(task_id, TASK_COMPLETED)
+        return task_id

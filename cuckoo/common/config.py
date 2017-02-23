@@ -984,7 +984,7 @@ def parse_options(options):
 
 def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
-    return ",".join("%s=%s" % (k, v) for k, v in options.items())
+    return ",".join("%s=%s" % (k, v) for k, v in sorted(options.items()))
 
 def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
     """Fetch a configuration value, denoted as file:section:key."""

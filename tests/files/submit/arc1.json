@@ -1,43 +1,70 @@
 {
-  "global": {
-    "network-routing": "internet",
-    "package": "python",
-    "priority": 1,
-    "options": {
-      "no-injection": true,
-      "process-memory-dump": true,
-      "full-memory-dump": false,
-      "enforce-timeout": false,
-      "simulated-human-interaction": true,
-      "enable-services": true
+    "file_selection": [
+        {
+            "arcname": "msg_invoice.msg",
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [
+                "oledata.mso"
+            ],
+            "filename": "oledata.mso",
+            "finger": {
+                "magic": "data",
+                "magic_human": "data",
+                "mime": "application/octet-stream",
+                "mime_human": "octet stream"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": "cuckoo1",
+                "options": {
+                    "enable-services": false,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "no-injection": false,
+                    "process-memory-dump": false,
+                    "simulated-human-interaction": true
+                },
+                "package": "doc",
+                "priority": 2,
+                "routing": "internet",
+                "timeout": 120
+            },
+            "package": "doc",
+            "password": null,
+            "relapath": "oledata.mso",
+            "selected": true,
+            "size": 234898,
+            "type": "container"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "internet",
+        "options": {
+            "enable-services": false,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "no-injection": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": ""
     },
-    "machine": "",
-    "vpn": ""
-  },
-  "file_selection": [
-    {
-      "filename": "oledata.mso",
-      "selected": true,
-      "filepath": null,
-      "size": 234898,
-      "children": [],
-      "password": null,
-      "arcname": "msg_invoice.msg",
-      "per_file_options": {},
-      "type": "container",
-      "relapath": "oledata.mso",
-      "finger": {
-        "mime_human": "application/octet-stream",
-        "magic": "data",
-        "mime": "octet stream",
-        "magic_human": "data"
-      },
-      "duplicate": false,
-      "package": "doc",
-      "extrpath": [
-        "oledata.mso"
-      ]
-    }
-  ],
-  "submit_id": 1
+    "submit_id": 1
 }

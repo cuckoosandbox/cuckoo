@@ -85,16 +85,20 @@ class SubmissionApi(object):
         password = body.get("password", None)
         astree = body.get("astree", True)
 
-        files = submit_manager.get_files(
+        files, errors, options = submit_manager.get_files(
             submit_id=submit_id,
             password=password,
             astree=astree
         )
 
+        defs = defaults()
+        defs["options"].update(options)
+
         return JsonResponse({
             "status": True,
             "files": files,
-            "defaults": defaults(),
+            "errors": errors,
+            "defaults": defs,
         }, encoder=JsonSerialize)
 
     @api_post

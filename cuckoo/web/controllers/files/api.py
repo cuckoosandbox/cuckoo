@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -29,20 +28,19 @@ class FilesApi:
         else:
             return json_fatal_response("Invalid lookup term")
 
-        if sample:
-            data["sample"] = sample.to_dict()
-        else:
+        if not sample:
             return json_error_response("File not found")
 
+        data["sample"] = sample.to_dict()
         return JsonResponse({"status": True, "data": data})
 
     @api_get
     def get(request, sha256):
-        file_path = os.path.join(cwd(), "storage", "binaries", sha256)
-
-        if os.path.exists(file_path):
-            response = HttpResponse(FileWrapper(open(file_path, "rb")),
-                                    content_type="application/octet-stream; charset=UTF-8")
-            return response
-        else:
+        filepath = cwd("storage", "binaries", sha256)
+        if os.path.exists(filepath):
             return json_error_response("File not found")
+
+        return HttpResponse(
+            FileWrapper(open(filepath, "rb")),
+            content_type="application/octet-stream; charset=UTF-8"
+        )

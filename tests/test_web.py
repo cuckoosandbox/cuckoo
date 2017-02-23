@@ -1,6 +1,7 @@
 # Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+import io
 
 import django
 import json
@@ -9,6 +10,7 @@ import os
 import pytest
 import responses
 import tempfile
+import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.core.database import Database
@@ -233,7 +235,7 @@ class TestWebInterface(object):
         r = client.get("/submit/1234/dropped/" + "a"*40 + "/")
         assert r.status_code == 302
 
-        r = SubmitManager().get_files(1)
+        r, _, _ = SubmitManager().get_files(1)
         assert len(r) == 1
         assert r[0].filesize == os.path.getsize(__file__)
 
@@ -373,6 +375,102 @@ class TestWebInterfaceFeedback(object):
         q.return_value.include_report_web.assert_called_once()
         q.return_value.include_analysis.assert_called_once()
         s.warning.assert_called_once()
+
+    def test_submit_reboot(self, client):
+        t0 = Database().add_path(__file__)
+        r = client.get("/analysis/%s/reboot/" % t0)
+        assert r.status_code == 302
+        t1, = Database().view_submit(1, tasks=True).tasks
+        assert Database().view_task(t1.id).custom == "%d" % t0
+
+    def test_resubmit_file(self, client):
+        Database().add_path(__file__, options={
+            "human": 0, "free": "yes",
+        })
+        assert client.get("/submit/re/1/").status_code == 302
+        submit = Database().view_submit(1)
+        assert submit.data["options"] == {
+            "no-injection": True, "simulated-human-interaction": False,
+        }
+
+    def test_resubmit_url(self, client):
+        Database().add_url("http://bing.com/", options={
+            "human": 0, "free": "yes",
+        })
+        assert client.get("/submit/re/1/").status_code == 302
+        submit = Database().view_submit(1)
+        assert submit.data["options"] == {
+            "no-injection": True, "simulated-human-interaction": False,
+        }
+
+    def test_import_analysis(self, client):
+        # Pack sample_analysis_storage into an importable .zip analysis.
+        buf = io.BytesIO()
+        z = zipfile.ZipFile(buf, "w")
+        l = os.walk("tests/files/sample_analysis_storage")
+        for dirpath, dirnames, filenames in l:
+            for filename in filenames:
+                if os.path.basename(dirpath) == "sample_analysis_storage":
+                    relapath = filename
+                else:
+                    relapath = "%s/%s" % (os.path.basename(dirpath), filename)
+                z.write(os.path.join(dirpath, filename), relapath)
+        z.close()
+
+        buf.seek(0)
+        r = client.post("/analysis/import/", {
+            "analyses": buf,
+        })
+        assert r.status_code == 302
+
+        submit = Database().view_submit(1, tasks=True)
+        assert len(submit.tasks) == 1
+        task = submit.tasks[0]
+        assert task.id == 1
+        assert task.route == "none"
+        assert task.package == "pdf"
+        assert os.path.basename(task.target) == "CVE-2011-0611.pdf_"
+        assert task.category == "file"
+        assert task.priority == 374289732472983
+        assert task.custom == ""
+
+    def test_import_analysis_exc(self, client):
+        @mock.patch("cuckoo.web.controllers.submission.routes.log")
+        def get_error(buf, p):
+            r = client.post("/analysis/import/", {
+                "analyses": io.BytesIO(buf),
+            })
+            assert r.status_code == 302
+            p.warning.assert_called_once()
+            return p.warning.call_args[0][2].message
+
+        def get_error2(kw):
+            buf = io.BytesIO()
+            z = zipfile.ZipFile(buf, "w")
+            for key, value in kw.items():
+                z.writestr(key, value)
+            z.close()
+            return get_error(buf.getvalue())
+
+        assert "is not a proper" in get_error("NOTAZIP")
+
+        assert "potentially incorrect" in get_error2({
+            "/etc/passwd": "notyourpasswd",
+        })
+        assert "potentially incorrect" in get_error2({
+            "reports/../../../etc/passwd": "notyourpassword",
+        })
+
+        assert "task.json file is required" in get_error2({})
+
+        assert "provided task.json file" in get_error2({
+            "task.json": "NOTAJSON",
+        })
+        assert "provided task.json file" in get_error2({
+            "task.json": json.dumps({
+                "options": {},
+            }),
+        })
 
 def test_mongodb_disabled():
     set_cwd(tempfile.mkdtemp())

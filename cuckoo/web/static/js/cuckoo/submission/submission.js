@@ -256,7 +256,7 @@ $(function () {
 											name: 'piority-' + item.filetree.index,
 											title: 'Priority',
 											default: parseInt(item.per_file_options['priority']),
-											options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
+											options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
 										}).on('change', function (value) {
 											item.per_file_options['priority'] = value;
 											setFieldValue.call(this, parseInt(value));
@@ -390,7 +390,7 @@ $(function () {
 						name: 'priority',
 						title: 'Priority',
 						default: default_analysis_options['priority'],
-						options: [{ name: 'low', value: 0, className: 'priority-s' }, { name: 'medium', value: 1, className: 'priority-m' }, { name: 'high', value: 2, className: 'priority-l' }]
+						options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
 					});
 
 					var config = new this.ToggleList({
