@@ -21,9 +21,9 @@ def upgrade():
     op.create_table(
         "submit",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("tmp_path", sa.Text(), nullable=False),
+        sa.Column("tmp_path", sa.Text(), nullable=True),
         sa.Column("added", sa.DateTime(), nullable=False),
-        sa.Column("submit_type", sa.String(length=16), nullable=False),
+        sa.Column("submit_type", sa.String(length=16), nullable=True),
         sa.Column("data", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("id")
     )

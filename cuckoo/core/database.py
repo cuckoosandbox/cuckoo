@@ -200,10 +200,10 @@ class Submit(Base):
     __tablename__ = "submit"
 
     id = Column(Integer(), primary_key=True)
-    tmp_path = Column(Text(), nullable=False)
+    tmp_path = Column(Text(), nullable=True)
     added = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
-    submit_type = Column(String(16), nullable=False)
-    data = Column(JsonType)
+    submit_type = Column(String(16), nullable=True)
+    data = Column(JsonType, nullable=True)
 
     def __init__(self, tmp_path, submit_type, data):
         self.tmp_path = tmp_path
@@ -1206,8 +1206,10 @@ class Database(object):
     @classlock
     def add_submit(self, tmp_path, submit_type, data):
         session = self.Session()
-        submit = Submit(tmp_path=tmp_path, submit_type=submit_type, data=data)
 
+        submit = Submit(
+            tmp_path=tmp_path, submit_type=submit_type, data=data or {}
+        )
         session.add(submit)
         try:
             session.commit()

@@ -105,7 +105,7 @@ class DatabaseEngine(object):
         assert "alembic_version" in self.d.engine.table_names()
 
     def test_view_submit_tasks(self):
-        submit_id = self.d.add_submit(tempfile.mkdtemp(), "strings", {})
+        submit_id = self.d.add_submit(None, None, None)
         t1 = self.d.add_path(__file__, custom="1", submit_id=submit_id)
         t2 = self.d.add_path(__file__, custom="2", submit_id=submit_id)
 
@@ -124,7 +124,7 @@ class DatabaseEngine(object):
 
     def test_add_reboot(self):
         t0 = self.d.add_path(__file__)
-        s0 = self.d.add_submit("", "", {})
+        s0 = self.d.add_submit(None, None, None)
         t1 = self.d.add_reboot(task_id=t0, submit_id=s0)
 
         t = self.d.view_task(t1)

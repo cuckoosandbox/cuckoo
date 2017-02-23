@@ -210,7 +210,7 @@ class TestWebInterface(object):
         assert r.status_code == 500
         assert "Invalid Submit ID" in r.content
 
-        submit_id = Database().add_submit(tempfile.mkdtemp(), "strings", {})
+        submit_id = Database().add_submit(None, None, None)
         r = client.get("/submit/post/1")
         assert r.status_code == 500
         assert "not associated with any tasks" in r.content

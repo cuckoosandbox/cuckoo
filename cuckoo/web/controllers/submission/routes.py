@@ -89,7 +89,7 @@ class SubmissionRoutes(object):
     @staticmethod
     def reboot(request, task_id):
         # TODO Dummy usage, should probably be improved.
-        submit_id = Database().add_submit("", "", {})
+        submit_id = Database().add_submit(None, None, None)
 
         task_id = Database().add_reboot(task_id=task_id, submit_id=submit_id)
         if not task_id:
@@ -105,7 +105,7 @@ class SubmissionRoutes(object):
         if request.method != "POST":
             return view_error(request, "Import analysis request must be POST!")
 
-        submit_id = Database().add_submit("", "", {})
+        submit_id = Database().add_submit(None, None, None)
         task_ids = []
 
         for analysis in request.FILES.getlist("analyses"):
