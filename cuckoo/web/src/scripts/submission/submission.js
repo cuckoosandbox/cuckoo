@@ -623,9 +623,10 @@ $(function() {
 			debug: false, // set to true to do 10 calls max and stop
 			refreshRate: 2500,
 			onRender: function(el) {
+				// opens up the task in a new task, if this task has finished processing
 				el.find('tbody > tr.finished').bind('click', function() {
 					var id = $(this).data('taskId');
-					window.location = `/analysis/${id}`;
+					window.open(`/analysis/${id}`);
 				});
 			}
 		});

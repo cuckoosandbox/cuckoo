@@ -5713,7 +5713,7 @@ body.night .flex-static__summary li {
   transition: opacity 300ms ease-in-out;
 }
 .page-freeze.error {
-  background-color: rgba(70, 6, 11, 0.9) !important;
+  background-color: rgba(70, 6, 11, 0.9);
 }
 .page-freeze__graphic {
   position: relative;
