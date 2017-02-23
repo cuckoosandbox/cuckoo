@@ -90,7 +90,7 @@ class ExportController:
         f = StringIO()
 
         # Creates a zip file with the selected files and directories of the task.
-        zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED)
+        zf = zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED, allowZip64=True)
 
         for dirname, subdirs, files in os.walk(path):
             if os.path.basename(dirname) == task_id:
