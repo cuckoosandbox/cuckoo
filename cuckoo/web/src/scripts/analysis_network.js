@@ -56,7 +56,7 @@ class RequestDisplay {
     	// this will later be replaced by the ajax call getting the content
     	setTimeout(function() {
     		_this.loadFinish({}, summaryElement);
-    	}, 5000);
+    	}, 1000);
     }
 
     /*

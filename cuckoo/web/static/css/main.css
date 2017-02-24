@@ -4729,8 +4729,52 @@ body.night table.cuckoo-table tfoot {
 .is-loading .network-display__request-summary .fa-long-arrow-right, .is-open .network-display__request-summary .fa-long-arrow-right {
   color: #C3CDDC;
 }
+.is-open .network-display__request-summary {
+  border-bottom-width: 2px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
 .is-open .network-display__request-summary .fa-chevron-right:before {
   content: "\f078";
+}
+.network-display__request-details {
+  display: none;
+  border: 1px solid #CBD2DE;
+  background-color: #F4F4F4;
+  padding: 30px 0 15px 0;
+  border-radius: 0 0 4px 4px;
+}
+.is-open .network-display__request-details {
+  display: block;
+}
+.network-display__request-details .detail-field-group {
+  display: flex;
+}
+.network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body {
+  border-right: 1px solid #D8D8D8;
+}
+.network-display__request-details .detail-field {
+  flex-basis: 100%;
+}
+.network-display__request-details .detail-field__header {
+  padding-left: 20px;
+  font-size: 14px;
+  border-bottom: 2px solid #D8D8D8;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #ACAFB6;
+  padding-bottom: 5px;
+}
+.network-display__request-details .detail-field__header .fa, .network-display__request-details .detail-field__header #submission-task-table .status.status-reported:before, #submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details .detail-field__header div:before, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:after, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:before, .network-display__request-details .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details .detail-field__header .custom-checkbox > input + span, .network-display__request-details .detail-field__header .breadcrumbs > li:not(:last-child):after {
+  margin-right: 10px;
+}
+.network-display__request-details .detail-field__body {
+  background-color: #fff;
+  padding: 15px 0 30px 0;
+  border-bottom: 1px solid #D8D8D8;
+}
+.network-display__request-details .detail-field:not(:last-child) {
+  margin-bottom: 20px;
 }
 
 .flex-grid {
