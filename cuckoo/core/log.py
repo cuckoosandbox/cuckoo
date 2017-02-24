@@ -29,8 +29,10 @@ class DatabaseHandler(logging.Handler):
 
     def emit(self, record):
         if hasattr(record, "task_id"):
-            db = Database()
-            db.add_error(self.format(record), int(record.task_id))
+            Database().add_error(
+                self.format(record), int(record.task_id),
+                getattr(record, "error_action")
+            )
 
 class TaskHandler(logging.Handler):
     """Per-task logger.

@@ -149,6 +149,16 @@ class DatabaseEngine(object):
             "tag1", "tag2", "tag3"
         ]
 
+    def test_error_action(self):
+        task_id = self.d.add_path(__file__)
+        self.d.add_error("message1", task_id)
+        self.d.add_error("message2", task_id, "actionhere")
+        e1, e2 = self.d.view_errors(task_id)
+        assert e1.message == "message1"
+        assert e1.action is None
+        assert e2.message == "message2"
+        assert e2.action == "actionhere"
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())

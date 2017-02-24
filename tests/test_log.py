@@ -8,10 +8,13 @@ import mock
 import tempfile
 
 from cuckoo.common.config import log_error
+from cuckoo.core.database import Database
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logging, init_logfile, init_console_logging
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import set_cwd, cwd
+
+db = Database()
 
 def reset_logging():
     """Resets the logging module to its initial state so that we can
@@ -142,6 +145,26 @@ def test_init_console_logging(capsys):
     _, buf = capsys.readouterr()
     assert "console-testing" in buf
     assert "this is a test" in buf
+
+def test_log_error_action():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    db.connect()
+
+    reset_logging()
+    init_console_logging(logging.DEBUG)
+
+    task_id = db.add_path(__file__)
+    assert db.view_errors(task_id) == []
+
+    logging.getLogger(__name__).error("message", extra={
+        "error_action": "erroraction",
+        "task_id": task_id,
+    })
+
+    errors = db.view_errors(task_id)
+    assert len(errors) == 1
+    assert errors[0].action == "erroraction"
 
 @mock.patch("cuckoo.common.config.log")
 @mock.patch("cuckoo.common.config.logging")

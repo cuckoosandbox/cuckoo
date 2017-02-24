@@ -2,7 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import io
 import json
+import mock
 import os
 import responses
 import tempfile
@@ -13,6 +15,8 @@ from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
+
+db = Database()
 
 class TestSubmitManager(object):
     def setup(self):
@@ -25,9 +29,7 @@ class TestSubmitManager(object):
             },
         })
 
-        self.db = Database()
-        self.db.connect()
-
+        db.connect()
         self.submit_manager = SubmitManager()
 
     def test_pre_file(self):
@@ -37,7 +39,7 @@ class TestSubmitManager(object):
             "data": open("tests/files/foo.txt", "rb").read()
         }]) == 1
 
-        submit = self.db.view_submit(1)
+        submit = db.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["errors"]) == 0
         assert os.path.exists(submit.data["data"][0]["data"])
@@ -54,7 +56,7 @@ class TestSubmitManager(object):
             "google.com",
         ]) == 1
 
-        submit = self.db.view_submit(1)
+        submit = db.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["data"]) == 3
 
@@ -68,7 +70,7 @@ class TestSubmitManager(object):
 
     def test_invalid_strings(self):
         assert SubmitManager().pre("strings", ["thisisnotanurl"]) == 1
-        submit = self.db.view_submit(1)
+        submit = db.view_submit(1)
         assert len(submit.data["errors"]) == 1
         assert "was neither a valid hash or url" in submit.data["errors"][0]
         assert not submit.data["data"]
@@ -89,7 +91,7 @@ class TestSubmitManager(object):
                 "87943278943798784783974893278493",  # invalid hash
             ]) == 1
 
-            submit = self.db.view_submit(1)
+            submit = db.view_submit(1)
             assert isinstance(submit.data["data"], list)
             assert len(submit.data["data"]) == 1
 
@@ -106,7 +108,7 @@ class TestSubmitManager(object):
         ) == 1
         config = json.load(open("tests/files/submit/url1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]
-        t = self.db.view_task(1)
+        t = db.view_task(1)
         assert t.target == "http://cuckoosandbox.org"
         assert t.package == "ie"
         assert t.timeout == 120
@@ -126,7 +128,7 @@ class TestSubmitManager(object):
 
         config = json.load(open("tests/files/submit/file1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]
-        t = self.db.view_task(1)
+        t = db.view_task(1)
         assert t.target.endswith("icardres.dll")
         assert t.package == "dll"
         assert t.timeout == 120
@@ -144,7 +146,7 @@ class TestSubmitManager(object):
 
         config = json.load(open("tests/files/submit/arc1.json", "rb"))
         assert self.submit_manager.submit(1, config) == [1]
-        t = self.db.view_task(1)
+        t = db.view_task(1)
         assert t.target.endswith("msg_invoice.msg")
         assert t.package == "doc"
         assert t.timeout == 120
@@ -161,7 +163,47 @@ class TestSubmitManager(object):
         assert self.submit_manager.pre(
             "strings", ["google.com"], {"foo": "bar"}
         ) == 1
-        assert self.db.view_submit(1).data["options"] == {"foo": "bar"}
+        assert db.view_submit(1).data["options"] == {"foo": "bar"}
+
+    def sample_analysis(self):
+        # Copied from test_web::test_import_analysis.
+        buf = io.BytesIO()
+        z = zipfile.ZipFile(buf, "w")
+        l = os.walk("tests/files/sample_analysis_storage")
+        for dirpath, dirnames, filenames in l:
+            for filename in filenames:
+                if os.path.basename(dirpath) == "sample_analysis_storage":
+                    relapath = filename
+                else:
+                    relapath = "%s/%s" % (os.path.basename(dirpath), filename)
+                z.write(os.path.join(dirpath, filename), relapath)
+        return z, buf
+
+    @mock.patch("cuckoo.core.submit.log")
+    def test_import_analysis_json(self, p):
+        z, buf = self.sample_analysis()
+        z.writestr("analysis.json", json.dumps({
+            "errors": "nope",
+        }))
+        z.close()
+        buf.seek(0)
+
+        self.submit_manager.import_(buf, None)
+        p.warning.assert_called_once()
+
+        z, buf = self.sample_analysis()
+        z.writestr("analysis.json", json.dumps({
+            "errors": ["yes", "very", "error"],
+            "action": ["oneaction"],
+        }))
+        z.close()
+        buf.seek(0)
+
+        task_id = self.submit_manager.import_(buf, None)
+        errors = [(e.message, e.action) for e in db.view_errors(task_id)]
+        assert sorted(errors) == [
+            ("", "oneaction"), ("error", None), ("very", None), ("yes", None),
+        ]
 
 def test_option_translations_from():
     sm = SubmitManager()

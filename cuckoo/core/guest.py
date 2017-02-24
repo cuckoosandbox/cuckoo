@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,10 +15,13 @@ import xmlrpclib
 import zipfile
 
 from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
-from cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
-from cuckoo.common.constants import CUCKOO_GUEST_FAILED
-from cuckoo.common.exceptions import CuckooGuestError
+from cuckoo.common.constants import (
+    CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED,
+    CUCKOO_GUEST_FAILED
+)
+from cuckoo.common.exceptions import (
+    CuckooGuestError, CuckooGuestCriticalTimeout
+)
 from cuckoo.common.utils import TimeoutServer
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
@@ -116,9 +119,10 @@ class OldGuestManager(object):
         while db.guest_get_status(self.task_id) == "starting":
             # Check if we've passed the timeout.
             if time.time() > end:
-                raise CuckooGuestError("{0}: the guest initialization hit the "
-                                       "critical timeout, analysis "
-                                       "aborted.".format(self.id))
+                raise CuckooGuestCriticalTimeout(
+                    "Machine %s: the guest initialization hit the "
+                    "critical timeout, analysis aborted." % self.id
+                )
 
             try:
                 # If the server returns the given status, break the loop
@@ -234,7 +238,9 @@ class OldGuestManager(object):
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
             if time.time() > end:
-                raise CuckooGuestError("The analysis hit the critical timeout, terminating.")
+                raise CuckooGuestError(
+                    "The analysis hit the critical timeout, terminating."
+                )
 
             try:
                 status = self.server.get_status()
@@ -318,9 +324,9 @@ class GuestManager(object):
                 time.sleep(1)
 
             if time.time() > end:
-                raise CuckooGuestError(
-                    "%s: the guest initialization hit the critical timeout, "
-                    "analysis aborted." % self.vmid
+                raise CuckooGuestCriticalTimeout(
+                    "Machine %s: the guest initialization hit the critical "
+                    "timeout, analysis aborted." % self.vmid
                 )
 
     def query_environ(self):

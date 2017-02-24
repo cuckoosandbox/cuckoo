@@ -29,7 +29,9 @@
 			{% if env.view_kwargs.page == 'behavior' %} class="active" {% endif %}>
 				<i class="fa fa-share-alt-square"></i> 
 				<span>Behavioral Analysis</span>
+                {% if report.analysis.behavior %}
 				<em>{{ report.analysis.behavior.processes|filter_key_if_has:"track"|length }}</em>
+                {% endif %}
 			</a>
 		</li>
 		<li>

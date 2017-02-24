@@ -17,10 +17,10 @@ from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.virustotal import VirusTotal
 
+db = Database()
+
 class TestProcessing:
     def test_debug(self):
-        db = Database()
-
         set_cwd(tempfile.mkdtemp())
 
         db.connect(dsn="sqlite:///:memory:")
@@ -34,11 +34,16 @@ class TestProcessing:
         }
         d.log_path = "nothing_to_see_here"
         d.cuckoolog_path = "neither here"
-        d.action_path = "or here.."
         d.mitmerr_path = "no no no"
 
         results = d.run()
         assert len(list(results["errors"])) == len(results["errors"])
+        assert results["errors"] == ["foo", "bar"]
+        assert results["action"] == []
+
+        db.add_error("err", 1, "thisisanaction")
+        results = d.run()
+        assert results["action"] == ["thisisanaction"]
 
     def test_pdf(self):
         s = Static()

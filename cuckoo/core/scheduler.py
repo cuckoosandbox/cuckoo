@@ -15,7 +15,7 @@ import cuckoo
 from cuckoo.common.config import Config, emit_options, config
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooGuestError, CuckooOperationalError,
-    CuckooMachineSnapshotError, CuckooCriticalError
+    CuckooMachineSnapshotError, CuckooCriticalError, CuckooGuestCriticalTimeout
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
@@ -523,6 +523,15 @@ class AnalysisManager(threading.Thread):
                     "vmname": self.machine.name,
                 }
             )
+        except CuckooGuestCriticalTimeout as e:
+            if not unlocked:
+                machine_lock.release()
+            log.error("Error from the Cuckoo Guest: %s", e, extra={
+                "error_action": "host2guest_routing",
+                "action": "guest.handle",
+                "status": "error",
+                "task_id": self.task.id,
+            })
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()

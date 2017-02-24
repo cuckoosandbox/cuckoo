@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "ef1ecf216392"
+SCHEMA_VERSION = "181be2111077"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -262,6 +262,7 @@ class Error(Base):
     __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
+    action = Column(String(64), nullable=True)
     message = Column(Text(), nullable=False)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
@@ -280,7 +281,8 @@ class Error(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, message, task_id):
+    def __init__(self, message, task_id, action=None):
+        self.action = action
         self.message = message
         self.task_id = task_id
 
@@ -924,13 +926,13 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_error(self, message, task_id):
+    def add_error(self, message, task_id, action=None):
         """Add an error related to a task.
         @param message: error message
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message, task_id=task_id)
+        error = Error(message=message, task_id=task_id, action=action)
         session.add(error)
         try:
             session.commit()
@@ -1512,7 +1514,8 @@ class Database(object):
         """
         session = self.Session()
         try:
-            errors = session.query(Error).filter_by(task_id=task_id).all()
+            q = session.query(Error).filter_by(task_id=task_id)
+            errors = q.order_by(Error.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing errors: {0}".format(e))
             return []

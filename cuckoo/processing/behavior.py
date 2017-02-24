@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ import os
 
 from cuckoo.common.abstracts import Processing, BehaviorHandler
 from cuckoo.common.config import Config
+from cuckoo.core.database import Database
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
@@ -197,13 +198,11 @@ class ActionInformation(BehaviorHandler):
         self.actions = []
 
     def handle_event(self, event):
-        self.actions.append(tuple(event.items()))
+        self.actions.append(event["action"])
 
     def run(self):
-        action_path = os.path.join(self.analysis.analysis_path, "action.json")
-        with open(action_path, "wb") as f:
-            for action in sorted(set(self.actions)):
-                f.write("%s\n" % json.dumps(dict(action)))
+        for action in set(self.actions):
+            Database().add_error("", self.analysis.task["id"], action)
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.

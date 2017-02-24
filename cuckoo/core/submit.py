@@ -17,7 +17,6 @@ from cuckoo.core.database import Database, TASK_COMPLETED
 from cuckoo.misc import cwd, mkdir
 
 log = logging.getLogger(__name__)
-
 db = Database()
 
 class SubmitManager(object):
@@ -118,7 +117,7 @@ class SubmitManager(object):
                     ),
                 })
 
-        return Database().add_submit(path_tmp, submit_type, submit_data)
+        return db.add_submit(path_tmp, submit_type, submit_data)
 
     def get_files(self, submit_id, password=None, astree=False):
         """
@@ -127,7 +126,7 @@ class SubmitManager(object):
         @param astree: sflock option; determines the format in which the files are returned
         @return: A tree of files
         """
-        submit = Database().view_submit(submit_id)
+        submit = db.view_submit(submit_id)
         files, duplicates = [], []
 
         for data in submit.data["data"]:
@@ -275,6 +274,9 @@ class SubmitManager(object):
             )
 
         # Ensure there are no files with illegal or potentially insecure names.
+        # TODO Keep in mind that if we start to support other archive formats
+        # (e.g., .tar) that those may also support symbolic links. In that case
+        # we should probably start using sflock here.
         for filename in z.namelist():
             if filename.startswith("/") or ".." in filename or ":" in filename:
                 raise CuckooOperationalError(
@@ -344,6 +346,33 @@ class SubmitManager(object):
 
         mkdir(cwd(analysis=task_id))
         z.extractall(cwd(analysis=task_id))
+
+        # If there's an analysis.json file, load it up to figure out additional
+        # metdata regarding this analysis.
+        if os.path.exists(cwd("analysis.json", analysis=task_id)):
+            try:
+                obj = json.load(
+                    open(cwd("analysis.json", analysis=task_id), "rb")
+                )
+                if not isinstance(obj, dict):
+                    raise ValueError
+                if "errors" in obj and not isinstance(obj["errors"], list):
+                    raise ValueError
+                if "action" in obj and not isinstance(obj["action"], list):
+                    raise ValueError
+            except ValueError:
+                log.warning(
+                    "An analysis.json file was provided, but wasn't a valid "
+                    "JSON object/structure that we can to enhance the "
+                    "analysis information."
+                )
+            else:
+                for error in set(obj.get("errors", [])):
+                    if isinstance(error, basestring):
+                        db.add_error(error, task_id)
+                for action in set(obj.get("action", [])):
+                    if isinstance(action, basestring):
+                        db.add_error("", task_id, action)
 
         # We set this analysis as completed so that it will be processed
         # automatically (assuming 'cuckoo process' is running).
