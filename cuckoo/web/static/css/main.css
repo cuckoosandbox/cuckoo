@@ -3232,27 +3232,6 @@ section#screenshots .minified {
   max-height: 278px;
 }
 
-#network-world-map {
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-body *[data-simplify="only"] {
-  display: none;
-  visibility: hidden;
-  opacity: 0;
-}
-body[data-simplified="true"] *[data-simplify="hide"] {
-  display: none;
-  visibility: hidden;
-  opacity: 0;
-}
-body[data-simplified="true"] *[data-simplify="only"] {
-  display: block;
-  visibility: visible;
-  opacity: 1;
-}
-
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -3423,7 +3402,7 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons a.active 
 }
 
 /* 
-   Copyright (C) 2016 Cuckoo Foundation.
+   Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
@@ -3465,7 +3444,6 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons a.active 
 }
 .cuckoo-analysis__header .file-name {
   display: inline-block;
-  vertical-align: middle;
   font-family: monospace;
   border: 1px solid #ccc;
   font-size: 11px;
