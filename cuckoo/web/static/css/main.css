@@ -4322,6 +4322,33 @@ button .panel-heading .glyphicon {
 .cuckoo-errors .show-all-errors .btn {
   margin-left: 10px;
 }
+.cuckoo-errors .troubleshoot {
+  background-color: #F2DEE4;
+  border: 1px solid #ebccd1;
+  padding: 15px 0;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.cuckoo-errors .troubleshoot p {
+  font-weight: 500;
+  color: #a94442;
+  padding: 0 15px;
+}
+.cuckoo-errors .troubleshoot ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cuckoo-errors .troubleshoot ul li {
+  margin-bottom: 5px;
+  padding: 15px;
+  border-bottom: 1px solid #ebccd1;
+  border-top: 1px solid #ebccd1;
+  background-color: #fff;
+}
+.cuckoo-errors .troubleshoot ul li:last-child {
+  margin-bottom: 0;
+}
 
 .errors {
   list-style: none;
