@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+        <section class="flex-nav__body cuckoo-analysis">
+
+            <header class="page-header cuckoo-analysis__header">
+                <h2><i class="fa fa-globe"></i> Network Analysis</h2>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tabbable tabs">
+                            <ul class="nav nav-pills" style="margin-bottom: 0;">
+                                <li><a href="#network_hosts_tab" data-toggle="tab">Hosts ({{ report.analysis.network.hosts|length }})</a></li>
+                                <li><a href="#network_dns_tab" data-toggle="tab">DNS ({{ report.analysis.network.dns|length }})</a></li>
+                                <li><a href="#network_tcp_tab" data-toggle="tab">TCP ({{ report.analysis.network.tcp|length }})</a></li>
+                                <li><a href="#network_udp_tab" data-toggle="tab">UDP ({{ report.analysis.network.udp|length }})</a></li>
+                                <li class="active"><a href="#network_http_tab" data-toggle="tab">
+                                    {% if report.analysis.network.http_ex %}
+                                        HTTP/HTTPS ({{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }})
+                                    {% else %}
+                                        HTTP ({{ report.analysis.network.http|length }})
+                                    {% endif %}
+                                </a></li>
+                                <li><a href="#network_icmp_tab" data-toggle="tab">ICMP ({{ report.analysis.network.icmp|length }})</a></li>
+                                <li><a href="#network_irc_tab" data-toggle="tab">IRC ({{ report.analysis.network.irc|length }})</a></li>
+                                <li><a href="#network_suricata_tab" data-toggle="tab">
+                                    Suricata
+                                    {% if report.analysis.suricata %}
+                                        ({{ report.analysis.suricata|custom_length:"alerts tls" }})
+                                    {% endif %}
+                                </a></li>
+                                <li><a href="#network_snort_tab" data-toggle="tab">
+                                    Snort
+                                    {% if report.analysis.snort %}
+                                        ({{ report.analysis.snort.alerts|length }})
+                                    {% endif %}
+                                    </a></li>
+                                <li class="pull-right">
+                        {% if report.analysis.network.pcap_id or report.analysis.network.mitmproxy_id %}
+                            {% if report.analysis.network.pcap_id %}
+                            <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "pcap" report.analysis.network.pcap_id %}">
+                                <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
+                                Download PCAP
+                            </a>
+                            {% endif %}
+                            {% if report.analysis.network.mitmproxy_id %}
+                            <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "mitmproxy" report.analysis.network.mitmproxy_id %}">
+                                <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
+                                Download mitmproxy dump
+                             </a>
+                            {% endif %}
+                        {% endif %}
+                                </li>
+
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade" id="network_hosts_tab">{% include "analysis/pages/network/_hosts.html" %}</div>
+                                <div class="tab-pane fade" id="network_dns_tab">{% include "analysis/pages/network/_dns.html" %}</div>
+                                <div class="tab-pane fade" id="network_tcp_tab">{% include "analysis/pages/network/_tcp.html" %}</div>
+                                <div class="tab-pane fade" id="network_udp_tab">{% include "analysis/pages/network/_udp.html" %}</div>
+                                <div class="tab-pane fade in active" id="network_http_tab">{% include "analysis/pages/network/_http.html" %}</div>
+                                <div class="tab-pane fade" id="network_icmp_tab">{% include "analysis/pages/network/_icmp.html" %}</div>
+                                <div class="tab-pane fade" id="network_irc_tab">{% include "analysis/pages/network/_irc.html" %}</div>
+                                <div class="tab-pane fade" id="network_suricata_tab">{% include "analysis/pages/network/_suricata.html" %}</div>
+                                <div class="tab-pane fade" id="network_snort_tab">{% include "analysis/pages/network/_snort.html" %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>  
+    </div>
+
+{% endblock %}

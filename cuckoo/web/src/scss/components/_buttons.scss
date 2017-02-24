@@ -63,6 +63,7 @@
 	&__bordered {
 		@extend .grouped-buttons;
 		background: transparent;
+		margin-bottom: 15px;
 
 		button, a {
 			display: flex;

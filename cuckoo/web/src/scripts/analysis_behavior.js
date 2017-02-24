@@ -160,3 +160,114 @@ class SummaryBehaviorController {
     }
 
 }
+
+class SummarySimplifier {
+
+    constructor(el) {
+        this.el = el;
+        this._simplified = false;
+        this._keepQuery = 'keep';
+        this._hideQuery = 'hide';
+        this._callbacks = {
+            on: [],
+            off: []
+        };
+        return this.initialise();
+    }
+
+    initialise() {
+
+        var _self = this;
+
+        this.el.on('click', function(e) {
+            e.preventDefault();
+            _self.toggle();
+        });
+
+        if($('body').attr('data-simplified') === 'true') {
+            this._simplified = true;
+            this._update();
+        } else {
+            this._simplified = false;
+            this._update();
+        }
+
+        return this;
+    }
+
+    toggle() {
+
+        if(this._simplified) {
+            this._off();
+        } else {
+            this._on();
+        }
+
+        this._save();
+
+    }
+
+    _off() {
+        this._simplified = false;
+        this._update();
+    }
+
+    _on() {
+        this._simplified = true;
+        this._update();
+
+        for(var cb in this._callbacks.on)  {
+            this._callbacks.on[cb]();
+        }
+    }
+
+    _update(preset) {
+
+        if(this._simplified) {
+            this.el.addClass('active');
+            this.el.find('span').text('default overview');
+            $('body').attr('data-simplified', "true");
+        } else {
+            this.el.removeClass('active');
+            this.el.find('span').text('simplify overview');
+            $('body').attr('data-simplified', 'false');
+        }
+
+    }
+
+    _save() {
+        Cookies("simplified_view", this._simplified, {expires: 365 * 10});
+    }
+
+    // adds 'listener' callbacks, like events
+    listen(namespace, fn) {
+        this._callbacks[namespace].push(fn);
+    }
+
+}
+
+$(function() {
+
+    var simplifier;
+
+    if($("#toggle-simplified").length) { 
+        simplifier = window.simplifier = new SummarySimplifier($("#toggle-simplified"));
+    }
+
+    // since the pew pew won't draw if it's invisible
+    if(window.pewpew && typeof window.pewpew === 'function') {
+        if(simplifier) {
+            if(!simplifier._simplified) {
+                simplifier.listen('on', function() {
+                    window.pewpew();
+                });
+                return;
+            } else {
+                window.pewpew();
+            }
+        } else {
+            window.pewpew();
+        }
+    }
+
+}); 

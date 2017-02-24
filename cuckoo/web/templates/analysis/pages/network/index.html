@@ -18,6 +18,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-12">
+
                     	   <div class="grouped-buttons__bordered">
                                 <a href="#" data-total="12">Hosts <span class="button-badge">12</span></a>
                                 <a href="#" data-total="16">DNS <span class="button-badge">16</span></a>
@@ -29,6 +30,47 @@
                                 <a href="#" class="no-badge">Suricata</a>
                                 <a href="#" class="no-badge">Snort</a>
                            </div>
+
+                           <div class="network-display__outer" id="http-requests">
+
+                            <!-- demo 1  -->
+                            <div class="network-display__request">
+                                <a class="network-display__request-summary" href="#">
+                                    <span class="method">GET</span>
+                                    <i class="fa fa-long-arrow-right"></i>
+                                    <span class="status-code--success">200 OK</span>
+                                    https://mijn.ing.nl/internetbankieren/
+                                    <i class="fa fa-chevron-right align-right"></i>
+                                </a>
+                                <section class="network-display__request-details"></section>
+                            </div>
+
+                            <!-- demo 2 -->
+                            <div class="network-display__request">
+                                <a class="network-display__request-summary" href="#">
+                                    <span class="method">GET</span>
+                                    <i class="fa fa-long-arrow-right"></i>
+                                    <span class="status-code--success">200 OK</span>
+                                    https://mijn.ing.nl/internetbankieren/
+                                    <i class="fa fa-chevron-right align-right"></i>
+                                </a>
+                                <section class="network-display__request-details"></section>
+                            </div>
+
+                            <!-- demo 3 -->
+                            <div class="network-display__request">
+                                <a class="network-display__request-summary" href="#">
+                                    <span class="method">GET</span>
+                                    <i class="fa fa-long-arrow-right"></i>
+                                    <span class="status-code--success">200 OK</span>
+                                    https://mijn.ing.nl/internetbankieren/
+                                    <i class="fa fa-chevron-right align-right"></i>
+                                </a>
+                                <section class="network-display__request-details"></section>
+                            </div>
+
+                           </div>
+
                     </div>
                 </div>
             </div>
@@ -46,5 +88,7 @@
             
         </article>  
     </div>
+
+    <script src="{% static "js/cuckoo/analysis_network.js" %}"></script>
 
 {% endblock %}
