@@ -3288,19 +3288,21 @@ section#screenshots .minified {
   font-size: 12px;
 }
 
-.grouped-buttons button, .grouped-buttons a {
+.grouped-buttons button, .grouped-buttons__bordered button, .grouped-buttons a, .grouped-buttons__bordered a {
   -webkit-appearance: none;
   border: 0;
 }
-.grouped-buttons button:focus, .grouped-buttons a:focus {
+.grouped-buttons button:focus, .grouped-buttons__bordered button:focus, .grouped-buttons a:focus, .grouped-buttons__bordered a:focus {
   outline: 0;
 }
 
-.grouped-buttons {
+.grouped-buttons, .grouped-buttons__bordered {
   display: flex;
+  width: 100%;
+  align-items: stretch;
   background-color: #fff;
 }
-.grouped-buttons button, .grouped-buttons a {
+.grouped-buttons button, .grouped-buttons__bordered button, .grouped-buttons a, .grouped-buttons__bordered a {
   background-color: #fff;
   color: #545454;
   padding: 10px 0;
@@ -3309,32 +3311,91 @@ section#screenshots .minified {
   text-align: center;
   text-decoration: none;
 }
-.grouped-buttons button:active, .grouped-buttons a:active {
+.grouped-buttons button:active, .grouped-buttons__bordered button:active, .grouped-buttons a:active, .grouped-buttons__bordered a:active {
   background-color: #e5e5e5;
 }
-.grouped-buttons button.active, .grouped-buttons a.active {
-  background-color: #337AB7;
+.grouped-buttons button.active, .grouped-buttons__bordered button.active, .grouped-buttons a.active, .grouped-buttons__bordered a.active {
+  background-color: #6297F8;
   font-weight: 700;
   color: #fff;
 }
-.grouped-buttons button:hover, .grouped-buttons button:focus, .grouped-buttons button:active, .grouped-buttons a:hover, .grouped-buttons a:focus, .grouped-buttons a:active {
+.grouped-buttons button:hover, .grouped-buttons__bordered button:hover, .grouped-buttons button:focus, .grouped-buttons__bordered button:focus, .grouped-buttons button:active, .grouped-buttons__bordered button:active, .grouped-buttons a:hover, .grouped-buttons__bordered a:hover, .grouped-buttons a:focus, .grouped-buttons__bordered a:focus, .grouped-buttons a:active, .grouped-buttons__bordered a:active {
   text-decoration: none;
 }
-body.cyborg .grouped-buttons button, body.cyborg .grouped-buttons a {
+body.cyborg .grouped-buttons button, body.cyborg .grouped-buttons__bordered button, body.cyborg .grouped-buttons a, body.cyborg .grouped-buttons__bordered a {
   background-color: #152D3B;
   color: #d7d7d7;
 }
-body.cyborg .grouped-buttons button.active, body.cyborg .grouped-buttons a.active {
+body.cyborg .grouped-buttons button.active, body.cyborg .grouped-buttons__bordered button.active, body.cyborg .grouped-buttons a.active, body.cyborg .grouped-buttons__bordered a.active {
   background-color: #0d1b21;
   color: #0ce3ac;
 }
-body.night .grouped-buttons button, body.night .grouped-buttons a {
+body.night .grouped-buttons button, body.night .grouped-buttons__bordered button, body.night .grouped-buttons a, body.night .grouped-buttons__bordered a {
   background-color: #555;
   color: #d7d7d7;
 }
-body.night .grouped-buttons button.active, body.night .grouped-buttons a.active {
+body.night .grouped-buttons button.active, body.night .grouped-buttons__bordered button.active, body.night .grouped-buttons a.active, body.night .grouped-buttons__bordered a.active {
   background-color: #131313;
   color: #0ce3ac;
+}
+.grouped-buttons__bordered {
+  background: transparent;
+}
+.grouped-buttons__bordered button, .grouped-buttons__bordered a {
+  display: flex;
+  background-color: #fff;
+  padding: 10px 5px 10px 20px;
+  border: 1px solid #CECECE;
+  border-right-width: 0;
+}
+.grouped-buttons__bordered button:first-child, .grouped-buttons__bordered a:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.grouped-buttons__bordered button:last-child, .grouped-buttons__bordered a:last-child {
+  border-radius: 0 8px 8px 0;
+  border-right-width: 1px;
+}
+.grouped-buttons__bordered button:not(.active):not(.disabled):not([data-total="0"]):hover, .grouped-buttons__bordered a:not(.active):not(.disabled):not([data-total="0"]):hover {
+  background-color: #EFEFEF;
+}
+.grouped-buttons__bordered button .button-badge, .grouped-buttons__bordered a .button-badge {
+  display: inline-block;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background-color: #999999;
+  border-radius: 50px;
+  padding: 3px 10px;
+  vertical-align: middle;
+}
+.grouped-buttons__bordered button.active, .grouped-buttons__bordered a.active {
+  border-color: #3177f6;
+  border-right-width: 1px;
+}
+.grouped-buttons__bordered button.active + button, .grouped-buttons__bordered button.active + a, .grouped-buttons__bordered a.active + button, .grouped-buttons__bordered a.active + a {
+  border-left-width: 0px;
+}
+.grouped-buttons__bordered button.active .button-badge, .grouped-buttons__bordered a.active .button-badge {
+  background-color: #fff;
+  color: #6297F8;
+}
+.grouped-buttons__bordered button[data-total="0"]:not(.active), .grouped-buttons__bordered button.disabled:not(.active), .grouped-buttons__bordered a[data-total="0"]:not(.active), .grouped-buttons__bordered a.disabled:not(.active) {
+  border-right-color: #ccc;
+  color: #E1E1E1;
+}
+.grouped-buttons__bordered button[data-total="0"]:not(.active) .button-badge, .grouped-buttons__bordered button.disabled:not(.active) .button-badge, .grouped-buttons__bordered a[data-total="0"]:not(.active) .button-badge, .grouped-buttons__bordered a.disabled:not(.active) .button-badge {
+  background-color: #E1E1E1;
+}
+.grouped-buttons__bordered button[data-total="0"]:not(.active):active, .grouped-buttons__bordered button.disabled:not(.active):active, .grouped-buttons__bordered a[data-total="0"]:not(.active):active, .grouped-buttons__bordered a.disabled:not(.active):active {
+  background-color: #fff;
+}
+.grouped-buttons__bordered button.disabled:hover, .grouped-buttons__bordered a.disabled:hover {
+  cursor: not-allowed;
+}
+.grouped-buttons__bordered button.no-badge, .grouped-buttons__bordered a.no-badge {
+  flex: 0 0 auto;
+  padding: 10px;
 }
 
 /* 

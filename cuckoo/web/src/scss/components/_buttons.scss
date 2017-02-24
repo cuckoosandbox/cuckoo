@@ -9,6 +9,8 @@
 
 .grouped-buttons {
 	display: flex;
+	width: 100%;
+	align-items: stretch;
 	background-color: #fff;
 
 	button, a {
@@ -27,7 +29,7 @@
 		}
 
 		&.active {
-			background-color: #337AB7;
+			background-color: $cuckoo_secundary_color;
 			font-weight: 700;
 			color: #fff;
 		}
@@ -56,6 +58,76 @@
 			}
 		}
 
+	}
+
+	&__bordered {
+		@extend .grouped-buttons;
+		background: transparent;
+
+		button, a {
+			display: flex;
+			background-color: #fff;
+			padding: 10px 5px 10px 20px;
+			border: 1px solid $cuckoo_border_color;
+			border-right-width: 0;
+
+			&:first-child { border-radius: 8px 0 0 8px; }
+			&:last-child { 
+				border-radius: 0 8px 8px 0; 
+				border-right-width: 1px;
+			}
+
+			&:not(.active):not(.disabled):not([data-total="0"]) {
+				&:hover{ background-color: #EFEFEF; }
+			}
+
+			.button-badge {
+				display: inline-block;
+				margin-left: auto;
+				font-size: 12px;
+				font-weight: 700;
+				color: #fff;
+				background-color: $cuckoo_default_grey;
+				border-radius: 50px;
+				padding: 3px 10px;
+				vertical-align: middle;
+			}
+
+			&.active { 
+				border-color: darken($cuckoo_secundary_color, 10); 
+				border-right-width: 1px;
+
+				& + button,
+				& + a {
+					border-left-width: 0px;
+				}
+
+				.button-badge {
+					background-color: #fff;
+					color: $cuckoo_secundary_color;
+				}
+
+			}
+
+			&[data-total="0"]:not(.active),
+			&.disabled:not(.active) {
+				border-right-color: #ccc;
+				color: #E1E1E1;
+
+				.button-badge { background-color: #E1E1E1; }
+				&:active { background-color: #fff; }
+			}
+
+			&.disabled:hover {
+				cursor: not-allowed;
+			}
+
+			&.no-badge {
+				flex: 0 0 auto;
+				padding: 10px;
+			}
+
+		}
 	}
 
 }
