@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -912,6 +912,23 @@ class Config(object):
             for name, raw_value in items:
                 if name in self.env_keys:
                     continue
+
+                if "\n" in raw_value:
+                    wrong_key = "???"
+                    try:
+                        wrong_key = raw_value.split("\n", 1)[1].split()[0]
+                    except:
+                        pass
+
+                    raise CuckooConfigurationError(
+                        "There was an error reading in the $CWD/conf/%s.conf "
+                        "configuration file. Namely, there are one or more "
+                        "leading whitespaces before the definition of the "
+                        "'%s' key/value pair in the '%s' section. Please "
+                        "remove those leading whitespaces as Python's default "
+                        "configuration parser is unable to handle those "
+                        "properly." % (file_name, wrong_key, section)
+                    )
 
                 if not raw and name in types:
                     # TODO Is this the area where we should be checking the
