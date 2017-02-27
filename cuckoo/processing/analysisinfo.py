@@ -69,6 +69,7 @@ class AnalysisInfo(Processing):
                 "fetch_head": git_fetch_head,
             },
             monitor=monitor,
+            added=task.get("added_on"),
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),

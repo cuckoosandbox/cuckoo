@@ -341,7 +341,10 @@ class AnalysisApi(object):
                 "id": info["id"],
                 "target": target,
                 "md5": md5,
-                "ended": info.get("ended"),
+                "category": category,
+                "added_on": info.get("added"),
+                "completed_on": info.get("ended"),
+                "status": "reported",
                 "score": info.get("score"),
             }
 
