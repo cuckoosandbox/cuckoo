@@ -4825,6 +4825,13 @@ body.night table.cuckoo-table tfoot {
   flex-basis: 100%;
 }
 
+.network-analysis-pages > div {
+  display: none;
+}
+.network-analysis-pages > div.active {
+  display: block;
+}
+
 /*
 	Custom utility for tabs, as the bootstrap tabs are stupid.
 	These tabs allow to have tabs without implementing the functionality,

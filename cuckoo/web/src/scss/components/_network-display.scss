@@ -222,3 +222,10 @@
 	}
 
 }
+
+.network-analysis-pages > div {
+	display: none;
+	&.active {
+		display: block;
+	}
+}

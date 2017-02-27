@@ -3,7 +3,7 @@
  */
 class RequestDisplay {
 
-    constructor(el) {
+    constructor(el, options) {
     	// element
         this.el = el;
 
@@ -11,6 +11,9 @@ class RequestDisplay {
         this.isLoading = false;
         this.isLoaded = false;
         this.isOpen = false;
+
+        // actions
+        this.actions = options.actions ? options.actions : {};
 
         this.initialise();
     }
@@ -65,10 +68,28 @@ class RequestDisplay {
      */
     loadFinish(response, summaryElement) {
 
+        var self = this;
+
     	this.isLoading = false;
     	this.isLoaded = true;
+
     	this.el.removeClass('is-loading');
     	summaryElement.find('.fa-chevron-right').removeClass('fa-spinner fa-spin');
+
+        this.el.find('.flex-tabs__tab .btn').bind('click', function(e) {
+
+            e.preventDefault();
+            var keys = $(this).attr('href').split(':');
+            var action = keys[0];
+            var actionValue = keys[1];
+
+            if(self.actions[action] && typeof self.actions[action] === 'function') {
+                self.actions[action](actionValue, self.el);
+            }
+
+            $(this).parent().find('.btn').removeClass('active');
+            $(this).addClass('active');
+        });
 
     	this.open();
     }
@@ -96,7 +117,36 @@ class RequestDisplay {
 $(function() {
 
 	$("#http-requests .network-display__request").each(function() {
-    	var rd = new RequestDisplay($(this));
+    	var rd = new RequestDisplay($(this), {
+            actions: {
+                display: function(value, $parent) {
+                    console.log(value);
+                },
+                output: function(value, $parent) {
+                    
+                    console.log($parent);
+
+                    if(value == 'hex') {
+                        $parent.find('.tab-mode').show();
+                    } else {
+                        $parent.find('.tab-mode').hide();
+                    }
+                },
+                mode: function(value, $parent) {
+
+                }
+            }
+        });
 	});
+
+    // page navigation
+    $(".network-analysis-groups > a").bind('click', function(e) {
+        e.preventDefault();
+        $(".network-analysis-groups > a").removeClass('active');
+        $(this).addClass('active');
+
+        $('.network-analysis-pages > div').removeClass('active');
+        $(`.network-analysis-pages > ${$(this).attr('href')}`).addClass('active');
+    });
 
 });
