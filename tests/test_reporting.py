@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,6 +13,7 @@ from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
+from cuckoo.reporting.mongodb import MongoDB
 
 def task(task_id, options, conf, results, filename="a.txt"):
     Folders.create(cwd(), ["conf", "storage"])
@@ -218,6 +219,26 @@ def test_misp_domain_ipaddr():
     r.misp.add_ipdst.assert_called_once_with(
         "event", ["2.3.4.5", "3.4.5.6"],
     )
+
+@mock.patch("cuckoo.reporting.mongodb.mongo")
+def test_mongodb_init_once_new(p):
+    p.init.return_value = True
+    MongoDB().init_once()
+    p.db.collection_names.return_value = []
+    p.db.cuckoo_schema.save.assert_called_once_with({
+        "version": "1",
+    })
+    p.db.fs.files.ensure_index.assert_called_once()
+
+@mock.patch("cuckoo.reporting.mongodb.mongo")
+def test_mongodb_init_once_new(p):
+    p.init.return_value = True
+    MongoDB().init_once()
+    p.db.collection_names.return_value = []
+    p.db.cuckoo_schema.save.assert_called_once_with({
+        "version": "1",
+    })
+    p.db.fs.files.ensure_index.assert_called_once()
 
 def test_feedback_empty():
     r = Feedback()
