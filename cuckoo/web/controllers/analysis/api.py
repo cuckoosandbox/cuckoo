@@ -18,6 +18,7 @@ from wsgiref.util import FileWrapper
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
 from cuckoo.common.mongo import mongo
+from cuckoo.common.utils import is_list_of_strings
 from cuckoo.core.database import (
     Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 )
@@ -264,10 +265,10 @@ class AnalysisApi:
 
         filters = {}
 
-        if cats:
+        if cats and is_list_of_strings(cats):
             filters["info.category"] = {"$in": cats}
 
-        if packs:
+        if packs and is_list_of_strings(packs):
             filters["info.package"] = {"$in": packs}
 
         if isinstance(score_range, (str, unicode)) and score_range != "":

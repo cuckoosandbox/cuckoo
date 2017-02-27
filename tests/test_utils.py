@@ -361,3 +361,13 @@ def test_validate_url():
     assert utils.validate_url("google.com/test")
     assert utils.validate_url("https://google.com/")
     assert not utils.validate_url("ftp://google.com/")
+
+def test_is_list_of_strings():
+    utils.is_list_of_strings(1) is False
+    utils.is_list_of_strings("a") is False
+    utils.is_list_of_strings([]) is True
+    utils.is_list_of_strings(["a"]) is True
+    utils.is_list_of_strings(["a", 1]) is False
+    utils.is_list_of_strings(["a", []]) is False
+    utils.is_list_of_strings(["a", ["a"]]) is False
+    utils.is_list_of_strings([lambda x: x]) is False

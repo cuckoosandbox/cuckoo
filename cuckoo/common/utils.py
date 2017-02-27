@@ -328,3 +328,11 @@ def supported_version(version, minimum, maximum):
         return False
 
     return True
+
+def is_list_of_strings(l):
+    if not isinstance(l, (tuple, list)):
+        return False
+    for value in l:
+        if not isinstance(value, basestring):
+            return False
+    return True
