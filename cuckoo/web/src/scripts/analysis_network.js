@@ -1,3 +1,17 @@
+function parseHeaderString(headerStr) {
+  var headers = {};
+  var header_lines = headerStr.split(/\r?\n/);
+  for(var header in header_lines) {
+    var keyv = header_lines[header].split(':');
+    if(keyv.length == 1) {
+        headers['url'] = keyv[0];
+    } else {
+        headers[keyv[0]] = keyv[1];
+    }
+  }
+  return headers;
+}
+
 /*
 	new HTTP layout helper
  */
@@ -12,8 +26,20 @@ class RequestDisplay {
         this.isLoaded = false;
         this.isOpen = false;
 
+        // request-specific parameters
+        this.index = this.el.data('index');
+        this.protocol = this.el.data('protocol');
+        this.request_headers = parseHeaderString(this.el.find('[data-contents=request-headers]').html());
+        this.response_headers = parseHeaderString(this.el.find('[data-contents=response-headers]').html());
+        this.request_body = null;
+        this.response_body = null;
+
+        console.log(this);
+
         // actions
         this.actions = options.actions ? options.actions : {};
+
+        this.el.find('[data-contents=response-headers], [data-contents=request-headers]').remove();
 
         this.initialise();
     }
@@ -57,9 +83,18 @@ class RequestDisplay {
     	summaryElement.find('.fa-chevron-right').addClass('fa-spinner fa-spin');
 
     	// this will later be replaced by the ajax call getting the content
-    	setTimeout(function() {
-    		_this.loadFinish({}, summaryElement);
-    	}, 1000);
+
+        $.post("/analysis/api/task/network_http_data/", JSON.stringify({
+            "task_id": window.task_id,
+            "protocol": _this.protocol,
+            "request_body": false,
+            "request_index": _this.index
+        }), function(data) {
+            _this.request_body = data.request;
+            _this.response_body = data.response;
+            _this.loadFinish(data, summaryElement);
+        });
+
     }
 
     /*

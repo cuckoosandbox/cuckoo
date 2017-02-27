@@ -19,7 +19,7 @@
 		border: 1px solid #D2D2D2;
 		border-radius: 4px;
 		padding: 10px 15px;
-		font-size: 21px;
+		font-size: 14px;
 		font-weight: 700;
 		color: #B1B1B1;
 
@@ -31,8 +31,16 @@
 			padding: 5px 10px;
 		}
 
+		.url {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding-right: 20px;
+		}
+
 		.status-code {
 			@extend .method;
+			flex-shrink: 0;
 
 			&--success {
 				@extend .status-code;

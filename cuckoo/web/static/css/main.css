@@ -4677,7 +4677,7 @@ body.night table.cuckoo-table tfoot {
   border: 1px solid #D2D2D2;
   border-radius: 4px;
   padding: 10px 15px;
-  font-size: 21px;
+  font-size: 14px;
   font-weight: 700;
   color: #B1B1B1;
 }
@@ -4687,6 +4687,15 @@ body.night table.cuckoo-table tfoot {
   border-radius: 5px;
   color: #fff;
   padding: 5px 10px;
+}
+.network-display__request-summary .url {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 20px;
+}
+.network-display__request-summary .status-code, .network-display__request-summary .status-code--success {
+  flex-shrink: 0;
 }
 .network-display__request-summary .status-code--success {
   background-color: #9DCB6E;
