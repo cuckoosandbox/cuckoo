@@ -157,14 +157,21 @@ def test_log_error_action():
     task_id = db.add_path(__file__)
     assert db.view_errors(task_id) == []
 
-    logging.getLogger(__name__).error("message", extra={
+    logging.getLogger(__name__).error("message1", extra={
         "error_action": "erroraction",
         "task_id": task_id,
     })
 
+    logging.getLogger(__name__).error("message2", extra={
+        "task_id": task_id,
+    })
+
     errors = db.view_errors(task_id)
-    assert len(errors) == 1
+    assert len(errors) == 2
+    assert errors[0].message == "message1"
     assert errors[0].action == "erroraction"
+    assert errors[1].message == "message2"
+    assert errors[1].action is None
 
 @mock.patch("cuckoo.common.config.log")
 @mock.patch("cuckoo.common.config.logging")
