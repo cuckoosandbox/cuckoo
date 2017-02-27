@@ -45,10 +45,10 @@ class IE(Package):
                 "UpdateEnabled": 0,
             },
         ],
-        [   
+        [
             HKEY_CURRENT_USER,
             "Software\\Microsoft\\Internet Explorer\\PhishingFilter",
-            {   
+            {
                 "EnabledV9": 0,
             },
         ],
