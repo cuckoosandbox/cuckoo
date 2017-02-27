@@ -2300,11 +2300,11 @@ var default_analysis_options = {
 		'enable-services': true,
 		'enforce-timeout': false,
 		'full-memory-dump': false,
-		'no-injection': false,
+		'enable-injection': true,
 		'process-memory-dump': true,
 		'simulated-human-interaction': true
 	},
-	'package': 'python',
+	'package': null,
 	'priority': 1,
 	'timeout': 120,
 	'vpn': 'united-states',
@@ -2314,7 +2314,7 @@ var default_analysis_options = {
 
 // default option set for the submission form
 var submission_options = [{
-	name: 'no-injection',
+	name: 'enable-injection',
 	label: 'Enable Injection',
 	description: 'Enable behavioral analysis.'
 }, {
@@ -2342,7 +2342,7 @@ var submission_options = [{
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['python', 'ie', 'js', 'pdf'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'jar', 'js', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
@@ -2559,6 +2559,7 @@ $(function () {
 											options: default_package_selection_options
 										}).on('change', function (value) {
 											item.per_file_options['package'] = value;
+											if (value == 'default') value = null;
 											setFieldValue.call(this, value);
 										});
 
@@ -2673,6 +2674,9 @@ $(function () {
 						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
+					}).on('change', function (value) {
+						if (value == 'default') value = null;
+						setFieldValue.call(this, value);
 					});
 
 					var priority = new this.TopSelect({
