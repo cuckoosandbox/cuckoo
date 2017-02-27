@@ -5355,7 +5355,7 @@ body.night .flex-form__toggle-group > li > input:checked + label {
   align-items: center;
   background-color: #fff;
   border-bottom: 1px solid #D0D0D0;
-  padding: 0 20px;
+  padding: 10px 20px;
 }
 .flex-form__toggle-list > li p {
   font-size: 10px;
@@ -5364,9 +5364,9 @@ body.night .flex-form__toggle-group > li > input:checked + label {
 }
 .flex-form__toggle-list > li p span {
   display: block;
-  font-size: 7px;
+  font-size: 9px;
   color: #6297F8;
-  font-weight: 600;
+  font-weight: 400;
   margin-top: 5px;
 }
 body.cyborg .flex-form__toggle-list > li {
@@ -5378,7 +5378,9 @@ body.night .flex-form__toggle-list > li {
   border-color: #375a7f;
 }
 .flex-form__toggle-list-switch {
-  margin-left: auto;
+  line-height: 0;
+  margin: 0 0 0 auto;
+  align-self: center;
 }
 .flex-form__toggle-list-switch span {
   position: relative;
@@ -5389,7 +5391,6 @@ body.night .flex-form__toggle-list > li {
   border: 1px solid #D53D50;
   border-radius: 30px;
   transition: all 100ms linear;
-  margin: 10px 0 7px 0;
 }
 .flex-form__toggle-list-switch span:before {
   content: "";

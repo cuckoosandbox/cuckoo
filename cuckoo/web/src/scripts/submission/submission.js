@@ -291,7 +291,7 @@ $(function() {
 											{
 												name: 'full-memory-dump',
 												label: 'Full Memory Dump',
-												description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+												description: 'If Volatility has been enabled, process an entire VM memory dump with it.'
 											},
 											{
 												name: 'enforce-timeout',
@@ -431,7 +431,7 @@ $(function() {
 							{
 								name: 'full-memory-dump',
 								label: 'Full Memory Dump',
-								description: 'If the “memory” processing module is enabled, will launch a Volatality Analysis.'
+								description: 'If Volatility has been enabled, process an entire VM memory dump with it.'
 							},
 							{
 								name: 'enforce-timeout',
