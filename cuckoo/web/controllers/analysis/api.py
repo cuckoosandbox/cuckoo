@@ -310,7 +310,8 @@ class AnalysisApi(object):
 
         # TODO Use a mongodb abstraction class once there is one.
         cursor = mongo.db.analysis.find(
-            filters, sort=[("_id", pymongo.DESCENDING)]
+            filters, ["info", "target"],
+            sort=[("_id", pymongo.DESCENDING)]
         ).limit(limit).skip(offset)
 
         tasks = {}
