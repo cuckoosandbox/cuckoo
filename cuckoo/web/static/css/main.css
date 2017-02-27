@@ -4747,17 +4747,14 @@ body.night table.cuckoo-table tfoot {
 .is-open .network-display__request-details {
   display: block;
 }
-.network-display__request-details .detail-field-group {
-  display: flex;
-}
-.network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body {
-  border-right: 1px solid #D8D8D8;
-}
-.network-display__request-details .detail-field-group .detail-field {
-  margin-bottom: 0;
-}
 .network-display__request-details .detail-field {
   flex-basis: 100%;
+  /*
+  	This class allows two fields to live next to each other,
+  	without breaking the layout. That means that fields within 
+  	a group will follow each others height. This avoid weird-looking
+  	containers.
+   */
 }
 .network-display__request-details .detail-field__header {
   padding-left: 20px;
@@ -4779,29 +4776,47 @@ body.night table.cuckoo-table tfoot {
 .network-display__request-details .detail-field:not(:last-child) {
   margin-bottom: 20px;
 }
-
-.request-headers {
+.network-display__request-details .detail-field table {
+  width: 100%;
+  table-layout: fixed;
+}
+.network-display__request-details .detail-field table td {
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.network-display__request-details .detail-field table td.key-name {
+  width: 30%;
+  text-align: right;
+  vertical-align: top;
+  color: #9598A0;
+  font-weight: 700;
+}
+.network-display__request-details .detail-field table td.key-value {
+  word-wrap: break-word;
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  color: #5E6166;
+}
+.network-display__request-details .detail-field-group {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 30px;
+}
+.network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body {
+  border-right: 1px solid #D8D8D8;
+}
+.network-display__request-details .detail-field-group .detail-field {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  margin-bottom: 0;
 }
-.request-headers__group {
-  display: flex;
-  flex-direction: row;
+.network-display__request-details .detail-field-group .detail-field .detail-field__header {
+  flex-basis: 27px;
 }
-.request-headers__group > * {
+.network-display__request-details .detail-field-group .detail-field .detail-field__body {
   flex-basis: 100%;
-}
-.request-headers .property-name {
-  flex-basis: 300px;
-  text-align: right;
-  padding-right: 15px;
-  font-weight: 500;
-  color: #9598A0;
-}
-.request-headers .property-value {
-  font-family: monospace;
-  font-weight: 600;
-  color: #5E6166;
 }
 
 .flex-grid {

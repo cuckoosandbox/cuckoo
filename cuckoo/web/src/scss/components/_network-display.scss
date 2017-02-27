@@ -123,18 +123,6 @@
 			display: block;
 		}
 
-		.detail-field-group {
-			display: flex;
-
-			.detail-field:not(:last-child) .detail-field__body {
-				border-right: 1px solid #D8D8D8;
-			}
-
-			.detail-field {
-				margin-bottom: 0;
-			}
-		}
-
 		.detail-field {
 			flex-basis: 100%;
 
@@ -162,37 +150,68 @@
 				margin-bottom: 20px;
 			}
 
+			table {
+				width: 100%;
+				table-layout: fixed;
+
+				td {
+					padding: 0 10px;
+					font-size: 12px;
+					font-weight: 700;
+
+					&.key-name {
+						width: 30%;
+						text-align: right;
+						vertical-align: top;
+						color: #9598A0;
+						font-weight: 700;
+					}
+
+					&.key-value {
+						word-wrap: break-word;
+						font-family: "Courier New", monospace;
+						font-weight: 700;
+						color: #5E6166;
+					}
+				}
+			}
+
+			/*
+				This class allows two fields to live next to each other,
+				without breaking the layout. That means that fields within 
+				a group will follow each others height. This avoid weird-looking
+				containers.
+			 */
+			&-group {
+
+				display: flex;
+				align-items: stretch;
+				margin-bottom: 30px;
+
+				.detail-field:not(:last-child) .detail-field__body {
+					border-right: 1px solid #D8D8D8;
+				}
+
+				.detail-field {
+					display: flex;
+					flex-direction: column;
+					align-items: stretch;
+					margin-bottom: 0;
+
+					.detail-field__header {
+						flex-basis: 27px;
+					}
+
+					.detail-field__body {
+						flex-basis: 100%;
+					}
+
+				}
+
+			}
+
 		}
 
-	}
-
-}
-
-.request-headers {
-
-	display: flex;
-	flex-direction: column;
-
-	&__group {
-		display: flex;
-		flex-direction: row;
-
-		& > * {
-			flex-basis: 100%;
-		}
-	}
-
-	.property-name {
-		flex-basis: 300px;
-		text-align: right;
-		padding-right: 15px;
-		font-weight: 500;
-		color: #9598A0;
-	}
-	.property-value {
-		font-family: monospace;
-		font-weight: 600;
-		color: #5E6166;
 	}
 
 }
