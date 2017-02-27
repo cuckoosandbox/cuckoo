@@ -59,7 +59,7 @@ class SubmitManager(object):
         if not options.get("simulated-human-interaction", True):
             ret["human"] = int(options.get("simulated-human-interaction", True))
 
-        if options.get("no-injection"):
+        if not options.get("enable-injection", True):
             ret["free"] = "yes"
 
         if options.get("process-memory-dump"):
@@ -75,7 +75,7 @@ class SubmitManager(object):
             ret["simulated-human-interaction"] = False
 
         if options.get("free") == "yes":
-            ret["no-injection"] = True
+            ret["enable-injection"] = False
 
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True

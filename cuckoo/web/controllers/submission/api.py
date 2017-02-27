@@ -40,7 +40,7 @@ def defaults():
             "enable-services": False,
             "enforce-timeout": False,
             "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
-            "no-injection": False,
+            "enable-injection": True,
             "process-memory-dump": True,
             "simulated-human-interaction": True,
         },

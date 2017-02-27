@@ -220,12 +220,12 @@ def test_option_translations_from():
     }
 
     assert sm.translate_options_from({
-        "no-injection": True,
+        "enable-injection": False,
     }) == {
         "free": "yes",
     }
     assert sm.translate_options_from({
-        "no-injection": False,
+        "enable-injection": True,
     }) == {}
 
 def test_option_translations_to():
@@ -242,5 +242,5 @@ def test_option_translations_to():
     assert sm.translate_options_to({
         "free": "yes",
     }) == {
-        "no-injection": True,
+        "enable-injection": False,
     }

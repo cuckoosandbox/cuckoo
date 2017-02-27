@@ -137,7 +137,7 @@ class TestWebInterface(object):
                 "enable-services": False,
                 "enforce-timeout": False,
                 "full-memory-dump": False,
-                "no-injection": False,
+                "enable-injection": True,
                 "process-memory-dump": True,
                 "simulated-human-interaction": True,
             }
@@ -390,7 +390,7 @@ class TestWebInterfaceFeedback(object):
         assert client.get("/submit/re/1/").status_code == 302
         submit = Database().view_submit(1)
         assert submit.data["options"] == {
-            "no-injection": True, "simulated-human-interaction": False,
+            "enable-injection": False, "simulated-human-interaction": False,
         }
 
     def test_resubmit_url(self, client):
@@ -400,7 +400,7 @@ class TestWebInterfaceFeedback(object):
         assert client.get("/submit/re/1/").status_code == 302
         submit = Database().view_submit(1)
         assert submit.data["options"] == {
-            "no-injection": True, "simulated-human-interaction": False,
+            "enable-injection": False, "simulated-human-interaction": False,
         }
 
     def test_import_analysis(self, client):

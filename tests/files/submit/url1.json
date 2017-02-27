@@ -30,7 +30,7 @@
                     "enable-services": false,
                     "enforce-timeout": false,
                     "full-memory-dump": false,
-                    "no-injection": false,
+                    "enable-injection": true,
                     "process-memory-dump": true,
                     "simulated-human-interaction": true
                 },
@@ -53,7 +53,7 @@
             "enable-services": false,
             "enforce-timeout": false,
             "full-memory-dump": false,
-            "no-injection": false,
+            "enable-injection": true,
             "process-memory-dump": true,
             "simulated-human-interaction": true
         },
