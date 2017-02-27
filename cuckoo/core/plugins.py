@@ -451,7 +451,7 @@ class RunSignatures(object):
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
         if "info" in self.results:
-            self.results["info"]["score"] = score / 5.0
+            self.results["info"]["score"] = score
 
 
     #
@@ -460,7 +460,11 @@ class RunSignatures(object):
     #
     def _context_aware_score(self, signature, package):
         ctx = SignatureMeta.context_from_package(package)
-        multiplier = signature.weights[ctx] or 1.0
+        if signature.weights and ctx in signature.weights:
+            multiplier = signature.weights[ctx]
+        else:
+            multiplier = 1.0
+
         return signature.severity * multiplier
 
 class RunReporting(object):
