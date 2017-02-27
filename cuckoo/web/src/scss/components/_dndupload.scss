@@ -294,12 +294,14 @@
 
         ul {
             display: flex;
+            flex-wrap: wrap;
             list-style: none;
             padding: 0;
 
             li {
                 position: relative;
                 margin: 0 7px;
+                padding: 5px 0;
 
                 .fa {
                     font-size: 41px;
@@ -310,10 +312,16 @@
                     position: absolute;
                     width: 100%;
                     text-align: center;
-                    bottom: 5px;
+                    bottom: 14px;
                     font-weight: 700;
                     font-size: 10px;
                     color: #B5B5B5;
+                }
+
+                &.footnote {
+                    font-size: 12px;
+                    align-self: flex-end;
+                    color: #b5b5b5;
                 }
 
             }

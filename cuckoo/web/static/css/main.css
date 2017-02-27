@@ -3814,12 +3814,14 @@ body.night .dndupload__v2 {
 }
 .upload-module .allowed-file-types ul {
   display: flex;
+  flex-wrap: wrap;
   list-style: none;
   padding: 0;
 }
 .upload-module .allowed-file-types ul li {
   position: relative;
   margin: 0 7px;
+  padding: 5px 0;
 }
 .upload-module .allowed-file-types ul li .fa, .upload-module .allowed-file-types ul li #submission-task-table .status.status-reported:before, #submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types .cuckoo-files ul li div:before, .cuckoo-files .upload-module .allowed-file-types ul li div:before, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:after, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:before, .upload-module .allowed-file-types ul li .flex-form__header .custom-checkbox > input + span, .flex-form__header .upload-module .allowed-file-types ul li .custom-checkbox > input + span, .upload-module .allowed-file-types ul li .breadcrumbs > li:not(:last-child):after {
   font-size: 41px;
@@ -3829,10 +3831,15 @@ body.night .dndupload__v2 {
   position: absolute;
   width: 100%;
   text-align: center;
-  bottom: 5px;
+  bottom: 14px;
   font-weight: 700;
   font-size: 10px;
   color: #B5B5B5;
+}
+.upload-module .allowed-file-types ul li.footnote {
+  font-size: 12px;
+  align-self: flex-end;
+  color: #b5b5b5;
 }
 
 #tab-hash textarea {
