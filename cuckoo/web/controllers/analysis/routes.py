@@ -1,17 +1,14 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import re
 
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
-from cuckoo.core.database import Database, TASK_PENDING
-
+from cuckoo.core.database import Database
 from cuckoo.web.controllers.analysis.export.export import ExportController
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.bin.utils import view_error, render_template
@@ -19,38 +16,7 @@ from cuckoo.web.bin.utils import view_error, render_template
 class AnalysisRoutes:
     @staticmethod
     def recent(request):
-        db = Database()
-        tasks_files = db.list_tasks(limit=50, category="file", not_status=TASK_PENDING)
-        tasks_urls = db.list_tasks(limit=50, category="url", not_status=TASK_PENDING)
-
-        analyses_files = []
-        analyses_urls = []
-
-        if tasks_files:
-            for task in tasks_files:
-                new = task.to_dict()
-                new["sample"] = db.view_sample(new["sample_id"]).to_dict()
-
-                filename = os.path.basename(new["target"])
-                new.update({"filename": filename})
-
-                if db.view_errors(task.id):
-                    new["errors"] = True
-
-                analyses_files.append(new)
-
-        if tasks_urls:
-            for task in tasks_urls:
-                new = task.to_dict()
-
-                if db.view_errors(task.id):
-                    new["errors"] = True
-
-                analyses_urls.append(new)
-
-        return render_template(request, "analysis/index.html",
-                               files=analyses_files,
-                               urls=analyses_urls)
+        return render_template(request, "analysis/index.html")
 
     @staticmethod
     def detail(request, task_id, page):
@@ -84,7 +50,11 @@ class AnalysisRoutes:
         if not isinstance(task_id, (unicode, str)):
             task_id = str(task_id)
 
-        return redirect(reverse("analysis", args=(re.sub(r"\^d+", "", task_id), "summary")), permanent=False)
+        return redirect(reverse(
+            "analysis",
+            args=(re.sub(r"\^d+", "", task_id), "summary")),
+            permanent=False
+        )
 
     @staticmethod
     def export(request, task_id):
