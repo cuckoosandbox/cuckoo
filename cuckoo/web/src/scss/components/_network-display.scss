@@ -130,13 +130,20 @@
 				padding-left: 20px;
 				font-size: 14px;
 				border-bottom: 2px solid #D8D8D8;
-				text-transform: uppercase;
 				font-weight: 700;
 				color: #ACAFB6;
 				padding-bottom: 5px;
 
 				.fa {
 					margin-right: 10px;
+				}
+
+				&.with-tabs {
+					padding-bottom: 0;
+					.flex-tabs__tabs {
+						position: relative;
+						top: 2px;
+					}
 				}
 			}
 
