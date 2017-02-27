@@ -11,6 +11,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
+from cuckoo.processing.behavior import ProcessTree
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
@@ -19,7 +20,7 @@ from cuckoo.processing.virustotal import VirusTotal
 
 db = Database()
 
-class TestProcessing:
+class TestProcessing(object):
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
 
@@ -187,3 +188,75 @@ class TestProcessing:
             })
             v.run()
         e.match("Unsupported task category")
+
+class TestBehavior(object):
+    def test_process_tree_regular(self):
+        pt = ProcessTree(None)
+
+        l = [
+            (484, 380, False),
+            (1444, 1872, True),
+            (2068, 1444, True),
+            (2104, 1444, True),
+            (2292, 2068, True),
+            (2348, 2292, True),
+            (2428, 2068, True),
+            (2488, 2428, True),
+            (2564, 2068, True),
+            (2620, 2068, True),
+        ]
+
+        for idx, (pid, ppid, track) in enumerate(l):
+            pt.handle_event({
+                "pid": pid,
+                "ppid": ppid,
+                "process_name": "procname",
+                "command_line": "cmdline",
+                "first_seen": idx,
+                "children": [],
+                "track": track,
+            })
+
+        obj = pt.run()
+        assert len(obj) == 2
+        assert not obj[0]["children"]
+        assert len(obj[1]["children"]) == 2
+        assert len(obj[1]["children"][0]["children"]) == 4
+        assert len(obj[1]["children"][0]["children"][0]["children"]) == 1
+
+    def test_process_tree_pid_reuse(self):
+        pt = ProcessTree(None)
+
+        # Parent PID of the initial malicious process (pid=2624) is later on
+        # created again, confusing our earlier code and therefore not
+        # displaying any of the malicious processes in our Web Interface.
+        l = [
+            (468, 364, False),
+            (2624, 2104, True),
+            (2148, 2624, True),
+            (1836, 1788, True),
+            (2056, 2148, True),
+            (2104, 2148, True),
+            (2480, 2104, True),
+            (2420, 2104, True),
+            (2308, 2056, True),
+        ]
+
+        for idx, (pid, ppid, track) in enumerate(l):
+            pt.handle_event({
+                "pid": pid,
+                "ppid": ppid,
+                "process_name": "procname",
+                "command_line": "cmdline",
+                "first_seen": idx,
+                "children": [],
+                "track": track,
+            })
+
+        obj = pt.run()
+        assert len(obj) == 3
+        assert len(obj[1]["children"]) == 1
+        assert len(obj[1]["children"][0]["children"]) == 2
+        assert len(obj[1]["children"][0]["children"][0]["children"]) == 1
+        assert len(obj[1]["children"][0]["children"][1]["children"]) == 2
+        assert not obj[2]["children"]

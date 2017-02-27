@@ -106,9 +106,15 @@ class ProcessTree(BehaviorHandler):
             "children": [],
         }
         first_seen = lambda x: x["first_seen"]
+        procs_seen = []
 
         for p in sorted(self.processes.values(), key=first_seen):
-            self.processes.get(p["ppid"], root)["children"].append(p)
+            if p["ppid"] in procs_seen:
+                self.processes[p["ppid"]]["children"].append(p)
+            else:
+                root["children"].append(p)
+
+            procs_seen.append(p["pid"])
 
         return sorted(root["children"], key=first_seen)
 
