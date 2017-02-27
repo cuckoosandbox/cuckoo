@@ -3,6 +3,7 @@ import * as FileTree from './components/FileTree';
 import * as Analysis from './components/Analysis';
 import { SubmissionTaskTable } from './components/SubmissionTaskTable';
 
+// default values for the analysis options
 var default_analysis_options = {
 	'machine': 'default',
 	'network-routing': 'internet',
@@ -10,7 +11,7 @@ var default_analysis_options = {
 		'enable-services': true,
 		'enforce-timeout': false,
 		'full-memory-dump': false,
-		'no-injection': true,
+		'no-injection': false,
 		'process-memory-dump': true,
 		'simulated-human-interaction': true
 	},
@@ -21,6 +22,38 @@ var default_analysis_options = {
 	'available_vpns': [],
 	'available_machines': []
 }
+
+// default option set for the submission form
+var submission_options = [
+	{
+		name: 'no-injection',
+		label: 'Enable Injection',
+		description: 'Enable behavioral analysis.'
+	},
+	{
+		name: 'process-memory-dump',
+		label: 'Process Memory Dump'
+	},
+	{
+		name: 'full-memory-dump',
+		label: 'Full Memory Dump',
+		description: 'If Volatility has been enabled, process an entire VM memory dump with it.'
+	},
+	{
+		name: 'enforce-timeout',
+		label: 'Enforce Timeout'
+	},
+	{
+		name: 'simulated-human-interaction',
+		label: 'Enable Simulated Human Interaction',
+		selected: true
+	}
+	// {
+	// 	name: 'enable-services',
+	// 	label: 'Enable Services',
+	// 	description: 'Enable simulated environment specified in the auxiliary configuration.'
+	// }
+];
 
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
@@ -72,6 +105,10 @@ $(function() {
 						if(response.defaults) {
 							default_analysis_options = response.defaults;
 
+							if(response.defaults.options['no-injection'] === false) {
+								response.defaults.options['no-injection'] = true;
+							}
+
 							// extract the routing settings and delete
 							routing_prefs = default_analysis_options.routing;
 							default_analysis_options.routing = routing_prefs.route;
@@ -109,6 +146,8 @@ $(function() {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = [];
+
+							console.log(item.per_file_options);
 
 							// machine guess: package options
 							// - also preselects the package field if available
@@ -278,35 +317,7 @@ $(function() {
 										title: 'Options',
 										extraOptions: true,
 										default: item.per_file_options['options'],
-										options: [
-											{
-												name: 'no-injection',
-												label: 'No Injection',
-												description: 'Disable behavioral analysis.'
-											},
-											{
-												name: 'process-memory-dump',
-												label: 'Process Memory Dump'
-											},
-											{
-												name: 'full-memory-dump',
-												label: 'Full Memory Dump',
-												description: 'If Volatility has been enabled, process an entire VM memory dump with it.'
-											},
-											{
-												name: 'enforce-timeout',
-												label: 'Enforce Timeout'
-											},
-											{
-												name: 'simulated-human-interaction',
-												label: 'Enable Simulated Human Interaction'
-											},
-											{
-												name: 'enable-services',
-												label: 'Enable Services',
-												description: 'Enable simulated environment specified in the auxiliary configuration.'
-											}
-										],
+										options: submission_options,
 										on: {
 											init: function() {	
 
@@ -418,36 +429,7 @@ $(function() {
 						title: 'Options',
 						default: default_analysis_options['options'],
 						extraOptions: true,
-						options: [
-							{
-								name: 'no-injection',
-								label: 'No Injection',
-								description: 'Disable behavioral analysis.'
-							},
-							{
-								name: 'process-memory-dump',
-								label: 'Process Memory Dump'
-							},
-							{
-								name: 'full-memory-dump',
-								label: 'Full Memory Dump',
-								description: 'If Volatility has been enabled, process an entire VM memory dump with it.'
-							},
-							{
-								name: 'enforce-timeout',
-								label: 'Enforce Timeout'
-							},
-							{
-								name: 'simulated-human-interaction',
-								label: 'Enable Simulated Human Interaction',
-								selected: true
-							},
-							{
-								name: 'enable-services',
-								label: 'Enable Services',
-								description: 'Enable simulated environment specified in the auxiliary configuration.'
-							}
-						]
+						options: submission_options
 					});
 
 					var machine = new this.SimpleSelect({

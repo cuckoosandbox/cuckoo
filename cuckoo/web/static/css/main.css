@@ -5130,6 +5130,7 @@ body.cyborg .cuckoo-files #selection-overview .extension-select:before {
   font-size: 10px;
   padding: 5px 20px;
   text-align: center;
+  margin-bottom: 0;
 }
 .flex-form__module {
   border: 0;

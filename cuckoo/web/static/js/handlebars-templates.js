@@ -67,7 +67,7 @@ this["HANDLEBARS_TEMPLATES"]["control-toggle-list"] = Handlebars.template({"1":f
 },"6":function(depth0,helpers,partials,data) {
     return "checked";
 },"8":function(depth0,helpers,partials,data) {
-    return "		<li class=\"toggle-list-seperator\">\n			<p>Extra options <a href=\"#\"><i class=\"fa fa-info-circle\"></i></a> <span><a href=\"#\">What can I use?</a></span></p>\n		</li>\n		<li class=\"flex-form__table extra-options\">\n			<table>\n				<thead>\n					<tr>\n						<th>name</th>\n						<th>value</th>\n					</tr>\n				</thead>\n				<tfoot>\n					<tr>\n						<td><input type=\"text\" placeholder=\"name\" name=\"new-key\" /></td>\n						<td><input type=\"text\" placeholder=\"value\" name=\"new-value\" /></td>\n					</tr>\n				</tfoot>\n				<tbody></tbody>\n			</table>\n		</li>\n\n";
+    return "		<li class=\"toggle-list-seperator\">\n			<p>Extra options <span><a href=\"https://cuckoo.sh/docs/usage/packages.html\" target=\"_blank\">What can I use?</a></span></p>\n		</li>\n		<li class=\"flex-form__table extra-options\">\n			<table>\n				<thead>\n					<tr>\n						<th>name</th>\n						<th>value</th>\n					</tr>\n				</thead>\n				<tfoot>\n					<tr>\n						<td><input type=\"text\" placeholder=\"name\" name=\"new-key\" /></td>\n						<td><input type=\"text\" placeholder=\"value\" name=\"new-value\" /></td>\n					</tr>\n				</tfoot>\n				<tbody></tbody>\n			</table>\n		</li>\n\n";
 },"10":function(depth0,helpers,partials,data) {
     return "	<p class=\"description\">To add a new option, type the option name + value and hit enter. it will add itself to the list. Remove an item by clicking the right remove icon.</p>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data,blockParams,depths) {
