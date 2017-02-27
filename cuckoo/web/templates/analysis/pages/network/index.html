@@ -34,7 +34,7 @@
                            <div class="network-display__outer" id="http-requests">
 
                                 <!-- demo 1  -->
-                                <div class="network-display__request">
+                                <div class="network-display__request is-open">
                                     <a class="network-display__request-summary" href="#">
                                         <span class="method">GET</span>
                                         <i class="fa fa-long-arrow-right"></i>
@@ -47,7 +47,61 @@
                                         <div class="detail-field-group">
                                             <div class="detail-field">
                                                 <header class="detail-field__header"><i class="fa fa-long-arrow-left"></i> request</header>
-                                                <section class="detail-field__body"></section>
+                                                <section class="detail-field__body">
+
+<!--                                                     <table>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="key-name">&nbsp;</td>
+                                                                <td class="key-value">GET /favicon.ico HTTP/1.1</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">Accept:</td>
+                                                                <td class="key-value">*/*</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">UA-CPU:</td>
+                                                                <td class="key-value">AMD64</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">Accept-Encoding:</td>
+                                                                <td class="key-value">gzip, deflate</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">User-Agent:</td>
+                                                                <td class="key-value">Mozilla/4.0 (compatible; MSIE8.0; Windows NT 6.1; Win64; x64; Trident/4.0; .NET CLR 2.0.50727; SLCC2; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">Host:</td>
+                                                                <td class="key-value">mijn.ing.nl</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">Connection:</td>
+                                                                <td class="key-value">Keep-Alive</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="key-name">Cookie:</td>
+                                                                <td class="key-value">CSESSIONID=03642OCEJnFgcnAjSADDC01FfStenw2ONMkflAdZzXGh9FE3qtoE7w004DF917450058371C2E000001;TS018e0e14=01f83a9401e7bb550873687f899e389bb33cc6fcc4ae23ad891f1ecfaca37baab9406617472d2a4c83de6a788bc7b77fba00597c2c1cb800a9828aec7541a853e57ba91268;lb-3p-201=mewERE4sOG5uFaeFBXoaC0sQdXQe9uMkEtZIJvQFCsLvDEL38uVKIT6/42QGTUQjO3EsvR66WVZ4fXKc9PPlpbehfqoCXdXlugUPnTXsA==;TS014f1a8a=01f83a9401e93582481229949bd55c5a297a2eed4dae23ad891f1ecfaca37baab9406617475777086aeb398ff7a42de84b835921c5f3ead6d2505cfbe8ac3593be9d36229e</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table> -->
+
+                                                    <section class="request-headers">
+                                                        <div class="request-headers__group">
+                                                            <p class="property-name">Accept-Encoding:</p>
+                                                            <p class="property-value">gzip, deflate</p>
+                                                        </div>
+                                                        <div class="request-headers__group">
+                                                            <p class="property-name">Host:</p>
+                                                            <p class="property-value">mijn.ing.nl</p>
+                                                        </div>
+                                                        <div class="request-headers__group">
+                                                            <p class="property-name">Connection:</p>
+                                                            <p class="property-value">Keep-Alive</p>
+                                                        </div>
+                                                    </section>
+
+                                                </section>
                                             </div>
                                             <div class="detail-field">
                                                 <header class="detail-field__header"><i class="fa fa-long-arrow-right"></i> response</header>

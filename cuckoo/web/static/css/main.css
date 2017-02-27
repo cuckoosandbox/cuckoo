@@ -4753,6 +4753,9 @@ body.night table.cuckoo-table tfoot {
 .network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body {
   border-right: 1px solid #D8D8D8;
 }
+.network-display__request-details .detail-field-group .detail-field {
+  margin-bottom: 0;
+}
 .network-display__request-details .detail-field {
   flex-basis: 100%;
 }
@@ -4770,11 +4773,35 @@ body.night table.cuckoo-table tfoot {
 }
 .network-display__request-details .detail-field__body {
   background-color: #fff;
-  padding: 15px 0 30px 0;
+  padding: 15px 15px 30px 15px;
   border-bottom: 1px solid #D8D8D8;
 }
 .network-display__request-details .detail-field:not(:last-child) {
   margin-bottom: 20px;
+}
+
+.request-headers {
+  display: flex;
+  flex-direction: column;
+}
+.request-headers__group {
+  display: flex;
+  flex-direction: row;
+}
+.request-headers__group > * {
+  flex-basis: 100%;
+}
+.request-headers .property-name {
+  flex-basis: 300px;
+  text-align: right;
+  padding-right: 15px;
+  font-weight: 500;
+  color: #9598A0;
+}
+.request-headers .property-value {
+  font-family: monospace;
+  font-weight: 600;
+  color: #5E6166;
 }
 
 .flex-grid {

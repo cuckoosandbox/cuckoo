@@ -129,6 +129,10 @@
 			.detail-field:not(:last-child) .detail-field__body {
 				border-right: 1px solid #D8D8D8;
 			}
+
+			.detail-field {
+				margin-bottom: 0;
+			}
 		}
 
 		.detail-field {
@@ -150,7 +154,7 @@
 
 			&__body {
 				background-color: #fff;
-				padding: 15px 0 30px 0;
+				padding: 15px 15px 30px 15px;
 				border-bottom: 1px solid #D8D8D8;
 			}
 
@@ -160,6 +164,35 @@
 
 		}
 
+	}
+
+}
+
+.request-headers {
+
+	display: flex;
+	flex-direction: column;
+
+	&__group {
+		display: flex;
+		flex-direction: row;
+
+		& > * {
+			flex-basis: 100%;
+		}
+	}
+
+	.property-name {
+		flex-basis: 300px;
+		text-align: right;
+		padding-right: 15px;
+		font-weight: 500;
+		color: #9598A0;
+	}
+	.property-value {
+		font-family: monospace;
+		font-weight: 600;
+		color: #5E6166;
 	}
 
 }
