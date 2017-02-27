@@ -105,9 +105,9 @@ $(function() {
 						if(response.defaults) {
 							default_analysis_options = response.defaults;
 
-							if(response.defaults.options['no-injection'] === false) {
-								response.defaults.options['no-injection'] = true;
-							}
+							// if(response.defaults.options['no-injection'] === false) {
+							// 	response.defaults.options['no-injection'] = true;
+							// }
 
 							// extract the routing settings and delete
 							routing_prefs = default_analysis_options.routing;
