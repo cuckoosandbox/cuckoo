@@ -526,10 +526,10 @@ def _20c1_20c2(c):
         "username": "cuckoo",
         "url": None,
         "myurl": None,
-        "show-virustotal": True,
-        "show-signatures": True,
-        "show-urls": True,
-        "hash-filename": True,
+        "show-virustotal": False,
+        "show-signatures": False,
+        "show-urls": False,
+        "hash-filename": False,
     }
 
     c["vpn"]["vpn"].pop("auto_rt", None)
@@ -577,6 +577,7 @@ def _20c2_200(c):
         "apikey": None,
         "mode": "maldoc ipaddr hashes url",
     }
+    c["reporting"]["mattermost"]["hash_url"] = False
     old_items = (
         "show-virustotal", "show-signatures", "show-urls", "hash-filename",
     )

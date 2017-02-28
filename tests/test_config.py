@@ -972,6 +972,7 @@ interface = eth0
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True
     assert cfg["reporting"]["mattermost"]["show_urls"] is False
     assert cfg["reporting"]["mattermost"]["hash_filename"] is True
+    assert cfg["reporting"]["mattermost"]["hash_url"] is False
     assert cfg["reporting"]["mongodb"]["username"] is None
     assert cfg["reporting"]["mongodb"]["password"] is None
     assert cfg["routing"]["routing"]["route"] == "foo"
