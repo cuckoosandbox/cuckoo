@@ -12,9 +12,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     @param headerStr [String]
     @returns headers [Array]
  */
-function parseHeaderString(headerStr) {
+function parseHeaderString(headerStr, extract_status_code) {
 
     var header_lines = headerStr.split(/\r?\n/);
+    var status_code;
 
     var headers = header_lines.map(function (item) {
         return item.split(':');
@@ -33,7 +34,10 @@ function parseHeaderString(headerStr) {
         }
     });
 
-    return headers;
+    return {
+        headers: headers,
+        status_code: status_code
+    };
 }
 
 /*
@@ -220,6 +224,9 @@ var RequestDisplay = function () {
             var outputMode = this.displayOutput;
             var displayMode = this.displayMode;
 
+            // private vars
+            var content;
+
             // private functions
             function renderHex(str) {
                 return hexy(base64.decode(str), {
@@ -232,14 +239,13 @@ var RequestDisplay = function () {
                 return base64.decode(str);
             }
 
-            // private vars
-            var content;
-
             // set the content we're working with based on what the user wants (response/request body)
             displayBody == 'response' ? content = this.response_body : content = this.request_body;
 
             // parse this content to our output results
             outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
+
+            console.log(content.length);
 
             if (content.length == 0) {
                 this.el.find('[data-draw=http-body]').addClass('empty-body');
@@ -263,7 +269,7 @@ var RequestDisplay = function () {
         value: function createHeaderTable(headers) {
             var tableTemplate = HANDLEBARS_TEMPLATES['header-table'];
             return tableTemplate({
-                keyv: parseHeaderString(headers)
+                keyv: parseHeaderString(headers).headers
             });
         }
     }]);

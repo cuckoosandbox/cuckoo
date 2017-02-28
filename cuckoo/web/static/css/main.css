@@ -4795,18 +4795,18 @@ body.night table.cuckoo-table tfoot {
   border: 0;
   border-radius: 0;
 }
-.network-display__request-details .detail-field__body pre.empty-body {
-  font-family: inherit;
-}
 .network-display__request-details .detail-field__body pre.empty-body:after {
   content: "Empty body";
   display: block;
+  padding: 30px 0;
+  font-family: "Roboto", sans-serif;
   text-align: center;
   width: 100%;
   font-size: 15px;
   font-weight: bold;
   text-transform: uppercase;
   color: #d8d8d8;
+  letter-spacing: .02em;
 }
 .network-display__request-details .detail-field:not(:last-child) {
   margin-bottom: 20px;

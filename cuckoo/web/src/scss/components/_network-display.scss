@@ -168,18 +168,21 @@
 					border-radius: 0;
 
 					&.empty-body {
-						font-family: inherit;
 						&:after {
 							content: "Empty body";
 						    display: block;
+						    padding: 30px 0;
+						    font-family: "Roboto", sans-serif;
 						    text-align: center;
 						    width: 100%;
 						    font-size: 15px;
 						    font-weight: bold;
 						    text-transform: uppercase;
 						    color: #d8d8d8;
+						    letter-spacing: .02em;
 						}
 					}
+
 				}
 			}
 
