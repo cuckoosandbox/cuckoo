@@ -47,18 +47,13 @@ class RequestDisplay {
         // request-specific parameters
         this.index = this.el.data('index');
         this.protocol = this.el.data('protocol');
-        this.request_headers = parseHeaderString(this.el.find('[data-contents=request-headers]').html());
-        this.response_headers = parseHeaderString(this.el.find('[data-contents=response-headers]').html());
+        this.request_headers = this.el.find('[data-contents=request-headers]').html();
+        this.response_headers = this.el.find('[data-contents=response-headers]').html();
         this.request_body = null;
         this.response_body = null;
 
-        console.log(this.request_headers);
-        debugger;
-
         // actions
         this.actions = options.actions ? options.actions : {};
-
-        this.el.find('[data-contents=response-headers], [data-contents=request-headers]').remove();
 
         this.initialise();
     }
@@ -66,6 +61,16 @@ class RequestDisplay {
     initialise() {
 
     	var _this = this;
+
+        // create static header fields from a headers string to a table
+        var requestHeadersTable = RequestDisplay.createHeaderTable(this.request_headers);
+        var responseHeadersTable = RequestDisplay.createHeaderTable(this.response_headers);
+
+        this.el.find('[data-draw=request-headers]').after(requestHeadersTable);
+        this.el.find('[data-draw=response-headers]').after(responseHeadersTable);
+
+        // cleans up init garbage from html
+        this.el.find('.removable').remove();
 
     	// bind a click event to the summary bar
     	this.el.find('.network-display__request-summary').bind('click', function(e) {
@@ -164,6 +169,17 @@ class RequestDisplay {
     close() {
     	this.el.removeClass('is-open');
     	this.isOpen = false;
+    }
+
+    /*
+        Takes in a headerString, passes it to a handlebars template
+        that will draw the table for me.
+     */
+    static createHeaderTable(headers) {
+        var tableTemplate = HANDLEBARS_TEMPLATES['header-table'];
+        return tableTemplate({
+            keyv: parseHeaderString(headers)
+        });
     }
 
 }

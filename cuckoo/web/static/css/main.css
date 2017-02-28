@@ -4799,11 +4799,11 @@ body.night table.cuckoo-table tfoot {
   padding: 0 10px;
   font-size: 12px;
   font-weight: 700;
+  vertical-align: top;
 }
 .network-display__request-details .detail-field table td.key-name {
   width: 30%;
   text-align: right;
-  vertical-align: top;
   color: #9598A0;
   font-weight: 700;
 }
