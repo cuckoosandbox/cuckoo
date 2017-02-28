@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg table.cuckoo-table thead, body.cyborg .cuckoo-files__controls {
+body.cyborg table.cuckoo-table thead, body.cyborg .network-display__request-summary, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -4718,6 +4718,14 @@ body.night table.cuckoo-table tfoot {
   border: 1px solid #D8D8D8;
   padding: 10px;
 }
+body.cyborg .network-display__outer {
+  background-color: #0d1b21;
+  border-color: #133b4a;
+}
+body.night .network-display__outer {
+  background-color: #191919;
+  border-color: #101010;
+}
 .network-display__request:not(:last-child) {
   margin-bottom: 10px;
 }
@@ -4765,7 +4773,7 @@ body.night table.cuckoo-table tfoot {
   margin-left: auto;
 }
 .network-display__request-summary:hover {
-  text-decoration: none;
+  text-decoration: none !important;
   color: #ACAFB6;
   background-color: #E0E5EE;
   border-color: #CCD2DF;
@@ -4778,7 +4786,7 @@ body.night table.cuckoo-table tfoot {
 }
 .network-display__request-summary:active, .network-display__request-summary:focus {
   color: #ACAFB6;
-  text-decoration: none;
+  text-decoration: none !important;
   outline: none;
 }
 .is-loading .network-display__request-summary, .is-open .network-display__request-summary {
@@ -4796,6 +4804,63 @@ body.night table.cuckoo-table tfoot {
 }
 .is-open .network-display__request-summary .fa-chevron-right:before {
   content: "\f078";
+}
+body.night .is-open .network-display__request-summary {
+  background-color: #333;
+}
+body.night .is-open .network-display__request-summary .method, body.night .is-open .network-display__request-summary .status-code, body.night .is-open .network-display__request-summary .status-code--success, body.night .is-open .network-display__request-summary .status-code, body.night .is-open .network-display__request-summary .status-code--success {
+  background-color: #333;
+  border-color: #444;
+}
+body.night .is-open .network-display__request-summary .fa-long-arrow-right {
+  color: #111;
+}
+body.cyborg .is-open .network-display__request-summary {
+  background: linear-gradient(#20404a, #112c35);
+}
+body.cyborg .network-display__request-summary {
+  border-color: #133b4a;
+  color: #d7d7d7;
+}
+body.cyborg .network-display__request-summary .method, body.cyborg .network-display__request-summary .status-code, body.cyborg .network-display__request-summary .status-code--success, body.cyborg .network-display__request-summary .status-code, body.cyborg .network-display__request-summary .status-code--success {
+  background-color: #152D3B;
+  border-color: #133b4a;
+  color: #0ce3ac;
+}
+body.cyborg .network-display__request-summary .fa, body.cyborg .network-display__request-summary #submission-task-table .status.status-reported:before, #submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.cyborg .network-display__request-summary div:before, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:after, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:before, body.cyborg .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.cyborg .network-display__request-summary .custom-checkbox > input + span, body.cyborg .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.cyborg .network-display__request-summary .url {
+  color: #0ce3ac;
+}
+body.cyborg .network-display__request-summary .fa-long-arrow-right {
+  color: #152D3B;
+  text-shadow: 0px 1px 0px #184b5e;
+}
+body.cyborg .network-display__request-summary:hover {
+  background: linear-gradient(#20404a, #112c35);
+}
+body.night .network-display__request-summary {
+  background-color: #252525;
+  border-color: #151515;
+  color: #d7d7d7;
+}
+body.night .network-display__request-summary .method, body.night .network-display__request-summary .status-code, body.night .network-display__request-summary .status-code--success, body.night .network-display__request-summary .status-code, body.night .network-display__request-summary .status-code--success {
+  background-color: #333;
+  border-color: #444;
+}
+body.night .network-display__request-summary .fa, body.night .network-display__request-summary #submission-task-table .status.status-reported:before, #submission-task-table body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.night .network-display__request-summary div:before, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:after, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:before, body.night .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.night .network-display__request-summary .custom-checkbox > input + span, body.night .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.night .network-display__request-summary .url {
+  color: #d7d7d7;
+}
+body.night .network-display__request-summary .fa-long-arrow-right {
+  color: #111;
+}
+body.night .network-display__request-summary:hover {
+  background-color: #333;
+}
+body.night .network-display__request-summary:hover .method, body.night .network-display__request-summary:hover .status-code, body.night .network-display__request-summary:hover .status-code--success, body.night .network-display__request-summary:hover .status-code, body.night .network-display__request-summary:hover .status-code--success {
+  background-color: #333;
+  border-color: #444;
+}
+body.night .network-display__request-summary:hover .fa-long-arrow-right {
+  color: #111;
 }
 .network-display__request-details {
   display: none;

@@ -5,6 +5,17 @@
 		background-color: #fff;
 		border: 1px solid #D8D8D8;
 		padding: 10px;
+
+		@include cuckoo-theme('cyborg') { 
+			background-color: $cyborg_panel_color; 
+			border-color: $cyborg_border_color;
+		}
+
+		@include cuckoo-theme('night') { 
+			background-color: #191919;
+			border-color: #101010;
+		}
+
 	}
 
 	&__request:not(:last-child) {
@@ -70,7 +81,7 @@
 		}
 
 		&:hover {
-			text-decoration: none;
+			text-decoration: none !important; // I allow myself to !important this
 			color: #ACAFB6;
 			background-color: #E0E5EE;
 			border-color: #CCD2DF;
@@ -87,7 +98,7 @@
 		&:active,
 		&:focus {
 			color: #ACAFB6;
-			text-decoration: none;
+			text-decoration: none !important;
 			outline: none;
 		}
 
@@ -115,6 +126,82 @@
 					content: "\f078";
 				}
 			}
+
+			@include cuckoo-theme('night') {
+				background-color: #333;
+
+				.method, .status-code {
+					background-color: #333;
+					border-color: #444;
+				}
+
+				.fa-long-arrow-right {
+					color: #111;
+				}
+			}
+
+			@include cuckoo-theme('cyborg') {
+				background: linear-gradient(#20404a, #112c35);
+			}
+
+		}
+
+		// styles for cyborg theme
+		@include cuckoo-theme('cyborg') {
+			@extend %cyborg-heading;
+			border-color: $cyborg_border_color;
+			color: $cyborg_text_color;
+
+			.method, .status-code {
+				background-color: $cyborg_primary_color;
+				border-color: $cyborg_border_color;
+				color: $cyborg_secundary_color;
+			}
+
+			.fa, .url { color: $cyborg_secundary_color; }
+
+			.fa-long-arrow-right { 
+				color: $cyborg_primary_color; 
+				text-shadow: 0px 1px 0px lighten($cyborg_border_color, 5);
+			}
+
+			&:hover {
+				background: linear-gradient(#20404a, #112c35);
+			}
+
+		}
+
+		// styles for night theme
+		@include cuckoo-theme('night') {
+
+			background-color: #252525;
+			border-color: #151515;
+			color: $night_text_color;
+
+			.method, .status-code {
+				background-color: #333;
+				border-color: #444;
+			}
+
+			.fa, .url { color: $night_text_color; }
+
+			.fa-long-arrow-right { 
+				color: #111;
+			}
+
+			&:hover {
+				background-color: #333;
+
+				.method, .status-code {
+					background-color: #333;
+					border-color: #444;
+				}
+
+				.fa-long-arrow-right {
+					color: #111;
+				}
+			}
+
 		}
 
 	}
