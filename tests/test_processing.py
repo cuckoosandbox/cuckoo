@@ -47,6 +47,8 @@ class TestProcessing(object):
         assert results["action"] == ["thisisanaction"]
 
     def test_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
         s = Static()
         s.set_task({
             "category": "file",
@@ -59,6 +61,34 @@ class TestProcessing(object):
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+
+    def test_pdf_metadata(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf-sample.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf-sample.pdf"
+        obj = s.run()["pdf"]
+        assert len(obj) == 2
+        assert obj[1] == {
+            "author": "cdaily",
+            "creation": "D:20000629102108+11'00'",
+            "creator": "Microsoft Word 8.0",
+            "javascript": [],
+            "modification": "2013-10-28T15:24:13-04:00",
+            "producer": "Acrobat Distiller 4.0 for Windows",
+            "subject": "",
+            "title": "This is a test PDF file",
+            "urls": [],
+            "version": 1,
+        }
 
     def test_office(self):
         s = Static()

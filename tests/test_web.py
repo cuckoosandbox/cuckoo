@@ -88,6 +88,26 @@ class TestWebInterface(object):
         assert "process.Create" in r
         assert "notepad.exe" in r
 
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_summary_pdf_metadata(self, p, request):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf-sample.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 10,
+        })
+        s.file_path = "tests/files/pdf-sample.pdf"
+
+        p._get_report.return_value = {
+            "static": s.run(),
+        }
+        r = AnalysisRoutes.detail(request, 1, "static").content
+        assert "Microsoft Word 8.0" in r
+        assert "This is a test PDF file" in r
+
     def test_submit_defaults(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
