@@ -52,6 +52,11 @@ class RequestDisplay {
         this.request_body = null;
         this.response_body = null;
 
+        // display modes, controls what the user will see in the body field
+        this.displayBody = 'response';
+        this.displayOutput = 'hex';
+        this.displayMode = 16;
+
         // actions
         this.actions = options.actions ? options.actions : {};
 
@@ -143,14 +148,19 @@ class RequestDisplay {
             var actionValue = keys[1];
 
             if(self.actions[action] && typeof self.actions[action] === 'function') {
-                self.actions[action](actionValue, self.el);
+                self.actions[action].apply(self, [actionValue, self.el]);
             }
 
             $(this).parent().find('.btn').removeClass('active');
             $(this).addClass('active');
+
+            // draws the new body view
+            self.bodyViewMode();
         });
 
-    	this.open();
+        this.bodyViewMode(function(data) {
+            self.open();
+        });
     }
 
     /*
@@ -172,6 +182,45 @@ class RequestDisplay {
     }
 
     /*
+        This function 'decides' what the user gets to see and controls
+        that behavior.
+     */
+    bodyViewMode(cb) {
+
+        // read-only vars
+        let displayBody = this.displayBody;
+        let outputMode = this.displayOutput;
+        let displayMode = this.displayMode;
+
+        // private functions
+        function renderHex(str) {
+            return hexy(base64.decode(str), {
+                width: displayMode ? displayMode : 16,
+                html: true
+            });
+        }
+
+        function renderPlaintext(str) {
+            return base64.decode(str);
+        }
+
+        // private vars
+        var content;
+
+        // set the content we're working with based on what the user wants (response/request body)
+        displayBody == 'response' ? content = this.response_body : content = this.request_body;
+
+        // parse this content to our output results
+        outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
+
+        // draw this into the container
+        this.el.find('[data-draw=http-body]').empty().text(content);
+
+        if(cb && typeof cb === 'function') cb(content);
+
+    }
+
+    /*
         Takes in a headerString, passes it to a handlebars template
         that will draw the table for me.
      */
@@ -190,20 +239,20 @@ $(function() {
     	var rd = new RequestDisplay($(this), {
             actions: {
                 display: function(value, $parent) {
-                    console.log(value);
+                    this.displayBody = value;
                 },
                 output: function(value, $parent) {
-                    
-                    console.log($parent);
 
                     if(value == 'hex') {
                         $parent.find('.tab-mode').show();
                     } else {
                         $parent.find('.tab-mode').hide();
                     }
+
+                    this.displayOutput = value;
                 },
                 mode: function(value, $parent) {
-
+                    this.displayMode = parseInt(value);
                 }
             }
         });
