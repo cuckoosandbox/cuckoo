@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,14 +37,16 @@ class Mattermost(Report):
             self.options.get("myurl")
         )
 
-        if results.get("info").get("category") == "file":
+        if results.get("info", {}).get("category") == "file":
             target = results.get("target", {}).get("file", {}).get("name", "")
             if self.options.get("hash-filename"):
                 target = hashlib.sha256(target).hexdigest()
-        elif results.get("info").get("category") == "url":
+        elif results.get("info", {}).get("category") == "url":
             target = results.get("target", {}).get("url", "")
             if self.options.get("hash-url"):
                 target = hashlib.sha256(target).hexdigest()
+        else:
+            target = "???"
 
         post += "Target : {0} ::: Score : **{1}** ::: ".format(
             target, results.get("info", {}).get("score")
@@ -70,14 +71,8 @@ class Mattermost(Report):
             "text": post,
         }
 
-        headers = {"Content-Type": "application/json"}
-
         try:
-            r = requests.post(
-                self.options.get("url"),
-                headers=headers,
-                data=json.dumps(data)
-            )
+            r = requests.post(self.options.get("url"), json=data)
 
             # note that POST max size is 4000 chars by default
             if r.status_code != 200:
