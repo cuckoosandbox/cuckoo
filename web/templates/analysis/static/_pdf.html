@@ -1,58 +1,58 @@
 <section id="static_analysis">
     {% for p in analysis.static.pdf %}
-	{% if p.modification %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel" id="accordion1">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <label class="accordion-toggle">Metadata</label>
-                                </div>
-
-                                <div id="pdf_metadata" class="panel-collapse collapse in" style="text-align: left;">
-                                    <div class="panel-body">
-                                        <table>
-                                            <tr>
-                                                <td>Version</td>
-                                                <td>{{ p.version }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Creator</td>
-                                                <td>{{ p.creator }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>creation</td>
-                                                <td>{{ p.creation }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>title</td>
-                                                <td>{{ p.title }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>subject</td>
-                                                <td>{{ p.subject }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>producer</td>
-                                                <td>{{ p.producer }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>author</td>
-                                                <td>{{ p.author }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>modification</td>
-                                                <td>{{ p.modification }}</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-
+	    {% if p.modification %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel" id="accordion1">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <label class="accordion-toggle">Metadata</label>
                             </div>
+
+                            <div id="pdf_metadata" class="panel-collapse collapse in" style="text-align: left;">
+                                <div class="panel-body">
+                                    <table>
+                                        <tr>
+                                            <td>Version</td>
+                                            <td>{{ p.version }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Creator</td>
+                                            <td>{{ p.creator }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>creation</td>
+                                            <td>{{ p.creation }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>title</td>
+                                            <td>{{ p.title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>subject</td>
+                                            <td>{{ p.subject }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>producer</td>
+                                            <td>{{ p.producer }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>author</td>
+                                            <td>{{ p.author }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>modification</td>
+                                            <td>{{ p.modification }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
-	{% endif %}
+            </div>
+        {% endif %}
         {% if p.urls %}
                 <div class="row">
                     <div class="col-md-6">
