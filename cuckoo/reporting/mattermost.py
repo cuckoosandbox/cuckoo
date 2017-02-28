@@ -1,9 +1,7 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import json
 import hashlib
 import requests
 
@@ -26,12 +24,19 @@ class Mattermost(Report):
             self.options.get("myurl")
         )
 
-        filename = results.get("target", {}).get("file", {}).get("name", "")
-        if self.options.get("hash_filename"):
-            filename = hashlib.sha256(filename).hexdigest()
+        if results.get("info", {}).get("category") == "file":
+            target = results.get("target", {}).get("file", {}).get("name", "")
+            if self.options.get("hash_filename"):
+                target = hashlib.sha256(target).hexdigest()
+        elif results.get("info", {}).get("category") == "url":
+            target = results.get("target", {}).get("url", "")
+            if self.options.get("hash_url"):
+                target = hashlib.sha256(target).hexdigest()
+        else:
+            target = "???"
 
-        post += "File : {0} ::: Score : **{1}** ::: ".format(
-            filename, results.get("info", {}).get("score")
+        post += "Target : {0} ::: Score : **{1}** ::: ".format(
+            target, results.get("info", {}).get("score")
         )
 
         if self.options.get("show_virustotal"):
@@ -53,17 +58,15 @@ class Mattermost(Report):
             "text": post,
         }
 
-        headers = {
-            "Content-Type": "application/json",
-        }
-
         try:
-            requests.post(
-                self.options.get("url"),
-                headers=headers,
-                data=json.dumps(data)
-            ).raise_for_status()
+            r = requests.post(self.options.get("url"), json=data)
+
+            # Note that POST max size is 4000 chars by default.
+            if r.status_code != 200:
+                raise CuckooReportError (
+                    "Failed posting message due to : {0}".format(r.text)
+                )
         except Exception as e:
             raise CuckooReportError(
-                "Failed posting message to Mattermost: %s" % e
+                "Failed posting message to Mattermost: {0}".format(e)
             )
