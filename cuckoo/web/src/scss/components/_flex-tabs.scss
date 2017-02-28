@@ -32,6 +32,25 @@
 				background-color: #F0F0F0;
 			}
 		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.btn {
+				color: $cyborg_text_color;
+
+				&.active {
+					background-color: $cyborg_primary_color;
+					color: $cyborg_secundary_color;
+				}
+
+				&:not(.active):hover {
+					background-color: rgba($cyborg_primary_color, .5);
+				}
+			}
+		}
+
 	}
 
 	&__tab-group {

@@ -271,6 +271,7 @@
 					}
 
 				}
+
 			}
 
 			&:not(:last-child) {
@@ -336,6 +337,35 @@
 				}
 
 			}
+
+		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.detail-field__header {
+				color: $cyborg_secundary_color;
+				border-color: lighten($cyborg_border_color, 5);
+			}
+
+			.detail-field__body,
+			.flex-tabs__tab {
+				background-color: lighten($cyborg_panel_color, 10);
+				border-color: lighten($cyborg_border_color, 5) !important;
+			}
+
+			table tr:nth-child(odd),
+			table tr:nth-child(even) {
+				background-color: transparent;
+
+				.key-value {
+					color: $cyborg_secundary_color;
+				}
+			}
+		}
+
+		@include cuckoo-theme('night') {
 
 		}
 
