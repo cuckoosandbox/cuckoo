@@ -36,11 +36,18 @@ def foreach_child(hwnd, lparam):
         "agree", "j'accepte",
         "enable", "activer",
         "don't send", "ne pas envoyer",
+        "don't save",
         "continue", "continuer",
         "unzip", "dezip",
         "open", "ouvrir",
+        "close the program",
         "execute", "executer",
         "launch", "lancer",
+        "later",
+        "finish",
+        "end",
+        "allow access",
+        "remind me later",
         "save", "sauvegarder"
     ]
 
