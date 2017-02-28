@@ -28,6 +28,9 @@
 			color: #555;
 			margin: 0;
 			padding-top: 30px;
+
+			@include cuckoo-theme('cyborg') { color: $cyborg_text_color; }
+			@include cuckoo-theme('night') { color: $night_text_color; }
 		}
 
 		&.page-header {
@@ -60,6 +63,9 @@
 				color: $cuckoo_secundary_color;
 				font-size: 12px;
 				font-weight: 700;
+
+				@include cuckoo-theme('cyborg') { color: $cyborg_secundary_color; } 
+				@include cuckoo-theme('night') { color: $cyborg_secundary_color; } 
 			}
 
 			&.valign-bottom {
