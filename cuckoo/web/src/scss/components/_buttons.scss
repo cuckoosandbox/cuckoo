@@ -129,6 +129,64 @@
 			}
 
 		}
+
+		@include cuckoo-theme('cyborg') {
+
+			button, a {
+				border-color: $cyborg_border_color;
+
+				.button-badge {
+					background-color: #000;
+					color: $cyborg_secundary_color;
+				}
+
+				&:not(.active):not(.disabled):not([data-total="0"]) {
+					&:hover {
+						background-color: lighten($cyborg_primary_color, 10);
+					}
+				}
+
+				&[data-total="0"] {
+					opacity: .5;
+					.button-badge {
+						background-color: #000;
+					}
+				}
+
+				&:hover, &:active, &:focus { text-decoration: none; }
+			}
+
+		}
+
+		@include cuckoo-theme('night') {
+
+			button, a {
+				border-color: $night_border_color;
+				background-color: $night_primary_color;
+
+				.button-badge {
+					background-color: #000;
+					color: $night_text_color;
+				}
+
+				&[data-total="0"] {
+					opacity: .5;
+					.button-badge {
+						background-color: #000;
+					}
+				}
+
+				&:not(.active):not(.disabled):not([data-total="0"]) {
+					&:hover {
+						background-color: darken($night_primary_color, 5);
+					}
+				}
+
+				&:hover, &:active, &:focus { text-decoration: none; }
+			}
+
+		}
+
 	}
 
 }

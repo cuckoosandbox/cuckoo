@@ -3398,6 +3398,45 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons__bordered
   flex: 0 0 auto;
   padding: 10px;
 }
+body.cyborg .grouped-buttons__bordered button, body.cyborg .grouped-buttons__bordered a {
+  border-color: #133b4a;
+}
+body.cyborg .grouped-buttons__bordered button .button-badge, body.cyborg .grouped-buttons__bordered a .button-badge {
+  background-color: #000;
+  color: #0ce3ac;
+}
+body.cyborg .grouped-buttons__bordered button:not(.active):not(.disabled):not([data-total="0"]):hover, body.cyborg .grouped-buttons__bordered a:not(.active):not(.disabled):not([data-total="0"]):hover {
+  background-color: #224a61;
+}
+body.cyborg .grouped-buttons__bordered button[data-total="0"], body.cyborg .grouped-buttons__bordered a[data-total="0"] {
+  opacity: .5;
+}
+body.cyborg .grouped-buttons__bordered button[data-total="0"] .button-badge, body.cyborg .grouped-buttons__bordered a[data-total="0"] .button-badge {
+  background-color: #000;
+}
+body.cyborg .grouped-buttons__bordered button:hover, body.cyborg .grouped-buttons__bordered button:active, body.cyborg .grouped-buttons__bordered button:focus, body.cyborg .grouped-buttons__bordered a:hover, body.cyborg .grouped-buttons__bordered a:active, body.cyborg .grouped-buttons__bordered a:focus {
+  text-decoration: none;
+}
+body.night .grouped-buttons__bordered button, body.night .grouped-buttons__bordered a {
+  border-color: #375a7f;
+  background-color: #152d3b;
+}
+body.night .grouped-buttons__bordered button .button-badge, body.night .grouped-buttons__bordered a .button-badge {
+  background-color: #000;
+  color: #d7d7d7;
+}
+body.night .grouped-buttons__bordered button[data-total="0"], body.night .grouped-buttons__bordered a[data-total="0"] {
+  opacity: .5;
+}
+body.night .grouped-buttons__bordered button[data-total="0"] .button-badge, body.night .grouped-buttons__bordered a[data-total="0"] .button-badge {
+  background-color: #000;
+}
+body.night .grouped-buttons__bordered button:not(.active):not(.disabled):not([data-total="0"]):hover, body.night .grouped-buttons__bordered a:not(.active):not(.disabled):not([data-total="0"]):hover {
+  background-color: #0e1f28;
+}
+body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons__bordered button:active, body.night .grouped-buttons__bordered button:focus, body.night .grouped-buttons__bordered a:hover, body.night .grouped-buttons__bordered a:active, body.night .grouped-buttons__bordered a:focus {
+  text-decoration: none;
+}
 
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
