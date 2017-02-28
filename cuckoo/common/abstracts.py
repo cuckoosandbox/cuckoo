@@ -695,6 +695,19 @@ class Signature(object):
     minimum = None
     maximum = None
 
+    _bundles = {
+        'document': ['doc', 'ppt', 'xsl'],
+        'executable': ['exe'],
+        'browser': ['js', 'url']
+    }
+
+    _default_weights = {
+        'document': 2.0,
+        'executable': 1.0,
+        'browser': 1.5
+    }
+
+
     # Maximum amount of marks to record.
     markcount = 50
 
@@ -720,6 +733,13 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
+
+    @staticmethod
+    def context_from_package(package):
+        for context, packages in Signature._bundles.iteritems():
+            if package in packages:
+                return context
+        return None
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.

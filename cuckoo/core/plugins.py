@@ -16,7 +16,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooDisableModule
-from cuckoo.data.signatures.meta import SignatureMeta
+from cuckoo.common.abstracts import Signature
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -459,11 +459,17 @@ class RunSignatures(object):
     # Signature score multipliers are defined per signature.
     #
     def _context_aware_score(self, signature, package):
-        ctx = SignatureMeta.context_from_package(package)
+        ctx = Signature.context_from_package(package)
         if signature.weights and ctx in signature.weights:
+            # If provided get the signature-specific multiplier
             multiplier = signature.weights[ctx]
+        elif ctx in Signature._default_weights:
+            # If not, use the context default weight
+            multiplier = Signature._default_weights[ctx]
         else:
+            # If everything else fails use 1.0
             multiplier = 1.0
+        #log.warning("Multiplier set to %.2f", multiplier)
 
         return signature.severity * multiplier
 
