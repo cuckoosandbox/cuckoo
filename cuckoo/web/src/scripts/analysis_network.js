@@ -39,7 +39,6 @@ function parseHeaderString(headerStr, extract_status_code) {
  */
 class RequestDisplay {
 
-
     constructor(el, options) {
     	// element
         this.el = el;
@@ -63,7 +62,11 @@ class RequestDisplay {
         this.displayMode = 16;
 
         // actions
-        this.actions = options.actions ? options.actions : {};
+        this.actions = options.actions ? options.actions : {
+            display: function() {},
+            output: function() {},
+            mode: function() {}
+        };
 
         this.initialise();
     }
@@ -172,6 +175,7 @@ class RequestDisplay {
      */
     open() {
         var _this = this;
+
         this.bodyViewMode(function() {
             _this.el.addClass('is-open');
             _this.isOpen = true;
@@ -193,10 +197,37 @@ class RequestDisplay {
     }
 
     /*
+        Synchronizes properties with element
+     */
+    syncUI() {
+        // syncs the mode property to ui
+        this.el.find('.tab-mode > a').removeClass('active');
+        this.el.find(`.tab-mode > a[href="mode:${this.displayMode}"]`).addClass('active');
+        // syncs the output property to ui
+        this.el.find('.tab-output > a').removeClass('active');
+        this.el.find(`.tab-output > a[href="output:${this.displayOutput}"]`).addClass('active');
+        // syncs the display property to ui
+        this.el.find('.tab-display > a').removeClass('active');
+        this.el.find(`.tab-display > a[href="display:${this.displayBody}"]`).addClass('active');
+
+        // show/hide byte selection in hex view
+        if(this.displayOutput == 'hex') {
+            this.el.find('.tab-mode').show();
+        } else {
+            this.el.find('.tab-mode').hide();
+        }
+    }   
+
+    /*
         This function 'decides' what the user gets to see and controls
         that behavior.
      */
     bodyViewMode(cb) {
+
+        this.syncUI();
+
+        // this can't be done when nothing is loaded.
+        if(!this.isLoaded) return;
 
         // read-only vars
         let displayBody = this.displayBody;
@@ -208,6 +239,7 @@ class RequestDisplay {
 
         // private functions
         function renderHex(str) {
+
             return hexy(base64.decode(str), {
                 width: displayMode ? displayMode : 16,
                 html: false
@@ -223,8 +255,6 @@ class RequestDisplay {
 
         // parse this content to our output results
         outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
-
-        console.log(content.length);
 
         if(content.length == 0) {
             this.el.find('[data-draw=http-body]').addClass('empty-body');
@@ -254,27 +284,38 @@ class RequestDisplay {
 
 $(function() {
 
+    var rDisplays = [];
+
+    function persistProperty(prop, value) {
+
+        rDisplays.forEach(function(rdisp) {
+            if(rdisp[prop] == value) return;
+            rdisp[prop] = value;
+            rdisp.bodyViewMode();
+        });
+    }
+
 	$("#http-requests .network-display__request").each(function() {
+
     	var rd = new RequestDisplay($(this), {
             actions: {
                 display: function(value, $parent) {
                     this.displayBody = value;
+                    persistProperty('displayBody', value);
                 },
                 output: function(value, $parent) {
-
-                    if(value == 'hex') {
-                        $parent.find('.tab-mode').show();
-                    } else {
-                        $parent.find('.tab-mode').hide();
-                    }
-
                     this.displayOutput = value;
+                    persistProperty('displayOutput', value);
                 },
                 mode: function(value, $parent) {
                     this.displayMode = parseInt(value);
+                    persistProperty('displayMode', parseInt(value));
                 }
             }
         });
+
+        rDisplays.push(rd);
+
 	});
 
     // page navigation for network analysis pages

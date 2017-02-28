@@ -9,13 +9,17 @@
 	font-family: "Roboto";
 	background-color: #fafafa;
 
+	& > .container-fluid {
+		padding: 0 25px;
+	}
+
 	&__header {
 		display: flex;
 		flex-shrink: 0;
 		align-items: center;
 		text-shadow: 0px 1px 0px #fff;
 		margin: 0 0 15px 0;
-		padding: 15px;
+		padding: 15px 25px;
 
 		& > h2 {
 			color: #ccc;
