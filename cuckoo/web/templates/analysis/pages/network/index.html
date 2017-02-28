@@ -20,13 +20,19 @@
                     <div class="col-md-12">
 
                     	   <div class="grouped-buttons__bordered network-analysis-groups">
-                                <a href="#network-analysis-hosts" data-total="12">Hosts <span class="button-badge">12</span></a>
-                                <a href="#network-analysis-dns" data-total="16">DNS <span class="button-badge">16</span></a>
-                                <a href="#network-analysis-tcp" data-total="24">TCP <span class="button-badge">24</span></a>
-                                <a href="#network-analysis-udp" data-total="23">UDP <span class="button-badge">23</span></a>
-                                <a class="active" href="#network-analysis-http" data-total="101">HTTP/HTTPS <span class="button-badge">101</span></a>
-                                <a href="#network-analysis-icmp" data-total="0">ICMP <span class="button-badge">0</span></a>
-                                <a href="#network-analysis-irc" data-total="0">IRC <span class="button-badge">0</span></a>
+                                <a href="#network-analysis-hosts" data-total="{{ report.analysis.network.hosts|length }}">Hosts <span class="button-badge">{{ report.analysis.network.hosts|length }}</span></a>
+                                <a href="#network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
+                                <a href="#network-analysis-tcp" data-total="{{ report.analysis.network.tcp|length }}">TCP <span class="button-badge">{{ report.analysis.network.tcp|length }}</span></a>
+                                <a href="#network-analysis-udp" data-total="{{ report.analysis.network.udp|length }}">UDP <span class="button-badge">{{ report.analysis.network.udp|length }}</span></a>
+                                <a class="active" href="#network-analysis-http" data-total="{% if report.analysis.network.http_ex %} {{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }} {% else %} {{ report.analysis.network.http|length }} {% endif %}">
+                                    {% if report.analysis.network.http_ex %}
+                                        HTTP/HTTPS <span class="button-badge">{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}</span>
+                                    {% else %}
+                                        HTTP <span class="button-badge">{{ report.analysis.network.http|length }}</span>
+                                    {% endif %}
+                                </a>
+                                <a href="#network-analysis-icmp" data-total="0">ICMP <span class="button-badge">{{ report.analysis.network.icmp|length }}</span></a>
+                                <a href="#network-analysis-irc" data-total="0">IRC <span class="button-badge">{{ report.analysis.network.irc|length }}</span></a>
                                 <a href="#network-analysis-suricata" class="no-badge">Suricata</a>
                                 <a href="#network-analysis-snort" class="no-badge">Snort</a>
                            </div>
