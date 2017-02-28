@@ -51,6 +51,23 @@
 			}
 		}
 
+		@include cuckoo-theme('night') {
+
+			.btn {
+				color: $night_text_color;
+
+				&.active {
+					background-color: $night_primary_color;
+					color: $night_text_color;
+				}
+
+				&:not(.active):hover {
+					background-color: rgba($night_primary_color, .5);
+				}
+			}
+
+		}
+
 	}
 
 	&__tab-group {

@@ -142,6 +142,7 @@
 
 			@include cuckoo-theme('cyborg') {
 				background: linear-gradient(#20404a, #112c35);
+				border-bottom: 2px solid $cyborg_border_color;
 			}
 
 		}
@@ -366,6 +367,28 @@
 		}
 
 		@include cuckoo-theme('night') {
+
+			background-color: #252525;
+			border-color: #222;
+
+			.detail-field__header {
+				border-color: #222;
+			}
+
+			.detail-field__body,
+			.flex-tabs__tab {
+				background-color: #333;
+				border-color: #222 !important;
+			}
+
+			table tr:nth-child(odd),
+			table tr:nth-child(even) {
+				background-color: transparent;
+
+				.key-value {
+					color: $night_text_color;
+				}
+			}
 
 		}
 
