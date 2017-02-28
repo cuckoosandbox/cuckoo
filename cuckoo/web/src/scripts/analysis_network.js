@@ -1,15 +1,33 @@
+/*
+    @description  A function that takes in some headers as a string containing newlines. 
+                  It will split the string on its newlines, and then will split it into
+                  a key-value pair for easy deploying into HTML.
+
+    @param headerStr [String]
+    @returns headers [Array]
+ */
 function parseHeaderString(headerStr) {
-  var headers = {};
-  var header_lines = headerStr.split(/\r?\n/);
-  for(var header in header_lines) {
-    var keyv = header_lines[header].split(':');
-    if(keyv.length == 1) {
-        headers['url'] = keyv[0];
-    } else {
-        headers[keyv[0]] = keyv[1];
-    }
-  }
-  return headers;
+
+    var header_lines = headerStr.split(/\r?\n/);
+
+    var headers = header_lines.map(function(item) {
+        return item.split(':');
+    }).map(function(item) {
+
+        if(item.length == 1) {
+            return {
+                name: null,
+                value: item[0]
+            }
+        } else {
+            return {
+                name: item[0],
+                value: item[1]
+            }
+        }
+    });
+
+    return headers;
 }
 
 /*
@@ -34,7 +52,8 @@ class RequestDisplay {
         this.request_body = null;
         this.response_body = null;
 
-        console.log(this);
+        console.log(this.request_headers);
+        debugger;
 
         // actions
         this.actions = options.actions ? options.actions : {};
@@ -174,12 +193,13 @@ $(function() {
         });
 	});
 
-    // page navigation
+    // page navigation for network analysis pages
+    // this will move to a more abstract and re-usable utility following
+    // underneath simple code
     $(".network-analysis-groups > a").bind('click', function(e) {
         e.preventDefault();
         $(".network-analysis-groups > a").removeClass('active');
         $(this).addClass('active');
-
         $('.network-analysis-pages > div').removeClass('active');
         $(`.network-analysis-pages > ${$(this).attr('href')}`).addClass('active');
     });
