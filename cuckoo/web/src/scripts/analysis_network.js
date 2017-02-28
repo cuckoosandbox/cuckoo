@@ -158,9 +158,7 @@ class RequestDisplay {
             self.bodyViewMode();
         });
 
-        this.bodyViewMode(function(data) {
-            self.open();
-        });
+        self.open();
     }
 
     /*
@@ -168,8 +166,11 @@ class RequestDisplay {
 		details panel.
      */
     open() {
-    	this.el.addClass('is-open');
-    	this.isOpen = true;
+        var _this = this;
+        this.bodyViewMode(function() {
+            _this.el.addClass('is-open');
+            _this.isOpen = true;
+        });
     }
 
     /*
@@ -179,6 +180,11 @@ class RequestDisplay {
     close() {
     	this.el.removeClass('is-open');
     	this.isOpen = false;
+
+        // to prevent big HTML hanging around while it's not visible
+        // we clear out the response fields for speed/performance optimization. it
+        // will be redrawn on 'open' again.
+        this.el.find('[data-draw=http-body]').empty();
     }
 
     /*
@@ -196,13 +202,14 @@ class RequestDisplay {
         function renderHex(str) {
             return hexy(base64.decode(str), {
                 width: displayMode ? displayMode : 16,
-                html: true
+                html: false
             });
         }
 
         function renderPlaintext(str) {
             return base64.decode(str);
         }
+
 
         // private vars
         var content;
@@ -212,6 +219,12 @@ class RequestDisplay {
 
         // parse this content to our output results
         outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
+
+        if(content.length == 0) {
+            this.el.find('[data-draw=http-body]').addClass('empty-body');
+        } else {
+            this.el.find('[data-draw=http-body]').removeClass('empty-body');
+        }
 
         // draw this into the container
         this.el.find('[data-draw=http-body]').empty().text(content);

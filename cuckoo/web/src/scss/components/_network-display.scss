@@ -157,8 +157,30 @@
 
 			&__body {
 				background-color: #fff;
-				padding: 15px 15px 30px 15px;
+				padding: 15px;
 				border-bottom: 1px solid #D8D8D8;
+
+				pre {
+					padding: 0;
+					margin: 0;
+					background-color: transparent;
+					border: 0;
+					border-radius: 0;
+
+					&.empty-body {
+						font-family: inherit;
+						&:after {
+							content: "Empty body";
+						    display: block;
+						    text-align: center;
+						    width: 100%;
+						    font-size: 15px;
+						    font-weight: bold;
+						    text-transform: uppercase;
+						    color: #d8d8d8;
+						}
+					}
+				}
 			}
 
 			&:not(:last-child) {

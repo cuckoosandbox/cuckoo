@@ -4785,8 +4785,28 @@ body.night table.cuckoo-table tfoot {
 }
 .network-display__request-details .detail-field__body {
   background-color: #fff;
-  padding: 15px 15px 30px 15px;
+  padding: 15px;
   border-bottom: 1px solid #D8D8D8;
+}
+.network-display__request-details .detail-field__body pre {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.network-display__request-details .detail-field__body pre.empty-body {
+  font-family: inherit;
+}
+.network-display__request-details .detail-field__body pre.empty-body:after {
+  content: "Empty body";
+  display: block;
+  text-align: center;
+  width: 100%;
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #d8d8d8;
 }
 .network-display__request-details .detail-field:not(:last-child) {
   margin-bottom: 20px;
