@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -14,7 +14,6 @@ import zipfile
 
 from bson.objectid import ObjectId
 
-from django.conf import settings
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -256,7 +255,7 @@ moloch_mapper = {
 
 @require_safe
 def moloch(request, **kwargs):
-    if not settings.MOLOCH_ENABLED:
+    if not config("reporting:moloch:enabled"):
         return view_error(request, "Moloch is not enabled!")
 
     query = []
@@ -269,8 +268,13 @@ def moloch(request, **kwargs):
     else:
         hostname = request.get_host()
 
-    url = "https://%s:8005/?%s" % (
-        settings.MOLOCH_HOST or hostname,
+    if config("reporting:moloch:insecure"):
+        url = "http://"
+    else:
+        url = "https://"
+
+    url += "%s:8005/?%s" % (
+        config("reporting:moloch:host") or hostname,
         urllib.urlencode({
             "date": "-1",
             "expression": " && ".join(query),

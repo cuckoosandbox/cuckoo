@@ -564,6 +564,9 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    for vm in c["qemu"]:
+        if "kernel_path" in c["qemu"][vm]:
+            c["qemu"][vm]["kernel"] = c["qemu"][vm].pop("kernel_path")
     c["reporting"]["elasticsearch"]["hosts"] = cast(
         "reporting:elasticsearch:hosts",
         c["reporting"]["elasticsearch"]["hosts"]
@@ -588,6 +591,7 @@ def _20c2_200(c):
             c["reporting"]["mattermost"].pop(old_item, None)
         )
 
+    c["reporting"]["moloch"]["insecure"] = False
     c["reporting"]["mongodb"]["username"] = None
     c["reporting"]["mongodb"]["password"] = None
 

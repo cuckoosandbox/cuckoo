@@ -634,7 +634,7 @@ class Config(object):
                     exists=True, writable=False, readable=True
                 ),
                 "interface": String("qemubr"),
-                "machines": List(String, "vm1,vm2"),
+                "machines": List(String, "vm1,vm2,vm3"),
             },
             "*": [
                 {
@@ -651,7 +651,8 @@ class Config(object):
                     "resultserver_ip": String("192.168.55.1"),
                     "resultserver_port": Int(),
                     "tags": String("debian_wheezy,64_bit"),
-                    "kernel_path": String(),
+                    "kernel": String(),
+                    "initrd": String(),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -666,8 +667,26 @@ class Config(object):
                     "resultserver_ip": String("192.168.55.1"),
                     "resultserver_port": Int(),
                     "tags": String("debian_wheezy,mipsel"),
-                    "kernel_path": String(
+                    "kernel": String(
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
+                    ),
+                }, {
+                    "__section__": "vm3",
+                    "label": String("vm3"),
+                    "image": Path(
+                        "/home/rep/vms/qvm_wheezy64_1.qcow2",
+                        exists=True, writable=False, readable=True
+                    ),
+                    "arch": String("arm"),
+                    "platform": String("linux"),
+                    "ip": String("192.168.55.4"),
+                    "interface": String("qemubr"),
+                    "tags": String("debian_wheezy,arm"),
+                    "kernel": String(
+                        "{imagepath}/vmlinuz-3.2.0-4-versatile-arm"
+                    ),
+                    "initrd": String(
+                        "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
                 },
             ],
@@ -713,6 +732,7 @@ class Config(object):
             "moloch": {
                 "enabled": Boolean(False),
                 "host": String(),
+                "insecure": Boolean(False),
                 "moloch_capture": Path(
                     "/data/moloch/bin/moloch-capture",
                     exists=True, writable=False, readable=True

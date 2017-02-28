@@ -913,6 +913,16 @@ analysis_size_limit = 104857600
 whitelist-dns = wow
 allowed-dns = 8.8.8.8
 """)
+    Files.create(cwd("conf"), "qemu.conf", """
+[qemu]
+machines = vm1, vm2
+[vm1]
+label = vm1
+kernel_path = kernelpath
+[vm2]
+label = vm2
+kernel_path = anotherpath
+""")
     Files.create(cwd("conf"), "reporting.conf", """
 [elasticsearch]
 enabled = no
@@ -922,6 +932,8 @@ show-virustotal = no
 show-signatures = yes
 show-urls = no
 hash-filename = yes
+[moloch]
+enabled = no
 [mongodb]
 enables = yes
 [notification]
@@ -967,12 +979,15 @@ interface = eth0
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [
         "127.0.0.1", "127.0.0.2"
     ]
+    assert cfg["qemu"]["vm1"]["kernel"] == "kernelpath"
+    assert cfg["qemu"]["vm2"]["kernel"] == "anotherpath"
     assert cfg["reporting"]["notification"]["url"] is None
     assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True
     assert cfg["reporting"]["mattermost"]["show_urls"] is False
     assert cfg["reporting"]["mattermost"]["hash_filename"] is True
     assert cfg["reporting"]["mattermost"]["hash_url"] is False
+    assert cfg["reporting"]["moloch"]["insecure"] is False
     assert cfg["reporting"]["mongodb"]["username"] is None
     assert cfg["reporting"]["mongodb"]["password"] is None
     assert cfg["routing"]["routing"]["route"] == "foo"
