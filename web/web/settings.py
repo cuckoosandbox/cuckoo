@@ -47,6 +47,7 @@ else:
 
 MOLOCH_ENABLED = cfg.moloch.get("enabled")
 MOLOCH_HOST = cfg.moloch.get("host")
+MOLOCH_INSECURE = cfg.moloch.get("insecure")
 
 # In case we have VPNs enabled we need to initialize through the following
 # two methods as they verify the interaction with VPNs as well as gather
