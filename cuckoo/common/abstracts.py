@@ -696,9 +696,11 @@ class Signature(object):
     maximum = None
 
     _bundles = {
-        'document': ['doc', 'ppt', 'xsl'],
-        'executable': ['exe'],
-        'browser': ['js', 'url']
+        'document': ['doc', 'ppt', 'xsl', 'pdf'],
+        'executable': ['applet', 'bin', 'cpl', 'exe', 'dll',
+                       'jar', 'msi', 'ps1', 'python', 'vbs',
+                       'wsf'],
+        'browser': ['js', 'url', 'ie']
     }
 
     weights = {
