@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,8 +9,11 @@ import tempfile
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.plugins import RunReporting
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
+from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
+from cuckoo.reporting.mongodb import MongoDB
 
 def task(task_id, options, conf, results, filename="a.txt"):
     Folders.create(cwd(), ["conf", "storage"])
@@ -216,3 +219,62 @@ def test_misp_domain_ipaddr():
     r.misp.add_ipdst.assert_called_once_with(
         "event", ["2.3.4.5", "3.4.5.6"],
     )
+
+@mock.patch("cuckoo.reporting.mongodb.mongo")
+def test_mongodb_init_once_new(p):
+    p.init.return_value = True
+    MongoDB().init_once()
+    p.db.collection_names.return_value = []
+    p.db.cuckoo_schema.save.assert_called_once_with({
+        "version": "1",
+    })
+    p.db.fs.files.ensure_index.assert_called_once()
+
+@mock.patch("cuckoo.reporting.mongodb.mongo")
+def test_mongodb_init_once_new(p):
+    p.init.return_value = True
+    MongoDB().init_once()
+    p.db.collection_names.return_value = []
+    p.db.cuckoo_schema.save.assert_called_once_with({
+        "version": "1",
+    })
+    p.db.fs.files.ensure_index.assert_called_once()
+
+def test_feedback_empty():
+    r = Feedback()
+    r.set_path("tests/files/sample_analysis_storage")
+    r.run({})
+
+@mock.patch("cuckoo.reporting.feedback.CuckooFeedbackObject")
+def test_feedback_not_enabled(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    r = Feedback()
+    r.set_path("tests/files/sample_analysis_storage")
+    r.run({
+        "debug": {
+            "errors": [
+                "a", "b",
+            ],
+        },
+    })
+    p.assert_not_called()
+
+@mock.patch("cuckoo.reporting.feedback.CuckooFeedbackObject")
+@mock.patch("cuckoo.reporting.feedback.CuckooFeedback")
+def test_feedback_enabled(p, q):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    r = Feedback()
+    r.set_path("tests/files/sample_analysis_storage")
+    r.run({
+        "debug": {
+            "errors": [
+                "a", "b",
+            ],
+        },
+    })
+    q.assert_called_once()
+    p.return_value.send_feedback.assert_called_once()

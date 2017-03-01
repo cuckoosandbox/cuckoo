@@ -1,0 +1,47 @@
+<div class="dndupload__v2" id="{{uid}}">
+
+    <form id="uploader" action="/submit/api/presubmit" method="POST" enctype="multipart/form-data">
+        <div id="container">
+
+            <input type="file" name="files[]" id="file" class="holder_input" data-multiple-caption="{count} files selected" multiple="">
+            <label for="file" id="info">
+
+                <span class="text-idle">
+                    <strong>Drag your file here or <em>click to select a file.</em></strong>
+                </span>
+
+                <span class="text-hovering">
+                    <strong>Drop your file here.</strong>
+                </span>
+
+                <span class="text-dropped">
+                    <strong>One moment, we're uploading!</strong>
+                    <small>You'll be redirected automatically after we're done.</small>
+                </span>
+
+                <span class="text-done">
+                    <strong>All good!</strong>
+                    <small>One second while we redirect you.</small>
+                </span>
+
+                <span class="text-error">
+                    <strong>Something went wrong!</strong>
+                    <small>The server returned an error. Please check our file compatibility list with the file you're trying to upload or try again.</small>
+                    <small>If the problem persists, send us a feedback report.</small>
+                </span> 
+
+            </label>
+
+            <button type="submit" class="holder_button">Upload</button>
+
+            <progress id="uploadprogress" min="0" max="100" value="0">0</progress>
+        </div>
+    </form>
+
+    <div class="alternate-progress"></div>
+    
+</div>
+
+<p id="filereader">File API &amp; FileReader API not supported</p>
+<p id="formdata">XHR2's FormData is not supported</p>
+<p id="progress">XHR2's upload progress isn't supported</p>

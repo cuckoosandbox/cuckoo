@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,6 +38,9 @@ class CuckooReportError(CuckooOperationalError):
 
 class CuckooGuestError(CuckooOperationalError):
     """Cuckoo guest agent error."""
+
+class CuckooGuestCriticalTimeout(CuckooGuestError):
+    """The Host was unable to connect to the Guest."""
 
 class CuckooResultError(CuckooOperationalError):
     """Cuckoo result server error."""

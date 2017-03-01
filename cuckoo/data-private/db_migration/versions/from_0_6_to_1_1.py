@@ -1,18 +1,18 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 """Database migration (from Cuckoo 0.6-1.0 to 1.1)
 
-Revision ID: 263a45963c72
+Revision ID: 5aa718cc79e1
 Revises: None
 Create Date: 2014-03-23 23:30:36.756792
 
 """
 
 # Revision identifiers, used by Alembic.
-revision = "263a45963c72"
+revision = "5aa718cc79e1"
 mongo_revision = "1"
 down_revision = None
 
@@ -24,7 +24,7 @@ from alembic import op
 from datetime import datetime
 from dateutil.parser import parse
 
-import cuckoo.core.database as db
+from cuckoo.core.database import Task
 from cuckoo.common.config import config
 
 old_enum = (
@@ -222,7 +222,7 @@ def upgrade():
             )
 
             # Insert data.
-            op.bulk_insert(db.Task.__table__, tasks_data)
+            op.bulk_insert(Task.__table__, tasks_data)
 
     # Migrate mongo.
     mongo_upgrade()

@@ -40,6 +40,7 @@ var CuckooWeb = function () {
     }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
+
             var data = JSON.stringify(params);
 
             $.ajax({
@@ -60,6 +61,7 @@ var CuckooWeb = function () {
                     }
                 }
             }).fail(function (err) {
+
                 if (err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")) {
                     console.log('POST err: ' + err.responseJSON.message);
                 } else {
@@ -95,16 +97,42 @@ var CuckooWeb = function () {
         value: function redirect(location) {
             window.location.href = location;
         }
+    }, {
+        key: 'toggle_page_freeze',
+        value: function toggle_page_freeze(open, text) {
+
+            if (open) {
+                $('.page-freeze__message').text(text);
+                $('.page-freeze').addClass('in');
+            } else {
+                $('.page-freeze').removeClass('in');
+                $('.page-freeze__options').addClass('hidden');
+            }
+        }
+    }, {
+        key: 'error_page_freeze',
+        value: function error_page_freeze(text) {
+            $('.page-freeze').addClass('error');
+            $('.page-freeze__message').text(text);
+            $('.page-freeze__options').removeClass('hidden');
+        }
     }]);
 
     return CuckooWeb;
 }();
 
 $(document).ready(function () {
-
     $("[data-toggle=popover]").popover();
+
+    $('.close-page-freeze').bind('click', function () {
+        CuckooWeb.toggle_page_freeze(false);
+        setTimeout(function () {
+            $('.page-freeze').removeClass('error');
+        }, 300);
+    });
 });
 
+// show/hide errors
 $(function () {
 
     var $container = $('.cuckoo-errors');
@@ -138,6 +166,15 @@ $(function () {
         } else {
             expanded = true;
         }
+    });
+});
+
+// back-to-top replacement for the analysis pages
+$(function () {
+
+    $("#analysis .flex-grid__footer .logo a").bind('click', function (e) {
+        e.preventDefault();
+        $(this).parents('.flex-nav__body').scrollTop(0);
     });
 });
 

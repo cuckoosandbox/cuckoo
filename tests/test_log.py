@@ -7,10 +7,21 @@ import logging
 import mock
 import tempfile
 
+from cuckoo.common.config import log_error
+from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logging, init_logfile
+from cuckoo.core.startup import init_logging, init_logfile, init_console_logging
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import set_cwd, cwd
+
+db = Database()
+
+def reset_logging():
+    """Resets the logging module to its initial state so that we can
+    re-register all kinds of logging logic for unit testing purposes."""
+    logging.root = logging.RootLogger(logging.WARNING)
+    logging.Logger.root = logging.root
+    logging.Logger.manager = logging.Manager(logging.Logger.root)
 
 def test_init_logging():
     set_cwd(tempfile.mkdtemp())
@@ -84,3 +95,98 @@ def test_process_json_logging():
         "task_id": None,
         "time": 1484232003,
     }
+
+def test_init_logging_info(capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    reset_logging()
+    init_logging(logging.WARNING)
+
+    log = logging.getLogger("testing")
+    log.debug("debug test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+    log.info("info test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+    log.warning("warning test", extra={
+        "action": "foo",
+        "status": "bar",
+    })
+
+    buf = open(cwd("log", "cuckoo.log")).read()
+    assert "debug test" not in buf
+    assert "info test" not in buf
+    assert "warning test" in buf
+
+    buf = open(cwd("log", "cuckoo.json")).read()
+    assert "debug test" in buf
+    assert "info test" in buf
+    assert "warning test" in buf
+
+    _, buf = capsys.readouterr()
+    assert "debug test" not in buf
+    assert "info test" not in buf
+    assert "warning test" in buf
+
+def test_init_console_logging(capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    reset_logging()
+    init_console_logging(logging.DEBUG)
+
+    log = logging.getLogger("console-testing")
+    log.debug("this is a test")
+
+    _, buf = capsys.readouterr()
+    assert "console-testing" in buf
+    assert "this is a test" in buf
+
+def test_log_error_action():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    db.connect()
+
+    reset_logging()
+    init_console_logging(logging.DEBUG)
+
+    task_id = db.add_path(__file__)
+    assert db.view_errors(task_id) == []
+
+    logging.getLogger(__name__).error("message1", extra={
+        "error_action": "erroraction",
+        "task_id": task_id,
+    })
+
+    logging.getLogger(__name__).error("message2", extra={
+        "task_id": task_id,
+    })
+
+    errors = db.view_errors(task_id)
+    assert len(errors) == 2
+    assert errors[0].message == "message1"
+    assert errors[0].action == "erroraction"
+    assert errors[1].message == "message2"
+    assert errors[1].action is None
+
+@mock.patch("cuckoo.common.config.log")
+@mock.patch("cuckoo.common.config.logging")
+def test_config_log_error_nohandler(p, q, capsys):
+    p.getLogger.return_value.handlers = None
+    log_error("%s %s", "foo", "bar")
+    out, err = capsys.readouterr()
+    assert "Configuration error: foo bar" in err
+    q.error.assert_not_called()
+
+@mock.patch("cuckoo.common.config.log")
+@mock.patch("cuckoo.common.config.logging")
+def test_config_log_error_yeshandler(p, q, capsys):
+    p.getLogger.return_value.handlers = [1]
+    log_error("%s %s", "foo", "bar")
+    out, err = capsys.readouterr()
+    assert "Configuration error: foo bar" not in err
+    q.error.assert_called_once_with("%s %s", "foo", "bar")

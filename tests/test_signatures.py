@@ -185,3 +185,28 @@ def test_check_suricata():
 
     s = Signature(caller)
     assert s.check_suricata_alerts(".*TEST.*")
+
+@mock.patch("cuckoo.core.plugins.log")
+def test_signature_severity(p):
+    class sig(object):
+        name = "foobar"
+        matched = True
+        severity = 42
+
+        def init(self):
+            pass
+
+        def on_complete(self):
+            pass
+
+        def results(self):
+            return self.__class__.__dict__
+
+    rs = RunSignatures({})
+    rs.signatures = sig(),
+    rs.run()
+    assert p.debug.call_count == 2
+    assert p.debug.call_args_list[1][1]["extra"] == {
+        "action": "signature.match", "status": "success",
+        "signature": "foobar", "severity": 42,
+    }

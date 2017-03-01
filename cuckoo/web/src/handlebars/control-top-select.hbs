@@ -1,0 +1,49 @@
+<legend class="flex-form__field-title">{{title}} {{#if doc_link}}<a href="{{doc_link}}" target="_blank"><i class="fa fa-info-circle"></i></a>{{/if}}</legend>
+
+<ul class="flex-form__toggle-group">
+	{{#each top_items}}
+		<li class="{{#if description}}has-description{{/if}} {{#if disabled}}disabled{{/if}}">
+			{{#unless manual}}
+				<input type="radio" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" {{#if selected}}checked{{/if}} {{#if disabled}}disabled{{/if}} />
+				<label for="{{../../name}}-{{value}}" {{#if className}}class="{{className}}"{{/if}}>
+					{{name}}
+					{{#if description}}
+						<span class="description">{{description}}</span>
+					{{/if}}
+				</label>
+			{{else}}	
+				<div class="manual-input">
+					<input type="text" name="{{../../name}}" id="{{../../name}}-{{this.value}}" value="{{value}}" placeholder="..." />
+					{{#if ../../controller.units}}
+						<span>{{../../../controller.units}}</span>
+					{{/if}}
+				</div>
+			{{/unless}}
+		</li>
+	{{/each}}
+</ul>
+
+{{#if extra_select}}
+	<div class="flex-form__select flex-form__select--horizontal {{#if extra_select.disabled}}disabled{{/if}}">
+		<label for="{{extra_select.name}}" class="title">{{extra_select.title}}</label>
+		<select name="{{extra_select.name}}" id="{{extra_select.name}}" {{#if extra_select.disabled}}disabled{{/if}}>
+			<option selected disabled>Select</option>
+			{{#each extra_select.options}}
+				<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+			{{/each}}
+		</select>
+		<i class="fa fa-chevron-down"></i>
+	</div>
+{{/if}}
+
+{{#if rest_items}}
+	<div class="flex-form__select">
+		<select name="{{name}}-other">
+			<option disabled selected>Or select one here if yours isn't featured above.</option>
+			{{#each rest_items}}
+				<option value="{{value}}">{{name}}</option>
+			{{/each}}
+		</select>
+		<i class="fa fa-chevron-down"></i>
+	</div>
+{{/if}}

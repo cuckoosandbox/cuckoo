@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import re
-import logging
 import time
 
 import xml.etree.ElementTree as ET
@@ -37,6 +37,10 @@ class Auxiliary(object):
         self.machine = None
         self.guest_manager = None
         self.options = None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def set_task(self, task):
         self.task = task
@@ -74,6 +78,10 @@ class Machinery(object):
         # Machine table is cleaned to be filled from configuration file
         # at each start.
         self.db.clean_machines()
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def pcap_path(self, task_id):
         """Returns the .pcap path for this task id."""
@@ -627,6 +635,10 @@ class Processing(object):
         self.options = None
         self.results = {}
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def set_options(self, options):
         """Set report options.
         @param options: report options dict.
@@ -650,7 +662,6 @@ class Processing(object):
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
         self.cuckoolog_path = os.path.join(self.analysis_path, "cuckoo.log")
-        self.action_path = os.path.join(self.analysis_path, "action.json")
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
@@ -742,6 +753,10 @@ class Signature(object):
             if package in packages:
                 return context
         return None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -1186,6 +1201,10 @@ class Report(object):
         self.task = None
         self.options = None
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def _get_analysis_path(self, subpath):
         return os.path.join(self.analysis_path, subpath)
 
@@ -1216,7 +1235,7 @@ class Report(object):
         """
         self.task = task
 
-    def run(self):
+    def run(self, results):
         """Start report processing.
         @raise NotImplementedError: this method is abstract.
         """

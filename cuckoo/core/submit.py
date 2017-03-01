@@ -1,39 +1,93 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import copy
+import json
 import logging
 import os
 import sflock
+import zipfile
 
-from cuckoo.common.config import Config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage
 from cuckoo.common.utils import validate_url, validate_hash
 from cuckoo.common.virustotal import VirusTotalAPI
-from cuckoo.core.database import Database
+from cuckoo.core.database import Database, TASK_COMPLETED
+from cuckoo.misc import cwd, mkdir
 
 log = logging.getLogger(__name__)
-
 db = Database()
 
 class SubmitManager(object):
-    """Submit Manager.
+    def _handle_string(self, submit, tmppath, line):
+        if not line:
+            return
 
-    This class handles the submission process for files to be analyzed. It takes
-    care of preparing the temporary storage locations, database registrations and
-    interacting with the submitted files to determine a package.
-    """
-    def __init__(self):
-        self._submit_urlschemes = ["http", "https"]
+        if validate_hash(line):
+            try:
+                filedata = VirusTotalAPI().hash_fetch(line)
+            except CuckooOperationalError as e:
+                submit["errors"].append(
+                    "Error retrieving file hash: %s" % e
+                )
+                return
 
-    def pre(self, submit_type, data):
+            filepath = Files.create(tmppath, line, filedata)
+
+            submit["data"].append({
+                "type": "file",
+                "data": filepath
+            })
+            return
+
+        if validate_url(line):
+            submit["data"].append({
+                "type": "url",
+                "data": line
+            })
+            return
+
+        submit["errors"].append(
+            "'%s' was neither a valid hash or url" % line
+        )
+
+    def translate_options_from(self, options):
+        """Translates from Web Interface options to Cuckoo database options."""
+        ret = {}
+
+        if not options.get("simulated-human-interaction", True):
+            ret["human"] = int(options.get("simulated-human-interaction", True))
+
+        if not options.get("enable-injection", True):
+            ret["free"] = "yes"
+
+        if options.get("process-memory-dump"):
+            ret["procmemdump"] = "yes"
+
+        return ret
+
+    def translate_options_to(self, options):
+        """Translates from Cuckoo database options to Web Interface options."""
+        ret = {}
+
+        if not int(options.get("human", "1")):
+            ret["simulated-human-interaction"] = False
+
+        if options.get("free") == "yes":
+            ret["enable-injection"] = False
+
+        if options.get("procmemdump") == "yes":
+            ret["process-memory-dump"] = True
+
+        return ret
+
+    def pre(self, submit_type, data, options=None):
         """
         The first step to submitting new analysis.
         @param submit_type: "files" or "strings"
-        @param data: a list of dicts containing "name" (file name) and "data" (file data)
-        or a list of strings (urls or hashes)
+        @param data: a list of dicts containing "name" (file name)
+                and "data" (file data) or a list of strings (urls or hashes)
         @return: submit id
         """
         if submit_type not in ("strings", "files"):
@@ -43,44 +97,13 @@ class SubmitManager(object):
         path_tmp = Folders.create_temp()
         submit_data = {
             "data": [],
-            "errors": []
+            "errors": [],
+            "options": options or {},
         }
 
         if submit_type == "strings":
             for line in data:
-                if not line:
-                    continue
-
-                if validate_hash(line):
-                    try:
-                        filedata = VirusTotalAPI(
-                            Config("processing").virustotal.apikey,
-                            Config("processing").virustotal.timeout
-                        ).hash_fetch(line)
-                    except CuckooOperationalError as e:
-                        submit_data["errors"].append(
-                            "Error retrieving file hash: %s" % e
-                        )
-                        continue
-
-                    filepath = Files.create(path_tmp, line, filedata)
-
-                    submit_data["data"].append({
-                        "type": "file",
-                        "data": filepath
-                    })
-                    continue
-
-                if validate_url(line):
-                    submit_data["data"].append({
-                        "type": "url",
-                        "data": line
-                    })
-                    continue
-
-                submit_data["errors"].append(
-                    "'%s' was neither a valid hash or url" % line
-                )
+                self._handle_string(submit_data, path_tmp, line)
 
         if submit_type == "files":
             for entry in data:
@@ -88,38 +111,35 @@ class SubmitManager(object):
                 filepath = Files.create(path_tmp, filename, entry["data"])
                 submit_data["data"].append({
                     "type": "file",
-                    "data": filepath
+                    "data": filepath,
+                    "options": self.translate_options_to(
+                        entry.get("options", {})
+                    ),
                 })
 
-        if not submit_data["data"]:
-            raise Exception("Unknown submit type or no data could be processed")
+        return db.add_submit(path_tmp, submit_type, submit_data)
 
-        return Database().add_submit(path_tmp, submit_type, submit_data)
-
-    @staticmethod
-    def get_files(submit_id, password=None, astree=False):
+    def get_files(self, submit_id, password=None, astree=False):
         """
-        Returns files from a submitted analysis.
+        Returns files or URLs from a submitted analysis.
         @param password: The password to unlock container archives with
         @param astree: sflock option; determines the format in which the files are returned
         @return: A tree of files
         """
-        submit = Database().view_submit(submit_id)
-
+        submit = db.view_submit(submit_id)
         files, duplicates = [], []
 
         for data in submit.data["data"]:
             if data["type"] == "file":
                 filename = Storage.get_filename_from_path(data["data"])
-                filedata = open(os.path.join(submit.tmp_path, data["data"]), "rb").read()
+                filepath = os.path.join(submit.tmp_path, filename)
 
                 unpacked = sflock.unpack(
-                    filepath=filename, contents=filedata,
-                    password=password, duplicates=duplicates
+                    filepath=filepath, password=password, duplicates=duplicates
                 )
 
                 if astree:
-                    unpacked = unpacked.astree()
+                    unpacked = unpacked.astree(sanitize=True)
 
                 files.append(unpacked)
             elif data["type"] == "url":
@@ -141,116 +161,220 @@ class SubmitManager(object):
                     }
                 })
             else:
-                continue
+                raise RuntimeError(
+                    "Unknown data entry type: %s" % data["type"]
+                )
 
-        return {
-            "files": files,
-            "path": submit.tmp_path,
-        }
+        return files, submit.data["errors"], submit.data["options"]
 
-    @staticmethod
-    def submit(submit_id, selected_files, timeout=0, package="", options="",
-               priority=1, custom="", owner="", machine="", platform="",
-               tags=None, memory=False, enforce_timeout=False, **kwargs):
-        # TODO Kwargs contains various analysis options that have to be taken
-        # into account sooner or later.
-        ret, db = [], Database()
+    def submit(self, submit_id, config):
+        """Reads, interprets, and converts the JSON configuration provided by
+        the Web Interface into something we insert into the database."""
+        ret = []
         submit = db.view_submit(submit_id)
 
-        for entry in selected_files:
-            for expected in ["filepath", "filename", "type"]:
-                if expected not in entry.keys() or not entry[expected]:
-                    submit.data["errors"].append(
-                        "Missing or empty argument %s" % expected
-                    )
-                    continue
+        for entry in config["file_selection"]:
+            # Merge the global & per-file analysis options.
+            info = copy.deepcopy(config["global"])
+            info.update(entry)
+            info.update(entry.get("options", {}))
+            options = copy.deepcopy(config["global"]["options"])
+            options.update(entry.get("options", {}).get("options", {}))
+
+            kw = {
+                "package": info.get("package"),
+                "timeout": info.get("timeout", 120),
+                "priority": info.get("priority"),
+                "custom": info.get("custom"),
+                "owner": info.get("owner"),
+                "tags": info.get("tags"),
+                "memory": info.get("memory"),
+                "enforce_timeout": options.get("enforce-timeout"),
+                "machine": info.get("machine"),
+                "platform": info.get("platform"),
+                "options": self.translate_options_from(options),
+                "submit_id": submit_id,
+            }
 
             if entry["type"] == "url":
                 ret.append(db.add_url(
-                    url=entry["filename"],
-                    package="ie",
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
-                    platform=platform,
+                    url=info["filename"], **kw
                 ))
-
                 continue
 
             # for each selected file entry, create a new temp. folder
             path_dest = Folders.create_temp()
 
-            if entry["filepath"][0] == "":
+            if not info["extrpath"]:
                 path = os.path.join(
-                    submit.tmp_path, os.path.basename(entry["filename"])
+                    submit.tmp_path, os.path.basename(info["filename"])
                 )
 
                 filepath = Files.copy(path, path_dest=path_dest)
 
                 ret.append(db.add_path(
-                    file_path=filepath,
-                    package=entry.get("package", package),
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
-                    platform=""
+                    file_path=filepath, **kw
                 ))
-            elif len(entry["filepath"]) >= 2:
+            elif len(info["extrpath"]) == 1:
                 arcpath = os.path.join(
-                    submit.tmp_path, os.path.basename(entry["filepath"][0])
+                    submit.tmp_path, os.path.basename(info["arcname"])
                 )
                 if not os.path.exists(arcpath):
                     submit.data["errors"].append(
                         "Unable to find parent archive file: %s" %
-                        os.path.basename(entry["filepath"][0])
+                        os.path.basename(info["arcname"])
                     )
                     continue
 
-                # Extract any sub-archives where required.
-                if len(entry["filepath"]) > 2:
-                    content = sflock.unpack(arcpath).read(
-                        entry["filepath"][1:-1]
-                    )
-                else:
-                    content = open(arcpath, "rb").read()
+                arc = sflock.zipify(sflock.unpack(
+                    info["arcname"], contents=open(arcpath, "rb").read()
+                ))
 
-                # Write .zip archive file.
-                filename = entry["filepath"][-2]
+                # Create a .zip archive out of this container.
                 arcpath = Files.temp_named_put(
-                    sflock.zipify(sflock.unpack(filename, contents=content)),
-                    os.path.basename(filename)
+                    arc, os.path.basename(info["arcname"])
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath,
-                    filename=entry["filepath"][-1],
-                    package=entry.get("package", package),
-                    timeout=timeout,
-                    options=options,
-                    priority=int(priority),
-                    custom=custom,
-                    owner=owner,
-                    tags=tags,
-                    memory=memory,
-                    enforce_timeout=enforce_timeout,
-                    machine=machine,
+                    file_path=arcpath, filename=info["filename"], **kw
                 ))
             else:
-                submit.data["errors"].append(
-                    "Unable to determine type of file.. couldn't submit!"
+                arcpath = os.path.join(
+                    submit.tmp_path, os.path.basename(info["arcname"])
                 )
-                continue
+                if not os.path.exists(arcpath):
+                    submit.data["errors"].append(
+                        "Unable to find parent archive file: %s" %
+                        os.path.basename(info["arcname"])
+                    )
+                    continue
+
+                content = sflock.unpack(arcpath).read(info["extrpath"][:-1])
+                subarc = sflock.unpack(info["extrpath"][-2], contents=content)
+
+                # Write intermediate .zip archive file.
+                arcpath = Files.temp_named_put(
+                    sflock.zipify(subarc),
+                    os.path.basename(info["extrpath"][-2])
+                )
+
+                ret.append(db.add_archive(
+                    file_path=arcpath, filename=info["filename"], **kw
+                ))
 
         return ret
+
+    def import_(self, f, submit_id):
+        """Import an analysis identified by the file(-like) object f."""
+        try:
+            z = zipfile.ZipFile(f)
+        except zipfile.BadZipfile:
+            raise CuckooOperationalError(
+                "Imported analysis is not a proper .zip file."
+            )
+
+        # Ensure there are no files with illegal or potentially insecure names.
+        # TODO Keep in mind that if we start to support other archive formats
+        # (e.g., .tar) that those may also support symbolic links. In that case
+        # we should probably start using sflock here.
+        for filename in z.namelist():
+            if filename.startswith("/") or ".." in filename or ":" in filename:
+                raise CuckooOperationalError(
+                    "The .zip file contains a file with a potentially "
+                    "incorrect filename: %s" % filename
+                )
+
+        if "task.json" not in z.namelist():
+            raise CuckooOperationalError(
+                "The task.json file is required in order to be able to import "
+                "an analysis! This file contains metadata about the analysis."
+            )
+
+        required_fields = {
+            "options": dict, "route": basestring, "package": basestring,
+            "target": basestring, "category": basestring, "memory": bool,
+            "timeout": (int, long), "priority": (int, long),
+            "custom": basestring, "tags": (tuple, list),
+        }
+
+        try:
+            info = json.loads(z.read("task.json"))
+            for key, type_ in required_fields.items():
+                if key not in info:
+                    raise ValueError("missing %s" % key)
+                if info[key] is not None and not isinstance(info[key], type_):
+                    raise ValueError("%s => %s" % (key, info[key]))
+        except ValueError as e:
+            raise CuckooOperationalError(
+                "The provided task.json file, required for properly importing "
+                "the analysis, is incorrect or incomplete (%s)." % e
+            )
+
+        if info["category"] == "url":
+            task_id = db.add_url(
+                url=info["target"], package=info["package"],
+                timeout=info["timeout"], options=info["options"],
+                priority=info["priority"], custom=info["custom"],
+                memory=info["memory"], tags=info["tags"], submit_id=submit_id
+            )
+        else:
+            # Users may have the "delete_bin_copy" enabled and in such cases
+            # the binary file won't be included in the .zip file.
+            if "binary" in z.namelist():
+                filepath = Files.temp_named_put(
+                    z.read("binary"), os.path.basename(info["target"])
+                )
+            else:
+                filepath = __file__
+
+            # We'll be updating the target shortly.
+            task_id = db.add_path(
+                file_path=filepath, package=info["package"],
+                timeout=info["timeout"], options=info["options"],
+                priority=info["priority"], custom=info["custom"],
+                memory=info["memory"], tags=info["tags"], submit_id=submit_id
+            )
+
+        if not task_id:
+            raise CuckooOperationalError(
+                "There was an error creating a task for the to-be imported "
+                "analysis in our database.. Can't proceed."
+            )
+
+        # The constructors currently don't accept this argument.
+        db.set_route(task_id, info["route"])
+
+        mkdir(cwd(analysis=task_id))
+        z.extractall(cwd(analysis=task_id))
+
+        # If there's an analysis.json file, load it up to figure out additional
+        # metdata regarding this analysis.
+        if os.path.exists(cwd("analysis.json", analysis=task_id)):
+            try:
+                obj = json.load(
+                    open(cwd("analysis.json", analysis=task_id), "rb")
+                )
+                if not isinstance(obj, dict):
+                    raise ValueError
+                if "errors" in obj and not isinstance(obj["errors"], list):
+                    raise ValueError
+                if "action" in obj and not isinstance(obj["action"], list):
+                    raise ValueError
+            except ValueError:
+                log.warning(
+                    "An analysis.json file was provided, but wasn't a valid "
+                    "JSON object/structure that we can to enhance the "
+                    "analysis information."
+                )
+            else:
+                for error in set(obj.get("errors", [])):
+                    if isinstance(error, basestring):
+                        db.add_error(error, task_id)
+                for action in set(obj.get("action", [])):
+                    if isinstance(action, basestring):
+                        db.add_error("", task_id, action)
+
+        # We set this analysis as completed so that it will be processed
+        # automatically (assuming 'cuckoo process' is running).
+        db.set_status(task_id, TASK_COMPLETED)
+        return task_id

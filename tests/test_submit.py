@@ -1,94 +1,79 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import io
+import json
+import mock
 import os
-import ntpath
 import responses
 import tempfile
 import zipfile
 
-from cuckoo.common.files import Folders, Files
 from cuckoo.common.virustotal import VirusTotalAPI
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 
-CUCKOO_CONF = """
-[cuckoo]
-tmppath = /tmp
-"""
-
-PROCESSING_CONF = """
-[virustotal]
-enabled = yes
-timeout = 60
-scan = 0
-key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
-"""
+db = Database()
 
 class TestSubmitManager(object):
     def setup(self):
-        self.dirpath = tempfile.mkdtemp()
-        set_cwd(self.dirpath)
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "processing": {
+                "virustotal": {
+                    "enabled": True,
+                },
+            },
+        })
 
-        self.d = Database()
-        self.d.connect(dsn="sqlite:///:memory:")
-
-        Folders.create(self.dirpath, "conf")
-        Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
-        Files.create(self.dirpath, "conf/processing.conf", PROCESSING_CONF)
-
+        db.connect()
         self.submit_manager = SubmitManager()
-
-        self.urls = [
-            "http://theguardian.com/",
-            "https://news.ycombinator.com/"
-        ]
-
-        self.hashes = [
-            "ba78410702f0cc8453da1afbb2a8b670",
-            "87943278943798784783974893278493",  # invalid hash
-        ]
-
-        self.files = [{
-            "name": "foo.txt",
-            "data": open("tests/files/foo.txt", "rb").read()
-        }]
 
     def test_pre_file(self):
         """Tests the submission of a plaintext file"""
-        assert self.submit_manager.pre(
-            submit_type="files",
-            data=self.files
-        ) == 1
+        assert self.submit_manager.pre(submit_type="files", data=[{
+            "name": "foo.txt",
+            "data": open("tests/files/foo.txt", "rb").read()
+        }]) == 1
 
-        submit = self.d.view_submit(1)
+        submit = db.view_submit(1)
         assert isinstance(submit.data["data"], list)
         assert len(submit.data["errors"]) == 0
         assert os.path.exists(submit.data["data"][0]["data"])
 
         assert submit.data["data"][0]["type"] == "file"
         filedata = open(submit.data["data"][0]["data"], "rb").read()
-        assert filedata == self.files[0]["data"]
+        assert filedata == open("tests/files/foo.txt", "rb").read()
 
     def test_pre_url(self):
         """Tests the submission of URLs (http/https)"""
-        assert self.submit_manager.pre(
-            submit_type="strings",
-            data=self.urls
-        ) == 1
+        assert self.submit_manager.pre(submit_type="strings", data=[
+            "http://theguardian.com/",
+            "https://news.ycombinator.com/",
+            "google.com",
+        ]) == 1
 
-        submit = self.d.view_submit(1)
+        submit = db.view_submit(1)
         assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 2
+        assert len(submit.data["data"]) == 3
 
-        url0, url1 = submit.data["data"]
+        url0, url1, url2 = submit.data["data"]
         assert url0["type"] == "url"
         assert url0["data"] == "http://theguardian.com/"
         assert url1["type"] == "url"
         assert url1["data"] == "https://news.ycombinator.com/"
+        assert url2["type"] == "url"
+        assert url2["data"] == "google.com"
+
+    def test_invalid_strings(self):
+        assert SubmitManager().pre("strings", ["thisisnotanurl"]) == 1
+        submit = db.view_submit(1)
+        assert len(submit.data["errors"]) == 1
+        assert "was neither a valid hash or url" in submit.data["errors"][0]
+        assert not submit.data["data"]
 
     @responses.activate
     def test_pre_hash(self):
@@ -101,12 +86,12 @@ class TestSubmitManager(object):
                 responses.GET, VirusTotalAPI.HASH_DOWNLOAD, status=404
             )
 
-            assert self.submit_manager.pre(
-                submit_type="strings",
-                data=self.hashes
-            ) == 1
+            assert self.submit_manager.pre(submit_type="strings", data=[
+                "ba78410702f0cc8453da1afbb2a8b670",
+                "87943278943798784783974893278493",  # invalid hash
+            ]) == 1
 
-            submit = self.d.view_submit(1)
+            submit = db.view_submit(1)
             assert isinstance(submit.data["data"], list)
             assert len(submit.data["data"]) == 1
 
@@ -117,143 +102,145 @@ class TestSubmitManager(object):
             # We couldn't locate the second hash.
             assert submit.data["errors"][0].startswith("Error retrieving")
 
-    def test_pre_url_submit(self):
-        """
-        Tests the submission of URLs (http/https) and
-        submits it as tasks
-        """
+    def test_submit_url1(self):
         assert self.submit_manager.pre(
-            submit_type="strings",
-            data=self.urls
+            "strings", ["http://cuckoosandbox.org"]
         ) == 1
+        config = json.load(open("tests/files/submit/url1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target == "http://cuckoosandbox.org"
+        assert t.package == "ie"
+        assert t.timeout == 120
+        assert t.category == "url"
+        assert t.status == "pending"
+        assert not t.enforce_timeout
+        assert not t.machine
+        assert t.options == {
+            "procmemdump": "yes",
+        }
 
-        submit = self.d.view_submit(1)
-        assert isinstance(submit.data["data"], list)
-        assert len(submit.data["data"]) == 2
+    def test_submit_file1(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "icardres.dll",
+            "data": open("tests/files/icardres.dll", "rb").read(),
+        }]) == 1
 
-        for obj in submit.data["data"]:
-            assert obj["type"] == "url"
+        config = json.load(open("tests/files/submit/file1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("icardres.dll")
+        assert t.package == "dll"
+        assert t.timeout == 120
+        assert t.category == "file"
+        assert t.status == "pending"
+        assert t.enforce_timeout is True
+        assert not t.machine
+        assert t.options == {}
 
-        selected_files = []
-        for url in self.urls:
-            selected_files.append({
-                "filename": url,
-                "filepath": [""],
-                "package": "ie",
-                "type": "url"
-            })
-
-        tasks = self.submit_manager.submit(
-            submit_id=1,
-            selected_files=selected_files,
-            memory=False,
-            priority=2,
-        )
-
-        assert len(tasks) == 2
-        assert tasks[0] == 1
-        assert tasks[1] == 2
-
-        for task_id in tasks:
-            url = self.urls[task_id - 1]
-            view_task = self.d.view_task(task_id=task_id, details=True)
-
-            assert view_task.target == url
-            assert view_task.status == "pending"
-            assert view_task.package == "ie"
-            assert view_task.priority == 2
-            assert view_task.memory is False
-            assert view_task.id == task_id
-            assert view_task.category == "url"
-
-    def test_pre_file_submit(self):
-        """
-        Tests the submission of a plaintext file and submits
-        it as a task
-        """
-        assert self.submit_manager.pre(
-            submit_type="files",
-            data=self.files
-        ) == 1
-
-        submit = self.d.view_submit(1)
-        assert isinstance(submit.data["data"], list)
-        assert len(submit.data["errors"]) == 0
-        assert os.path.exists(submit.data["data"][0]["data"])
-        assert submit.data["data"][0]["type"] == "file"
-
-        selected_files = []
-        for f in self.files:
-            selected_files.append({
-                "filename": f["name"],
-                "filepath": [""],
-                "package": None,
-                "type": "file"
-            })
-
-        tasks = self.submit_manager.submit(
-            submit_id=1,
-            selected_files=selected_files,
-            memory=False,
-            priority=2,
-            enforce_timeout=False
-        )
-
-        assert len(tasks) == 1
-        assert tasks[0] == 1
-
-        for task_id in tasks:
-            f = self.files[task_id - 1]
-            view_task = self.d.view_task(task_id=task_id, details=True)
-
-            assert view_task.target.endswith(ntpath.basename(f["name"]))
-            assert view_task.status == "pending"
-            assert view_task.package is None
-            assert view_task.priority == 2
-            assert view_task.memory is False
-            assert view_task.id == task_id
-            assert view_task.category == "file"
-            assert open(view_task.target, "rb").read() == f["data"]
-
-    def test_nested_archive(self):
-        submit_id = self.submit_manager.pre("files", [{
+    def test_submit_arc1(self):
+        assert self.submit_manager.pre("files", [{
             "name": "msg_invoice.msg",
             "data": open("tests/files/msg_invoice.msg", "rb").read(),
-        }])
+        }]) == 1
 
-        selected_files = [
-            {
-                "package": "doc",
-                "filename": "oledata.mso",
-                "type": "container",
-                "filepath": [
-                    "msg_invoice.msg",
-                    "oledata.mso"
-                ]
-            },
-            {
-                "package": "exe",
-                "filename": "Firefox Setup Stub 43.0.1.exe",
-                "type": "file",
-                "filepath": [
-                    "msg_invoice.msg",
-                    "oledata.mso",
-                    "Firefox Setup Stub 43.0.1.exe"
-                ]
-            }
-        ]
-
-        task_ids = self.submit_manager.submit(submit_id, selected_files)
-        t0, t1 = self.d.view_task(task_ids[0]), self.d.view_task(task_ids[1])
-        assert t0.category == "archive"
-        assert t0.options == {
+        config = json.load(open("tests/files/submit/arc1.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("msg_invoice.msg")
+        assert t.package == "doc"
+        assert t.timeout == 120
+        assert t.category == "archive"
+        assert t.status == "pending"
+        assert t.machine == "cuckoo1"
+        assert not t.enforce_timeout
+        assert t.options == {
             "filename": "oledata.mso",
         }
-        assert len(zipfile.ZipFile(t0.target).read("oledata.mso")) == 234898
-        assert t1.category == "archive"
-        assert t1.options == {
-            "filename": "Firefox Setup Stub 43.0.1.exe",
-        }
-        assert len(zipfile.ZipFile(t1.target).read(
-            "Firefox Setup Stub 43.0.1.exe"
-        )) == 249336
+        assert len(zipfile.ZipFile(t.target).read("oledata.mso")) == 234898
+
+    def test_pre_options(self):
+        assert self.submit_manager.pre(
+            "strings", ["google.com"], {"foo": "bar"}
+        ) == 1
+        assert db.view_submit(1).data["options"] == {"foo": "bar"}
+
+    def sample_analysis(self):
+        # Copied from test_web::test_import_analysis.
+        buf = io.BytesIO()
+        z = zipfile.ZipFile(buf, "w")
+        l = os.walk("tests/files/sample_analysis_storage")
+        for dirpath, dirnames, filenames in l:
+            for filename in filenames:
+                if os.path.basename(dirpath) == "sample_analysis_storage":
+                    relapath = filename
+                else:
+                    relapath = "%s/%s" % (os.path.basename(dirpath), filename)
+                z.write(os.path.join(dirpath, filename), relapath)
+        return z, buf
+
+    @mock.patch("cuckoo.core.submit.log")
+    def test_import_analysis_json(self, p):
+        z, buf = self.sample_analysis()
+        z.writestr("analysis.json", json.dumps({
+            "errors": "nope",
+        }))
+        z.close()
+        buf.seek(0)
+
+        self.submit_manager.import_(buf, None)
+        p.warning.assert_called_once()
+
+        z, buf = self.sample_analysis()
+        z.writestr("analysis.json", json.dumps({
+            "errors": ["yes", "very", "error"],
+            "action": ["oneaction"],
+        }))
+        z.close()
+        buf.seek(0)
+
+        task_id = self.submit_manager.import_(buf, None)
+        errors = [(e.message, e.action) for e in db.view_errors(task_id)]
+        assert sorted(errors) == [
+            ("", "oneaction"), ("error", None), ("very", None), ("yes", None),
+        ]
+
+def test_option_translations_from():
+    sm = SubmitManager()
+
+    assert sm.translate_options_from({}) == {}
+
+    assert sm.translate_options_from({
+        "simulated-human-interaction": True,
+    }) == {}
+    assert sm.translate_options_from({
+        "simulated-human-interaction": False,
+    }) == {
+        "human": 0,
+    }
+
+    assert sm.translate_options_from({
+        "enable-injection": False,
+    }) == {
+        "free": "yes",
+    }
+    assert sm.translate_options_from({
+        "enable-injection": True,
+    }) == {}
+
+def test_option_translations_to():
+    sm = SubmitManager()
+
+    assert sm.translate_options_to({}) == {}
+
+    assert sm.translate_options_to({
+        "human": "0",
+    }) == {
+        "simulated-human-interaction": False,
+    }
+
+    assert sm.translate_options_to({
+        "free": "yes",
+    }) == {
+        "enable-injection": False,
+    }

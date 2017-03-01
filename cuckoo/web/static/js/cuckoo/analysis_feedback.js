@@ -8,12 +8,12 @@
  *
  */
 
-function feedback_send(task_id, firstname, email, company, message, include_analysis, include_memdump, callback) {
+function feedback_send(task_id, name, email, company, message, include_analysis, include_memdump, callback) {
     var params = {
         "task_id": task_id,
         "email": email,
         "message": message,
-        "firstname": firstname,
+        "name": name,
         "company": company,
         "include_memdump": include_memdump,
         "include_analysis": include_analysis

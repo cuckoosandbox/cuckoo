@@ -14,9 +14,10 @@ import traceback
 import cuckoo
 
 from cuckoo.apps import (
-    fetch_community, submit_tasks, process_tasks, process_task, cuckoo_rooter,
-    cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance, cuckoo_clean,
-    cuckoo_dnsserve, cuckoo_machine, import_cuckoo, migrate_database
+    fetch_community, submit_tasks, process_tasks, process_task_range,
+    cuckoo_rooter, cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
+    cuckoo_clean, cuckoo_dnsserve, cuckoo_machine, import_cuckoo,
+    migrate_database
 )
 from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -28,17 +29,18 @@ from cuckoo.core.init import write_supervisor_conf, write_cuckoo_conf
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
-    check_configs, init_modules, check_version, init_logfile, drop_privileges,
-    init_logging, init_console_logging, init_tasks, init_yara, init_binaries,
-    init_rooter, init_routing
+    check_configs, init_modules, check_version, init_logfile, init_logging,
+    init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
+    init_routing
 )
-from cuckoo.misc import cwd, load_signatures, getuser, decide_cwd
+from cuckoo.misc import (
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges
+)
 
 log = logging.getLogger("cuckoo")
 
 def cuckoo_create(username=None, cfg=None):
     """Create a new Cuckoo Working Directory."""
-
     print "="*71
     print " "*4, yellow(
         "Welcome to Cuckoo Sandbox, this appears to be your first run!"
@@ -60,16 +62,18 @@ def cuckoo_create(username=None, cfg=None):
         """Don't copy .pyc files."""
         return [name for name in names if name.endswith(".pyc")]
 
-    dirpath = os.path.join(cuckoo.__path__[0], "data")
-    for filename in os.listdir(dirpath):
-        filepath = os.path.join(dirpath, filename)
-        if os.path.isfile(filepath):
-            if not filepath.endswith(".pyc"):
-                shutil.copy(filepath, cwd(filename))
-        else:
-            shutil.copytree(
-                filepath, cwd(filename), symlinks=True, ignore=_ignore_pyc
-            )
+    # The following effectively nops the first os.makedirs() call that
+    # shutil.copytree() does as we've already created the destination directory
+    # ourselves (assuming it didn't exist already).
+    orig_makedirs = shutil.os.makedirs
+    def _ignore_first_makedirs(dst):
+        shutil.os.makedirs = orig_makedirs
+    shutil.os.makedirs = _ignore_first_makedirs
+
+    shutil.copytree(
+        os.path.join(cuckoo.__path__[0], "data"),
+        cwd(), symlinks=True, ignore=_ignore_pyc
+    )
 
     # Drop our version of the CWD.
     our_version = open(cwd(".cwd", private=True), "rb").read()
@@ -225,13 +229,19 @@ def init(ctx, conf):
 @click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
 def community(force, branch, filepath):
     """Utility to fetch supplies from the Cuckoo Community."""
-    fetch_community(force=force, branch=branch, filepath=filepath)
+    try:
+        fetch_community(force=force, branch=branch, filepath=filepath)
+    except KeyboardInterrupt:
+        print(yellow("Aborting fetching of the Cuckoo Community resources.."))
 
 @main.command()
 def clean():
     """Utility to clean the Cuckoo Working Directory and associated
     databases."""
-    cuckoo_clean()
+    try:
+        cuckoo_clean()
+    except KeyboardInterrupt:
+        print(yellow("Aborting cleaning up of your CWD.."))
 
 @main.command()
 @click.argument("target", nargs=-1)
@@ -262,25 +272,28 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
-    l = submit_tasks(
-        target, options, package, custom, owner, timeout, priority, machine,
-        platform, memory, enforce_timeout, clock, tags, remote, pattern, max,
-        unique, url, baseline, shuffle
-    )
+    try:
+        l = submit_tasks(
+            target, options, package, custom, owner, timeout, priority,
+            machine, platform, memory, enforce_timeout, clock, tags, remote,
+            pattern, max, unique, url, baseline, shuffle
+        )
 
-    for category, target, task_id in l:
-        if task_id:
-            print "%s: %s \"%s\" added as task with ID #%s" % (
-                bold(green("Success")), category, target, task_id
-            )
-        else:
-            print "%s: %s \"%s\" skipped as it has already been analyzed" % (
-                bold(green("Success")), category, target
-            )
+        for category, target, task_id in l:
+            if task_id:
+                print "%s: %s \"%s\" added as task with ID #%s" % (
+                    bold(green("Success")), category, target, task_id
+                )
+            else:
+                print "%s: %s \"%s\" as it has already been analyzed" % (
+                    bold(yellow("Skipped")), category, target
+                )
+    except KeyboardInterrupt:
+        print(red("Aborting submission of samples.."))
 
 @main.command()
 @click.argument("instance", required=False)
-@click.option("-r", "--report", default=0, help="Re-generate a report")
+@click.option("-r", "--report", help="Re-generate one or more reports")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
 @click.pass_context
 def process(ctx, instance, report, maxcount):
@@ -290,34 +303,29 @@ def process(ctx, instance, report, maxcount):
     if instance:
         init_logfile("process-%s.json" % instance)
 
-    db = Database()
-    db.connect()
+    Database().connect()
 
     # Load additional Signatures.
     load_signatures()
 
-    # Regenerate a report.
-    if report:
-        task = db.view_task(report)
-        if not task:
-            task = {
-                "id": report,
-                "category": "file",
-                "target": "",
-                "options": "",
-            }
-        else:
-            task = task.to_dict()
+    # Initialize all modules.
+    init_modules()
 
-        process_task(task)
-    elif not instance:
-        print ctx.get_help(), "\n"
-        sys.exit("In automated mode an instance name is required!")
-    else:
-        log.info(
-            "Initialized instance=%s, ready to process some tasks", instance
-        )
-        process_tasks(instance, maxcount)
+    try:
+        # Regenerate one or more reports.
+        if report:
+            process_task_range(report)
+        elif not instance:
+            print ctx.get_help(), "\n"
+            sys.exit("In automated mode an instance name is required!")
+        else:
+            log.info(
+                "Initialized instance=%s, ready to process some tasks",
+                instance
+            )
+            process_tasks(instance, maxcount)
+    except KeyboardInterrupt:
+        print(red("Aborting (re-)processing of your analyses.."))
 
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
@@ -342,11 +350,17 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         ]
 
         if ctx.parent.level == logging.DEBUG:
-            args.append("--verbose")
+            args.insert(2, "--debug")
 
-        subprocess.call(args)
+        try:
+            subprocess.call(args)
+        except KeyboardInterrupt:
+            pass
     else:
-        cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+        try:
+            cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+        except KeyboardInterrupt:
+            print(red("Aborting the Cuckoo Rooter.."))
 
 @main.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
@@ -398,7 +412,10 @@ def api(ctx, host, port, uwsgi, nginx):
 @click.pass_context
 def dnsserve(ctx, host, port, nxdomain, hardcode):
     init_console_logging(ctx.parent.level)
-    cuckoo_dnsserve(host, port, nxdomain, hardcode)
+    try:
+        cuckoo_dnsserve(host, port, nxdomain, hardcode)
+    except KeyboardInterrupt:
+        print(red("Aborting Cuckoo DNS Serve.."))
 
 @main.command()
 @click.argument("args", nargs=-1)
@@ -477,8 +494,8 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @main.command()
 @click.argument("vmname")
 @click.argument("ip", default="")
-@click.option("--add", is_flag=True, help="Add a Virtual Machine")
-@click.option("--delete", is_flag=True, help="Delete a Virtual Machine")
+@click.option("--add", "action", flag_value="add", help="Add a Virtual Machine")
+@click.option("--delete", "action", flag_value="delete", help="Delete a Virtual Machine")
 @click.option("--platform", default="windows", help="Guest Operating System")
 @click.option("--options", help="Machine options")
 @click.option("--tags", help="Tags for this Virtual Machine")
@@ -486,15 +503,14 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
 @click.option("--resultserver", help="IP:Port of the Result Server")
 @click.pass_context
-def machine(ctx, vmname, ip, add, delete, platform, options, tags, interface,
+def machine(ctx, vmname, ip, action, platform, options, tags, interface,
             snapshot, resultserver):
-    if add and not ip:
-        sys.exit("You have to specify a legitimate IP address for --add.")
-
     init_console_logging(level=ctx.parent.level)
     Database().connect()
-    cuckoo_machine(vmname, add, delete, ip, platform, options, tags,
-                   interface, snapshot, resultserver)
+    cuckoo_machine(
+        vmname, action, ip, platform, options, tags, interface,
+        snapshot, resultserver
+    )
 
 @main.command()
 @click.option("--revision", default="head", help="Migrate to a certain revision")
@@ -516,8 +532,11 @@ def import_(ctx, path, force, database, mode):
     if force and database:
         sys.exit("Can't have both the --force and the --database parameter.")
 
-    # TODO Actually symlink or copy analyses.
-    import_cuckoo(ctx.parent.user, path, force, database)
+    try:
+        # TODO Actually symlink or copy analyses.
+        import_cuckoo(ctx.parent.user, path, force, database)
+    except KeyboardInterrupt:
+        print(red("Aborting import of Cuckoo instance.."))
 
 @main.group()
 def distributed():

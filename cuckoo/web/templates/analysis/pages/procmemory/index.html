@@ -5,7 +5,7 @@
 
     <div class="flex-nav">
         {% include "analysis/pages/nav-sidebar.html" %}
-        <div class="flex-nav__body cuckoo-analysis">
+        <section class="flex-nav__body cuckoo-analysis">
 
             <header class="page-header cuckoo-analysis__header">
                 <h2><i class="fa fa-qrcode"></i> Process Memory</h2>
@@ -72,7 +72,19 @@
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>
     </div>
     
 {% endblock %}

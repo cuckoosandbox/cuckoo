@@ -9,13 +9,17 @@ import os
 import pytest
 import tempfile
 
-from cuckoo.apps.apps import process, process_task, cuckoo_clean
+from cuckoo.apps.apps import (
+    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
+)
 from cuckoo.apps.migrate import import_legacy_analyses
+from cuckoo.common.config import config
+from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd, mkdir, is_windows
+from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
 
 @mock.patch("cuckoo.main.load_signatures")
 def test_init(p):
@@ -100,6 +104,14 @@ class TestAppsWithCWD(object):
             main.main(("--cwd", cwd(), "api"), standalone_mode=False)
             p.assert_called_once_with("localhost", 8090, False)
 
+    if is_linux():
+        @mock.patch("cuckoo.main.cuckoo_rooter")
+        def test_rooter_abort(self, p, capsys):
+            p.side_effect = KeyboardInterrupt
+            main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
+            out, _ = capsys.readouterr()
+            assert "Aborting the Cuckoo Rooter" in out
+
     def test_community(self):
         with mock.patch("cuckoo.main.fetch_community") as p:
             p.return_value = None
@@ -108,11 +120,25 @@ class TestAppsWithCWD(object):
                 force=False, branch="master", filepath=None
             )
 
+    @mock.patch("cuckoo.main.fetch_community")
+    def test_community_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "community"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting fetching of" in out
+
     def test_clean(self):
         with mock.patch("cuckoo.main.cuckoo_clean") as p:
             p.return_value = None
             main.main(("--cwd", cwd(), "clean"), standalone_mode=False)
             p.assert_called_once_with()
+
+    @mock.patch("cuckoo.main.cuckoo_clean")
+    def test_clean_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "clean"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting cleaning up of" in out
 
     def test_submit(self):
         with mock.patch("cuckoo.main.submit_tasks") as p:
@@ -121,36 +147,27 @@ class TestAppsWithCWD(object):
                 "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
             ), standalone_mode=False)
 
-    @mock.patch("cuckoo.main.load_signatures")
-    @mock.patch("cuckoo.main.process_task")
-    def test_process_once(self, p, q):
-        main.main(
-            ("--cwd", cwd(), "process", "-r", "1234"),
-            standalone_mode=False
-        )
-        p.assert_called_once_with({
-            "id": 1234,
-            "category": "file",
-            "target": "",
-            "options": "",
-        })
-        q.assert_called_once()
-
-    @mock.patch("cuckoo.main.load_signatures")
-    @mock.patch("cuckoo.main.process_tasks")
-    def test_process_many(self, p, q):
-        main.main(
-            ("--cwd", cwd(), "process", "instance"),
-            standalone_mode=False
-        )
-        p.assert_called_once_with("instance", 0)
-        q.assert_called_once()
+    @mock.patch("cuckoo.main.submit_tasks")
+    def test_submit_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main((
+            "--cwd", cwd(), "submit", Files.create(cwd(), "a.txt", "hello")
+        ), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting submission of" in out
 
     def test_dnsserve(self):
         with mock.patch("cuckoo.main.cuckoo_dnsserve") as p:
             p.return_value = None
             main.main(("--cwd", cwd(), "dnsserve"), standalone_mode=False)
             p.assert_called_once_with("0.0.0.0", 53, None, None)
+
+    @mock.patch("cuckoo.main.cuckoo_dnsserve")
+    def test_dnsserve_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(("--cwd", cwd(), "dnsserve"), standalone_mode=False)
+        out, _ = capsys.readouterr()
+        assert "Aborting Cuckoo DNS Serve" in out
 
     def test_web(self):
         curdir = os.getcwd()
@@ -177,13 +194,35 @@ class TestAppsWithCWD(object):
         with mock.patch("cuckoo.main.cuckoo_machine") as p:
             p.return_value = None
             main.main((
-                "--cwd", cwd(), "machine", "machine", "1.2.3.4", "--add"
+                "--cwd", cwd(), "machine", "cuckoo2", "1.2.3.4", "--add"
             ), standalone_mode=False)
 
             p.assert_called_once_with(
-                "machine", True, False, "1.2.3.4", "windows",
+                "cuckoo2", "add", "1.2.3.4", "windows",
                 None, None, None, None, None
             )
+
+    def test_machine_add(self):
+        cuckoo_machine(
+            "cuckoo2", "add", "1.2.3.4", "windows",
+            None, None, None, None, None
+        )
+        assert config("virtualbox:virtualbox:machines") == [
+            "cuckoo1", "cuckoo2",
+        ]
+        assert config("virtualbox:cuckoo2:ip") == "1.2.3.4"
+        assert config("virtualbox:cuckoo2:platform") == "windows"
+
+    def test_machine_delete(self):
+        cuckoo_machine(
+            "cuckoo1", "delete", None, None, None, None, None, None, None
+        )
+        assert config("virtualbox:virtualbox:machines") == []
+
+        # TODO This might require a little tweak.
+        with pytest.raises(CuckooConfigurationError) as e:
+            config("virtualbox:cuckoo1:label", strict=True)
+        e.match("No such configuration value exists")
 
     def test_import(self):
         with mock.patch("cuckoo.main.import_cuckoo") as p:
@@ -194,6 +233,16 @@ class TestAppsWithCWD(object):
                 standalone_mode=False
             )
             p.assert_called_once_with(None, dirpath, False, None)
+
+    @mock.patch("cuckoo.main.import_cuckoo")
+    def test_import_abort(self, p, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(
+            ("--cwd", cwd(), "import", tempfile.mkdtemp()),
+            standalone_mode=False
+        )
+        out, _ = capsys.readouterr()
+        assert "Aborting import of Cuckoo instance" in out
 
     def test_dist_server(self):
         with mock.patch("cuckoo.main.cuckoo_distributed") as p:
@@ -224,6 +273,212 @@ class TestAppsWithCWD(object):
                 ["alembic", "-x", "cwd=%s" % cwd(), "upgrade", "head"],
                 cwd=cwd("distributed", "migration", private=True)
             )
+
+class TestProcessingTasks(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_task_range")
+    def test_process_once(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with("1234")
+        q.assert_called_once()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_task_range")
+    def test_process_abort(self, p, q, capsys):
+        p.side_effect = KeyboardInterrupt
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1234"),
+            standalone_mode=False
+        )
+        out, _ = capsys.readouterr()
+        assert "Aborting (re-)processing of your analyses" in out
+
+    @mock.patch("cuckoo.apps.apps.process")
+    def test_process_once_deeper(self, p):
+        mkdir(cwd(analysis=1234))
+        process_task_range("1234")
+        p.assert_called_once_with("", None, {
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_single(self, p):
+        mkdir(cwd(analysis=1234))
+        process_task_range("1234")
+        p.assert_called_once_with({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_single_noanal(self, p):
+        process_task_range("1234")
+        p.assert_not_called()
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_single_db(self, p):
+        mkdir(cwd(analysis=1234))
+        p.return_value.view_task.return_value = {}
+        process_task_range("1234")
+        p.return_value.view_task.assert_called_once_with(1234)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_multi(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        process_task_range("1234,2345")
+        assert p.call_count == 2
+        p.assert_any_call({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+        p.assert_any_call({
+            "id": 2345,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_multi_db(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        p.return_value.view_task.return_value = {}
+        process_task_range("2345")
+        p.return_value.view_task.assert_called_once_with(2345)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_range(self, p):
+        mkdir(cwd(analysis=3))
+        for x in xrange(10, 101):
+            mkdir(cwd(analysis=x))
+        process_task_range("3,5,10-100")
+        assert p.call_count == 92  # 101-10+1
+        p.assert_any_call({
+            "id": 3,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
+        # We did not create an analysis directory for analysis=5.
+        with pytest.raises(AssertionError):
+            p.assert_any_call({
+                "id": 5,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+                "custom": None,
+            })
+
+        for x in xrange(10, 101):
+            p.assert_any_call({
+                "id": x,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+                "custom": None,
+            })
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    def test_process_task_range_duplicate(self, p):
+        process_task_range("3,3,42")
+        assert p.return_value.view_task.call_count == 2
+        p.return_value.view_task.assert_any_call(3)
+        p.return_value.view_task.assert_any_call(42)
+
+    @mock.patch("cuckoo.apps.apps.process_task")
+    def test_process_task_range_multi(self, p):
+        mkdir(cwd(analysis=1234))
+        mkdir(cwd(analysis=2345))
+        process_task_range("1234,2345")
+        assert p.call_count == 2
+        p.assert_any_call({
+            "id": 1234,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+        p.assert_any_call({
+            "id": 2345,
+            "category": "file",
+            "target": "",
+            "options": {},
+            "package": None,
+            "custom": None,
+        })
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.process_tasks")
+    def test_process_many(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "instance"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with("instance", 0)
+        q.assert_called_once()
+
+    @mock.patch("cuckoo.apps.apps.Database")
+    @mock.patch("cuckoo.apps.apps.process")
+    @mock.patch("cuckoo.apps.apps.logger")
+    def test_logger(self, p, q, r):
+        process_task({
+            "id": 123,
+            "target": "foo",
+            "category": "bar",
+            "package": "baz",
+            "options": {
+                "a": "b",
+            },
+            "custom": "foobar",
+        })
+        p.assert_called_once()
+        assert p.call_args[1] == {
+            "action": "task.report",
+            "status": "pending",
+            "target": "foo",
+            "category": "bar",
+            "package": "baz",
+            "options": "a=b",
+            "custom": "foobar",
+        }
+
+    @mock.patch("cuckoo.main.process_task_range")
+    @mock.patch("cuckoo.main.init_modules")
+    def test_process_init_modules(self, p, q):
+        main.main(
+            ("--cwd", cwd(), "process", "-r", "1"),
+            standalone_mode=False
+        )
+        p.assert_called_once()
 
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")
@@ -286,6 +541,7 @@ def test_process_log_taskid(p, q):
         "target": "http://google.com/",
         "package": "ie",
         "options": {},
+        "custom": None,
     })
 
     for line in open(cwd("log", "process-p0.json"), "rb"):
@@ -375,4 +631,4 @@ def test_submit_unique_with_duplicates(p, q, capsys):
     )
     out, err = capsys.readouterr()
     assert "added as task with" in out
-    assert "skipped as it has" in out
+    assert "Skipped" in out

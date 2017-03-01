@@ -1,0 +1,39 @@
+<legend class="flex-form__field-title">{{title}} {{#if doc_link}}<a href="{{doc_link}}" target="_blank"><i class="fa fa-info-circle"></i></a>{{/if}}</legend>
+<ul class="flex-form__toggle-list">
+	{{#each options}}
+		<li>
+			<p>{{label}} {{#if description}}<span>{{description}}</span>{{/if}}</p>
+			<label for="{{../name}}-{{name}}" class="flex-form__toggle-list-switch">
+				<input type="checkbox" id="{{../name}}-{{name}}" name="{{../name}}" {{#if selected}}checked{{/if}} data-option="{{name}}" />
+				<span></span>
+			</label>
+		</li>
+	{{/each}}
+	
+	{{#if extraOptions}}
+		<li class="toggle-list-seperator">
+			<p>Extra options <span><a href="https://cuckoo.sh/docs/usage/packages.html" target="_blank">What can I use?</a></span></p>
+		</li>
+		<li class="flex-form__table extra-options">
+			<table>
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>value</th>
+					</tr>
+				</thead>
+				<tfoot>
+					<tr>
+						<td><input type="text" placeholder="name" name="new-key" /></td>
+						<td><input type="text" placeholder="value" name="new-value" /></td>
+					</tr>
+				</tfoot>
+				<tbody></tbody>
+			</table>
+		</li>
+
+	{{/if}}
+</ul>
+{{#if extraOptions}}
+	<p class="description">To add a new option, type the option name + value and hit enter. it will add itself to the list. Remove an item by clicking the right remove icon.</p>
+{{/if}}

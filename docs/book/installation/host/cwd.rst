@@ -52,7 +52,7 @@ automatically, this pretty much goes as follows::
     / / /_________\/ / /____\/ // / /_________\/ / /    \ \ \ / / /____\/ // / /____\/ /
     \/____________/\/_________/ \/____________/\/_/      \_\_\\/_________/ \/_________/
 
-    Cuckoo Sandbox 2.0-dev
+    Cuckoo Sandbox 2.0.0
     www.cuckoosandbox.org
     Copyright (c) 2010-2017
 

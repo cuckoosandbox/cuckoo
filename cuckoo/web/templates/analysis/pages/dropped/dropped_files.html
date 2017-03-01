@@ -27,7 +27,7 @@
                                                             <a href="{% url "analysis.views.file" "dropped" file.object_id %}" class="btn btn-primary btn-xs">
                                                             <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
                                                             </a>
-                                                            <a href="{% url "submission.views.submit_dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
+                                                            <a href="{% url "submission/dropped" report.analysis.info.id file.sha1 %}" class="btn btn-warning btn-xs">
                                                                 <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Submit file
                                                             </a>
                                                     {% else %}
@@ -108,6 +108,18 @@
                     </div>
                 </div>
             </div>
+
+             <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer spread-alignment">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
         </section>
     </div>
 

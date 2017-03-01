@@ -115,6 +115,7 @@ class Sniffer(Auxiliary):
             "packets captured",
             "packets received by filter",
             "packets dropped by kernel",
+            "dropped privs to root",
         )
 
         for line in err.split("\n"):

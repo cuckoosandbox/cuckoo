@@ -87,7 +87,7 @@
                         <li><a href="{% url "analysis.views.pending" %}"><span class="glyphicon glyphicon-time"></span> Pending</a></li>
                         <li><a href="{% url "analysis.views.search" %}"><span class="glyphicon glyphicon-search"></span> Search</a></li>
                         <li><a href="{% url "submission/index" %}"><span class="glyphicon glyphicon-upload"></span> Submit</a></li>
-                        <li><a href="{% url "analysis.views.import_analysis" %}"><span class="glyphicon glyphicon-import"></span> Import</a></li>
+                        <li><a href="{% url "analysis/import" %}"><span class="glyphicon glyphicon-import"></span> Import</a></li>
                     </ul>
 
                     <ul class="nav navbar-nav pull-right">
@@ -108,7 +108,9 @@
                         $(document).ready(function(){
                             function theme_switch(theme) {
                                 Cookies("theme", theme, {expires: 365 * 10});
-                                location.reload();
+                                // location.reload();
+                                $('body').removeClass('cyborg night');
+                                $('body').addClass(theme);
                             }
 
                             $(".nav .dropdown-menu li a[id^=theme_]").click(function(){

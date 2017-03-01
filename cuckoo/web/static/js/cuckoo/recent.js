@@ -114,6 +114,7 @@ var Recent = function () {
     }, {
         key: "results_callback",
         value: function results_callback(data) {
+            data = data.tasks;
             if (Object.keys(data).length == 0) {
                 $("div#no_more_results").show();
                 $("div#no_more_results>span").html("no more results");
@@ -138,21 +139,16 @@ var Recent = function () {
 
                     html += "</td><td>";
 
-                    var identifier = "-";
-                    if (analysis.sample) {
-                        identifier = analysis.sample.md5;
-                    }
-
                     if (analysis.status == "reported" || analysis.status == "failed_analysis") {
-                        html += "<a href=\"" + analysis.id + "/summary\"><span class=\"mono\">" + identifier + "</span></a>";
+                        html += "<a href=\"" + analysis.id + "/summary\"><span class=\"mono\">" + analysis.md5 + "</span></a>";
                     } else {
-                        html += "<span class=\"mono\">" + identifier + "</span>";
+                        html += "<span class=\"mono\">" + analysis.md5 + "</span>";
                     }
 
                     html += "</td><td>";
 
                     if (analysis.status == "reported" || analysis.status == "failed_analysis") {
-                        html += "<a href=\"" + analysis.id + "/summary\">" + analysis.filename_url + "</a>";
+                        html += "<a href=\"" + analysis.id + "/summary\">" + analysis.target + "</a>";
                     } else {
                         html += analysis.category;
                     }

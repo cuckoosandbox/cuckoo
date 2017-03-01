@@ -3,41 +3,33 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import httplib
-import json
 import logging
 import logging.handlers
 import os
+import requests
 import socket
-import sys
-import urllib
-import urllib2
 
-from distutils.version import LooseVersion
+from distutils.version import StrictVersion
 
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config
-from cuckoo.common.exceptions import CuckooStartupError
-from cuckoo.core.database import Database, TASK_RUNNING
-from cuckoo.core.database import TASK_FAILED_ANALYSIS, TASK_PENDING
+from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.core.database import (
+    Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
+)
+from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.rooter import rooter, vpns
 from cuckoo.misc import cwd, version
-
-try:
-    import pwd
-    HAVE_PWD = True
-except ImportError:
-    HAVE_PWD = False
 
 log = logging.getLogger(__name__)
 
 def check_specific_config(filename):
     sections = Config.configuration[filename]
     for section, entries in sections.items():
-        if section == "*":
+        if section == "*" or section == "__star__":
             continue
 
         # If an enabled field is present, check it beforehand.
@@ -75,73 +67,83 @@ def check_configs():
         )
 
     check_specific_config(machinery)
+
+    # If Cuckoo Feedback is enabled, ensure its configuration is valid.
+    feedback_enabled = (
+        config("cuckoo:feedback:enabled") or
+        config("reporting:feedback:enabled")
+    )
+    if feedback_enabled:
+        try:
+            CuckooFeedbackObject(
+                name=config("cuckoo:feedback:name"),
+                email=config("cuckoo:feedback:email"),
+                company=config("cuckoo:feedback:company"),
+                message="startup"
+            ).validate()
+        except CuckooFeedbackError as e:
+            raise CuckooStartupError(
+                "You have filled out the Cuckoo Feedback configuration, but "
+                "there's an error in it: %s" % e
+            )
     return True
 
 def check_version():
     """Checks version of Cuckoo."""
-    cfg = Config()
-
-    if not cfg.cuckoo.version_check:
+    if not config("cuckoo:cuckoo:version_check"):
         return
 
     print(" Checking for updates...")
 
-    url = "http://api.cuckoosandbox.org/checkversion.php"
-    data = urllib.urlencode({"version": version})
-
     try:
-        request = urllib2.Request(url, data)
-        response = urllib2.urlopen(request)
-    except (urllib2.URLError, urllib2.HTTPError, httplib.BadStatusLine):
-        print(red(" Failed! ") + "Unable to establish connection.\n")
+        r = requests.post(
+            "http://api.cuckoosandbox.org/checkversion.php",
+            data={"version": version}
+        )
+        r.raise_for_status()
+        r = r.json()
+    except (requests.RequestException, ValueError) as e:
+        print(red(" Error checking for the latest Cuckoo version: %s!" % e))
+        return
+
+    if not isinstance(r, dict) or r.get("error"):
+        print(red(" Error checking for the latest Cuckoo version:"))
+        print(yellow(" Response: %s" % r))
+        return
+
+    # Deprecated response.
+    if r.get("response") == "NEW_VERSION" and r.get("current") == "2.0-rc1":
+        print(green(" You're good to go!"))
         return
 
     try:
-        response_data = json.loads(response.read())
+        old = StrictVersion(version) < StrictVersion(r.get("current"))
     except ValueError:
-        print(red(" Failed! ") + "Invalid response.\n")
-        return
+        old = True
 
-    stable_version = response_data["current"]
-
-    if version.endswith("-dev"):
-        print(yellow(" You are running a development version! Current stable is {}.".format(
-            stable_version)))
+    if old:
+        msg = "Cuckoo Sandbox version %s is available now." % r.get("current")
+        print(red(" Outdated! ") + msg),
     else:
-        if LooseVersion(version) < LooseVersion(stable_version):
-            msg = "Cuckoo Sandbox version {} is available now.".format(
-                stable_version)
-
-            print(red(" Outdated! ") + msg)
-        else:
-            print(green(" Good! ") + "You have the latest version "
-                                     "available.\n")
+        print(green(" You're good to go!"))
 
 def init_logging(level):
     """Initializes logging."""
-    # We operate on the root logger.
-    log = logging.getLogger()
-
-    init_logger(log, "cuckoo.log")
-    init_logger(log, "cuckoo.json")
-    init_logger(log, "console")
-    init_logger(log, "database")
-    init_logger(log, "task")
-
-    log.setLevel(level)
+    logging.getLogger().setLevel(logging.DEBUG)
+    init_logger("cuckoo.log", level)
+    init_logger("cuckoo.json")
+    init_logger("console", level)
+    init_logger("database")
+    init_logger("task")
 
 def init_console_logging(level=logging.INFO):
     """Initializes logging only to console."""
-    # We operate on the root logger.
-    log = logging.getLogger()
-
-    init_logger(log, "console")
-    init_logger(log, "database")
-
-    log.setLevel(level)
+    logging.getLogger().setLevel(logging.DEBUG)
+    init_logger("console", level)
+    init_logger("database")
 
 def init_logfile(logfile):
-    init_logger(logging.getLogger(), logfile)
+    init_logger(logfile, logging.DEBUG)
 
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""
@@ -171,6 +173,12 @@ def init_modules():
     categories = (
         "auxiliary", "machinery", "processing", "signatures", "reporting",
     )
+
+    # Call the init_once() static method of each plugin/module. If an exception
+    # is thrown in that initialization call, then a hard error is appropriate.
+    for category in categories:
+        for module in cuckoo.plugins[category]:
+            module.init_once()
 
     for category in categories:
         log.debug("Imported \"%s\" modules:", category)
@@ -259,18 +267,15 @@ def init_binaries():
         )
 
 def init_rooter():
-    """If required, check whether the rooter is running and whether we can
-    connect to it."""
-    cfg = Config("routing")
-
-    # The default configuration doesn't require the rooter to be ran.
+    """If required, check if the rooter is running and if we can connect
+    to it. The default configuration doesn't require the rooter to be ran."""
     required = (
-        cfg.routing.route != "none" or
-        cfg.routing.internet != "none" or
-        cfg.routing.drop or
-        cfg.inetsim.enabled or
-        cfg.tor.enabled or
-        cfg.vpn.enabled
+        config("routing:routing:route") != "none" or
+        config("routing:routing:internet") != "none" or
+        config("routing:routing:drop") or
+        config("routing:inetsim:enabled") or
+        config("routing:tor:enabled") or
+        config("routing:vpn:enabled")
     )
     if not required:
         return
@@ -278,7 +283,7 @@ def init_rooter():
     s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
     try:
-        s.connect(Config().cuckoo.rooter)
+        s.connect(config("cuckoo:cuckoo:rooter"))
     except socket.error as e:
         if e.strerror == "No such file or directory":
             raise CuckooStartupError(
@@ -306,6 +311,10 @@ def init_rooter():
 
     # Do not forward any packets unless we have explicitly stated so.
     rooter("forward_drop")
+
+    # Enable stateful connection tracking (but only once).
+    rooter("state_disable")
+    rooter("state_enable")
 
 def init_routing():
     """Initialize and check whether the routing information is correct."""
@@ -345,52 +354,38 @@ def init_routing():
     standard_routes = "none", "drop", "internet", "inetsim", "tor"
 
     # Check whether the default VPN exists if specified.
-    if cfg.routing.route not in standard_routes:
-        if cfg.routing.route not in vpns:
+    if config("routing:routing:route") not in standard_routes:
+        if config("routing:routing:route") not in vpns:
             raise CuckooStartupError(
                 "The default routing target (%s) has not been configured in "
                 "routing.conf, is it supposed to be a VPN?" %
-                cfg.routing.route
+                config("routing:routing:route")
             )
 
-        if not cfg.vpn.enabled:
+        if not config("routing:vpn:enabled"):
             raise CuckooStartupError(
                 "The default route configured is a VPN, but VPNs have "
                 "not been enabled in routing.conf."
             )
 
     # Check whether the dirty line exists if it has been defined.
-    if cfg.routing.internet != "none":
-        if not rooter("nic_available", cfg.routing.internet):
+    if config("routing:routing:internet") != "none":
+        if not rooter("nic_available", config("routing:routing:internet")):
             raise CuckooStartupError(
                 "The network interface that has been configured as dirty "
                 "line is not available."
             )
 
-        if not rooter("rt_available", cfg.routing.rt_table):
+        if not rooter("rt_available", config("routing:routing:rt_table")):
             raise CuckooStartupError(
                 "The routing table that has been configured for dirty "
                 "line interface is not available."
             )
 
-        interfaces.add((cfg.routing.rt_table, cfg.routing.internet))
-
-    # Check if Tor interface exists, if yes then enable NAT.
-    if cfg.tor.enabled:
-        if not rooter("nic_available", cfg.tor.interface):
-            raise CuckooStartupError(
-                "The network interface that has been configured as Tor "
-                "line is not available."
-            )
-
-    # Check if the InetSim interface exists, if so, enable NAT if the
-    # interface is not the same as the one we use for Tor.
-    if cfg.inetsim.enabled:
-        if not rooter("nic_available", cfg.tor.interface):
-            raise CuckooStartupError(
-                "The network interface that has been configured as InetSim "
-                "line is not available."
-            )
+        interfaces.add((
+            config("routing:routing:rt_table"),
+            config("routing:routing:internet")
+        ))
 
     for rt_table, interface in interfaces:
         # Disable & enable NAT on this network interface. Disable it just
@@ -399,27 +394,6 @@ def init_routing():
         rooter("enable_nat", interface)
 
         # Populate routing table with entries from main routing table.
-        if cfg.routing.auto_rt:
+        if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
-
-def drop_privileges(username):
-    """Drops privileges to selected user.
-    @param username: drop privileges to this username
-    """
-    if not HAVE_PWD:
-        sys.exit(
-            "Unable to import pwd required for dropping privileges (note that "
-            "privilege dropping is not supported under Windows)!"
-        )
-
-    try:
-        user = pwd.getpwnam(username)
-        os.setgroups((user.pw_gid,))
-        os.setgid(user.pw_gid)
-        os.setuid(user.pw_uid)
-        os.putenv("HOME", user.pw_dir)
-    except KeyError:
-        sys.exit("Invalid user specified to drop privileges to: %s" % username)
-    except OSError as e:
-        sys.exit("Failed to drop privileges to %s: %s" % (username, e))

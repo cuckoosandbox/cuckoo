@@ -38,4 +38,4 @@ class TestReport:
 
     def test_not_implemented_run(self):
         with pytest.raises(NotImplementedError):
-            self.r.run()
+            self.r.run({})

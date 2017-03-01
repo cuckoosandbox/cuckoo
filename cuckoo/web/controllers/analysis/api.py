@@ -1,38 +1,44 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import calendar
+import datetime
+import dateutil.relativedelta
+import io
 import os
 import pymongo
-import calendar
-from datetime import datetime, timedelta
-from StringIO import StringIO
+import sqlalchemy
 import tarfile
-from zipfile import ZipFile, ZIP_STORED
+import zipfile
 
-import dateutil.relativedelta
-from wsgiref.util import FileWrapper
-from sqlalchemy import asc
-from django.conf import settings
 from django.http import JsonResponse, HttpResponse
+from wsgiref.util import FileWrapper
 
-from cuckoo.misc import cwd
-from cuckoo.core.database import Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
+from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
-
-from cuckoo.web.bin.utils import api_post, api_get, file_response, json_error_response, json_fatal_response
+from cuckoo.common.mongo import mongo
+from cuckoo.common.utils import is_list_of_strings
+from cuckoo.core.database import (
+    Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
+)
+from cuckoo.core.feedback import CuckooFeedback
+from cuckoo.misc import cwd
+from cuckoo.web.bin.utils import (
+    api_post, api_get, file_response, json_error_response, json_fatal_response
+)
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
-results_db = settings.MONGO
 db = Database()
 
-class AnalysisApi:
+class AnalysisApi(object):
     @api_post
     def tasks_list(request, body):
         completed_after = body.get("completed_after")
         if completed_after:
-            completed_after = datetime.fromtimestamp(int(completed_after))
+            completed_after = datetime.datetime.fromtimestamp(
+                int(completed_after)
+            )
 
         data = {
             "tasks": []
@@ -160,10 +166,11 @@ class AnalysisApi:
                 else:
                     return json_error_response("Screenshot not found")
             else:
-                zip_data = StringIO()
-                with ZipFile(zip_data, "w", ZIP_STORED) as zip_file:
-                    for shot_name in os.listdir(folder_path):
-                        zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+                zip_data = io.BytesIO()
+                zip_file = zipfile.ZipFile(zip_data, "w", zipfile.ZIP_STORED)
+                for shot_name in os.listdir(folder_path):
+                    zip_file.write(os.path.join(folder_path, shot_name), shot_name)
+                zip_file.close()
 
                 zip_data.seek(0)
 
@@ -207,7 +214,7 @@ class AnalysisApi:
             srcdir = os.path.join(cwd(), "storage",
                                   "analyses", str(task_id))
 
-            s = StringIO()
+            s = io.BytesIO()
 
             # By default go for bz2 encoded tar files (for legacy reasons).
             if tarmode not in tar_formats:
@@ -248,89 +255,104 @@ class AnalysisApi:
 
     @api_post
     def tasks_recent(request, body):
-        limit = body.get("limit", 50)
+        limit = body.get("limit", 100)
         offset = body.get("offset", 0)
 
-        # filters
+        # Various filters.
         cats = body.get("cats")
         packs = body.get("packs")
-        score_range = body.get("score", None)
+        score_range = body.get("score")
 
         filters = {}
 
         if cats:
+            if not is_list_of_strings(cats):
+                return json_error_response("invalid categories")
             filters["info.category"] = {"$in": cats}
 
         if packs:
+            if not is_list_of_strings(packs):
+                return json_error_response("invalid packages")
             filters["info.package"] = {"$in": packs}
 
-        if isinstance(score_range, (str, unicode)) and score_range != "":
-            if "-" not in score_range:
+        if score_range and isinstance(score_range, basestring):
+            if score_range.count("-") != 1:
                 return json_error_response("faulty score")
 
-            score_min, score_max = score_range.split("-", 1)
-
-            try:
-                score_min = int(score_min)
-                score_max = int(score_max)
-
-                if score_min < 0 or score_min > 10 or score_max < 0 or score_max > 10:
-                    return json_error_response("faulty score")
-
-                filters["info.score"] = {"$gte": score_min, "$lte": score_max}
-            except:
+            score_min, score_max = score_range.split("-")
+            if not score_min.isdigit() or not score_max.isdigit():
                 return json_error_response("faulty score")
 
-        # @TO-DO: Use a mongodb abstraction class if there is one
-        cursor = results_db.analysis.find(
-            filters, sort=[("_id", pymongo.DESCENDING)]
+            score_min = int(score_min)
+            score_max = int(score_max)
+
+            if score_min < 0 or score_min > 10:
+                return json_error_response("faulty score")
+
+            if score_max < 0 or score_max > 10:
+                return json_error_response("faulty score")
+
+            # Because scores can be higher than 10.
+            # TODO Once we start capping the score, limit this naturally.
+            if score_max == 10:
+                score_max = 999
+
+            filters["info.score"] = {
+                "$gte": score_min,
+                "$lte": score_max,
+            }
+
+        if not isinstance(offset, (int, long)):
+            return json_error_response("invalid offset")
+
+        if not isinstance(limit, (int, long)):
+            return json_error_response("invalid limit")
+
+        # TODO Use a mongodb abstraction class once there is one.
+        cursor = mongo.db.analysis.find(
+            filters, ["info", "target"],
+            sort=[("_id", pymongo.DESCENDING)]
         ).limit(limit).skip(offset)
 
-        tasks = []
+        tasks = {}
         for row in cursor:
-            tasks.append({
-                "ended": row["info"]["ended"],
-                "score": row["info"].get("score"),
-                "id": row["info"]["id"]
-            })
+            info = row.get("info", {})
+            if not info:
+                continue
 
-        db = Database()
+            category = info.get("category")
+            if category == "file":
+                f = row["target"]["file"]
+                if f.get("path"):
+                    target = os.path.basename(f["path"])
+                elif f.get("name"):
+                    target = os.path.basename(f["name"])
+                else:
+                    target = None
+                md5 = f.get("md5")
+            elif category == "url":
+                target = row["target"]["url"]
+                md5 = "-"
+            else:
+                target = None
+                md5 = "-"
 
-        if tasks:
-            q = db.Session().query(Task)
-            q = q.filter(Task.id.in_([t["id"] for t in tasks]))
+            tasks[info["id"]] = {
+                "id": info["id"],
+                "target": target,
+                "md5": md5,
+                "category": category,
+                "added_on": info.get("added"),
+                "completed_on": info.get("ended"),
+                "status": "reported",
+                "score": info.get("score"),
+            }
 
-            for task_sql in q.all():
-                for task_mongo in [t for t in tasks if t["id"] == task_sql.id]:
-                    if task_sql.sample:
-                        task_mongo["sample"] = task_sql.sample.to_dict()
-                    else:
-                        task_mongo["sample"] = {}
-
-                    if task_sql.category == "file":
-                        task_mongo["filename_url"] = os.path.basename(task_sql.target)
-                    elif task_sql.category == "url":
-                        task_mongo["filename_url"] = task_sql.target
-
-                    task_mongo.update(task_sql.to_dict())
-
-        # Fetch remaining tasks that were not completed
-        q = db.Session().query(Task)
-        q = q.filter(Task.status != "reported")
-        if offset == 0:
-            for task_sql in q.all():
-                tasks.append({
-                    "id": task_sql.id,
-                    "filename_url": "-",
-                    "added_on": task_sql.added_on,
-                    "status": task_sql.status,
-                    "score": 0,
-                    "category": task_sql.category
-                })
-
-        tasks = sorted(tasks, key=lambda k: k["id"], reverse=True)
-
-        return JsonResponse(tasks, safe=False)
+        return JsonResponse({
+            "tasks": sorted(
+                tasks.values(), key=lambda task: task["id"], reverse=True
+            ),
+        }, safe=False)
 
     @api_post
     def tasks_stats(request, body):
@@ -342,16 +364,17 @@ class AnalysisApi:
         :param days: integer; the amount of days to go back in time starting from today.
         :return: A list of months and their statistics
         """
-        now = datetime.now()
+        now = datetime.datetime.now()
         days = body.get("days", 365)
 
         if not isinstance(days, int):
             return json_error_response("parameter \"days\" not an integer")
 
-        db = Database()
         q = db.Session().query(Task)
-        q = q.filter(Task.added_on.between(now - timedelta(days=days), now))
-        q = q.order_by(asc(Task.added_on))
+        q = q.filter(Task.added_on.between(
+            now - datetime.timedelta(days=days), now)
+        )
+        q = q.order_by(sqlalchemy.asc(Task.added_on))
         tasks = q.all()
 
         def _rtn_structure(start):
@@ -441,3 +464,30 @@ class AnalysisApi:
             return JsonResponse({"status": True, "data": data}, safe=False)
         except Exception as e:
             return json_error_response(str(e))
+
+    @api_post
+    def feedback_send(request, body):
+        f = CuckooFeedback()
+
+        task_id = body.get("task_id")
+        if task_id and task_id.isdigit():
+            task_id = int(task_id)
+
+        try:
+            feedback_id = f.send_form(
+                task_id=task_id,
+                name=body.get("name"),
+                company=body.get("company"),
+                email=body.get("email"),
+                message=body.get("message"),
+                json_report=body.get("include_analysis", False),
+                memdump=body.get("include_memdump", False),
+                automated=False
+            )
+        except CuckooFeedbackError as e:
+            return json_error_response(str(e))
+
+        return JsonResponse({
+            "status": True,
+            "feedback_id": feedback_id,
+        }, safe=False)

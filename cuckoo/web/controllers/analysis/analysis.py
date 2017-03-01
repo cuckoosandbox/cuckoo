@@ -1,16 +1,15 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import collections
 import os
-
-from collections import OrderedDict
-
 import pymongo
-from django.conf import settings
+
 from django.http import Http404
 
+from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database, TASK_PENDING
 
 db = Database()
@@ -20,33 +19,32 @@ class AnalysisController:
     def task_info(task_id):
         if not isinstance(task_id, int):
             raise Exception("Task ID should be integer")
-        data = {}
 
         task = db.view_task(task_id, details=True)
-        if task:
-            entry = task.to_dict()
-            entry["guest"] = {}
-            if task.guest:
-                entry["guest"] = task.guest.to_dict()
+        if not task:
+            return Http404("Task not found")
 
-            entry["errors"] = []
-            for error in task.errors:
-                entry["errors"].append(error.message)
+        entry = task.to_dict()
+        entry["guest"] = {}
+        if task.guest:
+            entry["guest"] = task.guest.to_dict()
 
-            entry["sample"] = {}
-            if task.sample_id:
-                sample = db.view_sample(task.sample_id)
-                entry["sample"] = sample.to_dict()
+        entry["errors"] = []
+        for error in task.errors:
+            entry["errors"].append(error.message)
 
-            data["task"] = entry
-        else:
-            return Exception("Task not found")
+        entry["sample"] = {}
+        if task.sample_id:
+            sample = db.view_sample(task.sample_id)
+            entry["sample"] = sample.to_dict()
 
-        return data
+        entry["target"] = os.path.basename(entry["target"])
+        return {
+            "task": entry,
+        }
 
     @staticmethod
     def get_recent(limit=50, offset=0):
-        db = Database()
         tasks_files = db.list_tasks(
             limit=limit,
             offset=offset,
@@ -100,15 +98,15 @@ class AnalysisController:
 
     @staticmethod
     def _get_report(task_id):
-        mongo_db = settings.MONGO
-        return mongo_db.analysis.find_one({
+        return mongo.db.analysis.find_one({
             "info.id": int(task_id)
         }, sort=[("_id", pymongo.DESCENDING)])
 
     @staticmethod
     def get_reports(filters):
-        mongo_db = settings.MONGO
-        cursor = mongo_db.analysis.find(filters, sort=[("_id", pymongo.DESCENDING)])
+        cursor = mongo.db.analysis.find(
+            filters, sort=[("_id", pymongo.DESCENDING)]
+        )
         return [report for report in cursor]
 
     @staticmethod
@@ -274,7 +272,7 @@ class AnalysisController:
         if not signatures:
             signatures = AnalysisController.get_report(task_id)["signatures"]
 
-        data = OrderedDict()
+        data = collections.OrderedDict()
         for signature in signatures:
             severity = signature["severity"]
             if severity > 3:

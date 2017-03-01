@@ -1,13 +1,15 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import ConfigParser
+import click
 import os
 import logging
-import click
+import sys
 
+from cuckoo.common.colors import red
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import parse_bool
@@ -16,6 +18,13 @@ from cuckoo.misc import cwd
 log = logging.getLogger(__name__)
 
 _cache = {}
+
+def log_error(message, *args):
+    """Prints to stderr if no logging has been initialized yet."""
+    if not logging.getLogger().handlers:
+        print>>sys.stderr, red("Configuration error: " + message % args)
+    else:
+        log.error(message, *args)
 
 class Type(object):
     """Base Class for Type Definitions"""
@@ -124,7 +133,7 @@ class Boolean(Type):
         try:
             return parse_bool(value)
         except:
-            log.error("Incorrect Boolean %s", value)
+            log_error("Incorrect Boolean %s", value)
 
     def check(self, value):
         try:
@@ -144,7 +153,7 @@ class UUID(Type):
             c = click.UUID(value)
             return str(c)
         except:
-            log.error("Incorrect UUID %s", value)
+            log_error("Incorrect UUID %s", value)
 
     def check(self, value):
         """Checks if the value is of type UUID."""
@@ -160,7 +169,7 @@ class UUID(Type):
 class List(Type):
     """List Type Definition class."""
 
-    def __init__(self, subclass, default, sep=",", strip=False):
+    def __init__(self, subclass, default, sep=",", strip=True):
         self.subclass = subclass
         self.sep = sep
         self.strip = strip
@@ -184,7 +193,7 @@ class List(Type):
                 ret.append(self.subclass().parse(entry))
             return ret
         except:
-            log.error("Incorrect list: %s", value)
+            log_error("Incorrect list: %s", value)
 
     def check(self, value):
         try:
@@ -194,7 +203,7 @@ class List(Type):
             return False
 
     def emit(self, value):
-        return self.sep.join(value)
+        return (", " if self.sep == "," else self.sep).join(value)
 
 class Config(object):
     """Configuration file parser."""
@@ -213,14 +222,14 @@ class Config(object):
                 "max_analysis_count": Int(0),
                 "max_machines_count": Int(0),
                 "max_vmstartup_count": Int(10),
-                "freespace": Int(64),
+                "freespace": Int(1024),
                 "tmppath": Path(
                     exists=True, writable=True, readable=False,
                     allow_empty=True
                 ),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
-                    exists=False, writable=False, readable=True
+                    exists=False, writable=False, readable=False
                 ),
             },
             "feedback": {
@@ -233,10 +242,10 @@ class Config(object):
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
                 "force_port": Boolean(False),
-                "upload_max_size": Int(10485760),
+                "upload_max_size": Int(128 * 1024 * 1024),
             },
             "processing": {
-                "analysis_size_limit": Int(104857600),
+                "analysis_size_limit": Int(128 * 1024 * 1024),
                 "resolve_dns": Boolean(True),
                 "sort_pcap": Boolean(True),
             },
@@ -272,6 +281,7 @@ class Config(object):
                 "tags": String(),
                 "options": String(),
             },
+            "__star__": ("virtualbox", "machines"),
         },
         "auxiliary": {
             "sniffer": {
@@ -334,6 +344,7 @@ class Config(object):
                 "resultserver_ip": String("10.0.2.2"),
                 "resultserver_port": Int(2042),
             },
+            "__star__": ("avd", "machines"),
         },
         "esx": {
             "esx": {
@@ -354,6 +365,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("esx", "machines"),
         },
         "kvm": {
             "kvm": {
@@ -371,6 +383,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("kvm", "machines"),
         },
         "memory": {
             "basic": {
@@ -488,6 +501,7 @@ class Config(object):
                 "platform": String("windows"),
                 "ip": String("192.168.56.101"),
             },
+            "__star__": ("physical", "machines"),
         },
         "processing": {
             "analysisinfo": {
@@ -620,7 +634,7 @@ class Config(object):
                     exists=True, writable=False, readable=True
                 ),
                 "interface": String("qemubr"),
-                "machines": List(String, "vm1,vm2"),
+                "machines": List(String, "vm1,vm2,vm3"),
             },
             "*": [
                 {
@@ -637,7 +651,8 @@ class Config(object):
                     "resultserver_ip": String("192.168.55.1"),
                     "resultserver_port": Int(),
                     "tags": String("debian_wheezy,64_bit"),
-                    "kernel_path": String(),
+                    "kernel": String(),
+                    "initrd": String(),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -652,13 +667,35 @@ class Config(object):
                     "resultserver_ip": String("192.168.55.1"),
                     "resultserver_port": Int(),
                     "tags": String("debian_wheezy,mipsel"),
-                    "kernel_path": String(
+                    "kernel": String(
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
+                    ),
+                }, {
+                    "__section__": "vm3",
+                    "label": String("vm3"),
+                    "image": Path(
+                        "/home/rep/vms/qvm_wheezy64_1.qcow2",
+                        exists=True, writable=False, readable=True
+                    ),
+                    "arch": String("arm"),
+                    "platform": String("linux"),
+                    "ip": String("192.168.55.4"),
+                    "interface": String("qemubr"),
+                    "tags": String("debian_wheezy,arm"),
+                    "kernel": String(
+                        "{imagepath}/vmlinuz-3.2.0-4-versatile-arm"
+                    ),
+                    "initrd": String(
+                        "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
                 },
             ],
+            "__star__": ("qemu", "machines"),
         },
         "reporting": {
+            "feedback": {
+                "enabled": Boolean(False),
+            },
             "jsondump": {
                 "enabled": Boolean(True),
                 "indent": Int(4),
@@ -681,18 +718,21 @@ class Config(object):
                 "db": String("cuckoo"),
                 "store_memdump": Boolean(True),
                 "paginate": Int(100),
+                "username": String(),
+                "password": String(),
             },
             "elasticsearch": {
                 "enabled": Boolean(False),
-                "hosts": String("127.0.0.1"),
+                "hosts": List(String, "127.0.0.1"),
                 "calls": Boolean(False),
-                "index": String(),
-                "index_time_pattern": String(),
+                "index": String("cuckoo"),
+                "index_time_pattern": String("yearly"),
                 "cuckoo_node": String(),
             },
             "moloch": {
                 "enabled": Boolean(False),
                 "host": String(),
+                "insecure": Boolean(False),
                 "moloch_capture": Path(
                     "/data/moloch/bin/moloch-capture",
                     exists=True, writable=False, readable=True
@@ -713,10 +753,11 @@ class Config(object):
                 "username": String("cuckoo"),
                 "url": String(),
                 "myurl": String(),
-                "show_virustotal": Boolean(True),
-                "show_signatures": Boolean(True),
-                "show_urls": Boolean(True),
-                "hash_filename": Boolean(True),
+                "show_virustotal": Boolean(False),
+                "show_signatures": Boolean(False),
+                "show_urls": Boolean(False),
+                "hash_filename": Boolean(False),
+                "hash_url": Boolean(False),
             },
         },
         "routing": {
@@ -747,6 +788,7 @@ class Config(object):
                 "interface": String("tun0"),
                 "rt_table": String("tun0"),
             },
+            "__star__": ("vpn", "vpns"),
         },
         "vmware": {
             "vmware": {
@@ -772,6 +814,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("vmware", "machines"),
         },
         "vsphere": {
             "vsphere": {
@@ -794,6 +837,7 @@ class Config(object):
                 "resultserver_port": Int(required=False),
                 "tags": String(required=False),
             },
+            "__star__": ("vsphere", "machines"),
         },
         "xenserver": {
             "xenserver": {
@@ -814,6 +858,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
             },
+            "__star__": ("xenserver", "machines"),
         },
     }
 
@@ -829,7 +874,7 @@ class Config(object):
         elif loose:
             types = {}
         else:
-            log.error(
+            log_error(
                 "Config section %s:%s not found!", file_name, section
             )
             if strict:
@@ -866,7 +911,7 @@ class Config(object):
             config.read(cwd("conf", "%s.conf" % file_name))
 
         if file_name not in self.configuration and not loose:
-            log.error("Unknown config file %s.conf", file_name)
+            log_error("Unknown config file %s.conf", file_name)
             return
 
         for section in config.sections():
@@ -880,7 +925,7 @@ class Config(object):
             try:
                 items = config.items(section)
             except ConfigParser.InterpolationMissingOptionError as e:
-                log.error("Missing environment variable(s): %s", e)
+                log_error("Missing environment variable(s): %s", e)
                 raise CuckooConfigurationError(
                     "Missing environment variable: %s" % e
                 )
@@ -888,6 +933,23 @@ class Config(object):
             for name, raw_value in items:
                 if name in self.env_keys:
                     continue
+
+                if "\n" in raw_value:
+                    wrong_key = "???"
+                    try:
+                        wrong_key = raw_value.split("\n", 1)[1].split()[0]
+                    except:
+                        pass
+
+                    raise CuckooConfigurationError(
+                        "There was an error reading in the $CWD/conf/%s.conf "
+                        "configuration file. Namely, there are one or more "
+                        "leading whitespaces before the definition of the "
+                        "'%s' key/value pair in the '%s' section. Please "
+                        "remove those leading whitespaces as Python's default "
+                        "configuration parser is unable to handle those "
+                        "properly." % (file_name, wrong_key, section)
+                    )
 
                 if not raw and name in types:
                     # TODO Is this the area where we should be checking the
@@ -899,7 +961,7 @@ class Config(object):
                     value = types[name].parse(raw_value)
                 else:
                     if not loose:
-                        log.error(
+                        log_error(
                             "Type of config parameter %s:%s:%s not found! "
                             "This may indicate that you've incorrectly filled "
                             "out the Cuckoo configuration, please double "
@@ -960,7 +1022,7 @@ def parse_options(options):
 
 def emit_options(options):
     """Emit the analysis options from a dictionary to a string."""
-    return ",".join("%s=%s" % (k, v) for k, v in options.items())
+    return ",".join("%s=%s" % (k, v) for k, v in sorted(options.items()))
 
 def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
     """Fetch a configuration value, denoted as file:section:key."""

@@ -1,20 +1,15 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import gridfs
 import os
-from PIL import Image
-from StringIO import StringIO
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
+from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
-
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
-from gridfs import GridFS
-from gridfs.errors import FileExists
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -23,28 +18,35 @@ class MongoDB(Report):
     # Mongo schema version, used for data migration.
     SCHEMA_VERSION = "1"
 
-    def connect(self):
-        """Connects to Mongo database, loads options and set connectors.
-        @raise CuckooReportError: if unable to connect.
-        """
-        host = self.options.get("host", "127.0.0.1")
-        port = int(self.options.get("port", 27017))
-        db = self.options.get("db", "cuckoo")
-        user = self.options.get("user", None)
-        password = self.options.get("pass", None)
+    db = None
+    fs = None
 
-        try:
-            conn = MongoClient(host, port)
-            if user and password:
-                conn.cuckoo.authenticate(user, password)
+    @classmethod
+    def init_once(cls):
+        if not mongo.init():
+            return
 
-            self.conn = conn
-            self.db = self.conn[db]
-            self.fs = GridFS(self.db)
-        except TypeError:
-            raise CuckooReportError("Mongo connection port must be integer")
-        except ConnectionFailure:
-            raise CuckooReportError("Cannot connect to MongoDB")
+        mongo.connect()
+        cls.db = mongo.db
+        cls.fs = mongo.grid
+
+        # Set MongoDB schema version.
+        if "cuckoo_schema" in mongo.db.collection_names():
+            version = mongo.db.cuckoo_schema.find_one()["version"]
+            if version != cls.SCHEMA_VERSION:
+                raise CuckooReportError(
+                    "Unknown MongoDB version schema version found. Cuckoo "
+                    "doesn't really know how to proceed now.."
+                )
+        else:
+            mongo.db.cuckoo_schema.save({"version": cls.SCHEMA_VERSION})
+
+        # Set an unique index on stored files to avoid duplicates. As per the
+        # pymongo documentation this is basically a no-op if the index already
+        # exists. So we don't have to do that check ourselves.
+        mongo.db.fs.files.ensure_index(
+            "sha256", unique=True, sparse=True, name="sha256_unique"
+        )
 
     def store_file(self, file_obj, filename=""):
         """Store a file in GridFS.
@@ -70,7 +72,7 @@ class MongoDB(Report):
         try:
             new.close()
             return new._id
-        except FileExists:
+        except gridfs.errors.FileExists:
             to_find = {"sha256": file_obj.get_sha256()}
             return self.db.fs.files.find_one(to_find)["_id"]
 
@@ -79,27 +81,6 @@ class MongoDB(Report):
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """
-        self.connect()
-
-        # Set mongo schema version.
-        # TODO: This is not optimal becuase it run each analysis. Need to run
-        # only one time at startup.
-        if "cuckoo_schema" in self.db.collection_names():
-            if self.db.cuckoo_schema.find_one()["version"] != self.SCHEMA_VERSION:
-                CuckooReportError("Mongo schema version not expected, check data migration tool")
-        else:
-            self.db.cuckoo_schema.save({"version": self.SCHEMA_VERSION})
-
-        # Set an unique index on stored files, to avoid duplicates.
-        # From pymongo docs:
-        #  Returns the name of the created index if an index is actually
-        #    created.
-        #  Returns None if the index already exists.
-        # TODO: This is not optimal because it run each analysis. Need to run
-        # only one time at startup.
-        self.db.fs.files.ensure_index("sha256", unique=True,
-                                      sparse=True, name="sha256_unique")
-
         # Create a copy of the dictionary. This is done in order to not modify
         # the original dictionary and possibly compromise the following
         # reporting modules.
@@ -267,4 +248,3 @@ class MongoDB(Report):
 
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
-        self.conn.close()

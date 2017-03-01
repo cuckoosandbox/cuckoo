@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,13 +9,14 @@ import tempfile
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf
 )
-from cuckoo.common.exceptions import CuckooConfigurationError
-from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.exceptions import (
+    CuckooConfigurationError, CuckooStartupError
+)
 from cuckoo.common.files import Folders, Files
 from cuckoo.compat.config import migrate
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.startup import check_configs
-from cuckoo.main import main
+from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
 CONF_EXAMPLE = """
@@ -62,9 +62,7 @@ class TestConfig:
         assert parse_options("a,b") == {}
 
         assert emit_options({"a": "b"}) == "a=b"
-        assert emit_options({"a": "b", "b": "c"}).count(",") == 1
-        assert "a=b" in emit_options({"a": "b", "b": "c"})
-        assert "b=c" in emit_options({"a": "b", "b": "c"})
+        assert emit_options({"a": "b", "b": "c"}) == "a=b,b=c"
 
         assert parse_options(emit_options({"x": "y"})) == {"x": "y"}
 
@@ -188,7 +186,7 @@ def test_default_config():
     assert config("cuckoo:cuckoo:version_check") is True
     assert config("cuckoo:cuckoo:tmppath") is None
     assert config("cuckoo:resultserver:ip") == "192.168.56.1"
-    assert config("cuckoo:processing:analysis_size_limit") == 104857600
+    assert config("cuckoo:processing:analysis_size_limit") == 128*1024*1024
     assert config("cuckoo:timeouts:critical") == 60
     assert config("auxiliary:mitm:mitmdump") == "/usr/local/bin/mitmdump"
 
@@ -293,6 +291,37 @@ def test_invalid_machinery():
     with pytest.raises(CuckooStartupError) as e:
         check_configs()
     e.match("unknown machinery")
+
+def test_invalid_feedback():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "feedback": {
+                "enabled": True,
+                "name": "foo",
+                "email": "a@b.com!",
+            }
+        }
+    })
+    with pytest.raises(CuckooStartupError) as e:
+        check_configs()
+    e.match("Cuckoo Feedback configuration")
+
+WHITESPACE_BEFORE_LINE = """
+[virtualbox]
+machines = cuckoo1
+[cuckoo1]
+label = cuckoo1
+ip = 1.2.3.4
+ snapshot = asnapshot
+"""
+
+def test_whitespace_before_line():
+    set_cwd(tempfile.mkdtemp())
+    filepath = Files.temp_put(WHITESPACE_BEFORE_LINE)
+    with pytest.raises(CuckooConfigurationError) as e:
+        Config(file_name="virtualbox", cfg=filepath)
+    e.match("error reading in the")
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
@@ -868,23 +897,45 @@ script = data/mitm.py
     Files.create(cwd("conf"), "cuckoo.conf", """
 [cuckoo]
 tmppath = /tmp
+freespace = 64
 [routing]
 route = foo
 internet = bar
 rt_table = main
 auto_rt = no
+[resultserver]
+upload_max_size = 10485760
+[processing]
+analysis_size_limit = 104857600
 """)
     Files.create(cwd("conf"), "processing.conf", """
 [network]
 whitelist-dns = wow
 allowed-dns = 8.8.8.8
 """)
+    Files.create(cwd("conf"), "qemu.conf", """
+[qemu]
+machines = vm1, vm2
+[vm1]
+label = vm1
+kernel_path = kernelpath
+[vm2]
+label = vm2
+kernel_path = anotherpath
+""")
     Files.create(cwd("conf"), "reporting.conf", """
+[elasticsearch]
+enabled = no
+hosts = 127.0.0.1, 127.0.0.2
 [mattermost]
 show-virustotal = no
 show-signatures = yes
 show-urls = no
 hash-filename = yes
+[moloch]
+enabled = no
+[mongodb]
+enables = yes
 [notification]
 enabled = no
 """)
@@ -913,20 +964,32 @@ interface = eth0
     assert "allowed-dns" in cfg["processing"]["network"]
     cfg = migrate(cfg, "2.0-rc2", "2.0.0")
     assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
+    assert cfg["cuckoo"]["cuckoo"]["freespace"] == 1024
     assert cfg["cuckoo"]["cuckoo"]["tmppath"] is None
     assert cfg["cuckoo"]["feedback"]["enabled"] is False
     assert cfg["cuckoo"]["feedback"]["name"] is None
     assert cfg["cuckoo"]["feedback"]["company"] is None
     assert cfg["cuckoo"]["feedback"]["email"] is None
+    assert cfg["cuckoo"]["processing"]["analysis_size_limit"] == 128*1024*1024
+    assert cfg["cuckoo"]["resultserver"]["upload_max_size"] == 128*1024*1024
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
+    assert cfg["reporting"]["elasticsearch"]["hosts"] == [
+        "127.0.0.1", "127.0.0.2"
+    ]
+    assert cfg["qemu"]["vm1"]["kernel"] == "kernelpath"
+    assert cfg["qemu"]["vm2"]["kernel"] == "anotherpath"
     assert cfg["reporting"]["notification"]["url"] is None
     assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True
     assert cfg["reporting"]["mattermost"]["show_urls"] is False
     assert cfg["reporting"]["mattermost"]["hash_filename"] is True
+    assert cfg["reporting"]["mattermost"]["hash_url"] is False
+    assert cfg["reporting"]["moloch"]["insecure"] is False
+    assert cfg["reporting"]["mongodb"]["username"] is None
+    assert cfg["reporting"]["mongodb"]["password"] is None
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"
@@ -959,8 +1022,9 @@ def test_full_migration_040():
         assert filename in cfg
         for section, entries in sections.items():
             # We check machines and VPNs manually later on.
-            if section == "*":
+            if section == "*" or section == "__star__":
                 continue
+
             assert section in cfg[filename]
             for key, value in entries.items():
                 assert key in cfg[filename][section]

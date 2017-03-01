@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,9 +7,11 @@ import os
 import pytest
 import tempfile
 
+from sqlalchemy.orm.exc import DetachedInstanceError
+
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, mkdir
 
 class DatabaseEngine(object):
     """Tests database stuff."""
@@ -103,6 +104,61 @@ class DatabaseEngine(object):
         self.d.connect(dsn=self.URI)
         assert "alembic_version" in self.d.engine.table_names()
 
+    def test_view_submit_tasks(self):
+        submit_id = self.d.add_submit(None, None, None)
+        t1 = self.d.add_path(__file__, custom="1", submit_id=submit_id)
+        t2 = self.d.add_path(__file__, custom="2", submit_id=submit_id)
+
+        submit = self.d.view_submit(submit_id)
+        assert submit.id == submit_id
+        with pytest.raises(DetachedInstanceError):
+            print submit.tasks
+
+        submit = self.d.view_submit(submit_id, tasks=True)
+        assert len(submit.tasks) == 2
+        tasks = sorted((task.id, task) for task in submit.tasks)
+        assert tasks[0][1].id == t1
+        assert tasks[0][1].custom == "1"
+        assert tasks[1][1].id == t2
+        assert tasks[1][1].custom == "2"
+
+    def test_add_reboot(self):
+        t0 = self.d.add_path(__file__)
+        s0 = self.d.add_submit(None, None, None)
+        t1 = self.d.add_reboot(task_id=t0, submit_id=s0)
+
+        t = self.d.view_task(t1)
+        assert t.custom == "%s" % t0
+        assert t.submit_id == s0
+
+    def test_task_set_options(self):
+        t0 = self.d.add_path(__file__, options={"foo": "bar"})
+        t1 = self.d.add_path(__file__, options="foo=bar")
+        assert self.d.view_task(t0).options == {"foo": "bar"}
+        assert self.d.view_task(t1).options == {"foo": "bar"}
+
+    def test_task_tags_str(self):
+        task = self.d.add_path(__file__, tags="foo,,bar")
+        tag0, tag1 = self.d.view_task(task).tags
+        assert sorted((tag0.name, tag1.name)) == ["bar", "foo"]
+
+    def test_task_tags_list(self):
+        task = self.d.add_path(__file__, tags=["tag1", "tag2", "", 1, "tag3"])
+        tag0, tag1, tag2 = self.d.view_task(task).tags
+        assert sorted((tag0.name, tag1.name, tag2.name)) == [
+            "tag1", "tag2", "tag3"
+        ]
+
+    def test_error_action(self):
+        task_id = self.d.add_path(__file__)
+        self.d.add_error("message1", task_id)
+        self.d.add_error("message2", task_id, "actionhere")
+        e1, e2 = self.d.view_errors(task_id)
+        assert e1.message == "message1"
+        assert e1.action is None
+        assert e2.message == "message2"
+        assert e2.action == "actionhere"
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -112,6 +168,7 @@ class TestConnectOnce(object):
     @mock.patch("cuckoo.apps.apps.Database")
     @mock.patch("cuckoo.apps.apps.process")
     def test_process_task(self, q, p1, p2):
+        mkdir(cwd(analysis=1))
         main.main(
             ("--cwd", cwd(), "process", "-r", "1"),
             standalone_mode=False
@@ -183,6 +240,26 @@ class DatabaseMigrationEngine(object):
         assert version and len(version) == 1
         assert version[0][0] == SCHEMA_VERSION
 
+    def test_long_error(self):
+        task_id = self.d.add_url("http://google.com/")
+        self.d.add_error("A"*1024, task_id)
+        err = self.d.view_errors(task_id)
+        assert err and len(err[0].message) == 1024
+
+    def test_long_options_custom(self):
+        task_id = self.d.add_url(
+            "http://google.com/", options="A"*1024, custom="B"*1024
+        )
+        task = self.d.view_task(task_id)
+        assert task._options == "A"*1024
+        assert task.custom == "B"*1024
+
+    def test_empty_submit_id(self):
+        task_id = self.d.add_url("http://google.com/")
+        task = self.d.view_task(task_id)
+        assert task.submit_id is None
+
+class DatabaseMigration060(DatabaseMigrationEngine):
     def test_machine_resultserver_port_is_int(self):
         machines = self.s.execute(
             "SELECT resultserver_ip, resultserver_port FROM machines"
@@ -193,13 +270,7 @@ class DatabaseMigrationEngine(object):
         assert machines[1][0] == "192.168.56.1"
         assert machines[1][1] == 2042
 
-    def test_long_error(self):
-        task_id = self.d.add_url("http://google.com/")
-        self.d.add_error("A"*1024, task_id)
-        err = self.d.view_errors(task_id)
-        assert err and len(err[0].message) == 1024
-
-class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
+class TestDatabaseMigration060PostgreSQL(DatabaseMigration060):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
 
@@ -242,7 +313,7 @@ class TestDatabaseMigration060PostgreSQL(DatabaseMigrationEngine):
         assert tasks[1][0] == "completed"
         assert tasks[2][0] == "running"
 
-class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
+class TestDatabaseMigration060SQLite3(DatabaseMigration060):
     URI = "sqlite:///%s.sqlite3" % tempfile.mktemp()
     SRC = "tests/files/sql/060sq.sql"
 
@@ -287,7 +358,7 @@ class TestDatabaseMigration060SQLite3(DatabaseMigrationEngine):
         assert tasks[2][0] == "completed"
         assert tasks[3][0] == "pending"
 
-class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
+class TestDatabaseMigration060MySQL(DatabaseMigration060):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060my.sql"
 
@@ -328,6 +399,50 @@ class TestDatabaseMigration060MySQL(DatabaseMigrationEngine):
         assert tasks[0][1] is None
         assert tasks[1][0] == "running"
         assert tasks[2][0] == "pending"
+
+class DatabaseMigration11(DatabaseMigrationEngine):
+    @staticmethod
+    def migrate(cls):
+        main.main(("--cwd", cwd(), "migrate"), standalone_mode=False)
+
+    def test_task_statuses(cls):
+        tasks = cls.d.engine.execute(
+            "SELECT status, owner FROM tasks ORDER BY id"
+        ).fetchall()
+        assert tasks[0][0] == "reported"
+        assert tasks[1][0] == "pending"
+
+    def test_task_options_custom(cls):
+        tasks = cls.d.engine.execute(
+            "SELECT options, custom FROM tasks WHERE id = 1"
+        ).fetchall()
+        assert tasks[0][0] == "human=1"
+        assert tasks[0][1] == "custom1"
+
+class TestDatabaseMigration11PostgreSQL(DatabaseMigration11):
+    URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest11"
+    SRC = "tests/files/sql/11pg.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
+        cls.s.commit()
+
+class TestDatabaseMigration11SQLite3(DatabaseMigration11):
+    URI = "sqlite:///%s.sqlite3" % tempfile.mktemp()
+    SRC = "tests/files/sql/11sq.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.connection().connection.cursor().executescript(script)
+
+class TestDatabaseMigration11MySQL(DatabaseMigration11):
+    URI = "mysql://cuckoo:cuckoo@localhost/cuckootest11"
+    SRC = "tests/files/sql/11my.sql"
+
+    @staticmethod
+    def execute_script(cls, script):
+        cls.s.execute(script)
 
 @mock.patch("cuckoo.core.database.create_engine")
 @mock.patch("cuckoo.core.database.sessionmaker")

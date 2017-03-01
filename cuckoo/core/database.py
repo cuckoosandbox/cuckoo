@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "796174689511"
+SCHEMA_VERSION = "181be2111077"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -38,6 +38,12 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 TASK_FAILED_REPORTING = "failed_reporting"
+
+status_type = Enum(
+    TASK_PENDING, TASK_RUNNING, TASK_COMPLETED, TASK_REPORTED, TASK_RECOVERED,
+    TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING,
+    name="status_type"
+)
 
 # Secondary table used in association Machine - Tag.
 machines_tags = Table(
@@ -194,10 +200,10 @@ class Submit(Base):
     __tablename__ = "submit"
 
     id = Column(Integer(), primary_key=True)
-    tmp_path = Column(Text(), nullable=False)
+    tmp_path = Column(Text(), nullable=True)
     added = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
-    submit_type = Column(String(16), nullable=False)
-    data = Column(JsonType)
+    submit_type = Column(String(16), nullable=True)
+    data = Column(JsonType, nullable=True)
 
     def __init__(self, tmp_path, submit_type, data):
         self.tmp_path = tmp_path
@@ -256,6 +262,7 @@ class Error(Base):
     __tablename__ = "errors"
 
     id = Column(Integer(), primary_key=True)
+    action = Column(String(64), nullable=True)
     message = Column(Text(), nullable=False)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
@@ -274,7 +281,8 @@ class Error(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, message, task_id):
+    def __init__(self, message, task_id, action=None):
+        self.action = action
         self.message = message
         self.task_id = task_id
 
@@ -290,13 +298,13 @@ class Task(Base):
     category = Column(String(255), nullable=False)
     timeout = Column(Integer(), server_default="0", nullable=False)
     priority = Column(Integer(), server_default="1", nullable=False)
-    custom = Column(String(255), nullable=True)
+    custom = Column(Text(), nullable=True)
     owner = Column(String(64), nullable=True)
     machine = Column(String(255), nullable=True)
     package = Column(String(255), nullable=True)
     tags = relationship("Tag", secondary=tasks_tags, single_parent=True,
                         backref="task", lazy="subquery")
-    _options = Column("options", String(255), nullable=True)
+    _options = Column("options", Text(), nullable=True)
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
@@ -308,15 +316,15 @@ class Task(Base):
                       nullable=False)
     started_on = Column(DateTime(timezone=False), nullable=True)
     completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(Enum(TASK_PENDING, TASK_RUNNING, TASK_COMPLETED,
-                         TASK_REPORTED, TASK_RECOVERED, TASK_FAILED_ANALYSIS,
-                         TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING, name="status_type"),
-                    server_default=TASK_PENDING,
-                    nullable=False)
+    status = Column(status_type, server_default=TASK_PENDING, nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    submit_id = Column(
+        Integer, ForeignKey("submit.id"), nullable=True, index=True
+    )
     processing = Column(String(16), nullable=True)
     route = Column(String(16), nullable=True)
     sample = relationship("Sample", backref="tasks")
+    submit = relationship("Submit", backref="tasks")
     guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
     errors = relationship("Error", backref="tasks", cascade="save-update, delete")
 
@@ -333,7 +341,10 @@ class Task(Base):
 
     @options.setter
     def options(self, value):
-        self._options = value
+        if isinstance(value, dict):
+            self._options = emit_options(value)
+        else:
+            self._options = value
 
     def to_dict(self, dt=False):
         """Converts object to dict.
@@ -915,13 +926,13 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_error(self, message, task_id):
+    def add_error(self, message, task_id, action=None):
         """Add an error related to a task.
         @param message: error message
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message, task_id=task_id)
+        error = Error(message=message, task_id=task_id, action=action)
         session.add(error)
         try:
             session.commit()
@@ -936,7 +947,8 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", owner="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None, category=None):
+            memory=False, enforce_timeout=False, clock=None, category=None,
+            submit_id=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -1005,11 +1017,22 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.submit_id = submit_id
 
         if tags:
-            for tag in [t.strip() for t in tags.split(",") if t]:
-                tag = self._get_or_create(session, Tag, name=tag)
-                task.tags.append(tag)
+            if isinstance(tags, basestring):
+                for tag in tags.split(","):
+                    if tag.strip():
+                        task.tags.append(self._get_or_create(
+                            session, Tag, name=tag.strip()
+                        ))
+
+            if isinstance(tags, (tuple, list)):
+                for tag in tags:
+                    if isinstance(tag, basestring) and tag.strip():
+                        task.tags.append(self._get_or_create(
+                            session, Tag, name=tag.strip()
+                        ))
 
         if clock:
             if isinstance(clock, basestring):
@@ -1037,7 +1060,8 @@ class Database(object):
 
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", owner="", machine="", platform="",
-                 tags=None, memory=False, enforce_timeout=False, clock=None):
+                 tags=None, memory=False, enforce_timeout=False, clock=None,
+                 submit_id=None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -1065,12 +1089,12 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "file")
+                        enforce_timeout, clock, "file", submit_id)
 
     def add_archive(self, file_path, filename, package, timeout=0,
                     options=None, priority=1, custom="", owner="", machine="",
                     platform="", tags=None, memory=False,
-                    enforce_timeout=False, clock=None):
+                    enforce_timeout=False, clock=None, submit_id=None):
         """Add a task to the database that's packaged in an archive file."""
         if not file_path or not os.path.exists(file_path):
             log.warning("File does not exist: %s.", file_path)
@@ -1088,11 +1112,12 @@ class Database(object):
         options = emit_options(options)
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "archive")
+                        enforce_timeout, clock, "archive", submit_id)
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
-                memory=False, enforce_timeout=False, clock=None):
+                memory=False, enforce_timeout=False, clock=None,
+                submit_id=None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -1117,7 +1142,7 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "url")
+                        enforce_timeout, clock, "url", submit_id)
 
     def add_baseline(self, timeout=0, owner="", machine="", memory=False):
         """Add a baseline task to database.
@@ -1142,7 +1167,7 @@ class Database(object):
 
     def add_reboot(self, task_id, timeout=0, options="", priority=1,
                    owner="", machine="", platform="", tags=None, memory=False,
-                   enforce_timeout=False, clock=None):
+                   enforce_timeout=False, clock=None, submit_id=None):
         """Add a reboot task to database from an existing analysis.
         @param task_id: task id of existing analysis.
         @param timeout: selected timeout.
@@ -1178,15 +1203,16 @@ class Database(object):
 
         return self.add(File(task.target), timeout, "reboot", options,
                         priority, custom, owner, machine, platform, tags,
-                        memory, enforce_timeout, clock, "file")
+                        memory, enforce_timeout, clock, "file", submit_id)
 
     @classlock
     def add_submit(self, tmp_path, submit_type, data):
         session = self.Session()
-        submit = Submit(tmp_path=tmp_path, submit_type=submit_type, data=data)
-        submit_id = None
-        session.add(submit)
 
+        submit = Submit(
+            tmp_path=tmp_path, submit_type=submit_type, data=data or {}
+        )
+        session.add(submit)
         try:
             session.commit()
             session.refresh(submit)
@@ -1196,14 +1222,16 @@ class Database(object):
             session.rollback()
         finally:
             session.close()
-
         return submit_id
 
     @classlock
-    def view_submit(self, submit_id):
+    def view_submit(self, submit_id, tasks=False):
         session = self.Session()
         try:
-            submit = session.query(Submit).get(submit_id)
+            q = session.query(Submit)
+            if tasks:
+                q = q.options(joinedload("tasks"))
+            submit = q.get(submit_id)
         except SQLAlchemyError as e:
             log.debug("Database error viewing submit: %s", e)
             return
@@ -1486,7 +1514,8 @@ class Database(object):
         """
         session = self.Session()
         try:
-            errors = session.query(Error).filter_by(task_id=task_id).all()
+            q = session.query(Error).filter_by(task_id=task_id)
+            errors = q.order_by(Error.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing errors: {0}".format(e))
             return []

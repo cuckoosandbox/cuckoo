@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,8 +12,10 @@ import time
 
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
-from cuckoo.misc import dispatch, cwd, set_cwd, getuser, mkdir, Popen
-from cuckoo.misc import HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
+from cuckoo.misc import (
+    dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges, HAVE_PWD,
+    is_linux, is_windows, is_macosx, decide_cwd
+)
 
 def return_value(value):
     return value
@@ -65,10 +67,10 @@ def test_cwd():
     with pytest.raises(RuntimeError):
         cwd("foo", analysis=None)
 
-@pytest.mark.skipif("not HAVE_PWD")
-def test_getuser():
-    # TODO This probably doesn't work on all platforms.
-    assert getuser() == subprocess.check_output(["id", "-un"]).strip()
+if HAVE_PWD:
+    def test_getuser():
+        # TODO This probably doesn't work on all platforms.
+        assert getuser() == subprocess.check_output(["id", "-un"]).strip()
 
 def test_mkdir():
     dirpath = tempfile.mkdtemp()
@@ -188,3 +190,14 @@ def test_decide_cwd():
         os.environ["CUCKOO_CWD"] = orig_cuckoo_cwd
     else:
         os.environ.pop("CUCKOO_CWD", None)
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+@mock.patch("cuckoo.misc.pwd")
+@mock.patch("cuckoo.misc.os")
+def test_drop_privileges(p, q):
+    drop_privileges("username")
+    q.getpwnam.assert_called_once_with("username")
+    p.setgroups.assert_called_once()
+    p.setgid.assert_called_once()
+    p.setuid.assert_called_once()
+    p.putenv.assert_called_once()

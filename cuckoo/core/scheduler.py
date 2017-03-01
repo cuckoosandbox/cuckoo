@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -12,10 +12,10 @@ import Queue
 
 import cuckoo
 
-from cuckoo.common.config import Config, emit_options
+from cuckoo.common.config import Config, emit_options, config
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooGuestError, CuckooOperationalError,
-    CuckooMachineSnapshotError, CuckooCriticalError
+    CuckooMachineSnapshotError, CuckooCriticalError, CuckooGuestCriticalTimeout
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
@@ -26,7 +26,7 @@ from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.rooter import rooter, vpns
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
@@ -56,11 +56,9 @@ class AnalysisManager(threading.Thread):
         self.binary = ""
         self.storage_binary = ""
         self.machine = None
-
         self.db = Database()
         self.task = self.db.view_task(task_id)
         self.guest_manager = None
-
         self.route = None
         self.interface = None
         self.rt_table = None
@@ -234,7 +232,9 @@ class AnalysisManager(threading.Thread):
         cfg = self.routing_cfg
 
         # Determine the desired routing strategy (none, internet, VPN).
-        self.route = self.task.options.get("route", cfg.routing.route)
+        self.route = self.task.options.get(
+            "route", config("routing:routing:route")
+        )
 
         if self.route == "none" or self.route == "drop":
             self.interface = None
@@ -242,10 +242,24 @@ class AnalysisManager(threading.Thread):
         elif self.route == "inetsim":
             self.interface = cfg.inetsim.interface
         elif self.route == "tor":
-            self.interface = cfg.tor.interface
-        elif self.route == "internet" and cfg.routing.internet != "none":
-            self.interface = cfg.routing.internet
-            self.rt_table = cfg.routing.rt_table
+            pass
+        elif self.route == "internet":
+            if config("routing:routing:internet") == "none":
+                log.warning(
+                    "Internet network routing has been specified, but not "
+                    "configured, ignoring routing for this analysis", extra={
+                        "action": "network.route",
+                        "status": "error",
+                        "route": self.route,
+                    }
+                )
+                self.route = "none"
+                self.task.options["route"] = "none"
+                self.interface = None
+                self.rt_table = None
+            else:
+                self.interface = config("routing:routing:internet")
+                self.rt_table = config("routing:routing:rt_table")
         elif self.route in vpns:
             self.interface = vpns[self.route].interface
             self.rt_table = vpns[self.route].rt_table
@@ -258,6 +272,8 @@ class AnalysisManager(threading.Thread):
                     "route": self.route,
                 }
             )
+            self.route = "none"
+            self.task.options["route"] = "none"
             self.interface = None
             self.rt_table = None
 
@@ -278,26 +294,39 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
-        if self.route == "drop":
-            rooter("drop_enable", self.machine.ip, str(cfg.resultserver.port))
+        # For now this doesn't work yet in combination with tor routing.
+        if self.route == "drop" or self.route == "internet":
+            rooter(
+                "drop_enable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "inetsim":
-            rooter("inetsim_enable", self.machine.ip,
-                   cfg.inetsim.server,
-                   str(cfg.resultserver.port))
+            rooter(
+                "inetsim_enable", self.machine.ip,
+                config("routing:inetsim:server"),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "tor":
-            rooter("tor_enable", self.machine.ip,
-                   str(cfg.resultserver.port),
-                   str(cfg.tor.dnsport),
-                   str(cfg.tor.proxyport))
+            rooter(
+                "tor_enable", self.machine.ip,
+                str(config("cuckoo:resultserver:ip")),
+                str(config("routing:tor:dnsport")),
+                str(config("routing:tor:proxyport"))
+            )
 
         if self.interface:
-            rooter("forward_enable", self.machine.interface,
-                   self.interface, self.machine.ip)
+            rooter(
+                "forward_enable", self.machine.interface,
+                self.interface, self.machine.ip
+            )
 
         if self.rt_table:
-            rooter("srcroute_enable", self.rt_table, self.machine.ip)
+            rooter(
+                "srcroute_enable", self.rt_table, self.machine.ip
+            )
 
         # Propagate the taken route to the database.
         self.db.set_route(self.task.id, self.route)
@@ -307,15 +336,22 @@ class AnalysisManager(threading.Thread):
         cfg = self.routing_cfg
 
         if self.interface:
-            rooter("forward_disable", self.machine.interface,
-                   self.interface, self.machine.ip)
+            rooter(
+                "forward_disable", self.machine.interface,
+                self.interface, self.machine.ip
+            )
 
         if self.rt_table:
-            rooter("srcroute_disable", self.rt_table, self.machine.ip)
+            rooter(
+                "srcroute_disable", self.rt_table, self.machine.ip
+            )
 
-        if self.route == "drop":
-            rooter("drop_disable", self.machine.ip,
-                   str(cfg.resultserver.port))
+        if self.route != "none":
+            rooter(
+                "drop_disable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,
@@ -323,10 +359,12 @@ class AnalysisManager(threading.Thread):
                    str(cfg.resultserver.port))
 
         if self.route == "tor":
-            rooter("tor_disable", self.machine.ip,
-                   str(cfg.resultserver.port),
-                   str(cfg.tor.dnsport),
-                   str(cfg.tor.proxyport))
+            rooter(
+                "tor_disable", self.machine.ip,
+                str(config("cuckoo:resultserver:ip")),
+                str(config("routing:tor:dnsport")),
+                str(config("routing:tor:proxyport"))
+            )
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
@@ -382,6 +420,7 @@ class AnalysisManager(threading.Thread):
                 "category": self.task.category,
                 "package": self.task.package,
                 "options": emit_options(self.task.options),
+                "custom": self.task.custom,
             }
         )
 
@@ -482,6 +521,15 @@ class AnalysisManager(threading.Thread):
                     "vmname": self.machine.name,
                 }
             )
+        except CuckooGuestCriticalTimeout as e:
+            if not unlocked:
+                machine_lock.release()
+            log.error("Error from the Cuckoo Guest: %s", e, extra={
+                "error_action": "host2guest_routing",
+                "action": "guest.handle",
+                "status": "error",
+                "task_id": self.task.id,
+            })
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
@@ -778,8 +826,10 @@ class Scheduler(object):
 
             # Drop forwarding rule to each VPN.
             for vpn in vpns.values():
-                rooter("forward_disable", machine.interface,
-                       vpn.interface, machine.ip)
+                rooter(
+                    "forward_disable", machine.interface,
+                    vpn.interface, machine.ip
+                )
 
             # Drop forwarding rule to the internet / dirty line.
             if routing_cfg.routing.internet != "none":

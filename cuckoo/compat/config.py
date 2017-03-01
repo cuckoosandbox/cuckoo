@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -526,10 +526,10 @@ def _20c1_20c2(c):
         "username": "cuckoo",
         "url": None,
         "myurl": None,
-        "show-virustotal": True,
-        "show-signatures": True,
-        "show-urls": True,
-        "hash-filename": True,
+        "show-virustotal": False,
+        "show-signatures": False,
+        "show-urls": False,
+        "hash-filename": False,
     }
 
     c["vpn"]["vpn"].pop("auto_rt", None)
@@ -544,8 +544,14 @@ def _20c1_20c2(c):
 def _20c2_200(c):
     if c["auxiliary"]["mitm"]["script"] == "data/mitm.py":
         c["auxiliary"]["mitm"]["script"] = "mitm.py"
+    if c["cuckoo"]["cuckoo"]["freespace"] == 64:
+        c["cuckoo"]["cuckoo"]["freespace"] = 1024
     if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
         c["cuckoo"]["cuckoo"]["tmppath"] = None
+    if c["cuckoo"]["processing"]["analysis_size_limit"] == 100*1024*1024:
+        c["cuckoo"]["processing"]["analysis_size_limit"] = 128*1024*1024
+    if c["cuckoo"]["resultserver"]["upload_max_size"] == 10*1024*1024:
+        c["cuckoo"]["resultserver"]["upload_max_size"] = 128*1024*1024
     c["cuckoo"]["feedback"] = {
         "enabled": False,
         "name": None,
@@ -558,12 +564,23 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    for vm in c["qemu"]:
+        if "kernel_path" in c["qemu"][vm]:
+            c["qemu"][vm]["kernel"] = c["qemu"][vm].pop("kernel_path")
+    c["reporting"]["elasticsearch"]["hosts"] = cast(
+        "reporting:elasticsearch:hosts",
+        c["reporting"]["elasticsearch"]["hosts"]
+    )
+    c["reporting"]["feedback"] = {
+        "enabled": False,
+    }
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,
         "apikey": None,
         "mode": "maldoc ipaddr hashes url",
     }
+    c["reporting"]["mattermost"]["hash_url"] = False
     old_items = (
         "show-virustotal", "show-signatures", "show-urls", "hash-filename",
     )
@@ -573,6 +590,10 @@ def _20c2_200(c):
             "reporting:mattermost:%s" % new_item,
             c["reporting"]["mattermost"].pop(old_item, None)
         )
+
+    c["reporting"]["moloch"]["insecure"] = False
+    c["reporting"]["mongodb"]["username"] = None
+    c["reporting"]["mongodb"]["password"] = None
 
     if "url" not in c["reporting"]["notification"]:
         c["reporting"]["notification"]["url"] = None

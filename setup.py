@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -24,7 +24,9 @@ if not os.path.isdir(os.path.join(monitor, latest)) and \
         not os.environ.get("ONLYINSTALL"):
     sys.exit(
         "Failure locating the monitoring binaries that belong to the latest "
-        "monitor release. Please include those to create a distribution."
+        "monitor release. Please include those to create a distribution. "
+        "You may easily obtain the monitoring binaries by running one of our "
+        "helper scripts: 'python stuff/monitor.py'."
     )
 
 manifest = []
@@ -104,6 +106,7 @@ setuptools.setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
+        "elasticsearch==2.2.0",
         "flask==0.10.1",
         "httpreplay==0.1.18",
         "jinja2==2.8",
@@ -117,7 +120,7 @@ setuptools.setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock==0.2.2",
+        "sflock==0.2.5",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
     ] + install_requires,

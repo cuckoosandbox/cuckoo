@@ -10,11 +10,12 @@ import random
 import requests
 import shutil
 import StringIO
+import sys
 import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
-from cuckoo.common.config import config, emit_options
+from cuckoo.common.config import config, emit_options, Config
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
 )
@@ -23,6 +24,7 @@ from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
     Database, TASK_FAILED_PROCESSING, TASK_REPORTED
 )
+from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.plugins import RunProcessing, RunSignatures, RunReporting
 from cuckoo.core.startup import init_console_logging
@@ -120,6 +122,7 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
         tags=tags,
         memory="1" if memory else "0",
         enforce_timeout="1" if enforce_timeout else "0",
+        clock=clock,
         unique="1" if is_unique else "0",
     )
 
@@ -236,8 +239,9 @@ def process_task(task):
         logger(
             "Starting task reporting",
             action="task.report", status="pending",
-            category=task["category"], package=task["package"],
-            options=emit_options(task["options"])
+            target=task["target"], category=task["category"],
+            package=task["package"], options=emit_options(task["options"]),
+            custom=task["custom"]
         )
 
         if task["category"] == "file" and task.get("sample_id"):
@@ -260,6 +264,37 @@ def process_task(task):
         log.exception("Caught unknown exception: %s", e)
     finally:
         task_log_stop(task["id"])
+
+def process_task_range(tasks):
+    db, task_ids = Database(), []
+    for entry in tasks.split(","):
+        if entry.isdigit():
+            task_ids.append(int(entry))
+        elif entry.count("-") == 1:
+            start, end = entry.split("-")
+            if not start.isdigit() or not end.isdigit():
+                log.warning("Invalid range provided: %s", entry)
+                continue
+            task_ids.extend(range(int(start), int(end)+1))
+        elif entry:
+            log.warning("Invalid range provided: %s", entry)
+
+    for task_id in sorted(set(task_ids)):
+        task = db.view_task(task_id)
+        if not task:
+            task = {
+                "id": task_id,
+                "category": "file",
+                "target": "",
+                "options": {},
+                "package": None,
+                "custom": None,
+            }
+        else:
+            task = task.to_dict()
+
+        if os.path.isdir(cwd(analysis=task_id)):
+            process_task(task)
 
 def process_tasks(instance, maxcount):
     count = 0
@@ -340,3 +375,58 @@ def cuckoo_clean():
                 os.unlink(path)
             except (IOError, OSError) as e:
                 log.warning("Error removing file %s: %s", path, e)
+
+def cuckoo_machine(vmname, action, ip, platform, options, tags,
+                   interface, snapshot, resultserver):
+    db = Database()
+
+    cfg = Config.from_confdir(cwd("conf"))
+    machinery = cfg["cuckoo"]["cuckoo"]["machinery"]
+    machines = cfg[machinery][machinery]["machines"]
+
+    if action == "add":
+        if not ip:
+            sys.exit("You have to specify a legitimate IP address for --add.")
+
+        if db.view_machine(vmname):
+            sys.exit("A Virtual Machine with this name already exists!")
+
+        if vmname in machines:
+            sys.exit("A Virtual Machine with this name already exists!")
+
+        if resultserver and resultserver.count(":") == 1:
+            resultserver_ip, resultserver_port = resultserver.split(":")
+            resultserver_port = int(resultserver_port)
+        else:
+            resultserver_ip = cfg["cuckoo"]["resultserver"]["ip"]
+            resultserver_port = cfg["cuckoo"]["resultserver"]["port"]
+
+        machines.append(vmname)
+        cfg[machinery][vmname] = {
+            "label": vmname,
+            "platform": platform,
+            "ip": ip,
+            "options": options,
+            "snapshot": snapshot,
+            "interface": interface,
+            "resultserver_ip": resultserver_ip,
+            "resultserver_port": resultserver_port,
+            "tags": tags,
+        }
+
+        db.add_machine(
+            vmname, vmname, ip, platform, options, tags, interface, snapshot,
+            resultserver_ip, int(resultserver_port)
+        )
+        db.unlock_machine(vmname)
+
+    if action == "delete":
+        # TODO Add a db.del_machine() function for runtime modification.
+
+        if vmname not in machines:
+            sys.exit("A Virtual Machine with this name doesn't exist!")
+
+        machines.remove(vmname)
+        cfg[machinery].pop(vmname)
+
+    write_cuckoo_conf(cfg=cfg)

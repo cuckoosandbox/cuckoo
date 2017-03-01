@@ -1,0 +1,12 @@
+{{#each tasks}}
+	<tr data-task-id="{{id}}" class="{{#if is_ready}}clickable finished{{/if}}">
+		<td>{{id}}</td>
+		<td>
+			<i class="fa fa-calendar-o"></i> {{date_added}}
+			<i class="fa fa-clock-o"></i> {{time_added}}
+		</td>
+		<td>{{target}}</td>
+		<td>{{package}}</td>
+		<td><span class="status status-{{status}}"></span> {{status}}</td>
+	</tr>
+{{/each}}
