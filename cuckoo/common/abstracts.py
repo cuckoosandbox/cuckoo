@@ -701,7 +701,7 @@ class Signature(object):
         'browser': ['js', 'url']
     }
 
-    _default_weights = {
+    weights = {
         'document': 2.0,
         'executable': 1.0,
         'browser': 1.5
