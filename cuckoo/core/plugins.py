@@ -460,7 +460,7 @@ class RunSignatures(object):
     #
     def _context_aware_score(self, signature, package):
         ctx = Signature.context_from_package(package)
-        if weights in signature and ctx in signature.weights:
+        if ctx in signature.weights:
             # If provided get the signature-specific multiplier
             multiplier = signature.weights[ctx]
         else:
