@@ -706,6 +706,21 @@ class Signature(object):
     minimum = None
     maximum = None
 
+    _bundles = {
+        'document': ['doc', 'ppt', 'xsl', 'pdf'],
+        'executable': ['applet', 'bin', 'cpl', 'exe', 'dll',
+                       'jar', 'msi', 'ps1', 'python', 'vbs',
+                       'wsf'],
+        'browser': ['js', 'url', 'ie']
+    }
+
+    weights = {
+        'document': 2.0,
+        'executable': 1.0,
+        'browser': 1.5
+    }
+
+
     # Maximum amount of marks to record.
     markcount = 50
 
@@ -731,6 +746,13 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
+
+    @staticmethod
+    def context_from_package(package):
+        for context, packages in Signature._bundles.iteritems():
+            if package in packages:
+                return context
+        return None
 
     @classmethod
     def init_once(cls):

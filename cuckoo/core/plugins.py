@@ -16,6 +16,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooDisableModule
+from cuckoo.common.abstracts import Signature
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -440,7 +441,11 @@ class RunSignatures(object):
                     }
                 )
                 self.matched.append(signature.results())
-                score += signature.severity
+                if "info" in self.results:
+                    score += self._context_aware_score(
+                                signature, self.results["info"]["package"])
+                else:
+                    score += signature.severity
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -448,6 +453,23 @@ class RunSignatures(object):
         self.results["signatures"] = self.matched
         if "info" in self.results:
             self.results["info"]["score"] = score / 5.0
+
+
+    #
+    # Returns a signature score based on the analysis package.
+    # Signature score multipliers are defined per signature.
+    #
+    def _context_aware_score(self, signature, package):
+        ctx = Signature.context_from_package(package)
+        if ctx in signature.weights:
+            # If provided get the signature-specific multiplier
+            multiplier = signature.weights[ctx]
+        else:
+            # If everything else fails use 1.0
+            multiplier = 1.0
+        #log.warning("Multiplier set to %.2f", multiplier)
+
+        return signature.severity * multiplier
 
 class RunReporting(object):
     """Reporting Engine.
