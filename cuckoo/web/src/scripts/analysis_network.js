@@ -48,6 +48,9 @@ class RequestDisplay {
         this.isLoaded = false;
         this.isOpen = false;
 
+        // util function for storing stuff to somewhere
+        this.store = options.store ? options.store : function(){};
+
         // request-specific parameters
         this.index = this.el.data('index');
         this.protocol = this.el.data('protocol');
@@ -57,9 +60,9 @@ class RequestDisplay {
         this.response_body = null;
 
         // display modes, controls what the user will see in the body field
-        this.displayBody = 'response';
-        this.displayOutput = 'hex';
-        this.displayMode = 16;
+        this.displayBody = options.displayBody ? options.displayBody : 'response';
+        this.displayOutput = options.displayOutput ? options.displayOutput : 'hex';
+        this.displayMode = options.displayMode ? options.displayMode : 16;
 
         // actions
         this.actions = options.actions ? options.actions : {
@@ -164,6 +167,7 @@ class RequestDisplay {
 
             // draws the new body view
             self.bodyViewMode();
+            self.store(self.displayMode, self.displayOutput, self.displayBody);
         });
 
         self.open();
@@ -216,6 +220,7 @@ class RequestDisplay {
         } else {
             this.el.find('.tab-mode').hide();
         }
+
     }   
 
     /*
@@ -286,8 +291,8 @@ $(function() {
 
     var rDisplays = [];
 
+    // persists property to other active http display elements
     function persistProperty(prop, value) {
-
         rDisplays.forEach(function(rdisp) {
             if(rdisp[prop] == value) return;
             rdisp[prop] = value;
@@ -295,9 +300,23 @@ $(function() {
         });
     }
 
+    // returns the localstorage preferences
+    function getPreferences() {
+        return {
+            displayMode: localStorage.getItem('http-display-mode'),
+            displayOutput: localStorage.getItem('http-display-output'),
+            displayBody: localStorage.getItem('http-display-body')
+        }
+    }
+
+    var prefs = getPreferences();
+
 	$("#http-requests .network-display__request").each(function() {
 
     	var rd = new RequestDisplay($(this), {
+            displayMode: prefs.displayMode ? prefs.displayMode : 16,
+            displayOutput: prefs.displayOutput ? prefs.displayOutput : 'hex',
+            displayBody: prefs.displayBody ? prefs.displayBody : 'response',
             actions: {
                 display: function(value, $parent) {
                     this.displayBody = value;
@@ -311,6 +330,13 @@ $(function() {
                     this.displayMode = parseInt(value);
                     persistProperty('displayMode', parseInt(value));
                 }
+            },
+            store: function(mode, output, body) {
+                console.log('before store');
+                window.localStorage.setItem('http-display-mode', mode);
+                window.localStorage.setItem('http-display-output', output);
+                window.localStorage.setItem('http-display-body', body);
+                console.log('after store');
             }
         });
 
