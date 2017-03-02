@@ -94,6 +94,8 @@ class Pcap(object):
         self.whitelist_enabled = self._build_whitelist_conf()
         # List of known good DNS servers
         self.known_dns = self._build_known_dns()
+        # List of all used DNS servers
+        self.dns_servers = []
 
     def _build_whitelist(self):
         result = []
@@ -152,6 +154,14 @@ class Pcap(object):
         else:
             ip = ""
         return ip
+
+    def _add_used_dns_server(self, server):
+        """Add DNS server to used DNS server
+        list
+        @param server: dns server
+        """
+        self.dns_servers.append(server)
+
 
     def _is_private_ip(self, ip):
         """Check if the IP belongs to private network blocks.
@@ -308,6 +318,9 @@ class Pcap(object):
         @param udpdata: UDP data flow.
         """
         dns = dpkt.dns.DNS(udpdata)
+
+        if len(dns.an) < 1:
+            self._add_used_dns_server(conn["dst"])
 
         # DNS query parsing.
         query = {}
@@ -714,6 +727,7 @@ class Pcap(object):
         self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
+        self.results["dns_servers"] = list(set(self.dns_servers))
 
         self.results["dead_hosts"] = []
 
@@ -741,6 +755,7 @@ class Pcap2(object):
 
         self.handlers = {
             25: httpreplay.cut.smtp_handler,
+            587: httpreplay.cut.smtp_handler,
             80: httpreplay.cut.http_handler,
             8000: httpreplay.cut.http_handler,
             8080: httpreplay.cut.http_handler,
@@ -752,6 +767,7 @@ class Pcap2(object):
         results = {
             "http_ex": [],
             "https_ex": [],
+            "smtp": []
         }
 
         if not os.path.exists(self.network_path):
@@ -763,6 +779,27 @@ class Pcap2(object):
         l = sorted(r.process(), key=lambda x: x[1])
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
+
+            if protocol == "smtp":
+                results[protocol].append({
+                    "src": srcip,
+                    "dst": dstip,
+                    "sport": srcport,
+                    "dport": dstport,
+                    "protocol": protocol,
+                    "req": {
+                        "hostname": sent.hostname,
+                        "mail_from": sent.mail_from,
+                        "mail_to": sent.mail_to,
+                        "auth_type": sent.auth_type,
+                        "username": sent.username,
+                        "password": sent.password,
+                        "headers": sent.headers
+                    },
+                    "resp": {
+                        "banner": recv.ready_message
+                    }
+                })
 
             if protocol == "http" or protocol == "https":
                 request = sent.raw.split("\r\n\r\n", 1)[0]

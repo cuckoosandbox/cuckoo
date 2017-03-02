@@ -16,6 +16,7 @@ from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.virustotal import VirusTotal
+from cuckoo.processing.network import Pcap
 
 db = Database()
 
@@ -187,3 +188,9 @@ class TestProcessing:
             })
             v.run()
         e.match("Unsupported task category")
+
+class TestProcessingNetwork:
+
+    def test_create_dns_server_list(self):
+        res = Pcap("tests/files/pcap/used_dns_server.pcap", {}).run()
+        assert res["dns_servers"] == ["8.8.8.8"]
