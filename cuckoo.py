@@ -16,7 +16,6 @@ try:
     from lib.cuckoo.common.exceptions import CuckooDependencyError
     from lib.cuckoo.common.logo import logo
     from lib.cuckoo.common.utils import exception_message
-    from lib.cuckoo.core.resultserver import ResultServer
     from lib.cuckoo.core.scheduler import Scheduler
     from lib.cuckoo.core.startup import check_working_directory, check_configs
     from lib.cuckoo.core.startup import check_version, create_structure
@@ -77,7 +76,7 @@ def cuckoo_init(quiet=False, debug=False, artwork=False, test=False):
     if test:
         return
 
-    ResultServer()
+
 
     os.chdir(cur_path)
 
