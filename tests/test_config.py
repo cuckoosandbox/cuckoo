@@ -307,21 +307,33 @@ def test_invalid_feedback():
         check_configs()
     e.match("Cuckoo Feedback configuration")
 
-WHITESPACE_BEFORE_LINE = """
+def test_whitespace_before_line():
+    set_cwd(tempfile.mkdtemp())
+    filepath = Files.temp_put("""
 [virtualbox]
 machines = cuckoo1
 [cuckoo1]
 label = cuckoo1
 ip = 1.2.3.4
  snapshot = asnapshot
-"""
-
-def test_whitespace_before_line():
-    set_cwd(tempfile.mkdtemp())
-    filepath = Files.temp_put(WHITESPACE_BEFORE_LINE)
+""")
     with pytest.raises(CuckooConfigurationError) as e:
         Config(file_name="virtualbox", cfg=filepath)
     e.match("error reading in the")
+
+def test_whitespace_before_line2():
+    set_cwd(tempfile.mkdtemp())
+    filepath = Files.temp_put("""
+[virtualbox]
+machines = cuckoo1
+[cuckoo1]
+ label = cuckoo1
+ip = 1.2.3.4
+snapshot = asnapshot
+""")
+    with pytest.raises(CuckooConfigurationError) as e:
+        Config(file_name="virtualbox", cfg=filepath)
+    e.match("Most likely there are leading whitespaces")
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
