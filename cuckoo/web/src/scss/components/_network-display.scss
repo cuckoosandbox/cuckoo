@@ -394,6 +394,44 @@
 
 	}
 
+	&__table {
+
+		padding: 0;
+
+		& > table {
+			@extend .cuckoo-table;
+			background-color: transparent;
+			font-size: 14px;
+			border: 0;
+
+			thead,
+			tbody {
+				& > tr:nth-child(odd),
+				& > tr:nth-child(even) {
+					background-color: transparent;
+
+					th,
+					td {
+						padding-top: 10px;
+						padding-bottom: 10px;
+					}
+
+					& > th:first-child,
+					& > td:first-child {
+						padding-left: 25px;
+					}
+
+					& > th:last-child,
+					& > td:last-child {
+						padding-right: 25px;
+					}
+				}
+			}
+
+		}
+
+	}
+
 }
 
 .network-analysis-pages > div {

@@ -1,4 +1,5 @@
 <div class="network-display__outer" id="http-requests">
+
     {% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
         {% for http in report.analysis.network.https_ex %}
             {% include "partials/http-request.html" with http=http %}
