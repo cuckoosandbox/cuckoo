@@ -12,6 +12,7 @@ from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
+from cuckoo.processing.network import Pcap2
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
@@ -187,3 +188,13 @@ class TestProcessing:
             })
             v.run()
         e.match("Unsupported task category")
+
+class TestPcap2(object):
+    def test_http_status(self):
+        p = Pcap2(
+            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+        )
+        obj = p.run()
+        assert len(obj["http_ex"]) == 1
+        assert not obj["https_ex"]
+        assert obj["http_ex"][0]["status"] == 301
