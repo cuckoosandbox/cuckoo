@@ -162,7 +162,6 @@ class Pcap(object):
         """
         self.dns_servers.append(server)
 
-
     def _is_private_ip(self, ip):
         """Check if the IP belongs to private network blocks.
         @param ip: IP address to verify.
@@ -767,7 +766,7 @@ class Pcap2(object):
         results = {
             "http_ex": [],
             "https_ex": [],
-            "smtp": []
+            "smtp_ex": []
         }
 
         if not os.path.exists(self.network_path):
@@ -780,7 +779,7 @@ class Pcap2(object):
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
 
-            if protocol == "smtp":
+            if protocol == "smtp_ex":
                 results[protocol].append({
                     "src": srcip,
                     "dst": dstip,
@@ -794,7 +793,8 @@ class Pcap2(object):
                         "auth_type": sent.auth_type,
                         "username": sent.username,
                         "password": sent.password,
-                        "headers": sent.headers
+                        "headers": sent.headers,
+                        "mail_body": sent.message
                     },
                     "resp": {
                         "banner": recv.ready_message
