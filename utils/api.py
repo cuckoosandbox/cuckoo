@@ -20,12 +20,20 @@ except ImportError:
 
 sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
+from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.constants import CUCKOO_VERSION, CUCKOO_ROOT
 from lib.cuckoo.common.utils import store_temp_file, delete_folder
 from lib.cuckoo.core.database import Database, TASK_RUNNING, Task
 from lib.cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED
 from lib.cuckoo.core.startup import drop_privileges
 from lib.cuckoo.core.rooter import rooter
+
+HAS_MONGO = True
+try:
+    import pymongo
+    import bson.json_util
+except ImportError:
+    HAS_MONGO = False
 
 # Global Database object.
 db = Database()
@@ -302,6 +310,80 @@ def tasks_report(task_id, report_format="json"):
         response.headers["Content-Type"] = \
             "application/x-tar; charset=UTF-8"
         return response
+    elif report_format.lower() == 'jsondb':
+        if not HAS_MONGO:
+            return json_error(400, 'pymongo not installed')
+
+        try:
+            options = Config('reporting')
+            mongo_options = options.get('mongodb')
+            if not mongo_options['enabled']:
+                return json_error(400, 'Report format not supported')
+
+            host = mongo_options['host']
+            port = mongo_options['port']
+            db = mongo_options['db']
+        except Exception as e:
+            return json_error(400, 'Error reading config file')
+
+        try:
+            mc = pymongo.MongoClient(host, port)
+            cuckoo_db = mc[db]
+            report = cuckoo_db.analysis.find_one({'info.id': task_id})
+            mc.disconnect()
+            del report['_id']
+            del report['shots']
+            del report['dropped']
+            if 'network' in report:
+                if 'pcap_id' in report['network']:
+                    del report['network']['pcap_id']
+                if 'sorted_pcap_id' in report['network']:
+                    del report['network']['sorted_pcap_id']
+
+            if 'target' in report:
+                if 'file_id' in report['target']:
+                    del report['target']['file_id']
+
+            if "behavior" in report and "processes" in report["behavior"]:
+                for process in report["behavior"]["processes"]:
+                    first_seen = process['first_seen']
+                    del process['first_seen']
+                    process['first_seen'] = first_seen.ctime()
+                    #process['first_seen'] = first_seen
+                    process_calls = []
+                    for call_id in process['calls']:
+                        call_info = cuckoo_db.calls.find_one({'_id': call_id})
+                        process_calls.extend(call_info['calls'])
+
+                    del process['calls']
+                    for pc in process_calls:
+                        time = pc['time']
+                        del pc['time']
+                        pc['time'] = time.ctime()
+                    process['calls'] = process_calls
+
+            if "behavior" in report and "generic" in report["behavior"]:
+                for process in report["behavior"]["generic"]:
+                    first_seen = process['first_seen']
+                    del process['first_seen']
+                    process['first_seen'] = first_seen.ctime()
+
+            if "behavior" in report and "processtree" in report["behavior"]:
+                for process in report["behavior"]["processtree"]:
+                    #first_seen = process['first_seen']['$data']
+                    first_seen = process['first_seen']
+                    del process['first_seen']
+                    process['first_seen'] = first_seen.ctime()
+                    if 'children' in process:
+                        for child in process['children']:
+                            first_seen = child['first_seen']
+                            del child['first_seen']
+                            child['first_seen'] = first_seen.ctime()
+
+            data = bson.json_util.dumps(report)
+            return data
+        except Exception as e:
+            return json_error(400, "Error connecting to mongo: %s" % str(e))
     else:
         return json_error(400, "Invalid report format")
 
