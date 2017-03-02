@@ -4475,19 +4475,31 @@ button .panel-heading .glyphicon {
   padding: 0 15px;
 }
 .cuckoo-errors .troubleshoot ul {
-  margin: 0;
-  padding: 0;
   list-style: none;
+  margin: 5px 0 0 0;
+  padding: 0;
 }
 .cuckoo-errors .troubleshoot ul li {
+  display: flex;
+  align-items: flex-start;
   margin-bottom: 5px;
-  padding: 15px;
-  border-bottom: 1px solid #ebccd1;
-  border-top: 1px solid #ebccd1;
-  background-color: #fff;
+  padding: 0 15px;
+}
+.cuckoo-errors .troubleshoot ul li p {
+  font-weight: 400;
+  color: inherit;
+  padding: 0;
+}
+.cuckoo-errors .troubleshoot ul li p a {
+  display: inline;
+  margin: 0 2px;
 }
 .cuckoo-errors .troubleshoot ul li:last-child {
   margin-bottom: 0;
+}
+.cuckoo-errors .troubleshoot ul li:before {
+  content: "\2192";
+  margin-right: 15px;
 }
 
 .errors {
