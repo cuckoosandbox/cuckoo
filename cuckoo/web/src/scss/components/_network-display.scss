@@ -408,12 +408,14 @@
 			tbody {
 				& > tr:nth-child(odd),
 				& > tr:nth-child(even) {
-					background-color: transparent;
+
+					overflow: hidden;
 
 					th,
 					td {
 						padding-top: 10px;
 						padding-bottom: 10px;
+						vertical-align: top;
 					}
 
 					& > th:first-child,

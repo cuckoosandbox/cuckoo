@@ -1,0 +1,12 @@
+<div class="dns-badge">
+    <span class="dns-badge__type">{{a.type}}</span>
+    <span class="dns-badge__content">
+        {% if a.type == "CNAME" %}
+            <a href="{% url "analysis.views.moloch" host=a.data %}">{{a.data|linebreaksbr}}</a>
+        {% elif a.type == "A" and ":" not in a.data %}
+            <a href="{% url "analysis.views.moloch" ip=a.data %}">{{a.data|linebreaksbr}}</a>
+        {% else %}  
+            {{a.data|linebreaksbr}}
+        {% endif %}
+    </span>
+</div>

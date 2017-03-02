@@ -20,8 +20,8 @@
                     <div class="col-md-12">
 
                     	   <div class="grouped-buttons__bordered network-analysis-groups">
-                                <a class="active" href="#network-analysis-hosts" data-total="{{ report.analysis.network.hosts|length }}">Hosts <span class="button-badge">{{ report.analysis.network.hosts|length }}</span></a>
-                                <a href="#network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
+                                <a href="#network-analysis-hosts" data-total="{{ report.analysis.network.hosts|length }}">Hosts <span class="button-badge">{{ report.analysis.network.hosts|length }}</span></a>
+                                <a class="active" href="#network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
                                 <a href="#network-analysis-tcp" data-total="{{ report.analysis.network.tcp|length }}">TCP <span class="button-badge">{{ report.analysis.network.tcp|length }}</span></a>
                                 <a href="#network-analysis-udp" data-total="{{ report.analysis.network.udp|length }}">UDP <span class="button-badge">{{ report.analysis.network.udp|length }}</span></a>
                                 <a href="#network-analysis-http" data-total="{% if report.analysis.network.http_ex %} {{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }} {% else %} {{ report.analysis.network.http|length }} {% endif %}">
@@ -40,8 +40,8 @@
                     </div>
 
                     <div class="col-md-12 network-analysis-pages">
-                        <div id="network-analysis-hosts" class="active">{% include "analysis/pages/network/_hosts.html" %}</div>
-                        <div id="network-analysis-dns">{% include "analysis/pages/network/_dns.html" %}</div>
+                        <div id="network-analysis-hosts">{% include "analysis/pages/network/_hosts.html" %}</div>
+                        <div id="network-analysis-dns" class="active">{% include "analysis/pages/network/_dns.html" %}</div>
                         <div id="network-analysis-tcp">{% include "analysis/pages/network/_tcp.html" %}</div>
                         <div id="network-analysis-udp"><{% include "analysis/pages/network/_udp.html" %}</div>
                         <div id="network-analysis-http">{% include "analysis/pages/network/_http.html" %}</div>
