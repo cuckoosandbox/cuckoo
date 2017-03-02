@@ -6,7 +6,7 @@
     @param headerStr [String]
     @returns headers [Array]
  */
-function parseHeaderString(headerStr, extract_status_code) {
+function parseHeaderString(headerStr, debug) {
 
     var header_lines = headerStr.split(/\r?\n/);
     var status_code;
@@ -244,7 +244,6 @@ class RequestDisplay {
 
         // private functions
         function renderHex(str) {
-
             return hexy(base64.decode(str), {
                 width: displayMode ? displayMode : 16,
                 html: false
@@ -302,11 +301,20 @@ $(function() {
 
     // returns the localstorage preferences
     function getPreferences() {
-        return {
-            displayMode: localStorage.getItem('http-display-mode'),
-            displayOutput: localStorage.getItem('http-display-output'),
-            displayBody: localStorage.getItem('http-display-body')
+
+        var json = {
+            displayMode: undefined,
+            displayOutput: undefined,
+            displayBody: undefined
+        };
+
+        var ls = localStorage.getItem('http-display');
+
+        if(ls) {
+            json = JSON.parse(ls);
         }
+
+        return json;
     }
 
     var prefs = getPreferences();
@@ -332,11 +340,11 @@ $(function() {
                 }
             },
             store: function(mode, output, body) {
-                console.log('before store');
-                window.localStorage.setItem('http-display-mode', mode);
-                window.localStorage.setItem('http-display-output', output);
-                window.localStorage.setItem('http-display-body', body);
-                console.log('after store');
+                window.localStorage.setItem('http-display', JSON.stringify({
+                    'displayMode': mode,
+                    'displayOutput': output,
+                    'dispayBody': body
+                }));
             }
         });
 
