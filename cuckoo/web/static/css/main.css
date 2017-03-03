@@ -5181,6 +5181,7 @@ body.night .network-display__request-details table tr:nth-child(even) .key-value
   background-color: #f9f9f9;
 }
 .source-destination > li > a.active {
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.2);
   background-color: #6297F8;
   color: #fff;
 }
