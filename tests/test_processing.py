@@ -13,6 +13,7 @@ from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.network import Pcap
+from cuckoo.processing.network import Pcap2
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
@@ -189,8 +190,22 @@ class TestProcessing:
             v.run()
         e.match("Unsupported task category")
 
-class TestProcessingNetwork:
+class TestProcessingNetwork(object):
 
     def test_create_dns_server_list(self):
         res = Pcap("tests/files/pcap/used_dns_server.pcap", {}).run()
         assert res["dns_servers"] == ["8.8.8.8"]
+
+class TestPcap2(object):
+
+    def test_smtp_ex(self):
+        pcap = Pcap2("tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp())
+        data = pcap.run()
+
+        assert len(data["smtp_ex"]) == 1
+        assert data["smtp_ex"][0]["req"]["username"] == "galunt"
+        assert data["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
+        assert data["smtp_ex"][0]["req"]["mail_to"] == ['xxxxxx.xxxx@xxxxx.com']
+        assert data["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
+        assert len(data["smtp_ex"][0]["req"]["headers"]) == 10
+        assert data["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
