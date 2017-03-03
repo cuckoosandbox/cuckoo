@@ -1,72 +1,48 @@
 {% load staticfiles %}
 {% load analysis_tags %}
-<script src="{% static "js/misc/hexdump.js" %}"></script>
-<section id="tcp" class="tcpudp">
-    <h4>TCP</h4>
-    {% if report.analysis.network.tcp %}
-        <div class="row">
-            <div class="col-md-6">
-                <table class="table table-bordered table-hover">
-                    <tr>
-                        <th>Source</th>
-                        <th>Source Port</th>
-                        <th>Destination</th>
-                        <th>Destination Port</th>
-                    </tr>
-                    {% for p in report.analysis.network.tcp %}
-                        <tr class="connrow" data="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},tcp">
-                            <td>{{p.src}}</td>
-                            <td>{{p.sport}}</td>
-                            <td>{{p.dst}} {{ report.iplookups|get_item:p.dst }}</td>
-                            <td>{{p.dport}}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-            <div class="stream col-md-6"></div>
-        </div>
-    {% else %}
-        <p>No TCP connections recorded.</p>
-    {% endif %}
-</section>
-<script type='text/javascript'>
-$(function () {
-    $("section.tcpudp table tr.connrow").click(function(e) {
-        var $section = $(this).closest("section");
 
-        $section.find("table tr.connrow").removeClass("row-active");
-        $(this).addClass("row-active"); 
+<div class="flex-grid__horizontal flex-grid__fluid">
 
-        var choice = $(this).closest('tr').attr('data');
+    <div class="flex-grid__column--md">
+            
+            <ul class="source-destination">
+                <li class="title">TCP Requests</li>
+                {% for p in report.analysis.network.tcp %}
+                    <li>
+                        <a href="#">
+                            <div class="flex-distribute">
+                                <span class="source">
+                                    {{p.src}}:{{p.sport}}
+                                </span>
+                                <i class="fa fa-long-arrow-right"></i>
+                                <span class="destination">
+                                    {{p.dst}}:{{p.dport}}
+                                </span>
+                            </div>
+                            <span class="destination-address">{{ report.iplookups|get_item:p.dst }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+    </div>
 
-        $.get("/analysis/{{report.analysis.info.id}}/pcapstream/"+choice+"/", function(data, status, xhr) {
-            if (status == "error") {
-                $section.find("div.stream").html("Error loading data. Please reload the page and if the error persists contact us.");
-            } else {
-                var out = $("<ul class=\"tcp-flow\">");
-                var first = undefined;
-                for (var i in data) {
-                    var p = data[i];
-                    var tuple = p.src + ":" + p.sport + " &rarr; " + p.dst + ":" + p.dport;
+    <div class="flex-grid__column">
+        <div class="network-display__outer"></div>
+    </div>
 
-                    if (first == undefined) first = tuple;
-                    if (first != tuple) { 
-                        tcpclass = "tcp-in";
-                        icon = "<i class=\"glyphicon glyphicon-chevron-down\" title=\"Inbound\"></i>";
-                    } else {
-                        tcpclass = "tcp-out";
-                        icon = "<i class=\"glyphicon glyphicon-chevron-up\" title=\"Outbound\"></i>";
-                    }
+</div>
 
-                    var li = $("<li class=\"" + tcpclass + "\">" + icon + tuple + "</li>").append("<pre>" + hexy(base64.decode(p.raw)) + "</pre>");
-                    out.append(li);
-                }
-                $section.find("div.stream").html(out);
-            }
-        });
+<script>
+
+    $(function() {
+
+        $('.source-destination li:nth-child(5) a').addClass('active');
+
+        $('.source-destination a').bind('click', function(e) {
+            e.preventDefault();
+            $('.source-destination a').removeClass('active');
+            $(this).addClass('active');
+        })
     });
-    // autoload first one
-    var $row = $("section#tcp table tr.connrow").first().click();
-    var $row = $("section#udp table tr.connrow").first().click();
-})
+
 </script>

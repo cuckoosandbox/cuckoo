@@ -5146,6 +5146,87 @@ body.night .network-display__request-details table tr:nth-child(even) .key-value
   display: block;
 }
 
+.source-destination {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid #CECECE;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.source-destination > li {
+  background-color: #fff;
+  border-bottom: 1px solid #CECECE;
+}
+.source-destination > li.title {
+  padding: 12px 15px 7px 15px;
+  border-bottom-width: 2px;
+  background-color: #f4f4f4;
+  color: #ACAFB5;
+  font-weight: 700;
+}
+.source-destination > li:last-child {
+  border-bottom: 0;
+}
+.source-destination > li > a {
+  display: block;
+  padding: 7px 15px 10px 15px;
+  font-weight: 700;
+}
+.source-destination > li > a .flex-distribute {
+  padding: 5px;
+}
+.source-destination > li > a:hover, .source-destination > li > a:focus, .source-destination > li > a:active {
+  text-decoration: none;
+  background-color: #f9f9f9;
+}
+.source-destination > li > a.active {
+  background-color: #6297F8;
+  color: #fff;
+}
+.source-destination > li > a.active .destination-address {
+  color: #fff;
+  border-color: #fff;
+  border-width: 2px;
+  background-color: transparent;
+  font-weight: 700;
+}
+.source-destination > li > a.active .destination-address:before {
+  border-bottom-color: #fff;
+}
+.source-destination > li .source,
+.source-destination > li .destination {
+  flex-basis: 50%;
+}
+.source-destination > li .destination {
+  text-align: right;
+}
+.source-destination > li .fa-long-arrow-right {
+  color: #d5d5d5;
+}
+.source-destination > li .destination-address {
+  position: relative;
+  display: block;
+  padding: 3px 0;
+  text-align: center;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  border: 1px solid #e5e5e5;
+  font-weight: 400;
+}
+.source-destination > li .destination-address:before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  margin-left: -7px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #e5e5e5;
+}
+
 /*
 	Custom utility for tabs, as the bootstrap tabs are stupid.
 	These tabs allow to have tabs without implementing the functionality,
@@ -5215,7 +5296,7 @@ body.night .flex-tabs__tab .btn:not(.active):hover {
   border-right-width: 1px;
 }
 
-.flex-grid {
+.flex-grid, .flex-grid__horizontal {
   display: flex;
   flex-direction: column;
   width: 100vw;
@@ -5414,14 +5495,38 @@ body.night .flex-grid__nav {
   flex-basis: 1180px;
   margin: 15px 0;
 }
-.flex-grid__column {
+.flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
   flex-basis: 100%;
 }
-.flex-grid__column.one-third {
+.flex-grid__column.one-third, .flex-grid__horizontal .one-third.flex-grid__column--xs, .flex-grid__horizontal .one-third.flex-grid__column--sm, .flex-grid__horizontal .one-third.flex-grid__column--md {
   flex-basis: 33.33333%;
 }
-.flex-grid__column.two-third {
+.flex-grid__column.two-third, .flex-grid__horizontal .two-third.flex-grid__column--xs, .flex-grid__horizontal .two-third.flex-grid__column--sm, .flex-grid__horizontal .two-third.flex-grid__column--md {
   flex-basis: 66.66667%;
+}
+.flex-grid__column--fixed, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.flex-grid__horizontal {
+  flex-direction: row;
+}
+.flex-grid__horizontal .flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
+  margin: 0 15px;
+}
+.flex-grid__horizontal .flex-grid__column--xs {
+  flex-basis: 150px;
+}
+.flex-grid__horizontal .flex-grid__column--sm {
+  flex-basis: 250px;
+}
+.flex-grid__horizontal .flex-grid__column--md {
+  flex-basis: 400px;
+}
+.flex-grid__fluid {
+  height: auto;
+  width: calc(100% + 30px);
+  margin-left: -15px;
 }
 
 .flex-display {
@@ -5473,6 +5578,16 @@ body.cyborg .flex-display .highlight-dark {
 }
 body.cyborg .flex-display > * {
   border-color: #0ce3ac;
+}
+
+/*
+	Flex utility: flex-distribute
+	distributes items in a simple flex-layout container
+ */
+.flex-distribute {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .cuckoo-files {
