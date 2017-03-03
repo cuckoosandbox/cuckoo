@@ -318,7 +318,7 @@ class Pcap(object):
         """
         dns = dpkt.dns.DNS(udpdata)
 
-        if len(dns.an) < 1:
+        if dns.qr == dpkt.dns.DNS_Q:
             self._add_used_dns_server(conn["dst"])
 
         # DNS query parsing.
@@ -779,8 +779,8 @@ class Pcap2(object):
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
 
-            if protocol == "smtp_ex":
-                results[protocol].append({
+            if protocol == "smtp":
+                results["smtp_ex"].append({
                     "src": srcip,
                     "dst": dstip,
                     "sport": srcport,
