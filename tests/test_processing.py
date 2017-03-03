@@ -14,11 +14,12 @@ from cuckoo.misc import set_cwd
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.network import Pcap
 from cuckoo.processing.network import Pcap2
+from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.virustotal import VirusTotal
-from cuckoo.processing.platform.windows import RebootReconstructor
+
 db = Database()
 
 class TestProcessing:
