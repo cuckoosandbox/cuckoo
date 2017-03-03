@@ -18,7 +18,7 @@ from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.virustotal import VirusTotal
-
+from cuckoo.processing.platform.windows import RebootReconstructor
 db = Database()
 
 class TestProcessing:
@@ -209,3 +209,15 @@ class TestPcap2(object):
         assert data["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
         assert len(data["smtp_ex"][0]["req"]["headers"]) == 10
         assert data["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+
+class TestPlatformWindows(object):
+
+    def test_parse_cmdline(self):
+
+        rb = RebootReconstructor()
+        command = "Stuff.exe /Y /x -P"
+        args_unicode = "\u4404\u73A8 \uECBC\uEE9E".decode("unicode-escape")
+        command_unicode = "Stuff.exe " + args_unicode
+
+        assert rb.parse_cmdline(command) == ('Stuff.exe', ['/Y', '/x', '-P'])
+        assert rb.parse_cmdline(command_unicode) == ('Stuff.exe', ['\\u4404\\u73a8', '\\uecbc\\uee9e'])
