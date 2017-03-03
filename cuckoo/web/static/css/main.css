@@ -4815,7 +4815,7 @@ body.night .network-display__outer {
   background-color: #191919;
   border-color: #101010;
 }
-.network-display__request:not(:last-child) {
+.network-display__request:not(:last-child), .network-display__request--single:not(:last-child) {
   margin-bottom: 10px;
 }
 .network-display__request-summary {
@@ -4952,17 +4952,17 @@ body.night .network-display__request-summary:hover .method, body.night .network-
 body.night .network-display__request-summary:hover .fa-long-arrow-right {
   color: #111;
 }
-.network-display__request-details {
+.network-display__request-details, .network-display__request-details--single {
   display: none;
   border: 1px solid #CBD2DE;
   background-color: #F4F4F4;
   padding: 30px 0 15px 0;
   border-radius: 0 0 4px 4px;
 }
-.is-open .network-display__request-details {
+.is-open .network-display__request-details, .is-open .network-display__request-details--single {
   display: block;
 }
-.network-display__request-details .detail-field {
+.network-display__request-details .detail-field, .network-display__request-details--single .detail-field {
   flex-basis: 100%;
   /*
   	This class allows two fields to live next to each other,
@@ -4971,7 +4971,7 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   	containers.
    */
 }
-.network-display__request-details .detail-field__header {
+.network-display__request-details .detail-field__header, .network-display__request-details--single .detail-field__header {
   padding-left: 20px;
   font-size: 14px;
   border-bottom: 2px solid #D8D8D8;
@@ -4979,29 +4979,29 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   color: #ACAFB6;
   padding-bottom: 5px;
 }
-.network-display__request-details .detail-field__header .fa, .network-display__request-details .detail-field__header .dns-badge__content:before, .network-display__request-details .detail-field__header #submission-task-table .status.status-reported:before, #submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details .detail-field__header div:before, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:after, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:before, .network-display__request-details .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details .detail-field__header .custom-checkbox > input + span, .network-display__request-details .detail-field__header .breadcrumbs > li:not(:last-child):after {
+.network-display__request-details .detail-field__header .fa, .network-display__request-details--single .detail-field__header .fa, .network-display__request-details .detail-field__header .dns-badge__content:before, .network-display__request-details--single .detail-field__header .dns-badge__content:before, .network-display__request-details .detail-field__header #submission-task-table .status.status-reported:before, #submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header #submission-task-table .status.status-reported:before, #submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details .detail-field__header div:before, .network-display__request-details--single .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details--single .detail-field__header div:before, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:after, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:after, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:before, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:before, .network-display__request-details .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details .detail-field__header .custom-checkbox > input + span, .network-display__request-details--single .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details--single .detail-field__header .custom-checkbox > input + span, .network-display__request-details .detail-field__header .breadcrumbs > li:not(:last-child):after, .network-display__request-details--single .detail-field__header .breadcrumbs > li:not(:last-child):after {
   margin-right: 10px;
 }
-.network-display__request-details .detail-field__header.with-tabs {
+.network-display__request-details .detail-field__header.with-tabs, .network-display__request-details--single .detail-field__header.with-tabs {
   padding-bottom: 0;
 }
-.network-display__request-details .detail-field__header.with-tabs .flex-tabs__tabs {
+.network-display__request-details .detail-field__header.with-tabs .flex-tabs__tabs, .network-display__request-details--single .detail-field__header.with-tabs .flex-tabs__tabs {
   position: relative;
   top: 2px;
 }
-.network-display__request-details .detail-field__body {
+.network-display__request-details .detail-field__body, .network-display__request-details--single .detail-field__body {
   background-color: #fff;
   padding: 15px;
   border-bottom: 1px solid #D8D8D8;
 }
-.network-display__request-details .detail-field__body pre {
+.network-display__request-details .detail-field__body pre, .network-display__request-details--single .detail-field__body pre {
   padding: 0;
   margin: 0;
   background-color: transparent;
   border: 0;
   border-radius: 0;
 }
-.network-display__request-details .detail-field__body pre.empty-body:after {
+.network-display__request-details .detail-field__body pre.empty-body:after, .network-display__request-details--single .detail-field__body pre.empty-body:after {
   content: "Empty body";
   display: block;
   padding: 30px 0;
@@ -5014,91 +5014,113 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   color: #d8d8d8;
   letter-spacing: .02em;
 }
-.network-display__request-details .detail-field:not(:last-child) {
+.network-display__request-details .detail-field__footer, .network-display__request-details--single .detail-field__footer {
+  padding-top: 15px;
+  text-align: center;
+  color: #acafb6;
+  font-weight: 700;
+  font-size: 14px;
+}
+.network-display__request-details .detail-field__title, .network-display__request-details--single .detail-field__title {
+  padding: 0 15px;
+  margin: 0 0 15px;
+  color: #acafb6;
+}
+.network-display__request-details .detail-field:not(:last-child), .network-display__request-details--single .detail-field:not(:last-child) {
   margin-bottom: 20px;
 }
-.network-display__request-details .detail-field table {
+.network-display__request-details .detail-field table, .network-display__request-details--single .detail-field table {
   width: 100%;
   table-layout: fixed;
 }
-.network-display__request-details .detail-field table td {
+.network-display__request-details .detail-field table td, .network-display__request-details--single .detail-field table td {
   padding: 0 10px;
   font-size: 12px;
   font-weight: 700;
   vertical-align: top;
 }
-.network-display__request-details .detail-field table td.key-name {
+.network-display__request-details .detail-field table td.key-name, .network-display__request-details--single .detail-field table td.key-name {
   width: 30%;
   text-align: right;
   color: #9598A0;
   font-weight: 700;
 }
-.network-display__request-details .detail-field table td.key-value {
+.network-display__request-details .detail-field table td.key-value, .network-display__request-details--single .detail-field table td.key-value {
   word-wrap: break-word;
   font-family: "Courier New", monospace;
   font-weight: 700;
   color: #5E6166;
 }
-.network-display__request-details .detail-field-group {
+.network-display__request-details .detail-field-group, .network-display__request-details--single .detail-field-group {
   display: flex;
   align-items: stretch;
   margin-bottom: 30px;
 }
-.network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body {
+.network-display__request-details .detail-field-group .detail-field:not(:last-child) .detail-field__body, .network-display__request-details--single .detail-field-group .detail-field:not(:last-child) .detail-field__body {
   border-right: 1px solid #D8D8D8;
 }
-.network-display__request-details .detail-field-group .detail-field {
+.network-display__request-details .detail-field-group .detail-field, .network-display__request-details--single .detail-field-group .detail-field {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   margin-bottom: 0;
 }
-.network-display__request-details .detail-field-group .detail-field .detail-field__header {
+.network-display__request-details .detail-field-group .detail-field .detail-field__header, .network-display__request-details--single .detail-field-group .detail-field .detail-field__header {
   flex-basis: 27px;
 }
-.network-display__request-details .detail-field-group .detail-field .detail-field__body {
+.network-display__request-details .detail-field-group .detail-field .detail-field__body, .network-display__request-details--single .detail-field-group .detail-field .detail-field__body {
   flex-basis: 100%;
 }
-body.cyborg .network-display__request-details {
+body.cyborg .network-display__request-details, body.cyborg .network-display__request-details--single {
   background-color: #0d1b21;
   border-color: #133b4a;
 }
-body.cyborg .network-display__request-details .detail-field__header {
+body.cyborg .network-display__request-details .detail-field__header, body.cyborg .network-display__request-details--single .detail-field__header {
   color: #0ce3ac;
   border-color: #184b5e;
 }
-body.cyborg .network-display__request-details .detail-field__body,
-body.cyborg .network-display__request-details .flex-tabs__tab {
+body.cyborg .network-display__request-details .detail-field__body, body.cyborg .network-display__request-details--single .detail-field__body,
+body.cyborg .network-display__request-details .flex-tabs__tab,
+body.cyborg .network-display__request-details--single .flex-tabs__tab {
   background-color: #1b3946;
   border-color: #184b5e !important;
 }
-body.cyborg .network-display__request-details table tr:nth-child(odd),
-body.cyborg .network-display__request-details table tr:nth-child(even) {
+body.cyborg .network-display__request-details table tr:nth-child(odd), body.cyborg .network-display__request-details--single table tr:nth-child(odd),
+body.cyborg .network-display__request-details table tr:nth-child(even),
+body.cyborg .network-display__request-details--single table tr:nth-child(even) {
   background-color: transparent;
 }
-body.cyborg .network-display__request-details table tr:nth-child(odd) .key-value,
-body.cyborg .network-display__request-details table tr:nth-child(even) .key-value {
+body.cyborg .network-display__request-details table tr:nth-child(odd) .key-value, body.cyborg .network-display__request-details--single table tr:nth-child(odd) .key-value,
+body.cyborg .network-display__request-details table tr:nth-child(even) .key-value,
+body.cyborg .network-display__request-details--single table tr:nth-child(even) .key-value {
   color: #0ce3ac;
 }
-body.night .network-display__request-details {
+body.night .network-display__request-details, body.night .network-display__request-details--single {
   background-color: #252525;
   border-color: #222;
 }
-body.night .network-display__request-details .detail-field__header {
+body.night .network-display__request-details .detail-field__header, body.night .network-display__request-details--single .detail-field__header {
   border-color: #222;
 }
-body.night .network-display__request-details .detail-field__body,
-body.night .network-display__request-details .flex-tabs__tab {
+body.night .network-display__request-details .detail-field__body, body.night .network-display__request-details--single .detail-field__body,
+body.night .network-display__request-details .flex-tabs__tab,
+body.night .network-display__request-details--single .flex-tabs__tab {
   background-color: #333;
   border-color: #222 !important;
 }
-body.night .network-display__request-details table tr:nth-child(odd),
-body.night .network-display__request-details table tr:nth-child(even) {
+body.night .network-display__request-details table tr:nth-child(odd), body.night .network-display__request-details--single table tr:nth-child(odd),
+body.night .network-display__request-details table tr:nth-child(even),
+body.night .network-display__request-details--single table tr:nth-child(even) {
   background-color: transparent;
 }
-body.night .network-display__request-details table tr:nth-child(odd) .key-value,
-body.night .network-display__request-details table tr:nth-child(even) .key-value {
+body.night .network-display__request-details table tr:nth-child(odd) .key-value, body.night .network-display__request-details--single table tr:nth-child(odd) .key-value,
+body.night .network-display__request-details table tr:nth-child(even) .key-value,
+body.night .network-display__request-details--single table tr:nth-child(even) .key-value {
   color: #d7d7d7;
+}
+.network-display__request-details--single {
+  padding-top: 15px;
+  border-radius: 4px;
 }
 .network-display__table {
   padding: 0;

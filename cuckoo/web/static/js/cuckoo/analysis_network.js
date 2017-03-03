@@ -41,7 +41,7 @@ function parseHeaderString(headerStr, debug) {
 }
 
 /*
-	new HTTP layout helper
+	HTTP layout helper
  */
 
 var RequestDisplay = function () {

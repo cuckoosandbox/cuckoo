@@ -35,7 +35,7 @@ function parseHeaderString(headerStr, debug) {
 }
 
 /*
-	new HTTP layout helper
+	HTTP layout helper
  */
 class RequestDisplay {
 

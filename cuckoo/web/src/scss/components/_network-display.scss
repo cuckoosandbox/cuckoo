@@ -18,8 +18,16 @@
 
 	}
 
-	&__request:not(:last-child) {
-		margin-bottom: 10px;
+	&__request {
+
+		&:not(:last-child) {
+			margin-bottom: 10px;
+		}
+
+		&--single {
+			@extend .network-display__request;
+		}
+
 	}
 
 	&__request-summary {
@@ -275,6 +283,20 @@
 
 			}
 
+			&__footer {
+				padding-top: 15px;
+				text-align: center;
+				color: #acafb6;
+				font-weight: 700;
+				font-size: 14px;
+			}
+
+			&__title {
+				padding: 0 15px;
+				margin: 0 0 15px;
+				color: #acafb6;
+			}
+
 			&:not(:last-child) {
 				margin-bottom: 20px;
 			}
@@ -390,6 +412,13 @@
 				}
 			}
 
+		}
+
+		// some changes to a 'single' view, this means there is only one field, basically.
+		&--single {
+			@extend .network-display__request-details;
+			padding-top: 15px;
+			border-radius: 4px;
 		}
 
 	}
