@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import io
 import logging
 import re
 import shlex
@@ -551,11 +552,9 @@ class RebootReconstructor(object):
 
     def parse_cmdline(self, command_line):
         """Extract the filepath and arguments from the full commandline."""
-        try:
-            components = shlex.split(command_line, posix=False)
-        except UnicodeEncodeError:
-            components = shlex.split(command_line.encode("unicode-escape"),
-                                     posix=False)
+        components = shlex.split(
+            io.StringIO(unicode(command_line)), posix=False
+        )
         return components[0].strip('"'), components[1:]
 
     def _handle_run(self, arguments, flags):

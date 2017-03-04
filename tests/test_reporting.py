@@ -47,6 +47,21 @@ def test_empty_json():
     task(1, {}, conf, {})
     assert open(report_path, "rb").read() == "{}"
 
+def test_unicode_json():
+    set_cwd(tempfile.mkdtemp())
+
+    conf = {
+        "jsondump": {
+            "enabled": True,
+        },
+    }
+    report_path = cwd("reports", "report.json", analysis=1)
+
+    task(1, {}, conf, {
+        "a": u"\u1234 \uecbc\uee9e",
+    })
+    assert "\\uecbc\\uee9e" in open(report_path, "rb").read()
+
 @responses.activate
 def test_empty_mattermost():
     set_cwd(tempfile.mkdtemp())

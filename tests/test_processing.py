@@ -294,25 +294,15 @@ class TestBehavior(object):
         assert len(obj[1]["children"][0]["children"][1]["children"]) == 2
         assert not obj[2]["children"]
 
-class TestProcessingNetwork(object):
-
-    data = None
-
-    def get_mixed_network(self):
-        print("Call")
-        if TestProcessingNetwork.data is None:
-            path = "tests/files/pcap/mixed-traffic.pcap"
-            print("Aw yiss")
-            TestProcessingNetwork.data = Pcap(path, {}).run()
-        return TestProcessingNetwork.data
+class TestPcap(object):
+    @classmethod
+    def setup_class(cls):
+        cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
 
     def test_dns_server_list(self):
-        res = self.get_mixed_network()
-        assert res["dns_servers"] == ["8.8.8.8"]
+        assert self.pcap["dns_servers"] == ["8.8.8.8"]
 
     def test_network_tls(self):
-        res = self.get_mixed_network()
-
         expected = {
             "5125e361db3498ad5582861bd3e7d2833720dc2667e84898a1a9809ca5d8b026": "74df546aa33ce1cd4d4c70560c46517f4d82ff3f453bc5fada7571a11b0b40e7",
             "e06e26040000541f575837fe59fcffc048d2da914bb592947fb00d93fe3096c1": "3fc88fa50ae338e96dbadcce9d1a4a39d3ab4082bdb8486d3798b43f8de35828",
@@ -332,14 +322,12 @@ class TestProcessingNetwork(object):
         }
 
         found = {}
-        for tls in res["tls"]:
+        for tls in self.pcap["tls"]:
             found[tls["server_random"]] = tls["session_id"]
 
         assert expected == found
 
     def test_network_udp(self):
-        res = self.get_mixed_network()
-
         expected_src = ["192.168.56.110"]
         expected_dst = [
             "224.0.0.252", "8.8.8.8", "192.168.56.255",
@@ -349,19 +337,17 @@ class TestProcessingNetwork(object):
         sources = []
         destinations = []
 
-        for data in res["udp"]:
+        for data in self.pcap["udp"]:
             if data["src"] not in sources:
                 sources.append(data["src"])
             if data["dst"] not in destinations:
                 destinations.append(data["dst"])
 
-        assert len(res["udp"]) == 69
+        assert len(self.pcap["udp"]) == 69
         assert sources == expected_src
         assert destinations == expected_dst
 
     def test_network_tcp(self):
-        res = self.get_mixed_network()
-
         expected_src = ["192.168.56.110"]
         expected_dst = [
             "149.210.181.54",
@@ -385,19 +371,17 @@ class TestProcessingNetwork(object):
         sources = []
         destinations = []
 
-        for data in res["tcp"]:
+        for data in self.pcap["tcp"]:
             if data["src"] not in sources:
                 sources.append(data["src"])
             if data["dst"] not in destinations:
                 destinations.append(data["dst"])
 
-        assert len(res["tcp"]) == 51
+        assert len(self.pcap["tcp"]) == 51
         assert sources == expected_src
         assert destinations == expected_dst
 
     def test_network_icmp(self):
-        res = self.get_mixed_network()
-
         expected_types = {0:4, 8:4}
         expected_src = ["192.168.56.110", "149.210.181.54"]
         expected_dst = ["149.210.181.54", "192.168.56.110"]
@@ -408,7 +392,7 @@ class TestProcessingNetwork(object):
         messages = []
         types = {}
 
-        for data in res["icmp"]:
+        for data in self.pcap["icmp"]:
             if data["src"] not in sources:
                 sources.append(data["src"])
             if data["dst"] not in destinations:
@@ -419,14 +403,13 @@ class TestProcessingNetwork(object):
                 types[data["type"]] = 1
             messages.append(data["data"])
 
-        assert len(res["icmp"]) == 8
+        assert len(self.pcap["icmp"]) == 8
         assert expected_types == types
         assert expected_src == sources
         assert expected_dst == destinations
         assert expected_mes == messages
 
     def test_network_hosts(self):
-        res = self.get_mixed_network()
         expected_hosts = [
             "8.8.8.8", "149.210.181.54", "178.255.83.1",
             "104.16.93.188", "216.58.212.202", "23.51.117.163",
@@ -436,32 +419,28 @@ class TestProcessingNetwork(object):
             "40.86.224.10", "54.174.33.196", "138.91.83.37",
             "55.119.32.91", "5.5.119.1"
         ]
-        assert res["hosts"] == expected_hosts
+        assert self.pcap["hosts"] == expected_hosts
 
     def test_network_dead_hosts(self):
-        res = self.get_mixed_network()
         expected_dead = [
             ("55.119.32.91", 1234),
             ("5.5.119.1", 9836)
         ]
 
-        assert res["dead_hosts"] == expected_dead
+        assert self.pcap["dead_hosts"] == expected_dead
 
     def test_network_domains(self):
-        res = self.get_mixed_network()
-        assert len(res["domains"]) == 23
+        assert len(self.pcap["domains"]) == 23
 
     def test_network_dns(self):
-        res = self.get_mixed_network()
-
         expected_types = {
-            'A': 23, 'SOA': 1, 'TXT': 1,
-            'PTR': 3, 'AAAA': 2, 'CNAME': 1,
-            'SRV': 1, 'HINFO': 1, 'NS': 1, 'MX': 1
+            "A": 23, "SOA": 1, "TXT": 1,
+            "PTR": 3, "AAAA": 2, "CNAME": 1,
+            "SRV": 1, "HINFO": 1, "NS": 1, "MX": 1
         }
 
         types = {}
-        for res in res["dns"]:
+        for res in self.pcap["dns"]:
             t = res["type"]
             if t in types:
                 types[t] += 1
@@ -471,7 +450,6 @@ class TestProcessingNetwork(object):
         assert expected_types == types
 
 class TestPcap2(object):
-
     def test_smtp_ex(self):
         pcap = Pcap2("tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp())
         data = pcap.run()
@@ -484,14 +462,11 @@ class TestPcap2(object):
         assert len(data["smtp_ex"][0]["req"]["headers"]) == 10
         assert data["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
 
-class TestPlatformWindows(object):
-
-    def test_parse_cmdline(self):
-
-        rb = RebootReconstructor()
-        command = "Stuff.exe /Y /x -P"
-        args_unicode = "\u4404\u73A8 \uECBC\uEE9E".decode("unicode-escape")
-        command_unicode = "Stuff.exe " + args_unicode
-
-        assert rb.parse_cmdline(command) == ('Stuff.exe', ['/Y', '/x', '-P'])
-        assert rb.parse_cmdline(command_unicode) == ('Stuff.exe', ['\\u4404\\u73a8', '\\uecbc\\uee9e'])
+def test_parse_cmdline():
+    rb = RebootReconstructor()
+    assert rb.parse_cmdline("stuff.exe /Y /x -P") == (
+        "stuff.exe", ["/Y", "/x", "-P"]
+    )
+    assert rb.parse_cmdline(u"stuff.exe \u4404\u73a8 \uecbc\uee9e") == (
+        "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
+    )
