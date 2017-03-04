@@ -108,7 +108,7 @@ setuptools.setup(
         "dpkt==1.8.7",
         "elasticsearch==2.2.0",
         "flask==0.10.1",
-        "httpreplay==0.1.18",
+        "httpreplay==0.1.19",
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
         "lxml==3.6.0",
