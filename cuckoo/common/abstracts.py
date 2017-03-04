@@ -987,6 +987,10 @@ class Signature(object):
         """Returns a list of all smtp data."""
         return self.get_net_generic("smtp")
 
+    def get_net_smtp_ex(self):
+        """"Returns a list of all smtp data"""
+        return self.get_net_generic("smtp_ex")
+
     def get_virustotal(self):
         """Returns the information retrieved from virustotal."""
         return self.get_results("virustotal", {})
