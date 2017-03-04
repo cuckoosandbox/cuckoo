@@ -509,8 +509,10 @@ class GuestManager(object):
                 log.info("%s: analysis completed successfully", self.vmid)
                 return
             elif status["status"] == "exception":
-                log.info("%s: analysis caught an exception\n%s",
-                         self.vmid, status["description"])
+                log.warning(
+                    "%s: analysis caught an exception\n%s",
+                    self.vmid, status["description"]
+                )
                 return
 
     @property
