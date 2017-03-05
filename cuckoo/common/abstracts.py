@@ -335,7 +335,10 @@ class LibVirtMachinery(Machinery):
 
     def __init__(self):
         if not HAVE_LIBVIRT:
-            raise CuckooDependencyError("Unable to import libvirt")
+            raise CuckooDependencyError(
+                "The libvirt package has not been installed "
+                "(`pip install libvirt-python`)"
+            )
 
         super(LibVirtMachinery, self).__init__()
 
