@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -11,11 +11,10 @@ import logging
 import cuckoo
 
 from cuckoo.common.config import Config
-from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.exceptions import CuckooReportError
-from cuckoo.common.exceptions import CuckooDependencyError
-from cuckoo.common.exceptions import CuckooDisableModule
+from cuckoo.common.exceptions import (
+    CuckooOperationalError, CuckooConfigurationError, CuckooProcessingError,
+    CuckooReportError, CuckooDependencyError, CuckooDisableModule
+)
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -486,7 +485,7 @@ class RunReporting(object):
 
         try:
             options = self.cfg.get(module_name)
-        except CuckooOperationalError:
+        except CuckooConfigurationError:
             log.debug("Reporting module %s not found in configuration file", module_name)
             return
 
