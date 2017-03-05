@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os.path
 import responses
 import tempfile
 
@@ -15,6 +16,7 @@ from cuckoo.misc import set_cwd, cwd
 from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
 from cuckoo.reporting.mongodb import MongoDB
+from cuckoo.reporting.reporthtml import ReportHTML
 
 def test_init():
     p = Report()
@@ -322,3 +324,38 @@ def test_feedback_enabled(p, q):
     })
     q.assert_called_once()
     p.return_value.send_feedback.assert_called_once()
+
+def test_empty_html():
+    set_cwd(tempfile.mkdtemp())
+
+    conf = {
+        "reporthtml": {
+            "enabled": True,
+        },
+    }
+    report_path = cwd("reports", "report.html", analysis=1)
+    task(1, {}, conf, {})
+    assert os.path.exists(report_path)
+
+class TestReportHTML(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        self.r = ReportHTML()
+
+    def test_combine_images(self):
+        assert len(self.r.combine_images().split("\n")) == 1
+
+    def test_combine_screenshots(self):
+        assert len(self.r.combine_screenshots({
+            "screenshots": [{
+                "path": "tests/files/sample_analysis_storage/shots/0001.jpg",
+            }],
+        })) == 1
+
+    def test_combine_js(self):
+        lines = self.r.combine_js().split("\n")
+        assert "jQuery v2.2.4" in lines[0]
+        assert "Stupid jQuery table plugin" in lines[2]
+
+    def test_index_fonts(self):
+        assert len(self.r.index_fonts()) == 5
