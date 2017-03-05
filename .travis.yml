@@ -23,10 +23,12 @@ before_install:
   - sudo mysql -e "CREATE DATABASE cuckootest"
   - sudo mysql -e "CREATE DATABASE cuckootest060"
   - sudo mysql -e "CREATE DATABASE cuckootest11"
+  - sudo mysql -e "CREATE DATABASE distcuckootest"
   - psql -U postgres -c "CREATE USER cuckoo WITH PASSWORD 'cuckoo'"
   - psql -U postgres -c "CREATE DATABASE cuckootest"
   - psql -U postgres -c "CREATE DATABASE cuckootest060"
   - psql -U postgres -c "CREATE DATABASE cuckootest11"
+  - psql -U postgres -c "CREATE DATABASE distcuckootest"
 
 install:
   - python setup.py develop

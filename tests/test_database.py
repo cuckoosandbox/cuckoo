@@ -10,6 +10,8 @@ import tempfile
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
+from cuckoo.distributed.app import create_app
+from cuckoo.distributed.misc import settings
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
@@ -478,3 +480,33 @@ def test_connect_pg(p, q):
         connect_args={"sslmode": "disable"}
     )
     assert db.engine.pool_timeout == 120
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+class DistributedDatabaseEngine(object):
+    URI = None
+
+    @classmethod
+    def setup_class(cls):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        # Don't judge me!
+        with open(cwd("distributed", "settings.py"), "a+b") as f:
+            f.write("\nSQLALCHEMY_DATABASE_URI = %r\n" % cls.URI)
+
+        cls.app = create_app()
+
+    def test_dummy(self):
+        pass
+
+class TestDistributedSqlite3Memory(DistributedDatabaseEngine):
+    URI = "sqlite:///:memory:"
+
+class TestDistributedSqlite3File(DistributedDatabaseEngine):
+    URI = "sqlite:///%s" % tempfile.mktemp()
+
+class TestDistributedPostgreSQL(DistributedDatabaseEngine):
+    URI = "postgresql://cuckoo:cuckoo@localhost/distcuckootest"
+
+class TestDistributedMySQL(DistributedDatabaseEngine):
+    URI = "mysql://cuckoo:cuckoo@localhost/distcuckootest"
