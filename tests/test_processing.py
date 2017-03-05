@@ -24,7 +24,7 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static
+from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -742,3 +742,11 @@ def test_parse_cmdline():
     assert rb.parse_cmdline(u"stuff.exe \u4404\u73a8 \uecbc\uee9e") == (
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
+
+def test_wsf_language():
+    wsf = WindowsScriptFile(Files.temp_put(
+        "<script language='JScript.Encode'></script>"
+    ))
+    wsf.decode = mock.MagicMock(return_value="codehere")
+    assert wsf.run() == ["codehere"]
+    wsf.decode.assert_called_once()

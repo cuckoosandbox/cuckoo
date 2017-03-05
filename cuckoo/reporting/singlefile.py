@@ -7,11 +7,22 @@ import base64
 import codecs
 import datetime
 import glob
+import io
+import logging
 import jinja2
 import os
 import random
 
+try:
+    logging.getLogger("weasyprint").setLevel(logging.ERROR)
+
+    import weasyprint
+    HAVE_WEASYPRINT = True
+except ImportError:
+    HAVE_WEASYPRINT = False
+
 from cuckoo.common.abstracts import Report
+from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.misc import cwd
 
 class SingleFile(Report):
@@ -82,7 +93,18 @@ class SingleFile(Report):
             codecs.open(report_path, "wb", encoding="utf-8").write(report)
 
         if self.options.get("pdf"):
-            pass
+            if not HAVE_WEASYPRINT:
+                raise CuckooReportError(
+                    "The weasyprint library hasn't been installed on your "
+                    "Operating System and as such we can't generate a PDF "
+                    "report for you. You can install 'weasyprint' manually "
+                    "by running 'pip install weasyprint' or by compiling and "
+                    "installing package yourself."
+                )
+
+            report_path = os.path.join(self.reports_path, "report.pdf")
+            f = weasyprint.HTML(io.BytesIO(report.encode("utf8")))
+            f.write_pdf(report_path)
 
     def generate_jinja2_template(self, results):
         template = open(cwd("html", "report.html", private=True), "rb").read()
