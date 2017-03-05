@@ -2,9 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import json
 
-from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
@@ -42,7 +42,7 @@ class JsonType(db.TypeDecorator):
 class Node(db.Model):
     """Cuckoo node database model."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, nullable=False, unique=True)
+    name = db.Column(db.Text, nullable=False, unique=False)
     url = db.Column(db.Text, nullable=False)
     mode = db.Column(db.Text, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False)
@@ -102,7 +102,9 @@ class Task(db.Model, Serializer):
     # Timestamps for this task. When it was submitted, when it was delegated
     # to a Cuckoo node, when the analysis started, and when we retrieved
     # the report.
-    submitted = db.Column(db.DateTime(timezone=False), default=datetime.now)
+    submitted = db.Column(
+        db.DateTime(timezone=False), default=datetime.datetime.now
+    )
     delegated = db.Column(db.DateTime(timezone=False), nullable=True)
     started = db.Column(db.DateTime(timezone=False), nullable=True)
     completed = db.Column(db.DateTime(timezone=False), nullable=True)
@@ -148,7 +150,7 @@ class NodeStatus(db.Model, Serializer):
 class AlembicVersion(db.Model):
     """Support model for keeping track of the alembic revision identifier."""
     VERSION = ALEMBIC_VERSION
-    version_num = db.Column(db.Text, nullable=False, primary_key=True)
+    version_num = db.Column(db.String(32), nullable=False, primary_key=True)
 
     def __init__(self, version_num):
         self.version_num = version_num
