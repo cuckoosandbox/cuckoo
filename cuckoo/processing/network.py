@@ -91,7 +91,7 @@ class Pcap(object):
         # List for holding whitelisted IP-s according to DNS responses
         self.whitelist_ips = []
         # state of whitelisting
-        self.whitelist_enabled = self._build_whitelist_conf()
+        self.whitelist_enabled = self.options.get("whitelist_dns")
         # List of known good DNS servers
         self.known_dns = self._build_known_dns()
         # List of all used DNS servers
@@ -103,14 +103,6 @@ class Pcap(object):
         for line in open(whitelist_path, "rb"):
             result.append(line.strip())
         return result
-
-    def _build_whitelist_conf(self):
-        """Check if whitelisting is enabled."""
-        if not self.options.get("whitelist_dns"):
-            log.debug("Whitelisting Disabled.")
-            return False
-
-        return True
 
     def _is_whitelisted(self, conn, hostname):
         """Checks if whitelisting conditions are met"""
