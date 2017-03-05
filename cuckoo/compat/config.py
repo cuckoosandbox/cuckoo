@@ -608,6 +608,19 @@ def _20c2_200(c):
     if "url" not in c["reporting"]["notification"]:
         c["reporting"]["notification"]["url"] = None
 
+    c["reporting"]["singlefile"] = {
+        "enabled": cast(
+            "reporting:singlefile:enabled",
+            c["reporting"]["reporthtml"]["enabled"]
+        ),
+        "html": cast(
+            "reporting:singlefile:html",
+            c["reporting"]["reporthtml"]["enabled"]
+        ),
+        "pdf": False,
+    }
+    c["reporting"].pop("reporthtml")
+
     c["routing"] = {
         "routing": {
             "drop": False,

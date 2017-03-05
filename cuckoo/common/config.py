@@ -702,8 +702,10 @@ class Config(object):
                 "indent": Int(4),
                 "calls": Boolean(True),
             },
-            "reporthtml": {
+            "singlefile": {
                 "enabled": Boolean(False),
+                "html": Boolean(False),
+                "pdf": Boolean(False),
             },
             "misp": {
                 "enabled": Boolean(False),

@@ -80,17 +80,22 @@
 				<div class="block block-summary">
 
 					<header class="block-header">
-						<h4><i class="fa fa-file-o"></i> Summary - <em>{{results.target.file.name}}</em></h4>
+						<h4><i class="fa fa-file-o"></i> Summary -
+                            {% if results.target %}
+                            <em>{{ results.target.file.name }}</em>
+                            {% endif %}
+                        </h4>
 					</header>
 
 					<section class="block-section">
 						<!-- file info -->
+                        {% if results.target %}
 						<div class="block-section-col">
 							<h5>File info</h5>
 							<ul class="list-reset key-value-list">
-								<li><strong>name: </strong> {{results.target.file.name}}</li>
-								<li><strong>type: </strong> {{results.target.file.type}}</li>
-								<li><strong>size: </strong> {{results.target.file.size}} bytes</li>
+								<li><strong>name: </strong> {{ results.target.file.name }}</li>
+								<li><strong>type: </strong> {{ results.target.file.type }}</li>
+								<li><strong>size: </strong> {{ results.target.file.size }} bytes</li>
 							</ul>
 						</div>
 
@@ -98,10 +103,11 @@
 						<div class="block-section-col">
 							<h5>Checksums</h5>
 							<ul class="list-reset list-checksums">
-								<li><span class="label">SHA1</span> {{results.target.file.sha1}}</li>
-								<li><span class="label">MD5</span> {{results.target.file.md5}}</li>
+								<li><span class="label">SHA1</span> {{ results.target.file.sha1 }}</li>
+								<li><span class="label">MD5</span> {{ results.target.file.md5 }}</li>
 							</ul>
 						</div>
+                        {% endif %}
 					</section>
 					<!-- <footer class="block-footer"></footer> -->
 				</div>
@@ -246,6 +252,7 @@
                     {% endif %}
                 {% endif %}
 
+                {% if results.network %}
                 {% if results.network.dns or results.network.hosts %}
                     <!-- network -->
                     <div class="block block-network">
@@ -315,6 +322,7 @@
                             </section>
                         {% endif %}
                     </div>
+                {% endif %}
                 {% endif %}
 			</div>
 

@@ -14,8 +14,8 @@ import random
 from cuckoo.common.abstracts import Report
 from cuckoo.misc import cwd
 
-class ReportHTML(Report):
-    """Stores report in a single-file HTML format."""
+class SingleFile(Report):
+    """Stores report in a single-file HTML and/or PDF format."""
 
     fonts = [{
         "family": "Roboto",
@@ -75,9 +75,14 @@ class ReportHTML(Report):
     path_base = cwd("html", private=True)
 
     def run(self, results):
-        report_path = os.path.join(self.reports_path, "report.html")
-        with codecs.open(report_path, "wb", encoding="utf-8") as f:
-            f.write(self.generate_jinja2_template(results))
+        report = self.generate_jinja2_template(results)
+
+        if self.options.get("html"):
+            report_path = os.path.join(self.reports_path, "report.html")
+            codecs.open(report_path, "wb", encoding="utf-8").write(report)
+
+        if self.options.get("pdf"):
+            pass
 
     def generate_jinja2_template(self, results):
         template = open(cwd("html", "report.html", private=True), "rb").read()
@@ -97,14 +102,14 @@ class ReportHTML(Report):
         )
 
     def combine_css(self):
-        """Scans the `static/css/ directory and concatenates stylesheets"""
+        """Scans the static/css/ directory and concatenates stylesheets"""
         css_includes = []
         for filepath in glob.glob("%s/static/css/*.css" % self.path_base):
             css_includes.append(open(filepath, "rb").read().decode("utf8"))
         return "\n".join(css_includes)
 
     def combine_js(self):
-        """Scans the `static/js/ directory and concatenates js files"""
+        """Scans the static/js/ directory and concatenates js files"""
         js_includes = []
         # Note: jquery-2.2.4.min.js must be the first file.
         filepaths = sorted(glob.glob("%s/static/js/*.js" % self.path_base))

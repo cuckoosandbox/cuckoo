@@ -964,6 +964,8 @@ enabled = no
 [jsondump]
 indent = 8
 encoding = utf8
+[reporthtml]
+enabled = yes
 """)
     Files.create(cwd("conf"), "vpn.conf", """
 [vpn]
@@ -1020,6 +1022,10 @@ interface = eth0
     assert cfg["reporting"]["moloch"]["insecure"] is False
     assert cfg["reporting"]["mongodb"]["username"] is None
     assert cfg["reporting"]["mongodb"]["password"] is None
+    assert cfg["reporting"]["singlefile"]["enabled"] is True
+    assert cfg["reporting"]["singlefile"]["html"] is True
+    assert cfg["reporting"]["singlefile"]["pdf"] is False
+    assert "reporthtml" not in cfg["reporting"]
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"

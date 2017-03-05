@@ -16,7 +16,7 @@ from cuckoo.misc import set_cwd, cwd
 from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
 from cuckoo.reporting.mongodb import MongoDB
-from cuckoo.reporting.reporthtml import ReportHTML
+from cuckoo.reporting.singlefile import SingleFile
 
 def test_init():
     p = Report()
@@ -329,18 +329,22 @@ def test_empty_html():
     set_cwd(tempfile.mkdtemp())
 
     conf = {
-        "reporthtml": {
+        "singlefile": {
             "enabled": True,
+            "html": True,
         },
     }
-    report_path = cwd("reports", "report.html", analysis=1)
     task(1, {}, conf, {})
-    assert os.path.exists(report_path)
+    assert os.path.exists(cwd("reports", "report.html", analysis=1))
 
-class TestReportHTML(object):
+class TestSingleFile(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
-        self.r = ReportHTML()
+        self.r = SingleFile()
+        self.r.set_options({
+            "html": True,
+            "pdf": False,
+        })
 
     def test_combine_images(self):
         assert len(self.r.combine_images().split("\n")) == 1
