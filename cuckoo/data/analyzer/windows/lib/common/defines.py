@@ -84,6 +84,8 @@ FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 
 WM_GETTEXT                = 0x0000000D
 WM_GETTEXTLENGTH          = 0x0000000E
+WM_SYSCOMMAND             = 0x00000112
+SC_CLOSE                  = 0x0000F060
 BM_CLICK                  = 0x000000F5
 
 SHARD_PATHA               = 0x00000002

@@ -13,6 +13,7 @@ from ctypes import c_bool, c_int, create_unicode_buffer
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import KERNEL32, USER32
 from lib.common.defines import WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK
+from lib.common.defines import WM_SYSCOMMAND, SC_CLOSE
 
 log = logging.getLogger(__name__)
 
@@ -92,10 +93,23 @@ def foreach_child(hwnd, lparam):
 
 # Callback procedure invoked for every enumerated window.
 def foreach_window(hwnd, lparam):
+    # List of window classes to close if found
+    close = [
+        "bosa_sdm_microsoft office word 12.0"
+    ]
+
     # If the window is visible, enumerate its child objects, looking
     # for buttons.
     if USER32.IsWindowVisible(hwnd):
-        USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
+        classname = create_unicode_buffer(100)
+        USER32.GetClassNameW(hwnd, classname, 100)
+
+        if classname.value.strip().lower() in close:
+            log.info("Found a window to close: %s" % classname.value.lower())
+            USER32.SendMessageW(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0)
+
+        else:
+            USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
     return True
 
 def move_mouse():
