@@ -614,7 +614,7 @@ class Config(object):
                 "enabled": Boolean(True),
             },
             "virustotal": {
-                "enabled": Boolean(True),
+                "enabled": Boolean(False),
                 "timeout": Int(60),
                 "scan": Boolean(False),
                 "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088", sanitize=True),

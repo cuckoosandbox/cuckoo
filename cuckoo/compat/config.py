@@ -564,6 +564,9 @@ def _20c2_200(c):
     c["processing"]["network"]["allowed_dns"] = (
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    # If default key, disable VirusTotal by default.
+    if c["processing"]["virustotal"]["key"] == "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088":
+        c["processing"]["virustotal"]["enabled"] = False
     for vm in c["qemu"]:
         if "kernel_path" in c["qemu"][vm]:
             c["qemu"][vm]["kernel"] = c["qemu"][vm].pop("kernel_path")

@@ -924,6 +924,9 @@ analysis_size_limit = 104857600
 [network]
 whitelist-dns = wow
 allowed-dns = 8.8.8.8
+[virustotal]
+enabled = yes
+key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
 """)
     Files.create(cwd("conf"), "qemu.conf", """
 [qemu]
@@ -988,6 +991,7 @@ interface = eth0
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
+    assert cfg["processing"]["virustotal"]["enabled"] is False
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [
         "127.0.0.1", "127.0.0.2"
     ]
