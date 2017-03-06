@@ -21,9 +21,9 @@ import zipfile
 import SimpleHTTPServer
 import SocketServer
 
-AGENT_VERSION = "0.6"
+AGENT_VERSION = "0.7"
 AGENT_FEATURES = [
-    "execpy", "pinning", "logs", "largefile",
+    "execpy", "pinning", "logs", "largefile", "unicodepath",
 ]
 
 sys.stdout = io.BytesIO()
@@ -65,7 +65,7 @@ class MiniHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 if value.filename:
                     request.files[key] = value.file
                 else:
-                    request.form[key] = value.value
+                    request.form[key] = value.value.decode("utf8")
 
         if "client_ip" not in state or request.client_ip == state["client_ip"]:
             self.httpd.handle(self)

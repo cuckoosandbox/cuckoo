@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -624,23 +624,7 @@ class Analyzer(object):
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
-        try:
-            pids = self.package.start(self.target)
-        except NotImplementedError:
-            raise CuckooError(
-                "The package \"%s\" doesn't contain a run function." %
-                package_name
-            )
-        except CuckooPackageError as e:
-            raise CuckooError(
-                "The package \"%s\" start function raised an error: %s" %
-                (package_name, e)
-            )
-        except Exception as e:
-            raise CuckooError(
-                "The package \"%s\" start function encountered an unhandled "
-                "exception: %s" % (package_name, e)
-            )
+        pids = self.package.start(self.target)
 
         # If the analysis package returned a list of process identifiers, we
         # add them to the list of monitored processes and enable the process monitor.
@@ -774,7 +758,6 @@ class Analyzer(object):
 
         # Let's invoke the completion procedure.
         self.complete()
-
         return True
 
 if __name__ == "__main__":
