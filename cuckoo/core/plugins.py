@@ -10,11 +10,12 @@ import logging
 
 import cuckoo
 
-from cuckoo.common.config import Config
+from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
-    CuckooOperationalError, CuckooConfigurationError, CuckooProcessingError,
-    CuckooReportError, CuckooDependencyError, CuckooDisableModule
+    CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
+    CuckooDependencyError, CuckooDisableModule
 )
+from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -74,8 +75,6 @@ class RunAuxiliary(object):
         self.task = task
         self.machine = machine
         self.guest_manager = guest_manager
-
-        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
@@ -94,10 +93,12 @@ class RunAuxiliary(object):
                 module_name = module_name.rsplit(".", 1)[1]
 
             try:
-                options = self.cfg.get(module_name)
-            except CuckooOperationalError:
-                log.debug("Auxiliary module %s not found in "
-                          "configuration file", module_name)
+                options = Dictionary(config2("auxiliary", module_name))
+            except CuckooConfigurationError:
+                log.debug(
+                    "Auxiliary module %s not found in configuration file",
+                    module_name
+                )
                 continue
 
             if not options.enabled:
@@ -175,7 +176,6 @@ class RunProcessing(object):
         self.task = task
         self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
         self.baseline_path = cwd("storage", "baseline")
-        self.cfg = Config("processing")
 
     def process(self, module, results):
         """Run a processing module.
@@ -199,10 +199,12 @@ class RunProcessing(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = self.cfg.get(module_name)
-        except CuckooOperationalError:
-            log.debug("Processing module %s not found in configuration file",
-                      module_name)
+            options = Dictionary(config2("processing", module_name))
+        except CuckooConfigurationError:
+            log.debug(
+                "Processing module %s not found in configuration file",
+                module_name
+            )
             return None, None
 
         # If the processing module is disabled in the config, skip it.
@@ -461,7 +463,6 @@ class RunReporting(object):
         self.task = task
         self.results = results
         self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
-        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -484,9 +485,12 @@ class RunReporting(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = self.cfg.get(module_name)
+            options = Dictionary(config2("reporting", module_name))
         except CuckooConfigurationError:
-            log.debug("Reporting module %s not found in configuration file", module_name)
+            log.debug(
+                "Reporting module %s not found in configuration file",
+                module_name
+            )
             return
 
         # If the reporting module is disabled in the config, skip it.

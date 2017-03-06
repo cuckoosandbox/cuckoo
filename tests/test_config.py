@@ -7,7 +7,8 @@ import pytest
 import tempfile
 
 from cuckoo.common.config import (
-    Config, parse_options, emit_options, config, cast, Path, read_kv_conf
+    Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
+    config2
 )
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooStartupError
@@ -1124,3 +1125,28 @@ class TestKvConf(object):
         with pytest.raises(CuckooConfigurationError) as e:
             read_kv_conf(filepath)
         e.match("Invalid flat configuration entry")
+
+def test_config2_default():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config2("processing", "suricata") == {
+        "enabled": False, "eve_log": "eve.json", "files_dir": "files",
+        "socket": None, "suricata": "/usr/bin/suricata",
+        "conf": "/etc/suricata/suricata.yaml", "files_log": "files-json.log",
+    }
+
+def test_config2_custom():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "processing": {
+            "virustotal": {
+                "key": "thisisthekey",
+            },
+        },
+    })
+    assert config2("processing", "virustotal") == {
+        "enabled": False,
+        "key": "thisisthekey",
+        "timeout": 60,
+        "scan": False,
+    }

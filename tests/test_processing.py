@@ -2,19 +2,20 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import dpkt
 import mock
 import os.path
 import pytest
+import shutil
 import tempfile
 
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
-from cuckoo.processing.behavior import ProcessTree
+from cuckoo.misc import set_cwd, cwd, mkdir
+from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
-from cuckoo.processing.network import Pcap
-from cuckoo.processing.network import Pcap2
+from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
@@ -294,6 +295,29 @@ class TestBehavior(object):
         assert len(obj[1]["children"][0]["children"][1]["children"]) == 2
         assert not obj[2]["children"]
 
+    def test_bson_limit(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+
+        mkdir(cwd(analysis=1))
+        mkdir(cwd("logs", analysis=1))
+
+        # 256mb should be fine, right?
+        with open(cwd("logs", "1.txt", analysis=1), "wb") as f:
+            f.write("A"*256*1024*1024)
+
+        with open(cwd("logs", "2.txt", analysis=1), "wb") as f:
+            f.write("A"*1024*1024)
+
+        assert ba.run() == {}
+
+        assert sorted(list(ba._enum_logs())) == [
+            cwd("logs", "2.txt", analysis=1),
+        ]
+
 class TestPcap(object):
     @classmethod
     def setup_class(cls):
@@ -448,6 +472,70 @@ class TestPcap(object):
                 types[t] = 1
 
         assert expected_types == types
+
+class TestPcapAdditional(object):
+    def test_resolve_dns(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        assert Pcap(None, {})._dns_gethostbyname("google.com") != ""
+
+    def test_icmp_ignore_resultserver(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        p = Pcap(None, {})
+        pkt = dpkt.icmp.ICMP.Echo()
+        pkt.id = 1
+        pkt.seq = 2
+        pkt.data = "foobar"
+        p._icmp_dissect({
+            "src": "192.168.56.1",
+        }, dpkt.icmp.ICMP(str(pkt)))
+        assert not p.icmp_requests
+        p._icmp_dissect({
+            "src": "1.2.3.4",
+            "dst": "4.5.6.7",
+        }, dpkt.icmp.ICMP(str(pkt)))
+        assert len(p.icmp_requests) == 1
+
+    def test_no_sorted_pcap(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "processing": {
+                    "sort_pcap": False,
+                },
+            },
+        })
+        mkdir(cwd(analysis=1))
+        shutil.copy(
+            "tests/files/sample_analysis_storage/dump.pcap",
+            cwd("dump.pcap", analysis=1)
+        )
+        na = NetworkAnalysis()
+        na.set_options({})
+        na.set_path(cwd(analysis=1))
+        na.run()
+        assert not os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+
+    def test_yes_sorted_pcap(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create({
+            "cuckoo": {
+                "network": {
+                    "sort_pcap": True,
+                },
+            },
+        })
+        mkdir(cwd(analysis=1))
+        shutil.copy(
+            "tests/files/sample_analysis_storage/dump.pcap",
+            cwd("dump.pcap", analysis=1)
+        )
+        na = NetworkAnalysis()
+        na.set_options({})
+        na.set_path(cwd(analysis=1))
+        na.run()
+        assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
 
 class TestPcap2(object):
     def test_smtp_ex(self):

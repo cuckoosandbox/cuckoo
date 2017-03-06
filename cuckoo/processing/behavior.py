@@ -9,7 +9,7 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Processing, BehaviorHandler
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.core.database import Database
 
 from .platform.windows import WindowsMonitor
@@ -255,9 +255,8 @@ class BehaviorAnalysis(Processing):
                 log.warning("Behavior log file %r is not a file.", fname)
                 continue
 
-            analysis_size_limit = self.cfg.processing.analysis_size_limit
-            if analysis_size_limit and \
-                    os.stat(path).st_size > analysis_size_limit:
+            limit = config("cuckoo:processing:analysis_size_limit")
+            if limit and os.stat(path).st_size > limit:
                 # This needs to be a big alert.
                 log.critical("Behavior log file %r is too big, skipped.", fname)
                 continue
@@ -268,7 +267,6 @@ class BehaviorAnalysis(Processing):
         """Run analysis.
         @return: results dict.
         """
-        self.cfg = Config()
         self.state = {}
 
         # these handlers will be present for any analysis, regardless of platform/format

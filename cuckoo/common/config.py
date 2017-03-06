@@ -1081,6 +1081,20 @@ def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
 
     return value
 
+def config2(file_name, section):
+    if section not in Config.configuration[file_name]:
+        raise CuckooConfigurationError(
+            "No such configuration section exists: %s!%s" %
+            (file_name, section)
+        )
+
+    ret = {}
+    for key in Config.configuration[file_name][section]:
+        if key == "__star__" or key == "*":
+            continue
+        ret[key] = config("%s:%s:%s" % (file_name, section, key))
+    return ret
+
 def cast(s, value):
     """Cast a configuration value as per its type."""
     if s.count(":") != 2:

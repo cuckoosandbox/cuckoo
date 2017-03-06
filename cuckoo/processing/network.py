@@ -17,7 +17,7 @@ import tempfile
 import urlparse
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.dns import resolve
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
@@ -141,7 +141,7 @@ class Pcap(object):
         @param name: hostname.
         @return: IP address or blank
         """
-        if Config().processing.resolve_dns:
+        if config("cuckoo:processing:resolve_dns"):
             ip = resolve(name)
         else:
             ip = ""
@@ -277,7 +277,7 @@ class Pcap(object):
         if self._check_icmp(data):
             # If ICMP packets are coming from the host, it probably isn't
             # relevant traffic, hence we can skip from reporting it.
-            if conn["src"] == Config().resultserver.ip:
+            if conn["src"] == config("cuckoo:resultserver:ip"):
                 return
 
             entry = {}
@@ -872,7 +872,7 @@ class NetworkAnalysis(Processing):
         results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
+        if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
             pcap_path = sorted_path
 
