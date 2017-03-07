@@ -441,25 +441,12 @@ class PacketDisplay {
 $(function() {
 
     if($("#network-analysis-tcp").length) {
-
-        var packet_display = new PacketDisplay($("#network-analysis-tcp"), {
-            
-        });
-
-        console.log(packet_display);
-
+        var packet_display = new PacketDisplay($("#network-analysis-tcp"));
     }
 
-});
-
-$(function() {
-
-    // network-http-displays
-	$("#http-requests .network-display__request").each(function() {
-
-    	var rd = new RequestDisplay($(this));
-
-	});
+    $("#http-requests .network-display__request").each(function() {
+        var rd = new RequestDisplay($(this));
+    });
 
     // page navigation for network analysis pages
     // this will move to a more abstract and re-usable utility following
