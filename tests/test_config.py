@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import os
 import pytest
 import tempfile
@@ -1155,3 +1156,12 @@ def test_config2_custom():
         "timeout": 60,
         "scan": False,
     }
+
+@mock.patch("cuckoo.common.config.log_error")
+def test_no_superfluous_conf(p):
+    """Tests that upon CWD creation no superfluous configuration values are
+    writted out (which may happen after a configuration migration)."""
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    Config.from_confdir(cwd("conf"))
+    p.assert_not_called()
