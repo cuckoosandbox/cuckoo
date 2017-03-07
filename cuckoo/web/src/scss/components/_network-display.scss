@@ -248,6 +248,14 @@
 						position: relative;
 						top: 2px;
 					}
+
+					.flex-tabs__tab {
+
+						& .empty-body {
+							opacity: 0.2;
+						}
+
+					}
 				}
 			}
 
@@ -263,7 +271,7 @@
 					border: 0;
 					border-radius: 0;
 
-					&.empty-body {
+					.empty-body & {
 						&:after {
 							content: "Empty body";
 						    display: block;

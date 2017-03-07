@@ -4989,6 +4989,9 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   position: relative;
   top: 2px;
 }
+.network-display__request-details .detail-field__header.with-tabs .flex-tabs__tab .empty-body, .network-display__request-details--single .detail-field__header.with-tabs .flex-tabs__tab .empty-body {
+  opacity: 0.2;
+}
 .network-display__request-details .detail-field__body, .network-display__request-details--single .detail-field__body {
   background-color: #fff;
   padding: 15px;
@@ -5001,7 +5004,7 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   border: 0;
   border-radius: 0;
 }
-.network-display__request-details .detail-field__body pre.empty-body:after, .network-display__request-details--single .detail-field__body pre.empty-body:after {
+.empty-body .network-display__request-details .detail-field__body pre:after, .empty-body .network-display__request-details--single .detail-field__body pre:after {
   content: "Empty body";
   display: block;
   padding: 30px 0;

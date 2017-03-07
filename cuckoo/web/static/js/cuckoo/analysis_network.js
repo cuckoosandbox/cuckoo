@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -50,15 +52,25 @@ var HexView = function () {
     function HexView(el, raw, options) {
         _classCallCheck(this, HexView);
 
+        // format if type is nog right, should be an object with different options,
+        // if it's not an object, we'll assume the body is passed in completely
+        if ((typeof raw === 'undefined' ? 'undefined' : _typeof(raw)) !== 'object') {
+            raw = {
+                'response': raw
+            };
+        }
+
         // class data
         this.el = el;
         this.raw = raw;
         this.container = options.container ? options.container : null;
 
+        var user_preferences = HexView.getPreferences();
+
         // parameters
-        this.displayBody = options.displayBody ? options.displayBody : 'response';
-        this.displayOutput = options.displayOutput ? options.displayOutput : 'plaintext';
-        this.displayMode = options.displayMode ? options.displayMode : 16;
+        this.displayBody = user_preferences.displayBody ? user_preferences.displayBody : 'response';
+        this.displayOutput = user_preferences.displayOutput ? user_preferences.displayOutput : 'hex';
+        this.displayMode = user_preferences.displayMode ? user_preferences.displayMode : 16;
 
         // actions
         this.actions = options.actions ? options.actions : {
@@ -66,6 +78,11 @@ var HexView = function () {
             output: function output() {},
             mode: function mode() {}
         };
+
+        this.el.data('hexView', this);
+        this.el.attr('hexview', true);
+
+        return this;
     }
 
     _createClass(HexView, [{
@@ -84,20 +101,41 @@ var HexView = function () {
                 var keys = $(this).attr('href').split(':');
                 var action = keys[0];
                 var actionValue = keys[1];
+                var propName;
 
                 if (_this.actions[action] && typeof _this.actions[action] === 'function') {
                     _this.actions[action].apply(_this, [actionValue, _this.el]);
                 }
 
-                if (action == 'output') _this.displayOutput = actionValue;
-                if (action == 'mode') _this.displayMode = actionValue;
-                if (action == 'body') _this.displayBody = actionValue;
-
-                // $(this).parent().find('.btn').removeClass('active');
-                // $(this).addClass('active');
+                if (action == 'output') {
+                    _this.displayOutput = actionValue;
+                    propName = 'displayOutput';
+                }
+                if (action == 'mode') {
+                    _this.displayMode = actionValue;
+                    propName = 'displayMode';
+                }
+                if (action == 'display') {
+                    _this.displayBody = actionValue;
+                    propName = 'displayBody';
+                }
 
                 _this.sync();
+
+                // save these things to user preference in localstorage
+                HexView.storePreferences({
+                    displayBody: _this.displayBody,
+                    displayOutput: _this.displayOutput,
+                    displayMode: _this.displayMode
+                });
+
+                // now persist this to EVERY active hexview to keep things awesome
+                HexView.persistProperty(propName, actionValue);
             });
+
+            this.sync();
+
+            return this;
         }
     }, {
         key: 'sync',
@@ -134,25 +172,18 @@ var HexView = function () {
             var output = this.displayOutput;
             var mode = this.displayMode;
 
-            output == 'hex' ? content = HexView.renderHex(content, mode) : content = HexView.renderPlaintext(content);
+            output == 'hex' ? content = HexView.renderHex(content[body], mode) : content = HexView.renderPlaintext(content[body]);
+
+            // display a message that there's an empty body if the content length is 0
+            if (content.length == 0) {
+                this.el.addClass('empty-body');
+                // this.container.addClass('empty-body');
+            } else {
+                this.el.removeClass('empty-body');
+                // this.container.removeClass('empty-body');
+            }
 
             this.container.empty().text(content);
-
-            /*
-                  // set the content we're working with based on what the user wants (response/request body)
-                displayBody == 'response' ? content = this.response_body : content = this.request_body;
-                 // parse this content to our output results
-                outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
-                 if(content.length == 0) {
-                    this.el.find('[data-draw=http-body]').addClass('empty-body');
-                } else {
-                    this.el.find('[data-draw=http-body]').removeClass('empty-body');
-                }
-                 // draw this into the container
-                this.el.find('[data-draw=http-body]').empty().text(content);
-                 if(cb && typeof cb === 'function') cb(content);
-            
-             */
         }
     }], [{
         key: 'renderHex',
@@ -167,6 +198,42 @@ var HexView = function () {
         value: function renderPlaintext(str) {
             return base64.decode(str);
         }
+    }, {
+        key: 'getPreferences',
+        value: function getPreferences() {
+            var prefs = window.localStorage.getItem('hex-view');
+            if (prefs) {
+                return JSON.parse(prefs);
+            } else {
+                // send defaults
+                return {
+                    displayMode: 16,
+                    displayOutput: 'hex',
+                    displayBody: 'response'
+                };
+            }
+        }
+    }, {
+        key: 'storePreferences',
+        value: function storePreferences(prefs) {
+            prefs = $.extend({
+                displayMode: 16,
+                displayOutput: 'hex',
+                displayBody: 'response'
+            }, prefs);
+            window.localStorage.setItem('hex-view', JSON.stringify(prefs));
+        }
+    }, {
+        key: 'persistProperty',
+        value: function persistProperty(property, value) {
+            $("[hexview='true']").each(function () {
+                var view = $(this).data('hexView');
+                if (view.hasOwnProperty(property)) {
+                    view[property] = value;
+                    view.sync();
+                }
+            });
+        }
     }]);
 
     return HexView;
@@ -178,19 +245,19 @@ var HexView = function () {
 
 
 var RequestDisplay = function () {
-    function RequestDisplay(el, options) {
+    function RequestDisplay(el) {
         _classCallCheck(this, RequestDisplay);
 
         // element
         this.el = el;
 
+        // after loading, this property will be an instance of HexView
+        this.hex_view = undefined;
+
         // flags
         this.isLoading = false;
         this.isLoaded = false;
         this.isOpen = false;
-
-        // util function for storing stuff to somewhere
-        this.store = options.store ? options.store : function () {};
 
         // request-specific parameters
         this.index = this.el.data('index');
@@ -199,18 +266,6 @@ var RequestDisplay = function () {
         this.response_headers = this.el.find('[data-contents=response-headers]').html();
         this.request_body = null;
         this.response_body = null;
-
-        // display modes, controls what the user will see in the body field
-        this.displayBody = options.displayBody ? options.displayBody : 'response';
-        this.displayOutput = options.displayOutput ? options.displayOutput : 'hex';
-        this.displayMode = options.displayMode ? options.displayMode : 16;
-
-        // actions
-        this.actions = options.actions ? options.actions : {
-            display: function display() {},
-            output: function output() {},
-            mode: function mode() {}
-        };
 
         this.initialise();
     }
@@ -297,24 +352,12 @@ var RequestDisplay = function () {
             this.el.removeClass('is-loading');
             summaryElement.find('.fa-chevron-right').removeClass('fa-spinner fa-spin');
 
-            this.el.find('.flex-tabs__tab .btn').bind('click', function (e) {
-
-                e.preventDefault();
-                var keys = $(this).attr('href').split(':');
-                var action = keys[0];
-                var actionValue = keys[1];
-
-                if (self.actions[action] && typeof self.actions[action] === 'function') {
-                    self.actions[action].apply(self, [actionValue, self.el]);
-                }
-
-                $(this).parent().find('.btn').removeClass('active');
-                $(this).addClass('active');
-
-                // draws the new body view
-                self.bodyViewMode();
-                self.store(self.displayMode, self.displayOutput, self.displayBody);
-            });
+            this.hex_view = new HexView(this.el, {
+                request: self.request_body,
+                response: self.response_body
+            }, {
+                container: '[data-draw="source"]'
+            }).initialise();
 
             self.open();
         }
@@ -328,11 +371,8 @@ var RequestDisplay = function () {
         key: 'open',
         value: function open() {
             var _this = this;
-
-            this.bodyViewMode(function () {
-                _this.el.addClass('is-open');
-                _this.isOpen = true;
-            });
+            _this.el.addClass('is-open');
+            _this.isOpen = true;
         }
 
         /*
@@ -349,81 +389,7 @@ var RequestDisplay = function () {
             // to prevent big HTML hanging around while it's not visible
             // we clear out the response fields for speed/performance optimization. it
             // will be redrawn on 'open' again.
-            this.el.find('[data-draw=http-body]').empty();
-        }
-
-        /*
-            Synchronizes properties with element
-         */
-
-    }, {
-        key: 'syncUI',
-        value: function syncUI() {
-            // syncs the mode property to ui
-            this.el.find('.tab-mode > a').removeClass('active');
-            this.el.find('.tab-mode > a[href="mode:' + this.displayMode + '"]').addClass('active');
-            // syncs the output property to ui
-            this.el.find('.tab-output > a').removeClass('active');
-            this.el.find('.tab-output > a[href="output:' + this.displayOutput + '"]').addClass('active');
-            // syncs the display property to ui
-            this.el.find('.tab-display > a').removeClass('active');
-            this.el.find('.tab-display > a[href="display:' + this.displayBody + '"]').addClass('active');
-
-            // show/hide byte selection in hex view
-            if (this.displayOutput == 'hex') {
-                this.el.find('.tab-mode').show();
-            } else {
-                this.el.find('.tab-mode').hide();
-            }
-        }
-
-        /*
-            This function 'decides' what the user gets to see and controls
-            that behavior.
-         */
-
-    }, {
-        key: 'bodyViewMode',
-        value: function bodyViewMode(cb) {
-
-            this.syncUI();
-
-            // this can't be done when nothing is loaded.
-            if (!this.isLoaded) return;
-
-            // read-only vars
-            var displayBody = this.displayBody;
-            var outputMode = this.displayOutput;
-            var displayMode = this.displayMode;
-
-            // private vars
-            var content;
-
-            // private functions
-            function renderHex(str) {
-                return HexView.renderHex(str, displayMode);
-            }
-
-            function renderPlaintext(str) {
-                return HexView.renderPlaintext(str);
-            }
-
-            // set the content we're working with based on what the user wants (response/request body)
-            displayBody == 'response' ? content = this.response_body : content = this.request_body;
-
-            // parse this content to our output results
-            outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
-
-            if (content.length == 0) {
-                this.el.find('[data-draw=http-body]').addClass('empty-body');
-            } else {
-                this.el.find('[data-draw=http-body]').removeClass('empty-body');
-            }
-
-            // draw this into the container
-            this.el.find('[data-draw=http-body]').empty().text(content);
-
-            if (cb && typeof cb === 'function') cb(content);
+            this.el.find('[data-draw=source]').empty();
         }
 
         /*
@@ -526,68 +492,10 @@ $(function () {
 
 $(function () {
 
-    var rDisplays = [];
-
-    // persists property to other active http display elements
-    function persistProperty(prop, value) {
-        rDisplays.forEach(function (rdisp) {
-            if (rdisp[prop] == value) return;
-            rdisp[prop] = value;
-            rdisp.bodyViewMode();
-        });
-    }
-
-    // returns the localstorage preferences
-    function getPreferences() {
-
-        var json = {
-            displayMode: undefined,
-            displayOutput: undefined,
-            displayBody: undefined
-        };
-
-        var ls = localStorage.getItem('http-display');
-
-        if (ls) {
-            json = JSON.parse(ls);
-        }
-
-        return json;
-    }
-
-    var prefs = getPreferences();
-
     // network-http-displays
     $("#http-requests .network-display__request").each(function () {
 
-        var rd = new RequestDisplay($(this), {
-            displayMode: prefs.displayMode ? prefs.displayMode : 16,
-            displayOutput: prefs.displayOutput ? prefs.displayOutput : 'hex',
-            displayBody: prefs.displayBody ? prefs.displayBody : 'response',
-            actions: {
-                display: function display(value, $parent) {
-                    this.displayBody = value;
-                    persistProperty('displayBody', value);
-                },
-                output: function output(value, $parent) {
-                    this.displayOutput = value;
-                    persistProperty('displayOutput', value);
-                },
-                mode: function mode(value, $parent) {
-                    this.displayMode = parseInt(value);
-                    persistProperty('displayMode', parseInt(value));
-                }
-            },
-            store: function store(mode, output, body) {
-                window.localStorage.setItem('http-display', JSON.stringify({
-                    'displayMode': mode,
-                    'displayOutput': output,
-                    'dispayBody': body
-                }));
-            }
-        });
-
-        rDisplays.push(rd);
+        var rd = new RequestDisplay($(this));
     });
 
     // page navigation for network analysis pages
