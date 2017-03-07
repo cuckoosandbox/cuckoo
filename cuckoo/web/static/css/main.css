@@ -4815,6 +4815,17 @@ body.night .network-display__outer {
   background-color: #191919;
   border-color: #101010;
 }
+.network-display__loader {
+  height: 0px;
+  overflow: hidden;
+  transition: height 250ms ease-out;
+}
+.network-display__loader.active {
+  height: 43px;
+}
+.network-display__requests.is-loading {
+  opacity: .5;
+}
 .network-display__request:not(:last-child), .network-display__request--single:not(:last-child) {
   margin-bottom: 10px;
 }

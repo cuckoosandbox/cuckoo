@@ -18,6 +18,26 @@
 
 	}
 
+	&__loader {
+
+		height: 0px;
+		overflow: hidden;
+		transition: height 250ms ease-out;
+
+		&.active { 
+			height: 43px; 
+		}
+
+	}
+
+	&__requests {
+
+		&.is-loading {
+			opacity: .5;
+		}
+
+	}
+
 	&__request {
 
 		&:not(:last-child) {

@@ -56,7 +56,8 @@ var HexView = function () {
         // if it's not an object, we'll assume the body is passed in completely
         if ((typeof raw === 'undefined' ? 'undefined' : _typeof(raw)) !== 'object') {
             raw = {
-                'response': raw
+                'response': raw,
+                'request': ''
             };
         }
 
@@ -64,6 +65,7 @@ var HexView = function () {
         this.el = el;
         this.raw = raw;
         this.container = options.container ? options.container : null;
+        this.locked = false;
 
         var user_preferences = HexView.getPreferences();
 
@@ -72,12 +74,23 @@ var HexView = function () {
         this.displayOutput = user_preferences.displayOutput ? user_preferences.displayOutput : 'hex';
         this.displayMode = user_preferences.displayMode ? user_preferences.displayMode : 16;
 
-        // actions
-        this.actions = options.actions ? options.actions : {
+        // manual overrides of the different states, in case one it not available
+        if (options.displayBody) this.displayBody = options.displayBody;
+        if (options.displayOutput) this.displayOutput = options.displayOutput;
+        if (options.displayMode) this.displayMode = options.displayMode;
+
+        this.actions = $.extend({
             display: function display() {},
             output: function output() {},
             mode: function mode() {}
-        };
+        }, options.actions ? options.actions : {});
+
+        this.events = $.extend({
+            click: function click() {},
+            display: function display() {},
+            output: function output() {},
+            mode: function mode() {}
+        }, options.events ? options.events : {});
 
         this.el.data('hexView', this);
         this.el.attr('hexview', true);
@@ -98,14 +111,13 @@ var HexView = function () {
             this.el.find('.flex-tabs__tab .btn').bind('click', function (e) {
 
                 e.preventDefault();
+
+                if (_this.locked) return;
+
                 var keys = $(this).attr('href').split(':');
                 var action = keys[0];
                 var actionValue = keys[1];
                 var propName;
-
-                if (_this.actions[action] && typeof _this.actions[action] === 'function') {
-                    _this.actions[action].apply(_this, [actionValue, _this.el]);
-                }
 
                 if (action == 'output') {
                     _this.displayOutput = actionValue;
@@ -119,6 +131,9 @@ var HexView = function () {
                     _this.displayBody = actionValue;
                     propName = 'displayBody';
                 }
+
+                _this.actions[action].apply(_this, [actionValue, _this.el]);
+                _this.events[action].apply(actionValue, _this.el);
 
                 _this.sync();
 
@@ -188,6 +203,7 @@ var HexView = function () {
     }], [{
         key: 'renderHex',
         value: function renderHex(str, mode) {
+
             return hexy(base64.decode(str), {
                 width: mode ? parseInt(mode) : 16,
                 html: false
@@ -233,6 +249,15 @@ var HexView = function () {
                     view.sync();
                 }
             });
+        }
+    }, {
+        key: 'lockAll',
+        value: function lockAll(lock) {
+            if (lock === true) {
+                HexView.persistProperty('locked', true);
+            } else {
+                HexView.persistProperty('locked', false);
+            }
         }
     }]);
 
@@ -422,6 +447,7 @@ var PacketDisplay = function () {
 
         this.nav = el.find("#requests");
         this.container = el.find("#packets");
+        this.loader = el.find('.network-display__loader');
         this.template = HANDLEBARS_TEMPLATES['packet-display'];
 
         this.initialise();
@@ -433,10 +459,16 @@ var PacketDisplay = function () {
 
             var _this = this;
 
-            this.nav.find('.source-destination a').bind('click', function (e) {
-                e.preventDefault();
-                _this.selectHandler($(this));
-            });
+            if (this.nav.find('.source-destination a').length) {
+
+                this.nav.find('.source-destination a').bind('click', function (e) {
+                    e.preventDefault();
+                    _this.selectHandler($(this));
+                });
+
+                // on initialise, activate the first one.
+                _this.selectHandler(this.nav.find('.source-destination a:first-child'));
+            }
         }
     }, {
         key: 'selectHandler',
@@ -446,12 +478,20 @@ var PacketDisplay = function () {
             var params = navElement.attr('href');
 
             if (params) {
+
+                // start the loader
+                this.loader.addClass('active');
+                this.container.addClass('is-loading');
+                HexView.lockAll(true);
+
+                // load the data
                 this.load(params, function (response) {
 
                     var html = [];
                     for (var r in response) {
                         var view = new HexView($(_this.template(response[r])), response[r].raw, {
-                            container: '[data-draw="source"]'
+                            container: '[data-draw="source"]',
+                            displayBody: 'response'
                         });
                         html.push(view);
                     }
@@ -462,6 +502,11 @@ var PacketDisplay = function () {
                         _this.container.append(partial.el);
                         partial.initialise();
                     });
+
+                    // stop the loader
+                    HexView.lockAll(false);
+                    _this.loader.removeClass('active');
+                    _this.container.removeClass('is-loading');
                 });
             }
         }

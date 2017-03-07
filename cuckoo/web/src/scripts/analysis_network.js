@@ -47,7 +47,8 @@ class HexView {
         // if it's not an object, we'll assume the body is passed in completely
         if(typeof raw !== 'object') {
             raw = { 
-                'response': raw
+                'response': raw,
+                'request': ''
             };
         }
 
@@ -55,6 +56,7 @@ class HexView {
         this.el          = el;
         this.raw         = raw;
         this.container   = options.container ? options.container : null;
+        this.locked      = false;
 
         var user_preferences = HexView.getPreferences();
 
@@ -63,12 +65,23 @@ class HexView {
         this.displayOutput = user_preferences.displayOutput ? user_preferences.displayOutput : 'hex';
         this.displayMode   = user_preferences.displayMode ? user_preferences.displayMode : 16;
 
-        // actions
-        this.actions = options.actions ? options.actions : {
+        // manual overrides of the different states, in case one it not available
+        if(options.displayBody) this.displayBody = options.displayBody;
+        if(options.displayOutput) this.displayOutput = options.displayOutput;
+        if(options.displayMode) this.displayMode = options.displayMode;
+
+        this.actions = $.extend({
             display: function() {},
             output: function() {},
             mode: function() {}
-        };
+        }, options.actions ? options.actions : {});
+
+        this.events = $.extend({
+            click: function() {},
+            display: function() {},
+            output: function() {},
+            mode: function() {}
+        }, options.events ? options.events : {});
 
         this.el.data('hexView', this);
         this.el.attr('hexview', true);
@@ -88,14 +101,13 @@ class HexView {
         this.el.find('.flex-tabs__tab .btn').bind('click', function(e) {
             
             e.preventDefault();
+
+            if(_this.locked) return;
+
             var keys = $(this).attr('href').split(':');
             var action = keys[0];
             var actionValue = keys[1];
             var propName;
-
-            if(_this.actions[action] && typeof _this.actions[action] === 'function') {
-                _this.actions[action].apply(_this, [actionValue, _this.el]);
-            }
 
             if(action == 'output') {
                 _this.displayOutput = actionValue;
@@ -109,6 +121,9 @@ class HexView {
                 _this.displayBody = actionValue;
                 propName = 'displayBody';
             }
+
+            _this.actions[action].apply(_this, [actionValue, _this.el]);
+            _this.events[action].apply(actionValue, _this.el);
 
             _this.sync();
 
@@ -178,6 +193,7 @@ class HexView {
     }
 
     static renderHex(str, mode) {
+
         return hexy(base64.decode(str), {
             width: mode ? parseInt(mode) : 16,
             html: false
@@ -219,6 +235,14 @@ class HexView {
                 view.sync();
             }
         });
+    }
+
+    static lockAll(lock) {
+        if(lock === true) {
+            HexView.persistProperty('locked', true);
+        } else {
+            HexView.persistProperty('locked', false);
+        }
     }
 
 }
@@ -386,6 +410,7 @@ class PacketDisplay {
 
         this.nav       = el.find("#requests");
         this.container = el.find("#packets");
+        this.loader    = el.find('.network-display__loader');
         this.template  = HANDLEBARS_TEMPLATES['packet-display'];
 
         this.initialise();
@@ -395,10 +420,18 @@ class PacketDisplay {
 
         var _this = this;
 
-        this.nav.find('.source-destination a').bind('click', function(e) {
-            e.preventDefault();
-            _this.selectHandler($(this));
-        });
+        if(this.nav.find('.source-destination a').length) {
+
+            this.nav.find('.source-destination a').bind('click', function(e) {
+                e.preventDefault();
+                _this.selectHandler($(this));
+            });
+
+            // on initialise, activate the first one.
+            _this.selectHandler(this.nav.find('.source-destination a:first-child'));
+
+        }
+
     }
 
     selectHandler(navElement) {
@@ -407,12 +440,20 @@ class PacketDisplay {
         var params = navElement.attr('href');
 
         if(params) {
+
+            // start the loader
+            this.loader.addClass('active');
+            this.container.addClass('is-loading');
+            HexView.lockAll(true);
+
+            // load the data
             this.load(params, function(response) {
                 
                 var html = [];
                 for(var r in response) {
                     var view = new HexView($(_this.template(response[r])), response[r].raw, {
-                        container: '[data-draw="source"]'
+                        container: '[data-draw="source"]',
+                        displayBody: 'response'
                     });
                     html.push(view);
                 }
@@ -423,6 +464,11 @@ class PacketDisplay {
                     _this.container.append(partial.el);
                     partial.initialise();
                 });
+
+                // stop the loader
+                HexView.lockAll(false);
+                _this.loader.removeClass('active');
+                _this.container.removeClass('is-loading');
 
             });
         }
