@@ -954,6 +954,9 @@ enabled = no
 enables = yes
 [notification]
 enabled = no
+[jsondump]
+indent = 8
+encoding = utf8
 """)
     Files.create(cwd("conf"), "vpn.conf", """
 [vpn]
@@ -998,6 +1001,8 @@ interface = eth0
     ]
     assert cfg["qemu"]["vm1"]["kernel"] == "kernelpath"
     assert cfg["qemu"]["vm2"]["kernel"] == "anotherpath"
+    assert cfg["reporting"]["jsondump"]["indent"] == 8
+    assert "encoding" not in cfg["reporting"]["jsondump"]
     assert cfg["reporting"]["notification"]["url"] is None
     assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True

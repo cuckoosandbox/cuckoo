@@ -577,6 +577,7 @@ def _20c2_200(c):
     c["reporting"]["feedback"] = {
         "enabled": False,
     }
+    c["reporting"]["jsondump"].pop("encoding")
     c["reporting"]["misp"] = {
         "enabled": False,
         "url": None,

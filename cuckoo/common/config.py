@@ -699,7 +699,6 @@ class Config(object):
             "jsondump": {
                 "enabled": Boolean(True),
                 "indent": Int(4),
-                "encoding": String("latin-1"),
                 "calls": Boolean(True),
             },
             "reporthtml": {
