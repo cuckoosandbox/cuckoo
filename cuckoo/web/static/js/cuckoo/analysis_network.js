@@ -41,8 +41,141 @@ function parseHeaderString(headerStr, debug) {
 }
 
 /*
+    working towards a single definition of the hex/plaintext
+    fields for display options, as the above only works for http,
+    but does not work for other components sharing this same feature.
+ */
+
+var HexView = function () {
+    function HexView(el, raw, options) {
+        _classCallCheck(this, HexView);
+
+        // class data
+        this.el = el;
+        this.raw = raw;
+        this.container = options.container ? options.container : null;
+
+        // parameters
+        this.displayBody = options.displayBody ? options.displayBody : 'response';
+        this.displayOutput = options.displayOutput ? options.displayOutput : 'plaintext';
+        this.displayMode = options.displayMode ? options.displayMode : 16;
+
+        // actions
+        this.actions = options.actions ? options.actions : {
+            display: function display() {},
+            output: function output() {},
+            mode: function mode() {}
+        };
+    }
+
+    _createClass(HexView, [{
+        key: 'initialise',
+        value: function initialise() {
+
+            var _this = this;
+
+            if (this.container) {
+                this.container = this.el.find(this.container);
+            }
+
+            this.el.find('.flex-tabs__tab .btn').bind('click', function (e) {
+
+                e.preventDefault();
+                var keys = $(this).attr('href').split(':');
+                var action = keys[0];
+                var actionValue = keys[1];
+
+                if (_this.actions[action] && typeof _this.actions[action] === 'function') {
+                    _this.actions[action].apply(_this, [actionValue, _this.el]);
+                }
+
+                if (action == 'output') _this.displayOutput = actionValue;
+                if (action == 'mode') _this.displayMode = actionValue;
+                if (action == 'body') _this.displayBody = actionValue;
+
+                // $(this).parent().find('.btn').removeClass('active');
+                // $(this).addClass('active');
+
+                _this.sync();
+            });
+        }
+    }, {
+        key: 'sync',
+        value: function sync() {
+
+            // syncs the mode property to ui
+            this.el.find('.tab-mode > a').removeClass('active');
+            this.el.find('.tab-mode > a[href="mode:' + this.displayMode + '"]').addClass('active');
+            // syncs the output property to ui
+            this.el.find('.tab-output > a').removeClass('active');
+            this.el.find('.tab-output > a[href="output:' + this.displayOutput + '"]').addClass('active');
+            // syncs the display property to ui
+            this.el.find('.tab-display > a').removeClass('active');
+            this.el.find('.tab-display > a[href="display:' + this.displayBody + '"]').addClass('active');
+
+            // show/hide byte selection in hex view
+            if (this.displayOutput == 'hex') {
+                this.el.find('.tab-mode').show();
+            } else {
+                this.el.find('.tab-mode').hide();
+            }
+
+            this.render();
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+
+            var displayBody,
+                outputMode,
+                content = this.raw;
+
+            var body = this.displayBody;
+            var output = this.displayOutput;
+            var mode = this.displayMode;
+
+            output == 'hex' ? content = HexView.renderHex(content, mode) : content = HexView.renderPlaintext(content);
+
+            this.container.empty().text(content);
+
+            /*
+                  // set the content we're working with based on what the user wants (response/request body)
+                displayBody == 'response' ? content = this.response_body : content = this.request_body;
+                 // parse this content to our output results
+                outputMode == 'hex' ? content = renderHex(content) : content = renderPlaintext(content);
+                 if(content.length == 0) {
+                    this.el.find('[data-draw=http-body]').addClass('empty-body');
+                } else {
+                    this.el.find('[data-draw=http-body]').removeClass('empty-body');
+                }
+                 // draw this into the container
+                this.el.find('[data-draw=http-body]').empty().text(content);
+                 if(cb && typeof cb === 'function') cb(content);
+            
+             */
+        }
+    }], [{
+        key: 'renderHex',
+        value: function renderHex(str, mode) {
+            return hexy(base64.decode(str), {
+                width: mode ? parseInt(mode) : 16,
+                html: false
+            });
+        }
+    }, {
+        key: 'renderPlaintext',
+        value: function renderPlaintext(str) {
+            return base64.decode(str);
+        }
+    }]);
+
+    return HexView;
+}();
+
+/*
 	HTTP layout helper
  */
+
 
 var RequestDisplay = function () {
     function RequestDisplay(el, options) {
@@ -268,14 +401,11 @@ var RequestDisplay = function () {
 
             // private functions
             function renderHex(str) {
-                return hexy(base64.decode(str), {
-                    width: displayMode ? displayMode : 16,
-                    html: false
-                });
+                return HexView.renderHex(str, displayMode);
             }
 
             function renderPlaintext(str) {
-                return base64.decode(str);
+                return HexView.renderPlaintext(str);
             }
 
             // set the content we're working with based on what the user wants (response/request body)
@@ -314,6 +444,86 @@ var RequestDisplay = function () {
     return RequestDisplay;
 }();
 
+/* 
+    class PacketDisplay
+    @todo: unify the hex display body view to one class instead of defining two seperate
+ */
+
+
+var PacketDisplay = function () {
+    function PacketDisplay(el, options) {
+        _classCallCheck(this, PacketDisplay);
+
+        this.nav = el.find("#requests");
+        this.container = el.find("#packets");
+        this.template = HANDLEBARS_TEMPLATES['packet-display'];
+
+        this.initialise();
+    }
+
+    _createClass(PacketDisplay, [{
+        key: 'initialise',
+        value: function initialise() {
+
+            var _this = this;
+
+            this.nav.find('.source-destination a').bind('click', function (e) {
+                e.preventDefault();
+                _this.selectHandler($(this));
+            });
+        }
+    }, {
+        key: 'selectHandler',
+        value: function selectHandler(navElement) {
+
+            var _this = this;
+            var params = navElement.attr('href');
+
+            if (params) {
+                this.load(params, function (response) {
+
+                    var html = [];
+                    for (var r in response) {
+                        var view = new HexView($(_this.template(response[r])), response[r].raw, {
+                            container: '[data-draw="source"]'
+                        });
+                        html.push(view);
+                    }
+
+                    _this.container.empty();
+
+                    html.forEach(function (partial) {
+                        _this.container.append(partial.el);
+                        partial.initialise();
+                    });
+                });
+            }
+        }
+    }, {
+        key: 'load',
+        value: function load(params, callback) {
+            $.get('/analysis/' + window.task_id + '/pcapstream/' + params + '/', function (response) {
+                if (callback && typeof callback == 'function') callback(response);
+            });
+        }
+    }]);
+
+    return PacketDisplay;
+}();
+
+// TCP/UTP packet displays
+
+
+$(function () {
+
+    if ($("#network-analysis-tcp").length) {
+
+        var packet_display = new PacketDisplay($("#network-analysis-tcp"), {});
+
+        console.log(packet_display);
+    }
+});
+
 $(function () {
 
     var rDisplays = [];
@@ -347,6 +557,7 @@ $(function () {
 
     var prefs = getPreferences();
 
+    // network-http-displays
     $("#http-requests .network-display__request").each(function () {
 
         var rd = new RequestDisplay($(this), {

@@ -254,6 +254,19 @@ this["HANDLEBARS_TEMPLATES"]["header-table"] = Handlebars.template({"1":function
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.keyv : depth0),{"name":"each","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "	</tbody>\n</table>";
 },"useData":true});
+this["HANDLEBARS_TEMPLATES"]["packet-display"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "<div class=\"network-display__request is-open\">\n    <section class=\"network-display__request-details--single\">\n        <div class=\"detail-field\">\n\n            <h4 class=\"detail-field__title flex-distribute\">\n                <span>"
+    + alias3(((helper = (helper = helpers.src || (depth0 != null ? depth0.src : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"src","hash":{},"data":data}) : helper)))
+    + ":"
+    + alias3(((helper = (helper = helpers.sport || (depth0 != null ? depth0.sport : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"sport","hash":{},"data":data}) : helper)))
+    + "</span>\n                <i class=\"fa fa-long-arrow-right\"></i>\n                <span>"
+    + alias3(((helper = (helper = helpers.dst || (depth0 != null ? depth0.dst : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"dst","hash":{},"data":data}) : helper)))
+    + ":"
+    + alias3(((helper = (helper = helpers.dport || (depth0 != null ? depth0.dport : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"dport","hash":{},"data":data}) : helper)))
+    + "</span>\n            </h4>\n\n            <header class=\"detail-field__header with-tabs\">\n                <i class=\"fa fa-file-o\"></i>\n                <div class=\"flex-tabs__tabs\">\n                    <div class=\"flex-tabs__tab tab-output\">\n                        <a href=\"output:plaintext\" class=\"btn btn-sm\">plaintext</a>\n                        <a href=\"output:hex\" class=\"btn btn-sm active\">hex</a>\n                    </div>\n                    <div class=\"flex-tabs__tab tab-mode\">\n                        <a href=\"mode:16\" class=\"btn btn-sm active\">16 bytes</a>\n                        <a href=\"mode:32\" class=\"btn btn-sm\">32 bytes</a>\n                        <a href=\"mode:48\" class=\"btn btn-sm\">48 bytes</a>\n                        <a href=\"mode:64\" class=\"btn btn-sm\">64 bytes</a>\n                    </div>\n                </div>\n            </header>\n\n            <section class=\"detail-field__body\"><pre data-draw=\"source\"></pre></section>\n            <div class=\"detail-field__footer\">mijn.ing.nl</div>\n\n        </div>\n    </section>\n</div>";
+},"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     return "checked";
 },"3":function(depth0,helpers,partials,data) {

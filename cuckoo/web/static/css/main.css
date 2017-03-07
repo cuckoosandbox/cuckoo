@@ -5520,6 +5520,7 @@ body.night .flex-grid__nav {
 }
 .flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
   flex-basis: 100%;
+  overflow: hidden;
 }
 .flex-grid__column.one-third, .flex-grid__horizontal .one-third.flex-grid__column--xs, .flex-grid__horizontal .one-third.flex-grid__column--sm, .flex-grid__horizontal .one-third.flex-grid__column--md {
   flex-basis: 33.33333%;

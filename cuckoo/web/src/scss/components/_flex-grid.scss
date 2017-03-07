@@ -175,6 +175,7 @@
 	&__column {
 
 		flex-basis: 100%;
+		overflow: hidden;
 
 		&.one-third {
 			flex-basis: percentage(1/3);
