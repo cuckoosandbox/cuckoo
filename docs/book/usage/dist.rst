@@ -2,75 +2,65 @@
 Distributed Cuckoo
 ==================
 
-.. versionchanged:: 2.0.0
-    The documenation on Distributed Cuckoo is outdated due to the switch to
-    the Cuckoo Package.
-
 As mentioned in :doc:`submit`, Cuckoo provides a REST API for Distributed
 Cuckoo usage. The distributed script allows one to setup a single REST API
 point to which samples and URLs can be submitted which will then, in turn, be
 submitted to one of the configured Cuckoo nodes.
 
-A typical setup thus includes a machine on which the distributed script is run
-and one or more machines running an instance of the Cuckoo daemon
-(``./cuckoo.py``) and the :doc:`Cuckoo REST API <api>`.
+A typical setup thus includes a machine on which Distributed Cuckoo is run
+and one or more machines running an instance of the Cuckoo daemon and the
+:doc:`Cuckoo REST API <api>`.
 
 A few notes;
 
-* Using the distributed script makes more sense when running at least two
+* Using the distributed script only makes sense when running at least two
   cuckoo nodes.
 * The distributed script can be run on a machine that also runs a Cuckoo
   daemon and REST API, however, make sure it has enough disk space if the
   intention is to submit a lot of samples.
 
-Dependencies
-============
-
-The distributed script uses a few Python libraries which can be installed
-through the following command (on Debian/Ubuntu)::
-
-    $ sudo pip install flask flask-sqlalchemy requests
-
 Starting the Distributed REST API
 =================================
 
-The Distributed REST API requires a few commandline options in order to run.
-Following is a listing of all available commandline options::
+The Distributed REST API has the following command line options::
 
-    $ ./distributed/app.py -h
+    $ cuckoo distributed server --help
+    Usage: cuckoo distributed server [OPTIONS]
 
-    usage: app.py [-h] [-s SETTINGS] [-v] [host] [port]
+    Options:
+      -H, --host TEXT     Host to bind the Distributed Cuckoo server on
+      -p, --port INTEGER  Port to bind the Distributed Cuckoo server on
+      --uwsgi             Dump uWSGI configuration
+      --nginx             Dump nginx configuration
+      --help              Show this message and exit.
 
-    positional arguments:
-        host                  Host to listen on.
-        port                  Port to listen on.
+As may be derived from the help output, starting Distributed Cuckoo may be as
+simple as running ``cuckoo distributed server``.
 
-    optional arguments:
-        -h, --help            show this help message and exit
-        -s SETTINGS, --settings SETTINGS
-                              Settings file.
-        -v, --verbose         Enable verbose logging.
+The various configuration options are described in the configuration file, but
+following we have more in-depth descriptions as well. More advanced usage
+naturally includes deploying to ``uWSGI`` and ``nginx``.
 
-The various configuration options are described in the configuration file, but following we have more in-depth
-descriptions as well.
+Distributed Cuckoo Configuration
+================================
 
 Report Formats
 --------------
 
 The reporting formats denote which reports you'd like to retrieve later on.
 Note that all task-related data will be removed from the Cuckoo nodes once the
-related reports have been fetches so that the machines are not running out of
+related reports have been fetched so that the machines are not running out of
 disk space. This does, however, force you to specify all the report formats
 that you're interested in, because otherwise that information will be lost.
 
 Reporting formats include, but are not limited to and may also include your
-own reporting formats, ``json``, ``html``, etc.
+own reporting formats, ``report.json``, ``report.html``, etc.
 
 Samples Directory
 -----------------
 
 The samples directory denotes the directory where the submitted samples will
-be stored temporarily, until they're passed on to a Cuckoo node and processed.
+be stored temporarily, until the associated task has been deleted.
 
 Reports Directory
 -----------------
@@ -114,8 +104,8 @@ Following are all RESTful resources. Also make sure to check out the
 GET /api/node
 -------------
 
-Returns all enabled nodes. For each node its associated name, API url, and
-machines are returned::
+Returns all enabled nodes. For each node the information includes the
+associated name, its API URL, and machines::
 
     $ curl http://localhost:9003/api/node
     {
@@ -192,9 +182,9 @@ DELETE /api/node/<name>
 -----------------------
 
 Disable a Cuckoo node, therefore not having it process any new tasks, but
-keeping its history in the Distributed's database::
+keeping its history in the Distributed Cuckoo database::
 
-    $ curl -XDELETE http://localhost:9003/node/localhost
+    $ curl -XDELETE http://localhost:9003/api/node/localhost
     {
         "success": true
     }
@@ -282,7 +272,8 @@ Get basic information about a particular task::
 DELETE /api/task/<id>
 ---------------------
 
-Delete all associated data of a task, namely the binary and the reports::
+Delete all associated data of a task, namely the binary, the PCAP, and the
+reports::
 
     $ curl -XDELETE http://localhost:9003/api/task/2
     {
@@ -297,7 +288,7 @@ GET /api/report/<id>/<format>
 Fetch a report for the given task in the specified format::
 
     # Defaults to the JSON report.
-    $ curl http://localhost:9003/report/2
+    $ curl http://localhost:9003/api/report/2
     ...
 
 .. _quick-usage:
@@ -310,8 +301,7 @@ For practical usage the following few commands will be most interesting.
 Register a Cuckoo node - a Cuckoo API running on the same machine in this
 case::
 
-    $ curl http://localhost:9003/api/node \
-        -F name=localhost -F url=http://localhost:8090/
+    $ curl http://localhost:9003/api/node -F name=localhost -F ip=127.0.0.1
 
 Disable a Cuckoo node::
 
@@ -352,10 +342,15 @@ hundred binaries. On some servers or setups ``/tmp`` may have a limited amount
 of space and thus this wouldn't suffice.
 
 Update ``connection`` to use something *not* sqlite3. Preferably PostgreSQL or
-MySQL. SQLite3 doesn't support multi-threaded applications that well and this
-will give errors at random if used.
+MySQL. SQLite3 doesn't support multi-threaded applications and as such is not
+a good choice for systems such as Cuckoo (as-is).
 
-You should create your own empty database for the distributed cuckoo setup. Do not be tempted to use any existing cuckoo database in order to avoid update problems with the DB scripts. In the config use the new database name, the remaining stuff like usernames , servers can be the same as for your cuckoo install.Don´t forget to use one DB per node and another one more for the first machine which run the distributed script (so the say the "management machine" ).
+You should create a database specifically for the distributed cuckoo setup. Do
+not be tempted to use any existing cuckoo database in order to avoid update
+problems with the DB scripts. In the configuration use the new database name.
+The remaining configuration such as usernames, servers, etc can be the same as
+for your cuckoo install. Don't forget to use one DB per node and one for the
+machine running Distributed Cuckoo (the "management machine" or "controller").
 
 conf/processing.conf
 ^^^^^^^^^^^^^^^^^^^^
@@ -367,57 +362,52 @@ conf/reporting.conf
 
 Depending on which report(s) are required for integration with your system it
 might make sense to only make those report(s) that you're going to use. Thus
-disable the other ones.
+disabling the other ones.
 
 conf/virtualbox.conf
 ^^^^^^^^^^^^^^^^^^^^
 
 Assuming ``VirtualBox`` is the Virtual Machine manager of choice, the ``mode``
-will have to be changed to ``headless`` or you will have some restless nights.
+will have to be changed to ``headless`` or you will have some restless nights
+(this is the default nowadays).
 
 Setup Cuckoo
 ------------
 
-On each machine the following three scripts should be ran::
-
-    ./cuckoo.py
-    ./utils/api.py -H 1.2.3.4  # IP accessible by the Distributed script.
-    ./utils/process.py auto
-
-One way to do this is by placing each script in its own ``screen(1)`` session
-as follows, this allows one to check back on each script to ensure it's
-(still) running successfully::
-
-    $ screen -S cuckoo  ./cuckoo.py
-    $ screen -S api     ./utils/api.py
-    $ screen -S process ./utils/process.py auto
+On each machine you will have to run the Cuckoo Daemon, the Cuckoo API, and
+one or more Cuckoo Process instances. For more information on setting that up,
+please refer to :doc:`Starting Cuckoo <start>`.
 
 Setup Distributed Cuckoo
 ------------------------
 
-On the first machine (so the say the "management machine" ) start a few separate ``screen(1)`` sessions for the
-Distributed Cuckoo scripts with all the required parameters (see the rest of
-the documentation on the parameters for this script)::
+On the Distributed Cuckoo machine you'll have to setup the Distributed Cuckoo
+REST API and the Distributed Cuckoo Worker.
 
-    $ screen -S distributed ./distributed/app.py
-    $ SCREEN -S dist_scheduler ./distributed/instance.py dist.scheduler
-    $ SCREEN -S dist_status ./distributed/instance.py dist.status
-    $ SCREEN -S cuckoo0 ./distributed/instance.py -v cuckoo0
-    $ SCREEN -S cuckoo1 ./distributed/instance.py -v cuckoo1
+As stated earlier, Distributed Cuckoo REST API may be started by running
+``cuckoo distributed server`` or by deploying it properly with ``uWSGI`` and
+``nginx``.
 
-The -v parameter enables verbose output and the cuckoo1 parameter is the name assigned to the actual cuckoo instance running the virtual machine while registering the node as outlined below.It´s mandatory to register the nodes before run the instance.py due to the script check the DB.
+The Distributed Cuckoo Worker may be started by running
+``supervisorctl start distributed`` in the ``CWD``. This will automatically
+start the Worker with the correct configuration and arguments, etc.
 
 Register Cuckoo nodes
 ---------------------
 
 As outlined in :ref:`quick-usage` the Cuckoo nodes have to be registered with
-the Distributed Cuckoo script::
+the Distributed Cuckoo REST API::
 
     $ curl http://localhost:9003/api/node -F name=cuckoo0 -F url=http://localhost:8090/
     $ curl http://localhost:9003/api/node -F name=cuckoo1 -F url=http://1.2.3.4:8090/
 
 Having registered the Cuckoo nodes all that's left to do now is to submit
 tasks and fetch reports once finished. Documentation on these commands can be
-found in the :ref:`quick-usage` section. In case you are not using localhost, replace localhost with the IP of the node where there distributed.py is running and the -F url parameter points to the nodes running the actual virtual machines.
+found in the :ref:`quick-usage` section. In case your Cuckoo node is not on
+``localhost``, replace ``localhost`` with the IP address of the node where
+the Cuckoo REST API is running.
 
-If you want to experiment a real load balancing between the nodes you should use a lower value for the threshold parameter in the distributed/settings.py file, the default value is 500.
+If you want to experiment a real load balancing between the nodes you may want
+to try using a lower value for the ``threshold`` parameter in the
+``$CWD/distributed/settings.py`` file as the default value is ``500`` (meaning
+tasks are assigned to Cuckoo nodes in batches of 500).
