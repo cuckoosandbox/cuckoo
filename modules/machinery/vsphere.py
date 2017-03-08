@@ -234,20 +234,20 @@ class vSphere(Machinery):
 
         for dc, dcpath in traverseDCFolders(conn, conn.content.rootFolder.childEntity):
             for vm in traverseVMFolders(conn, dc.vmFolder.childEntity):
-                try:
+                if hasattr(vm.summary.config, 'name'):
                     self.VMtoDC[vm.summary.config.name] = dcpath
                     yield vm
-                except AttributeError:
-                    pass
+                else:
+                    continue
 
     def _get_virtual_machine_by_label(self, conn, label):
         """Return the named VirtualMachine managed object"""
         for vm in self._get_virtual_machines(conn):
-            try:
+            if hasattr(vm.summary.config, 'name'):
                 if vm.summary.config.name == label:
                     return vm
-            except AttributeError:
-                pass
+            else:
+                continue
 
     def _get_snapshot_by_name(self, vm, name):
         """Return the named VirtualMachineSnapshot managed object for
