@@ -40,7 +40,16 @@ class TestGuestManager(object):
             gm.get("/")
 
     @responses.activate
-    def test_get_exception(self):
+    def test_do_not_get_exception(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        responses.add(responses.GET, "http://1.2.3.4:8000/", status=501)
+        gm = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        assert gm.get("/", do_raise=False).status_code == 501
+
+    @responses.activate
+    def test_post_exception(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
 

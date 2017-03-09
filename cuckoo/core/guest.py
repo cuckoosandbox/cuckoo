@@ -291,12 +291,13 @@ class GuestManager(object):
 
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
+        do_raise = kwargs.pop("do_raise", True)
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
         r = session.get(url, *args, **kwargs)
-        r.raise_for_status()
+        do_raise and r.raise_for_status()
         return r
 
     def post(self, method, *args, **kwargs):
@@ -395,7 +396,7 @@ class GuestManager(object):
 
         # Check whether this is the new Agent or the old one (by looking at
         # the status code of the index page).
-        r = self.get("/")
+        r = self.get("/", do_raise=False)
         if r.status_code == 501:
             # log.info("Cuckoo 2.0 features a new Agent which is more "
             #          "feature-rich. It is recommended to make new Virtual "
