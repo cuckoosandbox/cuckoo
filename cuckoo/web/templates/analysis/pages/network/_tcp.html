@@ -42,19 +42,3 @@
     </div>
 
 </div>
-
-<script>
-
-    $(function() {
-
-        $('.source-destination .content li:first-child a').addClass('active');
-
-        $('.source-destination .content a').bind('click', function(e) {
-            e.preventDefault();
-            $('.source-destination a').removeClass('active');
-            $(this).addClass('active');
-        });
-
-    });
-
-</script>

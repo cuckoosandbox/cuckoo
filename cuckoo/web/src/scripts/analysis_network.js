@@ -483,43 +483,150 @@ class PacketDisplay {
 
 }
 
+/*
+    class PageSwitcher
+    - a class that handles 'tabbed' navigation
+    - primarily [now] used at the network analysis page as proof of concept
+    - this class will be traversible and highly configurable using hooks (will improve overall page performance)
+    - this technique might open a few windows on asynchronous page loading, which I will highly recommend for this page
+    - also in mind to do this all using Handlebars, which works overall nice with these kind of pages, but that'll 
+      require some back-end logistics for getting its required data. but this needs to be discussed at some point.
+      Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
+      page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
+    - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
+ */
+class PageSwitcher {
+
+    constructor(options) {
+        this.nav = options.nav;
+        this.container = options.container;
+
+        this.pages = [];
+
+        this.events = $.extend({
+            transition: function(){},
+            beforeTransition: function(){},
+            afterTransition: function(){}
+        }, options.events ? options.events : {});
+
+        this.initialise();
+    }
+
+    /*
+        Called on instance construction
+     */
+    initialise() {
+
+        var _this = this;
+
+        this.indexPages();
+
+        this.nav.children('a').bind('click', function(e) {
+            e.preventDefault();
+            _this._beforeTransition($(this));
+        });
+
+    }
+
+    /*
+        Creates a short summary about the pages and their names
+     */
+    indexPages() {
+        var _this = this;
+        this.container.children('div').each(function() {
+            _this.pages.push({
+                name: $(this).attr('id'),
+                el: $(this),
+                initialised: false
+            });
+        });
+    }
+
+    /*
+        Prepares a transition
+        - a transition is traversing from page A to page B
+     */
+    _beforeTransition(el) {
+
+        var name = el.attr('href').replace('#','');
+
+        if(this.exists(name)) {
+            this.nav.children('a').removeClass('active');
+            this.container.children('div').removeClass('active');
+            this.events.beforeTransition(name);
+            this._transition(this.getPage(name), el);
+        } else {
+            this._afterTransition();
+        }
+
+    }
+
+    /*
+        Executes the transition
+     */
+    _transition(page, link) {
+        page.el.addClass('active');
+        link.addClass('active');
+        this.events.transition(page, link);
+        this._afterTransition(page);
+    }
+
+    /*
+        Finishes the transition
+     */
+    _afterTransition(page) {
+        this.events.afterTransition(page);
+    }
+
+    /*
+        returns a page by name
+     */
+    getPage(name) {
+        return this.pages.filter(function(element) {
+            return element.name == name;
+        })[0];
+    }
+
+    /*
+        quick-validates if a page exists
+     */
+    exists(name) {
+        return this.getPage(name) !== undefined;
+    }
+
+}
+
 // TCP/UTP packet displays
 $(function() {
 
     // some info about alteration in layout type
-    var fixed_layouts = ['#network-analysis-tcp','#network-analysis-udp'];
+    let fixed_layouts = ['network-analysis-tcp','network-analysis-udp'];
+
+    let network_nav = new PageSwitcher({
+        nav: $('.network-analysis-groups'),
+        container: $('.network-analysis-pages'),
+        events: {
+            beforeTransition: function(name) {
+                // some pages require a fixed layout change, this does that
+                 if(fixed_layouts.indexOf(name) !== -1) {
+                    $('.cuckoo-analysis').addClass('flex-nav__body--disable-overflow');
+                } else {
+                    $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
+                }
+            }
+        }
+    });
 
     if($("#network-analysis-tcp").length) {
-        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
+        let packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
     }
 
     if($("#network-analysis-udp").length) {
-        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
+        let packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
     }
 
     $("#http-requests .network-display__request").each(function() {
-        var rd = new RequestDisplay($(this));
-    });
-
-    // page navigation for network analysis pages
-    // this will move to a more abstract and re-usable utility following
-    // underneath simple code
-    $(".network-analysis-groups > a").bind('click', function(e) {
-        e.preventDefault();
-
-        var target = $(this).attr('href');
-
-        $(".network-analysis-groups > a").removeClass('active');
-        $(this).addClass('active');
-        $('.network-analysis-pages > div').removeClass('active');
-        $(`.network-analysis-pages > ${$(this).attr('href')}`).addClass('active');
-
-        if(fixed_layouts.indexOf(target) !== -1) {
-            $('.cuckoo-analysis').addClass('flex-nav__body--disable-overflow');
-        } else {
-            $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
-        }
-
+        let rd = new RequestDisplay($(this));
     });
 
     // helpers for the udp/tcp pages
