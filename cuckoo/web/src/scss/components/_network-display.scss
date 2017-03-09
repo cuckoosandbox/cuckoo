@@ -6,6 +6,11 @@
 		border: 1px solid #D8D8D8;
 		padding: 10px;
 
+		.scroll-internal & {
+			height: 100%;
+			overflow-y: auto;
+		}
+
 		@include cuckoo-theme('cyborg') { 
 			background-color: $cyborg_panel_color; 
 			border-color: $cyborg_border_color;
@@ -501,6 +506,10 @@
 }
 
 .source-destination {
+
+	display: flex;
+	flex-direction: column;
+
 	padding: 0;
 	margin: 0;
 	list-style: none;
@@ -508,17 +517,28 @@
 	border-radius: 5px;
 	overflow: hidden;
 
-	& > li {
+	.title {
+		padding: 12px 15px 7px 15px;
+		border-bottom-width: 2px;
+		background-color: #f4f4f4;
+		color: #ACAFB5;
+		font-weight: 700;
+	}
+
+	.content {
+		padding: 0;
+		border-radius: 0;
+	}
+
+	li {
 
 		background-color: #fff;
 		border-bottom: 1px solid $cuckoo_border_color;
 
-		&.title {
-			padding: 12px 15px 7px 15px;
-			border-bottom-width: 2px;
-			background-color: #f4f4f4;
-			color: #ACAFB5;
-			font-weight: 700;
+		ul {
+			padding: 0;
+			list-style: none;
+			border-radius: 0;
 		}
 
 		&:last-child { border-bottom: 0; }
@@ -593,6 +613,17 @@
 				border-right: 7px solid transparent;
 				border-bottom: 7px solid #e5e5e5;
 			}
+		}
+	}
+
+	.scroll-internal & {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		overflow-y: hidden;
+
+		.content {
+			overflow-y: scroll;
 		}
 	}
 }

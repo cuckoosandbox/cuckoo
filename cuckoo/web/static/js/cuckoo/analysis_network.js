@@ -527,6 +527,9 @@ var PacketDisplay = function () {
 
 $(function () {
 
+    // some info about alteration in layout type
+    var fixed_layouts = ['#network-analysis-tcp', '#network-analysis-udp'];
+
     if ($("#network-analysis-tcp").length) {
         var packet_display = new PacketDisplay($("#network-analysis-tcp"));
     }
@@ -540,10 +543,19 @@ $(function () {
     // underneath simple code
     $(".network-analysis-groups > a").bind('click', function (e) {
         e.preventDefault();
+
+        var target = $(this).attr('href');
+
         $(".network-analysis-groups > a").removeClass('active');
         $(this).addClass('active');
         $('.network-analysis-pages > div').removeClass('active');
         $('.network-analysis-pages > ' + $(this).attr('href')).addClass('active');
+
+        if (fixed_layouts.indexOf(target) !== -1) {
+            $('.cuckoo-analysis').addClass('flex-nav__body--disable-overflow');
+        } else {
+            $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
+        }
     });
 });
 //# sourceMappingURL=analysis_network.js.map

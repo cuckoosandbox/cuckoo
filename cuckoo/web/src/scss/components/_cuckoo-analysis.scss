@@ -95,6 +95,56 @@
 			}
 		}
 
+		// alternate fix for a disabled overflow in network page
+		// mostly resets a lot of bootstrap garbage
+		.flex-nav__body--disable-overflow & {
+
+			+ .container-fluid {
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				flex-basis: 100%;
+
+				& > .row {
+					display: flex;
+					flex-direction: column;
+					flex-basis: 100%;
+					width: 100%;
+					overflow: hidden;
+					margin: auto;
+
+					.col-md-12 {
+						min-height: initial;
+						flex-basis: 100%;
+						overflow: hidden;
+						padding: 0;
+					}
+
+					.network-analysis-menu {
+						flex-basis: 45px;
+						flex-shrink: 0;
+						margin-bottom: 15px;
+					}
+
+					.network-analysis-pages {
+						display: flex;
+						width: 100%;
+
+						& > div {
+							flex-basis: 100%;
+							overflow: hidden;
+
+							.flex-grid__fluid {
+								height: 100%;
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+
 	}
 
 }
