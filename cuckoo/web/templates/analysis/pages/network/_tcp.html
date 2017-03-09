@@ -21,7 +21,9 @@
                                             {{p.dst}}:{{p.dport}}
                                         </span>
                                     </div>
-                                    <span class="destination-address">{{ report.iplookups|get_item:p.dst }}</span>
+                                    {% if report.iplookups|get_item:p.dst %}
+                                        <span class="destination-address">{{ report.iplookups|get_item:p.dst }}</span>
+                                    {% endif %}
                                 </a>
                             </li>
                         {% endfor %}
@@ -35,7 +37,7 @@
             {% include "components/loader.html" %}
         </div>
         <div class="network-display__outer">
-            <div class="network-display__requests" id="packets"> </div>
+            <div class="network-display__requests" id="packets"></div>
         </div>
     </div>
 

@@ -531,7 +531,11 @@ $(function () {
     var fixed_layouts = ['#network-analysis-tcp', '#network-analysis-udp'];
 
     if ($("#network-analysis-tcp").length) {
-        var packet_display = new PacketDisplay($("#network-analysis-tcp"));
+        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
+    }
+
+    if ($("#network-analysis-udp").length) {
+        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
     }
 
     $("#http-requests .network-display__request").each(function () {
@@ -556,6 +560,15 @@ $(function () {
         } else {
             $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
         }
+    });
+
+    // helpers for the udp/tcp pages
+    $('.source-destination .content li:first-child a').addClass('active');
+
+    $('.source-destination .content a').bind('click', function (e) {
+        e.preventDefault();
+        $('.source-destination a').removeClass('active');
+        $(this).addClass('active');
     });
 });
 //# sourceMappingURL=analysis_network.js.map
