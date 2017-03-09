@@ -47,6 +47,41 @@ def test_empty_json():
     task(1, {}, conf, {})
     assert open(report_path, "rb").read() == "{}"
 
+def test_unicode_json():
+    set_cwd(tempfile.mkdtemp())
+
+    conf = {
+        "jsondump": {
+            "enabled": True,
+            "indent": 2,
+        },
+    }
+    report_path = cwd("reports", "report.json", analysis=1)
+
+    task(1, {}, conf, {
+        "a": u"\u1234 \uecbc\uee9e",
+    })
+    assert open(report_path, "rb").read() == (
+        '{\n  "a": "\\u1234 \\uecbc\\uee9e"\n}'
+    )
+
+def test_nonascii_json():
+    set_cwd(tempfile.mkdtemp())
+
+    conf = {
+        "jsondump": {
+            "enabled": True,
+        },
+    }
+    report_path = cwd("reports", "report.json", analysis=1)
+
+    task(1, {}, conf, {
+        "a": "".join(chr(x) for x in range(256)),
+    })
+    buf = open(report_path, "rb").read()
+    assert buf.startswith('{\n    "a": "\\u0000\\u0001\\u0002')
+    assert buf.endswith('\\u00fd\\u00fe\\u00ff"\n}')
+
 @responses.activate
 def test_empty_mattermost():
     set_cwd(tempfile.mkdtemp())

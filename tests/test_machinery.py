@@ -8,10 +8,13 @@ import subprocess
 import tempfile
 
 from cuckoo.common.config import config, Config
-from cuckoo.common.exceptions import CuckooMachineError, CuckooCriticalError
-from cuckoo.common.exceptions import CuckooMachineSnapshotError
+from cuckoo.common.exceptions import (
+    CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
+    CuckooDependencyError
+)
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
+from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
 from cuckoo.misc import set_cwd, cwd
 
@@ -534,3 +537,8 @@ class TestBrokenMachine(object):
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
+
+def test_esx_not_installed():
+    with pytest.raises(CuckooDependencyError) as e:
+        ESX()
+    e.match("libvirt package has not")

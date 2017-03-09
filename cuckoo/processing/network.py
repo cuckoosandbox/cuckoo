@@ -17,7 +17,7 @@ import tempfile
 import urlparse
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.dns import resolve
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
@@ -91,9 +91,11 @@ class Pcap(object):
         # List for holding whitelisted IP-s according to DNS responses
         self.whitelist_ips = []
         # state of whitelisting
-        self.whitelist_enabled = self._build_whitelist_conf()
+        self.whitelist_enabled = self.options.get("whitelist_dns")
         # List of known good DNS servers
         self.known_dns = self._build_known_dns()
+        # List of all used DNS servers
+        self.dns_servers = []
 
     def _build_whitelist(self):
         result = []
@@ -101,14 +103,6 @@ class Pcap(object):
         for line in open(whitelist_path, "rb"):
             result.append(line.strip())
         return result
-
-    def _build_whitelist_conf(self):
-        """Check if whitelisting is enabled."""
-        if not self.options.get("whitelist_dns"):
-            log.debug("Whitelisting Disabled.")
-            return False
-
-        return True
 
     def _is_whitelisted(self, conn, hostname):
         """Checks if whitelisting conditions are met"""
@@ -147,11 +141,18 @@ class Pcap(object):
         @param name: hostname.
         @return: IP address or blank
         """
-        if Config().processing.resolve_dns:
+        if config("cuckoo:processing:resolve_dns"):
             ip = resolve(name)
         else:
             ip = ""
         return ip
+
+    def _add_used_dns_server(self, server):
+        """Add DNS server to used DNS server
+        list
+        @param server: dns server
+        """
+        self.dns_servers.append(server)
 
     def _is_private_ip(self, ip):
         """Check if the IP belongs to private network blocks.
@@ -276,7 +277,7 @@ class Pcap(object):
         if self._check_icmp(data):
             # If ICMP packets are coming from the host, it probably isn't
             # relevant traffic, hence we can skip from reporting it.
-            if conn["src"] == Config().resultserver.ip:
+            if conn["src"] == config("cuckoo:resultserver:ip"):
                 return
 
             entry = {}
@@ -308,6 +309,9 @@ class Pcap(object):
         @param udpdata: UDP data flow.
         """
         dns = dpkt.dns.DNS(udpdata)
+
+        if dns.qr == dpkt.dns.DNS_Q:
+            self._add_used_dns_server(conn["dst"])
 
         # DNS query parsing.
         query = {}
@@ -714,6 +718,7 @@ class Pcap(object):
         self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
+        self.results["dns_servers"] = list(set(self.dns_servers))
 
         self.results["dead_hosts"] = []
 
@@ -741,6 +746,7 @@ class Pcap2(object):
 
         self.handlers = {
             25: httpreplay.cut.smtp_handler,
+            587: httpreplay.cut.smtp_handler,
             80: httpreplay.cut.http_handler,
             8000: httpreplay.cut.http_handler,
             8080: httpreplay.cut.http_handler,
@@ -752,6 +758,7 @@ class Pcap2(object):
         results = {
             "http_ex": [],
             "https_ex": [],
+            "smtp_ex": []
         }
 
         if not os.path.exists(self.network_path):
@@ -763,6 +770,28 @@ class Pcap2(object):
         l = sorted(r.process(), key=lambda x: x[1])
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
+
+            if protocol == "smtp":
+                results["smtp_ex"].append({
+                    "src": srcip,
+                    "dst": dstip,
+                    "sport": srcport,
+                    "dport": dstport,
+                    "protocol": protocol,
+                    "req": {
+                        "hostname": sent.hostname,
+                        "mail_from": sent.mail_from,
+                        "mail_to": sent.mail_to,
+                        "auth_type": sent.auth_type,
+                        "username": sent.username,
+                        "password": sent.password,
+                        "headers": sent.headers,
+                        "mail_body": sent.message
+                    },
+                    "resp": {
+                        "banner": recv.ready_message
+                    }
+                })
 
             if protocol == "http" or protocol == "https":
                 request = sent.raw.split("\r\n\r\n", 1)[0]
@@ -843,7 +872,7 @@ class NetworkAnalysis(Processing):
         results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
+        if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
             pcap_path = sorted_path
 

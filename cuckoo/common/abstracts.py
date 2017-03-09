@@ -335,7 +335,10 @@ class LibVirtMachinery(Machinery):
 
     def __init__(self):
         if not HAVE_LIBVIRT:
-            raise CuckooDependencyError("Unable to import libvirt")
+            raise CuckooDependencyError(
+                "The libvirt package has not been installed "
+                "(`pip install libvirt-python`)"
+            )
 
         super(LibVirtMachinery, self).__init__()
 
@@ -986,6 +989,10 @@ class Signature(object):
     def get_net_smtp(self):
         """Returns a list of all smtp data."""
         return self.get_net_generic("smtp")
+
+    def get_net_smtp_ex(self):
+        """"Returns a list of all smtp data"""
+        return self.get_net_generic("smtp_ex")
 
     def get_virustotal(self):
         """Returns the information retrieved from virustotal."""

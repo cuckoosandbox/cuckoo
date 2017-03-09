@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -228,8 +228,9 @@ class Process(object):
         @return: operation status.
         """
         if not os.access(path, os.X_OK):
-            log.error("Unable to access file at path \"%s\", "
-                      "execution aborted", path)
+            log.error(
+                "Unable to access file at path %r, execution aborted!", path
+            )
             return False
 
         is32bit = self.is32bit(path=path)

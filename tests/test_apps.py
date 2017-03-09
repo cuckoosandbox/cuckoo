@@ -7,6 +7,7 @@ import logging
 import mock
 import os
 import pytest
+import shutil
 import tempfile
 
 from cuckoo.apps.apps import (
@@ -16,10 +17,13 @@ from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
+from cuckoo.core.database import Database
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
+
+db = Database()
 
 @mock.patch("cuckoo.main.load_signatures")
 def test_init(p):
@@ -632,3 +636,19 @@ def test_submit_unique_with_duplicates(p, q, capsys):
     out, err = capsys.readouterr()
     assert "added as task with" in out
     assert "Skipped" in out
+
+def test_config_load_once():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    db.connect()
+    t0 = db.add_path(__file__)
+    t1 = db.add_path(__file__)
+    shutil.copytree("tests/files/sample_analysis_storage", cwd(analysis=t0))
+    shutil.copytree("tests/files/sample_analysis_storage", cwd(analysis=t1))
+
+    with mock.patch("cuckoo.common.config.ConfigParser.ConfigParser") as p:
+        process_task_range("%d,%d" % (t0, t1))
+        assert p.return_value.read.call_count == 2
+        p.return_value.read.assert_any_call(cwd("conf", "processing.conf"))
+        p.return_value.read.assert_any_call(cwd("conf", "reporting.conf"))

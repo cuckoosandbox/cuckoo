@@ -2,12 +2,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import os
 import pytest
 import tempfile
 
 from cuckoo.common.config import (
-    Config, parse_options, emit_options, config, cast, Path, read_kv_conf
+    Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
+    config2
 )
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooStartupError
@@ -307,21 +309,33 @@ def test_invalid_feedback():
         check_configs()
     e.match("Cuckoo Feedback configuration")
 
-WHITESPACE_BEFORE_LINE = """
+def test_whitespace_before_line():
+    set_cwd(tempfile.mkdtemp())
+    filepath = Files.temp_put("""
 [virtualbox]
 machines = cuckoo1
 [cuckoo1]
 label = cuckoo1
 ip = 1.2.3.4
  snapshot = asnapshot
-"""
-
-def test_whitespace_before_line():
-    set_cwd(tempfile.mkdtemp())
-    filepath = Files.temp_put(WHITESPACE_BEFORE_LINE)
+""")
     with pytest.raises(CuckooConfigurationError) as e:
         Config(file_name="virtualbox", cfg=filepath)
     e.match("error reading in the")
+
+def test_whitespace_before_line2():
+    set_cwd(tempfile.mkdtemp())
+    filepath = Files.temp_put("""
+[virtualbox]
+machines = cuckoo1
+[cuckoo1]
+ label = cuckoo1
+ip = 1.2.3.4
+snapshot = asnapshot
+""")
+    with pytest.raises(CuckooConfigurationError) as e:
+        Config(file_name="virtualbox", cfg=filepath)
+    e.match("Most likely there are leading whitespaces")
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
@@ -912,6 +926,9 @@ analysis_size_limit = 104857600
 [network]
 whitelist-dns = wow
 allowed-dns = 8.8.8.8
+[virustotal]
+enabled = yes
+key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
 """)
     Files.create(cwd("conf"), "qemu.conf", """
 [qemu]
@@ -938,6 +955,9 @@ enabled = no
 enables = yes
 [notification]
 enabled = no
+[jsondump]
+indent = 8
+encoding = utf8
 """)
     Files.create(cwd("conf"), "vpn.conf", """
 [vpn]
@@ -976,11 +996,14 @@ interface = eth0
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
+    assert cfg["processing"]["virustotal"]["enabled"] is False
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [
         "127.0.0.1", "127.0.0.2"
     ]
     assert cfg["qemu"]["vm1"]["kernel"] == "kernelpath"
     assert cfg["qemu"]["vm2"]["kernel"] == "anotherpath"
+    assert cfg["reporting"]["jsondump"]["indent"] == 8
+    assert "encoding" not in cfg["reporting"]["jsondump"]
     assert cfg["reporting"]["notification"]["url"] is None
     assert cfg["reporting"]["mattermost"]["show_virustotal"] is False
     assert cfg["reporting"]["mattermost"]["show_signatures"] is True
@@ -1108,3 +1131,37 @@ class TestKvConf(object):
         with pytest.raises(CuckooConfigurationError) as e:
             read_kv_conf(filepath)
         e.match("Invalid flat configuration entry")
+
+def test_config2_default():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config2("processing", "suricata") == {
+        "enabled": False, "eve_log": "eve.json", "files_dir": "files",
+        "socket": None, "suricata": "/usr/bin/suricata",
+        "conf": "/etc/suricata/suricata.yaml", "files_log": "files-json.log",
+    }
+
+def test_config2_custom():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "processing": {
+            "virustotal": {
+                "key": "thisisthekey",
+            },
+        },
+    })
+    assert config2("processing", "virustotal") == {
+        "enabled": False,
+        "key": "thisisthekey",
+        "timeout": 60,
+        "scan": False,
+    }
+
+@mock.patch("cuckoo.common.config.log_error")
+def test_no_superfluous_conf(p):
+    """Tests that upon CWD creation no superfluous configuration values are
+    writted out (which may happen after a configuration migration)."""
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    Config.from_confdir(cwd("conf"))
+    p.assert_not_called()

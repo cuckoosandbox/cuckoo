@@ -28,9 +28,6 @@ class ESX(LibVirtMachinery):
         if not self.options.esx.password:
             raise CuckooMachineError("ESX(i) password is missing, please add it to the config file")
 
-        if not HAVE_LIBVIRT:
-            raise CuckooMachineError("The libvirt package has not been installed (`pip install libvirt-python`)")
-
         self.dsn = self.options.esx.dsn
         self.global_conn = self._global_connect()
         super(ESX, self)._initialize_check()
@@ -63,6 +60,3 @@ class ESX(LibVirtMachinery):
     def _disconnect(self, conn):
         """Using one global connection we now disconnect in the destructor, ignore requests to disconnect."""
         pass
-
-    def __del__(self):
-        self.global_conn.close()

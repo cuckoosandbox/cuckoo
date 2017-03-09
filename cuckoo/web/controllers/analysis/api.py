@@ -323,9 +323,7 @@ class AnalysisApi(object):
             category = info.get("category")
             if category == "file":
                 f = row["target"]["file"]
-                if f.get("path"):
-                    target = os.path.basename(f["path"])
-                elif f.get("name"):
+                if f.get("name"):
                     target = os.path.basename(f["name"])
                 else:
                     target = None

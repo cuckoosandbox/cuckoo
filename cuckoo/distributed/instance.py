@@ -144,7 +144,10 @@ def handle_node(instance):
                 try:
                     store_report(node.url, t.task_id, report_format, dirpath)
                 except InvalidReport as e:
-                    log.critical("Error fetching report: %s", e)
+                    log.critical(
+                        "Error fetching report for task #%d (%s.%d): %s",
+                        t.id, node.name, t.task_id, e
+                    )
 
             # Fetch the pcap file.
             if settings.pcap:
@@ -152,7 +155,10 @@ def handle_node(instance):
                 try:
                     fetch_pcap(node.url, t.task_id, pcap_path)
                 except InvalidPcap as e:
-                    log.critical("Error fetching pcap: %s", e)
+                    log.critical(
+                        "Error fetching pcap for task #%d (%s.%d): %s",
+                        t.id, node.name, t.task_id, e
+                    )
 
             # Delete the task and all its associated files from the
             # Cuckoo node.

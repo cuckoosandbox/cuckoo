@@ -1,2 +1,3 @@
 graft cuckoo
 recursive-exclude * *.pyc *.pyo
+recursive-exclude cuckoo/web/src/ *

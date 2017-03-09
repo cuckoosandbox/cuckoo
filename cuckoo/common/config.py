@@ -614,7 +614,7 @@ class Config(object):
                 "enabled": Boolean(True),
             },
             "virustotal": {
-                "enabled": Boolean(True),
+                "enabled": Boolean(False),
                 "timeout": Int(60),
                 "scan": Boolean(False),
                 "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088", sanitize=True),
@@ -699,7 +699,6 @@ class Config(object):
             "jsondump": {
                 "enabled": Boolean(True),
                 "indent": Int(4),
-                "encoding": String("latin-1"),
                 "calls": Boolean(True),
             },
             "reporthtml": {
@@ -905,10 +904,16 @@ class Config(object):
 
         self.sections = {}
 
-        if cfg:
-            config.read(cfg)
-        else:
-            config.read(cwd("conf", "%s.conf" % file_name))
+        try:
+            config.read(cfg or cwd("conf", "%s.conf" % file_name))
+        except ConfigParser.ParsingError as e:
+            raise CuckooConfigurationError(
+                "There was an error reading in the $CWD/conf/%s.conf "
+                "configuration file. Most likely there are leading "
+                "whitespaces in front of one of the key=value lines defined. "
+                "More information from the original exception: %s" %
+                (file_name, e)
+            )
 
         if file_name not in self.configuration and not loose:
             log_error("Unknown config file %s.conf", file_name)
@@ -1074,6 +1079,20 @@ def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
         )
 
     return value
+
+def config2(file_name, section):
+    if section not in Config.configuration[file_name]:
+        raise CuckooConfigurationError(
+            "No such configuration section exists: %s!%s" %
+            (file_name, section)
+        )
+
+    ret = {}
+    for key in Config.configuration[file_name][section]:
+        if key == "__star__" or key == "*":
+            continue
+        ret[key] = config("%s:%s:%s" % (file_name, section, key))
+    return ret
 
 def cast(s, value):
     """Cast a configuration value as per its type."""

@@ -556,7 +556,7 @@ class TestMongoInteraction(object):
                     d["target"] = {
                         "category": "file",
                         "file": {
-                            "path": target,
+                            "name": target,
                             "md5": md5,
                         },
                     }

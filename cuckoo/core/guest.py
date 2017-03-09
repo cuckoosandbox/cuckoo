@@ -14,7 +14,7 @@ import time
 import xmlrpclib
 import zipfile
 
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.constants import (
     CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED,
     CUCKOO_GUEST_FAILED
@@ -99,8 +99,6 @@ class OldGuestManager(object):
         self.platform = platform
         self.task_id = task_id
 
-        self.cfg = Config()
-
         # initialized in start_analysis so we can update the critical timeout
         # TODO, pull options parameter into __init__ so we can do this here
         self.timeout = None
@@ -167,7 +165,7 @@ class OldGuestManager(object):
         # TODO Deal with unicode URLs, should probably try URL encoding.
         # Unicode files are being taken care of.
 
-        self.timeout = options["timeout"] + self.cfg.timeouts.critical
+        self.timeout = options["timeout"] + config("cuckoo:timeouts:critical")
 
         url = "http://{0}:{1}".format(self.ip, CUCKOO_GUEST_PORT)
         self.server = TimeoutServer(url, allow_none=True,
@@ -274,8 +272,6 @@ class GuestManager(object):
         self.platform = platform
         self.task_id = task_id
         self.analysis_manager = analysis_manager
-
-        self.cfg = Config()
         self.timeout = None
 
         # Just in case we have an old agent inside the Virtual Machine. This
@@ -299,7 +295,9 @@ class GuestManager(object):
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        return session.get(url, *args, **kwargs)
+        r = session.get(url, *args, **kwargs)
+        r.raise_for_status()
+        return r
 
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
@@ -307,7 +305,9 @@ class GuestManager(object):
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        return session.post(url, *args, **kwargs)
+        r = session.post(url, *args, **kwargs)
+        r.raise_for_status()
+        return r
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
@@ -383,7 +383,7 @@ class GuestManager(object):
                  self.vmid, self.ipaddr)
 
         self.options = options
-        self.timeout = options["timeout"] + self.cfg.timeouts.critical
+        self.timeout = options["timeout"] + config("cuckoo:timeouts:critical")
 
         # Wait for the agent to come alive.
         self.wait_available()
@@ -459,7 +459,7 @@ class GuestManager(object):
                 ),
             }
             files = {
-                "file": open(options["target"], "rb"),
+                "file": ("sample.bin", open(options["target"], "rb")),
             }
             self.post("/store", files=files, data=data)
 
@@ -509,8 +509,10 @@ class GuestManager(object):
                 log.info("%s: analysis completed successfully", self.vmid)
                 return
             elif status["status"] == "exception":
-                log.info("%s: analysis caught an exception\n%s",
-                         self.vmid, status["description"])
+                log.warning(
+                    "%s: analysis caught an exception\n%s",
+                    self.vmid, status["description"]
+                )
                 return
 
     @property
