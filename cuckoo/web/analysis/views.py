@@ -3,14 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import io
 import json
 import os
 import pymongo
 import re
-import sflock
 import urllib
-import zipfile
 
 from bson.objectid import ObjectId
 
@@ -21,11 +18,10 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
 
-from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
+from cuckoo.core.database import Database, TASK_PENDING
+from cuckoo.common.config import config
 from cuckoo.common.elastic import elastic
-from cuckoo.common.files import Files
 from cuckoo.common.mongo import mongo
-from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
 from cuckoo.web.bin.utils import view_error, render_template

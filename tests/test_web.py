@@ -633,3 +633,45 @@ class TestMongoInteraction(object):
             assert self.req(client, packs="exe").status_code == 501
             assert self.req(client, packs=["doc", 1]).status_code == 501
             assert self.req(client, packs=["xls", "doc"]).status_code == 200
+
+class TestMoloch(object):
+    def test_disabled(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "moloch": {
+                    "enabled": False,
+                    "host": "molochhost",
+                },
+            },
+        })
+        assert client.get("/analysis/moloch/1.2.3.4//////").status_code == 500
+
+    def test_host(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "moloch": {
+                    "enabled": True,
+                    "host": "molochhost",
+                },
+            },
+        })
+        r = client.get("/analysis/moloch//google.com/////")
+        assert r.status_code == 302
+        assert "https://molochhost" in r["Location"]
+
+    def test_insecure(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "moloch": {
+                    "enabled": True,
+                    "host": "molochhost",
+                    "insecure": True,
+                },
+            },
+        })
+        r = client.get("/analysis/moloch//////12345/")
+        assert r.status_code == 302
+        assert "http://molochhost" in r["Location"]
