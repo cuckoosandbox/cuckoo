@@ -7,7 +7,7 @@
 .app {
     padding: 30px;
     
-    #analysis &,
+    [id^="analysis"] &,
     [id^="submission/"] & {
         padding: 0;
     }

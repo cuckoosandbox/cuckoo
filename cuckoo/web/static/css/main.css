@@ -3104,7 +3104,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-body#analysis {
+/* note to self: this is very hacky and I need to pick this up later */
+body[id^="analysis"] {
   padding-top: 30px;
 }
 
@@ -3118,8 +3119,8 @@ body[id="submission/index"] footer:not(.flex-grid__footer),
 body[id="submission/index"] #footer-extra,
 body[id="submission/post"] footer:not(.flex-grid__footer),
 body[id="submission/post"] #footer-extra,
-body[id="analysis"] footer:not(.flex-grid__footer),
-body[id="analysis"] #footer-extra {
+body[id^="analysis"] footer:not(.flex-grid__footer),
+body[id^="analysis"] #footer-extra {
   display: none;
 }
 
@@ -3150,7 +3151,7 @@ pre {
 .app {
   padding: 30px;
 }
-#analysis .app, [id^="submission/"] .app {
+[id^="analysis"] .app, [id^="submission/"] .app {
   padding: 0;
 }
 
