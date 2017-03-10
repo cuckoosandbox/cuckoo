@@ -7,11 +7,7 @@ import logging
 import os
 import zipfile
 
-try:
-    from androguard.core.bytecodes.apk import APK
-    HAVE_ANDROGUARD = True
-except ImportError:
-    HAVE_ANDROGUARD = False
+from androguard.core.bytecodes.apk import APK
 
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing

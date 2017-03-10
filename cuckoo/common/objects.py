@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import androguard
 import binascii
 import hashlib
 import logging
@@ -14,12 +15,6 @@ import re
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.compat import magic
 from cuckoo.misc import cwd
-
-try:
-    import androguard
-    HAVE_ANDROGUARD = True
-except ImportError:
-    HAVE_ANDROGUARD = False
 
 try:
     import pydeep
@@ -278,9 +273,6 @@ class File(object):
         package and main activity name."""
         filetype = self.get_type()
         if "Zip archive data" not in filetype and "Java archive data" not in filetype:
-            return "", ""
-
-        if not HAVE_ANDROGUARD:
             return "", ""
 
         try:
