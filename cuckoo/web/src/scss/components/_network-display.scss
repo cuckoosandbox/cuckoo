@@ -643,6 +643,7 @@
 		}
 	}
 
+	// cyborg theme
 	@include cuckoo-theme('cyborg') {
 
 		border-color: $cyborg_border_color;
@@ -681,6 +682,54 @@
 
 					&:before {
 						border-bottom-color: darken($cyborg_border_color, 10);
+					}
+				}
+			}
+
+		}
+
+	}
+
+	// cyborg theme
+	@include cuckoo-theme('night') {
+
+		border-color: #151515;
+
+		.title {
+			background-color: #191919;
+			border-color: #101010;
+		}
+
+		.content > ul > li {
+			background-color: #252525;
+			border-color: #151515;
+
+			.destination-address {
+				background-color: #333;	
+				border-color: #151515;
+
+				&:before {
+					border-bottom-color: #151515;
+				}
+			}
+
+			a:hover,
+			a:focus,
+			a:active { text-decoration: none; }
+
+			a:hover:not(.active) {
+				background-color: rgba($night_primary_color, .5);
+			}
+
+			a.active {
+				background-color: $night_primary_color;
+				color: #fff;
+
+				.destination-address {
+					border-color: #222;
+
+					&:before {
+						border-bottom-color: #222;
 					}
 				}
 			}

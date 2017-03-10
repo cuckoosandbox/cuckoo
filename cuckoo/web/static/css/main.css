@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
+body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -4581,6 +4581,13 @@ button .panel-heading .glyphicon {
   content: "\2192";
   margin-right: 15px;
 }
+body.cyborg .cuckoo-errors .troubleshoot > p {
+  color: #ff0500;
+}
+body.night .cuckoo-errors .troubleshoot {
+  background-color: #252525;
+  border-color: #151515;
+}
 
 .errors {
   list-style: none;
@@ -5376,6 +5383,42 @@ body.cyborg .source-destination .content > ul > li a.active .destination-address
 }
 body.cyborg .source-destination .content > ul > li a.active .destination-address:before {
   border-bottom-color: #091b21;
+}
+body.night .source-destination {
+  border-color: #151515;
+}
+body.night .source-destination .title {
+  background-color: #191919;
+  border-color: #101010;
+}
+body.night .source-destination .content > ul > li {
+  background-color: #252525;
+  border-color: #151515;
+}
+body.night .source-destination .content > ul > li .destination-address {
+  background-color: #333;
+  border-color: #151515;
+}
+body.night .source-destination .content > ul > li .destination-address:before {
+  border-bottom-color: #151515;
+}
+body.night .source-destination .content > ul > li a:hover,
+body.night .source-destination .content > ul > li a:focus,
+body.night .source-destination .content > ul > li a:active {
+  text-decoration: none;
+}
+body.night .source-destination .content > ul > li a:hover:not(.active) {
+  background-color: rgba(21, 45, 59, 0.5);
+}
+body.night .source-destination .content > ul > li a.active {
+  background-color: #152d3b;
+  color: #fff;
+}
+body.night .source-destination .content > ul > li a.active .destination-address {
+  border-color: #222;
+}
+body.night .source-destination .content > ul > li a.active .destination-address:before {
+  border-bottom-color: #222;
 }
 
 /*
