@@ -3,42 +3,54 @@
 
 <div class="flex-grid__horizontal flex-grid__fluid">
 
-    <div class="flex-grid__column--md scroll-internal" id="requests">
-            
-            <ul class="source-destination">
-                <li class="title">UDP Requests</li>
-                <li class="content">
-                    <ul>
-                         {% for p in report.analysis.network.udp %}
-                            <li>
-                                <a href="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp">
-                                    <div class="flex-distribute">
-                                        <span class="source">
-                                            {{p.src}}:{{p.sport}}
-                                        </span>
-                                        <i class="fa fa-long-arrow-right"></i>
-                                        <span class="destination">
-                                            {{p.dst}}:{{p.dport}}
-                                        </span>
-                                    </div>
-                                    {% if report.iplookups|get_item:p.dst %}
-                                        <span class="destination-address">{{ report.iplookups|get_item:p.dst }}</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            </ul>
-    </div>
+    {% if report.analysis.network.udp %}
 
-    <div class="flex-grid__column scroll-internal">
-        <div class="network-display__loader">
-            {% include "components/loader.html" %}
+        <div class="flex-grid__column--md scroll-internal" id="requests">
+                
+                <ul class="source-destination">
+                    <li class="title">UDP Requests</li>
+                    <li class="content">
+                        <ul>
+                             {% for p in report.analysis.network.udp %}
+                                <li>
+                                    <a href="{{p.src}},{{p.sport}},{{p.dst}},{{p.dport}},udp">
+                                        <div class="flex-distribute">
+                                            <span class="source">
+                                                {{p.src}}:{{p.sport}}
+                                            </span>
+                                            <i class="fa fa-long-arrow-right"></i>
+                                            <span class="destination">
+                                                {{p.dst}}:{{p.dport}}
+                                            </span>
+                                        </div>
+                                        {% if report.iplookups|get_item:p.dst %}
+                                            <span class="destination-address">{{ report.iplookups|get_item:p.dst }}</span>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
         </div>
-        <div class="network-display__outer">
-            <div class="network-display__requests" id="packets"></div>
+
+        <div class="flex-grid__column scroll-internal">
+            <div class="network-display__loader">
+                {% include "components/loader.html" %}
+            </div>
+            <div class="network-display__outer">
+                <div class="network-display__requests" id="packets"></div>
+            </div>
         </div>
-    </div>
+
+    {% else %}
+
+        <div class="flex-grid__column scroll-internal">
+            <div class="network-display__outer no-content">
+                <p>No traffic</p>
+            </div>
+        </div>
+
+    {% endif %}
 
 </div>

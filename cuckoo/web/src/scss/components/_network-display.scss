@@ -11,6 +11,22 @@
 			overflow-y: auto;
 		}
 
+		&.no-content {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: 0;
+			background-color: transparent;
+
+			& > p {
+				font-weight: 700;
+				color: #CECECE;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+			}
+
+		}
+
 		@include cuckoo-theme('cyborg') { 
 			background-color: $cyborg_panel_color; 
 			border-color: $cyborg_border_color;

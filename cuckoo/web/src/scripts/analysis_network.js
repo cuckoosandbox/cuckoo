@@ -549,12 +549,16 @@ class PageSwitcher {
     _beforeTransition(el) {
 
         var name = el.attr('href').replace('#','');
+        var targetPage;
 
         if(this.exists(name)) {
             this.nav.children('a').removeClass('active');
             this.container.children('div').removeClass('active');
-            this.events.beforeTransition(name);
-            this._transition(this.getPage(name), el);
+
+            targetPage = this.getPage(name);
+
+            this.events.beforeTransition.apply(this, [name, targetPage]);
+            this._transition(targetPage, el);
         } else {
             this._afterTransition();
         }
@@ -567,7 +571,7 @@ class PageSwitcher {
     _transition(page, link) {
         page.el.addClass('active');
         link.addClass('active');
-        this.events.transition(page, link);
+        this.events.transition.apply(this, [page, link]);
         this._afterTransition(page);
     }
 
@@ -575,7 +579,7 @@ class PageSwitcher {
         Finishes the transition
      */
     _afterTransition(page) {
-        this.events.afterTransition(page);
+        this.events.afterTransition.apply(this, [page]);
     }
 
     /*
@@ -594,6 +598,17 @@ class PageSwitcher {
         return this.getPage(name) !== undefined;
     }
 
+    /*
+        public method for transitioning programatically
+     */
+    transition(name) { 
+        if(this.exists(name)) {
+            this._beforeTransition(this.nav.children(`[href=${name}]`));
+        } else {
+            return false;
+        }
+    }
+
 }
 
 // TCP/UTP packet displays
@@ -606,16 +621,27 @@ $(function() {
         nav: $('.network-analysis-groups'),
         container: $('.network-analysis-pages'),
         events: {
-            beforeTransition: function(name) {
+            beforeTransition: function(name, page) {
+
+                $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
+
                 // some pages require a fixed layout change, this does that
                  if(fixed_layouts.indexOf(name) !== -1) {
                     $('.cuckoo-analysis').addClass('flex-nav__body--disable-overflow');
-                } else {
-                    $('.cuckoo-analysis').removeClass('flex-nav__body--disable-overflow');
                 }
+
+                if(name == 'network-analysis-http') {
+                    if(page.el.find('.no-content').length) {
+                        $('.cuckoo-analysis').addClass('flex-nav__body--disable-overflow');
+                    }
+                }
+
             }
         }
     });
+
+    // jumps to the default activated page
+    network_nav.transition('network-analysis-http');
 
     if($("#network-analysis-tcp").length) {
         let packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));

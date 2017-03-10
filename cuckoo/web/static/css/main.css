@@ -4856,6 +4856,19 @@ body.night .network-display__table > table tfoot {
   height: 100%;
   overflow-y: auto;
 }
+.network-display__outer.no-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background-color: transparent;
+}
+.network-display__outer.no-content > p {
+  font-weight: 700;
+  color: #CECECE;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 body.cyborg .network-display__outer {
   background-color: #0d1b21;
   border-color: #133b4a;

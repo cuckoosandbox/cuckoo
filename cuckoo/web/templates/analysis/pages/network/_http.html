@@ -1,10 +1,22 @@
-<div class="network-display__outer" id="http-requests">
-    {% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
+{% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
+
+	<div class="network-display__outer" id="http-requests">
         {% for http in report.analysis.network.https_ex %}
             {% include "partials/http-request.html" with http=http %}
         {% endfor %}
         {% for http in report.analysis.network.http_ex %}
             {% include "partials/http-request.html" with http=http %}
         {% endfor %}
-    {% endif %}
-</div>
+	</div>
+
+{% else %}
+
+	<div class="flex-grid__horizontal flex-grid__fluid">
+	    <div class="flex-grid__column scroll-internal">
+	        <div class="network-display__outer no-content">
+	            <p>No traffic</p>
+	        </div>
+	    </div>
+	</div>
+
+{% endif %}

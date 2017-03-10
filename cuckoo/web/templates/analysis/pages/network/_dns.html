@@ -12,27 +12,33 @@
         </thead>
         <tbody>
 
-            {% for p in report.analysis.network.dns %}
-                <tr>
-                    <td>
-                        <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
-                    </td>
-                    <td class="dns-badges">
-                        {% for a in p.answers %}
-                            {% include "partials/dns-badge.html" with a=a %}
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% if ":" not in report.domainlookups|get_item:p.request %}
-                            <a target="_blank" href="{% url "analysis.views.moloch" ip=report.domainlookups|get_item:p.request %}">
+            {% if report.analysis.network.hosts %}
+                {% for p in report.analysis.network.dns %}
+                    <tr>
+                        <td>
+                            <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
+                        </td>
+                        <td class="dns-badges">
+                            {% for a in p.answers %}
+                                {% include "partials/dns-badge.html" with a=a %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if ":" not in report.domainlookups|get_item:p.request %}
+                                <a target="_blank" href="{% url "analysis.views.moloch" ip=report.domainlookups|get_item:p.request %}">
+                                    {{ report.domainlookups|get_item:p.request }}
+                                </a>
+                            {% else %}
                                 {{ report.domainlookups|get_item:p.request }}
-                            </a>
-                        {% else %}
-                            {{ report.domainlookups|get_item:p.request }}
-                        {% endif %}
-                    </td>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="cell-fill text-center" colspan="3">No hosts contacted.</td>
                 </tr>
-            {% endfor %}
+            {% endif %}
 
         </tbody>
     </table>
