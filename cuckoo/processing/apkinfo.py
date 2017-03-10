@@ -1,23 +1,25 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 import hashlib
-import os
 import logging
+import os
+import zipfile
 
-from zipfile import BadZipfile
+try:
+    from androguard.core.bytecodes.apk import APK
+    from androguard.core.bytecodes.dvm import DalvikVMFormat
+    from androguard.core.analysis.analysis import uVMAnalysis
+    from androguard.core.analysis import analysis
+    HAVE_ANDROGUARD = True
+except ImportError:
+    HAVE_ANDROGUARD = False
 
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
-
-from androguard.core.bytecodes.apk import APK
-from androguard.core.bytecodes.dvm import DalvikVMFormat
-from androguard.core.analysis.analysis import uVMAnalysis
-from androguard.core.analysis import analysis
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +58,7 @@ class ApkInfo(Processing):
         self.key = "apkinfo"
         apkinfo = {}
 
-        if "file" not in self.task["category"]:
+        if "file" not in self.task["category"] or not HAVE_ANDROGUARD:
             return
 
         f = File(self.task["target"])
@@ -99,7 +101,7 @@ class ApkInfo(Processing):
                         log.warning("Dex size bigger than: %s",
                                     self.options.decompilation_threshold)
                     apkinfo["static_method_calls"] = static_calls
-            except (IOError, OSError, BadZipfile) as e:
+            except (IOError, OSError, zipfile.BadZipfile) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
 
         return apkinfo

@@ -99,7 +99,6 @@ setuptools.setup(
     },
     install_requires=[
         "alembic==0.8.8",
-        "androguard==3.0",
         "beautifulsoup4==4.4.1",
         "chardet==2.3.0",
         "click==6.6",
@@ -112,7 +111,6 @@ setuptools.setup(
         "httpreplay==0.1.19",
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
-        "lxml==3.6.0",
         "oletools==0.42",
         "peepdf==0.3.2",
         "pefile2==1.2.11",
@@ -135,6 +133,9 @@ setuptools.setup(
         ":sys_platform == 'linux2'": [
             "requests[security]==2.7.0",
             "scapy==2.3.2",
+        ],
+        "android": [
+            "androguard==3.0",
         ],
         "distributed": [
             "gevent==1.1.1",

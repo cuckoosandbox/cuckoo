@@ -1,20 +1,24 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
 import os
-from zipfile import BadZipfile
+import zipfile
 
-from androguard.core.bytecodes.apk import APK
+try:
+    from androguard.core.bytecodes.apk import APK
+    HAVE_ANDROGUARD = True
+except ImportError:
+    HAVE_ANDROGUARD = False
 
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
 
 try:
+    # TODO Fix with actual dependency from PyPI.
     from lib.api.googleplay.googleplay import GooglePlayAPI
     HAVE_GOOGLEPLAY = True
 except ImportError:
@@ -80,7 +84,7 @@ class GooglePlay(Processing):
                     googleplay["num_downloads"] = app_detail.numDownloads
                     googleplay["upload_date"] = app_detail.uploadDate
                     googleplay["permissions"] = app_detail.permission._values
-            except (IOError, OSError, BadZipfile) as e:
+            except (IOError, OSError, zipfile.BadZipfile) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
 
         return googleplay
