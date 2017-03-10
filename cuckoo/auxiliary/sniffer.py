@@ -3,15 +3,14 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
-import getpass
 import logging
+import os
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, getuser, Popen
 
 log = logging.getLogger(__name__)
 
@@ -23,20 +22,20 @@ class Sniffer(Auxiliary):
     def start(self):
         if not self.machine.interface:
             log.error("Network interface not defined, network capture aborted")
-            return
+            return False
 
         # Handle special pcap dumping options.
         if "nictrace" in self.machine.options:
-            return
+            return True
 
-        tcpdump = self.options.get("tcpdump", "/usr/sbin/tcpdump")
-        bpf = self.options.get("bpf", "")
+        tcpdump = self.options["tcpdump"]
+        bpf = self.options["bpf"] or ""
         file_path = cwd("storage", "analyses", "%s" % self.task.id, "dump.pcap")
 
         if not os.path.exists(tcpdump):
             log.error("Tcpdump does not exist at path \"%s\", network "
                       "capture aborted", tcpdump)
-            return
+            return False
 
         # TODO: this isn't working. need to fix.
         # mode = os.stat(tcpdump)[stat.ST_MODE]
@@ -51,11 +50,9 @@ class Sniffer(Auxiliary):
         ]
 
         # Trying to save pcap with the same user which cuckoo is running.
-        try:
-            user = getpass.getuser()
+        user = getuser()
+        if user:
             pargs.extend(["-Z", user])
-        except:
-            pass
 
         pargs.extend(["-w", file_path])
         pargs.extend(["host", self.machine.ip])
@@ -65,10 +62,10 @@ class Sniffer(Auxiliary):
             pargs.extend([
                 "and", "not", "(",
                 "dst", "host", self.machine.ip, "and",
-                "dst", "port", str(CUCKOO_GUEST_PORT),
+                "dst", "port", "%s" % CUCKOO_GUEST_PORT,
                 ")", "and", "not", "(",
                 "src", "host", self.machine.ip, "and",
-                "src", "port", str(CUCKOO_GUEST_PORT),
+                "src", "port", "%s" % CUCKOO_GUEST_PORT,
                 ")",
             ])
 
@@ -76,10 +73,10 @@ class Sniffer(Auxiliary):
             pargs.extend([
                 "and", "not", "(",
                 "dst", "host", self.machine.resultserver_ip, "and",
-                "dst", "port", self.machine.resultserver_port,
+                "dst", "port", "%s" % self.machine.resultserver_port,
                 ")", "and", "not", "(",
                 "src", "host", self.machine.resultserver_ip, "and",
-                "src", "port", self.machine.resultserver_port,
+                "src", "port", "%s" % self.machine.resultserver_port,
                 ")",
             ])
 
@@ -87,20 +84,21 @@ class Sniffer(Auxiliary):
                 pargs.extend(["and", "(", bpf, ")"])
 
         try:
-            self.proc = subprocess.Popen(
-                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            self.proc = Popen(
+                pargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
             )
         except (OSError, ValueError):
             log.exception(
                 "Failed to start sniffer (interface=%s, host=%s, pcap=%s)",
                 self.machine.interface, self.machine.ip, file_path,
             )
-            return
+            return False
 
         log.info(
             "Started sniffer with PID %d (interface=%s, host=%s, pcap=%s)",
             self.proc.pid, self.machine.interface, self.machine.ip, file_path,
         )
+        return True
 
     def _check_output(self, out, err):
         if out:
@@ -109,17 +107,22 @@ class Sniffer(Auxiliary):
                 "standard output, got: %r." % out
             )
 
-        err_whitelist = (
+        err_whitelist_start = (
+            "tcpdump: listening on ",
+        )
+
+        err_whitelist_ends = (
             "packets captured",
             "packets received by filter",
             "packets dropped by kernel",
+            "dropped privs to root",
         )
 
         for line in err.split("\n"):
-            if not line or line.startswith("tcpdump: listening on "):
+            if not line or line.startswith(err_whitelist_start):
                 continue
 
-            if line.endswith(err_whitelist):
+            if line.endswith(err_whitelist_ends):
                 continue
 
             raise CuckooOperationalError(
@@ -143,8 +146,8 @@ class Sniffer(Auxiliary):
                 "Error running tcpdump to sniff the network traffic during "
                 "the analysis; stdout = %r and stderr = %r. Did you enable "
                 "the extra capabilities to allow running tcpdump as non-root "
-                "user and disable AppArmor properly (only applies to Ubuntu)?"
-                % (out, err)
+                "user and disable AppArmor properly (the latter only applies "
+                "to Ubuntu-based distributions with AppArmor)?" % (out, err)
             )
 
         try:

@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,9 +10,8 @@ import socket
 import tempfile
 import threading
 
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 
-_cfg = None
 log = logging.getLogger(__name__)
 unixpath = tempfile.mktemp()
 lock = threading.Lock()
@@ -20,13 +19,11 @@ lock = threading.Lock()
 vpns = {}
 
 def rooter(command, *args, **kwargs):
-    global _cfg
-    if _cfg is None:
-        _cfg = Config()
-
-    if not os.path.exists(_cfg.cuckoo.rooter):
-        log.critical("Unable to passthrough root command (%s) as the rooter "
-                     "unix socket doesn't exist.", command)
+    if not os.path.exists(config("cuckoo:cuckoo:rooter")):
+        log.critical(
+            "Unable to passthrough root command (%s) as the rooter "
+            "unix socket doesn't exist.", command
+        )
         return
 
     lock.acquire()
@@ -39,10 +36,12 @@ def rooter(command, *args, **kwargs):
     s.bind(unixpath)
 
     try:
-        s.connect(_cfg.cuckoo.rooter)
+        s.connect(config("cuckoo:cuckoo:rooter"))
     except socket.error as e:
-        log.critical("Unable to passthrough root command as we're unable to "
-                     "connect to the rooter unix socket: %s.", e)
+        log.critical(
+            "Unable to passthrough root command as we're unable to "
+            "connect to the rooter unix socket: %s.", e
+        )
         lock.release()
         return
 

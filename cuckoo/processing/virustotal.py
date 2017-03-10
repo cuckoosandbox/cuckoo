@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,10 +7,13 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.virustotal import VirusTotalAPI
-from cuckoo.common.virustotal import VirusTotalResourceNotScanned
+from cuckoo.common.config import config
+from cuckoo.common.exceptions import (
+    CuckooOperationalError, CuckooProcessingError
+)
+from cuckoo.common.virustotal import (
+    VirusTotalAPI, VirusTotalResourceNotScanned
+)
 
 log = logging.getLogger(__name__)
 
@@ -28,16 +31,13 @@ class VirusTotal(Processing):
         """
         self.key = "virustotal"
 
-        apikey = self.options.get("key")
-        timeout = int(self.options.get("timeout", 60))
-        scan = int(self.options.get("scan", 0))
+        if not config("processing:virustotal:key"):
+            raise CuckooProcessingError(
+                "VirusTotal API key not configured, skipping the VirusTotal "
+                "processing module."
+            )
 
-        if not apikey:
-            raise CuckooProcessingError("VirusTotal API key not "
-                                        "configured, skipping VirusTotal "
-                                        "processing module.")
-
-        self.vt = VirusTotalAPI(apikey, timeout, scan)
+        self.vt = VirusTotalAPI()
 
         # Scan the original sample or URL.
         if self.task["category"] == "file":
@@ -49,8 +49,9 @@ class VirusTotal(Processing):
         elif self.task["category"] == "service":
             return
         else:
-            raise CuckooProcessingError("Unsupported task category: %s" %
-                                        self.task["category"])
+            raise CuckooProcessingError(
+                "Unsupported task category: %s" % self.task["category"]
+            )
 
         # Scan any dropped files that have an interesting filetype.
         for row in self.results.get("dropped", []):

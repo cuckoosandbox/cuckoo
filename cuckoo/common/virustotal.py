@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,8 +11,13 @@ import requests
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
+from cuckoo.common.utils import validate_hash
+
+class VirusTotalError(CuckooOperationalError):
+    """VirusTotal operational error"""
 
 class VirusTotalResourceNotScanned(CuckooOperationalError):
     """This resource has not been scanned yet."""
@@ -24,6 +29,7 @@ class VirusTotalAPI(object):
     URL_REPORT = "https://www.virustotal.com/vtapi/v2/url/report"
     FILE_SCAN = "https://www.virustotal.com/vtapi/v2/file/scan"
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
+    HASH_DOWNLOAD = "https://www.virustotal.com/vtapi/v2/file/download"
 
     VARIANT_BLACKLIST = [
         "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
@@ -60,15 +66,11 @@ class VirusTotalAPI(object):
         "patched", "patchfile", "downware", "dropped",
     ]
 
-    def __init__(self, apikey, timeout, scan=0):
-        """Initialize VirusTotal API with the API key and timeout.
-        @param api_key: virustotal api key
-        @param timeout: request and response timeout
-        @param scan: send file to scan or just get report
-        """
-        self.apikey = apikey
-        self.timeout = timeout
-        self.scan = scan
+    def __init__(self):
+        """Initialize VirusTotal API."""
+        self.apikey = config("processing:virustotal:key")
+        self.timeout = config("processing:virustotal:timeout")
+        self.scan = config("processing:virustotal:scan")
 
     def _request_json(self, url, **kwargs):
         """Wrapper around doing a request and parsing its JSON output."""
@@ -78,6 +80,19 @@ class VirusTotalAPI(object):
         except (requests.ConnectionError, ValueError) as e:
             raise CuckooOperationalError("Unable to fetch VirusTotal "
                                          "results: %r" % e.message)
+
+    def _request_hash(self, file_hash, **kwargs):
+        """Wrapper around requesting a hash."""
+        params = dict(hash=file_hash, apikey=self.apikey)
+
+        try:
+            r = requests.get(self.HASH_DOWNLOAD, params=params,
+                             timeout=self.timeout, **kwargs)
+            r.raise_for_status()  # raise an exception for HTTP error codes
+            return r.content
+        except (requests.ConnectionError, ValueError, requests.HTTPError):
+            raise CuckooOperationalError("Could not fetch hash \"%s\" "
+                                         "from VirusTotal" % file_hash)
 
     def _get_report(self, url, resource, summary=False):
         """Fetch the report of a file or URL."""
@@ -148,6 +163,13 @@ class VirusTotalAPI(object):
         data = dict(apikey=self.apikey, url=url)
         r = self._request_json(self.URL_SCAN, data=data)
         return dict(summary=dict(permalink=r.get("permalink")))
+
+    def hash_fetch(self, file_hash):
+        file_hash = validate_hash(file_hash)
+        if not file_hash:
+            raise VirusTotalError("Invalid hash")
+
+        return self._request_hash(file_hash=file_hash)
 
     def file_scan(self, filepath):
         """Submit a file to be scanned.

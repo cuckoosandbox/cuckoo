@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -24,7 +24,9 @@ if not os.path.isdir(os.path.join(monitor, latest)) and \
         not os.environ.get("ONLYINSTALL"):
     sys.exit(
         "Failure locating the monitoring binaries that belong to the latest "
-        "monitor release. Please include those to create a distribution."
+        "monitor release. Please include those to create a distribution. "
+        "You may easily obtain the monitoring binaries by running one of our "
+        "helper scripts: 'python stuff/monitor.py'."
     )
 
 manifest = []
@@ -38,13 +40,28 @@ manifest.extend(excl)
 
 open("MANIFEST.in", "wb").write("\n".join(manifest) + "\n")
 
-# Update cuckoo/data-private/.cwd with the latest Git hash. TODO Update the
-# branch name when merging package into master or read out .git/HEAD to parse
-# out the current branch name.
-githash_path = os.path.join(".git", "refs", "heads", "package")
-if os.path.exists(githash_path):
-    h = open(githash_path, "rb").read().strip()
-    open(os.path.join("cuckoo", "data-private", ".cwd"), "wb").write(h)
+def githash():
+    """Extracts the current Git hash."""
+    git_head = os.path.join(".git", "HEAD")
+    if os.path.exists(git_head):
+        head = open(git_head, "rb").read().strip()
+        if not head.startswith("ref: "):
+            return head
+
+        git_ref = os.path.join(".git", head.split()[1])
+        if os.path.exists(git_ref):
+            return open(git_ref, "rb").read().strip()
+
+cwd_path = os.path.join("cuckoo", "data-private", ".cwd")
+open(cwd_path, "wb").write(githash() or "")
+
+install_requires = []
+
+# M2Crypto relies on swig being installed. We also don't support the latest
+# version of SWIG. We should be replacing M2Crypto by something else when
+# the time allows us to do so.
+if os.path.exists("/usr/bin/swig"):
+    install_requires.append("m2crypto==0.24.0")
 
 setuptools.setup(
     name="Cuckoo",
@@ -81,40 +98,44 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        "alembic==0.8.0",
+        "alembic==0.8.8",
         "androguard==3.0",
         "beautifulsoup4==4.4.1",
         "chardet==2.3.0",
         "click==6.6",
-        "Django==1.8.4",
+        "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "Flask==0.10.1",
-        "HTTPReplay==0.1.15",
+        "elasticsearch==2.2.0",
+        "flask==0.10.1",
+        "flask-sqlalchemy==2.1",
+        "httpreplay==0.2",
+        "jinja2==2.8",
         "jsbeautifier==1.6.2",
-        "lxml==3.6.0",
         "oletools==0.42",
-        "peepdf==0.3.2",
+        "peepdf==0.3.4",
         "pefile2==1.2.11",
-        "Pillow==3.2",
-        "pymisp==2.4.50",
+        "pillow==3.2",
+        "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock==0.1",
-        "SQLAlchemy==1.0.8",
+        "sflock==0.2.5",
+        "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
-    ],
+    ] + install_requires,
     extras_require={
         ":sys_platform == 'win32'": [
             "requests==2.7.0",
         ],
-        ":sys_platform != 'win32'": [
+        ":sys_platform == 'darwin'": [
+            "requests==2.7.0",
+        ],
+        ":sys_platform == 'linux2'": [
             "requests[security]==2.7.0",
             "scapy==2.3.2",
         ],
         "distributed": [
-            "flask-sqlalchemy==2.1",
             "gevent==1.1.1",
             "psycopg2==2.6.2",
         ],
@@ -126,6 +147,12 @@ setuptools.setup(
         "pytest-runner",
     ],
     tests_require=[
+        "coveralls",
         "pytest",
+        "pytest-cov",
+        "pytest-django",
+        "pytest-pythonpath",
+        "mock==2.0.0",
+        "responses==0.5.1",
     ],
 )

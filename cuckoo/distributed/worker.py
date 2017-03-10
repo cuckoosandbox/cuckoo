@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,15 +14,10 @@ import os
 import time
 import sys
 
-from cuckoo.misc import set_cwd
-
-try:
-    from cuckoo.distributed.app import create_app
-    from cuckoo.distributed.db import Node
-    from cuckoo.distributed.instance import scheduler, handle_node
-    HAVE_FLASKSQLA = True
-except ImportError:
-    HAVE_FLASKSQLA = False
+from cuckoo.distributed.app import create_app
+from cuckoo.distributed.db import Node
+from cuckoo.distributed.instance import scheduler, handle_node
+from cuckoo.misc import cwd, decide_cwd
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("cuckoo.distributed.worker")
@@ -74,13 +69,21 @@ def spawner():
         time.sleep(5)
 
 if os.environ.get("CUCKOO_APP") == "worker":
-    set_cwd(os.environ["CUCKOO_CWD"])
+    decide_cwd(exists=True)
 
-    if not HAVE_GEVENT or not HAVE_FLASKSQLA:
+    if not HAVE_GEVENT:
         sys.exit(
             "Please install Distributed Cuckoo dependencies (through "
             "`pip install cuckoo[distributed]`)"
         )
+
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
+
+    fh = logging.handlers.WatchedFileHandler(cwd("log", "distributed.log"))
+    fh.setFormatter(formatter)
+    logging.getLogger().addHandler(fh)
 
     # Create the Flask object and push its context so that we can reuse the
     # database connection throughout our script.
@@ -89,6 +92,9 @@ if os.environ.get("CUCKOO_APP") == "worker":
     workers = {
         ("dist.scheduler", True): gevent.spawn(
             with_app, "dist.scheduler", scheduler
+        ),
+        ("dist.status", True): gevent.spawn(
+            with_app, "dist.status", scheduler
         ),
     }
 

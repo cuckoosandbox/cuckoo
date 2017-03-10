@@ -8,11 +8,10 @@ import logging
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import emit_options
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.objects import File
 from cuckoo.common.utils import json_decode
 from cuckoo.core.database import Database, Task
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
@@ -64,12 +63,13 @@ class AnalysisInfo(Processing):
             monitor = None
 
         return dict(
-            version=CUCKOO_VERSION,
+            version=version,
             git={
                 "head": git_head,
                 "fetch_head": git_fetch_head,
             },
             monitor=monitor,
+            added=task.get("added_on"),
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),

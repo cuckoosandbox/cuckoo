@@ -17,9 +17,13 @@
                     <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot.original "nofetch" %}">
                         <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot.small "nofetch" %}" style="height: 120px;" />
                     </a>
+                    {% elif shot.original %}
+                    <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot.original "nofetch" %}">
+                        <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot.original "nofetch" %}" style="height: 120px;" />
+                    </a>
                     {% else %}
-                    <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot %}">
-                        <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot %}" style="border-radius: 4px;height: 120px;" />
+                    <a style="padding: 4px;display: inline-block;" data-lightbox="screenshot" href="{% url "analysis.views.file" "screenshot" shot "nofetch" %}">
+                        <img class="opaque screenshot" src="{% url "analysis.views.file" "screenshot" shot "nofetch" %}" style="border-radius: 4px;height: 120px;" />
                     </a>
                     {% endif %}
                 {% endfor %}

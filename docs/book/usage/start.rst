@@ -16,7 +16,7 @@ You will get an output similar to this::
 
      Cuckoo Sandbox 2.0.0
      www.cuckoosandbox.org
-     Copyright (c) 2010-2016
+     Copyright (c) 2010-2017
 
      Checking for updates...
      Good! You have the latest version available.
@@ -98,12 +98,12 @@ From there on, one may start and stop the various cuckoo processes (i.e., the
 main cuckoo process and the four processing instances) by running commands
 such as the following (assuming that they're run from the ``CWD``)::
 
-    # Stop all processes.
-    $ supervisorctl stop all
+    # Stop the Cuckoo daemon and the processing utilities.
+    $ supervisorctl stop cuckoo:
 
-    # Start all processes.
-    $ supervisorctl start all
+    # Start the Cuckoo daemon and the processing utilities.
+    $ supervisorctl start cuckoo:
 
-Note that when running the ``start all`` subcommand, ``supervisord`` will try
-to start the ``distributed`` script as well, which will fail and error, but
-that error is unrelated here (it's use lays within :doc:`dist`).
+Note that you'll need the trailing colon (i.e., ``cuckoo:``) so to denote the
+Cuckoo supervisor ``group``, containing the Cuckoo daemon process as well as
+the various processing utilities.

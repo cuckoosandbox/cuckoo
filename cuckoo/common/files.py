@@ -12,6 +12,16 @@ import shutil
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.config import Config
 
+def temppath():
+    """Returns the true temporary directory."""
+    tmppath = getattr(Config(), "cuckoo", {}).get("tmppath")
+
+    # Backwards compatibility with older configuration.
+    if not tmppath or tmppath == "/tmp":
+        return tempfile.gettempdir()
+
+    return tmppath
+
 class Storage(object):
     @staticmethod
     def get_filename_from_path(path):
@@ -31,6 +41,9 @@ class Folders(Storage):
         @raise CuckooOperationalError: if fails to create folder.
         If folders is None, we try to create the folder provided by `root`.
         """
+        if isinstance(root, (tuple, list)):
+            root = os.path.join(*root)
+
         if folders is None:
             folders = [""]
         elif isinstance(folders, basestring):
@@ -47,12 +60,20 @@ class Folders(Storage):
                     )
 
     @staticmethod
+    def copy(src, dest):
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+
+    @staticmethod
     def create_temp(path=None):
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
+
+        if not os.path.exists(target_path):
+            os.mkdir(target_path)
 
         return tempfile.mkdtemp(dir=target_path)
 
@@ -62,11 +83,7 @@ class Folders(Storage):
         @param folder: path or components to path to delete.
         @raise CuckooOperationalError: if fails to delete folder.
         """
-        if len(folder) == 1:
-            folder = folder[0]
-        else:
-            folder = os.path.join(*folder)
-
+        folder = os.path.join(*folder)
         if os.path.exists(folder):
             try:
                 shutil.rmtree(folder)
@@ -86,8 +103,7 @@ class Files(Storage):
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
@@ -102,6 +118,7 @@ class Files(Storage):
         else:
             os.write(fd, content)
 
+        os.close(fd)
         return filepath
 
     @staticmethod
@@ -110,13 +127,13 @@ class Files(Storage):
         @param content: the content of this file
         @param filename: filename that the file should have
         @param path: directory path to store the file
+        @return: full path to the temporary file
         """
         # Create temporary directory path.
         if path:
             target_path = path
         else:
-            tmp_path = Config().cuckoo.get("tmppath", "/tmp")
-            target_path = os.path.join(tmp_path, "cuckoo-tmp")
+            target_path = os.path.join(temppath(), "cuckoo-tmp")
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
@@ -127,7 +144,11 @@ class Files(Storage):
 
     @staticmethod
     def create(root, filename, content):
-        with open(os.path.join(root, filename), "wb") as f:
+        if isinstance(root, (tuple, list)):
+            root = os.path.join(*root)
+
+        filepath = os.path.join(root, filename)
+        with open(filepath, "wb") as f:
             if hasattr(content, "read"):
                 chunk = content.read(1024)
                 while chunk:
@@ -135,6 +156,17 @@ class Files(Storage):
                     chunk = content.read(1024)
             else:
                 f.write(content)
+        return filepath
+
+    @staticmethod
+    def copy(path_target, path_dest):
+        """Copy a file. The destination may be a directory.
+        @param path_target: The
+        @param path_dest: path_dest
+        @return: path to the file or directory
+        """
+        shutil.copy(src=path_target, dst=path_dest)
+        return os.path.join(path_dest, os.path.basename(path_target))
 
     @staticmethod
     def hash_file(method, filepath):

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<div class="flex-grid" id="post-submission">
+
+    <header class="flex-grid__header">
+        <ul class="breadcrumbs">
+            <li class="done"><a href="#">submit file</a></li>
+            <li class="done"><a href="#">configure</a></li>
+            <li class="done"><a href="#">analyze</a></li>
+            <li class="active"><a href="#">Summary</a></li>
+        </ul>
+        <h3>
+            <i class="fa fa-check"></i> Your submission has been received and the tasks are being processed!
+            <div class="pull-right">
+                <a class="flex-grid__button--description">Next: </a>
+                <a class="flex-grid__button transparent" href="/analysis/pending">View pending tasks</a>
+                <a class="flex-grid__button transparent" href="/submit">Submit again</a>
+            </div>
+        </h3>
+    </header>
+
+    <section class="flex-grid__body--center background-grey">
+        <div class="flex-grid__container">
+            <div class="flex-grid__column">
+
+                <!-- <h3>The following tasks have been created:</h3>
+                <ul class="flex-display divided rounded-off monospaced">
+                    <li class="highlight-dark">task id</li>
+                    {% for task_id in task_ids %}
+                        <li>{{ task_id }}</li>
+                    {% endfor %}
+                </ul> -->
+
+                <h3 class="clearfix">Tasks: <small>Refreshes every 2.5 seconds</small></h3>
+                <table class="cuckoo-table" id="submission-task-table">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Date</th>
+                            <th>Filename / URL</th>
+                            <th>Package</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <td colspan="5">
+                            {% include "components/loader.html" %}
+                        </td>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" align="center">
+                                <p class="ajax-status">Loading task info...</p>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="flex-grid__footer">
+        <p class="footnote">
+            &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+        </p>
+        <div class="logo">
+            <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+        </div>
+    </footer>
+
+</div>
+
+<script type="text/javascript">var task_ids = [{{ task_ids|join:", " }}];</script>
+
+{% endblock %}

@@ -5,14 +5,16 @@
 
 from django.http import JsonResponse
 
-from bin.utils import api_post, json_error_response
-from controllers.analysis.export.export import ExportController
-from controllers.analysis.analysis import AnalysisController
+from cuckoo.common.exceptions import CuckooApiError
+
+from cuckoo.web.bin.utils import api_post, json_error_response
+from cuckoo.web.controllers.analysis.export.export import ExportController
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 class ExportApi:
     @api_post
     def export_estimate_size(request, body):
-        task_id = body.get('task_id', None)
+        task_id = body.get('task_id')
         taken_dirs = body.get("dirs", [])
         taken_files = body.get("files", [])
 
@@ -37,10 +39,13 @@ class ExportApi:
 
         report = AnalysisController.get_report(task_id)
         if not report["analysis"].get("info", {}).get("analysis_path"):
-            raise Exception("old-style analysis")
+            raise CuckooApiError("old-style analysis")
 
         analysis_path = report["analysis"]["info"]["analysis_path"]
 
-        dirs, files = ExportController.get_files(analysis_path)
+        try:
+            dirs, files = ExportController.get_files(analysis_path)
+        except Exception as e:
+            return json_error_response(message=str(e))
 
         return JsonResponse({"dirs": dirs, "files": files}, safe=False)

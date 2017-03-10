@@ -1,0 +1,107 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.cuckoo-nav {
+
+	display: flex;
+	flex-direction: column;
+	list-style: none;
+	margin: 0;
+	padding: 10px 0 0;
+
+	& > li {
+
+		margin: 0 0;
+		overflow: hidden;
+
+		& > a,
+		&.cuckoo-nav__search > div  {
+
+			display: flex;
+			width: 280px;
+			align-items: center;
+			padding: 7px 15px;
+			color: #eee;
+
+			& > i {
+				width: 28px;
+				height: 28px;
+				background-color: #eee;
+				color: #444;
+				border-radius: 50%;
+				font-size: 16px;
+				text-align: center;
+				padding-top: 6px;
+				margin-right: 10px;
+			}
+
+			& > em,
+			& > button {
+				margin-left: auto;
+				padding: 3px 10px;
+				font-size: 10px;
+				border-radius: 5px;
+				border: 1px solid #ccc;
+				font-style: normal;
+			}
+
+			& > button {
+				background-color: transparent;
+				text-transform: uppercase;
+				font-weight: 700;
+
+				&:hover {
+					color: #444;
+					background-color: #ccc;
+				}
+			}
+
+			& > span {
+				font-size: 11px;
+
+				input {
+					background-color: transparent;
+					border: 0;
+					border-bottom: 1px solid #ccc;
+					width: 135px;
+					padding: 5px 0;
+
+					&:focus {
+						outline: none;
+					}
+				}
+
+			}
+
+			&:hover,
+			&.active {
+				background-color: #222;
+				text-decoration: none !important;
+			}
+
+		}
+
+	}
+
+	li.cuckoo-nav__search > div:hover {
+		background-color: #444;
+	}
+
+	.lock-sidebar {
+
+		& > a { text-decoration: none; }
+
+		// icon
+		.fa:before { content: "\f13e"; }
+		.locked:not(.locked-silent) & .fa:before { content: "\f023"; }
+
+		// text
+		span:before { content: "Lock sidebar"; }
+		.locked:not(.locked-silent) & span:before { content: "Unlock sidebar"; }
+
+	}
+
+}

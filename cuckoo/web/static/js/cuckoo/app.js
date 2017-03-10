@@ -40,6 +40,7 @@ var CuckooWeb = function () {
     }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
+
             var data = JSON.stringify(params);
 
             $.ajax({
@@ -60,12 +61,60 @@ var CuckooWeb = function () {
                     }
                 }
             }).fail(function (err) {
-                console.log('ajax post error: ' + err);
+
+                if (err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")) {
+                    console.log('POST err: ' + err.responseJSON.message);
+                } else {
+                    console.log('POST err: ' + err);
+                }
 
                 if (errback) {
                     errback(err);
                 }
             });
+        }
+    }, {
+        key: 'getFormattedDate',
+        value: function getFormattedDate(jsondate) {
+            var date = new Date(jsondate);
+
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            var hour = date.getHours();
+            var min = date.getMinutes();
+            var sec = date.getSeconds();
+
+            month = (month < 10 ? "0" : "") + month;
+            day = (day < 10 ? "0" : "") + day;
+            hour = (hour < 10 ? "0" : "") + hour;
+            min = (min < 10 ? "0" : "") + min;
+            sec = (sec < 10 ? "0" : "") + sec;
+
+            return date.getFullYear() + "-" + month + "-" + day + " " + hour + ":" + min;
+        }
+    }, {
+        key: 'redirect',
+        value: function redirect(location) {
+            window.location.href = location;
+        }
+    }, {
+        key: 'toggle_page_freeze',
+        value: function toggle_page_freeze(open, text) {
+
+            if (open) {
+                $('.page-freeze__message').text(text);
+                $('.page-freeze').addClass('in');
+            } else {
+                $('.page-freeze').removeClass('in');
+                $('.page-freeze__options').addClass('hidden');
+            }
+        }
+    }, {
+        key: 'error_page_freeze',
+        value: function error_page_freeze(text) {
+            $('.page-freeze').addClass('error');
+            $('.page-freeze__message').text(text);
+            $('.page-freeze__options').removeClass('hidden');
         }
     }]);
 
@@ -74,6 +123,59 @@ var CuckooWeb = function () {
 
 $(document).ready(function () {
     $("[data-toggle=popover]").popover();
+
+    $('.close-page-freeze').bind('click', function () {
+        CuckooWeb.toggle_page_freeze(false);
+        setTimeout(function () {
+            $('.page-freeze').removeClass('error');
+        }, 300);
+    });
+});
+
+// show/hide errors
+$(function () {
+
+    var $container = $('.cuckoo-errors');
+    var $errors = $container.find('.errors');
+    var $toggle = $container.find('.show-all-errors a');
+    var $errorExpand = $container.find('.expand-error');
+    var expanded = false;
+    var maxErrors = 3;
+
+    // 1. collapse and expand individual errors
+    $(".cuckoo-errors .expand-error").bind('click', function (e) {
+
+        e.preventDefault();
+
+        if ($(this).parent().hasClass('expanded')) {
+            $(this).attr('title', 'Expand error message');
+            $(this).parent().removeClass('expanded');
+        } else {
+            $(this).attr('title', 'Collapse error message');
+            $(this).parent().addClass('expanded');
+        }
+    });
+
+    // 2. show or hide ALL errors
+    $toggle.bind('click', function (e) {
+
+        e.preventDefault();
+
+        if (expanded) {
+            expanded = false;
+        } else {
+            expanded = true;
+        }
+    });
+});
+
+// back-to-top replacement for the analysis pages
+$(function () {
+
+    $("#analysis .flex-grid__footer .logo a").bind('click', function (e) {
+        e.preventDefault();
+        $(this).parents('.flex-nav__body').scrollTop(0);
+    });
 });
 
 function alertbox(msg, context, attr_id) {
@@ -89,5 +191,4 @@ function alertbox(msg, context, attr_id) {
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
-
 //# sourceMappingURL=app.js.map

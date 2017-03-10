@@ -51,9 +51,7 @@ Following is the list of existing packages in alphabetical order:
 
 * ``generic``: used to run and analyze **generic samples** via cmd.exe.
 
-* ``html``: used to analyze **Internet Explorer**'s behavior when opening the given HTML file.
-
-* ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL.
+* ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL or HTML file.
 
 * ``js``: used to run and analyze **Javascript** files (e.g., those found in attachments of emails).
 

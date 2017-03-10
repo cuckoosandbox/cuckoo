@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -294,7 +294,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         if event["track"]:
             log.debug(
                 "New process (pid=%s, ppid=%s, name=%s)",
-                pid, ppid, procname
+                pid, ppid, procname.encode("utf8")
             )
 
         filepath = os.path.join(self.storagepath, "logs", "%s.bson" % pid)
@@ -418,7 +418,7 @@ class LogHandler(ProtocolHandler):
 
         while True:
             try:
-                buf = self.handler.read_newline(strip=False)
+                buf = self.handler.read_any()
             except Disconnect:
                 break
 

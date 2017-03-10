@@ -5,8 +5,8 @@ Requirements
 Before proceeding to installing and configuring Cuckoo, you'll need to install
 some required software packages and libraries.
 
-Installing Python libraries
-===========================
+Installing Python libraries (on Ubuntu/Debian-based distributions)
+==================================================================
 
 The Cuckoo host components is completely written in Python, therefore it is
 required to have an appropriate version of Python installed. At this point we
@@ -18,7 +18,7 @@ The following software packages from the apt repositories are required to get
 Cuckoo to install and run properly::
 
     $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
-    $ sudo apt-get install python-virtualenv libxml2-dev libxslt1-dev libjpeg-dev
+    $ sudo apt-get install python-virtualenv libjpeg-dev swig
 
 In order to use the Django-based Web Interface, MongoDB is required::
 
@@ -47,6 +47,20 @@ installation instructions.
 .. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _mitmproxy: https://mitmproxy.org/
+
+Installing Python libraries (on Mac OS X)
+=========================================
+
+This is mostly the same as the installation on Ubuntu/Debian, except that
+we'll be using the ``brew`` package manager. Install all the required
+dependencies as follows (this list is WIP)::
+
+    $ brew install libmagic
+
+Installing Python libraries (on Windows 7)
+==========================================
+
+To be documented.
 
 Virtualization Software
 =======================
@@ -146,3 +160,16 @@ download it from their `official repository`_.
 See the volatility documentation for detailed instructions on how to install it.
 
 .. _official repository: https://github.com/volatilityfoundation
+
+Installing M2Crypto
+===================
+
+Currently the ``M2Crypto`` library is only supported when `SWIG`_ has been
+installed. On Ubuntu/Debian-like systems this may be done as follows::
+
+    $ sudo apt-get install swig
+
+If ``SWIG`` is present on the system, Cuckoo will automatically install the
+``M2Crypto`` dependency upon installation.
+
+.. _SWIG: http://www.swig.org/

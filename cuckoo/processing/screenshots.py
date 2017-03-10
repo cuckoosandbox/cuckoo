@@ -1,12 +1,12 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
 import os
+import PIL.Image
 import subprocess
-from PIL import Image
 
 from cuckoo.common.abstracts import Processing
 
@@ -26,9 +26,14 @@ class Screenshots(Processing):
         if not os.path.isdir(self.shots_path):
             return
 
-        if tesseract and not os.path.exists(tesseract):
-            log.error("Could not find tesseract binary, "
-                      "screenshot OCR aborted.")
+        if tesseract:
+            if tesseract == "no":
+                tesseract = None
+            elif not os.path.exists(tesseract):
+                log.error(
+                    "Could not find tesseract binary, screenshot OCR aborted."
+                )
+                tesseract = None
 
         for shot_file in sorted(os.listdir(self.shots_path)):
             if not shot_file.endswith(".jpg"):
@@ -40,25 +45,29 @@ class Screenshots(Processing):
             shot_path = os.path.join(self.shots_path, shot_file)
             shot_file_name, shot_file_ext = os.path.splitext(shot_file)
 
-            im = Image.open(shot_path)
-            im.thumbnail((320, 320), Image.ANTIALIAS)
+            im = PIL.Image.open(shot_path)
+            im.thumbnail((320, 320), PIL.Image.ANTIALIAS)
 
             shot_file_name_resized = "%s_%s.jpg" % (shot_file_name, "small")
-            shot_path_resized = os.path.join(self.shots_path, shot_file_name_resized)
+            shot_path_resized = os.path.join(
+                self.shots_path, shot_file_name_resized
+            )
 
             im.save(shot_path_resized, "JPEG")
 
-            if tesseract:
-                # Initialize the entry for the results dict.
-                shot_entry = dict(path=shot_path, ocr="")
+            shot_entry = {
+                "path": shot_path,
+                "ocr": "",
+            }
 
+            if tesseract:
                 try:
                     args = [tesseract, shot_path, "stdout"]
                     shot_entry["ocr"] = subprocess.check_output(args)
                 except subprocess.CalledProcessError as e:
-                    log.info("Error running tesseract: %s", e)
+                    log.warning("Error running tesseract: %s", e)
 
-                # Append entry to list of screenshots.
-                screenshots.append(shot_entry)
+            # Append entry to list of screenshots.
+            screenshots.append(shot_entry)
 
         return screenshots

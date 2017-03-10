@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,7 @@ import sys
 import random
 
 from cuckoo.common.colors import color, yellow
-from cuckoo.common.constants import CUCKOO_VERSION
+from cuckoo.misc import version
 
 def logo():
     """Cuckoo asciiarts.
@@ -141,8 +141,8 @@ def logo():
 
     print(color(random.choice(logos), random.randrange(31, 37)))
     print
-    print(" Cuckoo Sandbox %s" % yellow(CUCKOO_VERSION))
+    print(" Cuckoo Sandbox %s" % yellow(version))
     print(" www.cuckoosandbox.org")
-    print(" Copyright (c) 2010-2016")
+    print(" Copyright (c) 2010-2017")
     print
     sys.stdout.flush()

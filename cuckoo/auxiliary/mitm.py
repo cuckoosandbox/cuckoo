@@ -5,11 +5,10 @@
 
 import logging
 import os.path
-import subprocess
 import threading
 
 from cuckoo.common.abstracts import Auxiliary
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, Popen
 
 log = logging.getLogger(__name__)
 PORTS = []
@@ -66,8 +65,9 @@ class MITM(Auxiliary):
         mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
         mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
 
-        self.proc = subprocess.Popen(
-            args, stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
+        self.proc = Popen(
+            args, close_fds=True,
+            stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
         )
 
         if "cert" in self.task.options:

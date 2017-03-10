@@ -1,0 +1,64 @@
+<table data-target="collapse" data-init="table">
+    <thead>
+        <tr class="table-display-config">
+            <th colspan="2">
+
+                <ul class="pagination">
+                    <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                    <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                    <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                    <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                </ul>
+
+                <div class="results-per-page">
+                    <label for="rpp">Results per page:</label>
+                    <input type="text" name="rpp" />
+                    <i class="fa fa-caret-right"></i>
+                    <button data-action="update-rpp">show</button>
+                    <p>or</p>
+                    <button data-action="rpp-all">show all</button>
+                </div>
+
+            </th>
+        </tr>
+        <tr>
+            <th id="time" data-sort="string"><i class="fa"></i> Name</th>
+            <th id="arguments" data-sort="string"><i class="fa"></i> Data</th>
+        </tr>
+    </thead>
+
+    <tfoot>
+        <tr>
+            <td colspan="2">
+                <div class="table-display-config">
+
+                    <ul class="pagination">
+                        <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                        <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                        <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                        <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                    </ul>
+
+                    <div class="results-per-page">
+                        <label for="rpp">Results per page:</label>
+                        <input type="text" data-action="rpp" name="rpp" />
+                        <i class="fa fa-caret-right"></i>
+                        <button data-action="update-rpp">show</button>
+                        <p>or</p>
+                        <button data-action="rpp-all">show all</button>
+                    </div>
+
+                </div>
+            </td>
+        </tr>
+    </tfoot>
+
+    <tbody>
+        {% for mark in sig.marks %}
+        <tr>
+            <td>{{ mark.category }}</td>
+            <td><span class="monospace">{{ mark.ioc }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

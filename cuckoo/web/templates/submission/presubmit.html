@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<!-- config -->
+<main class="flex-grid" id="analysis-configuration">
+
+	<header class="flex-grid__header">
+		<ul class="breadcrumbs">
+			<li class="done"><a href="#">submit file</a></li>
+			<li class="active"><a href="#">configure</a></li>
+			<li class="todo"><a href="#">analyze</a></li>
+		</ul>
+		<h3>
+			<i class="fa fa-cogs"></i> Configure your Analysis
+			<div class="pull-right">
+				<button class="grey" id="reset-options"><i class="fa fa-refresh"></i> Reset</button>
+				<button id="start-analysis"><i class="fa fa-check"></i> Analyze</button>
+			</div>
+		</h3>
+	</header>
+
+	<div class="flex-grid__body">
+
+		<nav class="flex-grid__nav" id="config-form">
+			
+			<header class="flex-form__header">
+				<h4>
+					<i class="fa fa-tasks"></i> Global Advanced Options
+				</h4>
+				<small>Options you change here are globally persisted to all files in your selection.</small>
+			</header>
+
+			<form class="flex-form" id="submission-config"></form>
+
+		</nav>
+
+		<section class="flex-grid__content">
+			
+			<nav class="cuckoo-files__controls">
+				<ul>
+					<li>
+						<a href="filetree:expandAllFolders" title="Expand all folders"><i class="fa fa-folder-open-o"></i></a>
+					</li>
+					<li>
+						<a href="filetree:collapseAllFolders" title="Collapse all folders"><i class="fa fa-folder-o"></i></a>
+					</li>
+					<li class="indent">
+						<a href="filetree:selectAll" title="Select all files"><i class="fa fa-check-square-o"></i></a>
+					</li>
+					<li>
+						<a href="filetree:deselectAll" title="Deselect all files"><i class="fa fa-square-o"></i></a>
+					</li>
+					<!-- <li class="indent">
+						<a href="filetree:showAsFileTree"><i class="fa fa-files-o"></i></a>
+					</li>
+					<li>
+						<a href="filetree:showAsList"><i class="fa fa-bars"></i></a>
+					</li> -->
+				</ul>
+				<ul class="right">
+					<li><p><a href="filetree:showSelection">Selection: <span data-value="filetree:selectedFilesCount">0</span>/<span data-value="filetree:totalFilesCount">0</span></a></p></li>
+				</ul>
+			</nav>
+
+			<div class="cuckoo-files">
+				<div id="filetree">
+
+					<div class="loading">
+					    <div class="spinner">
+					      <div></div>
+					      <div></div>
+					      <div></div>
+					    </div>
+					    <p class="loading-message">Loading your submitted files</p>
+					</div>	
+
+					<!-- filetree is rendered here -->
+
+				</div>
+				<aside id="filetree-detail" class="flex-grid__nav"><!-- rendered by handlebars via internal filetree code --></aside>
+			</div>
+
+		</section>
+
+		<aside class="flex-grid__detail-panel"></aside>
+	</div>
+
+	<footer class="flex-grid__footer">
+		<p class="footnote">
+			&copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+		</p>
+		<div class="logo">
+			<img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+		</div>
+	</footer>
+
+</main>
+
+<script>window.submit_id = {{ submit_id }};</script>
+{% endblock %}

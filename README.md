@@ -22,5 +22,7 @@ You can find a full documentation of the latest stable release
 
 <hr />
 
-[![Build Status](https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=package)](https://travis-ci.org/cuckoosandbox/cuckoo)
+[![Linux Build Status](https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=package)](https://travis-ci.org/cuckoosandbox/cuckoo)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/p892esebjdbhq653/branch/package?svg=true)](https://ci.appveyor.com/project/jbremer/cuckoo/branch/package)
 [![Coverage Status](https://coveralls.io/repos/github/cuckoosandbox/cuckoo/badge.svg?branch=package)](https://coveralls.io/github/cuckoosandbox/cuckoo?branch=package)
+[![codecov](https://codecov.io/gh/cuckoosandbox/cuckoo/branch/master/graph/badge.svg)](https://codecov.io/gh/cuckoosandbox/cuckoo)

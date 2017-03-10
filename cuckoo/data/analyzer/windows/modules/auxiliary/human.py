@@ -38,16 +38,24 @@ def foreach_child(hwnd, lparam):
         "i agree", "accepte",
         "enable", "activer", "accord", "valider",
         "don't send", "ne pas envoyer",
+        "don't save",
         "continue", "continuer",
         "personal", "personnel",
         "scan", "scanner",
         "unzip", "dezip",
         "open", "ouvrir",
+        "close the program",
         "execute", "executer",
         "launch", "lancer",
         "save", "sauvegarder",
         "download", "load", "charger",
         "end", "fin", "terminer"
+        "later",
+        "finish",
+        "end",
+        "allow access",
+        "remind me later",
+        "save", "sauvegarder"
     ]
 
     # List of buttons labels to not click.

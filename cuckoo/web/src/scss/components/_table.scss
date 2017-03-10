@@ -1,0 +1,154 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+ table.cuckoo-table {
+	width: 100%;
+	background-color: #fff;
+	text-align: left;
+	font-size: 12px;
+	border-collapse: collapse;
+	border: 1px solid #ccc;	
+
+	thead { 
+		border-bottom: 2px solid #ccc; 
+		th { white-space: nowrap; }
+
+		tr:not(.table-display-config) {
+			th {
+				.fa { 
+					margin-right: 10px; 
+					&:before { 
+						content: "\f0dc"; 
+
+						.sorting-asc & { content: "\f0de"; }
+						.sorting-desc & { content: "\f0dd"; }
+					}
+				}
+			}
+		}
+
+		tr.table-display-config > th {
+			font-weight: 400;
+			padding: 15px;
+			border-bottom: 1px solid #ccc;
+			border-top: 1px solid #ccc;
+		}
+	}
+	
+	tbody {
+		tr:not(:last-child) { border-bottom: 1px solid #ccc; }
+		tr:nth-child(even) { background-color: #f5f5f5;  }
+		td:empty:before { content: "-"; color: #999; }
+
+		tr.clickable {
+			&:hover {
+				cursor: pointer;
+				background-color: #ddd; 
+			}
+		}
+	}
+
+	thead,
+	tbody {
+		th, td { padding: 10px; }
+	}
+
+	tfoot {
+		text-align: left;
+		border-top: 2px solid #ccc;
+
+		td { 
+			padding: 5px; 
+			p {
+				margin: 0;
+			}
+		}
+	}
+
+	.small-integer { width: 50px; }
+	.results-per-page { float: right; }
+
+	&.table-key-value {
+		td { 
+			width: 50%; 
+			border-right: 1px solid #ccc;
+
+			&:last-child { border: 0; }
+
+			.col-3 & { width: 33%; }
+		}
+	}
+
+	.loading {
+		margin: 0;
+	}
+
+	@include cuckoo-theme('cyborg') {
+
+		border-color: $cyborg_border_color;
+		background-color: $cyborg_primary_color;
+
+		thead {
+			@extend %cyborg-heading;
+			border-bottom: 1px solid $cyborg_border_color;
+		}
+
+		tbody tr, 
+		tfoot {
+			border-color: $cyborg_border_color;
+		}
+
+	}
+
+	@include cuckoo-theme('night') {
+		border-color: $night_border_color;
+		background-color: $night_primary_color;
+
+		tr:nth-child(even) {
+			background-color: lighten($night_primary_color, 5);
+		}
+
+		thead {
+			background-color: $night_panel_color;
+			border-bottom: 1px solid $night_border_color;
+		}
+
+		tbody tr, 
+		tfoot {
+			border-color: $night_border_color;
+		}
+	}
+
+}
+
+#submission-task-table {
+
+	// status circles
+	.status {
+		display: inline-block;
+		vertical-align: middle;
+		background-color: #bbb;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+
+		&.status-pending { background-color: #bbb; }
+		&.status-running { background-color: #d2e24c; }
+		&.status-completed { background-color: #66ca4d; }
+		&.status-reported { 
+			background-color: transparent;
+			color: #66ca4d;
+			width: auto;
+			height: auto;
+			&:before {
+				@extend .fa;
+				content: "\f00c";
+			}
+		}
+
+	}
+
+}

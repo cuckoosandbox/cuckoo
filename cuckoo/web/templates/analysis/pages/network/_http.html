@@ -13,8 +13,8 @@
 
 <h4>HTTP &amp; HTTPS Requests</h4>
 {% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
-    {% for http in report.analysis.network.http_ex %}
-        <div class="network_http_request" id="http_{{ forloop.counter0 }}">
+    {% for http in report.analysis.network.https_ex %}
+        <div class="network_http_request" id="{{ http.protocol }}_{{ forloop.counter0 }}">
             <div class="panel">
                 <div class="panel-heading">
                     <div class="col-md-4">
@@ -24,11 +24,11 @@
 
                 <div class="row">
                     <div class="col-md-4">
-                        <pre class="url">http://{{http.host}}{{http.uri}}</pre>
+                        <pre class="url">{{ http.protocol }}://{{http.host}}{{http.uri}}</pre>
                         <pre class="headers">{{http.request}}</pre>
                     </div>
-                    <div class="col-md-8">
-                        <!-- @TO-DO: request body -->
+                    <div class="col-md-8" id="request">
+                        <pre class="body" id="{{ http.protocol }}_{{ forloop.counter0 }}_req"></pre>
                     </div>
                 </div>
             </div>
@@ -48,20 +48,22 @@
                     <div class="col-md-4">
                         <pre class="headers">{{http.response}}</pre>
                     </div>
-                    <div class="col-md-8" id="body">
-                        <pre class="body"></pre>
-                        
+                    <div class="col-md-8" id="response">
+                        <pre class="body" id="{{ http.protocol }}_{{ forloop.counter0 }}_resp"></pre>
+
                         <script>
                             $(document).ready(function() {
-                                CuckooWeb.api_post("/analysis/api/network_http_response_data/", {
+                                CuckooWeb.api_post("/analysis/api/task/network_http_data/", {
                                     "task_id": task_id,
+                                    "protocol": "{{ http.protocol }}",
                                     "request_body": false,
                                     "request_index": {{ forloop.counter0 }}
                                 }, function(data) {
-                                    sel = $("#http_" + {{ forloop.counter0 }} + ">.panel>.row pre.body");
+                                    sel = $("#{{ http.protocol }}_{{ forloop.counter0 }}_req");
+                                    sel.append(hexy(base64.decode(data["request"])));
 
-                                    hex = hexy(base64.decode(data["body"]));
-                                    sel.append(hex);
+                                    sel = $("#{{ http.protocol }}_{{ forloop.counter0 }}_resp");
+                                    sel.append(hexy(base64.decode(data["response"])));
                                 });
                             });
                         </script>
@@ -69,7 +71,65 @@
                 </div>
             </div>
         </div>
+    {% endfor %}
+    {% for http in report.analysis.network.http_ex %}
+        <div class="network_http_request" id="{{ http.protocol }}_{{ forloop.counter0 }}">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="col-md-4">
+                        <span class="glyphicon glyphicon-arrow-right"></span> Request</div>
+                    <div class="col-md-8">Body</div>
+                </div>
 
+                <div class="row">
+                    <div class="col-md-4">
+                        <pre class="url">{{ http.protocol }}://{{http.host}}{{http.uri}}</pre>
+                        <pre class="headers">{{http.request}}</pre>
+                    </div>
+                    <div class="col-md-8" id="request">
+                        <pre class="body" id="{{ http.protocol }}_{{ forloop.counter0 }}_req"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="col-md-4">
+                        <span class="glyphicon glyphicon-arrow-left"></span> Response
+                    </div>
+
+                    <div class="col-md-8">
+                        Body
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <pre class="headers">{{http.response}}</pre>
+                    </div>
+                    <div class="col-md-8" id="response">
+                        <pre class="body" id="{{ http.protocol }}_{{ forloop.counter0 }}_resp"></pre>
+
+                        <script>
+                            $(document).ready(function() {
+                                CuckooWeb.api_post("/analysis/api/task/network_http_data/", {
+                                    "task_id": task_id,
+                                    "protocol": "{{ http.protocol }}",
+                                    "request_body": false,
+                                    "request_index": {{ forloop.counter0 }}
+                                }, function(data) {
+                                    sel = $("#{{ http.protocol }}_{{ forloop.counter0 }}_req");
+                                    sel.append(hexy(base64.decode(data["request"])));
+
+                                    sel = $("#{{ http.protocol }}_{{ forloop.counter0 }}_resp");
+                                    sel.append(hexy(base64.decode(data["response"])));
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endfor %}
 {% elif report.analysis.network.http %}
 <table class="table table-striped table-bordered" style="table-layout: fixed;">

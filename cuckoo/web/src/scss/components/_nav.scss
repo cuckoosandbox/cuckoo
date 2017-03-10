@@ -1,0 +1,34 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.nav {
+	
+	& > li {
+		& > a {
+			&:hover {
+				text-decoration: none;
+			    cursor:pointer;
+			    background-color: #eee;		
+
+			    &.btn-primary {
+					background-color: #337ab7;
+	    			border-color: #2e6da4;
+			    }
+			}
+		}
+	}
+
+	&-pills > li.active a {
+		color: #4c4c4c;
+    	background-color: #eee;
+		&:focus,
+		&:hover {
+			color: #4c4c4c;
+    		background-color: #eee;		
+		}
+	}
+	
+}

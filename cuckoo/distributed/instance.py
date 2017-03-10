@@ -19,6 +19,11 @@ log = logging.getLogger(__name__)
 def scheduler():
     while True:
         for node in Node.query.filter_by(enabled=True, mode="normal").all():
+            # Check how many tasks have already been assigned for this node.
+            q = Task.query.filter_by(status=Task.ASSIGNED, node_id=node.id)
+            if q.count() >= settings.threshold:
+                continue
+
             # Fetch the status of this node.
             status = node_status(node.url)
             if not status:
@@ -100,7 +105,11 @@ def handle_node(instance):
             q = q.order_by(Task.priority.desc(), Task.id)
             tasks = q.limit(settings.threshold).all()
             for t in tasks:
-                t.task_id = submit_task(node.url, t.to_dict())
+                task_id = submit_task(node.url, t.to_dict())
+                if not task_id:
+                    continue
+
+                t.task_id = task_id
                 t.status = Task.PROCESSING
                 t.delegated = datetime.datetime.now()
 
@@ -135,7 +144,10 @@ def handle_node(instance):
                 try:
                     store_report(node.url, t.task_id, report_format, dirpath)
                 except InvalidReport as e:
-                    log.critical("Error fetching report: %s", e)
+                    log.critical(
+                        "Error fetching report for task #%d (%s.%d): %s",
+                        t.id, node.name, t.task_id, e
+                    )
 
             # Fetch the pcap file.
             if settings.pcap:
@@ -143,7 +155,10 @@ def handle_node(instance):
                 try:
                     fetch_pcap(node.url, t.task_id, pcap_path)
                 except InvalidPcap as e:
-                    log.critical("Error fetching pcap: %s", e)
+                    log.critical(
+                        "Error fetching pcap for task #%d (%s.%d): %s",
+                        t.id, node.name, t.task_id, e
+                    )
 
             # Delete the task and all its associated files from the
             # Cuckoo node.

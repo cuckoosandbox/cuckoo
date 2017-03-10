@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import re
-import logging
 import time
 
 import xml.etree.ElementTree as ET
@@ -37,6 +37,10 @@ class Auxiliary(object):
         self.machine = None
         self.guest_manager = None
         self.options = None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def set_task(self, task):
         self.task = task
@@ -75,6 +79,10 @@ class Machinery(object):
         # at each start.
         self.db.clean_machines()
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def pcap_path(self, task_id):
         """Returns the .pcap path for this task id."""
         return cwd("storage", "analyses", "%s" % task_id, "dump.pcap")
@@ -108,14 +116,11 @@ class Machinery(object):
         self.module_name = module_name
         mmanager_opts = self.options.get(module_name)
 
-        for machine_id in mmanager_opts["machines"].strip().split(","):
-            if not machine_id.strip():
-                continue
-
+        for machine_id in mmanager_opts["machines"]:
             try:
-                machine_opts = self.options.get(machine_id.strip())
+                machine_opts = self.options.get(machine_id)
                 machine = Dictionary()
-                machine.id = machine_id.strip()
+                machine.id = machine_id
                 machine.label = machine_opts[self.LABEL]
                 machine.platform = machine_opts["platform"]
                 machine.options = machine_opts.get("options", "")
@@ -164,7 +169,7 @@ class Machinery(object):
                                     resultserver_port=port)
             except (AttributeError, CuckooOperationalError) as e:
                 log.warning("Configuration details about machine %s "
-                            "are missing: %s", machine_id.strip(), e)
+                            "are missing: %s", machine_id, e)
                 continue
 
     def _initialize_check(self):
@@ -288,7 +293,7 @@ class Machinery(object):
         """
         raise NotImplementedError
 
-    def _wait_status(self, label, state):
+    def _wait_status(self, label, *states):
         """Waits for a vm status.
         @param label: virtual machine name.
         @param state: virtual machine status, accepts multiple states as list.
@@ -301,15 +306,14 @@ class Machinery(object):
         except NameError:
             return
 
-        if isinstance(state, str):
-            state = [state]
-
-        while current not in state:
+        while current not in states:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
-                      "to status %s", waitme, label, state)
+                      "to status %s", waitme, label, states)
             if waitme > int(self.options_globals.timeouts.vm_state):
-                raise CuckooMachineError("Timeout hit while for machine {0} "
-                                         "to change status".format(label))
+                raise CuckooMachineError(
+                    "Timeout hit while for machine %s to change status" % label
+                )
+
             time.sleep(1)
             waitme += 1
             current = self._status(label)
@@ -331,7 +335,10 @@ class LibVirtMachinery(Machinery):
 
     def __init__(self):
         if not HAVE_LIBVIRT:
-            raise CuckooDependencyError("Unable to import libvirt")
+            raise CuckooDependencyError(
+                "The libvirt package has not been installed "
+                "(`pip install libvirt-python`)"
+            )
 
         super(LibVirtMachinery, self).__init__()
 
@@ -631,6 +638,10 @@ class Processing(object):
         self.options = None
         self.results = {}
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def set_options(self, options):
         """Set report options.
         @param options: report options dict.
@@ -654,7 +665,6 @@ class Processing(object):
         self.analysis_path = analysis_path
         self.log_path = os.path.join(self.analysis_path, "analysis.log")
         self.cuckoolog_path = os.path.join(self.analysis_path, "cuckoo.log")
-        self.action_path = os.path.join(self.analysis_path, "action.json")
         self.file_path = os.path.realpath(os.path.join(self.analysis_path,
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
@@ -724,6 +734,10 @@ class Signature(object):
         self.pid = None
         self.cid = None
         self.call = None
+
+    @classmethod
+    def init_once(cls):
+        pass
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -976,6 +990,10 @@ class Signature(object):
         """Returns a list of all smtp data."""
         return self.get_net_generic("smtp")
 
+    def get_net_smtp_ex(self):
+        """"Returns a list of all smtp data"""
+        return self.get_net_generic("smtp_ex")
+
     def get_virustotal(self):
         """Returns the information retrieved from virustotal."""
         return self.get_results("virustotal", {})
@@ -1043,6 +1061,16 @@ class Signature(object):
                                  subject=list(urls),
                                  regex=regex,
                                  all=all)
+
+    def check_suricata_alerts(self, pattern):
+        """Check for pattern in Suricata alert signature
+        @param pattern: string or expression to check for.
+        @return: True/False
+        """
+        for alert in self.get_results("suricata", {}).get("alerts", []):
+            if re.findall(pattern, alert.get("signature", ""), re.I):
+                return True
+        return False
 
     def init(self):
         """Allow signatures to initialize themselves."""
@@ -1158,6 +1186,10 @@ class Report(object):
         self.task = None
         self.options = None
 
+    @classmethod
+    def init_once(cls):
+        pass
+
     def _get_analysis_path(self, subpath):
         return os.path.join(self.analysis_path, subpath)
 
@@ -1188,7 +1220,7 @@ class Report(object):
         """
         self.task = task
 
-    def run(self):
+    def run(self, results):
         """Start report processing.
         @raise NotImplementedError: this method is abstract.
         """

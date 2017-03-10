@@ -9,19 +9,15 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 from logging.config import fileConfig
 
-# This is the Alembic Config object, which provides access to the values within
-# the .ini file in use.
-config = context.config
-
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+fileConfig(context.config.config_file_name)
 
 from cuckoo.core.database import Base, Database
 from cuckoo.misc import set_cwd
 
 set_cwd(context.get_x_argument(as_dictionary=True)["cwd"])
-Database().connect(schema_check=False)
+Database().connect(schema_check=False, create=False)
 
 # Get database connection string from cuckoo configuration.
 url = Database().engine.url.__to_string__(hide_password=False)

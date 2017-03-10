@@ -1,10 +1,9 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""Database migration from Cuckoo 0.6 to Cuckoo 1.1.
-Extend sample's file-type field.
+"""Extend sample's file-type field (from Cuckoo 1.1 to 1.2)
 
 Revision ID: 18eee46c6f81
 Revises: 263a45963c72
@@ -19,9 +18,9 @@ down_revision = "263a45963c72"
 from alembic import op
 import sqlalchemy as sa
 
-import cuckoo.core.database as db
+from cuckoo.core.database import Database, Sample
 
-def _perform(upgrade):
+def upgrade():
     conn = op.get_bind()
 
     sample_list = conn.execute("SELECT id, file_size, file_type, md5, crc32, "
@@ -49,7 +48,7 @@ def _perform(upgrade):
         "postgresql": "tasks_sample_id_fkey",
     }
 
-    fkey = fkey_name.get(db.Database(schema_check=False).engine.name)
+    fkey = fkey_name.get(Database(schema_check=False).engine.name)
 
     # First drop the foreign key.
     if fkey:
@@ -61,15 +60,7 @@ def _perform(upgrade):
     # Drop old table.
     op.drop_table("old_samples")
 
-    if upgrade:
-        file_type = sa.Text()
-    else:
-        file_type = sa.String(255)
-
-        # As downgrading implies trimming file_type's to 255 bytes we force
-        # this for every available record.
-        for sample in samples:
-            sample["file_type"] = sample["file_type"][:255]
+    file_type = sa.Text()
 
     # Create the new table with 1.2 schema.
     # Changelog:
@@ -89,7 +80,7 @@ def _perform(upgrade):
     )
 
     # Insert data.
-    op.bulk_insert(db.Sample.__table__, samples)
+    op.bulk_insert(Sample.__table__, samples)
 
     # Restore the indices.
     op.create_index("hash_index", "samples",
@@ -100,8 +91,5 @@ def _perform(upgrade):
     if fkey:
         op.create_foreign_key(fkey, "tasks", "samples", ["sample_id"], ["id"])
 
-def upgrade():
-    _perform(upgrade=True)
-
 def downgrade():
-    _perform(upgrade=False)
+    pass

@@ -1,0 +1,58 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+/* analysis/network/http */
+.network_http_request {
+
+    border: 1px solid #d0d0d0;
+
+    .panel {
+
+        margin-bottom: 0px;
+        border: 0px;
+        border-radius: 0px;    
+
+        &:first-child { border-bottom:0px; }
+        &:nth-child(2) { border-top: 0px; }
+
+        & > .panel-heading {
+            background: #eee;
+            display: flex; 
+
+            .row { 
+                padding: 4px 12px; 
+                div[class^="col-md-"] { padding-top: 4px; }
+
+                .col-md-8 {
+                    padding-left: 18px;
+                }
+            }
+
+            .col-md-4 { 
+                padding-left: 4px; 
+                pre { padding: 6px; }
+
+                .glyphicon {
+                    padding-right: 4px;
+                }
+            }
+
+            .col-md-8 { padding-left: 18px; }
+
+        }
+
+    }
+
+    pre {
+        border-radius: 0px;
+
+        &.collapse { 
+            max-height: none !important;
+            overflow: visible !important;
+        }
+    }
+
+}

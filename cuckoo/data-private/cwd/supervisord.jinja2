@@ -1,0 +1,36 @@
+[supervisord]
+logfile = {{ cwd("supervisord", "log.log") }}
+pidfile = {{ cwd("supervisord", "pidfile") }}
+user = {{ username }}
+
+[supervisorctl]
+serverurl = unix://{{ cwd("supervisord", "unix.sock") }}
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[unix_http_server]
+file = {{ cwd("supervisord", "unix.sock") }}
+
+[program:cuckoo-daemon]
+command = {{ cuckoo_path }} -d -m 10000
+user = {{ username }}
+startsecs = 30
+autorestart = true
+
+[program:cuckoo-process]
+command = {{ cuckoo_path }} process p%(process_num)d
+process_name = cuckoo-process_%(process_num)d
+numprocs = 4
+user = {{ username }}
+autorestart = true
+
+[group:cuckoo]
+programs = cuckoo-daemon, cuckoo-process
+
+[program:distributed]
+command = {{ python_path }} -m cuckoo.distributed.worker
+user = {{ username }}
+autostart = false
+autorestart = true
+environment = CUCKOO_APP="worker",CUCKOO_CWD="{{ cwd() }}"

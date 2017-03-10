@@ -1,0 +1,56 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// mixin to include on the varieties of cuckoo boxes
+// @param $color [ANY COLOR TYPE]
+// @param $background-color [ANY COLOR TYPE] 
+// @include cuckoo-input-label($color: #RRGGBB, $background-color: #RRGGBB)
+@mixin cuckoo-input-label($color, $background-color) {
+	input[type="radio"],
+	input[type="checked"] {
+		&:checked ~ label:before {
+			color: $color;
+			background-color: $background-color;
+		}
+	}
+}
+
+// mixin for defining priority color styles, color variables are defined in _variables.scss
+// @param $priority [STRING] - accepted: low, medium, high
+// @param $background_dim [FLOAT 0 - 1] - default: .2
+// @param $text_darken [INT [with decimals] 0 - 100] - default: 20
+// @param $border_darken [INT [with decimals] 0 - 100] default: 25
+@mixin cuckoo-priority($priority: 'low', $background_dim: .2, $text_darken: 20, $border_darken: 25) {
+
+	@if $priority == 'medium' {
+
+		background-color: rgba($cuckoo_color_priority_medium, $background_dim);
+		color: darken($cuckoo_color_priority_medium, $text_darken);
+		border-color: rgba(darken($cuckoo_color_priority_medium, $border_darken), .2);
+
+	} @else if $priority == 'high' {
+
+		background-color: rgba($cuckoo_color_priority_high, $background_dim);
+		color: darken($cuckoo_color_priority_high, $text_darken);
+		border-color: rgba(darken($cuckoo_color_priority_high, $border_darken), .2);
+
+	} @else {
+
+		background-color: rgba($cuckoo_color_priority_low, $background_dim);
+		color: darken($cuckoo_color_priority_low, $text_darken);
+		border-color: rgba(darken($cuckoo_color_priority_medium, $border_darken), .2);
+
+	}
+
+}
+
+// mixin for helping theming pages and elements a bit easier! This works as follows, in this mixin you can define the styles 
+// for the themes themselves. This requires a less lot searching and doing this scss thing a bit more efficient.
+@mixin cuckoo-theme($theme_name) {
+	body.#{$theme_name} & {
+		@content;
+	}
+}

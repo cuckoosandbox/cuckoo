@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,7 +9,8 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Processing, BehaviorHandler
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
+from cuckoo.core.database import Database
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
@@ -105,9 +106,15 @@ class ProcessTree(BehaviorHandler):
             "children": [],
         }
         first_seen = lambda x: x["first_seen"]
+        procs_seen = []
 
         for p in sorted(self.processes.values(), key=first_seen):
-            self.processes.get(p["ppid"], root)["children"].append(p)
+            if p["ppid"] in procs_seen:
+                self.processes[p["ppid"]]["children"].append(p)
+            else:
+                root["children"].append(p)
+
+            procs_seen.append(p["pid"])
 
         return sorted(root["children"], key=first_seen)
 
@@ -129,7 +136,7 @@ class GenericBehavior(BehaviorHandler):
             "pid": process["pid"],
             "ppid": process["ppid"],
             "process_name": process["process_name"],
-            "process_path": process["process_path"],
+            "process_path": process.get("process_path"),
             "first_seen": process["first_seen"],
             "summary": collections.defaultdict(set),
         }
@@ -197,13 +204,11 @@ class ActionInformation(BehaviorHandler):
         self.actions = []
 
     def handle_event(self, event):
-        self.actions.append(tuple(event.items()))
+        self.actions.append(event["action"])
 
     def run(self):
-        action_path = os.path.join(self.analysis.analysis_path, "action.json")
-        with open(action_path, "wb") as f:
-            for action in sorted(set(self.actions)):
-                f.write("%s\n" % json.dumps(dict(action)))
+        for action in set(self.actions):
+            Database().add_error("", self.analysis.task["id"], action)
 
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
@@ -250,9 +255,8 @@ class BehaviorAnalysis(Processing):
                 log.warning("Behavior log file %r is not a file.", fname)
                 continue
 
-            analysis_size_limit = self.cfg.processing.analysis_size_limit
-            if analysis_size_limit and \
-                    os.stat(path).st_size > analysis_size_limit:
+            limit = config("cuckoo:processing:analysis_size_limit")
+            if limit and os.stat(path).st_size > limit:
                 # This needs to be a big alert.
                 log.critical("Behavior log file %r is too big, skipped.", fname)
                 continue
@@ -263,7 +267,6 @@ class BehaviorAnalysis(Processing):
         """Run analysis.
         @return: results dict.
         """
-        self.cfg = Config()
         self.state = {}
 
         # these handlers will be present for any analysis, regardless of platform/format

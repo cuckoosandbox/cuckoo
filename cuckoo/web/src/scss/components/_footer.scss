@@ -1,0 +1,48 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// footer
+footer {
+    background: #292727;
+    margin: 0;
+    padding: 20px 0 15px;
+    width: 100%;
+    color: #ccc;
+
+    a:link,
+    a:visited {
+        color: #ccc;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: underline;    
+    }
+
+}
+
+// footer-extra
+#footer-extra {
+
+    background: #1c1c1c;
+    padding: 10px 0;
+    font-size: 11px;
+    color: #999;
+
+    a:link,
+    a:visited {
+        color: #999;
+        font-weight: bold;
+        text-decoration: none;    
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: underline;
+    }
+
+}

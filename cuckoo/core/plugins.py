@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,18 +8,16 @@ import importlib
 import inspect
 import logging
 
-from distutils.version import StrictVersion
-
 import cuckoo
 
-from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_VERSION
-from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.exceptions import CuckooReportError
-from cuckoo.common.exceptions import CuckooDependencyError
-from cuckoo.common.exceptions import CuckooDisableModule
-from cuckoo.misc import cwd
+from cuckoo.common.config import config2
+from cuckoo.common.exceptions import (
+    CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
+    CuckooDependencyError, CuckooDisableModule
+)
+from cuckoo.common.objects import Dictionary
+from cuckoo.common.utils import supported_version
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
@@ -39,8 +37,17 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
             module_name, _ = os.path.splitext(fname)
             importlib.import_module("%s.%s" % (module_prefix, module_name))
 
+    subclasses = class_.__subclasses__()[:]
+
     plugins = []
-    for subclass in class_.__subclasses__():
+    while subclasses:
+        subclass = subclasses.pop(0)
+
+        # Include subclasses of this subclass (there are some subclasses, e.g.,
+        # LibVirtMachinery, that fail the fail the following module namespace
+        # check and as such we perform this logic here).
+        subclasses.extend(subclass.__subclasses__())
+
         # Check whether this subclass belongs to the module namespace that
         # we're currently importing. It should be noted that parent and child
         # namespaces should fail the following if-statement.
@@ -68,8 +75,6 @@ class RunAuxiliary(object):
         self.task = task
         self.machine = machine
         self.guest_manager = guest_manager
-
-        self.cfg = Config("auxiliary")
         self.enabled = []
 
     def start(self):
@@ -88,10 +93,12 @@ class RunAuxiliary(object):
                 module_name = module_name.rsplit(".", 1)[1]
 
             try:
-                options = self.cfg.get(module_name)
-            except CuckooOperationalError:
-                log.debug("Auxiliary module %s not found in "
-                          "configuration file", module_name)
+                options = Dictionary(config2("auxiliary", module_name))
+            except CuckooConfigurationError:
+                log.debug(
+                    "Auxiliary module %s not found in configuration file",
+                    module_name
+                )
                 continue
 
             if not options.enabled:
@@ -169,7 +176,6 @@ class RunProcessing(object):
         self.task = task
         self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
         self.baseline_path = cwd("storage", "baseline")
-        self.cfg = Config("processing")
 
     def process(self, module, results):
         """Run a processing module.
@@ -193,10 +199,12 @@ class RunProcessing(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = self.cfg.get(module_name)
-        except CuckooOperationalError:
-            log.debug("Processing module %s not found in configuration file",
-                      module_name)
+            options = Dictionary(config2("processing", module_name))
+        except CuckooConfigurationError:
+            log.debug(
+                "Processing module %s not found in configuration file",
+                module_name
+            )
             return None, None
 
         # If the processing module is disabled in the config, skip it.
@@ -288,28 +296,31 @@ class RunSignatures(object):
     def __init__(self, results):
         self.results = results
         self.matched = []
-
-        # While developing our version is generally something along the lines
-        # of "2.0-dev" whereas StrictVersion() does not handle "-dev", so we
-        # strip that part off.
-        self.version = CUCKOO_VERSION.split("-")[0]
+        self.version = version
 
         # Gather all enabled, up-to-date, and applicable signatures.
         self.signatures = []
-        for signature in cuckoo.signatures.plugins:
-            if self._should_enable_signature(signature):
+        for signature in cuckoo.signatures:
+            if self.should_enable_signature(signature):
                 self.signatures.append(signature(self))
+
+        # Sort Signatures by their order.
+        self.signatures.sort(key=lambda sig: sig.order)
 
         # Signatures to call per API name.
         self.api_sigs = {}
 
-    def _should_enable_signature(self, signature):
+    def should_enable_signature(self, signature):
         """Should the given signature be enabled for this analysis?"""
-        if not signature.enabled:
+        if not signature.enabled or signature.name is None:
             return False
 
         if not self.check_signature_version(signature):
             return False
+
+        if hasattr(signature, "enable") and callable(signature.enable):
+            if not signature.enable():
+                return False
 
         # Network and/or cross-platform signatures.
         if not signature.platform:
@@ -325,62 +336,27 @@ class RunSignatures(object):
 
         return task_platform == signature.platform
 
-    def check_signature_version(self, signature):
+    def check_signature_version(self, sig):
         """Check signature version.
         @param current: signature class/instance to check.
         @return: check result.
         """
-        # Check the minimum Cuckoo version for this signature, if provided.
-        if signature.minimum:
-            try:
-                # If the running Cuckoo is older than the required minimum
-                # version, skip this signature.
-                if StrictVersion(self.version) < StrictVersion(signature.minimum):
-                    log.debug("You are running an older incompatible version "
-                              "of Cuckoo, the signature \"%s\" requires "
-                              "minimum version %s.",
-                              signature.name, signature.minimum)
-                    return False
+        if not supported_version(self.version, sig.minimum, sig.maximum):
+            log.debug(
+                "You are running a version of Cuckoo that's not compatible "
+                "with this signature (either it's too old or too new): "
+                "cuckoo=%s signature=%s minversion=%s maxversion=%s",
+                self.version, sig.name, sig.minimum, sig.maximum
+            )
+            return False
 
-                if StrictVersion("1.2") > StrictVersion(signature.minimum):
-                    log.warn("Cuckoo signature style has been redesigned in "
-                             "cuckoo 1.2. This signature is not "
-                             "compatible: %s.", signature.name)
-                    return False
-
-                if StrictVersion("2.0") > StrictVersion(signature.minimum):
-                    log.warn("Cuckoo version 2.0 features a lot of changes that "
-                             "render old signatures ineffective as they are not "
-                             "backwards-compatible. Please upgrade this "
-                             "signature: %s.", signature.name)
-                    return False
-
-                if hasattr(signature, "run"):
-                    log.warn("This signatures features one or more deprecated "
-                             "functions which indicates that it is very likely "
-                             "an old-style signature. Please upgrade this "
-                             "signature: %s.", signature.name)
-                    return False
-            except ValueError:
-                log.debug("Wrong minor version number in signature %s",
-                          signature.name)
-                return False
-
-        # Check the maximum version of Cuckoo for this signature, if provided.
-        if signature.maximum:
-            try:
-                # If the running Cuckoo is newer than the required maximum
-                # version, skip this signature.
-                if StrictVersion(self.version) > StrictVersion(signature.maximum):
-                    log.debug("You are running a newer incompatible version "
-                              "of Cuckoo, the signature \"%s\" requires "
-                              "maximum version %s.",
-                              signature.name, signature.maximum)
-                    return False
-            except ValueError:
-                log.debug("Wrong major version number in signature %s",
-                          signature.name)
-                return False
+        if hasattr(sig, "run"):
+            log.warning(
+                "This signatures features one or more deprecated functions "
+                "which indicates that it is very likely an old-style "
+                "signature. Please upgrade this signature: %s.", sig.name
+            )
+            return False
 
         return True
 
@@ -388,7 +364,7 @@ class RunSignatures(object):
         """Wrapper to call into 3rd party signatures. This wrapper yields the
         event to the signature and handles matched signatures recursively."""
         try:
-            if handler(*args, **kwargs):
+            if not signature.matched and handler(*args, **kwargs):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
@@ -457,7 +433,13 @@ class RunSignatures(object):
         score = 0
         for signature in self.signatures:
             if signature.matched:
-                log.debug("Analysis matched signature: %s", signature.name)
+                log.debug(
+                    "Analysis matched signature: %s", signature.name, extra={
+                        "action": "signature.match", "status": "success",
+                        "signature": signature.name,
+                        "severity": signature.severity,
+                    }
+                )
                 self.matched.append(signature.results())
                 score += signature.severity
 
@@ -481,7 +463,6 @@ class RunReporting(object):
         self.task = task
         self.results = results
         self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
-        self.cfg = Config("reporting")
 
     def process(self, module):
         """Run a single reporting module.
@@ -504,9 +485,12 @@ class RunReporting(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = self.cfg.get(module_name)
-        except CuckooOperationalError:
-            log.debug("Reporting module %s not found in configuration file", module_name)
+            options = Dictionary(config2("reporting", module_name))
+        except CuckooConfigurationError:
+            log.debug(
+                "Reporting module %s not found in configuration file",
+                module_name
+            )
             return
 
         # If the reporting module is disabled in the config, skip it.

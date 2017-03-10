@@ -16,6 +16,7 @@ class XLS(Package):
         ("ProgramFiles", "Microsoft Office", "Office12", "EXCEL.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office14", "EXCEL.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office15", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "Office16", "EXCEL.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "EXCEL.EXE"),
     ]
 

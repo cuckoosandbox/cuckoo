@@ -1,0 +1,18 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+@media (max-width: 979px) {
+    body {
+        padding-top: 50px;
+        padding-bottom: 0px;
+    }
+}
+
+@media (min-width: 992px) {
+    #analysis_menu-sidebar {
+        max-width: 260px;
+    }
+}

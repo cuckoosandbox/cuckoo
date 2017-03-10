@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,11 +14,14 @@ import time
 import xmlrpclib
 import zipfile
 
-from cuckoo.common.config import Config
-from cuckoo.common.constants import CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT
-from cuckoo.common.constants import CUCKOO_GUEST_COMPLETED
-from cuckoo.common.constants import CUCKOO_GUEST_FAILED
-from cuckoo.common.exceptions import CuckooGuestError
+from cuckoo.common.config import config
+from cuckoo.common.constants import (
+    CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED,
+    CUCKOO_GUEST_FAILED
+)
+from cuckoo.common.exceptions import (
+    CuckooGuestError, CuckooGuestCriticalTimeout
+)
 from cuckoo.common.utils import TimeoutServer
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
@@ -96,8 +99,6 @@ class OldGuestManager(object):
         self.platform = platform
         self.task_id = task_id
 
-        self.cfg = Config()
-
         # initialized in start_analysis so we can update the critical timeout
         # TODO, pull options parameter into __init__ so we can do this here
         self.timeout = None
@@ -116,9 +117,10 @@ class OldGuestManager(object):
         while db.guest_get_status(self.task_id) == "starting":
             # Check if we've passed the timeout.
             if time.time() > end:
-                raise CuckooGuestError("{0}: the guest initialization hit the "
-                                       "critical timeout, analysis "
-                                       "aborted.".format(self.id))
+                raise CuckooGuestCriticalTimeout(
+                    "Machine %s: the guest initialization hit the "
+                    "critical timeout, analysis aborted." % self.id
+                )
 
             try:
                 # If the server returns the given status, break the loop
@@ -163,7 +165,7 @@ class OldGuestManager(object):
         # TODO Deal with unicode URLs, should probably try URL encoding.
         # Unicode files are being taken care of.
 
-        self.timeout = options["timeout"] + self.cfg.timeouts.critical
+        self.timeout = options["timeout"] + config("cuckoo:timeouts:critical")
 
         url = "http://{0}:{1}".format(self.ip, CUCKOO_GUEST_PORT)
         self.server = TimeoutServer(url, allow_none=True,
@@ -234,7 +236,9 @@ class OldGuestManager(object):
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
             if time.time() > end:
-                raise CuckooGuestError("The analysis hit the critical timeout, terminating.")
+                raise CuckooGuestError(
+                    "The analysis hit the critical timeout, terminating."
+                )
 
             try:
                 status = self.server.get_status()
@@ -268,8 +272,6 @@ class GuestManager(object):
         self.platform = platform
         self.task_id = task_id
         self.analysis_manager = analysis_manager
-
-        self.cfg = Config()
         self.timeout = None
 
         # Just in case we have an old agent inside the Virtual Machine. This
@@ -289,11 +291,14 @@ class GuestManager(object):
 
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
+        do_raise = kwargs.pop("do_raise", True)
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        return session.get(url, *args, **kwargs)
+        r = session.get(url, *args, **kwargs)
+        do_raise and r.raise_for_status()
+        return r
 
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
@@ -301,7 +306,9 @@ class GuestManager(object):
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        return session.post(url, *args, **kwargs)
+        r = session.post(url, *args, **kwargs)
+        r.raise_for_status()
+        return r
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
@@ -318,9 +325,9 @@ class GuestManager(object):
                 time.sleep(1)
 
             if time.time() > end:
-                raise CuckooGuestError(
-                    "%s: the guest initialization hit the critical timeout, "
-                    "analysis aborted." % self.vmid
+                raise CuckooGuestCriticalTimeout(
+                    "Machine %s: the guest initialization hit the critical "
+                    "timeout, analysis aborted." % self.vmid
                 )
 
     def query_environ(self):
@@ -377,7 +384,7 @@ class GuestManager(object):
                  self.vmid, self.ipaddr)
 
         self.options = options
-        self.timeout = options["timeout"] + self.cfg.timeouts.critical
+        self.timeout = options["timeout"] + config("cuckoo:timeouts:critical")
 
         # Wait for the agent to come alive.
         self.wait_available()
@@ -389,7 +396,7 @@ class GuestManager(object):
 
         # Check whether this is the new Agent or the old one (by looking at
         # the status code of the index page).
-        r = self.get("/")
+        r = self.get("/", do_raise=False)
         if r.status_code == 501:
             # log.info("Cuckoo 2.0 features a new Agent which is more "
             #          "feature-rich. It is recommended to make new Virtual "
@@ -453,7 +460,7 @@ class GuestManager(object):
                 ),
             }
             files = {
-                "file": open(options["target"], "rb"),
+                "file": ("sample.bin", open(options["target"], "rb")),
             }
             self.post("/store", files=files, data=data)
 
@@ -503,8 +510,10 @@ class GuestManager(object):
                 log.info("%s: analysis completed successfully", self.vmid)
                 return
             elif status["status"] == "exception":
-                log.info("%s: analysis caught an exception\n%s",
-                         self.vmid, status["description"])
+                log.warning(
+                    "%s: analysis caught an exception\n%s",
+                    self.vmid, status["description"]
+                )
                 return
 
     @property

@@ -1,0 +1,51 @@
+<header class="flex-form__header">
+	<h4>
+		<label class="custom-checkbox" for="file-selected">
+			<input type="checkbox" id="file-selected" {{#if item.selected}}checked{{/if}} />
+			<span></span>
+		</label>
+
+		<i class="fa fa-file-o"></i> 
+		{{#if item.fname_short}}
+			{{item.fname_short}}
+		{{else}}
+			{{item.filename}}
+		{{/if}}
+	</h4>
+</header>
+
+<ul class="flex-static__summary">
+	<li>
+		<strong>path</strong>
+		{{#if item.rpath_short}}
+			{{item.rpath_short}}
+		{{else}}
+			{{item.relapath}}
+		{{/if}}
+	</li>
+	<li>
+		<strong>type</strong>
+		{{item.finger.magic_human}}
+	</li>
+	<li>
+		<strong>mime</strong>
+		{{item.finger.mime_human}}
+	</li>
+	<li>
+		<strong>size</strong>
+		{{{file_size item.size}}}
+	</li>
+	{{#if item.duplicate}}
+		<li class="warning">
+			<strong>duplicate</strong>
+			This is a duplicate of another submitted file.
+		</li>
+	{{/if}}
+</ul>
+
+<header class="flex-form__header">
+	<h4><i class="fa fa-tasks"></i> Analysis Specific options</h4>
+	<small>Options you change here are persisted to this file only.</small>
+</header>
+
+<div class="per-file-options flex-form"></div>

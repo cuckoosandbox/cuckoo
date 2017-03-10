@@ -6,7 +6,6 @@
 import bs4
 import datetime
 import logging
-import magic
 import oletools.olevba
 import os
 import peepdf.JSAnalysis
@@ -34,7 +33,8 @@ except:
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
-from cuckoo.misc import cwd
+from cuckoo.compat import magic
+from cuckoo.misc import cwd, dispatch
 
 log = logging.getLogger(__name__)
 
@@ -238,9 +238,11 @@ class PortableExecutable(object):
             return []
 
         if not HAVE_MCRYPTO:
-            log.critical("You do not have the m2crypto library installed "
-                         "preventing certificate extraction: "
-                         "pip install m2crypto")
+            log.critical(
+                "You do not have the m2crypto library installed preventing "
+                "certificate extraction. Please read the Cuckoo "
+                "documentation on installing m2crypto!"
+            )
             return []
 
         signatures = self.pe.write()[dir_entry.VirtualAddress+8:]
@@ -588,6 +590,9 @@ class PdfDocument(object):
 
         return ret
 
+def _pdf_worker(filepath):
+    return PdfDocument(filepath).run()
+
 class Static(Processing):
     """Static analysis."""
     PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
@@ -628,7 +633,10 @@ class Static(Processing):
             static["office"] = OfficeDocument(self.file_path).run()
 
         if package == "pdf" or ext == "pdf":
-            static["pdf"] = PdfDocument(self.file_path).run()
+            timeout = int(self.options.get("pdf_timeout", 60))
+            static["pdf"] = dispatch(
+                _pdf_worker, (self.file_path,), timeout=timeout
+            )
 
         return static
 

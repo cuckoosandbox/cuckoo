@@ -43,11 +43,14 @@ def submit_task(url, task):
         return task["id"], None
 
     files = {"file": (task["filename"], open(task["path"], "rb"))}
-    r = requests.post(
-        urlparse.urljoin(url, "/tasks/create/file"),
-        data=data, files=files
-    )
-    return r.json()["task_id"]
+    try:
+        r = requests.post(
+            urlparse.urljoin(url, "/tasks/create/file"),
+            data=data, files=files
+        )
+        return r.json()["task_id"]
+    except Exception:
+        pass
 
 def fetch_tasks(url, status, limit):
     r = _get(url, "/tasks/list/%s", limit, params=dict(status=status))

@@ -17,12 +17,13 @@ import tempfile
 import urlparse
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.dns import resolve
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.misc import cwd
 
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
@@ -43,11 +44,13 @@ class Pcap(object):
     """Reads network data from PCAP file."""
     ssl_ports = 443,
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, options):
         """Creates a new instance.
         @param filepath: path to PCAP file
+        @param options: config options
         """
         self.filepath = filepath
+        self.options = options
 
         # List of all hosts.
         self.hosts = []
@@ -83,17 +86,73 @@ class Pcap(object):
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
+        # List containing all whitelist entries.
+        self.whitelist = self._build_whitelist()
+        # List for holding whitelisted IP-s according to DNS responses
+        self.whitelist_ips = []
+        # state of whitelisting
+        self.whitelist_enabled = self.options.get("whitelist_dns")
+        # List of known good DNS servers
+        self.known_dns = self._build_known_dns()
+        # List of all used DNS servers
+        self.dns_servers = []
+
+    def _build_whitelist(self):
+        result = []
+        whitelist_path = cwd("whitelist", "domain.txt", private=True)
+        for line in open(whitelist_path, "rb"):
+            result.append(line.strip())
+        return result
+
+    def _is_whitelisted(self, conn, hostname):
+        """Checks if whitelisting conditions are met"""
+        # is whitelistng enabled ?
+        if not self.whitelist_enabled:
+            return False
+
+        # is DNS recording coming from allowed NS server
+        if not self.known_dns:
+            pass
+        elif (conn.get("src") in self.known_dns or
+              conn.get("dst") in self.known_dns):
+            pass
+        else:
+            return False
+
+        # is hostname whitelisted
+        if hostname not in self.whitelist:
+            return False
+
+        return True
+
+    def _build_known_dns(self):
+        """Build known DNS list."""
+        result = []
+        _known_dns = self.options.get("allowed_dns")
+        if _known_dns is not None:
+            for r in _known_dns.split(","):
+                result.append(r.strip())
+            return result
+
+        return []
 
     def _dns_gethostbyname(self, name):
         """Get host by name wrapper.
         @param name: hostname.
         @return: IP address or blank
         """
-        if Config().processing.resolve_dns:
+        if config("cuckoo:processing:resolve_dns"):
             ip = resolve(name)
         else:
             ip = ""
         return ip
+
+    def _add_used_dns_server(self, server):
+        """Add DNS server to used DNS server
+        list
+        @param server: dns server
+        """
+        self.dns_servers.append(server)
 
     def _is_private_ip(self, ip):
         """Check if the IP belongs to private network blocks.
@@ -164,7 +223,7 @@ class Pcap(object):
                     # We add external IPs to the list, only the first time
                     # we see them and if they're the destination of the
                     # first packet they appear in.
-                    if not self._is_private_ip(ip):
+                    if not self._is_private_ip(ip) and ip not in self.whitelist_ips:
                         self.unique_hosts.append(ip)
         except:
             pass
@@ -197,7 +256,7 @@ class Pcap(object):
         # Select DNS and MDNS traffic.
         if conn["dport"] == 53 or conn["sport"] == 53 or conn["dport"] == 5353 or conn["sport"] == 5353:
             if self._check_dns(data):
-                self._add_dns(data)
+                self._add_dns(conn, data)
 
     def _check_icmp(self, icmp_data):
         """Checks for ICMP traffic.
@@ -218,7 +277,7 @@ class Pcap(object):
         if self._check_icmp(data):
             # If ICMP packets are coming from the host, it probably isn't
             # relevant traffic, hence we can skip from reporting it.
-            if conn["src"] == Config().resultserver.ip:
+            if conn["src"] == config("cuckoo:resultserver:ip"):
                 return
 
             entry = {}
@@ -245,14 +304,19 @@ class Pcap(object):
 
         return True
 
-    def _add_dns(self, udpdata):
+    def _add_dns(self, conn, udpdata):
         """Adds a DNS data flow.
         @param udpdata: UDP data flow.
         """
         dns = dpkt.dns.DNS(udpdata)
 
+        if dns.qr == dpkt.dns.DNS_Q:
+            self._add_used_dns_server(conn["dst"])
+
         # DNS query parsing.
         query = {}
+        # Temporary list for found A or AAAA responses.
+        _ip = []
 
         if dns.rcode == dpkt.dns.DNS_RCODE_NOERR or \
                 dns.qr == dpkt.dns.DNS_R or \
@@ -303,6 +367,7 @@ class Pcap(object):
                     ans["type"] = "A"
                     try:
                         ans["data"] = socket.inet_ntoa(answer.rdata)
+                        _ip.append(ans["data"])
                     except socket.error:
                         continue
                 elif answer.type == dpkt.dns.DNS_AAAA:
@@ -310,6 +375,7 @@ class Pcap(object):
                     try:
                         ans["data"] = socket.inet_ntop(socket.AF_INET6,
                                                        answer.rdata)
+                        _ip.append(ans["data"])
                     except (socket.error, ValueError):
                         continue
                 elif answer.type == dpkt.dns.DNS_CNAME:
@@ -342,6 +408,11 @@ class Pcap(object):
 
                 # TODO: add srv handling
                 query["answers"].append(ans)
+
+            if self._is_whitelisted(conn, q_name):
+                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
+                self.whitelist_ips = self.whitelist_ips + _ip
+                return True
 
             self._add_domain(query["request"])
 
@@ -647,6 +718,7 @@ class Pcap(object):
         self.results["dns"] = self.dns_requests.values()
         self.results["smtp"] = self.smtp_requests
         self.results["irc"] = self.irc_requests
+        self.results["dns_servers"] = list(set(self.dns_servers))
 
         self.results["dead_hosts"] = []
 
@@ -674,6 +746,7 @@ class Pcap2(object):
 
         self.handlers = {
             25: httpreplay.cut.smtp_handler,
+            587: httpreplay.cut.smtp_handler,
             80: httpreplay.cut.http_handler,
             8000: httpreplay.cut.http_handler,
             8080: httpreplay.cut.http_handler,
@@ -685,6 +758,7 @@ class Pcap2(object):
         results = {
             "http_ex": [],
             "https_ex": [],
+            "smtp_ex": []
         }
 
         if not os.path.exists(self.network_path):
@@ -697,15 +771,43 @@ class Pcap2(object):
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
 
+            if protocol == "smtp":
+                results["smtp_ex"].append({
+                    "src": srcip,
+                    "dst": dstip,
+                    "sport": srcport,
+                    "dport": dstport,
+                    "protocol": protocol,
+                    "req": {
+                        "hostname": sent.hostname,
+                        "mail_from": sent.mail_from,
+                        "mail_to": sent.mail_to,
+                        "auth_type": sent.auth_type,
+                        "username": sent.username,
+                        "password": sent.password,
+                        "headers": sent.headers,
+                        "mail_body": sent.message
+                    },
+                    "resp": {
+                        "banner": recv.ready_message
+                    }
+                })
+
             if protocol == "http" or protocol == "https":
                 request = sent.raw.split("\r\n\r\n", 1)[0]
                 response = recv.raw.split("\r\n\r\n", 1)[0]
 
-                md5 = hashlib.md5(recv.body or "").hexdigest()
-                sha1 = hashlib.sha1(recv.body or "").hexdigest()
+                # TODO Don't create empty files (e.g., the sent body for a
+                # GET request or a 301/302 HTTP redirect).
+                req_md5 = hashlib.md5(sent.body or "").hexdigest()
+                req_sha1 = hashlib.sha1(sent.body or "").hexdigest()
+                req_path = os.path.join(self.network_path, req_sha1)
+                open(req_path, "wb").write(sent.body or "")
 
-                filepath = os.path.join(self.network_path, sha1)
-                open(filepath, "wb").write(recv.body or "")
+                resp_md5 = hashlib.md5(recv.body or "").hexdigest()
+                resp_sha1 = hashlib.sha1(recv.body or "").hexdigest()
+                resp_path = os.path.join(self.network_path, resp_sha1)
+                open(resp_path, "wb").write(recv.body or "")
 
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
@@ -714,11 +816,27 @@ class Pcap2(object):
                     "method": sent.method,
                     "host": sent.headers.get("host", dstip),
                     "uri": sent.uri,
+
+                    # We'll keep these fields here for now.
                     "request": request.decode("latin-1"),
                     "response": response.decode("latin-1"),
-                    "md5": md5,
-                    "sha1": sha1,
-                    "path": filepath,
+
+                    # It's not perfect yet, but it'll have to do.
+                    "req": {
+                        "path": req_path,
+                        "md5": req_md5,
+                        "sha1": req_sha1,
+                    },
+                    "resp": {
+                        "path": resp_path,
+                        "md5": resp_md5,
+                        "sha1": resp_sha1,
+                    },
+
+                    # Obsolete fields.
+                    "md5": resp_md5,
+                    "sha1": resp_sha1,
+                    "path": resp_path,
                 })
 
         return results
@@ -754,7 +872,7 @@ class NetworkAnalysis(Processing):
         results["pcap_sha256"] = File(self.pcap_path).get_sha256()
 
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
-        if Config().processing.sort_pcap:
+        if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
             pcap_path = sorted_path
 
@@ -764,7 +882,7 @@ class NetworkAnalysis(Processing):
         else:
             pcap_path = self.pcap_path
 
-        results.update(Pcap(pcap_path).run())
+        results.update(Pcap(pcap_path, self.options).run())
 
         if os.path.exists(pcap_path):
             try:

@@ -1,36 +1,38 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import bs4
 import chardet
+import datetime
+import inspect
+import io
 import jsbeautifier
+import json
 import logging
 import os
-import sys
-import string
-import xmlrpclib
-import inspect
 import platform
+import re
+import string
+import sys
 import threading
-import json
-import multiprocessing
 import warnings
+import xmlrpclib
 
-from cStringIO import StringIO
-from datetime import datetime
+from distutils.version import StrictVersion
+from django.core.validators import URLValidator
 
-from cuckoo.common.constants import CUCKOO_VERSION
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
 
 # Don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports.
-PRINTABLE_CHARACTERS = \
+PRINTABLE_CHARACTERS = (
     string.letters + string.digits + string.punctuation + " \t\r\n"
+)
 
 def convert_char(c):
     """Escapes characters.
@@ -57,6 +59,29 @@ def convert_to_printable(s):
     if is_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
+
+def validate_hash(hash):
+    """Validates a hash by length and contents"""
+    if len(hash) not in (32, 40, 64, 128):
+        return
+
+    return "".join(ch for ch in hash if re.match("\\w", ch))
+
+def validate_url(url):
+    """Validates an URL using Django's built-in URL validator"""
+    val = URLValidator(schemes=["http", "https"])
+
+    try:
+        val(url)
+        return True
+    except:
+        pass
+
+    try:
+        val("http://%s" % url)
+        return True
+    except:
+        pass
 
 class TimeoutServer(xmlrpclib.ServerProxy):
     """Timeout server for XMLRPC.
@@ -171,14 +196,11 @@ def classlock(f):
 class SuperLock(object):
     def __init__(self):
         self.tlock = threading.Lock()
-        self.mlock = multiprocessing.Lock()
 
     def __enter__(self):
         self.tlock.acquire()
-        self.mlock.acquire()
 
     def __exit__(self, type, value, traceback):
-        self.mlock.release()
         self.tlock.release()
 
 GUIDS = {}
@@ -216,21 +238,12 @@ def exception_message():
     )
 
     msg += "=== Exception details ===\n"
-    msg += "Cuckoo version: %s\n" % CUCKOO_VERSION
+    msg += "Cuckoo version: %s\n" % version
     msg += "OS version: %s\n" % os.name
     msg += "OS release: %s\n" % get_os_release()
     msg += "Python version: %s\n" % platform.python_version()
     msg += "Python implementation: %s\n" % platform.python_implementation()
     msg += "Machine arch: %s\n" % platform.machine()
-
-    """
-    git_version = os.path.join(CUCKOO_ROOT, ".git", "refs", "heads", "master")
-    if os.path.exists(git_version):
-        try:
-            msg += "Git version: %s\n" % open(git_version, "rb").read().strip()
-        except:
-            pass
-    """
 
     try:
         import pip
@@ -255,7 +268,7 @@ _jsbeautify_lock = threading.Lock()
 def jsbeautify(javascript):
     """Beautifies Javascript through jsbeautifier and ignore some messages."""
     with _jsbeautify_lock:
-        origout, sys.stdout = sys.stdout, StringIO()
+        origout, sys.stdout = sys.stdout, io.StringIO()
         javascript = jsbeautifier.beautify(javascript)
 
         if sys.stdout.getvalue() not in _jsbeautify_blacklist:
@@ -277,7 +290,7 @@ def json_default(obj):
     if hasattr(obj, "to_dict"):
         return obj.to_dict()
 
-    if isinstance(obj, datetime):
+    if isinstance(obj, datetime.datetime):
         if obj.utcoffset() is not None:
             obj = obj - obj.utcoffset()
         return {"$dt": obj.isoformat()}
@@ -286,7 +299,7 @@ def json_default(obj):
 def json_hook(obj):
     """JSON object hook, deserializing datetimes ($date)"""
     if "$dt" in obj:
-        return datetime.strptime(obj["$dt"], "%Y-%m-%dT%H:%M:%S.%f")
+        return datetime.datetime.strptime(obj["$dt"], "%Y-%m-%dT%H:%M:%S.%f")
     return obj
 
 def json_encode(obj, **kwargs):
@@ -297,6 +310,29 @@ def json_decode(x):
     """JSON decoder that does ugly first-level datetime handling"""
     return json.loads(x, object_hook=json_hook)
 
-def versiontuple(v):
-    """Return the version as a tuple for easy comparison."""
-    return tuple(int(x) for x in v.split("."))
+def parse_bool(value):
+    """Attempt to parse a boolean value."""
+    if value in ("true", "True", "yes", "1", "on"):
+        return True
+    if value in ("false", "False", "None", "no", "0", "off"):
+        return False
+    return bool(int(value))
+
+def supported_version(version, minimum, maximum):
+    """Checks if a version number is supported as per the minimum and maximum
+    version numbers."""
+    if minimum and StrictVersion(version) < StrictVersion(minimum):
+        return False
+
+    if maximum and StrictVersion(version) > StrictVersion(maximum):
+        return False
+
+    return True
+
+def is_list_of_strings(l):
+    if not isinstance(l, (tuple, list)):
+        return False
+    for value in l:
+        if not isinstance(value, basestring):
+            return False
+    return True

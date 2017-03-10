@@ -29,7 +29,7 @@
 </style>
 
 <section id="static_analysis">
-    {% for office in report.analysis.static.office %}
+    {% for office in report.analysis.static.office.macros %}
         <div class="row">
             <div class="col-md-12">
                 <div class="panel" id="accordion">
@@ -66,6 +66,7 @@
     {% endfor %}
 </section>
 <script>
-    $(document).ready(function() {
-        hljs.initHighlightingOnLoad();
-    });</script>
+$(document).ready(function() {
+    hljs.initHighlightingOnLoad();
+});
+</script>

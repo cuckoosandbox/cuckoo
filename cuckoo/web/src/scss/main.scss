@@ -1,0 +1,75 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// import variables and mixins files [exposed globally]
+@import "variables";
+@import "mixins";
+
+// external lib - fontawesome (icon font)
+@import "font-awesome";
+@import "roboto";
+
+// general css on the body and the html
+html { background: #1c1c1c; }
+body { 
+	padding-top: 70px; 
+	-webkit-font-smoothing: antialiased;
+}
+
+body#analysis { padding-top: 30px; }
+
+body[id^="submission/"] { padding-top: 41px; }
+body[id="submission/pre"],
+body[id="submission/index"],
+body[id="submission/post"],
+body[id="analysis"] {
+	footer:not(.flex-grid__footer), 
+	#footer-extra {
+		display: none;
+	}
+}
+
+// layout utils
+@import "layout/typography";
+@import "layout/app";
+@import "layout/badges";
+
+// components
+@import "components/buttons";
+@import "components/analysis-sidebar";
+@import "components/cuckoo-analysis";
+@import "components/flex-navigation";
+@import "components/network-http-request";
+@import "components/dndupload";
+@import "components/nav";
+@import "components/navbar";
+@import "components/cuckoo-nav";
+@import "components/panel";
+@import "components/tcp";
+@import "components/page-error";
+@import "components/recent-analysis";
+@import "components/loading";
+@import "components/cuckoo-box";
+@import "components/errors";
+@import "components/footer";
+@import "components/table";
+
+@import "components/flex-grid";
+@import "components/cuckoo-filetree";
+@import "components/flex-form";
+@import "components/breadcrumbs";
+@import "components/page-freeze";
+
+// custom plugin css overrides
+@import "plugins/jstree";
+@import "plugins/data-tables";
+
+// responsive at last - responsive code OVERRIDES defaults always
+@import "layout/responsive";
+
+// imports all the themes
+@import "themes/cyborg";
+@import "themes/night";

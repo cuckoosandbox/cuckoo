@@ -9,6 +9,7 @@ import re
 import tempfile
 
 from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
 
 class TestDictionary:
@@ -27,11 +28,14 @@ class TestDictionary:
 
 class TestFile:
     def setup(self):
+        # File() will invoke cwd(), so any CWD is required.
+        set_cwd(tempfile.mkdtemp())
+
         self.path = tempfile.mkstemp()[1]
         self.file = File(self.path)
 
     def test_get_name(self):
-        assert self.path.split("/")[-1] == self.file.get_name()
+        assert self.path.split(os.sep)[-1] == self.file.get_name()
 
     def test_get_data(self):
         assert "" == self.file.get_data()
@@ -75,9 +79,6 @@ class TestFile:
         for key in ["name", "size", "crc32", "md5", "sha1", "sha256", "sha512", "ssdeep", "type"]:
             assert key in self.file.get_all()
 
-    def teardown(self):
-        os.remove(self.path)
-
 class TestMagic(object):
     def test_magic1(self):
         f = File("tests/files/foo.txt")
@@ -89,10 +90,21 @@ class TestMagic(object):
         assert "ASCII text" in pe._get_filetype("hello world")
 
     def test_magic3(self):
-        assert "Python script" in File(__file__).get_type()
-        assert File(__file__).get_content_type() == "text/x-python"
+        assert File(__file__).get_type().startswith((
+            "Python script", "ASCII ",
+        ))
+        assert File(__file__).get_content_type() in (
+            "text/x-python", "text/plain",
+        )
 
 def test_regex():
     r = re.findall(URL_REGEX, "foo http://google.com/search bar")
     assert len(r) == 1
     assert "".join(r[0]) == "http://google.com/search"
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+def test_m2crypto():
+    pe = PortableExecutable("tests/files/icardres.dll")
+    sig0 = pe.run()["signature"][0]
+    assert sig0["organization"] == "Microsoft Corporation"
+    assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"

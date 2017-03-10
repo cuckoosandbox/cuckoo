@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<procmon><eventlist>
+<event>
+<ProcessIndex>5</ProcessIndex>
+<Time_of_Day>12:57:15.0645467 AM</Time_of_Day>
+<Process_Name>System</Process_Name>
+<PID>4</PID>
+<Operation>Thread Create</Operation>
+<Path></Path>
+<Result>SUCCESS</Result>
+<Detail>Thread ID: 1328</Detail>
+</event>
+
+<event>
+<ProcessIndex>3</ProcessIndex>
+<Time_of_Day>12:57:15.0645804 AM</Time_of_Day>
+<Process_Name>python.exe</Process_Name>
+<PID>1068</PID>
+<Operation>ReadFile</Operation>
+<Path>C:\Windows\System32\wow64cpu.dll</Path>
+<Result>SUCCESS</Result>
+<Detail>Offset: 11,264, Length: 512, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal</Detail>
+</event>
+
+<event>
+<ProcessIndex>7</ProcessIndex>
+<Time_of_Day>12:57:15.0651960 AM</Time_of_Day>
+<Process_Name>Explorer.EXE</Process_Name>
+<PID>1304</PID>
+<Operation>ReadFile</Operation>
+<Path>C:\Windows\System32\shell32.dll</Path>
+<Result>SUCCESS</Result>
+<Detail>Offset: 5,286,912, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal</Detail>
+</event>
+
+<event>
+<ProcessIndex>7</ProcessIndex>
+<Time_of_Day>12:57:15.0653377 AM</Time_of_Day>
+<Process_Name>Explorer.EXE</Process_Name>
+<PID>1304</PID>
+<Operation>ReadFile</Operation>
+<Path>C:\Windows\System32\shell32.dll</Path>
+<Result>SUCCESS</Result>
+<Detail>Offset: 5,213,184, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal</Detail>
+</event>
+
+<event>
+<ProcessIndex>7</ProcessIndex>
+<Time_of_Day>12:57:15.0654481 AM</Time_of_Day>
+<Process_Name>Explorer.EXE</Process_Name>
+<PID>1304</PID>
+<Operation>ReadFile</Operation>
+<Path>C:\Windows\System32\shell32.dll</Path>
+<Result>SUCCESS</Result>
+<Detail>Offset: 5,176,320, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal</Detail>
+</event>
+
+</eventlist></procmon>

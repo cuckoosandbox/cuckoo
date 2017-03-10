@@ -1,70 +1,123 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
+import logging
+import os.path
 
-from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import redirect
 
-from cuckoo.core.rooter import vpns
-from cuckoo.common.config import Config
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.core.database import Database
-from cuckoo.misc import cwd
+from cuckoo.core.submit import SubmitManager
+from cuckoo.web.bin.utils import view_error, render_template, dropped_filepath
 
-from controllers.submission.submission import SubmissionController
+log = logging.getLogger(__name__)
+submit_manager = SubmitManager()
 
-cfg = Config("routing")
-results_db = settings.MONGO
-
-class SubmissionRoutes:
+class SubmissionRoutes(object):
     @staticmethod
-    def index(request, kwargs={}):
-        files = os.listdir(cwd("analyzer", "windows", "modules", "packages"))
+    def submit(request):
+        return render_template(request, "submission/submit.html")
 
-        packages = []
-        for name in files:
-            name = os.path.splitext(name)[0]
-            if name == "__init__":
-                continue
+    @staticmethod
+    def postsubmit(request, submit_id):
+        submit = Database().view_submit(submit_id, tasks=True)
+        if not submit:
+            return view_error(request, "Invalid Submit ID specified")
 
-            packages.append(name)
+        task_ids = []
+        for task in submit.tasks:
+            task_ids.append(task.id)
 
-        # Prepare a list of VM names, description label based on tags.
-        machines = []
-        for machine in Database().list_machines():
-            tags = []
-            for tag in machine.tags:
-                tags.append(tag.name)
+        if not task_ids:
+            return view_error(
+                request, "This Submit ID is not associated with any tasks. "
+                "Please submit some files before loading this page."
+            )
 
-            if tags:
-                label = machine.label + ": " + ", ".join(tags)
-            else:
-                label = machine.label
-
-            machines.append((machine.label, label))
-
-        # Prepend ALL/ANY options.
-        machines.insert(0, ("", "First available"))
-        machines.insert(1, ("all", "All"))
-
-        values = {
-            "packages": sorted(packages),
-            "machines": machines,
-            "vpns": vpns.values(),
-            "route": cfg.routing.route,
-            "internet": cfg.routing.internet,
-        }
-
-        values.update(kwargs)
-        return render(request, "submission/submit.html", values)
+        return render_template(
+            request, "submission/postsubmit.html", task_ids=sorted(task_ids)
+        )
 
     @staticmethod
     def presubmit(request, submit_id):
-        controller = SubmissionController(submit_id=submit_id)
-        data = controller.get_files(astree=True)
-        return render(request, "submission/index.html", {
-            "file_data": data,
-            "submit_id": submit_id,
-        })
+        submit = Database().view_submit(submit_id)
+        if not submit:
+            # TODO Include an error message regarding the invalid Submit entry.
+            return redirect("submission/index")
+
+        return render_template(
+            request, "submission/presubmit.html", submit_id=submit_id
+        )
+
+    @staticmethod
+    def dropped(request, task_id, sha1):
+        filepath = dropped_filepath(task_id, sha1)
+        if not filepath:
+            return view_error(request, "No such dropped file was found!")
+
+        # TODO Obtain the original name for this file.
+        submit_id = submit_manager.pre("files", [{
+            "name": os.path.basename(filepath),
+            "data": open(filepath, "rb"),
+        }])
+
+        return redirect("submission/pre", submit_id=submit_id)
+
+    @staticmethod
+    def resubmit(request, task_id):
+        task = Database().view_task(task_id)
+        if not task:
+            return view_error(request, "No Task was found with this ID")
+
+        if task.category == "url":
+            # TODO This most certainly needs to be improved.
+            submit_id = submit_manager.pre("strings", [
+                task.target,
+            ], submit_manager.translate_options_to(task.options))
+        else:
+            # TODO There's a very good chance this won't work properly for
+            # analyses of type "archive".
+            submit_id = submit_manager.pre("files", [{
+                "name": os.path.basename(task.target),
+                "data": open(task.target, "rb"),
+            }], submit_manager.translate_options_to(task.options))
+
+        return redirect("submission/pre", submit_id=submit_id)
+
+    @staticmethod
+    def reboot(request, task_id):
+        # TODO Dummy usage, should probably be improved.
+        submit_id = Database().add_submit(None, None, None)
+
+        task_id = Database().add_reboot(task_id=task_id, submit_id=submit_id)
+        if not task_id:
+            return view_error(request, "Error adding reboot analysis!")
+
+        return redirect("submission/post", submit_id=submit_id)
+
+    @staticmethod
+    def import_(request):
+        if request.method == "GET":
+            return render_template(request, "analysis/import.html")
+
+        if request.method != "POST":
+            return view_error(request, "Import analysis request must be POST!")
+
+        submit_id = Database().add_submit(None, None, None)
+        task_ids = []
+
+        for analysis in request.FILES.getlist("analyses"):
+            if not analysis.size:
+                continue
+
+            try:
+                task_ids.append(submit_manager.import_(analysis, submit_id))
+            except CuckooOperationalError as e:
+                log.warning(
+                    "Error importing analysis (%s): %s", analysis.name, e
+                )
+                continue
+
+        return redirect("submission/post", submit_id=submit_id)

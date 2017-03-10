@@ -1,12 +1,12 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import web.errors
 
-# Maximum upload size.
-MAX_UPLOAD_SIZE = 26214400
+# Maximum upload size (10GB, so there's basically no limit).
+MAX_UPLOAD_SIZE = 10*1024*1024*1024
 
 # Override default secret key stored in $CWD/web/.secret_key
 # Make this unique, and don't share it with anybody.
@@ -26,7 +26,7 @@ MANAGERS = ADMINS
 # It's strongly suggested to set it to False if you are serving the
 # web application from a web server front-end (i.e. Apache).
 DEBUG = False
-DEBUG404 = True
+DEBUG404 = False
 
 # A list of strings representing the host/domain names that this Django site
 # can serve.

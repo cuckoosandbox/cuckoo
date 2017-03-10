@@ -18,17 +18,16 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+
 import os
 import sys
 
 import cuckoo
 
-from cuckoo.misc import set_cwd
+from cuckoo.misc import decide_cwd
 
 if os.environ.get("CUCKOO_APP") == "web":
-    # When run under uWSGI the Cuckoo Working Directory will not have been set
-    # yet and we'll have to do so ourselves.
-    set_cwd(os.environ["CUCKOO_CWD"])
+    decide_cwd(exists=True)
 
     os.chdir(os.path.join(cuckoo.__path__[0], "web"))
     sys.path.insert(0, ".")

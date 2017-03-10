@@ -8,20 +8,24 @@
  *
  */
 
-function feedback_send(task_id, firstname, email, company, message, include_analysis, include_memdump, callback) {
+function feedback_send(task_id, name, email, company, message, include_analysis, include_memdump, callback) {
     var params = {
         "task_id": task_id,
         "email": email,
         "message": message,
-        "firstname": firstname,
+        "name": name,
         "company": company,
         "include_memdump": include_memdump,
         "include_analysis": include_analysis
     };
 
-    CuckooWeb.api_post("/analysis/api/feedback_send/", params, function (data) {
+    CuckooWeb.api_post("/analysis/api/task/feedback_send/", params, function (data) {
         callback(data);
+    }, function (err) {
+        if (err.responseJSON.hasOwnProperty("message")) {
+            var _message = err.responseJSON.message;
+            $("#modal_feedback").find("#result").html(_message);
+        }
     });
 }
-
 //# sourceMappingURL=analysis_feedback.js.map
