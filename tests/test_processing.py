@@ -459,7 +459,7 @@ class TestPcap(object):
         assert destinations == expected_dst
 
     def test_network_icmp(self):
-        expected_types = {0:4, 8:4}
+        expected_types = {0: 4, 8: 4}
         expected_src = ["192.168.56.110", "149.210.181.54"]
         expected_dst = ["149.210.181.54", "192.168.56.110"]
         expected_mes = ["abcdefghijklmnopqrstuvwabcdefghi"]*8
@@ -592,16 +592,25 @@ class TestPcapAdditional(object):
 
 class TestPcap2(object):
     def test_smtp_ex(self):
-        pcap = Pcap2("tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp())
-        data = pcap.run()
+        obj = Pcap2(
+            "tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp()
+        ).run()
 
-        assert len(data["smtp_ex"]) == 1
-        assert data["smtp_ex"][0]["req"]["username"] == "galunt"
-        assert data["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
-        assert data["smtp_ex"][0]["req"]["mail_to"] == ['xxxxxx.xxxx@xxxxx.com']
-        assert data["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
-        assert len(data["smtp_ex"][0]["req"]["headers"]) == 10
-        assert data["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+        assert len(obj["smtp_ex"]) == 1
+        assert obj["smtp_ex"][0]["req"]["username"] == "galunt"
+        assert obj["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
+        assert obj["smtp_ex"][0]["req"]["mail_to"] == ['xxxxxx.xxxx@xxxxx.com']
+        assert obj["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
+        assert len(obj["smtp_ex"][0]["req"]["headers"]) == 10
+        assert obj["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+
+    def test_http_status(self):
+        obj = Pcap2(
+            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+        ).run()
+        assert len(obj["http_ex"]) == 1
+        assert not obj["https_ex"]
+        assert obj["http_ex"][0]["status"] == 301
 
 def test_parse_cmdline():
     rb = RebootReconstructor()

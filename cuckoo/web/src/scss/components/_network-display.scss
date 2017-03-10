@@ -1,0 +1,741 @@
+.network-display {
+
+	&__outer {
+		border-radius: 5px;
+		background-color: #fff;
+		border: 1px solid #D8D8D8;
+		padding: 10px;
+
+		.scroll-internal & {
+			height: 100%;
+			overflow-y: auto;
+		}
+
+		&.no-content {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: 0;
+			background-color: transparent;
+
+			& > p {
+				font-weight: 700;
+				color: #CECECE;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+			}
+
+		}
+
+		@include cuckoo-theme('cyborg') { 
+			background-color: $cyborg_panel_color; 
+			border-color: $cyborg_border_color;
+		}
+
+		@include cuckoo-theme('night') { 
+			background-color: #191919;
+			border-color: #101010;
+		}
+
+	}
+
+	&__loader {
+
+		height: 0px;
+		overflow: hidden;
+		transition: height 250ms ease-out;
+
+		&.active { 
+			height: 43px; 
+		}
+
+	}
+
+	&__requests {
+
+		&.is-loading {
+			opacity: .5;
+		}
+
+	}
+
+	&__request {
+
+		&:not(:last-child) {
+			margin-bottom: 10px;
+		}
+
+		&--single {
+			@extend .network-display__request;
+		}
+
+	}
+
+	&__request-summary {
+
+		display: flex;
+		align-items: center;
+		background-color: #F5F5F5;
+		border: 1px solid #D2D2D2;
+		border-radius: 4px;
+		padding: 10px 15px;
+		font-size: 14px;
+		font-weight: 700;
+		color: #B1B1B1;
+
+		.method {
+			background-color: #999;
+			border: 1px solid #7F7F7F;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+		}
+
+		.url {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding-right: 20px;
+		}
+
+		.status-code {
+			@extend .method;
+			flex-shrink: 0;
+
+			&--success {
+				@extend .status-code;
+				background-color: #9DCB6E;
+				border: 1px solid #84AD5B;
+				margin-right: 15px;
+			}
+
+		}
+
+		.fa {
+
+			&-long-arrow-right {
+				font-size: 36px;
+				margin: 0 10px; 
+				color: #D0D0D0;
+			}
+
+			&-chevron-right {
+				font-size: 20px;
+			}
+
+		}
+
+		.align-right {
+			margin-left: auto;
+		}
+
+		&:hover {
+			text-decoration: none !important; // I allow myself to !important this
+			color: #ACAFB6;
+			background-color: #E0E5EE;
+			border-color: #CCD2DF;
+
+			.fa {
+				color: #69778F;
+
+				&-long-arrow-right {
+					opacity: .7;
+				}
+			}
+		}
+
+		&:active,
+		&:focus {
+			color: #ACAFB6;
+			text-decoration: none !important;
+			outline: none;
+		}
+
+		.is-loading &,
+		.is-open & {
+			background-color: #ECF0F7;
+			border-color: #CCD2DF;
+			color: #ACAFB6;
+
+			.fa {
+				&-long-arrow-right {
+					color: #C3CDDC;
+				}
+			}
+		}
+
+		.is-open & {
+
+			border-bottom-width: 2px;
+			border-bottom-right-radius: 0;
+			border-bottom-left-radius: 0;
+
+			.fa {
+				&-chevron-right:before {
+					content: "\f078";
+				}
+			}
+
+			@include cuckoo-theme('night') {
+				background-color: #333;
+
+				.method, .status-code {
+					background-color: #333;
+					border-color: #444;
+				}
+
+				.fa-long-arrow-right {
+					color: #111;
+				}
+			}
+
+			@include cuckoo-theme('cyborg') {
+				background: linear-gradient(#20404a, #112c35);
+				border-bottom: 2px solid $cyborg_border_color;
+			}
+
+		}
+
+		// styles for cyborg theme
+		@include cuckoo-theme('cyborg') {
+			@extend %cyborg-heading;
+			border-color: $cyborg_border_color;
+			color: $cyborg_text_color;
+
+			.method, .status-code {
+				background-color: $cyborg_primary_color;
+				border-color: $cyborg_border_color;
+				color: $cyborg_secundary_color;
+			}
+
+			.fa, .url { color: $cyborg_secundary_color; }
+
+			.fa-long-arrow-right { 
+				color: $cyborg_primary_color; 
+				text-shadow: 0px 1px 0px lighten($cyborg_border_color, 5);
+			}
+
+			&:hover {
+				background: linear-gradient(#20404a, #112c35);
+			}
+
+		}
+
+		// styles for night theme
+		@include cuckoo-theme('night') {
+
+			background-color: #252525;
+			border-color: #151515;
+			color: $night_text_color;
+
+			.method, .status-code {
+				background-color: #333;
+				border-color: #444;
+			}
+
+			.fa, .url { color: $night_text_color; }
+
+			.fa-long-arrow-right { 
+				color: #111;
+			}
+
+			&:hover {
+				background-color: #333;
+
+				.method, .status-code {
+					background-color: #333;
+					border-color: #444;
+				}
+
+				.fa-long-arrow-right {
+					color: #111;
+				}
+			}
+
+		}
+
+	}
+
+	&__request-details {
+
+		display: none;
+		border: 1px solid #CBD2DE;
+		background-color: #F4F4F4;
+		padding: 30px 0 15px 0;
+		border-radius: 0 0 4px 4px;
+
+		.is-open & {
+			display: block;
+		}
+
+		.detail-field {
+			flex-basis: 100%;
+
+			&__header {
+				padding-left: 20px;
+				font-size: 14px;
+				border-bottom: 2px solid #D8D8D8;
+				font-weight: 700;
+				color: #ACAFB6;
+				padding-bottom: 5px;
+
+				.fa {
+					margin-right: 10px;
+				}
+
+				&.with-tabs {
+					padding-bottom: 0;
+					.flex-tabs__tabs {
+						position: relative;
+						top: 2px;
+					}
+
+					.flex-tabs__tab {
+
+						& .empty-body {
+							opacity: 0.2;
+						}
+
+					}
+				}
+			}
+
+			&__body {
+				background-color: #fff;
+				padding: 15px;
+				border-bottom: 1px solid #D8D8D8;
+
+				pre {
+					padding: 0;
+					margin: 0;
+					background-color: transparent;
+					border: 0;
+					border-radius: 0;
+
+					.empty-body & {
+						&:after {
+							content: "Empty body";
+						    display: block;
+						    padding: 30px 0;
+						    font-family: "Roboto", sans-serif;
+						    text-align: center;
+						    width: 100%;
+						    font-size: 15px;
+						    font-weight: bold;
+						    text-transform: uppercase;
+						    color: #d8d8d8;
+						    letter-spacing: .02em;
+						}
+					}
+
+				}
+
+			}
+
+			&__footer {
+				padding-top: 15px;
+				text-align: center;
+				color: #acafb6;
+				font-weight: 700;
+				font-size: 14px;
+			}
+
+			&__title {
+				padding: 0 15px;
+				margin: 0 0 15px;
+				color: #acafb6;
+			}
+
+			&:not(:last-child) {
+				margin-bottom: 20px;
+			}
+
+			table {
+				width: 100%;
+				table-layout: fixed;
+
+				td {
+					padding: 0 10px;
+					font-size: 12px;
+					font-weight: 700;
+					vertical-align: top;
+
+					&.key-name {
+						width: 30%;
+						text-align: right;
+						color: #9598A0;
+						font-weight: 700;
+					}
+
+					&.key-value {
+						word-wrap: break-word;
+						font-family: "Courier New", monospace;
+						font-weight: 700;
+						color: #5E6166;
+					}
+				}
+			}
+
+			/*
+				This class allows two fields to live next to each other,
+				without breaking the layout. That means that fields within 
+				a group will follow each others height. This avoid weird-looking
+				containers.
+			 */
+			&-group {
+
+				display: flex;
+				align-items: stretch;
+				margin-bottom: 30px;
+
+				.detail-field:not(:last-child) .detail-field__body {
+					border-right: 1px solid #D8D8D8;
+				}
+
+				.detail-field {
+					display: flex;
+					flex-direction: column;
+					align-items: stretch;
+					margin-bottom: 0;
+
+					.detail-field__header {
+						flex-basis: 27px;
+					}
+
+					.detail-field__body {
+						flex-basis: 100%;
+					}
+
+				}
+
+			}
+
+		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.detail-field__header {
+				color: $cyborg_secundary_color;
+				border-color: lighten($cyborg_border_color, 5);
+			}
+
+			.detail-field__body,
+			.flex-tabs__tab {
+				background-color: lighten($cyborg_panel_color, 10);
+				border-color: lighten($cyborg_border_color, 5) !important;
+			}
+
+			table tr:nth-child(odd),
+			table tr:nth-child(even) {
+				background-color: transparent;
+
+				.key-value {
+					color: $cyborg_secundary_color;
+				}
+			}
+		}
+
+		@include cuckoo-theme('night') {
+
+			background-color: #252525;
+			border-color: #222;
+
+			.detail-field__header {
+				border-color: #222;
+			}
+
+			.detail-field__body,
+			.flex-tabs__tab {
+				background-color: #333;
+				border-color: #222 !important;
+			}
+
+			table tr:nth-child(odd),
+			table tr:nth-child(even) {
+				background-color: transparent;
+
+				.key-value {
+					color: $night_text_color;
+				}
+			}
+
+		}
+
+		// some changes to a 'single' view, this means there is only one field, basically.
+		&--single {
+			@extend .network-display__request-details;
+			padding-top: 15px;
+			border-radius: 4px;
+		}
+
+	}
+
+	&__table {
+
+		padding: 0;
+
+		& > table {
+			@extend .cuckoo-table;
+			background-color: transparent;
+			font-size: 14px;
+			border: 0;
+
+			thead,
+			tbody {
+				& > tr:nth-child(odd),
+				& > tr:nth-child(even) {
+
+					overflow: hidden;
+
+					th,
+					td {
+						padding-top: 10px;
+						padding-bottom: 10px;
+						vertical-align: top;
+					}
+
+					& > th:first-child,
+					& > td:first-child {
+						padding-left: 25px;
+					}
+
+					& > th:last-child,
+					& > td:last-child {
+						padding-right: 25px;
+					}
+				}
+			}
+
+		}
+
+	}
+
+}
+
+.network-analysis-pages > div {
+	display: none;
+	&.active {
+		display: block;
+	}
+}
+
+.source-destination {
+
+	display: flex;
+	flex-direction: column;
+
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	border: 1px solid $cuckoo_border_color;
+	border-radius: 5px;
+	overflow: hidden;
+
+	.title {
+		padding: 12px 15px 7px 15px;
+		border-bottom-width: 2px;
+		background-color: #f4f4f4;
+		color: #ACAFB5;
+		font-weight: 700;
+	}
+
+	.content {
+		padding: 0;
+		border-radius: 0;
+	}
+
+	li {
+
+		background-color: #fff;
+		border-bottom: 1px solid $cuckoo_border_color;
+
+		ul {
+			padding: 0;
+			list-style: none;
+			border-radius: 0;
+		}
+
+		&:last-child { border-bottom: 0; }
+
+		& > a {
+			display: block;
+			padding: 7px 15px 10px 15px;
+			font-weight: 700;
+
+			.flex-distribute {
+				padding: 5px;
+			}
+
+			&:hover,
+			&:focus,
+			&:active {
+				text-decoration: none;
+				background-color: #f9f9f9;
+			}
+
+			&.active {
+				box-shadow: inset 0px 2px 4px rgba(0,0,0,.2);
+				background-color: $cuckoo_secundary_color;
+				color: #fff;
+
+				.destination-address {
+					color: #fff;
+					border-color: #fff;
+					border-width: 2px;
+					background-color: transparent;
+					font-weight: 700;
+
+					&:before {
+						border-bottom-color: #fff;
+					}
+				}
+			}
+		}
+
+		.source,
+		.destination {
+			flex-basis: 50%;
+		}
+
+		.destination {
+			text-align: right;
+		}
+
+		.fa-long-arrow-right {
+			color: #d5d5d5;
+		}
+
+		.destination-address {
+			position: relative;
+			display: block;
+			padding: 3px 0;
+			text-align: center;
+			background-color: #f5f5f5;
+			border-radius: 20px;
+			border: 1px solid #e5e5e5;
+			font-weight: 400;
+
+			&:before {
+				content: "";
+				position: absolute;
+				top: -7px;
+			    left: 50%;
+			    margin-left: -7px;
+				width: 0; 
+				height: 0; 
+				border-left: 7px solid transparent;
+				border-right: 7px solid transparent;
+				border-bottom: 7px solid #e5e5e5;
+			}
+		}
+	}
+
+	.scroll-internal & {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		overflow-y: hidden;
+
+		.content {
+			overflow-y: scroll;
+		}
+	}
+
+	// cyborg theme
+	@include cuckoo-theme('cyborg') {
+
+		border-color: $cyborg_border_color;
+
+		.title {
+			@extend %cyborg-heading;
+		}
+
+		.content > ul > li {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.destination-address {
+				background-color: lighten($cyborg_panel_color, 10);	
+				border-color: lighten($cyborg_panel_color, 10);
+
+				&:before {
+					border-bottom-color: lighten($cyborg_panel_color, 10);
+				}
+			}
+
+			a:hover,
+			a:focus,
+			a:active { text-decoration: none; }
+
+			a:hover:not(.active) {
+				background-color: lighten($cyborg_panel_color, 3);
+			}
+
+			a.active {
+				background-color: $cyborg_primary_color;
+				color: #fff;
+
+				.destination-address {
+					border-color: darken($cyborg_border_color, 10);
+
+					&:before {
+						border-bottom-color: darken($cyborg_border_color, 10);
+					}
+				}
+			}
+
+		}
+
+	}
+
+	// cyborg theme
+	@include cuckoo-theme('night') {
+
+		border-color: #151515;
+
+		.title {
+			background-color: #191919;
+			border-color: #101010;
+		}
+
+		.content > ul > li {
+			background-color: #252525;
+			border-color: #151515;
+
+			.destination-address {
+				background-color: #333;	
+				border-color: #151515;
+
+				&:before {
+					border-bottom-color: #151515;
+				}
+			}
+
+			a:hover,
+			a:focus,
+			a:active { text-decoration: none; }
+
+			a:hover:not(.active) {
+				background-color: rgba($night_primary_color, .5);
+			}
+
+			a.active {
+				background-color: $night_primary_color;
+				color: #fff;
+
+				.destination-address {
+					border-color: #222;
+
+					&:before {
+						border-bottom-color: #222;
+					}
+				}
+			}
+
+		}
+
+	}
+
+}

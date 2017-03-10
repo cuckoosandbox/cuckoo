@@ -6,16 +6,20 @@
 
 .cuckoo-analysis {
 
+	font-family: "Roboto";
 	background-color: #fafafa;
+
+	& > .container-fluid {
+		padding: 0 25px;
+	}
 
 	&__header {
 		display: flex;
 		flex-shrink: 0;
 		align-items: center;
-		box-shadow: 0px 1px 0px #fff;
 		text-shadow: 0px 1px 0px #fff;
 		margin: 0 0 15px 0;
-		padding: 15px;
+		padding: 15px 25px;
 
 		& > h2 {
 			color: #ccc;
@@ -23,8 +27,22 @@
 			margin: 0;	
 		}
 
-		.header-right {
-			margin-left: auto;
+		& > h1 {
+			font-size: 36px;
+			color: #555;
+			margin: 0;
+			padding-top: 30px;
+
+			@include cuckoo-theme('cyborg') { color: $cyborg_text_color; }
+			@include cuckoo-theme('night') { color: $night_text_color; }
+		}
+
+		&.page-header {
+			box-shadow: 0px 1px 0px #fff;
+		}
+
+		.header-right { 
+			margin-left: auto; 
 			vertical-align: middle;
 			text-shadow: none;
 
@@ -45,6 +63,19 @@
 				}
 			}
 
+			a:not(.btn-circle) {
+				color: $cuckoo_secundary_color;
+				font-size: 12px;
+				font-weight: 700;
+
+				@include cuckoo-theme('cyborg') { color: $cyborg_secundary_color; } 
+				@include cuckoo-theme('night') { color: $cyborg_secundary_color; } 
+			}
+
+			&.valign-bottom {
+				align-self: flex-end;
+			}
+
 		}
 
 		.file-name {
@@ -62,6 +93,56 @@
 				padding: 5px 5px 5px 7px;
 				text-shadow: none;
 			}
+		}
+
+		// alternate fix for a disabled overflow in network page
+		// mostly resets a lot of bootstrap garbage
+		.flex-nav__body--disable-overflow & {
+
+			+ .container-fluid {
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				flex-basis: 100%;
+
+				& > .row {
+					display: flex;
+					flex-direction: column;
+					flex-basis: 100%;
+					width: 100%;
+					overflow: hidden;
+					margin: auto;
+
+					.col-md-12 {
+						min-height: initial;
+						flex-basis: 100%;
+						overflow: hidden;
+						padding: 0;
+					}
+
+					.network-analysis-menu {
+						flex-basis: 45px;
+						flex-shrink: 0;
+						margin-bottom: 15px;
+					}
+
+					.network-analysis-pages {
+						display: flex;
+						width: 100%;
+
+						& > div {
+							flex-basis: 100%;
+							overflow: hidden;
+
+							.flex-grid__fluid {
+								height: 100%;
+							}
+						}
+					}
+
+				}
+			}
+
 		}
 
 	}

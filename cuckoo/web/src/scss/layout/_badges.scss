@@ -21,16 +21,61 @@
 
 }
 
-.dns_badge_container{
-    min-width: 60px;
-    float: left;
-}
+.dns-badge {
+    display: flex;
+    align-items: stretch;
+    min-height: 40px;
+    padding: 0;
 
-.dns_badge {
-    background-color: #ebebeb;
-    color: #7a7a7a;
-    font-weight: bold;
-    padding: 2px;
-    border-radius: 4px;
-    font-size: 12px;
+    & > * {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-width: 0px 1px 1px 1px;
+
+        @include cuckoo-theme('cyborg') {
+            border-color: $cyborg_border_color;
+            &.dns-badge__type { color: #506a79; }
+        }
+
+        @include cuckoo-theme('night') {
+            border-color: $night_border_color;
+            &.dns-badge__type { color: #667687; }
+        }
+    }
+
+    &__type {
+        justify-content: flex-end;
+        flex-basis: 80px;
+        text-align: center;
+        border-right: 0;
+        font-weight: 600;
+        color: #949494;
+    }
+
+    &__content {
+        flex-basis: 100%;
+        white-space: nowrap;
+        border-left: 0;
+
+        &:before {
+            @extend .fa;
+            content: "\f178";
+            margin: 0 10px;
+            opacity: .4;
+        }
+    }
+
+    // utility construct for display in a table
+    &s {
+        padding: 0 !important;
+
+        .dns-badge {
+            &:last-child > * {
+                border-bottom: 0;
+            }
+        }
+
+    }
+
 }

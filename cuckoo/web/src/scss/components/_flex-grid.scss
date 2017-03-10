@@ -115,6 +115,7 @@
 		flex-basis: 50px;
 		background-color: #111;
 		padding: 15px 20px;
+		margin-top: 30px;
 
 		.logo {
 			margin-left: 20px;
@@ -174,6 +175,7 @@
 	&__column {
 
 		flex-basis: 100%;
+		overflow: hidden;
 
 		&.one-third {
 			flex-basis: percentage(1/3);
@@ -182,6 +184,47 @@
 			flex-basis: percentage(2/3);
 		}
 
+		&--fixed {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+	}
+
+	&__horizontal {
+		@extend .flex-grid;
+		flex-direction: row;
+
+		.flex-grid__column {
+			margin: 0 15px;
+
+			// utilities for fixed-width containers, they won't grow and won't
+			// shrink because of their contents, which can be nice sometimes.
+			&--xs {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 150px;
+			}
+
+			&--sm {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 250px;
+			}
+
+			&--md {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 400px;	
+			}
+		}
+	}
+
+	&__fluid {
+		// enable equally distributed widths to be aligned perfect
+		height: auto;
+		width: calc(100% + 30px);
+		margin-left: -15px;
 	}
 
 }
@@ -250,4 +293,14 @@
 		& > * { border-color: $cyborg_secundary_color; }
 	}
 
+}
+
+/*
+	Flex utility: flex-distribute
+	distributes items in a simple flex-layout container
+ */
+.flex-distribute {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }

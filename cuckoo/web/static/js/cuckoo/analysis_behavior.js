@@ -184,4 +184,125 @@ var SummaryBehaviorController = function () {
 
     return SummaryBehaviorController;
 }();
+
+var SummarySimplifier = function () {
+    function SummarySimplifier(el) {
+        _classCallCheck(this, SummarySimplifier);
+
+        this.el = el;
+        this._simplified = false;
+        this._keepQuery = 'keep';
+        this._hideQuery = 'hide';
+        this._callbacks = {
+            on: [],
+            off: []
+        };
+        return this.initialise();
+    }
+
+    _createClass(SummarySimplifier, [{
+        key: "initialise",
+        value: function initialise() {
+
+            var _self = this;
+
+            this.el.on('click', function (e) {
+                e.preventDefault();
+                _self.toggle();
+            });
+
+            if ($('body').attr('data-simplified') === 'true') {
+                this._simplified = true;
+                this._update();
+            } else {
+                this._simplified = false;
+                this._update();
+            }
+
+            return this;
+        }
+    }, {
+        key: "toggle",
+        value: function toggle() {
+
+            if (this._simplified) {
+                this._off();
+            } else {
+                this._on();
+            }
+
+            this._save();
+        }
+    }, {
+        key: "_off",
+        value: function _off() {
+            this._simplified = false;
+            this._update();
+        }
+    }, {
+        key: "_on",
+        value: function _on() {
+            this._simplified = true;
+            this._update();
+
+            for (var cb in this._callbacks.on) {
+                this._callbacks.on[cb]();
+            }
+        }
+    }, {
+        key: "_update",
+        value: function _update(preset) {
+
+            if (this._simplified) {
+                this.el.addClass('active');
+                this.el.find('span').text('default overview');
+                $('body').attr('data-simplified', "true");
+            } else {
+                this.el.removeClass('active');
+                this.el.find('span').text('simplify overview');
+                $('body').attr('data-simplified', 'false');
+            }
+        }
+    }, {
+        key: "_save",
+        value: function _save() {
+            Cookies("simplified_view", this._simplified, { expires: 365 * 10 });
+        }
+
+        // adds 'listener' callbacks, like events
+
+    }, {
+        key: "listen",
+        value: function listen(namespace, fn) {
+            this._callbacks[namespace].push(fn);
+        }
+    }]);
+
+    return SummarySimplifier;
+}();
+
+$(function () {
+
+    var simplifier;
+
+    if ($("#toggle-simplified").length) {
+        simplifier = window.simplifier = new SummarySimplifier($("#toggle-simplified"));
+    }
+
+    // since the pew pew won't draw if it's invisible
+    if (window.pewpew && typeof window.pewpew === 'function') {
+        if (simplifier) {
+            if (!simplifier._simplified) {
+                simplifier.listen('on', function () {
+                    window.pewpew();
+                });
+                return;
+            } else {
+                window.pewpew();
+            }
+        } else {
+            window.pewpew();
+        }
+    }
+});
 //# sourceMappingURL=analysis_behavior.js.map

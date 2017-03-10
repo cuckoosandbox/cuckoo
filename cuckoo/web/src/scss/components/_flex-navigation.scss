@@ -52,9 +52,22 @@
 		padding: 15px 0 0 0;
 
 		// this is for now only applicable to analysis
-		#analysis & > .container-fluid {
+		[id^="analysis"] & > .container-fluid {
 			width: 100%;
 			flex-basis: 100%;
+		}
+
+		&--disable-overflow {
+			@extend .flex-nav__body;
+			overflow-y: hidden;
+			flex-basis: 100%;
+
+			.cuckoo-analysis__header {
+				flex-basis: 99px;
+				flex-shrink: 0;
+				flex-grow: 0;
+			}
+
 		}
 
 	}

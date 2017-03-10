@@ -231,6 +231,42 @@ this["HANDLEBARS_TEMPLATES"]["dndupload"] = Handlebars.template({"compiler":[6,"
     + this.escapeExpression(((helper = (helper = helpers.uid || (depth0 != null ? depth0.uid : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"uid","hash":{},"data":data}) : helper)))
     + "\">\n\n    <form id=\"uploader\" action=\"/submit/api/presubmit\" method=\"POST\" enctype=\"multipart/form-data\">\n        <div id=\"container\">\n\n            <input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\">\n            <label for=\"file\" id=\"info\">\n\n                <span class=\"text-idle\">\n                    <strong>Drag your file here or <em>click to select a file.</em></strong>\n                </span>\n\n                <span class=\"text-hovering\">\n                    <strong>Drop your file here.</strong>\n                </span>\n\n                <span class=\"text-dropped\">\n                    <strong>One moment, we're uploading!</strong>\n                    <small>You'll be redirected automatically after we're done.</small>\n                </span>\n\n                <span class=\"text-done\">\n                    <strong>All good!</strong>\n                    <small>One second while we redirect you.</small>\n                </span>\n\n                <span class=\"text-error\">\n                    <strong>Something went wrong!</strong>\n                    <small>The server returned an error. Please check our file compatibility list with the file you're trying to upload or try again.</small>\n                    <small>If the problem persists, send us a feedback report.</small>\n                </span> \n\n            </label>\n\n            <button type=\"submit\" class=\"holder_button\">Upload</button>\n\n            <progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n        </div>\n    </form>\n\n    <div class=\"alternate-progress\"></div>\n    \n</div>\n\n<p id=\"filereader\">File API &amp; FileReader API not supported</p>\n<p id=\"formdata\">XHR2's FormData is not supported</p>\n<p id=\"progress\">XHR2's upload progress isn't supported</p>";
 },"useData":true});
+this["HANDLEBARS_TEMPLATES"]["header-table"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "class=\""
+    + this.escapeExpression(((helper = (helper = helpers.className || (depth0 != null ? depth0.className : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"className","hash":{},"data":data}) : helper)))
+    + "\"";
+},"3":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "			<tr>\n				<td class=\"key-name\">"
+    + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
+    + ":</td>\n				<td class=\"key-value\">"
+    + alias3(((helper = (helper = helpers.value || (depth0 != null ? depth0.value : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"value","hash":{},"data":data}) : helper)))
+    + "</td>\n			</tr>\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<table "
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.className : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ">\n	<tbody>\n"
+    + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.keyv : depth0),{"name":"each","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "	</tbody>\n</table>";
+},"useData":true});
+this["HANDLEBARS_TEMPLATES"]["packet-display"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "<div class=\"network-display__request is-open\">\n    <section class=\"network-display__request-details--single\">\n        <div class=\"detail-field\">\n\n            <h4 class=\"detail-field__title flex-distribute\">\n                <span>"
+    + alias3(((helper = (helper = helpers.src || (depth0 != null ? depth0.src : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"src","hash":{},"data":data}) : helper)))
+    + ":"
+    + alias3(((helper = (helper = helpers.sport || (depth0 != null ? depth0.sport : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"sport","hash":{},"data":data}) : helper)))
+    + "</span>\n                <i class=\"fa fa-long-arrow-right\"></i>\n                <span>"
+    + alias3(((helper = (helper = helpers.dst || (depth0 != null ? depth0.dst : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"dst","hash":{},"data":data}) : helper)))
+    + ":"
+    + alias3(((helper = (helper = helpers.dport || (depth0 != null ? depth0.dport : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"dport","hash":{},"data":data}) : helper)))
+    + "</span>\n            </h4>\n\n            <header class=\"detail-field__header with-tabs\">\n                <i class=\"fa fa-file-o\"></i>\n                <div class=\"flex-tabs__tabs\">\n                    <div class=\"flex-tabs__tab tab-output\">\n                        <a href=\"output:plaintext\" class=\"btn btn-sm\">plaintext</a>\n                        <a href=\"output:hex\" class=\"btn btn-sm active\">hex</a>\n                    </div>\n                    <div class=\"flex-tabs__tab tab-mode\">\n                        <a href=\"mode:16\" class=\"btn btn-sm active\">16 bytes</a>\n                        <a href=\"mode:32\" class=\"btn btn-sm\">32 bytes</a>\n                        <a href=\"mode:48\" class=\"btn btn-sm\">48 bytes</a>\n                        <a href=\"mode:64\" class=\"btn btn-sm\">64 bytes</a>\n                    </div>\n                </div>\n            </header>\n\n            <section class=\"detail-field__body\"><pre data-draw=\"source\"></pre></section>\n            <div class=\"detail-field__footer\">mijn.ing.nl</div>\n\n        </div>\n    </section>\n</div>";
+},"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     return "checked";
 },"3":function(depth0,helpers,partials,data) {

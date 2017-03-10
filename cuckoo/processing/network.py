@@ -816,6 +816,7 @@ class Pcap2(object):
                     "method": sent.method,
                     "host": sent.headers.get("host", dstip),
                     "uri": sent.uri,
+                    "status": int(recv.status),
 
                     # We'll keep these fields here for now.
                     "request": request.decode("latin-1"),

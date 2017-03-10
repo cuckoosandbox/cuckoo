@@ -19,13 +19,13 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-body#analysis { padding-top: 30px; }
-
+/* note to self: this is very hacky and I need to pick this up later */
+body[id^="analysis"] { padding-top: 30px; }
 body[id^="submission/"] { padding-top: 41px; }
 body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],
-body[id="analysis"] {
+body[id^="analysis"] {
 	footer:not(.flex-grid__footer), 
 	#footer-extra {
 		display: none;
@@ -56,7 +56,8 @@ body[id="analysis"] {
 @import "components/errors";
 @import "components/footer";
 @import "components/table";
-
+@import "components/network-display";
+@import "components/flex-tabs";
 @import "components/flex-grid";
 @import "components/cuckoo-filetree";
 @import "components/flex-form";

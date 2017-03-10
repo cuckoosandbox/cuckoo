@@ -1,3 +1,4 @@
+var path = require('path');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var browserify = require('browserify');
@@ -7,6 +8,7 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
+var chalk = require('chalk');
 var debug = require('gulp-debug');
 
 module.exports = function(done) {
@@ -16,6 +18,12 @@ module.exports = function(done) {
 		.pipe(babel({
 			presets: 'es2015'
 		}))
+		.on('error', function(err) {
+			console.log(chalk.red('\nOopsie-daysee! You made an unforgivable typo:\n'));
+			console.log(`${err.codeFrame}\n`);
+			console.log(`>>> ${path.basename(err.fileName)} (line ${err.loc.line}, col ${err.loc.column} ]\n`);
+			this.emit('end');
+		})
 		.pipe(gutil.env.production ? uglify() : gutil.noop())
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('../static/js/cuckoo'));

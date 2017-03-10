@@ -1,0 +1,10 @@
+<table {{#if className}}class="{{className}}"{{/if}}>
+	<tbody>
+		{{#each keyv}}
+			<tr>
+				<td class="key-name">{{name}}:</td>
+				<td class="key-value">{{value}}</td>
+			</tr>
+		{{/each}}
+	</tbody>
+</table>

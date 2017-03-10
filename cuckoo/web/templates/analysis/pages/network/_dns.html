@@ -1,79 +1,46 @@
 {% load analysis_tags %}
 
-<section id="domains">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> DNS
-        </div>
-        <div class="panel-body" style="min-height: 502px;padding:0px;">
-            {% if report.analysis.network.dns %}
-                <table id="network_dns" class="table table-striped table-responsive responsive" width="100%">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Response</th>
-                            <th>Post-Analysis Lookup</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in report.analysis.network.dns %}
-                            <tr>
-                                <td>
-                                    <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
-                                </td>
-                                <td>
-                                    {% for a in p.answers %}
-                                        {% if a.type == "A" %}
-                                            {% if ":" not in a.data %}
-                                                <div class="dns_badge_container">
-                                                    <span class="dns_badge">{{a.type}}</span>
-                                                </div>
+<div class="network-display__outer network-display__table" id="dns-requests">
 
-                                                <a target="_blank" href="{% url "analysis.views.moloch" ip=a.data %}">
-                                                     {{a.data|linebreaksbr}}
-                                                </a>
-                                            {% else %}
-                                                <div class="dns_badge_container">
-                                                    <span class="dns_badge">{{a.type}}</span>
-                                                </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Response</th>
+                <th>Post-Analysis Lookup</th>
+            </tr>
+        </thead>
+        <tbody>
 
-                                                {{a.data|linebreaksbr}}
-                                            {% endif %}
-                                            {% if not forloop.last %}<br/>{% endif %}
-                                        {% elif a.type == "CNAME" %}
-                                            <div class="dns_badge_container">
-                                                <span class="dns_badge">{{a.type}}</span>
-                                            </div>
-
-                                            <a target="_blank" href="{% url "analysis.views.moloch" host=a.data %}">
-                                                {{a.data|linebreaksbr}}
-                                            </a>
-                                            {% if not forloop.last %}<br/>{% endif %}
-                                        {% else %}
-                                            <div class="dns_badge_container">
-                                                <span class="dns_badge">{{a.type}}</span>
-                                            </div>
-
-                                            {{a.data|linebreaksbr}}{% if not forloop.last %}<br/>{% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% if ":" not in report.domainlookups|get_item:p.request %}
-                                        <a target="_blank" href="{% url "analysis.views.moloch" ip=report.domainlookups|get_item:p.request %}">
-                                            {{ report.domainlookups|get_item:p.request }}
-                                        </a>
-                                    {% else %}
-                                        {{ report.domainlookups|get_item:p.request }}
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            {% if report.analysis.network.hosts %}
+                {% for p in report.analysis.network.dns %}
+                    <tr>
+                        <td>
+                            <a target="_blank" href="{% url "analysis.views.moloch" host=p.request %}">{{p.request}}</a>
+                        </td>
+                        <td class="dns-badges">
+                            {% for a in p.answers %}
+                                {% include "partials/dns-badge.html" with a=a %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if ":" not in report.domainlookups|get_item:p.request %}
+                                <a target="_blank" href="{% url "analysis.views.moloch" ip=report.domainlookups|get_item:p.request %}">
+                                    {{ report.domainlookups|get_item:p.request }}
+                                </a>
+                            {% else %}
+                                {{ report.domainlookups|get_item:p.request }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
             {% else %}
-                <p>No domains contacted.</p>
+                <tr>
+                    <td class="cell-fill text-center" colspan="3">No hosts contacted.</td>
+                </tr>
             {% endif %}
-        </div>
-    </div>
-</section>
+
+        </tbody>
+    </table>
+
+</div>

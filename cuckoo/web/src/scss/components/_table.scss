@@ -53,7 +53,16 @@
 
 	thead,
 	tbody {
-		th, td { padding: 10px; }
+		th, td { 
+			padding: 10px; 
+
+			&.cell-xs { width: 10%; }
+			&.cell-sm { width: 20%; }
+			&.cell-md { width: 30%; }
+			&.cell-lg { width: 50%; }
+			&.cell-fill { width: 100%; }
+
+		}
 	}
 
 	tfoot {

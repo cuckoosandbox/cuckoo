@@ -9,6 +9,11 @@ $cuckoo_color_priority_low: #00FF1E;
 $cuckoo_color_priority_medium: #FFD700;
 $cuckoo_color_priority_high: #D7586F;
 
+// UTILITY COLORS
+$cuckoo_default_grey: #999999;
+$cuckoo_secundary_color: #6297F8; 
+$cuckoo_border_color: #CECECE;
+
 // THEME COLORS
 $cyborg_background_color: #020e10;
 $cyborg_panel_color: #0d1b21;
@@ -21,7 +26,7 @@ $cyborg_border_color: #133b4a;
 
 // cyborg heading style
 %cyborg-heading {
-	color: #ffffff;
+    color: #ffffff;
     background: linear-gradient(rgb(40, 79, 92), #112c35);
     border-color: #2b5a6a;
     border: 0px;
