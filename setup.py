@@ -108,7 +108,7 @@ setuptools.setup(
         "elasticsearch==2.2.0",
         "flask==0.10.1",
         "flask-sqlalchemy==2.1",
-        "httpreplay==0.1.19",
+        "httpreplay==0.2",
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
         "oletools==0.42",
