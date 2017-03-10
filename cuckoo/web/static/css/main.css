@@ -3703,7 +3703,7 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle) {
   overflow-y: auto;
   padding: 15px 0 0 0;
 }
-#analysis .flex-nav__body > .container-fluid, #analysis .flex-nav__body--disable-overflow > .container-fluid {
+[id^="analysis"] .flex-nav__body > .container-fluid, [id^="analysis"] .flex-nav__body--disable-overflow > .container-fluid {
   width: 100%;
   flex-basis: 100%;
 }
