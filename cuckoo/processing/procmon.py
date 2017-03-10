@@ -1,9 +1,9 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import lxml.etree
 import os.path
+import xml.etree.ElementTree
 
 from cuckoo.common.abstracts import Processing
 
@@ -11,11 +11,17 @@ class ProcmonLog(list):
     """Yields each API call event to the parent handler."""
 
     def __init__(self, filepath):
+        list.__init__(self)
         self.filepath = filepath
 
     def __iter__(self):
-        procmon = open(self.filepath, "rb")
-        for _, element in lxml.etree.iterparse(procmon, tag="event"):
+        iterator = xml.etree.ElementTree.iterparse(
+            open(self.filepath, "rb"), events=["end"]
+        )
+        for _, element in iterator:
+            if element.tag != "event":
+                continue
+
             entry = {}
             for child in element.getchildren():
                 entry[child.tag] = child.text

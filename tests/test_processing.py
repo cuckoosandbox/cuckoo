@@ -17,6 +17,7 @@ from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
+from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
@@ -106,6 +107,58 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    def test_procmon(self):
+        p = Procmon()
+        p.logs_path = "tests/files/"
+        a, b = list(p.run()), list(p.run())
+        assert a == b
+        assert a == [{
+            "Detail": "Thread ID: 1328",
+            "Operation": "Thread Create",
+            "PID": "4",
+            "Path": None,
+            "ProcessIndex": "5",
+            "Process_Name": "System",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0645467 AM",
+        }, {
+            "Detail": "Offset: 11,264, Length: 512, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1068",
+            "Path": "C:\\Windows\\System32\\wow64cpu.dll",
+            "ProcessIndex": "3",
+            "Process_Name": "python.exe",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0645804 AM",
+        }, {
+            "Detail": "Offset: 5,286,912, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0651960 AM",
+        }, {
+            "Detail": "Offset: 5,213,184, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0653377 AM",
+        }, {
+            "Detail": "Offset: 5,176,320, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0654481 AM",
+        }]
 
     def test_strings(self):
         s = Strings()
