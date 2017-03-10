@@ -90,6 +90,16 @@ BM_CLICK                  = 0x000000F5
 
 SHARD_PATHA               = 0x00000002
 
+INPUT_KEYBOARD            = 0x00000001
+KEYEVENTF_KEYUP           = 0x00000002
+VK_MENU                   = 0x00000012
+VK_RETURN                 = 0x0000000D
+VK_RIGHT                  = 0x00000027
+
+KEYEVENTF_EXTENDEDKEY     = 0x00000001
+KEYEVENTF_KEYUP           = 0x00000002
+
+
 class STARTUPINFO(Structure):
     _fields_ = [
         ("cb",            DWORD),
@@ -187,3 +197,19 @@ class SYSTEMTIME(Structure):
         ("wSecond", WORD),
         ("wMilliseconds", WORD),
     ]
+
+class KEYBDINPUT(Structure):
+    _fields_ = [
+        ("wVk", WORD),
+        ("wScan", WORD),
+        ("dwFlags", DWORD),
+        ("time", DWORD),
+        ("dwExtraInfo", LONG),
+    ]
+
+class INPUT(Structure):
+    _fields_ = [
+        ("type", DWORD),
+        ("ki", KEYBDINPUT),
+    ]
+

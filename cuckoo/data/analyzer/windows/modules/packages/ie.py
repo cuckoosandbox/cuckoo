@@ -94,6 +94,14 @@ class IE(Package):
                 "CheckExeSignatures": "no",
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Associations",
+            {
+                # Disable "Publisher could not be verified"
+                "LowRiskFileTypes": ".exe;.bat"
+            }
+        ]
     ]
 
     def setup_proxy(self, proxy_host):

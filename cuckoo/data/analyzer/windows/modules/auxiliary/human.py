@@ -6,19 +6,19 @@
 
 import random
 import logging
+import sys
+import time
 from threading import Thread
-from ctypes import WINFUNCTYPE, POINTER
-from ctypes import c_bool, c_int, create_unicode_buffer
+from ctypes import WINFUNCTYPE, POINTER, sizeof
+from ctypes import c_bool, c_int, create_unicode_buffer, c_void_p
 
 from lib.common.abstracts import Auxiliary
-from lib.common.defines import KERNEL32, USER32
-from lib.common.defines import WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK
-from lib.common.defines import WM_SYSCOMMAND, SC_CLOSE
+from lib.common.defines import *
 
 log = logging.getLogger(__name__)
 
-EnumWindowsProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
-EnumChildProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
+EnumWindowsProc = WINFUNCTYPE(c_bool, c_void_p, c_void_p)
+EnumChildProc = WINFUNCTYPE(c_bool, c_void_p, c_void_p)
 
 RESOLUTION = {
     "x": USER32.GetSystemMetrics(0),
@@ -98,6 +98,11 @@ def foreach_window(hwnd, lparam):
         "bosa_sdm_microsoft office word 12.0"
     ]
 
+    # List of window classes with specific behaviour
+    specific = [
+        "IEFrame", "#32770"
+    ]
+
     # If the window is visible, enumerate its child objects, looking
     # for buttons.
     if USER32.IsWindowVisible(hwnd):
@@ -108,7 +113,16 @@ def foreach_window(hwnd, lparam):
             log.info("Found a window to close: %s" % classname.value.lower())
             USER32.SendMessageW(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0)
 
+        elif classname.value.lower() in specific:
+            log.info("Found a window with a specific handler: %s", classname.value.lower())
+            handler = getattr(Human, "handle_" + classname.value.replace("#", "").lower())
+            if handler:
+                handler(hwnd)
+            else:
+                log.error("No specific handler found for %s", classname.value.lower())
+
         else:
+            log.debug("%s is not specific or to be closed", classname.value.lower())
             USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
     return True
 
@@ -176,3 +190,68 @@ class Human(Auxiliary, Thread):
                 USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
 
             KERNEL32.Sleep(1000)
+
+    @staticmethod
+    def handle_32770(frameHandle):
+        """
+          Handle IE11's "View Downloads" window
+        """
+        log.debug("Setting %s as foreground window", frameHandle)
+        USER32.SetForegroundWindow(frameHandle)
+        # Press RIGHT + ENTER to run the file
+        log.debug("Sending RIGHT + ENTER...")
+        USER32.keybd_event(VK_RIGHT, 0x4D, KEYEVENTF_EXTENDEDKEY | 0, 0)
+        USER32.keybd_event(VK_RIGHT, 0x4D, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+        USER32.keybd_event(VK_RETURN, 0x1C, KEYEVENTF_EXTENDEDKEY | 0, 0)
+        USER32.keybd_event(VK_RETURN, 0x1C, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+
+    @staticmethod
+    def handle_IEFrame(frameHandle):
+        """
+          Automates the download of a file in IE
+        """
+        # Iterate while we can find a download notification toolbar
+        while True:
+            # Get the IE11 download notification toolbar
+            hToolbar = USER32.FindWindowEx(frameHandle.value, 0, u"Frame Notification Bar", 0)
+            if not hToolbar:
+                break
+
+            hBar = USER32.FindWindowEx(hToolbar.value, 0, u"DirectUIHWND", 0)
+            if(not hBar or not USER32.IsWindowVisible(hToolbar.value) or
+               not USER32.IsWindowVisible(hBar.value)):
+                # No IE11 download toolbar has been found
+                break
+
+            # Set the IE frame as fg window to receive keys
+            USER32.SetForegroundWindow(frameHandle.value)
+            # Press ALT + R to run the file
+            ip = INPUT()
+            ip.type = INPUT_KEYBOARD
+            ip.ki.wScan = 0
+            ip.ki.time = 0
+            ip.ki.dwExtraInfo = 0
+
+            # Press the "Alt" key
+            ip.ki.wVk = VK_MENU
+            ip.ki.dwFlags = 0 # 0 for key press
+            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
+
+            # Press the "R" key
+            ip.ki.wVk = 'R'
+            ip.ki.dwFlags = 0 # 0 for key press
+            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
+
+            # Release the "R" key
+            ip.ki.wVk = 'R'
+            ip.ki.dwFlags = KEYEVENTF_KEYUP
+            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
+
+            # Release the "Alt" key
+            ip.ki.wVk = VK_MENU
+            ip.ki.dwFlags = KEYEVENTF_KEYUP
+            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
+
+            time.sleep(500)
+
+
