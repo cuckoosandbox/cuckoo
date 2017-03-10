@@ -642,4 +642,51 @@
 			overflow-y: scroll;
 		}
 	}
+
+	@include cuckoo-theme('cyborg') {
+
+		border-color: $cyborg_border_color;
+
+		.title {
+			@extend %cyborg-heading;
+		}
+
+		.content > ul > li {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.destination-address {
+				background-color: lighten($cyborg_panel_color, 10);	
+				border-color: lighten($cyborg_panel_color, 10);
+
+				&:before {
+					border-bottom-color: lighten($cyborg_panel_color, 10);
+				}
+			}
+
+			a:hover,
+			a:focus,
+			a:active { text-decoration: none; }
+
+			a:hover:not(.active) {
+				background-color: lighten($cyborg_panel_color, 3);
+			}
+
+			a.active {
+				background-color: $cyborg_primary_color;
+				color: #fff;
+
+				.destination-address {
+					border-color: darken($cyborg_border_color, 10);
+
+					&:before {
+						border-bottom-color: darken($cyborg_border_color, 10);
+					}
+				}
+			}
+
+		}
+
+	}
+
 }

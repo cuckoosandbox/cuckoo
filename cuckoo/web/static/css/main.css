@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .cuckoo-files__controls {
+body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -5344,6 +5344,38 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 }
 .scroll-internal .source-destination .content {
   overflow-y: scroll;
+}
+body.cyborg .source-destination {
+  border-color: #133b4a;
+}
+body.cyborg .source-destination .content > ul > li {
+  background-color: #0d1b21;
+  border-color: #133b4a;
+}
+body.cyborg .source-destination .content > ul > li .destination-address {
+  background-color: #1b3946;
+  border-color: #1b3946;
+}
+body.cyborg .source-destination .content > ul > li .destination-address:before {
+  border-bottom-color: #1b3946;
+}
+body.cyborg .source-destination .content > ul > li a:hover,
+body.cyborg .source-destination .content > ul > li a:focus,
+body.cyborg .source-destination .content > ul > li a:active {
+  text-decoration: none;
+}
+body.cyborg .source-destination .content > ul > li a:hover:not(.active) {
+  background-color: #11242c;
+}
+body.cyborg .source-destination .content > ul > li a.active {
+  background-color: #152D3B;
+  color: #fff;
+}
+body.cyborg .source-destination .content > ul > li a.active .destination-address {
+  border-color: #091b21;
+}
+body.cyborg .source-destination .content > ul > li a.active .destination-address:before {
+  border-bottom-color: #091b21;
 }
 
 /*
