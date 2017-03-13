@@ -46,4 +46,50 @@ class Elastic(object):
                 "Unable to connect to ElasticSearch: %s" % e
             )
 
+    def search_helper(self, obj, k, term, value):
+        """ Search for appropriate key/value pair """
+        r = []
+
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                r += self.search_helper(v, k, value)
+
+        if isinstance(obj, (tuple, list)):
+            for v in obj:
+                r += self.search_helper(v, k, value)
+
+        if isinstance(obj, basestring):
+            if re.search(value, obj, re.I):
+                if not term or term == k:
+                    r.append((k, obj))
+
+        return r
+
+    def search(self, term, value):
+        results = []
+        match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value))
+
+        r = self.client.search(
+            index=self.index + "-*",
+            body={
+                "query": {
+                    "query_string": {
+                        "query": '"%s"*' % value,
+                    },
+                },
+            }
+        )
+        for hit in r["hits"]["hits"]:
+            # Find the actual matches in this hit and limit to 16 matches.
+            matches = self.search_helper(hit, "none", term, match_value)
+            if not matches:
+                continue
+
+            results.append({
+                "task_id": hit["_source"]["report_id"],
+                "matches": matches[:16],
+                "total": max(len(matches) - 16, 0),
+            })
+        return results
+
 elastic = Elastic()

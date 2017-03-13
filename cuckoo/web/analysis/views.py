@@ -20,8 +20,8 @@ from django.views.decorators.http import require_safe
 
 from cuckoo.core.database import Database, TASK_PENDING
 from cuckoo.common.config import config
-from cuckoo.common.elastic import elastic
 from cuckoo.common.mongo import mongo
+from cuckoo.common.search import searcher
 from cuckoo.misc import cwd
 from cuckoo.processing import network
 from cuckoo.web.bin.utils import view_error, render_template
@@ -308,50 +308,36 @@ def _search_helper(obj, k, value):
 
 @csrf_exempt
 def search(request):
-    """New Search API using ElasticSearch as backend."""
-    if not elastic.enabled:
-        return view_error(request, "ElasticSearch is not enabled and therefore it "
-                                   "is not possible to do a global search.")
-
+    """New Search API using combination of MongoDB and ElasticSearch as backend."""
+    results = []
+    if not searcher.enabled:
+        return view_error(request, "Neither ElasticSearch nor MongoDB is enabled and "
+                                    "therefore it's not possible to do a global search.")
     if request.method == "GET":
         return render_template(request, "analysis/search.html")
 
-    value = request.POST["search"]
-
-    match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
-
-    r = elastic.client.search(
-        index=elastic.index + "-*",
-        body={
-            "query": {
-                "query_string": {
-                    "query": '"%s"*' % value,
-                },
-            },
-        }
-    )
-
-    analyses = []
-    for hit in r["hits"]["hits"]:
-        # Find the actual matches in this hit and limit to 8 matches.
-        matches = _search_helper(hit, "none", match_value)
-        if not matches:
-            continue
-
-        analyses.append({
-            "task_id": hit["_source"]["report_id"],
-            "matches": matches[:16],
-            "total": max(len(matches)-16, 0),
-        })
+    if "search" in request.POST:
+        try:
+            term, value = request.POST["search"].strip().split(":", 1)
+        except ValueError:
+            term = None
+            value = request.POST["search"].strip()
+        if len(value) < 3:
+            return render_template(request, "analysis/search.html", **{
+                "analyses": None,
+                "term": request.POST["search"],
+                "error": "Search term too short, minimum 3 characters required.",
+            })
+        results = searcher.find(term, value)
 
     if request.POST.get("raw"):
         return render_template(request, "analysis/search_results.html", **{
-            "analyses": analyses,
+            "analyses": results,
             "term": request.POST["search"],
         })
 
     return render_template(request, "analysis/search.html", **{
-        "analyses": analyses,
+        "analyses": results,
         "term": request.POST["search"],
         "error": None,
     })
