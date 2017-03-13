@@ -1,0 +1,11 @@
+{{ "="*71 }}
+    {{ yellow("Welcome to Cuckoo Sandbox, this appears to be your first run!") }}
+    We will now set you up with our default configuration.
+    You will be able to see and modify the Cuckoo configuration,
+    Yara rules, Cuckoo Signatures, and much more to your likings
+    by exploring the {{ red(cwd()) }} directory.
+
+    Among other configurable items of most interest is the
+    new location for your Cuckoo configuration:
+              {{ red(cwd("conf")) }}
+{{ "="*71 }}

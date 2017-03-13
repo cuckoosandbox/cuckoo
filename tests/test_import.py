@@ -1,11 +1,25 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
+import mock
 import os
+import pytest
+import shutil
 import tempfile
 
-from cuckoo.apps.import_ import identify
+from cuckoo.apps.import_ import (
+    identify, import_legacy_analyses, dumpcmd, sqldump, import_cuckoo
+)
+from cuckoo.common.config import config
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Files
+from cuckoo.core.database import Database
+from cuckoo.main import cuckoo_create, main
+from cuckoo.misc import cwd, set_cwd, mkdir, is_windows, is_linux
+
+log = logging.getLogger(__name__)
 
 constants_04_py = """
 # Copyright (C) 2010-2012 Cuckoo Sandbox Developers.
@@ -244,3 +258,162 @@ def test_identify():
 
     dirpath = drop_constants_py("hello world")
     assert identify(dirpath) is None
+
+def init_legacy_analyses():
+    dirpath = tempfile.mkdtemp()
+    mkdir(dirpath, "storage")
+    mkdir(dirpath, "storage", "analyses")
+
+    mkdir(dirpath, "storage", "analyses", "1")
+    mkdir(dirpath, "storage", "analyses", "1", "logs")
+    Files.create(
+        (dirpath, "storage", "analyses", "1", "logs"), "a.txt", "a"
+    )
+    mkdir(dirpath, "storage", "analyses", "1", "reports")
+    Files.create(
+        (dirpath, "storage", "analyses", "1", "reports"), "b.txt", "b"
+    )
+
+    mkdir(dirpath, "storage", "analyses", "2")
+    Files.create((dirpath, "storage", "analyses", "2"), "cuckoo.log", "log")
+
+    Files.create((dirpath, "storage", "analyses"), "latest", "last!!1")
+    return dirpath
+
+def test_import_legacy_analyses():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    dirpath = init_legacy_analyses()
+    assert sorted(import_legacy_analyses(dirpath)) == [1, 2]
+    assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
+    assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
+    assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
+    assert not os.path.exists(cwd(analysis="latest"))
+
+    if not is_windows():
+        assert os.path.islink(cwd(analysis=1))
+        assert os.path.islink(cwd(analysis=2))
+    else:
+        assert os.path.isdir(cwd(analysis=1))
+        assert os.path.isdir(cwd(analysis=2))
+
+def test_dumpcmd():
+    assert dumpcmd(None, "/tmp") == (
+        ["sqlite3", os.path.join("/tmp", "db", "cuckoo.db"), ".dump"], {}
+    )
+    assert dumpcmd("sqlite:///db/cuckoo.db", "/tmp") == (
+        ["sqlite3", os.path.join("/tmp", "db/cuckoo.db"), ".dump"], {}
+    )
+    assert dumpcmd("sqlite:////tmp/cuckoo.db", "/tmp") == (
+        ["sqlite3", "/tmp/cuckoo.db", ".dump"], {}
+    )
+    assert dumpcmd("mysql://foo:bar@localh0st/baz", "/tmp") == (
+        ["mysqldump", "-u", "foo", "-pbar", "-h", "localh0st", "baz"], {}
+    )
+    assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
+        ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
+    )
+
+@mock.patch("cuckoo.apps.import_.subprocess")
+@mock.patch("click.confirm")
+def test_sqldump_noconfirm(p, q):
+    p.return_value = False
+    sqldump(None, "/tmp")
+    q.check_call.assert_not_called()
+
+class ImportCuckoo(object):
+    @mock.patch("click.confirm")
+    def test_sqldump(self, p):
+        set_cwd(tempfile.mkdtemp())
+        p.return_value = True
+
+        try:
+            sqldump(self.URI, "/tmp")
+            assert os.path.getsize(cwd("backup.sql"))
+        except CuckooOperationalError as e:
+            assert "SQL database dump as the command" in e.message
+            assert not is_linux()
+
+    @mock.patch("click.confirm")
+    def test_import_confirm(self, p):
+        set_cwd(tempfile.mkdtemp())
+        p.return_value = True
+
+        dirpath = init_legacy_analyses()
+        os.makedirs(os.path.join(dirpath, "lib", "cuckoo", "common"))
+        open(os.path.join(
+            dirpath, "lib", "cuckoo", "common", "constants.py"
+        ), "wb").write(constants_11_py)
+
+        shutil.copytree(
+            "tests/files/conf/110_plain", os.path.join(dirpath, "conf")
+        )
+
+        filepath = os.path.join(dirpath, "conf", "cuckoo.conf")
+        buf = open(filepath, "rb").read()
+        open(filepath, "wb").write(buf.replace(
+            "connection =", "connection = %s" % self.URI
+        ))
+
+        try:
+            main.main(
+                ("--cwd", cwd(), "import", dirpath), standalone_mode=False
+            )
+        except CuckooOperationalError as e:
+            assert "SQL database dump as the command" in e.message
+            assert not is_linux()
+            return
+
+        db = Database()
+        db.connect()
+        assert db.engine.name == self.ENGINE
+        assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
+        assert config("cuckoo:database:connection") == self.URI
+        assert db.count_tasks() == 2
+
+    @mock.patch("click.confirm")
+    def test_import_noconfirm(self, p):
+        set_cwd(tempfile.mkdtemp())
+        p.side_effect = True, False
+
+        dirpath = init_legacy_analyses()
+        os.makedirs(os.path.join(dirpath, "lib", "cuckoo", "common"))
+        open(os.path.join(
+            dirpath, "lib", "cuckoo", "common", "constants.py"
+        ), "wb").write(constants_11_py)
+
+        shutil.copytree(
+            "tests/files/conf/110_plain", os.path.join(dirpath, "conf")
+        )
+
+        filepath = os.path.join(dirpath, "conf", "cuckoo.conf")
+        buf = open(filepath, "rb").read()
+        open(filepath, "wb").write(buf.replace(
+            "connection =", "connection = %s" % self.URI
+        ))
+
+        main.main(
+            ("--cwd", cwd(), "import", dirpath), standalone_mode=False
+        )
+
+        db = Database()
+        db.connect()
+        assert db.engine.name == self.ENGINE
+        assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
+        assert config("cuckoo:database:connection") == self.URI
+        assert db.count_tasks() == 2
+
+class TestImportCuckooSQLite3(ImportCuckoo):
+    ENGINE = "sqlite"
+    _filepath = tempfile.mktemp()
+    shutil.copy("tests/files/cuckoo.db", _filepath)
+    URI = "sqlite:///%s" % _filepath
+
+class TestImportCuckooMySQL(ImportCuckoo):
+    ENGINE = "mysql"
+    URI = "mysql://cuckoo:cuckoo@localhost/cuckootestimport"
+
+class TestImportCuckooPostgreSQL(ImportCuckoo):
+    ENGINE = "postgresql"
+    URI = "postgresql://cuckoo:cuckoo@localhost/cuckootestimport"

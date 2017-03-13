@@ -1,9 +1,9 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import click
+import jinja2
 import logging
 import os
 import shutil
@@ -39,21 +39,12 @@ from cuckoo.misc import (
 
 log = logging.getLogger("cuckoo")
 
-def cuckoo_create(username=None, cfg=None):
+def cuckoo_create(username=None, cfg=None, quiet=False):
     """Create a new Cuckoo Working Directory."""
-    print "="*71
-    print " "*4, yellow(
-        "Welcome to Cuckoo Sandbox, this appears to be your first run!"
-    )
-    print " "*4, "We will now set you up with our default configuration."
-    print " "*4, "You will be able to modify the configuration to your likings "
-    print " "*4, "by exploring the", red(cwd()), "directory."
-    print
-    print " "*4, "Among other configurable things of most interest is the"
-    print " "*4, "new location for your Cuckoo configuration:"
-    print " "*4, "         " + red(cwd("conf"))
-    print "="*71
-    print
+    if not quiet:
+        print jinja2.Environment().from_string(
+            open(cwd("cwd", "init-pre.jinja2", private=True), "rb").read()
+        ).render(cwd=cwd, yellow=yellow, red=red)
 
     if not os.path.isdir(cwd()):
         os.mkdir(cwd())
@@ -83,9 +74,11 @@ def cuckoo_create(username=None, cfg=None):
     write_supervisor_conf(username or getuser())
     write_cuckoo_conf(cfg=cfg)
 
-    print "Cuckoo has finished setting up the default configuration."
-    print "Please modify the default settings where required and"
-    print "start Cuckoo again (by running `cuckoo` or `cuckoo -d`)."
+    if not quiet:
+        print
+        print jinja2.Environment().from_string(
+            open(cwd("cwd", "init-post.jinja2", private=True), "rb").read()
+        ).render()
 
 def cuckoo_init(level, ctx, cfg=None):
     """Initialize Cuckoo configuration.
@@ -523,18 +516,27 @@ def migrate(revision):
 
 @main.command("import")
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
-@click.option("-f", "--force", is_flag=True, help="Perform non-reversible in-place database migrations")
-@click.option("--database", help="Creation of a new database for a reversible migration")
-@click.option("-r", "--reference", "mode", flag_value="reference", default=True)
-@click.option("-c", "--copy", "mode", flag_value="copy")
 @click.pass_context
-def import_(ctx, path, force, database, mode):
-    if force and database:
-        sys.exit("Can't have both the --force and the --database parameter.")
+def import_(ctx, path):
+    print yellow("You are importing an existing Cuckoo setup. Please")
+    print yellow("understand that if you remove the old Cuckoo setup")
+    print yellow("after this import you will still ")
+    print " "*20, red("loose ALL of your data!")
+    print
+    print yellow("Additionally, database migrations will be performed ")
+    print yellow("in-place. You won't be able to use your old Cuckoo ")
+    print yellow("setup anymore afterwards! However, we'll provide ")
+    print yellow("you with the option to create a SQL backup beforehand.")
+    print
+
+    value = click.confirm(
+        "... I've read the above and understand the consequences", False
+    )
+    if not value:
+        sys.exit(red("Aborting operation.. please try again!"))
 
     try:
-        # TODO Actually symlink or copy analyses.
-        import_cuckoo(ctx.parent.user, path, force, database)
+        import_cuckoo(ctx.parent.user, path)
     except KeyboardInterrupt:
         print(red("Aborting import of Cuckoo instance.."))
 

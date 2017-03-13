@@ -34,6 +34,11 @@ before_test:
   - "psql -c \"CREATE USER cuckoo WITH PASSWORD 'cuckoo'\""
   - "psql -c \"CREATE DATABASE cuckootest\""
 
+  - "mysql -u root -e \"CREATE DATABASE cuckootestimport\""
+  - "mysql -u root cuckootestimport < tests/files/sql/11my.sql"
+  - "psql -c \"CREATE DATABASE cuckootestimport\""
+  - "psql cuckootestimport <tests/files/sql/11pg.sql >NUL"
+
 test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"

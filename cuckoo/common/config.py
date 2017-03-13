@@ -1006,7 +1006,9 @@ class Config(object):
             ret[config_name] = {}
             for section, values in cfg.sections.items():
                 ret[config_name][section] = {}
-                types = cfg.get_section_types(config_name, section) or {}
+                types = cfg.get_section_types(
+                    config_name, section, loose=loose
+                ) or {}
                 for key, value in values.items():
                     if sanitize and key in types and types[key].sanitize:
                         value = "*"*8

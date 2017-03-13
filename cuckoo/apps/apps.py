@@ -10,6 +10,7 @@ import random
 import requests
 import shutil
 import StringIO
+import subprocess
 import sys
 import tarfile
 import time
@@ -430,3 +431,13 @@ def cuckoo_machine(vmname, action, ip, platform, options, tags,
         cfg[machinery].pop(vmname)
 
     write_cuckoo_conf(cfg=cfg)
+
+def migrate_database(revision="head"):
+    args = [
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", revision,
+    ]
+    try:
+        subprocess.check_call(args, cwd=cwd("db_migration", private=True))
+    except subprocess.CalledProcessError:
+        return False
+    return True
