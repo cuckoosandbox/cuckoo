@@ -6,8 +6,6 @@
 
 import random
 import logging
-import sys
-import time
 from threading import Thread
 from ctypes import WINFUNCTYPE, POINTER, sizeof
 from ctypes import c_bool, c_int, create_unicode_buffer, c_void_p
@@ -100,7 +98,7 @@ def foreach_window(hwnd, lparam):
 
     # List of window classes with specific behaviour
     specific = [
-        "IEFrame", "#32770"
+        "ieframe", "#32770"
     ]
 
     # If the window is visible, enumerate its child objects, looking
@@ -206,52 +204,30 @@ class Human(Auxiliary, Thread):
         USER32.keybd_event(VK_RETURN, 0x1C, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 
     @staticmethod
-    def handle_IEFrame(frameHandle):
+    def handle_ieframe(frameHandle):
         """
           Automates the download of a file in IE
         """
-        # Iterate while we can find a download notification toolbar
-        while True:
-            # Get the IE11 download notification toolbar
-            hToolbar = USER32.FindWindowEx(frameHandle.value, 0, u"Frame Notification Bar", 0)
-            if not hToolbar:
-                break
+        # Get the IE11 download notification toolbar
+        hToolbar = USER32.FindWindowExW(frameHandle, 0, u"Frame Notification Bar", 0)
+        if not hToolbar:
+            log.warn("Download toolbar not found in IEFrame")
+            return
 
-            hBar = USER32.FindWindowEx(hToolbar.value, 0, u"DirectUIHWND", 0)
-            if(not hBar or not USER32.IsWindowVisible(hToolbar.value) or
-               not USER32.IsWindowVisible(hBar.value)):
-                # No IE11 download toolbar has been found
-                break
+        hBar = USER32.FindWindowExW(hToolbar, 0, u"DirectUIHWND", 0)
+        if(not hBar or not USER32.IsWindowVisible(hToolbar) or
+           not USER32.IsWindowVisible(hBar)):
+            # No IE11 download toolbar has been found
+            log.warn("Download toolbar not found in IEFrame")
+            return
 
-            # Set the IE frame as fg window to receive keys
-            USER32.SetForegroundWindow(frameHandle.value)
-            # Press ALT + R to run the file
-            ip = INPUT()
-            ip.type = INPUT_KEYBOARD
-            ip.ki.wScan = 0
-            ip.ki.time = 0
-            ip.ki.dwExtraInfo = 0
+        log.debug("Setting %s window as foreground", frameHandle)
+        # Set the IE frame as fg window to receive keys
+        USER32.SetForegroundWindow(frameHandle)
 
-            # Press the "Alt" key
-            ip.ki.wVk = VK_MENU
-            ip.ki.dwFlags = 0 # 0 for key press
-            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
-
-            # Press the "R" key
-            ip.ki.wVk = 'R'
-            ip.ki.dwFlags = 0 # 0 for key press
-            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
-
-            # Release the "R" key
-            ip.ki.wVk = 'R'
-            ip.ki.dwFlags = KEYEVENTF_KEYUP
-            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
-
-            # Release the "Alt" key
-            ip.ki.wVk = VK_MENU
-            ip.ki.dwFlags = KEYEVENTF_KEYUP
-            USER32.SendInput(1, byref(ip), sys.getsizeof(INPUT))
-
-            time.sleep(500)
-
+        log.debug("Sending ALT + R to IEFrame to run the download")
+        USER32.keybd_event(VK_LMENU, 0, KEYEVENTF_EXTENDEDKEY | 0, 0)
+        USER32.keybd_event(VK_R, 0, KEYEVENTF_EXTENDEDKEY | 0, 0)
+        USER32.keybd_event(VK_R, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+        USER32.keybd_event(VK_LMENU, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 

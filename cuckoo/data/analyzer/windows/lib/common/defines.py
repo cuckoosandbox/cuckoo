@@ -93,8 +93,10 @@ SHARD_PATHA               = 0x00000002
 INPUT_KEYBOARD            = 0x00000001
 KEYEVENTF_KEYUP           = 0x00000002
 VK_MENU                   = 0x00000012
+VK_LMENU                  = 0x000000A4
 VK_RETURN                 = 0x0000000D
 VK_RIGHT                  = 0x00000027
+VK_R                      = 0x00000052
 
 KEYEVENTF_EXTENDEDKEY     = 0x00000001
 KEYEVENTF_KEYUP           = 0x00000002
