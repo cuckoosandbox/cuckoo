@@ -907,6 +907,8 @@ def test_migration_20c2_200():
     Files.create(cwd("conf"), "auxiliary.conf", """
 [mitm]
 script = data/mitm.py
+[sniffer]
+tcpdump = foobar
 """)
     Files.create(cwd("conf"), "cuckoo.conf", """
 [cuckoo]
@@ -1036,47 +1038,59 @@ interface = eth0
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
 
-def test_full_migration_040():
-    cfg = Config.from_confdir("tests/files/conf/040_plain", loose=True)
-    cfg = migrate(cfg, "0.4")
+class FullMigration(object):
+    DIRPATH = None
+    VERSION = None
 
-    # Ensure that all values exist and that have the correct types.
-    for filename, sections in Config.configuration.items():
-        assert filename in cfg
-        for section, entries in sections.items():
-            # We check machines and VPNs manually later on.
-            if section == "*" or section == "__star__":
-                continue
+    def test_full_migration(self):
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
 
-            assert section in cfg[filename]
-            for key, value in entries.items():
-                assert key in cfg[filename][section]
-                actual_value = cfg[filename][section][key]
-                assert actual_value == value.parse(actual_value)
+        # Ensure that all values exist and that have the correct types.
+        for filename, sections in Config.configuration.items():
+            assert filename in cfg
+            for section, entries in sections.items():
+                # We check machines and VPNs manually later on.
+                if section == "*" or section == "__star__":
+                    continue
 
-    machineries = (
-        "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
-        "vmware", "vsphere", "xenserver",
-    )
+                assert section in cfg[filename]
+                for key, value in entries.items():
+                    assert key in cfg[filename][section]
+                    actual_value = cfg[filename][section][key]
+                    assert actual_value == value.parse(actual_value)
 
-    for machinery in machineries:
-        for machine in config("%s:%s:machines" % (machinery, machinery)):
-            assert machine in cfg[machinery]
-            type_ = Config.configuration[machinery]["*"]
+        machineries = (
+            "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
+            "vmware", "vsphere", "xenserver",
+        )
+
+        for machinery in machineries:
+            for machine in config("%s:%s:machines" % (machinery, machinery)):
+                assert machine in cfg[machinery]
+                type_ = Config.configuration[machinery]["*"]
+                if isinstance(type_, (tuple, list)):
+                    type_ = type_[0]
+
+                for key, value in cfg[machinery][machine].items():
+                    assert value == type_[key].parse(value)
+
+        for vpn in config("routing:vpn:vpns"):
+            assert vpn in cfg["routing"]
+            type_ = Config.configuration["routing"]["*"]
             if isinstance(type_, (tuple, list)):
                 type_ = type_[0]
 
-            for key, value in cfg[machinery][machine].items():
+            for key, value in cfg["routing"][vpn].items():
                 assert value == type_[key].parse(value)
 
-    for vpn in config("routing:vpn:vpns"):
-        assert vpn in cfg["routing"]
-        type_ = Config.configuration["routing"]["*"]
-        if isinstance(type_, (tuple, list)):
-            type_ = type_[0]
+class TestFullMigration040(FullMigration):
+    DIRPATH = "tests/files/conf/040_plain"
+    VERSION = "0.4"
 
-        for key, value in cfg["routing"][vpn].items():
-            assert value == type_[key].parse(value)
+class TestFullMigration110(FullMigration):
+    DIRPATH = "tests/files/conf/110_plain"
+    VERSION = "1.1.0"
 
 def test_cast():
     assert cast("cuckoo:cuckoo:version_check", "1") is True

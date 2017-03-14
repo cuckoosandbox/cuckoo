@@ -243,7 +243,10 @@ def _100_110(c):
     c["cuckoo"]["cuckoo"]["tmppath"] = "/tmp"
     return c
 
-def _110_120(c):
+def _110_111(c):
+    return c
+
+def _111_120(c):
     c["cuckoo"]["cuckoo"]["terminate_processes"] = False
     c["cuckoo"]["cuckoo"]["max_machines_count"] = 0
     c["cuckoo"]["processing"]["sort_pcap"] = True
@@ -544,6 +547,8 @@ def _20c1_20c2(c):
 def _20c2_200(c):
     if c["auxiliary"]["mitm"]["script"] == "data/mitm.py":
         c["auxiliary"]["mitm"]["script"] = "mitm.py"
+    if "bpf" not in c["auxiliary"]["sniffer"]:
+        c["auxiliary"]["sniffer"]["bpf"] = None
     if c["cuckoo"]["cuckoo"]["freespace"] == 64:
         c["cuckoo"]["cuckoo"]["freespace"] = 1024
     if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
@@ -643,13 +648,14 @@ def _20dev(c):
     return c
 
 migrations = {
-    "0.4": ("0.4.1", _040_041),
+    "0.4.0": ("0.4.1", _040_041),
     "0.4.1": ("0.4.2", _041_042),
     "0.4.2": ("0.5.0", _042_050),
     "0.5.0": ("0.6.0", _050_060),
     "0.6.0": ("1.0.0", _060_100),
     "1.0.0": ("1.1.0", _100_110),
-    "1.1.0": ("1.2.0", _110_120),
+    "1.1.0": ("1.1.1", _110_111),
+    "1.1.1": ("1.2.0", _111_120),
     "1.2.0": ("2.0-rc1", _120_20c1),
     "2.0-rc1": ("2.0-rc2", _20c1_20c2),
     "2.0-rc2": ("2.0.0", _20c2_200),
@@ -662,9 +668,15 @@ migrations = {
     "2.0-dev": ("1.2.0", _20dev),
 }
 
+# Mapping from actual version numbers to "full" / beautified version numbers.
+mapping = {
+    "0.4": "0.4.0", "0.5": "0.5.0", "0.6": "0.6.0", "1.0": "1.0.0",
+    "1.1": "1.1.0", "1.2": "1.2.0",
+}
+
 def migrate(c, current, to=None):
     """Upgrade the configuration 'c' from 'current' to 'to'."""
-    while current != to and current in migrations:
-        current, migration = migrations[current]
+    while current != to and mapping.get(current, current) in migrations:
+        current, migration = migrations[mapping.get(current, current)]
         c = migration(c)
     return c
