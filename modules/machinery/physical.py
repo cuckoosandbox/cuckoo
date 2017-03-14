@@ -6,6 +6,7 @@ import socket
 import logging
 import xmlrpclib
 import subprocess
+import re
 
 log = logging.getLogger(__name__)
 
@@ -183,6 +184,8 @@ class Physical(Machinery):
         data.update({
             "uname": self.options.fog.username,
             "upass": self.options.fog.password,
+            "ulang": "English",
+            "login": "Login",            
         })
 
         return requests.post(url, data=data)
@@ -194,7 +197,7 @@ class Physical(Machinery):
             return
 
         # TODO Handle exceptions such as not being able to connect.
-        r = self.fog_query("node=tasks&sub=listhosts")
+        r = self.fog_query("node=task&sub=listhosts")
 
         # Parse the HTML.
         b = bs4.BeautifulSoup(r.content, "html.parser")
@@ -207,10 +210,25 @@ class Physical(Machinery):
         # Mapping for physical machine hostnames to their mac address and uri
         # for "downloading" a safe image onto the host. Great piece of FOG API
         # usage here.
-        for row in b.find_all("table")[0].find_all("tr")[1:]:
-            hostname, macaddr, download, upload, advanced = row.find_all("td")
-            self.fog_machines[hostname.text] = (
-                macaddr.text, next(download.children).attrs["href"][1:],
+        for row in  b.find_all("table")[0].find_all("tr")[1:]:
+            host_info = row.find_all("td")[0]         
+            host_info_text= host_info.getText(",")
+        
+            aux = host_info_text.split(",")
+            macaddr = aux[1]
+            hostname = aux[0]
+             
+            host_download = row.find_all("td")[2]
+            downlink_regx = re.compile(r'Deploy')
+             
+            host_links = []
+            for l in host_download.children:
+                if type(l) == bs4.element.Tag:
+                    host_links.append(l.attrs["href"][1:])    
+                next(host_download.children)
+             
+            self.fog_machines[hostname] = (
+                    macaddr, host_links[1],
             )
 
         # Check whether all our machines are available on FOG.
