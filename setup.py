@@ -6,6 +6,7 @@
 import os
 import setuptools
 import sys
+import traceback
 
 # Update the MANIFEST.in file to include the one monitor version that is
 # actively shipped for this distribution and exclude all the other monitors
@@ -63,7 +64,25 @@ install_requires = []
 if os.path.exists("/usr/bin/swig"):
     install_requires.append("m2crypto==0.24.0")
 
-setuptools.setup(
+def do_setup(**kwargs):
+    try:
+        setuptools.setup(**kwargs)
+    except Exception as e:
+        print "\x1b[31m"
+        print "The following error has occurred while trying to install Cuckoo!"
+        print "\x1b[0m"
+        print traceback.format_exc(),
+        print "\x1b[31m"
+        print "Make sure that you've installed all requirements for Cuckoo "
+        print "to be installed properly! Please refer to our documentation: "
+        print "https://cuckoo.sh/docs/installation/host/requirements.html"
+        print "\x1b[33m"
+        print "Once you have triple checked that all dependencies have been "
+        print "installed but Cuckoo still fails, please feel free to reach "
+        print "out to us on IRC / email / Github!"
+        print "\x1b[0m"
+
+do_setup(
     name="Cuckoo",
     version="2.0.0",
     author="Stichting Cuckoo Foundation",
