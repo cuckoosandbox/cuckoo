@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,7 +10,7 @@ import tempfile
 from cuckoo.common.config import config, Config
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
-    CuckooDependencyError
+    CuckooDependencyError, CuckooMissingMachineError
 )
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
@@ -125,6 +125,20 @@ class TestVirtualbox(object):
             config("virtualbox:virtualbox:path"),
             "showvminfo", "label", "--machinereadable"
         )
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_vminfo_missing_machine(self, p):
+        stderr = (
+            "VBoxManage: error: Could not find a registered machine named 'vmname'\n"
+            "VBoxManage: error: Details: code VBOX_E_OBJECT_NOT_FOUND (0x80bb0001), component VirtualBox, interface IVirtualBox, callee nsISupports\n"
+            "VBoxManage: error: Context: \"FindMachine(Bstr(VMNameOrUuid).raw(), machine.asOutParam())\" at line 2611 of file VBoxManageInfo.cpp\n"
+        )
+
+        p.return_value.returncode = 1
+        p.return_value.communicate.return_value = "out", stderr
+        with pytest.raises(CuckooMissingMachineError) as e:
+            self.m.vminfo("vmname", None)
+        e.match("Please create one or more")
 
     def test_list_success(self):
         output = (

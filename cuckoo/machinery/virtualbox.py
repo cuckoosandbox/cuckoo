@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,7 +10,8 @@ import time
 
 from cuckoo.common.abstracts import Machinery
 from cuckoo.common.exceptions import (
-    CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError
+    CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError,
+    CuckooMissingMachineError
 )
 from cuckoo.misc import Popen
 
@@ -250,6 +251,13 @@ class VirtualBox(Machinery):
             output, err = proc.communicate()
 
             if proc.returncode != 0:
+                if "VBOX_E_OBJECT_NOT_FOUND" in err:
+                    raise CuckooMissingMachineError(
+                        "The virtual machine '%s' doesn't exist! Please "
+                        "create one or more Cuckoo analysis VMs and properly "
+                        "fill out the Cuckoo configuration!" % label
+                    )
+
                 # It's quite common for virtualbox crap utility to exit with:
                 # VBoxManage: error: Details: code E_ACCESSDENIED (0x80070005)
                 # So we just log to debug this.

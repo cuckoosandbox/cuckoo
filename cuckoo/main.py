@@ -184,7 +184,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
-        message = "{0}: {1}".format(e.__class__.__name__, e)
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
         if len(log.handlers):
             log.critical(message)
         else:
