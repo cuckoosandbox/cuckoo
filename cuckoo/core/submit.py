@@ -188,7 +188,7 @@ class SubmitManager(object):
                 "custom": info.get("custom"),
                 "owner": info.get("owner"),
                 "tags": info.get("tags"),
-                "memory": info.get("memory"),
+                "memory": options.get("full-memory-dump"),
                 "enforce_timeout": options.get("enforce-timeout"),
                 "machine": info.get("machine"),
                 "platform": info.get("platform"),

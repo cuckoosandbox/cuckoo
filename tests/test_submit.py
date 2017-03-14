@@ -115,6 +115,7 @@ class TestSubmitManager(object):
         assert t.category == "url"
         assert t.status == "pending"
         assert not t.enforce_timeout
+        assert not t.memory
         assert not t.machine
         assert t.options == {
             "procmemdump": "yes",
@@ -135,8 +136,31 @@ class TestSubmitManager(object):
         assert t.category == "file"
         assert t.status == "pending"
         assert t.enforce_timeout is True
+        assert not t.memory
         assert not t.machine
         assert t.options == {}
+
+    def test_submit_file2(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "pdf0.pdf",
+            "data": open("tests/files/pdf0.pdf", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/file2.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("pdf0.pdf")
+        assert t.package == "pdf"
+        assert t.timeout == 111
+        assert t.category == "file"
+        assert t.status == "pending"
+        assert t.enforce_timeout is True
+        assert t.memory is True
+        assert not t.machine
+        assert t.options == {
+            "free": "yes",
+            "human": "0",
+        }
 
     def test_submit_arc1(self):
         assert self.submit_manager.pre("files", [{
@@ -154,6 +178,7 @@ class TestSubmitManager(object):
         assert t.status == "pending"
         assert t.machine == "cuckoo1"
         assert not t.enforce_timeout
+        assert not t.memory
         assert t.options == {
             "filename": "oledata.mso",
         }
