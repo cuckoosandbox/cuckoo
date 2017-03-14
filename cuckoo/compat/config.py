@@ -547,8 +547,6 @@ def _20c1_20c2(c):
 def _20c2_200(c):
     if c["auxiliary"]["mitm"]["script"] == "data/mitm.py":
         c["auxiliary"]["mitm"]["script"] = "mitm.py"
-    if "bpf" not in c["auxiliary"]["sniffer"]:
-        c["auxiliary"]["sniffer"]["bpf"] = None
     if c["cuckoo"]["cuckoo"]["freespace"] == 64:
         c["cuckoo"]["cuckoo"]["freespace"] = 1024
     if c["cuckoo"]["cuckoo"]["tmppath"] == "/tmp":
@@ -563,10 +561,12 @@ def _20c2_200(c):
         "company": None,
         "email": None,
     }
-    c["processing"]["network"]["whitelist_dns"] = (
+    c["processing"]["network"]["whitelist_dns"] = cast(
+        "processing:network:whitelist_dns",
         c["processing"]["network"].pop("whitelist-dns", None)
     )
-    c["processing"]["network"]["allowed_dns"] = (
+    c["processing"]["network"]["allowed_dns"] = cast(
+        "processing:network:allowed_dns",
         c["processing"]["network"].pop("allowed-dns", None)
     )
     # If default key, disable VirusTotal by default.

@@ -926,7 +926,7 @@ analysis_size_limit = 104857600
 """)
     Files.create(cwd("conf"), "processing.conf", """
 [network]
-whitelist-dns = wow
+whitelist-dns = yes
 allowed-dns = 8.8.8.8
 [virustotal]
 enabled = yes
@@ -996,7 +996,7 @@ interface = eth0
     assert cfg["cuckoo"]["resultserver"]["upload_max_size"] == 128*1024*1024
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
-    assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
+    assert cfg["processing"]["network"]["whitelist_dns"] is True
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["processing"]["virustotal"]["enabled"] is False
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [
@@ -1056,7 +1056,8 @@ class FullMigration(object):
 
                 assert section in cfg[filename]
                 for key, value in entries.items():
-                    assert key in cfg[filename][section]
+                    if key not in cfg[filename][section]:
+                        continue
                     actual_value = cfg[filename][section][key]
                     assert actual_value == value.parse(actual_value)
 
@@ -1084,13 +1085,31 @@ class FullMigration(object):
             for key, value in cfg["routing"][vpn].items():
                 assert value == type_[key].parse(value)
 
+    def test_write_configuration(self):
+        set_cwd(tempfile.mkdtemp())
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
+        cuckoo_create(cfg=cfg)
+
 class TestFullMigration040(FullMigration):
     DIRPATH = "tests/files/conf/040_plain"
     VERSION = "0.4"
 
 class TestFullMigration110(FullMigration):
     DIRPATH = "tests/files/conf/110_plain"
-    VERSION = "1.1.0"
+    VERSION = "1.1"
+
+class TestFullMigration120(FullMigration):
+    DIRPATH = "tests/files/conf/120_plain"
+    VERSION = "1.2"
+
+class TestFullMigration20c1(FullMigration):
+    DIRPATH = "tests/files/conf/20c1_plain"
+    VERSION = "2.0-rc1"
+
+class TestFullMigration20c2(FullMigration):
+    DIRPATH = "tests/files/conf/20c2_plain"
+    VERSION = "2.0-rc2"
 
 def test_cast():
     assert cast("cuckoo:cuckoo:version_check", "1") is True
