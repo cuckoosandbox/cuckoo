@@ -142,7 +142,7 @@ class TestVirtualbox(object):
         e.match("Please create one or more")
 
     @mock.patch("cuckoo.machinery.virtualbox.Popen")
-    def test_initialize(self, p):
+    def test_initialize_snapshot_fail(self, p):
         self.m.set_options(Dictionary({
             "virtualbox": Dictionary({
                 "machines": ["machine1"],
@@ -172,6 +172,41 @@ class TestVirtualbox(object):
         with pytest.raises(CuckooMachineError) as e:
             self.m.initialize("virtualbox")
         e.match("trying to restore the snapshot")
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_initialize_success(self, p):
+        self.m.set_options(Dictionary({
+            "virtualbox": Dictionary({
+                "machines": ["machine1"],
+                "path": __file__,
+                "mode": "headless",
+            }),
+            "machine1": Dictionary({
+                "label": "machine1",
+                "platform": "windows",
+                "ip": "192.168.56.101",
+            }),
+        }))
+        self.m._list = mock.MagicMock(return_value=[
+            "machine1",
+        ])
+        self.m.stop = mock.MagicMock()
+        self.m._status = mock.MagicMock(return_value="poweroff")
+        self.m._get_resultserver_port = mock.MagicMock(return_value=2042)
+        p.return_value.returncode = 0
+        p.return_value.communicate.return_value = "", ""
+        class machine1(object):
+            label = "machine1"
+            snapshot = None
+
+        self.m.machines = mock.MagicMock(return_value=[
+            machine1(),
+        ])
+        self.m.initialize("virtualbox")
+        p.assert_called_once_with(
+            [__file__, "snapshot", "machine1", "restorecurrent"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
 
     def test_list_success(self):
         output = (
