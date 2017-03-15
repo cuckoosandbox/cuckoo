@@ -54,20 +54,18 @@ class VirtualBox(Machinery):
 
         super(VirtualBox, self)._initialize_check()
 
-    def start(self, label, task):
-        """Start a virtual machine.
-        @param label: virtual machine name.
-        @param task: task object.
-        @raise CuckooMachineError: if unable to start.
-        """
-        log.debug("Starting vm %s" % label)
+        # Restore each virtual machine to its snapshot. This will crash early
+        # for users that don't have proper snapshots in-place, which is good.
+        # TODO This should be ported to all machinery engines.
+        machines = self._list()
+        for machine in self.machines():
+            if machine.label not in machines:
+                continue
 
-        if self._status(label) == self.RUNNING:
-            raise CuckooMachineError(
-                "Trying to start an already started vm %s" % label
-            )
+            self.restore(machine.label, machine)
 
-        machine = self.db.view_machine_by_label(label)
+    def restore(self, label, machine):
+        """Restore a VM to its snapshot."""
         args = [
             self.options.virtualbox.path, "snapshot", label
         ]
@@ -95,8 +93,26 @@ class VirtualBox(Machinery):
         except OSError as e:
             raise CuckooMachineSnapshotError(
                 "VBoxManage failed trying to restore the snapshot of "
-                "machine: %s" % e
+                "machine '%s' (this most likely means there is no snapshot, "
+                "please refer to our documentation for more information on "
+                "how to setup a snapshot for your VM): %s" % (label, e)
             )
+
+    def start(self, label, task):
+        """Start a virtual machine.
+        @param label: virtual machine name.
+        @param task: task object.
+        @raise CuckooMachineError: if unable to start.
+        """
+        log.debug("Starting vm %s", label)
+
+        if self._status(label) == self.RUNNING:
+            raise CuckooMachineError(
+                "Trying to start an already started vm %s" % label
+            )
+
+        machine = self.db.view_machine_by_label(label)
+        self.restore(label, machine)
 
         self._wait_status(label, self.SAVED)
 

@@ -13,6 +13,7 @@ from cuckoo.common.exceptions import (
     CuckooDependencyError, CuckooMissingMachineError
 )
 from cuckoo.common.files import Folders
+from cuckoo.common.objects import Dictionary
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
@@ -139,6 +140,38 @@ class TestVirtualbox(object):
         with pytest.raises(CuckooMissingMachineError) as e:
             self.m.vminfo("vmname", None)
         e.match("Please create one or more")
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_initialize(self, p):
+        self.m.set_options(Dictionary({
+            "virtualbox": Dictionary({
+                "machines": ["machine1"],
+                "path": __file__,
+                "mode": "headless",
+            }),
+            "machine1": Dictionary({
+                "label": "machine1",
+                "platform": "windows",
+                "ip": "192.168.56.101",
+            }),
+        }))
+        self.m._list = mock.MagicMock(return_value=[
+            "machine1",
+        ])
+        self.m.stop = mock.MagicMock()
+        self.m._get_resultserver_port = mock.MagicMock(return_value=2042)
+        p.return_value.returncode = 1
+        p.return_value.communicate.return_value = "out", "err"
+        class machine1(object):
+            label = "machine1"
+            snapshot = None
+
+        self.m.machines = mock.MagicMock(return_value=[
+            machine1(),
+        ])
+        with pytest.raises(CuckooMachineError) as e:
+            self.m.initialize("virtualbox")
+        e.match("trying to restore the snapshot")
 
     def test_list_success(self):
         output = (

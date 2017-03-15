@@ -197,10 +197,11 @@ class Machinery(object):
             try:
                 self.stop(machine.label)
             except CuckooMachineError as e:
-                msg = "Please update your configuration. Unable to shut " \
-                      "'{0}' down or find the machine in its proper state:" \
-                      " {1}".format(machine.label, e)
-                raise CuckooCriticalError(msg)
+                raise CuckooCriticalError(
+                    "Please update your configuration. Unable to shut '%s' "
+                    "down or find the machine in its proper state: %s" %
+                    (machine.label, e)
+                )
 
         if not self.options_globals.timeouts.vm_state:
             raise CuckooCriticalError("Virtual machine state change timeout "
