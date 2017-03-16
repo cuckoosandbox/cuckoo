@@ -17,6 +17,7 @@ import time
 
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import config, emit_options, Config
+from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
 )
@@ -352,6 +353,26 @@ def cuckoo_clean():
             conn.close()
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
+
+    # Check if ElasticSearch reporting is enabled and drop its data if it is.
+    elastic.init()
+    if elastic.enabled:
+        elastic.connect()
+
+        # This should be moved to the elastic abstract.
+        date_index = datetime.datetime.utcnow().strftime({
+            "yearly": "%Y",
+            "monthly": "%Y-%m",
+            "daily": "%Y-%m-%d",
+        }[elastic.index_time_pattern])
+        dated_index = "%s-%s" % (elastic.index, date_index)
+
+        elastic.client.indices.delete(
+            index=dated_index, ignore=[400, 404]
+        )
+
+        if es.indices.exists_template("%s_template" % dated_index):
+            es.indices.delete_template("%s_template" % dated_index)
 
     # Paths to clean.
     paths = [

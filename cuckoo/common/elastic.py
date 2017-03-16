@@ -35,7 +35,9 @@ class Elastic(object):
             return
 
         try:
-            self.client = elasticsearch.Elasticsearch(self.hosts)
+            self.client = elasticsearch.Elasticsearch(
+                self.hosts, timeout=self.options.get("timeout", 300)
+            )
         except TypeError as e:
             raise CuckooOperationalError(
                 "Unable to connect to ElasticSearch due to an invalid ip:port "
