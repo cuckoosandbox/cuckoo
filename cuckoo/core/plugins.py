@@ -13,7 +13,7 @@ import cuckoo
 from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
-    CuckooDependencyError, CuckooDisableModule
+    CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
 from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import supported_version
@@ -35,7 +35,15 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     for fname in os.listdir(dirpath):
         if fname.endswith(".py") and not fname.startswith("__init__"):
             module_name, _ = os.path.splitext(fname)
-            importlib.import_module("%s.%s" % (module_prefix, module_name))
+            try:
+                importlib.import_module(
+                    "%s.%s" % (module_prefix, module_name)
+                )
+            except ImportError as e:
+                raise CuckooOperationalError(
+                    "Unable to load the Cuckoo plugin at %s: %s. Please "
+                    "review its contents and/or validity!" % (fname, e)
+                )
 
     subclasses = class_.__subclasses__()[:]
 
