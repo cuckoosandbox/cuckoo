@@ -11,6 +11,7 @@ from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
     config2
 )
+from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooStartupError
 )
@@ -1198,3 +1199,7 @@ def test_no_superfluous_conf(p):
     cuckoo_create()
     Config.from_confdir(cwd("conf"))
     p.assert_not_called()
+
+def test_faq():
+    assert faq("hehe").startswith("http")
+    assert faq("hehe").endswith("#hehe")

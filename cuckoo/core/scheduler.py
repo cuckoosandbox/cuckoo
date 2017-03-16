@@ -13,6 +13,7 @@ import Queue
 import cuckoo
 
 from cuckoo.common.config import Config, emit_options, config
+from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooGuestError, CuckooOperationalError,
     CuckooMachineSnapshotError, CuckooCriticalError, CuckooGuestCriticalTimeout
@@ -524,8 +525,16 @@ class AnalysisManager(threading.Thread):
         except CuckooGuestCriticalTimeout as e:
             if not unlocked:
                 machine_lock.release()
-            log.error("Error from the Cuckoo Guest: %s", e, extra={
-                "error_action": "host2guest_routing",
+            log.error(
+                "Error from machine '%s': it appears that this Virtual "
+                "Machine hasn't been configured properly as the Cuckoo Host "
+                "wasn't able to connect to the Guest. There could be a few "
+                "reasons for this, please refer to our documentation on the "
+                "matter: %s",
+                self.machine.name,
+                faq("troubleshooting-vm-network-configuration"),
+            extra={
+                "error_action": "vmrouting",
                 "action": "guest.handle",
                 "status": "error",
                 "task_id": self.task.id,

@@ -8,7 +8,7 @@ Add agent to autorun, the easier way is to add it to crontab::
     @reboot python path_to_agent.py
 
 The following instructions are only for x32/x64 linux guests
-===========================================================
+============================================================
 
 Install dependencies::
 
@@ -19,19 +19,18 @@ Compile Kernel extension::
     wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/data/strace.stp
     sudo stap -p4 -r $(uname -r) strace.stp -m stap_ -v
 
-Once finished it you should see stap_.ko in the same folder
+Once the compilation finishes you should see the file ``stap_.ko`` in the same
+folder. You will now be able to test the STAP kernel extension as follows::
 
-Test Kernel extension::
+    $ staprun -v ./stap_.ko
+    staprun:insert_module:x Module stap_ inserted from file path_to_stap_.ko
 
-    staprun -v ./stap_.ko
-
-Output should be something like **staprun:insert_module:x Module stap_ inserted from file path_to_stap_.ko**
-stap_.ko should be placed in /root/.cuckoo::
+In order to setup the Guest, you will have to place ``stap_.ko`` in
+``/root/.cuckoo``::
 
     mkdir /root/.cuckoo
     mv stap_.ko /root/.cuckoo/
 
+And finally you'll want to disable the firewall::
 
-Disable firewall::
-
-    sudo ufw disable
+    $ sudo ufw disable

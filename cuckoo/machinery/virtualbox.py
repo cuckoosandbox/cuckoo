@@ -39,9 +39,10 @@ class VirtualBox(Machinery):
 
         if not os.path.exists(self.options.virtualbox.path):
             raise CuckooCriticalError(
-                "VirtualBox VBoxManage not found at specified path \"%s\" "
-                "(as specified in virtualbox.conf)" %
-                self.options.virtualbox.path
+                "VirtualBox' VBoxManage not found at specified path \"%s\" "
+                "(as specified in virtualbox.conf). Did you properly install "
+                "VirtualBox and configure Cuckoo to use it?"
+                % self.options.virtualbox.path
             )
 
         if self.options.virtualbox.mode not in ("gui", "headless"):

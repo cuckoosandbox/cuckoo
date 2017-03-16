@@ -9,6 +9,7 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Processing
+from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.core.database import Database
 
@@ -58,20 +59,35 @@ class Debug(Processing):
                 raise CuckooProcessingError(
                     "Error opening %s: %s" % (self.log_path, e)
                 )
+        else:
+            log.error(
+                "Error processing task #%d / machine '%s': it appears that "
+                "this Virtual Machine hasn't been able to contact back to "
+                "the Cuckoo Host. There could be a few reasons for this, "
+                "please refer to our documentation on the matter: %s",
+                self.task.id, self.task.machine,
+                faq("troubleshooting-vm-network-configuration"),
+            extra={
+                "error_action": "vmrouting",
+                "action": "guest.communication",
+                "status": "error",
+                "task_id": self.task.id,
+            })
 
         if os.path.exists(self.cuckoolog_path):
             debug["cuckoo"] = Logfile(self.cuckoolog_path)
 
         debug["errors"] = []
         for error in Database().view_errors(self.task["id"]):
-            debug["errors"].append(error.message)
+            if error.message not in debug["errors"]:
+                debug["errors"].append(error.message)
 
-            if error.action:
+            if error.action and error.action not in debug["action"]:
                 debug["action"].append(error.action)
 
         if os.path.exists(self.mitmerr_path):
             mitmerr = open(self.mitmerr_path, "rb").read()
-            if mitmerr:
+            if mitmerr and mitmerr not in debug["errors"]:
                 debug["errors"].append(mitmerr)
 
         return debug

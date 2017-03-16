@@ -10,6 +10,7 @@ import shutil
 import tempfile
 
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
@@ -33,23 +34,28 @@ class TestProcessing(object):
         db.add_url("http://google.com/")
         db.add_error("foo", 1)
         db.add_error("bar", 1)
+        db.add_error("bar", 1)
 
         d = Debug()
-        d.task = {
+        d.task = Dictionary({
             "id": 1,
-        }
+        })
+        # Note that the according exception doesn't show up provided we didn't
+        # configure the DatabaseHandler logging handler with our temporary
+        # database here.
         d.log_path = "nothing_to_see_here"
         d.cuckoolog_path = "neither here"
         d.mitmerr_path = "no no no"
 
         results = d.run()
         assert len(list(results["errors"])) == len(results["errors"])
-        assert results["errors"] == ["foo", "bar"]
-        assert results["action"] == []
+        assert len(results["errors"]) == 3
+        assert results["errors"][:2] == ["foo", "bar"]
+        assert results["action"] == ["vmrouting"]
 
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
-        assert results["action"] == ["thisisanaction"]
+        assert results["action"] == ["vmrouting", "thisisanaction"]
 
     def test_pdf(self):
         set_cwd(tempfile.mkdtemp())

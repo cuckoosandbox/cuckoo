@@ -370,3 +370,37 @@ said dependency and reinstalling Cuckoo. In the case presented above, with
 
 Then reinstalling Cuckoo again is simply invoking ``pip install -U cuckoo`` or
 similar.
+
+Troubleshooting VM network configuration
+----------------------------------------
+
+In case the network configuration of your Virtual Machine isn't working as
+expected, you'll be prompted with the message to resolve this issue as Cuckoo
+isn't able to use it for analyses as-is. There are numerous possibilities as
+to why the network configuration and/or your setup are incorrect so please
+read our documentation once more. However, most often the issue lies within
+one of the following reasons:
+
+* The IP address of the VM has been configured incorrectly. Please verify that
+  the VM has a static IP address, that it matches the one in the Cuckoo
+  configuration, and that the configured network interface exists and is up.
+  Also, in case of VirtualBox, did you configure the network interface to be a
+  "Host-Only interface"?
+* Check that there are no firewalls in-place that hinder the communication
+  between your Host and Guest and double check that the Host and Guest can
+  ping each other as well as connect to each other.
+
+If connections from the Cuckoo Host to the Guest work, but the other way
+around don't, then some additional problems may be at hand:
+
+* Is the network configuration equivalent on the host and in the VM? If not,
+  e.g., if the VM sees different IP ranges, then you'll have to configure the
+  "resultserver_ip" and "resultserver_port", for which we have separate
+  documentation.
+* If you've modified the Cuckoo Analyzer (located at ``$CWD/analyzer``) this
+  error message may indicate that a syntax error or other exception was
+  introduced, preventing the Analyzer from being properly started, and thus
+  not being able to perform the analysis as expected.
+
+If you've triple-checked the above and are still experiencing issues, then
+please contact us through one of the various communication channels.
