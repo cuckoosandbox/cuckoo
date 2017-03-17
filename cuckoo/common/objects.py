@@ -308,35 +308,6 @@ class File(object):
 
         return "", ""
 
-    def _yara_encode_string(self, s):
-        # Beware, spaghetti code ahead.
-        try:
-            new = s.encode("utf-8")
-        except UnicodeDecodeError:
-            s = s.lstrip("uU").encode("hex").upper()
-            s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
-            new = "{ %s }" % s
-
-        return new
-
-    def _yara_matches_177(self, matches):
-        """Extract matches from the Yara output for version 1.7.7."""
-        ret = []
-        for _, rule_matches in matches.items():
-            for match in rule_matches:
-                strings = set()
-
-                for s in match["strings"]:
-                    strings.add(self._yara_encode_string(s["data"]))
-
-                ret.append({
-                    "name": match["rule"],
-                    "meta": match["meta"],
-                    "strings": list(strings),
-                })
-
-        return ret
-
     def get_yara(self, category="binaries"):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
@@ -366,36 +337,22 @@ class File(object):
         if not os.path.getsize(self.file_path):
             return results
 
-        try:
-            matches = File.yara_rules[category].match(self.file_path)
+        for match in File.yara_rules[category].match(self.file_path):
+            strings, offsets = set(), {}
+            for _, key, value in match.strings:
+                strings.add(value)
+                offsets[key] = []
 
-            if getattr(yara, "__version__", None) == "1.7.7":
-                return self._yara_matches_177(matches)
+            strings = sorted(strings)
+            for offset, key, value in match.strings:
+                offsets[key].append((offset, strings.index(value)))
 
-            results = []
-
-            for match in matches:
-                strings = set()
-                offsets = {}
-                for s in match.strings:
-                    o, s = s[0], self._yara_encode_string(s[2])
-                    strings.add(s)
-                    offsets[s] = offsets.get(s, []) + [o]
-
-                # Map the offsets.
-                strings, offs = list(strings), {}
-                for s, o in offsets.items():
-                    offs[strings.index(s)] = o
-
-                results.append({
-                    "name": match.rule,
-                    "meta": match.meta,
-                    "strings": strings,
-                    "offsets": offs,
-                })
-
-        except Exception as e:
-            log.exception("Unable to match Yara signatures: %s", e)
+            results.append({
+                "name": match.rule,
+                "meta": match.meta,
+                "strings": list(strings),
+                "offsets": offsets,
+            })
 
         return results
 

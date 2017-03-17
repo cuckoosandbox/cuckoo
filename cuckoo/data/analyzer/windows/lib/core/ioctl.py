@@ -24,6 +24,9 @@ class Ioctl(object):
         self.pipepath = pipepath
 
     def invoke(self, ctlcode, value, outlength=0x1000):
+        # TODO Enable the kernel drivers.
+        return
+
         device_handle = KERNEL32.CreateFileA(
             "\\\\.\\%s" % self.pipepath, GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE, None, OPEN_EXISTING, 0, None

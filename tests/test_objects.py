@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,7 +8,10 @@ import pytest
 import re
 import tempfile
 
-from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.common.files import Files
+from cuckoo.common.objects import Dictionary, File, URL_REGEX, HAVE_YARA
+from cuckoo.core.startup import init_yara
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
 
@@ -108,3 +111,42 @@ def test_m2crypto():
     sig0 = pe.run()["signature"][0]
     assert sig0["organization"] == "Microsoft Corporation"
     assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
+
+@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
+def test_yara_offsets():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    File.YARA_RULEPATH = None
+    init_yara()
+
+    buf = (
+        # The SSEXY payload as per vmdetect.yar
+        "66 0F 70 ?? ?? 66 0F DB ?? ?? ?? ?? "
+        "?? 66 0F DB ?? ?? ?? ?? ?? 66 0F EF "
+        # A VirtualBox MAC address.
+        "30 38 2d 30 30 2d 32 37"
+    )
+    filepath = Files.temp_put(
+        "A"*64 + buf.replace("??", "00").replace(" ", "").decode("hex")
+    )
+    assert File(filepath).get_yara() == [{
+        "meta": {
+            "description": "Possibly employs anti-virtualization techniques",
+            "author": "nex"
+        },
+        "name": "vmdetect",
+        "offsets": {
+            "$ssexy": [
+                (64, 1),
+            ],
+            "$virtualbox_mac_1a": [
+                (88, 0),
+            ],
+        },
+        "strings": [
+            "08-00-27",
+            "f\x0fp\x00\x00f\x0f\xdb\x00\x00\x00\x00\x00"
+            "f\x0f\xdb\x00\x00\x00\x00\x00f\x0f\xef",
+        ],
+    }]

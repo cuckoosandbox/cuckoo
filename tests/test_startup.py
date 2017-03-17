@@ -13,12 +13,10 @@ from cuckoo.common.abstracts import (
 )
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.startup import (
-    init_modules, check_version, init_rooter, init_routing
+    init_modules, check_version, init_rooter, init_routing, init_yara
 )
-
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
-from cuckoo.core.startup import init_modules, init_yara
 
 @mock.patch("cuckoo.reporting.elasticsearch.elastic")
 @mock.patch("cuckoo.reporting.mongodb.mongo")

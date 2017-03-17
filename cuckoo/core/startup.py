@@ -194,12 +194,8 @@ def init_yara():
     """Generates index for yara signatures."""
     log.debug("Initializing Yara...")
 
-    # We divide yara rules in three categories.
-    categories = ["binaries", "urls", "memory"]
     generated = []
-
-    # Loop through all categories.
-    for category in categories:
+    for category in ("binaries", "urls", "memory"):
         # Check if there is a directory for the given category.
         category_root = cwd("yara", category)
         if not os.path.exists(category_root):
