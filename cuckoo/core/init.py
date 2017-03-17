@@ -74,12 +74,12 @@ def write_cuckoo_conf(cfg=None):
                     )
 
                 if isinstance(sections["*"], (tuple, list)):
-                    section = sections["*"][0]
+                    section_types = sections["*"][0]
                 else:
-                    section = sections["*"]
+                    section_types = sections["*"]
 
                 raw[filename][entry] = {}
-                for key, value in section.items():
+                for key, value in section_types.items():
                     if key == "__section__":
                         continue
 

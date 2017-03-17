@@ -1083,14 +1083,24 @@ def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
     return value
 
 def config2(file_name, section):
-    if section not in Config.configuration[file_name]:
+    keys = None
+    if section in Config.configuration[file_name]:
+        keys = Config.configuration[file_name][section].keys()
+    elif "__star__" in Config.configuration[file_name]:
+        section_, key = Config.configuration[file_name]["__star__"]
+        if section in config("%s:%s:%s" % (file_name, section_, key)):
+            section_types = Config.configuration[file_name]["*"]
+            if isinstance(keys, (tuple, list)):
+                section_types = section_types[0]
+            keys = section_types.keys()
+    if keys is None:
         raise CuckooConfigurationError(
-            "No such configuration section exists: %s!%s" %
+            "No such configuration section exists: %s:%s" %
             (file_name, section)
         )
 
-    ret = {}
-    for key in Config.configuration[file_name][section]:
+    ret = Dictionary()
+    for key in keys:
         if key == "__star__" or key == "*":
             continue
         ret[key] = config("%s:%s:%s" % (file_name, section, key))

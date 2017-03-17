@@ -1191,6 +1191,45 @@ def test_config2_custom():
         "scan": False,
     }
 
+def test_config2_vpns():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "routing": {
+            "vpn": {
+                "vpns": [
+                    "a", "b",
+                ],
+            },
+            "a": {
+                "name": "name_a",
+                "description": "desc_a",
+            },
+            "b": {
+                "name": "name_b",
+                "description": "desc_b",
+            },
+        },
+    })
+    assert config2("routing", "vpn") == {
+        "enabled": False,
+        "vpns": [
+            "a", "b",
+        ],
+    }
+    assert config2("routing", "a") == {
+        "__section__": None,
+        "name": "name_a",
+        "description": "desc_a",
+        "interface": None,
+        "rt_table": None,
+    }
+    with pytest.raises(CuckooConfigurationError) as e:
+        config2("routing", "c")
+    e.match("No such configuration section exists")
+
+    assert config2("routing", "a").name == "name_a"
+    assert config2("routing", "a").interface is None
+
 @mock.patch("cuckoo.common.config.log_error")
 def test_no_superfluous_conf(p):
     """Tests that upon CWD creation no superfluous configuration values are
