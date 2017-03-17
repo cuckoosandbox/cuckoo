@@ -52,7 +52,7 @@ class SubmitManager(object):
             "'%s' was neither a valid hash or url" % line
         )
 
-    def translate_options_from(self, options):
+    def translate_options_from(self, entry, options):
         """Translates from Web Interface options to Cuckoo database options."""
         ret = {}
 
@@ -64,6 +64,9 @@ class SubmitManager(object):
 
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
+
+        if entry.get("network-routing"):
+            ret["route"] = entry["network-routing"]
 
         return ret
 
@@ -79,6 +82,9 @@ class SubmitManager(object):
 
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True
+
+        if options.get("route"):
+            ret["network-routing"] = options["route"]
 
         return ret
 
@@ -192,7 +198,7 @@ class SubmitManager(object):
                 "enforce_timeout": options.get("enforce-timeout"),
                 "machine": info.get("machine"),
                 "platform": info.get("platform"),
-                "options": self.translate_options_from(options),
+                "options": self.translate_options_from(info, options),
                 "submit_id": submit_id,
             }
 

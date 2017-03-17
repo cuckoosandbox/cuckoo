@@ -119,6 +119,7 @@ class TestSubmitManager(object):
         assert not t.machine
         assert t.options == {
             "procmemdump": "yes",
+            "route": "internet",
         }
 
     def test_submit_file1(self):
@@ -138,7 +139,9 @@ class TestSubmitManager(object):
         assert t.enforce_timeout is True
         assert not t.memory
         assert not t.machine
-        assert t.options == {}
+        assert t.options == {
+            "route": "internet",
+        }
 
     def test_submit_file2(self):
         assert self.submit_manager.pre("files", [{
@@ -158,8 +161,39 @@ class TestSubmitManager(object):
         assert t.memory is True
         assert not t.machine
         assert t.options == {
+            "route": "none",
             "free": "yes",
             "human": "0",
+        }
+
+    def test_submit_file3_drop(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "msgbox.exe",
+            "data": "hello world",
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/file3.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("msgbox.exe")
+        assert t.options == {
+            "procmemdump": "yes",
+            "route": "drop",
+        }
+
+    def test_submit_file4_tor(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "msgbox.exe",
+            "data": "hello world",
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/file4.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("msgbox.exe")
+        assert t.options == {
+            "procmemdump": "yes",
+            "route": "tor",
         }
 
     def test_submit_arc1(self):
@@ -180,6 +214,7 @@ class TestSubmitManager(object):
         assert not t.enforce_timeout
         assert not t.memory
         assert t.options == {
+            "route": "internet",
             "filename": "oledata.mso",
         }
         assert len(zipfile.ZipFile(t.target).read("oledata.mso")) == 234898
@@ -233,25 +268,31 @@ class TestSubmitManager(object):
 def test_option_translations_from():
     sm = SubmitManager()
 
-    assert sm.translate_options_from({}) == {}
+    assert sm.translate_options_from({}, {}) == {}
 
-    assert sm.translate_options_from({
+    assert sm.translate_options_from({}, {
         "simulated-human-interaction": True,
     }) == {}
-    assert sm.translate_options_from({
+    assert sm.translate_options_from({}, {
         "simulated-human-interaction": False,
     }) == {
         "human": 0,
     }
 
-    assert sm.translate_options_from({
+    assert sm.translate_options_from({}, {
         "enable-injection": False,
     }) == {
         "free": "yes",
     }
-    assert sm.translate_options_from({
+    assert sm.translate_options_from({}, {
         "enable-injection": True,
     }) == {}
+
+    assert sm.translate_options_from({
+        "network-routing": "foobar",
+    }, {}) == {
+        "route": "foobar",
+    }
 
 def test_option_translations_to():
     sm = SubmitManager()
