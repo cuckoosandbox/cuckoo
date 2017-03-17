@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os
 import pytest
 import responses
 import tempfile
@@ -14,8 +15,10 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing
 )
+
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, load_signatures
+from cuckoo.misc import set_cwd, load_signatures, cwd
+from cuckoo.core.startup import init_modules, init_yara
 
 @mock.patch("cuckoo.reporting.elasticsearch.elastic")
 @mock.patch("cuckoo.reporting.mongodb.mongo")
@@ -463,3 +466,28 @@ def test_init_routing_tor_inetsim_noint(p):
 
     init_routing()
     p.assert_not_called()
+
+def test_init_yara():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    def count(dirpath):
+        ret = 0
+        for name in os.listdir(dirpath):
+            if name.endswith((".yar", ".yara")):
+                ret += 1
+        return ret
+
+    # Will change when we start shipping more Yara rules by default.
+    assert count(cwd("yara", "binaries")) == 3
+    assert not count(cwd("yara", "urls"))
+    assert not count(cwd("yara", "memory"))
+
+    init_yara()
+
+    assert os.path.exists(cwd("yara", "index_binaries.yar"))
+    assert not os.path.exists(cwd("yara", "index_urls.yar"))
+    assert not os.path.exists(cwd("yara", "index_memory.yar"))
+
+    buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
+    assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf

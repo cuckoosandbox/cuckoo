@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import ctypes
 import importlib
 import logging
 import multiprocessing
@@ -209,3 +210,18 @@ def drop_privileges(username):
         sys.exit("Invalid user specified to drop privileges to: %s" % username)
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
+
+class Structure(ctypes.Structure):
+    def as_dict(self):
+        ret = {}
+        for field, _ in self._fields_:
+            value = getattr(self, field)
+            if isinstance(value, Structure):
+                ret[field] = value.as_dict()
+            elif hasattr(value, "value"):
+                ret[field] = value
+            elif hasattr(value, "__getitem__"):
+                ret[field] = value[:]
+            else:
+                ret[field] = value
+        return ret

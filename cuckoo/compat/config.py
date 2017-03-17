@@ -569,6 +569,7 @@ def _20c2_200(c):
         "processing:network:allowed_dns",
         c["processing"]["network"].pop("allowed-dns", None)
     )
+    c["processing"]["procmemory"]["extract_dll"] = False
     # If default key, disable VirusTotal by default.
     if c["processing"]["virustotal"]["key"] == "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088":
         c["processing"]["virustotal"]["enabled"] = False

@@ -929,6 +929,9 @@ analysis_size_limit = 104857600
 [network]
 whitelist-dns = yes
 allowed-dns = 8.8.8.8
+[procmemory]
+enabled = yes
+extract_img = yes
 [virustotal]
 enabled = yes
 key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
@@ -998,6 +1001,7 @@ interface = eth0
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
     assert cfg["processing"]["network"]["whitelist_dns"] is True
+    assert cfg["processing"]["procmemory"]["extract_dll"] is False
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["processing"]["virustotal"]["enabled"] is False
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [

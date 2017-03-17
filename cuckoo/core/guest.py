@@ -14,7 +14,7 @@ import time
 import xmlrpclib
 import zipfile
 
-from cuckoo.common.config import config
+from cuckoo.common.config import config, parse_options
 from cuckoo.common.constants import (
     CUCKOO_GUEST_PORT, CUCKOO_GUEST_INIT, CUCKOO_GUEST_COMPLETED,
     CUCKOO_GUEST_FAILED
@@ -339,8 +339,14 @@ class GuestManager(object):
         directory in the systemdrive, i.e., C:\\."""
         systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
 
-        r = self.post("/mkdtemp", data={"dirpath": systemdrive})
-        self.analyzer_path = r.json()["dirpath"]
+        options = parse_options(self.options["options"])
+        if options.get("analpath"):
+            dirpath = "%s\\%s" % (systemdrive, options["analpath"])
+            r = self.post("/mkdir", data={"dirpath": dirpath})
+            self.analyzer_path = dirpath
+        else:
+            r = self.post("/mkdtemp", data={"dirpath": systemdrive})
+            self.analyzer_path = r.json()["dirpath"]
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""

@@ -18,6 +18,7 @@ from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
 from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
+from lib.core.ioctl import zer0m0n
 
 log = logging.getLogger(__name__)
 
@@ -290,6 +291,9 @@ class Process(object):
                       "arguments %r (Error: %s)", path, argv,
                       get_error_string(KERNEL32.GetLastError()))
             return False
+
+        # Report this PID to the kernel driver (if present).
+        zer0m0n.addpid(self.pid)
 
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")

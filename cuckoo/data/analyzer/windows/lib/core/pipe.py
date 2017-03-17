@@ -62,12 +62,16 @@ class PipeForwarder(threading.Thread):
             KERNEL32.CloseHandle(self.pipe_handle)
             return
 
-        if pid.value not in self.sockets:
-            self.sockets[pid.value] = \
-                socket.create_connection(self.destination)
+        if pid.value:
+            if pid.value not in self.sockets:
+                self.sockets[pid.value] = (
+                    socket.create_connection(self.destination)
+                )
 
-        sock = self.sockets[pid.value]
-        self.active[pid.value] = True
+            sock = self.sockets[pid.value]
+            self.active[pid.value] = True
+        else:
+            sock = socket.create_connection(self.destination)
 
         while True:
             success = KERNEL32.ReadFile(
@@ -91,7 +95,8 @@ class PipeForwarder(threading.Thread):
                 )
                 break
 
-        self.active[pid.value] = False
+        if pid.value:
+            self.active[pid.value] = False
 
 class PipeDispatcher(threading.Thread):
     """Receives commands through a local pipe, forwards them to the

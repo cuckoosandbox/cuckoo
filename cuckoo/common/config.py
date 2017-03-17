@@ -556,6 +556,7 @@ class Config(object):
                 "enabled": Boolean(True),
                 "idapro": Boolean(False),
                 "extract_img": Boolean(True),
+                "extract_dll": Boolean(False),
                 "dump_delete": Boolean(False),
             },
             "procmon": {
