@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -14,14 +14,14 @@ from distutils.version import StrictVersion
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
-from cuckoo.common.config import Config, config
+from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
 )
 from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
-from cuckoo.core.rooter import rooter, vpns
+from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
@@ -318,24 +318,13 @@ def init_rooter():
 
 def init_routing():
     """Initialize and check whether the routing information is correct."""
-    cfg = Config("routing")
     interfaces = set()
 
-    # Check whether all VPNs exist if configured and make their configuration
-    # available through the vpns variable. Also enable NAT on each interface.
-    if cfg.vpn.enabled:
-        for name in cfg.vpn.vpns.split(","):
-            name = name.strip()
-            if not name:
-                continue
-
-            if not hasattr(cfg, name):
-                raise CuckooStartupError(
-                    "Could not find VPN configuration for %s" % name
-                )
-
-            entry = cfg.get(name)
-
+    # Check if all configured VPNs exist and are up and enable NAT on
+    # each VPN interface.
+    if config("routing:vpn:enabled"):
+        for name in config("routing:vpn:vpns"):
+            entry = config2("routing", name)
             if not rooter("nic_available", entry.interface):
                 raise CuckooStartupError(
                     "The network interface that has been configured for "
@@ -348,14 +337,13 @@ def init_routing():
                     "VPN %s is not available." % entry.name
                 )
 
-            vpns[entry.name] = entry
             interfaces.add((entry.rt_table, entry.interface))
 
     standard_routes = "none", "drop", "internet", "inetsim", "tor"
 
     # Check whether the default VPN exists if specified.
     if config("routing:routing:route") not in standard_routes:
-        if config("routing:routing:route") not in vpns:
+        if config("routing:routing:route") not in config("routing:vpn:vpns"):
             raise CuckooStartupError(
                 "The default routing target (%s) has not been configured in "
                 "routing.conf, is it supposed to be a VPN?" %

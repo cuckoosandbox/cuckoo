@@ -335,7 +335,6 @@ def test_init_routing_unknown(p):
         init_routing()
     e.match("is it supposed to be a VPN")
 
-"""TODO Enable when merging the Config changes.
 @mock.patch("cuckoo.core.startup.rooter")
 def test_init_routing_vpndisabled(p):
     set_cwd(tempfile.mkdtemp())
@@ -359,7 +358,42 @@ def test_init_routing_vpndisabled(p):
     with pytest.raises(CuckooStartupError) as e:
         init_routing()
     e.match("VPNs have not been enabled")
-"""
+
+@mock.patch("cuckoo.core.startup.rooter")
+def test_init_routing_vpns(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "routing": {
+            "vpn": {
+                "enabled": True,
+                "vpns": [
+                    "1", "2",
+                ],
+            },
+            "1": {
+                "name": "1",
+                "interface": "tun1",
+                "rt_table": "main",
+            },
+            "2": {
+                "name": "2",
+                "interface": "tun2",
+                "rt_table": "main",
+            },
+        },
+    })
+    init_routing()
+    assert p.call_count == 12
+    p.assert_any_call("nic_available", "tun1")
+    p.assert_any_call("rt_available", "main")
+    p.assert_any_call("nic_available", "tun2")
+    p.assert_any_call("disable_nat", "tun1")
+    p.assert_any_call("disable_nat", "tun2")
+    p.assert_any_call("enable_nat", "tun1")
+    p.assert_any_call("enable_nat", "tun2")
+    p.assert_any_call("flush_rttable", "main")
+    p.assert_any_call("init_rttable", "main", "tun1")
+    p.assert_any_call("init_rttable", "main", "tun2")
 
 @mock.patch("cuckoo.core.startup.rooter")
 def test_init_routing_internet_exc(p):
