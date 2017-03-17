@@ -3,9 +3,18 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import pytest
+import shutil
+import struct
+import tempfile
 
 from cuckoo.common.abstracts import Signature
-from cuckoo.core.plugins import RunSignatures
+from cuckoo.common.objects import HAVE_YARA, Dictionary, File
+from cuckoo.core.database import Database
+from cuckoo.core.plugins import RunSignatures, RunProcessing
+from cuckoo.core.startup import init_yara, init_modules
+from cuckoo.main import cuckoo_create
+from cuckoo.misc import cwd, set_cwd, mkdir
 
 def test_signature_version():
     rs = RunSignatures({})
@@ -209,4 +218,86 @@ def test_signature_severity(p):
     assert p.debug.call_args_list[1][1]["extra"] == {
         "action": "signature.match", "status": "success",
         "signature": "foobar", "severity": 42,
+    }
+
+@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
+def test_on_yara():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    init_modules()
+
+    File.YARA_RULEPATH = None
+    shutil.copy(
+        cwd("yara", "binaries", "vmdetect.yar"),
+        cwd("yara", "memory", "vmdetect.yar")
+    )
+    init_yara()
+
+    mkdir(cwd(analysis=1))
+    open(cwd("binary", analysis=1), "wb").write("\x0f\x3f\x07\x0b")
+
+    mkdir(cwd("files", analysis=1))
+    open(cwd("files", "1.txt", analysis=1), "wb").write("\x56\x4d\x58\x68")
+
+    mkdir(cwd("memory", analysis=1))
+    open(cwd("memory", "1-0.dmp", analysis=1), "wb").write(
+        struct.pack("QIIII", 0x400000, 0x1000, 0, 0, 0) + "\x45\xc7\x00\x01"
+    )
+
+    Database().connect()
+    results = RunProcessing(task=Dictionary({
+        "id": 1,
+        "category": "file",
+        "target": __file__,
+    })).run()
+    assert results["target"]["file"]["yara"][0]["offsets"] == {
+        "$virtualpc": [(0, 0)],
+    }
+    assert results["procmemory"][0]["yara"][0]["offsets"] == {
+        "$vmcheckdll": [(24, 0)],
+    }
+    assert results["dropped"][0]["yara"][0]["offsets"] == {
+        "$vmware": [(0, 0)],
+        "$vmware1": [(0, 0)],
+    }
+
+    class sig1(object):
+        name = "sig1"
+
+        @property
+        def matched(self):
+            return False
+
+        @matched.setter
+        def matched(self, value):
+            pass
+
+        def init(self):
+            pass
+
+        def on_signature(self):
+            pass
+
+        def on_complete(self):
+            pass
+
+        on_yara = mock.MagicMock()
+
+    rs = RunSignatures(results)
+
+    rs.signatures = sig1(),
+    rs.run()
+
+    assert sig1.on_yara.call_count == 3
+    sig1.on_yara.assert_any_call(
+        "sample", cwd("binary", analysis=1), mock.ANY
+    )
+    sig1.on_yara.assert_any_call(
+        "dropped", cwd("files", "1.txt", analysis=1), mock.ANY
+    )
+    sig1.on_yara.assert_any_call(
+        "procmem", cwd("memory", "1-0.dmp", analysis=1), mock.ANY
+    )
+    assert sig1.on_yara.call_args_list[0][0][2]["offsets"] == {
+        "$virtualpc": [(0, 0)],
     }

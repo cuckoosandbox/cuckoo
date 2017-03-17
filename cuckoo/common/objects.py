@@ -350,7 +350,7 @@ class File(object):
             results.append({
                 "name": match.rule,
                 "meta": match.meta,
-                "strings": list(strings),
+                "strings": strings,
                 "offsets": offsets,
             })
 

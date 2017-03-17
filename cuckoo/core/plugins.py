@@ -418,28 +418,31 @@ class RunSignatures(object):
 
     def process_yara_matches(self):
         """Yields any Yara matches to each signature."""
+        def loop_yara(category, filepath, matches):
+            for match in matches:
+                for sig in self.signatures:
+                    self.call_signature(
+                        sig, sig.on_yara, category, filepath, match
+                    )
+
+        target = self.results.get("target", {})
+        if target.get("category") == "file" and target.get("file"):
+            loop_yara(
+                "sample",
+                self.results["target"]["file"]["path"],
+                self.results["target"]["file"]["yara"]
+            )
+
         for procmem in self.results.get("procmemory", []):
             # Yara matches on extracted PE files from process memory dumps.
             for extr in procmem.get("extracted", []):
-                for match in extr.get("yara", []):
-                    for sig in self.signatures:
-                        self.call_signature(
-                            sig, sig.on_yara, "extracted", extr["path"], match
-                        )
+                loop_yara("extracted", extr["path"], extr["yara"])
 
             # Yara rules on the process memory dump itself.
-            for match in procmem.get("yara", []):
-                for sig in self.signatures:
-                    self.call_signature(
-                        sig, sig.on_yara, "procmem", procmem["file"], match
-                    )
+            loop_yara("procmem", procmem["file"], procmem["yara"])
 
         for dropped in self.results.get("dropped", []):
-            for match in dropped.get("yara", []):
-                for sig in self.signatures:
-                    self.call_signature(
-                        sig, sig.on_yara, "dropped", dropped["file"], match
-                    )
+            loop_yara("dropped", dropped["path"], dropped["yara"])
 
     def run(self):
         """Run signatures."""
