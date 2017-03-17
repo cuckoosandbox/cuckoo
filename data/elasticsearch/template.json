@@ -27,6 +27,18 @@
                 "report_time": {
                     "format": "epoch_second",
                     "type": "date"
+                },
+                "signatures": {
+                    "properties": {
+                        "marks": {
+                            "properties": {
+                                "section": {
+                                    "type": "object",
+                                    "enabled": false
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
