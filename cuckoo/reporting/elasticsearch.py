@@ -5,7 +5,6 @@
 from __future__ import absolute_import
 
 import datetime
-import elasticsearch
 import json
 import logging
 import time
@@ -37,22 +36,22 @@ class ElasticSearch(Report):
         if not elastic.init():
             return
 
-        self.template_name = self.index + "_template"
+        cls.template_name = "%s_template" % elastic.index
 
         try:
             elastic.connect()
-            cls.es = elastic.client
         except CuckooOperationalError as e:
             raise CuckooReportError(
                 "Error running ElasticSearch reporting module: %s" % e
             )
 
         # check to see if the template exists apply it if it does not
-        if not cls.es.indices.exists_template(self.template_name):
+        if not elastic.client.indices.exists_template(cls.template_name):
             if not cls.apply_template():
                 raise CuckooReportError("Cannot apply Elasticsearch template")
 
-    def apply_template(self):
+    @classmethod
+    def apply_template(cls):
         template_path = cwd("elasticsearch", "template.json")
         if not os.path.exists(template_path):
             return False
@@ -71,9 +70,9 @@ class ElasticSearch(Report):
         template["template"] = elastic.index + "-*"
 
         # if the template does not already exist then create it
-        if not elastic.client.indices.exists_template(self.template_name):
+        if not elastic.client.indices.exists_template(cls.template_name):
             elastic.client.indices.put_template(
-                name=self.template_name, body=json.dumps(template)
+                name=cls.template_name, body=json.dumps(template)
             )
         return True
 
@@ -106,7 +105,7 @@ class ElasticSearch(Report):
 
     def do_bulk_index(self, bulk_reqs):
         try:
-            elasticsearch.helpers.bulk(elastic.client, bulk_reqs)
+            elastic.client.bulk(bulk_reqs)
         except Exception as e:
             raise CuckooReportError(
                 "Failed to save results in ElasticSearch for "

@@ -723,6 +723,7 @@ class Config(object):
             "elasticsearch": {
                 "enabled": Boolean(False),
                 "hosts": List(String, "127.0.0.1"),
+                "timeout": Int(300),
                 "calls": Boolean(False),
                 "index": String("cuckoo"),
                 "index_time_pattern": String("yearly"),

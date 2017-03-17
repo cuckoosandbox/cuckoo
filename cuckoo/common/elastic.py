@@ -21,6 +21,7 @@ class Elastic(object):
     def init(self):
         self.enabled = config("reporting:elasticsearch:enabled")
         self.hosts = config("reporting:elasticsearch:hosts")
+        self.timeout = config("reporting:elasticsearch:timeout")
         self.calls = config("reporting:elasticsearch:calls")
         self.index = config("reporting:elasticsearch:index")
         self.index_time_pattern = config(
@@ -36,7 +37,7 @@ class Elastic(object):
 
         try:
             self.client = elasticsearch.Elasticsearch(
-                self.hosts, timeout=self.options.get("timeout", 300)
+                self.hosts, timeout=self.timeout
             )
         except TypeError as e:
             raise CuckooOperationalError(
