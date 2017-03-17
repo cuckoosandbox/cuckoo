@@ -8,8 +8,8 @@ import os.path
 from lib.api.dse import Capcom
 from lib.core.driver import Driver
 
-@mock.patch("lib.core.driver.os.path.exists")
-@mock.patch("lib.core.driver.shutil")
+@mock.patch("os.path.exists")
+@mock.patch("shutil.copy")
 def test_copy_driver(p, q):
     d = Driver("foo", "bar")
     d.is_64bit = True
@@ -17,14 +17,14 @@ def test_copy_driver(p, q):
 
     q.assert_called_once_with("bin\\foo-x64.sys")
     sysroot = os.path.expandvars("%SystemRoot%")
-    p.copy.assert_called_once_with(
+    p.assert_called_once_with(
         "bin\\foo-x64.sys", "%s\\sysnative\\drivers\\bar.sys" % sysroot
     )
 
 class TestCapcom(object):
-    @mock.patch("lib.core.driver.platform")
+    @mock.patch("platform.machine")
     def setup(self, p):
-        p.machine.return_value = "amd64"
+        p.return_value = "amd64"
         self.c = Capcom()
 
     def test_is64bit(self):
