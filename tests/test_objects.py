@@ -145,8 +145,7 @@ def test_yara_offsets():
             ],
         },
         "strings": [
-            "08-00-27",
-            "f\x0fp\x00\x00f\x0f\xdb\x00\x00\x00\x00\x00"
-            "f\x0f\xdb\x00\x00\x00\x00\x00f\x0f\xef",
+            "MDgtMDAtMjc=",
+            "Zg9wAABmD9sAAAAAAGYP2wAAAAAAZg/v",
         ],
     }]

@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import androguard
+import base64
 import binascii
 import hashlib
 import logging
@@ -340,13 +341,13 @@ class File(object):
         for match in File.yara_rules[category].match(self.file_path):
             strings, offsets = set(), {}
             for _, key, value in match.strings:
-                strings.add(value)
+                strings.add(base64.b64encode(value))
                 offsets[key.lstrip("$")] = []
 
             strings = sorted(strings)
             for offset, key, value in match.strings:
                 offsets[key.lstrip("$")].append(
-                    (offset, strings.index(value))
+                    (offset, strings.index(base64.b64encode(value)))
                 )
 
             results.append({
