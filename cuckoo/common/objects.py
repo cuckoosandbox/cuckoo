@@ -341,11 +341,13 @@ class File(object):
             strings, offsets = set(), {}
             for _, key, value in match.strings:
                 strings.add(value)
-                offsets[key] = []
+                offsets[key.lstrip("$")] = []
 
             strings = sorted(strings)
             for offset, key, value in match.strings:
-                offsets[key].append((offset, strings.index(value)))
+                offsets[key.lstrip("$")].append(
+                    (offset, strings.index(value))
+                )
 
             results.append({
                 "name": match.rule,

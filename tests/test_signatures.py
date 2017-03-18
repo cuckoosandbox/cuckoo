@@ -251,14 +251,14 @@ def test_on_yara():
         "target": __file__,
     })).run()
     assert results["target"]["file"]["yara"][0]["offsets"] == {
-        "$virtualpc": [(0, 0)],
+        "virtualpc": [(0, 0)],
     }
     assert results["procmemory"][0]["yara"][0]["offsets"] == {
-        "$vmcheckdll": [(24, 0)],
+        "vmcheckdll": [(24, 0)],
     }
     assert results["dropped"][0]["yara"][0]["offsets"] == {
-        "$vmware": [(0, 0)],
-        "$vmware1": [(0, 0)],
+        "vmware": [(0, 0)],
+        "vmware1": [(0, 0)],
     }
 
     class sig1(object):
@@ -299,5 +299,5 @@ def test_on_yara():
         "procmem", cwd("memory", "1-0.dmp", analysis=1), mock.ANY
     )
     assert sig1.on_yara.call_args_list[0][0][2]["offsets"] == {
-        "$virtualpc": [(0, 0)],
+        "virtualpc": [(0, 0)],
     }

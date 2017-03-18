@@ -137,10 +137,10 @@ def test_yara_offsets():
         },
         "name": "vmdetect",
         "offsets": {
-            "$ssexy": [
+            "ssexy": [
                 (64, 1),
             ],
-            "$virtualbox_mac_1a": [
+            "virtualbox_mac_1a": [
                 (88, 0),
             ],
         },
