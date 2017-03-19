@@ -1091,7 +1091,7 @@ def config2(file_name, section):
         section_, key = Config.configuration[file_name]["__star__"]
         if section in config("%s:%s:%s" % (file_name, section_, key)):
             section_types = Config.configuration[file_name]["*"]
-            if isinstance(keys, (tuple, list)):
+            if isinstance(section_types, (tuple, list)):
                 section_types = section_types[0]
             keys = section_types.keys()
     if keys is None:

@@ -1234,6 +1234,11 @@ def test_config2_vpns():
     assert config2("routing", "a").name == "name_a"
     assert config2("routing", "a").interface is None
 
+def test_config2_liststar():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config2("qemu", "vm1").interface == "qemubr"
+
 @mock.patch("cuckoo.common.config.log_error")
 def test_no_superfluous_conf(p):
     """Tests that upon CWD creation no superfluous configuration values are
