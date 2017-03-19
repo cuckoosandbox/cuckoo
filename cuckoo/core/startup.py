@@ -194,38 +194,26 @@ def init_yara():
     """Generates index for yara signatures."""
     log.debug("Initializing Yara...")
 
-    generated = []
+    indexed = []
     for category in ("binaries", "urls", "memory"):
         # Check if there is a directory for the given category.
-        category_root = cwd("yara", category)
-        if not os.path.exists(category_root):
+        dirpath = cwd("yara", category)
+        if not os.path.exists(dirpath):
             continue
 
-        # Check if the directory contains any rules.
-        signatures = []
-        for entry in os.listdir(category_root):
-            if entry.endswith((".yar", ".yara")):
-                signatures.append(os.path.join(category_root, entry))
+        # Populate the index Yara file for this category.
+        with open(cwd("yara", "index_%s.yar" % category), "wb") as f:
+            for entry in os.listdir(dirpath):
+                if entry.endswith((".yar", ".yara")):
+                    f.write("include \"%s\"\n" % os.path.join(dirpath, entry))
+                    indexed.append((category, entry))
 
-        if not signatures:
-            continue
-
-        # Generate path for the category's index file.
-        index_name = "index_%s.yar" % category
-        index_path = cwd("yara", index_name)
-
-        # Create index file and populate it.
-        with open(index_path, "wb") as index_handle:
-            for signature in signatures:
-                index_handle.write("include \"%s\"\n" % signature)
-
-        generated.append(index_name)
-
-    for entry in generated:
-        if entry == generated[-1]:
-            log.debug("\t `-- %s", entry)
+    indexed = sorted(indexed)
+    for category, entry in indexed:
+        if (category, entry) == indexed[-1]:
+            log.debug("\t `-- %s %s", category, entry)
         else:
-            log.debug("\t |-- %s", entry)
+            log.debug("\t |-- %s %s", category, entry)
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

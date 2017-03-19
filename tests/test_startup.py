@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import logging
 import os
 import pytest
 import responses
@@ -13,7 +14,8 @@ from cuckoo.common.abstracts import (
 )
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.startup import (
-    init_modules, check_version, init_rooter, init_routing, init_yara
+    init_modules, check_version, init_rooter, init_routing, init_yara,
+    init_console_logging
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
@@ -465,7 +467,7 @@ def test_init_routing_tor_inetsim_noint(p):
     init_routing()
     p.assert_not_called()
 
-def test_init_yara():
+def test_init_yara(capsys):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
@@ -481,11 +483,16 @@ def test_init_yara():
     assert not count(cwd("yara", "urls"))
     assert not count(cwd("yara", "memory"))
 
+    init_console_logging(logging.DEBUG)
     init_yara()
 
     assert os.path.exists(cwd("yara", "index_binaries.yar"))
-    assert not os.path.exists(cwd("yara", "index_urls.yar"))
-    assert not os.path.exists(cwd("yara", "index_memory.yar"))
+    assert os.path.exists(cwd("yara", "index_urls.yar"))
+    assert os.path.exists(cwd("yara", "index_memory.yar"))
 
     buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
     assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
+
+    out, err = capsys.readouterr()
+    assert "binaries embedded.yar" in err
+    assert "binaries vmdetect.yar" in err
