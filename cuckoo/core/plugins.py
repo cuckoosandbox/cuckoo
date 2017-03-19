@@ -74,7 +74,7 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
             ret[plugin.__module__.split(".")[-1]] = plugin
         return ret
 
-    return plugins
+    return sorted(plugins, key=lambda x: x.__name__.lower())
 
 class RunAuxiliary(object):
     """Auxiliary modules manager."""
