@@ -4,18 +4,21 @@
 
 import dpkt
 import mock
+import json
 import os.path
 import pytest
 import shutil
 import tempfile
 
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
+from cuckoo.processing.droidmon import Droidmon
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
@@ -56,6 +59,24 @@ class TestProcessing(object):
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
         assert results["action"] == ["vmrouting", "thisisanaction"]
+
+    def test_droidmon_url(self):
+        d = Droidmon()
+        d.set_task({
+            "category": "url",
+        })
+        assert d.run() == {}
+
+    def test_droidmon_file(self):
+        d = Droidmon()
+        d.set_task({
+            "category": "file",
+        })
+        filepath = Files.temp_named_put("", "droidmon.log")
+        d.logs_path = os.path.dirname(filepath)
+        # Ensure there is data available and none of it is a set().
+        assert d.run() != {}
+        assert json.loads(json.dumps(d.run())) == d.run()
 
     def test_pdf(self):
         set_cwd(tempfile.mkdtemp())

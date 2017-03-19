@@ -359,7 +359,7 @@ class Droidmon(Processing):
         """
 
         if "file" not in self.task["category"]:
-            return self.droidmon
+            return {}
 
         results = {}
         log_path = os.path.join(self.logs_path, "droidmon.log")
