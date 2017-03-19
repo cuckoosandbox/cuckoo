@@ -483,7 +483,6 @@ def test_init_yara(capsys):
     assert not count(cwd("yara", "urls"))
     assert not count(cwd("yara", "memory"))
 
-    init_console_logging(logging.DEBUG)
     init_yara()
 
     assert os.path.exists(cwd("yara", "index_binaries.yar"))
@@ -492,7 +491,3 @@ def test_init_yara(capsys):
 
     buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
     assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
-
-    out, err = capsys.readouterr()
-    assert "binaries embedded.yar" in err
-    assert "binaries vmdetect.yar" in err
