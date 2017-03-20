@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
 import elasticsearch
 
 from cuckoo.common.config import config
@@ -46,27 +47,31 @@ class Elastic(object):
                 "Unable to connect to ElasticSearch: %s" % e
             )
 
-    def search_helper(self, obj, k, term, value):
+    def search_helper(self, obj, keys, term, value):
         """ Search for appropriate key/value pair """
         r = []
 
         if isinstance(obj, dict):
             for k, v in obj.items():
-                r += self.search_helper(v, k, value)
+                r += self.search_helper(v, keys + [k], term, value)
 
         if isinstance(obj, (tuple, list)):
             for v in obj:
-                r += self.search_helper(v, k, value)
+                r += self.search_helper(v, keys, term, value)
 
         if isinstance(obj, basestring):
             if re.search(value, obj, re.I):
-                if not term or term == k:
-                    r.append((k, obj))
+                if not term or term in keys:
+                    r.append((keys[-1] if len(keys) else "none", obj))
 
         return r
 
     def search(self, term, value):
         results = []
+
+        if not self.enabled:
+            return results
+
         match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value))
 
         r = self.client.search(
@@ -81,7 +86,7 @@ class Elastic(object):
         )
         for hit in r["hits"]["hits"]:
             # Find the actual matches in this hit and limit to 16 matches.
-            matches = self.search_helper(hit, "none", term, match_value)
+            matches = self.search_helper(hit, [], term, match_value)
             if not matches:
                 continue
 

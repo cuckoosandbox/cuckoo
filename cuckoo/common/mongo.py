@@ -47,6 +47,22 @@ class Mongo(object):
                 "Unable to connect to MongoDB: %s" % e
             )
 
+    def drop(self):
+        if not self.enabled:
+            return
+
+        try:
+            if self.client and self.database in self.client.database_names():
+                self.client.drop_database(self.database)
+        except TypeError as e:
+            raise CuckooOperationalError(
+                "Unable to find Database %s in MongoDB: %s" %(self.database,e)
+            )
+        except pymongo.errors.PyMongoError as e:
+            raise CuckooOperationalError(
+                "Unable to connect to MongoDB: %s" % e
+            )
+
     def search_filename(self, value):
         return self.db.analysis.find({"target.file.name": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
@@ -54,13 +70,13 @@ class Mongo(object):
         return self.db.analysis.find({"target.file.type": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_string(self, value):
-        return self.db.analysis.find({"strings": {"$regex": value, "$options": "-1"}}).sort([["_id", -1]])
+        return self.db.analysis.find({"strings": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_ssdeep(self, value):
         return self.db.analysis.find({"target.file.ssdeep": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_crc32(self, value):
-        return self.db.analysis.find({"target.file.crc32": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"target.file.crc32": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_file(self, value):
         return self.db.analysis.find({"behavior.summary.files": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
@@ -69,34 +85,50 @@ class Mongo(object):
         return self.db.analysis.find({"behavior.summary.keys": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_mutex(self, value):
-        return self.db.analysis.find({"behavior.summary.mutexes": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+        return self.db.analysis.find({"behavior.summary.mutex": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_domain(self, value):
         return self.db.analysis.find({"network.domains.domain": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_ip(self, value):
-        return self.db.analysis.find({"network.hosts": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"network.hosts": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_signature(self, value):
-        return self.db.analysis.find({"signatures.description": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+        return self.db.analysis.find({ "$or": [{"signatures.families": {"$regex": value, "$options": "-i"}},
+                                               {"signatures.name": {"$regex": value, "$options": "-i"}},
+                                               {"signatures.marks.call.api": {"$regex": value, "$options": "-i"}},
+                                               {"signatures.description": {"$regex": value, "$options": "-i"}}]}).sort([["_id", -1]])
 
     def search_url(self, value):
-        return self.db.analysis.find({"target.url": value}).sort([["_id", -1]])
+        return self.db.analysis.find({ "$or": [{"target.url": {"$regex": value, "$options": "-i"}},
+                                               {"target.file.urls": {"$regex": value, "$options": "-i"}}]}).sort([["_id", -1]])
 
     def search_imphash(self, value):
-        return self.db.analysis.find({"static.pe_imphash": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"static.pe_imphash": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_md5(self, value):
-        return self.db.analysis.find({"target.file.md5": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"target.file.md5": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_sha1(self, value):
-        return self.db.analysis.find({"target.file.sha1": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"target.file.sha1": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_sha256(self, value):
-        return self.db.analysis.find({"target.file.sha256": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"target.file.sha256": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
 
     def search_sha512(self, value):
-        return self.db.analysis.find({"target.file.sha512": value}).sort([["_id", -1]])
+        return self.db.analysis.find({"target.file.sha512": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+
+    def search_process_args(self, value):
+        return self.db.analysis.find({"behavior.processes.command_line": {"$regex": value, "$options": "-i"}}).sort([["_id", -1]])
+
+    def search_regkey_read(self, value):
+        return self.db.analysis.find({"behavior.summary.regkey_read": {"$elemMatch": {"$regex": value, "$options": "-i"}}}).sort([["_id", -1]])
+
+    def search_regkey_opened(self, value):
+        return self.db.analysis.find({"behavior.summary.regkey_opened": {"$elemMatch": {"$regex": value, "$options": "-i"}}}).sort([["_id", -1]])
+
+    def search_regkey_written(self, value):
+        return self.db.analysis.find({"behavior.summary.regkey_written": {"$elemMatch": {"$regex": value, "$options": "-i"}}}).sort([["_id", -1]])
 
     def extract_database(self, results):
         # Get data from cuckoo db
@@ -151,6 +183,14 @@ class Mongo(object):
             results = self.search_url(value)
         elif term == "imphash":
             results = self.search_imphash(value)
+        elif term == "args":
+            results = self.search_process_args(value)
+        elif term == "regkey_read":
+            results = self.search_regkey_read(value)
+        elif term == "regkey_opened":
+            results = self.search_regkey_opened(value)
+        elif term == "regkey_written":
+            results = self.search_regkey_written(value)
         elif term == None:
             if re.match(r"^([a-fA-F\d]{32})$", value):
                 results = self.search_md5(value)
@@ -161,7 +201,7 @@ class Mongo(object):
             elif re.match(r"^([a-fA-F\d]{128})$", value):
                 results = self.search_sha512(value)
 
-        results = self.extract_database(results)
+        results = self.extract_database(results)[:16]
         return results
 
 mongo = Mongo()
