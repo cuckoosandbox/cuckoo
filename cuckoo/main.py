@@ -120,7 +120,7 @@ def cuckoo_init(level, ctx, cfg=None):
 
     init_modules()
     init_tasks()
-    init_yara()
+    init_yara(True)
     init_binaries()
     init_rooter()
     init_routing()
@@ -301,8 +301,9 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
-    # Initialize all modules.
+    # Initialize all modules & Yara rules.
     init_modules()
+    init_yara(False)
 
     try:
         # Regenerate one or more reports.

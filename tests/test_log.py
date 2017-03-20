@@ -10,7 +10,9 @@ import tempfile
 from cuckoo.common.config import log_error
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logging, init_logfile, init_console_logging
+from cuckoo.core.startup import (
+    init_logging, init_logfile, init_console_logging, index_yara
+)
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import set_cwd, cwd
 
@@ -72,6 +74,7 @@ def test_logging():
 def test_process_json_logging():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
+    index_yara()
     init_logfile("process-p0.json")
 
     def process_tasks(instance, maxcount):

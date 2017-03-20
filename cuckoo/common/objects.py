@@ -23,12 +23,6 @@ try:
 except ImportError:
     HAVE_PYDEEP = False
 
-try:
-    import yara
-    HAVE_YARA = True
-except ImportError:
-    HAVE_YARA = False
-
 log = logging.getLogger(__name__)
 
 FILE_CHUNK_SIZE = 16*1024*1024
@@ -68,21 +62,12 @@ class URL:
 
 class File(object):
     """Basic file object class with all useful utilities."""
-
-    # To be substituted with a category.
-    YARA_RULEPATH = None
-
-    # static fields which indicate whether the user has been
-    # notified about missing dependencies already
-    notified_yara = False
-
     # Given that ssdeep hashes are not really used much in practice we're just
     # going to disable its warning by default for now.
     notified_pydeep = True
 
-    # The yara rules should not change during one session of processing tasks,
-    # thus we can cache them. If they are updated, one should restart Cuckoo
-    # or the processing tasks.
+    # The yara rules should not change during one Cuckoo run and as such we're
+    # caching 'em. This dictionary is filled during init_yara().
     yara_rules = {}
 
     def __init__(self, file_path):
@@ -96,10 +81,6 @@ class File(object):
         self._sha1 = None
         self._sha256 = None
         self._sha512 = None
-
-        # During class initialization cwd is not yet set.
-        if not File.YARA_RULEPATH:
-            File.YARA_RULEPATH = cwd("yara", "index_%s.yar")
 
     def get_name(self):
         """Get file name.
@@ -313,31 +294,14 @@ class File(object):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
-        results = []
-
-        if not HAVE_YARA:
-            if not File.notified_yara:
-                File.notified_yara = True
-                log.warning("Unable to import yara (please compile from sources)")
-            return results
-
-        # Compile the Yara rules only the first time.
+        # This only happens if Yara is missing (which is reported at startup).
         if category not in File.yara_rules:
-            rulepath = self.YARA_RULEPATH % category
-            if not os.path.exists(rulepath):
-                log.warning("The specified rule file at %s doesn't exist, "
-                            "skip", rulepath)
-                return results
-
-            try:
-                File.yara_rules[category] = yara.compile(rulepath)
-            except:
-                log.exception("Error compiling the Yara rules.")
-                return
+            return []
 
         if not os.path.getsize(self.file_path):
-            return results
+            return []
 
+        results = []
         for match in File.yara_rules[category].match(self.file_path):
             strings, offsets = set(), {}
             for _, key, value in match.strings:

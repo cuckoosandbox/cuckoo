@@ -9,10 +9,10 @@ import struct
 import tempfile
 
 from cuckoo.common.abstracts import Signature
-from cuckoo.common.objects import HAVE_YARA, Dictionary, File
+from cuckoo.common.objects import Dictionary, File
 from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunSignatures, RunProcessing
-from cuckoo.core.startup import init_yara, init_modules
+from cuckoo.core.startup import init_yara, init_modules, HAVE_YARA
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
 
@@ -226,12 +226,11 @@ def test_on_yara():
     cuckoo_create()
     init_modules()
 
-    File.YARA_RULEPATH = None
     shutil.copy(
         cwd("yara", "binaries", "vmdetect.yar"),
         cwd("yara", "memory", "vmdetect.yar")
     )
-    init_yara()
+    init_yara(True)
 
     mkdir(cwd(analysis=1))
     open(cwd("binary", analysis=1), "wb").write("\x0f\x3f\x07\x0b")

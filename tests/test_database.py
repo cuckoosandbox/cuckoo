@@ -10,6 +10,7 @@ import tempfile
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
+from cuckoo.core.startup import index_yara
 from cuckoo.distributed.app import create_app
 from cuckoo.distributed.misc import settings
 from cuckoo.main import main, cuckoo_create
@@ -165,6 +166,7 @@ class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        index_yara()
 
     @mock.patch("cuckoo.main.Database")
     @mock.patch("cuckoo.apps.apps.Database")

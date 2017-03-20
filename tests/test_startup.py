@@ -15,7 +15,7 @@ from cuckoo.common.abstracts import (
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_console_logging
+    init_console_logging, HAVE_YARA
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
@@ -467,27 +467,69 @@ def test_init_routing_tor_inetsim_noint(p):
     init_routing()
     p.assert_not_called()
 
-def test_init_yara(capsys):
-    set_cwd(tempfile.mkdtemp())
-    cuckoo_create()
+@pytest.mark.skipif(HAVE_YARA, reason="Tests not having Yara available")
+@mock.patch("cuckoo.core.startup.log")
+def test_no_init_yara(p):
+    init_yara(None)
+    p.warning.assert_called_once()
 
-    def count(dirpath):
+@pytest.mark.skipif(not HAVE_YARA, reason="Unittest requires Yara")
+class TestYaraIntegration(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    def count(self, dirpath):
         ret = 0
         for name in os.listdir(dirpath):
             if name.endswith((".yar", ".yara")):
                 ret += 1
         return ret
 
-    # Will change when we start shipping more Yara rules by default.
-    assert count(cwd("yara", "binaries")) == 3
-    assert not count(cwd("yara", "urls"))
-    assert not count(cwd("yara", "memory"))
+    def test_default(self):
+        # Will change when we start shipping more Yara rules by default.
+        assert self.count(cwd("yara", "binaries")) == 3
+        assert not self.count(cwd("yara", "urls"))
+        assert not self.count(cwd("yara", "memory"))
 
-    init_yara()
+        init_yara(True)
 
-    assert os.path.exists(cwd("yara", "index_binaries.yar"))
-    assert os.path.exists(cwd("yara", "index_urls.yar"))
-    assert os.path.exists(cwd("yara", "index_memory.yar"))
+        assert os.path.exists(cwd("yara", "index_binaries.yar"))
+        assert os.path.exists(cwd("yara", "index_urls.yar"))
+        assert os.path.exists(cwd("yara", "index_memory.yar"))
 
-    buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
-    assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
+        buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
+        assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
+
+    def test_noinit(self):
+        # This happens in case "cuckoo process" is invoked without having run
+        # the Cuckoo daemon (i.e., without having generated the index rules).
+        with pytest.raises(CuckooStartupError) as e:
+            init_yara(False)
+        e.match("before being able to run")
+
+    def test_invalid_rule(self):
+        # TODO Cuckoo could help figuring out which Yara rule is the culprit,
+        # but on the other hand, where's the fun in that?
+        with pytest.raises(CuckooStartupError) as e:
+            open(cwd("yara", "binaries", "invld.yar"), "wb").write("rule")
+            init_yara(True)
+        e.match("(unexpected _RULE_|unexpected \\$end)")
+
+    def test_unreferenced_variable(self):
+        # TODO This is probably a bit too harsh. Is it possible to suppress
+        # such errors? Would the "error_on_warning" flag help here (we used
+        # this flag in the past, btw)? Answer to the last question: probably
+        # not provided it raises a SyntaxError rather than a WarningError (?).
+        with pytest.raises(CuckooStartupError) as e:
+            open(cwd("yara", "binaries", "invld.yar"), "wb").write("""
+                rule a {
+                    strings:
+                      $s1 = "foo"
+                      $s2 = "bar"
+                    condition:
+                      $s1
+                }
+            """)
+            init_yara(True)
+        e.match("unreferenced string")

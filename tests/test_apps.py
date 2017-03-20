@@ -19,7 +19,7 @@ from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logfile, init_console_logging
+from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
 
@@ -247,6 +247,7 @@ class TestProcessingTasks(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        index_yara()
 
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_task_range")

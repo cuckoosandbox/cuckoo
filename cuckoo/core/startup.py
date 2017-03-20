@@ -11,11 +11,18 @@ import socket
 
 from distutils.version import StrictVersion
 
+try:
+    import yara
+    HAVE_YARA = True
+except ImportError:
+    HAVE_YARA = False
+
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
 )
@@ -190,7 +197,7 @@ def init_modules():
             else:
                 log.debug("\t |-- %s", entry.__name__)
 
-def init_yara():
+def index_yara():
     """Generates index for yara signatures."""
     log.debug("Initializing Yara...")
 
@@ -214,6 +221,32 @@ def init_yara():
             log.debug("\t `-- %s %s", category, entry)
         else:
             log.debug("\t |-- %s %s", category, entry)
+
+def init_yara(index):
+    """Initialize & load/compile Yara rules."""
+    if not HAVE_YARA:
+        log.warning("Unable to import yara (please compile from sources)")
+        return
+
+    if index:
+        index_yara()
+
+    for category in ("binaries", "urls", "memory"):
+        rulepath = cwd("yara", "index_%s.yar" % category)
+        if not os.path.exists(rulepath) and not index:
+            raise CuckooStartupError(
+                "You must run the Cuckoo daemon before being able to run "
+                "this utility, as otherwise any potentially available Yara "
+                "rules will not be taken into account (yes, also if you "
+                "didn't configure any Yara rules)!"
+            )
+
+        try:
+            File.yara_rules[category] = yara.compile(rulepath)
+        except yara.Error as e:
+            raise CuckooStartupError(
+                "There was a syntax error in one or more Yara rules: %s" % e
+            )
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

@@ -9,8 +9,8 @@ import re
 import tempfile
 
 from cuckoo.common.files import Files
-from cuckoo.common.objects import Dictionary, File, URL_REGEX, HAVE_YARA
-from cuckoo.core.startup import init_yara
+from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.core.startup import init_yara, HAVE_YARA
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
@@ -117,8 +117,7 @@ def test_yara_offsets():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
-    File.YARA_RULEPATH = None
-    init_yara()
+    init_yara(True)
 
     buf = (
         # The SSEXY payload as per vmdetect.yar
