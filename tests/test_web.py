@@ -557,6 +557,7 @@ class TestMongoInteraction(object):
                 (3, "file", "doc", "malicious.doc", 11, "anothermd5"),
                 (4, "file", "vbs", "foo.vbs", 0, "didnothing"),
                 (5, "file", "xls", "bar.xls", 7, "verymalicious"),
+                (6, "archive", "pdf", "pdf0.zip", 3, "amd5"),
             ]
 
             for id_, category, package, target, score, md5 in tasks:
@@ -572,6 +573,13 @@ class TestMongoInteraction(object):
                     d["target"] = {
                         "category": "url",
                         "url": target,
+                    }
+                elif category == "archive":
+                    d["target"] = {
+                        "category": "archive",
+                        "archive": {},
+                        "filename": "pdf0.pdf",
+                        "human": "pdf0.pdf @ pdf0.zip",
                     }
                 else:
                     d["target"] = {
@@ -595,11 +603,11 @@ class TestMongoInteraction(object):
             r = self.req(client)
             assert r.status_code == 200
             obj = json.loads(r.content)
-            assert len(obj["tasks"]) == 5
-            assert obj["tasks"][0]["id"] == 5
-            assert obj["tasks"][0]["target"] == "bar.xls"
-            assert obj["tasks"][4]["id"] == 1
-            assert obj["tasks"][4]["target"] == "target.exe"
+            assert len(obj["tasks"]) == 6
+            assert obj["tasks"][0]["id"] == 6
+            assert obj["tasks"][0]["target"] == "pdf0.pdf @ pdf0.zip"
+            assert obj["tasks"][5]["id"] == 1
+            assert obj["tasks"][5]["target"] == "target.exe"
 
         def test_limit2(self, client):
             r = self.req(client, limit=2)
@@ -621,6 +629,12 @@ class TestMongoInteraction(object):
             assert r.status_code == 200
             obj = json.loads(r.content)
             assert len(obj["tasks"]) == 4
+
+        def test_archive_category(self, client):
+            r = self.req(client, cats=["archive"])
+            assert r.status_code == 200
+            obj = json.loads(r.content)
+            assert len(obj["tasks"]) == 1
 
         def test_doc_packages(self, client):
             r = self.req(client, packs=["doc", "vbs", "xls", "js"])

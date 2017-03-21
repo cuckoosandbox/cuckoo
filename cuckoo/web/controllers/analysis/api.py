@@ -331,6 +331,9 @@ class AnalysisApi(object):
             elif category == "url":
                 target = row["target"]["url"]
                 md5 = "-"
+            elif category == "archive":
+                target = row["target"]["human"]
+                md5 = "-"
             else:
                 target = None
                 md5 = "-"

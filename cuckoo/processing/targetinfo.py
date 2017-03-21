@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -17,21 +17,35 @@ class TargetInfo(Processing):
         """
         self.key = "target"
         if not self.task:
-            return {"category": "unknown", "file": {"name": "unknown"}}
+            return {
+                "category": "unknown",
+                "file": {
+                    "name": "unknown",
+                },
+            }
 
-        target_info = {"category": self.task["category"]}
+        ret = {
+            "category": self.task["category"],
+        }
 
-        # We have to deal with file or URL targets.
+        # We have to deal with file, archive, and URL targets.
         if self.task["category"] == "file":
-            target_info["file"] = {}
+            ret["file"] = {}
 
             # Let's try to get as much information as possible, i.e., the
             # filename if the file is not available anymore.
             if os.path.exists(self.file_path):
-                target_info["file"] = File(self.file_path).get_all()
+                ret["file"] = File(self.file_path).get_all()
 
-            target_info["file"]["name"] = File(self.task["target"]).get_name()
+            ret["file"]["name"] = File(self.task["target"]).get_name()
+        elif self.task["category"] == "archive":
+            ret["archive"] = File(self.file_path).get_all()
+            ret["archive"]["name"] = File(self.task["target"]).get_name()
+            ret["filename"] = self.task["options"]["filename"]
+            ret["human"] = "%s @ %s" % (
+                ret["filename"], ret["archive"]["name"]
+            )
         elif self.task["category"] == "url":
-            target_info["url"] = self.task["target"]
+            ret["url"] = self.task["target"]
 
-        return target_info
+        return ret

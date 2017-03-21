@@ -25,6 +25,7 @@ from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static
 from cuckoo.processing.strings import Strings
+from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
 db = Database()
@@ -257,6 +258,43 @@ class TestProcessing(object):
         )
         assert os.path.exists(shotpath)
         os.unlink(shotpath)
+
+    def test_targetinfo(self):
+        ti = TargetInfo()
+        ti.file_path = __file__
+        ti.set_task({
+            "category": "file",
+            "target": __file__,
+        })
+        obj = ti.run()
+        assert obj["category"] == "file"
+        assert os.path.basename(obj["file"]["name"]) == "test_processing.py"
+
+        ti = TargetInfo()
+        ti.file_path = __file__
+        ti.set_task({
+            "category": "archive",
+            "target": __file__,
+            "options": {
+                "filename": "foo.txt",
+            },
+        })
+        obj = ti.run()
+        assert obj["category"] == "archive"
+        assert os.path.basename(obj["archive"]["name"]) == "test_processing.py"
+        assert obj["filename"] == "foo.txt"
+        assert obj["human"] == "foo.txt @ test_processing.py"
+
+        ti = TargetInfo()
+        ti.file_path = __file__
+        ti.set_task({
+            "category": "url",
+            "target": "http://google.com",
+        })
+        assert ti.run() == {
+            "category": "url",
+            "url": "http://google.com",
+        }
 
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     @mock.patch("cuckoo.processing.screenshots.log")
