@@ -1,6 +1,6 @@
 {% load static from staticfiles %}
 
-<nav class="app-nav">
+<nav class="app-nav" id="primary-nav">
 
 	<a href="/" class="logo">
 		<img src="{% static "graphic/cuckoo-default.png" %}" />
@@ -20,10 +20,18 @@
 		<li>
 			<a href="{% url "analysis/import" %}" class="button--lg">Import</a>
 		</li>
-		<li>
-			<a href="#">
+		<li class="app-nav__dropdown--parent">
+			<a href="#" id="select-theme">
 				<i class="fa fa-paint-brush"></i>
 			</a>
+			<div class="app-nav__dropdown">
+				<h5>Select theme</h5>
+				<ul class="flex-distribute theme-selection">
+					<li><a {% if request.COOKIES.theme == "default" or not request.COOKIES.theme %}class="active"{% endif %} href="theme:default">Default</a></li>
+					<li><a {% if request.COOKIES.theme == "cyborg" %}class="active"{% endif %} href="theme:cyborg">Cyborg</a></li>
+					<li><a {% if request.COOKIES.theme == "night" %}class="active"{% endif %} href="theme:night">Night</a></li>
+				</ul>
+			</div>
 		</li>
 	</ul>
 

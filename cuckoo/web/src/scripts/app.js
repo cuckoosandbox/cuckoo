@@ -163,7 +163,34 @@ $(function() {
         $(this).parents('.flex-nav__body').scrollTop(0);
     });
 
-})
+});
+
+// primary navigation things
+$(function() {
+
+    function theme_switch(theme) {
+        Cookies("theme", theme, {expires: 365 * 10});
+        $('body').removeClass('cyborg night');
+        $('body').addClass(theme);
+    }
+
+    $("#select-theme").bind('click', function(e) {
+        e.preventDefault();
+        $(this).parent().find('.app-nav__dropdown').toggleClass('in');
+    });
+
+    $(".theme-selection a").bind('click', function(e) { 
+        e.preventDefault();
+        // set active class
+        $(".theme-selection a").removeClass('active');
+        $(this).addClass('active');
+        // toggle theme
+        var theme = $(this).attr("href").split(':')[1];
+        // if(theme == 'default') theme ='';
+        theme_switch(theme);
+    });
+
+});
 
 function alertbox(msg, context, attr_id){
     if(context) { context = `alert-${context}`; }
