@@ -148,3 +148,16 @@ def test_yara_offsets():
             "Zg9wAABmD9sAAAAAAGYP2wAAAAAAZg/v",
         ],
     }]
+
+def test_get_urls():
+    filepath = Files.temp_put("""
+http://google.com
+google.com/foobar
+thisisnotadomain
+https://1.2.3.4:9001/hello
+    """)
+    assert sorted(File(filepath).get_urls()) == [
+        # TODO Why does this not work properly at my own machine?
+        "http://google.com",
+        "https://1.2.3.4:9001/hello",
+    ]

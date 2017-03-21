@@ -331,7 +331,16 @@ class File(object):
         # http://stackoverflow.com/a/454589
         urls = set()
         f = open(self.file_path, "rb")
-        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
+
+        if hasattr(mmap, "PROT_READ"):
+            access = mmap.PROT_READ
+        elif hasattr(mmap, "ACCESS_READ"):
+            access = mmap.ACCESS_READ
+        else:
+            log.warning("Getting the URLs is not supported on your OS!")
+            return []
+
+        m = mmap.mmap(f.fileno(), 0, access=access)
 
         for url in re.findall(URL_REGEX, m):
             if not is_whitelisted_domain(url[1]):
