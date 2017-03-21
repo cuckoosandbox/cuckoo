@@ -1,0 +1,86 @@
+.app-nav {
+	
+	// maintain the fixed top nav layout
+	position: fixed;
+	display: flex;
+	width: 100%;
+	height: 80px;
+	top: 0;
+	z-index: 5;
+
+	padding: 0 30px;
+	background-color: #f5f5f5;
+	border-bottom: 2px solid #DFE7EE;
+
+	.logo {
+		padding: 15px 0 12px 0;
+		margin-right: 20px;
+		& > img { width: 164px; }
+	}
+
+	a:hover,
+	a:focus,
+	a:active {
+		text-decoration: none;
+	}
+
+	&__nav {
+		display: flex;
+		align-self: stretch;
+		align-items: stretch;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+
+		& > li {
+			display: flex;
+		}
+
+		&--primary {
+
+			@extend .app-nav__nav;
+
+			& > li {
+				align-items: flex-end;
+
+				& > a {
+					font-weight: 700;
+					font-size: 18px;
+					padding: 0 10px 12px 10px;
+				}
+
+				&.active {
+					background-image: linear-gradient(-180deg, #81A9F2 2%, #4F7CCF 100%);
+					box-shadow: 0 2px 0 0 #4366A6;
+
+					& > a {
+						color: #fff;
+					}
+				}
+			}
+
+		}
+
+		&--right {
+
+			@extend .app-nav__nav;
+			margin-left: auto;
+
+			& > li {
+				align-items: center;
+				padding: 0 10px;
+
+				.fa {
+					font-size: 24px;
+				}
+
+				&:last-child {
+					padding-right: 0;
+				}
+			}
+
+		}
+
+	}
+
+}

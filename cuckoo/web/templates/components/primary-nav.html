@@ -1,0 +1,30 @@
+{% load static from staticfiles %}
+
+<nav class="app-nav">
+
+	<a href="/" class="logo">
+		<img src="{% static "graphic/cuckoo-default.png" %}" />
+	</a>
+
+	<ul class="app-nav__nav--primary">
+		<li {% if "/dashboard/" in request.path or request.path == "/" %}class="active"{% endif %}><a href="{% url "dashboard.views.index" %}">Dashboard</a></li>
+		<li {% if request.path == "/analysis/" %}class="active"{% endif %}><a href="{% url "analysis/recent" %}">Recent</a></li>
+		<li {% if request.path == "/analysis/pending/" %}class="active"{% endif %}><a href="{% url "analysis.views.pending" %}">Pending</a></li>
+		<li {% if request.path == "/analysis/search/" %}class="active"{% endif %}><a href="{% url "analysis.views.search" %}">Search</a></li>
+	</ul>
+
+	<ul class="app-nav__nav--right">
+		<li>
+			<a href="{% url "submission/index" %}" class="button--lg">Submit</a>
+		</li>
+		<li>
+			<a href="{% url "analysis/import" %}" class="button--lg">Import</a>
+		</li>
+		<li>
+			<a href="#">
+				<i class="fa fa-paint-brush"></i>
+			</a>
+		</li>
+	</ul>
+
+</nav>

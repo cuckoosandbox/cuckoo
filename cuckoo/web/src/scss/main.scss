@@ -15,12 +15,12 @@
 // general css on the body and the html
 html { background: #1c1c1c; }
 body { 
-	padding-top: 70px; 
+	padding-top: 80px;
 	-webkit-font-smoothing: antialiased;
 }
 
 /* note to self: this is very hacky and I need to pick this up later */
-body[id^="analysis"] { padding-top: 30px; }
+body[id^="analysis"] { padding-top: 80px; }
 body[id^="submission/"] { padding-top: 41px; }
 body[id="submission/pre"],
 body[id="submission/index"],
@@ -38,6 +38,7 @@ body[id^="analysis"] {
 @import "layout/badges";
 
 // components
+@import "components/app-nav";
 @import "components/buttons";
 @import "components/analysis-sidebar";
 @import "components/cuckoo-analysis";
