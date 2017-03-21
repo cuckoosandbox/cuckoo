@@ -548,10 +548,6 @@ class TestMongoInteraction(object):
         mongo.init()
         mongo.connect()
 
-        # TODO REMOVE THIS BEFORE COMMITTING.
-        mongo.db.command("dropDatabase")
-        mongo.connect()
-
     class TestTasksRecent(object):
         @classmethod
         def setup_class(cls):
