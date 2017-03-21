@@ -3,7 +3,8 @@
 		"js/vendor.js@concat": [
 			"handlebars/handlebars.js",
 			"string/dist/string.js",
-			"moment/moment.js"
+			"moment/moment.js",
+			"chart.js/dist/Chart.js"
 		],
 		"css/vendor.css@concat": [],
 		"fonts@copy": [

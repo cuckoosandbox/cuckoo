@@ -19,6 +19,7 @@
     "handlebars": "^3.0.0",
     "font-roboto": "^0.0.2",
     "string": "stringjs#^3.3.3",
-    "moment": "^2.17.1"
+    "moment": "^2.17.1",
+    "chart.js": "^2.5.0"
   }
 }
