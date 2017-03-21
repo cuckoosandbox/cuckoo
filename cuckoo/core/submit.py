@@ -242,7 +242,7 @@ class SubmitManager(object):
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath, filename=info["filename"], **kw
+                    file_path=arcpath, filename=info["relapath"], **kw
                 ))
             else:
                 arcpath = os.path.join(
@@ -265,7 +265,7 @@ class SubmitManager(object):
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath, filename=info["filename"], **kw
+                    file_path=arcpath, filename=info["relapath"], **kw
                 ))
 
         return ret

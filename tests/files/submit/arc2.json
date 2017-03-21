@@ -1,0 +1,69 @@
+{
+    "file_selection": [
+        {
+            "arcname": "pdf0.zip",
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [
+                "files/pdf0.pdf"
+            ],
+            "filename": "pdf0.pdf",
+            "finger": {
+                "magic": "PDF document, version 1.5",
+                "magic_human": "PDF document (version 1.5)",
+                "mime": "application/pdf",
+                "mime_human": "pdf"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": null,
+                "options": {
+                    "enable-injection": true,
+                    "enable-services": false,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "process-memory-dump": true,
+                    "simulated-human-interaction": true
+                },
+                "package": "pdf",
+                "priority": 2,
+                "routing": "none",
+                "timeout": 10
+            },
+            "package": "pdf",
+            "password": null,
+            "relapath": "files/pdf0.pdf",
+            "selected": true,
+            "size": 680,
+            "type": "file"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "none",
+        "options": {
+            "enable-injection": true,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": "",
+        "vpn": ""
+    },
+    "submit_id": 1
+}

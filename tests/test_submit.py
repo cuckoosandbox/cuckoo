@@ -219,6 +219,54 @@ class TestSubmitManager(object):
         }
         assert len(zipfile.ZipFile(t.target).read("oledata.mso")) == 234898
 
+    def test_submit_arc2(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "pdf0.zip",
+            "data": open("tests/files/pdf0.zip", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/arc2.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("pdf0.zip")
+        assert t.package == "pdf"
+        assert t.timeout == 10
+        assert t.category == "archive"
+        assert t.status == "pending"
+        assert t.machine is None
+        assert not t.enforce_timeout
+        assert not t.memory
+        assert t.options == {
+            "route": "none",
+            "procmemdump": "yes",
+            "filename": "files/pdf0.pdf",
+        }
+        assert len(zipfile.ZipFile(t.target).read("files/pdf0.pdf")) == 680
+
+    def test_submit_arc3(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "pdf0.tgz",
+            "data": open("tests/files/pdf0.tgz", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/arc3.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("pdf0.zip")
+        assert t.package == "pdf"
+        assert t.timeout == 10
+        assert t.category == "archive"
+        assert t.status == "pending"
+        assert t.machine is None
+        assert not t.enforce_timeout
+        assert not t.memory
+        assert t.options == {
+            "route": "none",
+            "procmemdump": "yes",
+            "filename": "files/pdf0.pdf",
+        }
+        assert len(zipfile.ZipFile(t.target).read("files/pdf0.pdf")) == 680
+
     def test_pre_options(self):
         assert self.submit_manager.pre(
             "strings", ["google.com"], {"foo": "bar"}
