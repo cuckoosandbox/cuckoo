@@ -44,7 +44,7 @@ class SubmitManager(object):
         if validate_url(line):
             submit["data"].append({
                 "type": "url",
-                "data": line
+                "data": validate_url(line),
             })
             return
 

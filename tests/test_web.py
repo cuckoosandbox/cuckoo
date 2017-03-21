@@ -20,6 +20,7 @@ from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
+from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
 
@@ -217,7 +218,7 @@ class TestWebInterface(object):
 
         obj = json.loads(r.content)
         assert obj["status"] is True
-        assert obj["files"][0]["filename"] == "google.com"
+        assert obj["files"][0]["filename"] == "http://google.com"
         assert obj["defaults"]["priority"] == 2
         assert obj["defaults"]["options"]["process-memory-dump"] is True
 
@@ -492,6 +493,30 @@ class TestWebInterfaceFeedback(object):
                 "options": {},
             }),
         })
+
+class TestAnalysisController(object):
+    def test_task_info(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        Database().connect()
+
+        task_id = Database().add_path(__file__)
+        obj = AnalysisController.task_info(task_id)
+        assert obj["task"]["category"] == "file"
+        assert obj["task"]["target"] == "test_web.py"
+
+        task_id = Database().add_url("http://cuckoosandbox.org")
+        obj = AnalysisController.task_info(task_id)
+        assert obj["task"]["category"] == "url"
+        assert obj["task"]["target"] == "hxxp://cuckoosandbox.org"
+
+        task_id = Database().add_archive(
+            "tests/files/pdf0.zip", "pdf0.pdf", "pdf"
+        )
+        obj = AnalysisController.task_info(task_id)
+        assert obj["task"]["category"] == "archive"
+        assert obj["task"]["options"]["filename"] == "pdf0.pdf"
+        assert obj["task"]["target"] == "pdf0.pdf @ pdf0.zip"
 
 def test_mongodb_disabled():
     set_cwd(tempfile.mkdtemp())

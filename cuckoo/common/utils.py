@@ -73,13 +73,13 @@ def validate_url(url):
 
     try:
         val(url)
-        return True
+        return url
     except:
         pass
 
     try:
         val("http://%s" % url)
-        return True
+        return "http://%s" % url
     except:
         pass
 

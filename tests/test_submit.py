@@ -66,7 +66,7 @@ class TestSubmitManager(object):
         assert url1["type"] == "url"
         assert url1["data"] == "https://news.ycombinator.com/"
         assert url2["type"] == "url"
-        assert url2["data"] == "google.com"
+        assert url2["data"] == "http://google.com"
 
     def test_invalid_strings(self):
         assert SubmitManager().pre("strings", ["thisisnotanurl"]) == 1

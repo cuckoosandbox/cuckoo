@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -38,7 +37,17 @@ class AnalysisController:
             sample = db.view_sample(task.sample_id)
             entry["sample"] = sample.to_dict()
 
-        entry["target"] = os.path.basename(entry["target"])
+        if entry["category"] == "file":
+            entry["target"] = os.path.basename(entry["target"])
+        elif entry["category"] == "url":
+            if entry["target"].startswith(("http://", "https://")):
+                entry["target"] = "hxxp" + entry["target"][4:]
+        elif entry["category"] == "archive":
+            entry["target"] = "%s @ %s" % (
+                entry["options"]["filename"],
+                os.path.basename(entry["target"])
+            )
+
         return {
             "task": entry,
         }
