@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
+body.cyborg .app-nav, body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -3393,7 +3393,7 @@ body.night .dns-badge > *.dns-badge__type {
 .app-nav__dropdown {
   display: none;
   position: absolute;
-  top: 50px;
+  top: 57px;
   width: 200px;
   height: auto;
   background-color: #fff;
@@ -3467,6 +3467,64 @@ body.night .dns-badge > *.dns-badge__type {
 }
 .app-nav__dropdown .theme-selection li:first-child > a {
   border-bottom-left-radius: 4px;
+}
+body.cyborg .app-nav {
+  border-bottom: 2px solid #1d3f4a;
+}
+body.cyborg .app-nav .button, body.cyborg .app-nav .button--lg {
+  color: #fff;
+}
+body.cyborg .app-nav .app-nav__nav--primary li.active {
+  background-image: linear-gradient(-180deg, #0ce3ac 2%, #0d9c78 100%);
+  box-shadow: 0 2px 0 0 #095844;
+}
+body.cyborg .app-nav .app-nav__dropdown {
+  background-color: #020e10;
+  border-color: #133b4a;
+}
+body.cyborg .app-nav .app-nav__dropdown:after {
+  border-bottom-color: #020e10;
+}
+body.cyborg .app-nav .app-nav__dropdown:before {
+  border-bottom-color: #133b4a;
+}
+body.cyborg .app-nav .app-nav__dropdown .theme-selection {
+  border-color: #133b4a;
+}
+body.cyborg .app-nav .app-nav__dropdown .theme-selection li {
+  border-color: #133b4a;
+}
+body.cyborg .app-nav .app-nav__dropdown .active {
+  background-color: #0ce3ac;
+  box-shadow: none;
+  color: #444;
+}
+body.night .app-nav {
+  background-color: #375a7f;
+  border-bottom: 2px solid #2f4d6d;
+}
+body.night .app-nav .button, body.night .app-nav .button--lg {
+  color: #fff;
+}
+body.night .app-nav .app-nav__dropdown {
+  background-color: #313131;
+  border-color: #2f4d6d;
+}
+body.night .app-nav .app-nav__dropdown:after {
+  border-bottom-color: #313131;
+}
+body.night .app-nav .app-nav__dropdown:before {
+  border-bottom-color: #2f4d6d;
+}
+body.night .app-nav .app-nav__dropdown .theme-selection {
+  border-color: #2f4d6d;
+}
+body.night .app-nav .app-nav__dropdown .theme-selection li {
+  border-color: #2f4d6d;
+}
+body.night .app-nav .app-nav__dropdown .active {
+  background-color: #375a7f;
+  box-shadow: none;
 }
 
 .grouped-buttons button, .grouped-buttons__bordered button, .grouped-buttons a, .grouped-buttons__bordered a {

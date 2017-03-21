@@ -92,7 +92,7 @@
 
 		display: none;
 		position: absolute;
-		top: 50px;
+		top: 57px;
 		width: 200px;
 		height: auto;
 		background-color: #fff;
@@ -174,6 +174,67 @@
 				&:first-child > a {
 					border-bottom-left-radius: 4px;
 				}
+			}
+		}
+
+	}
+
+	@include cuckoo-theme('cyborg') {
+		@extend %cyborg-heading;
+		border-bottom: 2px solid #1d3f4a;
+
+		.button { color: #fff; }
+
+		.app-nav__nav--primary li.active {
+			background-image: linear-gradient(-180deg, #0ce3ac 2%, #0d9c78 100%);
+			box-shadow: 0 2px 0 0 #095844;
+		}
+
+		.app-nav__dropdown {
+			background-color: $cyborg_background_color;
+			border-color: $cyborg_border_color;
+
+			&:after { border-bottom-color: $cyborg_background_color; }
+			&:before { border-bottom-color: $cyborg_border_color; }
+
+			.theme-selection {
+				border-color: $cyborg_border_color;
+				li { border-color: $cyborg_border_color; }
+			}
+
+			.active {
+				background-color: $cyborg_secundary_color;
+				box-shadow: none;
+				color: #444;
+			}
+		}
+
+	}
+
+	// night theme for the navbar
+	@include cuckoo-theme('night') {
+		background-color: $night_panel_color;
+		border-bottom: 2px solid darken($night_border_color, 5);
+
+		.button {
+			color: #fff;
+		}
+
+		.app-nav__dropdown {
+			background-color: #313131;
+			border-color: darken($night_border_color, 5);
+
+			&:after { border-bottom-color: #313131; }
+			&:before { border-bottom-color: darken($night_border_color, 5); }
+
+			.theme-selection {
+				border-color: darken($night_border_color, 5);
+				li { border-color: darken($night_border_color, 5); }
+			}
+
+			.active {
+				background-color: $night_panel_color;
+				box-shadow: none;
 			}
 		}
 
