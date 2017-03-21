@@ -172,6 +172,7 @@ $(function() {
         Cookies("theme", theme, {expires: 365 * 10});
         $('body').removeClass('cyborg night');
         $('body').addClass(theme);
+        $(".app-nav__dropdown").removeClass('in');
     }
 
     $("#select-theme").bind('click', function(e) {
@@ -188,6 +189,13 @@ $(function() {
         var theme = $(this).attr("href").split(':')[1];
         // if(theme == 'default') theme ='';
         theme_switch(theme);
+    });
+
+    // close the theme dropdown on body click
+    $('body').bind('click', function(e) {
+        if($(e.target).parents('.app-nav__dropdown--parent').length == 0) {
+            $(".app-nav__dropdown").removeClass('in');
+        }
     });
 
 });
