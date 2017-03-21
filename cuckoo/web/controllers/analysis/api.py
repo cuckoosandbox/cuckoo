@@ -414,56 +414,6 @@ class AnalysisApi(object):
         return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_post
-    def behavior_get_processes(request, body):
-        task_id = body.get("task_id", None)
-        if not task_id:
-            return json_error_response("missing task_id")
-
-        try:
-            data = AnalysisController.behavior_get_processes(task_id)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
-    def behavior_get_watchers(request, body):
-        task_id = body.get("task_id", None)
-        pid = body.get("pid", None)
-
-        if not task_id or not pid:
-            return json_error_response("missing task_id or pid")
-
-        try:
-            data = AnalysisController.behavior_get_watchers(
-                task_id=task_id,
-                pid=pid)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
-    def behavior_get_watcher(request, body):
-        task_id = body.get("task_id", None)
-        pid = body.get("pid", None)
-        watcher = body.get("watcher", None)
-        limit = body.get("limit", None)
-        offset = body.get("offset", None)
-
-        if not task_id or not watcher or not pid:
-            return json_error_response("missing task_id, watcher, and/or pid")
-
-        try:
-            data = AnalysisController.behavior_get_watcher(
-                task_id=task_id,
-                pid=pid,
-                watcher=watcher,
-                limit=limit,
-                offset=offset)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
     def feedback_send(request, body):
         f = CuckooFeedback()
 
