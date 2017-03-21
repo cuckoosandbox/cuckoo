@@ -3110,7 +3110,7 @@ body[id^="analysis"] {
 }
 
 body[id^="submission/"] {
-  padding-top: 41px;
+  padding-top: 80px;
 }
 
 body[id="submission/pre"] footer:not(.flex-grid__footer),
@@ -5577,7 +5577,7 @@ body.night .flex-tabs__tab .btn:not(.active):hover {
   display: flex;
   flex-direction: column;
   width: 100vw;
-  height: -webkit-calc(100vh - 41px);
+  height: -webkit-calc(100vh - 80px);
   font-family: "Roboto", sans-serif;
 }
 .flex-grid__header {
@@ -5727,7 +5727,6 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   flex-basis: 50px;
   background-color: #111;
   padding: 15px 20px;
-  margin-top: 30px;
 }
 .flex-grid__footer .logo {
   margin-left: 20px;
