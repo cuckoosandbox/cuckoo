@@ -6,6 +6,8 @@
 import os
 import shlex
 import shutil
+import platform
+import pefile
 
 from lib.common.abstracts import Package
 
@@ -16,7 +18,24 @@ class Dll(Package):
     ]
 
     def start(self, path):
-        rundll32 = self.get_path("rundll32.exe")
+        # Check DLL PE Header Machine
+        dll_pe = pefile.PE(path, fast_load=True)
+        dll_machine = dll_pe.FILE_HEADER.Machine
+        dll_pe.close()
+        # Check if Dll and System is AMD64 and 32bit Python then use Sysnative path rundll32
+        if dll_machine == 34404 and \
+           platform.machine().endswith('64') and \
+           platform.architecture()[0] == '32bit':
+            rundll32 = r"C:\Windows\Sysnative\rundll32.exe"
+        # Check if System and Python are 64bit and Dll is 32 bit then use SysWOW64 rundll32
+        elif dll_machine == 332 and \
+           platform.machine().endswith('64') and \
+           platform.architecture()[0] == '64bit':
+            rundll32 = r"C:\Windows\SysWOW64\rundll32.exe"
+        # Else use prior default behavior
+        else:
+            rundll32 = self.get_path("rundll32.exe")
+
         function = self.options.get("function", "DllMain")
         arguments = self.options.get("arguments", "")
         loader_name = self.options.get("loader")
