@@ -143,8 +143,6 @@ $(function() {
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = [];
 
-							console.log(item.per_file_options);
-
 							// machine guess: package options
 							// - also preselects the package field if available
 							if(item.package) {
@@ -430,6 +428,8 @@ $(function() {
 						default: default_analysis_options['options'],
 						extraOptions: true,
 						options: submission_options
+					}).on('change', function() {
+						console.log(arguments);
 					});
 
 					var machine = new this.SimpleSelect({
