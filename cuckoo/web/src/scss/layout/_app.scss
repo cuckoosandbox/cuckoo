@@ -8,7 +8,9 @@
     padding: 30px;
     
     [id^="analysis"] &,
-    [id^="submission/"] & {
+    [id^="submission/"] &,
+    [id="dashboard"] &,
+    [id="dashboard.views.index"] & {
         padding: 0;
     }
 }

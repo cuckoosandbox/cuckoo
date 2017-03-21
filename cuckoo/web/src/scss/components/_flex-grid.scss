@@ -217,6 +217,12 @@
 				flex-basis: 400px;	
 			}
 		}
+
+		// utility class for 'auto'-ing the height
+		&--grow {
+			@extend .flex-grid__horizontal;
+			height: auto;
+		}
 	}
 
 	&__fluid {

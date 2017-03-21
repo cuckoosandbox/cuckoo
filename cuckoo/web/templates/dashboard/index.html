@@ -2,108 +2,113 @@
 {% load staticfiles %}
 {% block content %}
 
-    {% if report.estimate_hour and report.estimate_day %}
-        <div class="alert alert-info" style="text-align: center;font-size: 22px;">
-            Estimating ~<b>{{ report.estimate_hour }}</b> analysis per hour, <b>{{ report.estimate_day }}</b> per day.
-        </div>
-    {% endif %}
+<div class="flex-grid__horizontal--grow dashboard">
+    <div class="flex-grid__column dashboard__left">
+        <h2 class="dashboard__col-title">Insights</h2>
 
-    <div class="row">
-        <div class="col-xs-6">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_tasks }}</h1>
-                Total tasks
-            </div>
-        </div>
-        <div class="col-xs-6">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_samples }}</h1>
-                Total samples
-            </div>
-        </div>
-
-        <div class="col-xs-4">
-            <div class="panel panel-primary">
-                <div class="panel-heading">States</div>
-                <table class="table table-striped" style="table-layout: fixed;">
-                    <thead>
-                    <tr>
-                        <th>State</th>
-                        <th>Count</th>
-                    </tr>
-                    </thead>
+        <div class="dashboard-module">
+            <header class="dashboard-module__header">
+                <h4>Cuckoo Installation</h4>
+            </header>
+            <section class="dashboard-module__body">
+                <table class="simple">
                     <tbody>
-                    {% for state, count in report.states_count.items %}
                         <tr>
-                            <td>{{ state }}</td>
-                            <td>{{ count }}</td>
+                            <td>Version</td>
+                            <td>2.0</td>
                         </tr>
-                    {% endfor %}
+                        <tr>
+                            <td>Last update</td>
+                            <td>14-03-2017</td>
+                        </tr>
+                        <tr>
+                            <td>Health</td>
+                            <td>OK</td>
+                        </tr>
+                        <tr>
+                            <td>Running</td>
+                            <td>YES</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>IDLE</td>
+                        </tr>
                     </tbody>
                 </table>
-            </div>
+            </section>
+            <footer class="dashboard-module__footer">
+                <p>How to: <a href="#">Upgrade your Cuckoo installation</a></p>
+            </footer>
         </div>
+
+        <div class="dashboard-module">
+            <header class="dashboard-module__header">
+                <h4>System info</h4>
+            </header>
+            <section class="dashboard-module__body">
+                
+                <div class="dashboard-module__body--left">
+                    <table class="simple">
+                        <tbody>
+                            <tr>
+                                <td>Network</td>
+                                <td>YES</td>
+                            </tr>
+                            <tr>
+                                <td>Internet</td>
+                                <td>YES</td>
+                            </tr>
+                            <tr>
+                                <td>OS</td>
+                                <td>Mac OSX 10.11</td>
+                            </tr>
+                            <tr>
+                                <td>VM</td>
+                                <td>VirtualBox</td>
+                            </tr>
+                            <tr>
+                                <td>Routing</td>
+                                <td>HTTP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="dashboard-module__body--right free-disk-space">
+                    <h5>Free disk space</h5>
+                </div>
+
+            </section>
+            <footer class="dashboard-module__footer">
+                <p>How to: <a href="#">Configure Cuckoo system options</a></p>
+            </footer>
+        </div>
+
+        <div class="dashboard-module">
+            <header class="dashboard-module__header">
+                <h4>Usage statistics</h4>
+            </header>
+            <section class="dashboard-module__body">
+                <table class="simple">
+                    <tbody>
+                        {% for state, count in report.states_count.items %}
+                            <tr>
+                                <td>{{ state }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            <footer class="dashboard-module__footer">
+                <p>How to: <a href="#">Manage Cuckoo processes</a></p>
+            </footer>
+        </div>
+
     </div>
-
-    <div class="row" id="stats">
-        <script src="{% static "js/cuckoo/plots.js" %}"></script>
-        <script>
-            $(document).ready(function(){
-                function cb(data){
-                    data = data.data;
-                    var draw = true;
-                    var chart_data = [];
-                    var def = {
-                        "analysis": "rgb(51,122,183)",
-                        "failed": "rgba(237,81,81,0.2)"
-                    };
-
-                    ["analysis", "failed"].forEach(function(type){
-                        var _data = {
-                            "x": [],
-                            "y": [],
-                            "type": "bar",
-                            "name": type.capitalize(),
-                            "marker": {
-                                color: def[type],
-                                opacity: 0.1,
-                                line: {
-                                    color: 'rbg(8,48,107)',
-                                    width: 1
-                                }
-                            }
-                        };
-
-                        // Only show the graph when data of more than 2 months
-                        // is present, to prevent drawing useless graphs
-                        if(data[type].length <= 2){
-                            draw = false;
-                        }
-
-                        data[type].forEach(function(month){
-                            var _month_human = month["month_human"].substring(0,3);
-                            var _year = month["year"].toString().substring(2);
-
-                            _data.x.push(_month_human + "\'" + _year);
-                            _data.y.push(month["num"]);
-                        });
-
-                        chart_data.push(_data);
-                    });
-
-                    var selector = $(".row").first();
-                    if(draw){
-                        selector.append('<div style="height:400px;" id="chart_analysis_count" class="col-xs-4">');
-                        selector.append('</div>');
-
-                        var chart_analysis_count = new BarChart("chart_analysis_count", true);
-                        chart_analysis_count.draw(chart_data, "Analysis per month");
-                    }
-                }
-
-                CuckooWeb.api_post("/analysis/api/tasks/stats/", {}, cb);
-            });
-        </script>
+    <div class="flex-grid__column dashboard__right">
+        <h2 class="dashboard__col-title">Cuckoo</h2>
     </div>
+</div>
 
 {% endblock %}

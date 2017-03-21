@@ -3151,7 +3151,7 @@ pre {
 .app {
   padding: 30px;
 }
-[id^="analysis"] .app, [id^="submission/"] .app {
+[id^="analysis"] .app, [id^="submission/"] .app, [id="dashboard"] .app, [id="dashboard.views.index"] .app {
   padding: 0;
 }
 
@@ -4864,19 +4864,19 @@ body.night .cuckoo-errors .troubleshoot {
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-footer {
+footer:not(.dashboard-module__footer) {
   background: #292727;
   margin: 0;
   padding: 20px 0 15px;
   width: 100%;
   color: #ccc;
 }
-footer a:link,
-footer a:visited {
+footer:not(.dashboard-module__footer) a:link,
+footer:not(.dashboard-module__footer) a:visited {
   color: #ccc;
   text-decoration: none;
 }
-footer a:hover {
+footer:not(.dashboard-module__footer) a:hover {
   color: #ccc;
   text-decoration: underline;
 }
@@ -5713,7 +5713,7 @@ body.night .flex-tabs__tab .btn:not(.active):hover {
   border-right-width: 1px;
 }
 
-.flex-grid, .flex-grid__horizontal {
+.flex-grid, .flex-grid__horizontal, .flex-grid__horizontal--grow {
   display: flex;
   flex-direction: column;
   width: 100vw;
@@ -5911,34 +5911,37 @@ body.night .flex-grid__nav {
   flex-basis: 1180px;
   margin: 15px 0;
 }
-.flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
+.flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal--grow .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal--grow .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md, .flex-grid__horizontal--grow .flex-grid__column--md {
   flex-basis: 100%;
   overflow: hidden;
 }
-.flex-grid__column.one-third, .flex-grid__horizontal .one-third.flex-grid__column--xs, .flex-grid__horizontal .one-third.flex-grid__column--sm, .flex-grid__horizontal .one-third.flex-grid__column--md {
+.flex-grid__column.one-third, .flex-grid__horizontal .one-third.flex-grid__column--xs, .flex-grid__horizontal--grow .one-third.flex-grid__column--xs, .flex-grid__horizontal .one-third.flex-grid__column--sm, .flex-grid__horizontal--grow .one-third.flex-grid__column--sm, .flex-grid__horizontal .one-third.flex-grid__column--md, .flex-grid__horizontal--grow .one-third.flex-grid__column--md {
   flex-basis: 33.33333%;
 }
-.flex-grid__column.two-third, .flex-grid__horizontal .two-third.flex-grid__column--xs, .flex-grid__horizontal .two-third.flex-grid__column--sm, .flex-grid__horizontal .two-third.flex-grid__column--md {
+.flex-grid__column.two-third, .flex-grid__horizontal .two-third.flex-grid__column--xs, .flex-grid__horizontal--grow .two-third.flex-grid__column--xs, .flex-grid__horizontal .two-third.flex-grid__column--sm, .flex-grid__horizontal--grow .two-third.flex-grid__column--sm, .flex-grid__horizontal .two-third.flex-grid__column--md, .flex-grid__horizontal--grow .two-third.flex-grid__column--md {
   flex-basis: 66.66667%;
 }
-.flex-grid__column--fixed, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
+.flex-grid__column--fixed, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal--grow .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal--grow .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md, .flex-grid__horizontal--grow .flex-grid__column--md {
   flex-grow: 0;
   flex-shrink: 0;
 }
-.flex-grid__horizontal {
+.flex-grid__horizontal, .flex-grid__horizontal--grow {
   flex-direction: row;
 }
-.flex-grid__horizontal .flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md {
+.flex-grid__horizontal .flex-grid__column, .flex-grid__horizontal--grow .flex-grid__column, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal--grow .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal--grow .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md, .flex-grid__horizontal--grow .flex-grid__column--md {
   margin: 0 15px;
 }
-.flex-grid__horizontal .flex-grid__column--xs {
+.flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal--grow .flex-grid__column--xs {
   flex-basis: 150px;
 }
-.flex-grid__horizontal .flex-grid__column--sm {
+.flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal--grow .flex-grid__column--sm {
   flex-basis: 250px;
 }
-.flex-grid__horizontal .flex-grid__column--md {
+.flex-grid__horizontal .flex-grid__column--md, .flex-grid__horizontal--grow .flex-grid__column--md {
   flex-basis: 400px;
+}
+.flex-grid__horizontal--grow {
+  height: auto;
 }
 .flex-grid__fluid {
   height: auto;
@@ -7032,6 +7035,96 @@ body.cyborg .page-freeze {
 }
 body.cyborg .page-freeze.error {
   background-color: rgba(70, 6, 11, 0.9);
+}
+
+.dashboard {
+  background-color: #F7F8FA;
+  padding: 20px 15px 0 15px;
+}
+.dashboard__left {
+  flex-basis: 415px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.dashboard__right {
+  flex-basis: 100%;
+}
+.dashboard__col-title {
+  font-size: 32px;
+  color: #6297F8;
+}
+.dashboard-module {
+  border: 2px solid #DFDFDF;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+.dashboard-module__header {
+  background-color: #fff;
+  border-bottom: 2px solid #DFDFDF;
+  text-align: center;
+}
+.dashboard-module__header h4 {
+  font-size: 14px;
+  color: #337AB8;
+  padding: 20px 0 10px 0;
+  margin: 0;
+}
+.dashboard-module__body {
+  display: flex;
+  background-color: #F5F5F5;
+  border-bottom: 1px solid #DFDFDF;
+}
+.dashboard-module__body--left, .dashboard-module__body--right {
+  flex-basis: 50%;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.dashboard-module__body--left {
+  border-right: 2px solid #DFDFDF;
+}
+.dashboard-module__footer {
+  background-color: #fff;
+  text-align: center;
+}
+.dashboard-module__footer p {
+  font-weight: 500;
+  font-size: 12px;
+  padding: 5px;
+  margin: 0;
+  color: #979797;
+}
+.dashboard-module table.simple {
+  table-layout: fixed;
+  width: 100%;
+}
+.dashboard-module table.simple tr {
+  border-bottom: 1px solid #DFDFDF;
+}
+.dashboard-module table.simple tr:last-child {
+  border-bottom: 0;
+}
+.dashboard-module table.simple tr:last-child td {
+  padding-bottom: 20px;
+}
+.dashboard-module table.simple tr:first-child td {
+  padding-top: 20px;
+}
+.dashboard-module table.simple tr td {
+  font-size: 12px;
+  padding: 6px;
+  color: #979797;
+}
+.dashboard-module table.simple tr td:first-child {
+  font-weight: 600;
+  border-right: 1px solid #DFDFDF;
+  text-align: right;
+}
+.dashboard-module .free-disk-space h5 {
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: center;
+  color: #979797;
 }
 
 /* 
