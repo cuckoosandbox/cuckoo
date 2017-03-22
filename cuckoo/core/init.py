@@ -96,7 +96,7 @@ def write_cuckoo_conf(cfg=None):
 
     raw["config"] = _config
     for filename in os.listdir(cwd("cwd", "conf", private=True)):
-        template = jinja2.Environment().from_string(
+        template = jinja2.Template(
             open(cwd("cwd", "conf", filename, private=True), "rb").read()
         )
         open(cwd("conf", filename), "wb").write(

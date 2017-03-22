@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import jinja2
 import mock
 import os
 import pytest
@@ -10,7 +11,7 @@ import tempfile
 
 import cuckoo
 
-from cuckoo.common.config import config
+from cuckoo.common.config import config, Config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.utils import Singleton
@@ -173,7 +174,7 @@ class TestWriteCuckooConfiguration(object):
         self.h.stop()
 
     def render(self):
-        return self.p.Environment.return_value.from_string.return_value.render
+        return self.p.Template.return_value.render
 
     def value(self, s):
         return self.render().call_args[0][0]["config"](s)
@@ -279,3 +280,51 @@ class TestWriteCuckooConfiguration(object):
 
         assert self.value("virtualbox:a:ip") == "1.2.3.4"
         assert self.rawvalue("virtualbox:a:ip") == "1.2.3.4"
+
+def test_all_config_written():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    cfg = Config.from_confdir(cwd("conf"))
+
+    # This one is extra, ignore.
+    cfg["virtualbox"].pop("honeyd", None)
+
+    set_cwd(tempfile.mkdtemp())
+    mkdir(cwd("conf"))
+
+    lookups = []
+
+    class LookupDict(dict):
+        parents = []
+        def __getitem__(self, key):
+            lookups.append(":".join(self.parents + [key]))
+            return dict.__getitem__(key)
+
+    class Template(jinja2.Template):
+        def render(self, kw):
+            orig_config = kw["config"]
+
+            def lookup_config(s):
+                lookups.append(s)
+                return orig_config(s)
+
+            kw["config"] = lookup_config
+
+            for key, value in kw.items():
+                if key == "config":
+                    continue
+
+                for key2, value2 in value.items():
+                    value[key2] = LookupDict(value2)
+                    value[key2].parents = [key, key2]
+
+            return jinja2.Template.render(self, kw)
+
+    with mock.patch("cuckoo.core.init.jinja2") as p:
+        p.Template = Template
+        write_cuckoo_conf(cfg)
+
+    for key, value in cfg.items():
+        for key2, value2 in value.items():
+            for key3, value3 in value2.items():
+                assert "%s:%s:%s" % (key, key2, key3) in lookups
