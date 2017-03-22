@@ -9,12 +9,12 @@ import tempfile
 import ntpath
 import shutil
 
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.config import Config
 
 def temppath():
     """Returns the true temporary directory."""
-    tmppath = getattr(Config(), "cuckoo", {}).get("tmppath")
+    tmppath = config("cuckoo:cuckoo:tmppath")
 
     # Backwards compatibility with older configuration.
     if not tmppath or tmppath == "/tmp":

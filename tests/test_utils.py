@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -16,6 +16,7 @@ import cuckoo
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders, Files, Storage, temppath
 from cuckoo.common import utils
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 
 class TestCreateFolders:
@@ -296,28 +297,39 @@ def test_htmlprettify():
         assert utils.htmlprettify(k) == v
 
 def test_temppath():
-    dirpath = tempfile.mkdtemp()
-    set_cwd(dirpath)
-    Folders.create(dirpath, "conf")
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
 
     assert temppath() == tempfile.gettempdir()
 
-    Files.create(
-        os.path.join(dirpath, "conf"), "cuckoo.conf",
-        "[cuckoo]\ntmppath = "
-    )
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": "",
+            },
+        },
+    })
     assert temppath() == tempfile.gettempdir()
 
-    Files.create(
-        os.path.join(dirpath, "conf"), "cuckoo.conf",
-        "[cuckoo]\ntmppath = /tmp"
-    )
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": "/tmp",
+            },
+        },
+    })
     assert temppath() == tempfile.gettempdir()
 
-    Files.create(
-        os.path.join(dirpath, "conf"), "cuckoo.conf",
-        "[cuckoo]\ntmppath = /custom/directory"
-    )
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": "/custom/directory",
+            },
+        },
+    })
     assert temppath() == "/custom/directory"
 
 def test_bool():

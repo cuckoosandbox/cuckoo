@@ -154,6 +154,9 @@ class TestInit(object):
             "cuckoo.cuckoo.version_check = no"
         )
 
+        # Create a new CWD as Files.temp_put() indexes - or tries to - the
+        # original cuckoo.conf (even though it doesn't exist yet).
+        set_cwd(tempfile.mkdtemp())
         with pytest.raises(SystemExit):
             main.main(
                 ("--cwd", cwd(), "init", "--conf", filepath),
