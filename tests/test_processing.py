@@ -603,9 +603,11 @@ class TestPcap(object):
         assert expected_types == types
 
 class TestPcapAdditional(object):
-    def test_resolve_dns(self):
+    @mock.patch("cuckoo.processing.network.resolve")
+    def test_resolve_dns(self, p):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        p.return_value = "1.2.3.4"
         assert Pcap(None, {})._dns_gethostbyname("google.com") != ""
 
     def test_icmp_ignore_resultserver(self):
