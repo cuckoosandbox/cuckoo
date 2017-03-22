@@ -217,7 +217,7 @@ class TestWriteCuckooConfiguration(object):
         assert self.rawvalue("routing:vpn0:name") == "vpn0"
         assert self.value("virtualbox:cuckoo1:ip") == "192.168.56.101"
         assert self.value("avd:cuckoo1:platform") == "android"
-        assert self.value("esx:analysis1:ip") == "192.168.122.105"
+        assert self.value("esx:analysis1:ip") == "192.168.122.101"
         assert self.value("physical:physical1:label") == "physical1"
         assert self.value("qemu:vm1:label") == "vm1"
         assert self.value("vmware:cuckoo1:vmx_path") == "../cuckoo1/cuckoo1.vmx"
@@ -305,7 +305,9 @@ def test_all_config_written():
             orig_config = kw["config"]
 
             def lookup_config(s):
-                lookups.append(s)
+                # For some reason this is called multiple times (?).
+                if s not in lookups:
+                    lookups.append(s)
                 return orig_config(s)
 
             kw["config"] = lookup_config
@@ -328,3 +330,5 @@ def test_all_config_written():
         for key2, value2 in value.items():
             for key3, value3 in value2.items():
                 assert "%s:%s:%s" % (key, key2, key3) in lookups
+
+    assert sorted(lookups) == sorted(set(lookups))
