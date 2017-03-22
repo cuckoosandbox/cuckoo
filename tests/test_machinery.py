@@ -14,10 +14,14 @@ from cuckoo.common.exceptions import (
 )
 from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
+from cuckoo.core.database import Database
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
+
+db = Database()
 
 class TestVirtualbox(object):
     def setup(self):
@@ -153,13 +157,14 @@ class TestVirtualbox(object):
                 "label": "machine1",
                 "platform": "windows",
                 "ip": "192.168.56.101",
+                "tags": "",
+                "resultserver_port": 2042,
             }),
         }))
         self.m._list = mock.MagicMock(return_value=[
             "machine1",
         ])
         self.m.stop = mock.MagicMock()
-        self.m._get_resultserver_port = mock.MagicMock(return_value=2042)
         p.return_value.returncode = 1
         p.return_value.communicate.return_value = "out", "err"
         class machine1(object):
@@ -185,6 +190,8 @@ class TestVirtualbox(object):
                 "label": "machine1",
                 "platform": "windows",
                 "ip": "192.168.56.101",
+                "tags": "",
+                "resultserver_port": 2042,
             }),
         }))
         self.m._list = mock.MagicMock(return_value=[
@@ -192,7 +199,6 @@ class TestVirtualbox(object):
         ])
         self.m.stop = mock.MagicMock()
         self.m._status = mock.MagicMock(return_value="poweroff")
-        self.m._get_resultserver_port = mock.MagicMock(return_value=2042)
         p.return_value.returncode = 0
         p.return_value.communicate.return_value = "", ""
         class machine1(object):
@@ -624,3 +630,74 @@ def test_esx_not_installed():
     with pytest.raises(CuckooDependencyError) as e:
         ESX()
     e.match("libvirt package has not")
+
+class TestVirtualboxInitialize(object):
+    def test_initialize_global(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "machinery": "virtualbox",
+                },
+                # This unittest will actually start the ResultServer.
+                "resultserver": {
+                    "ip": "127.0.0.1",
+                    "port": 3000,
+                },
+            },
+        })
+        db.connect()
+
+        self.m = VirtualBox()
+        self.m.set_options(Config("virtualbox"))
+        self.m._initialize("virtualbox")
+
+        m, = db.list_machines()
+        assert m.label == "cuckoo1"
+        assert m.interface == "vboxnet0"
+        assert m.ip == "192.168.56.101"
+        assert m.options is None
+        assert m.platform == "windows"
+        assert m.resultserver_ip == "127.0.0.1"
+        assert m.resultserver_port == 3000
+        assert m.tags == []
+
+    def test_initialize_specific(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "machinery": "virtualbox",
+                },
+            },
+            "virtualbox": {
+                "cuckoo1": {
+                    "label": "kookoo1",
+                    "platform": "foobar",
+                    "snapshot": "snapshot1",
+                    "interface": "foo0",
+                    "ip": "1.2.3.5",
+                    "resultserver_ip": "1.2.3.4",
+                    "resultserver_port": 1234,
+                    # TODO Turn tags into a list.
+                    "tags": "tag1,tag2",
+                },
+            },
+        })
+        db.connect()
+
+        self.m = VirtualBox()
+        self.m.set_options(Config("virtualbox"))
+        self.m._initialize("virtualbox")
+
+        m, = db.list_machines()
+        assert m.label == "kookoo1"
+        assert m.platform == "foobar"
+        assert m.snapshot == "snapshot1"
+        assert m.interface == "foo0"
+        assert m.ip == "1.2.3.5"
+        assert m.resultserver_ip == "1.2.3.4"
+        assert m.resultserver_port == 1234
+        assert sorted((t.name for t in m.tags)) == [
+            "tag1", "tag2"
+        ]

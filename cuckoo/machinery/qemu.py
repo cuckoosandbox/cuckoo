@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +9,7 @@ import subprocess
 import os.path
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 
@@ -204,7 +204,7 @@ class QEMU(Machinery):
 
         stop_me = 0
         while proc.poll() is None:
-            if stop_me < int(self.options_globals.timeouts.vm_state):
+            if stop_me < config("cuckoo:timeouts:vm_state"):
                 time.sleep(1)
                 stop_me += 1
             else:
@@ -212,7 +212,7 @@ class QEMU(Machinery):
                 proc.terminate()
                 time.sleep(1)
 
-        # if proc.returncode != 0 and stop_me < int(self.options_globals.timeouts.vm_state):
+        # if proc.returncode != 0 and stop_me < config("cuckoo:timeouts:vm_state"):
         #     log.debug("QEMU exited with error powering off the machine")
 
         self.state[vm_info.name] = None

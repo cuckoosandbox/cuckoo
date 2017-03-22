@@ -9,6 +9,7 @@ import subprocess
 import time
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import (
     CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError,
     CuckooMissingMachineError
@@ -187,7 +188,7 @@ class VirtualBox(Machinery):
                 "Trying to stop an already stopped vm %s" % label
             )
 
-        vm_state_timeout = int(self.options_globals.timeouts.vm_state)
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
 
         try:
             args = [

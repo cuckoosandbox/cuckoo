@@ -1,4 +1,5 @@
 # Copyright (C) 2015 eSentire, Inc (jacob.gajek@esentire.com).
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,6 +12,7 @@ import ssl
 import time
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -390,9 +392,7 @@ class vSphere(Machinery):
 
     def _wait_task(self, task):
         """Wait for a task to complete with timeout"""
-        limit = datetime.timedelta(
-            seconds=int(self.options_globals.timeouts.vm_state)
-        )
+        limit = datetime.timedelta(seconds=config("cuckoo:timeouts:vm_state"))
         start = datetime.datetime.utcnow()
 
         while True:
