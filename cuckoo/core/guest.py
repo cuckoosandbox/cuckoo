@@ -337,7 +337,10 @@ class GuestManager(object):
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
-        systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+        if self.platform == "windows":
+            systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+        elif self.platform in ("linux", "darwin"):
+            systemdrive = self.environ["HOME"]
 
         r = self.post("/mkdtemp", data={"dirpath": systemdrive})
         self.analyzer_path = r.json()["dirpath"]
@@ -454,9 +457,15 @@ class GuestManager(object):
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
+
+            if self.platform in ("linux", "darwin"):
+                temp = "/tmp"
+            else:
+                temp = self.environ["TEMP"]
+
             data = {
                 "filepath": os.path.join(
-                    self.environ["TEMP"], options["file_name"]
+                    temp, options["file_name"]
                 ),
             }
             files = {

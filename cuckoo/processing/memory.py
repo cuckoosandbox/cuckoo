@@ -938,14 +938,19 @@ class VolatilityManager(object):
         """Get the OS profile"""
         return VolatilityAPI(self.memfile).imageinfo()["data"][0]["osprofile"]
 
-    def run(self):
+    def run(self, manager=None, vm=None):
         results = {}
 
         # Exit if options were not loaded.
         if not self.voptions:
             return
 
-        vol = VolatilityAPI(self.memfile, self.osprofile)
+        # Check if theres a memory profile configured in the machinery config.
+        profile = Config(manager).get(vm).get("mem_profile")
+        if profile == None:
+             vol = VolatilityAPI(self.memfile, self.osprofile)
+        else:
+             vol = VolatilityAPI(self.memfile, profile)
 
         for plugin_name in self.PLUGINS:
             if isinstance(plugin_name, list):
@@ -1020,12 +1025,14 @@ class Memory(Processing):
         @return: volatility results dict.
         """
         self.key = "memory"
+        task_machine = self.task["machine"]["name"]
+        machine_manager = self.task["machine"]["manager"].lower()
 
         results = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
                 try:
-                    results = VolatilityManager(self.memory_path).run()
+                    results = VolatilityManager(self.memory_path).run(manager=machine_manager, vm=task_machine)
                 except Exception:
                     log.exception("Generic error executing volatility")
             else:
