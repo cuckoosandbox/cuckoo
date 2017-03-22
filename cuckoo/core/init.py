@@ -54,7 +54,9 @@ def write_cuckoo_conf(cfg=None):
 
             for entry in entries:
                 real_section = entry.get("__section__", section)
-                cfg[filename][real_section] = cfg[filename].get(section, {})
+                entries = cfg[filename].get(section, {})
+                entries.update(cfg[filename].get(real_section, {}))
+                cfg[filename][real_section] = entries
                 raw[filename][real_section] = {}
                 for key, value in entry.items():
                     if key == "__section__":

@@ -1152,6 +1152,44 @@ class TestKvConf(object):
             },
         }
 
+    def test_star_existing(self):
+        filepath = Files.temp_put("""
+        virtualbox.cuckoo1.resultserver_port = 1234
+        """)
+        assert read_kv_conf(filepath) == {
+            "virtualbox": {
+                "cuckoo1": {
+                    "resultserver_port": 1234,
+                },
+            },
+        }
+
+    def test_star_new(self):
+        filepath = Files.temp_put("""
+        virtualbox.virtualbox.machines = cuckoo2, cuckoo3
+        virtualbox.cuckoo2.ip = 192.168.56.102
+        virtualbox.cuckoo3.ip = 192.168.56.103
+        virtualbox.notexistingvm.ip = 1.2.3.4
+        """)
+        assert read_kv_conf(filepath) == {
+            "virtualbox": {
+                "virtualbox": {
+                    "machines": [
+                        "cuckoo2", "cuckoo3",
+                    ],
+                },
+                "cuckoo2": {
+                    "ip": "192.168.56.102",
+                },
+                "cuckoo3": {
+                    "ip": "192.168.56.103",
+                },
+                "notexistingvm": {
+                    "ip": "1.2.3.4",
+                },
+            },
+        }
+
     def test_fail1(self):
         filepath = Files.temp_put("a = b")
         with pytest.raises(CuckooConfigurationError) as e:

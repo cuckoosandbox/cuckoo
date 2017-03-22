@@ -864,16 +864,8 @@ class Config(object):
 
     def get_section_types(self, file_name, section, strict=False, loose=False):
         """Get types for a section entry."""
-        if section in self.configuration.get(file_name, {}):
-            types = self.configuration[file_name][section]
-        elif "*" in self.configuration.get(file_name, {}):
-            types = self.configuration[file_name]["*"]
-            # If multiple default values have been provided, pick one.
-            if isinstance(types, (tuple, list)):
-                types = types[0]
-        elif loose:
-            types = {}
-        else:
+        section_types = get_section_types(file_name, section)
+        if not section_types and not loose:
             log_error(
                 "Config section %s:%s not found!", file_name, section
             )
@@ -882,7 +874,7 @@ class Config(object):
                     "Config section %s:%s not found!", file_name, section
                 )
             return
-        return types
+        return section_types
 
     def __init__(self, file_name="cuckoo", cfg=None, strict=False,
                  loose=False, raw=False):
@@ -1083,18 +1075,29 @@ def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
 
     return value
 
-def config2(file_name, section):
-    keys = None
-    if section in Config.configuration[file_name]:
-        keys = Config.configuration[file_name][section].keys()
-    elif "__star__" in Config.configuration[file_name]:
+def get_section_types(file_name, section, strict=False):
+    if section in Config.configuration.get(file_name, {}):
+        return Config.configuration[file_name][section]
+
+    if "__star__" not in Config.configuration.get(file_name, {}):
+        return {}
+
+    if strict:
         section_, key = Config.configuration[file_name]["__star__"]
-        if section in config("%s:%s:%s" % (file_name, section_, key)):
-            section_types = Config.configuration[file_name]["*"]
-            if isinstance(section_types, (tuple, list)):
-                section_types = section_types[0]
-            keys = section_types.keys()
-    if keys is None:
+        if section not in config("%s:%s:%s" % (file_name, section_, key)):
+            return {}
+
+    if "*" in Config.configuration.get(file_name, {}):
+        section_types = Config.configuration[file_name]["*"]
+        # If multiple default values have been provided, pick one.
+        if isinstance(section_types, (tuple, list)):
+            section_types = section_types[0]
+        return section_types
+    return {}
+
+def config2(file_name, section):
+    keys = get_section_types(file_name, section, strict=True)
+    if not keys:
         raise CuckooConfigurationError(
             "No such configuration section exists: %s:%s" %
             (file_name, section)
@@ -1113,8 +1116,7 @@ def cast(s, value):
         raise RuntimeError("Invalid configuration entry: %s" % s)
 
     file_name, section, key = s.split(":")
-
-    type_ = Config.configuration.get(file_name, {}).get(section, {}).get(key)
+    type_ = get_section_types(file_name, section).get(key)
     if type_ is None:
         raise CuckooConfigurationError(
             "No such configuration value exists: %s" % s

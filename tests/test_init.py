@@ -162,6 +162,42 @@ class TestInit(object):
 
         assert config("cuckoo:cuckoo:version_check") is False
 
+    def test_init_star_existing(self):
+        cuckoo_create(cfg={
+            "virtualbox": {
+                "cuckoo1": {
+                    "ip": "192.168.56.102",
+                },
+            },
+        })
+        assert config("virtualbox:cuckoo1:ip") == "192.168.56.102"
+
+    def test_init_star_multiple(self):
+        cuckoo_create(cfg={
+            "virtualbox": {
+                "virtualbox": {
+                    "machines": [
+                        "cuckoo2", "cuckoo3",
+                    ],
+                },
+                "cuckoo2": {
+                    "ip": "192.168.56.102",
+                },
+                "cuckoo3": {
+                    "ip": "192.168.56.103",
+                },
+                "notexistingvm": {
+                    "ip": "1.2.3.4",
+                },
+            },
+        })
+        assert config("virtualbox:virtualbox:machines") == [
+            "cuckoo2", "cuckoo3"
+        ]
+        assert config("virtualbox:cuckoo2:ip") == "192.168.56.102"
+        assert config("virtualbox:cuckoo3:ip") == "192.168.56.103"
+        assert config("virtualbox:notexistingvm:ip") is None
+
 class TestWriteCuckooConfiguration(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
