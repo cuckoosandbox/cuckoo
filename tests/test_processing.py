@@ -10,6 +10,7 @@ import pytest
 import shutil
 import tempfile
 
+from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
@@ -31,6 +32,14 @@ from cuckoo.processing.virustotal import VirusTotal
 db = Database()
 
 class TestProcessing(object):
+    def test_init(self):
+        p = Processing()
+        p.set_options({
+            "foo": "bar",
+        })
+        assert p.options["foo"] == "bar"
+        assert p.options.foo == "bar"
+
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
 

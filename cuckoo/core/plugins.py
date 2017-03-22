@@ -15,7 +15,6 @@ from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
     CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
-from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -101,7 +100,7 @@ class RunAuxiliary(object):
                 module_name = module_name.rsplit(".", 1)[1]
 
             try:
-                options = Dictionary(config2("auxiliary", module_name))
+                options = config2("auxiliary", module_name)
             except CuckooConfigurationError:
                 log.debug(
                     "Auxiliary module %s not found in configuration file",
@@ -207,7 +206,7 @@ class RunProcessing(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = Dictionary(config2("processing", module_name))
+            options = config2("processing", module_name)
         except CuckooConfigurationError:
             log.debug(
                 "Processing module %s not found in configuration file",
@@ -524,7 +523,7 @@ class RunReporting(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = Dictionary(config2("reporting", module_name))
+            options = config2("reporting", module_name)
         except CuckooConfigurationError:
             log.debug(
                 "Reporting module %s not found in configuration file",

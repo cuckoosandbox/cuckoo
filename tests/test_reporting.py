@@ -6,6 +6,7 @@ import mock
 import responses
 import tempfile
 
+from cuckoo.common.abstracts import Report
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.plugins import RunReporting
@@ -14,6 +15,14 @@ from cuckoo.misc import set_cwd, cwd
 from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
 from cuckoo.reporting.mongodb import MongoDB
+
+def test_init():
+    p = Report()
+    p.set_options({
+        "rep": "ort",
+    })
+    assert p.options["rep"] == "ort"
+    assert p.options.rep == "ort"
 
 def task(task_id, options, conf, results, filename="a.txt"):
     Folders.create(cwd(), ["conf", "storage"])

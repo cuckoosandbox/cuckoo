@@ -52,7 +52,7 @@ class Auxiliary(object):
         self.guest_manager = guest_manager
 
     def set_options(self, options):
-        self.options = options
+        self.options = Dictionary(options)
 
     def start(self):
         raise NotImplementedError
@@ -644,10 +644,10 @@ class Processing(object):
         pass
 
     def set_options(self, options):
-        """Set report options.
-        @param options: report options dict.
+        """Set processing options.
+        @param options: processing options dict.
         """
-        self.options = options
+        self.options = Dictionary(options)
 
     def set_task(self, task):
         """Add task information.
@@ -1233,7 +1233,7 @@ class Report(object):
         """Set report options.
         @param options: report options dict.
         """
-        self.options = options
+        self.options = Dictionary(options)
 
     def set_task(self, task):
         """Add task information.
