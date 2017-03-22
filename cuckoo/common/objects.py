@@ -47,6 +47,18 @@ URL_REGEX = (
     "(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]*)?"
 )
 
+PUBPRIVKEY = (
+    "("
+    "(?:-----BEGIN PUBLIC KEY-----"
+    "[a-zA-Z0-9\\n\\+/]+"
+    "-----END PUBLIC KEY-----)"
+    "|"
+    "(?:-----BEGIN RSA PRIVATE KEY-----"
+    "[a-zA-Z0-9\\n\\+/]+"
+    "-----END RSA PRIVATE KEY-----)"
+    ")"
+)
+
 class Dictionary(dict):
     """Cuckoo custom dict."""
 
@@ -330,30 +342,39 @@ class File(object):
 
         return results
 
-    def get_urls(self):
-        """Extract all URLs embedded in this file through a simple regex."""
-        if not os.path.getsize(self.file_path):
-            return []
-
-        # http://stackoverflow.com/a/454589
-        urls = set()
-        f = open(self.file_path, "rb")
-
+    def mmap(self, fileno):
         if hasattr(mmap, "PROT_READ"):
             access = mmap.PROT_READ
         elif hasattr(mmap, "ACCESS_READ"):
             access = mmap.ACCESS_READ
         else:
-            log.warning("Getting the URLs is not supported on your OS!")
+            log.warning(
+                "Regexing through a file is not supported on your OS!"
+            )
+            return
+
+        return mmap.mmap(fileno, 0, access=access)
+
+    def get_urls(self):
+        """Extract all URLs embedded in this file through a simple regex."""
+        if not os.path.getsize(self.file_path):
             return []
 
-        m = mmap.mmap(f.fileno(), 0, access=access)
 
-        for url in re.findall(URL_REGEX, m):
+        # http://stackoverflow.com/a/454589
+        urls, f = set(), open(self.file_path, "rb")
+        for url in re.findall(URL_REGEX, self.mmap(f.fileno())):
             if not is_whitelisted_domain(url[1]):
                 urls.add("".join(url))
-
         return list(urls)
+
+    def get_keys(self):
+        """Get any embedded plaintext public and/or private keys."""
+        if not os.path.getsize(self.file_path):
+            return []
+
+        f = open(self.file_path, "rb")
+        return list(set(re.findall(PUBPRIVKEY, self.mmap(f.fileno()))))
 
     def get_all(self):
         """Get all information available.

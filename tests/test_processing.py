@@ -88,6 +88,30 @@ class TestProcessing(object):
         assert d.run() != {}
         assert json.loads(json.dumps(d.run())) == d.run()
 
+    def test_static_none(self):
+        s = Static()
+        s.set_task({
+            "category": "none",
+        })
+        assert s.run() is None
+
+    def test_archive_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "archive",
+            "package": "pdf",
+            "options": {
+                "filename": "files/pdf0.pdf",
+            },
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.zip"
+        assert "%48%65" in s.run()["pdf"][0]["javascript"][0]["orig_code"]
+
     def test_pdf(self):
         set_cwd(tempfile.mkdtemp())
 
@@ -103,6 +127,26 @@ class TestProcessing(object):
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+
+    @mock.patch("cuckoo.processing.static.dispatch")
+    def test_pdf_mock(self, p):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.pdf"
+        p.return_value = ["hello"]
+        assert s.run()["pdf"] == ["hello"]
+        p.assert_called_once_with(
+            mock.ANY, ("tests/files/pdf0.pdf",), timeout=30
+        )
 
     def test_pdf_metadata(self):
         set_cwd(tempfile.mkdtemp())

@@ -181,3 +181,37 @@ class TestArchive(object):
         assert os.path.exists(filepath)
         del f
         assert not os.path.exists(filepath)
+
+class TestPubPrivKeys(object):
+    def test_no_keys(self):
+        assert File("tests/files/pdf0.pdf").get_keys() == []
+
+    def test_pub_key(self):
+        buf = open("tests/files/pdf0.pdf", "rb").read()
+        filepath = Files.temp_put((
+            buf +
+            "-----BEGIN PUBLIC KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END PUBLIC KEY-----" +
+            buf
+        ))
+        assert File(filepath).get_keys() == [
+            "-----BEGIN PUBLIC KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END PUBLIC KEY-----"
+        ]
+
+    def test_private_key(self):
+        buf = open("tests/files/pdf0.pdf", "rb").read()
+        filepath = Files.temp_put((
+            buf +
+            "-----BEGIN RSA PRIVATE KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END RSA PRIVATE KEY-----" +
+            buf
+        ))
+        assert File(filepath).get_keys() == [
+            "-----BEGIN RSA PRIVATE KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END RSA PRIVATE KEY-----"
+        ]
