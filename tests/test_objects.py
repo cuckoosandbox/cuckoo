@@ -9,13 +9,13 @@ import re
 import tempfile
 
 from cuckoo.common.files import Files
-from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.common.objects import Dictionary, File, Archive, URL_REGEX
 from cuckoo.core.startup import init_yara, HAVE_YARA
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
 
-class TestDictionary:
+class TestDictionary(object):
     def setup_method(self, method):
         self.d = Dictionary()
 
@@ -29,7 +29,7 @@ class TestDictionary:
         with pytest.raises(AttributeError):
             self.d.b.a
 
-class TestFile:
+class TestFile(object):
     def setup(self):
         # File() will invoke cwd(), so any CWD is required.
         set_cwd(tempfile.mkdtemp())
@@ -161,3 +161,23 @@ https://1.2.3.4:9001/hello
         "http://google.com",
         "https://1.2.3.4:9001/hello",
     ]
+
+class TestArchive(object):
+    def test_get_file(self):
+        a = Archive("tests/files/pdf0.zip")
+        assert a.get_file("files/pdf0.pdf").get_size() == 680
+
+    def test_not_temporary_file(self):
+        f = File("tests/files/pdf0.pdf")
+        assert os.path.exists("tests/files/pdf0.pdf")
+        del f
+        assert os.path.exists("tests/files/pdf0.pdf")
+
+    def test_temporary_file(self):
+        a = Archive("tests/files/pdf0.zip")
+        f = a.get_file("files/pdf0.pdf")
+        filepath = f.file_path
+        assert f.get_size() == 680
+        assert os.path.exists(filepath)
+        del f
+        assert not os.path.exists(filepath)

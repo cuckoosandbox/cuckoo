@@ -6,7 +6,7 @@
 import os.path
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.objects import File
+from cuckoo.common.objects import Archive, File
 
 class TargetInfo(Processing):
     """General information about a file."""
@@ -45,6 +45,10 @@ class TargetInfo(Processing):
             ret["human"] = "%s @ %s" % (
                 ret["filename"], ret["archive"]["name"]
             )
+            ret["file"] = (
+                Archive(self.file_path).get_file(ret["filename"]).get_all()
+            )
+            ret["file"]["name"] = os.path.basename(ret["filename"])
         elif self.task["category"] == "url":
             ret["url"] = self.task["target"]
 

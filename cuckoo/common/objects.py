@@ -12,6 +12,9 @@ import mmap
 import os
 import pefile
 import re
+import shutil
+import tempfile
+import zipfile
 
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.compat import magic
@@ -70,9 +73,10 @@ class File(object):
     # caching 'em. This dictionary is filled during init_yara().
     yara_rules = {}
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, temporary=False):
         """@param file_path: file path."""
         self.file_path = file_path
+        self.temporary = temporary
 
         # these will be populated when first accessed
         self._file_data = None
@@ -81,6 +85,9 @@ class File(object):
         self._sha1 = None
         self._sha256 = None
         self._sha512 = None
+
+    def __del__(self):
+        self.temporary and os.unlink(self.file_path)
 
     def get_name(self):
         """Get file name.
@@ -366,3 +373,13 @@ class File(object):
         infos["yara"] = self.get_yara()
         infos["urls"] = self.get_urls()
         return infos
+
+class Archive(object):
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.z = zipfile.ZipFile(filepath)
+
+    def get_file(self, filename):
+        filepath = tempfile.mktemp()
+        shutil.copyfileobj(self.z.open(filename), open(filepath, "wb"))
+        return File(filepath, temporary=True)

@@ -32,6 +32,8 @@
                         
                         {% if report.analysis.info.category == "file" and report.analysis.target %}
                             {% include "analysis/pages/summary/_file.html" %}
+                        {% elif report.analysis.info.category == "archive" and report.analysis.target %}
+                            {% include "analysis/pages/summary/_archive.html" %}
                         {% elif report.analysis.info.category == "url" %}
                             {% include "analysis/pages/summary/_url.html" %}
                         {% endif %}

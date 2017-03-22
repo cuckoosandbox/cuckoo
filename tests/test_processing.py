@@ -271,19 +271,21 @@ class TestProcessing(object):
         assert os.path.basename(obj["file"]["name"]) == "test_processing.py"
 
         ti = TargetInfo()
-        ti.file_path = __file__
+        ti.file_path = "tests/files/pdf0.zip"
         ti.set_task({
             "category": "archive",
-            "target": __file__,
+            "target": "tests/files/pdf0.zip",
             "options": {
-                "filename": "foo.txt",
+                "filename": "files/pdf0.pdf",
             },
         })
         obj = ti.run()
         assert obj["category"] == "archive"
-        assert os.path.basename(obj["archive"]["name"]) == "test_processing.py"
-        assert obj["filename"] == "foo.txt"
-        assert obj["human"] == "foo.txt @ test_processing.py"
+        assert os.path.basename(obj["archive"]["name"]) == "pdf0.zip"
+        assert obj["filename"] == "files/pdf0.pdf"
+        assert obj["human"] == "files/pdf0.pdf @ pdf0.zip"
+        assert obj["file"]["name"] == "pdf0.pdf"
+        assert obj["file"]["size"] == 680
 
         ti = TargetInfo()
         ti.file_path = __file__
