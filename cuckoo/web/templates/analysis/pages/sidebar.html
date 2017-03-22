@@ -1,0 +1,110 @@
+<div id="analysis_menu-sidebar" class="col-md-2">
+    <div class="analysis_menu-sidebar">
+        <div class="analysis_menu-usermenu">
+            <ul class="nav">
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "summary" %}">
+                        <i class="glyphicon glyphicon-home"></i>Summary
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "static" %}">
+                        <i class="glyphicon glyphicon-search"></i>Static Analysis
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
+                        <i class="glyphicon glyphicon-search"></i>Behavioral Analysis
+                        {% if report.analysis.behavior %}
+                        <span class="label label-primary pull-right">
+                            {{ report.analysis.behavior.processes|filter_key_if_has:"track"|length }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "network" %}">
+                        <i class="glyphicon glyphicon-search"></i>Network Analysis
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "dropped_files" %}">
+                        <i class="glyphicon glyphicon-download-alt"></i> Dropped Files
+                        <span class="label label-primary pull-right">{{ report.analysis.dropped|length }}</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}">
+                        <i class="glyphicon glyphicon-download-alt"></i>Dropped Buffers
+                        {% if report.analysis.buffer %}
+                        <span class="label label-primary pull-right">
+                            {{ report.analysis.buffer|length }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "procmemory" %}">
+                        <i class="glyphicon glyphicon-barcode"></i>Process Memory
+                        {% if report.analysis.procmemory %}
+                        <span class="label label-primary pull-right">
+                            {{ report.analysis.procmemory|length }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                {% if report.analysis.misp %}
+                    <li>
+                        <a href="{% url "analysis" report.analysis.info.id "misp" %}">
+                            <i class="glyphicon glyphicon-flag"></i>MISP
+                            <span class="label label-primary pull-right">{{ report.analysis.misp|length }}</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <a href="{% url "analysis/compare/left" report.analysis.info.id %}">
+                        <i class="glyphicon glyphicon-transfer"></i>Compare Analysis
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "export" %}">
+                        <i class="glyphicon glyphicon-export"></i>Export Analysis
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url "analysis/reboot" report.analysis.info.id%}">
+                        <i class="glyphicon glyphicon-repeat"></i>Reboot Analysis
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url "analysis" report.analysis.info.id "options" %}">
+                        <i class="glyphicon glyphicon-flag"></i>Options
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#modal_feedback">
+                        <i class="glyphicon glyphicon-barcode"></i>Feedback
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- END MENU -->
+    </div>
+</div>
+
+<!-- I'm not sure if this is the correct place to put it -->
+{% include "analysis/pages/feedback/form.html" %}
+
+<script>
+    $( document ).ready(function() {
+        $(".analysis_menu-sidebar li").each(function(i, obj){
+            if(window.location.pathname.startsWith($(obj).find('a').attr('href'))) $(obj).addClass('active');
+        });
+    });
+</script>

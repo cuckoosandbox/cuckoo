@@ -1,0 +1,168 @@
+// animations for the loader graphic
+// thanks to: https://boguz.github.io/Spinners/
+@-webkit-keyframes c1 {
+  0% {
+     -webkit-transform: rotate(0deg);
+     transform: rotate(0deg);
+  }
+  100% {
+     -webkit-transform: rotate(360deg);
+     transform: rotate(360deg);
+  }
+}  
+
+@keyframes c1 {
+  0% {
+     -webkit-transform: rotate(0deg);
+     transform: rotate(0deg);
+  }
+  100% {
+     -webkit-transform: rotate(360deg);
+     transform: rotate(360deg);
+  }
+} 
+ 
+@-webkit-keyframes c2 {
+  0% {
+     -webkit-transform: rotate(0deg);
+     transform: rotate(0deg);
+  }
+  100% {
+     -webkit-transform: rotate(360deg);
+     transform: rotate(360deg);
+  }
+} 
+ 
+@keyframes c2 {
+  0% {
+     -webkit-transform: rotate(0deg);
+     transform: rotate(0deg);
+  }
+  100% {
+     -webkit-transform: rotate(360deg);
+     transform: rotate(360deg);
+  }
+}
+
+.page-freeze {
+
+	position: fixed;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	width: 100vw;
+	height: 100vh;
+	top: -100vh;
+	opacity: 0;
+	left: 0;
+	z-index: 2000;
+	background-color: rgba(#66CCCC, .9);
+	font-family: "Roboto", sans-serif;
+
+	&.error {
+		background-color: rgba(70, 6, 11, 0.9); 
+	}
+
+	&__graphic {
+		position: relative;
+		width: 125px;
+		z-index: 2;
+
+		& > img {
+			width: 100%;
+		}
+
+		*::selection {
+			background: transparent;
+		}
+
+		.error & {
+			display: none;
+		}
+
+	}
+
+	&__spinner {
+		position: absolute;
+		height: 175px;
+		width: 175px;
+		margin-left: -87px;
+		margin-top: -189px;
+		z-index: 1;
+
+		&--c1 {
+			height: 100%;
+			width: 100%;
+			border-radius: 50%;
+			border: 15px solid #d9e8e8;
+			border-bottom-color: rgba(0,0,0,0);
+			border-top-color: rgba(0,0,0,0);
+			-webkit-animation: c1 3s infinite linear;
+			animation: c1 3s infinite linear;
+			position: absolute;
+		}
+
+		&--c2 {
+			height: 100%;
+			width: 100%;
+			border-radius: 50%;
+			border: 15px solid #307575;
+			border-bottom-color: rgba(0,0,0,0);
+			border-top-color: rgba(0,0,0,0);
+			-webkit-animation: c2 3.5s infinite linear;
+			animation: c2 3.5s infinite linear;
+			position: absolute;
+		}
+
+		.error & {
+			display: none;
+		}
+
+	} 
+
+	&__message {
+		color: #fff;
+		font-size: 18px;
+		font-weight: 700;
+		margin: 20px;
+	}
+
+	&__context {
+		text-align: center;
+	}
+
+	&__close {
+		position: absolute;
+		right: 20px;
+		top: 10px;
+		color: #fff;
+		font-size: 40px;
+	}
+
+	&__options {
+		.btn {
+			&:focus { outline: none !important; }
+		}
+	}
+
+	&.in {
+		top: 0;
+		opacity: 1;
+	}
+
+	&.out {
+		opacity: 0;
+	}
+
+	transition: opacity 300ms ease-in-out;
+
+	@include cuckoo-theme('cyborg') {
+		background-color: rgba($cyborg_background_color, .9);
+
+		&.error {
+			background-color: rgba(70, 6, 11, 0.9);
+		}
+	}
+
+}

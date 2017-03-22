@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+        <section class="flex-nav__body cuckoo-analysis">
+
+            <header class="page-header cuckoo-analysis__header">
+                <h2><i class="fa fa-cogs"></i> Options</h2>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8">
+                        {% load analysis_tags %}
+                        <div class="panel panel-default">
+                            <table class="table table-striped">
+                                <tr>
+                                    <th>Task ID</th>
+                                    <td>{{report.analysis.info.id}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mongo ID</th>
+                                    <td>{{report.analysis|mongo_id}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cuckoo release</th>
+                                    <td>{{report.analysis.info.version}}</td>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <td><a href="{% url "analysis.views.remove" report.analysis.info.id %}" class="btn btn-primary btn-small">Delete</a></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,42 @@
+<section id="static_antivirus">
+    {% if report.analysis.virustotal and report.analysis.virustotal.response_code %}
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>Antivirus</th>
+            {% if report.analysis.info.category == "file" %}
+                <th>Signature</th>
+            {% else %}
+                <th>Result</th>
+            {% endif %}
+        </tr>
+        {% for av, values in report.analysis.virustotal.scans.items %}
+        <tr>
+            <td>{{av}}</td>
+            <td>
+                {% if report.analysis.info.category == "file" %}
+                    {% if not values.result %}
+                        <span class="text-muted">Clean</span>
+                    {% else %}
+                        <span class="text-danger">{{values.result}}</span>
+                    {% endif %}
+                {% else %}
+                    {% if not values.detected %}
+                        <span class="text-muted">
+                    {% else %}
+                        <span class="text-danger">
+                    {% endif %}
+                    {{ values.result|title }}
+                    </span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        {% if report.analysis.virustotal.summary.permalink %}
+            <a href="{{report.analysis.virustotal.summary.permalink}}">Your file is being analysed</a>
+        {% else %}
+            No antivirus signatures available.
+        {% endif %}
+    {% endif %}
+</section>

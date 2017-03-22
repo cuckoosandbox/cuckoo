@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+        <section class="flex-nav__body cuckoo-analysis">
+
+            <header class="page-header cuckoo-analysis__header">
+                <h2><i class="fa fa-qrcode"></i> Process Memory</h2>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        {% if report.analysis.procmemory %}
+                            {% for proc in report.analysis.procmemory %}
+                                <div class="panel panel-default">
+                                    <div class="panel-heading"><h3 class="panel-title">Process memory dump for <b>{{ proc.pid|process_name:report.analysis }}</b> (PID {{ proc.pid }}, dump {{ proc.num }})</h3></div>
+                                    <div class="panel-body">
+                                        {% if proc.procmem_id %}
+                                            <a class="btn btn-primary btn-small" href="{% url "analysis.views.file" "memdump" proc.procmem_id %}">Download</a>
+                                        {% endif %}
+
+                                        {% if proc.extracted %}
+                                            <p>
+                                                <b>Extracted/injected images</b> <small>(may contain unpacked executables)</small>
+                                                <br>
+                                                {% for extracted in proc.extracted %}
+                                                    {% if extracted.extracted_id %}
+                                                        <a href="{% url "analysis.views.file" "procmem_extracted" extracted.extracted_id %}">Download #{{ forloop.counter }}</a>
+                                                        <br>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </p>
+                                            <hr />
+                                        {% endif %}
+
+                                        {% if proc.yara %}
+                                            <b>Yara signatures matches on process memory</b>
+                                            {% for match in proc.yara %}
+                                                <p>Match: {{match.name}}
+                                                <ul>
+                                                {% for string in match.strings %}
+                                                    <li>{{string}}</li>
+                                                {% endfor %}
+                                                </ul></p>
+                                            {% endfor %}
+                                            <hr />
+                                        {% endif %}
+
+                                        {% if proc.urls %}
+                                            <b>URLs found in process memory</b>
+
+                                                <pre>
+    {% for url in proc.urls %}{{url}}
+    {% endfor %}
+                                                </pre>
+
+                                        {% endif %}
+
+                                        {% if proc.procmem_id %}
+                                        <a href="{% url "analysis.views.file" "procmem" proc.procmem_id %}" class="btn btn-primary btn-small">Download</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info"><b>Sorry!</b> No process memory available.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>
+    </div>
+    
+{% endblock %}

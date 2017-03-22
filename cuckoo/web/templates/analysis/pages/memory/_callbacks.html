@@ -1,0 +1,20 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Callback</th>
+            <th>Module</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.callbacks.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.type}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.callback}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</td>
+            <td class="{{ row.class_ }}">{{row.details}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

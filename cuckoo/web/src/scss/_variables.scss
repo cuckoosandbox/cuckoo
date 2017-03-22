@@ -1,0 +1,44 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+// COLOR DEFINITIONS
+$cuckoo_color_priority_low: #00FF1E;
+$cuckoo_color_priority_medium: #FFD700;
+$cuckoo_color_priority_high: #D7586F;
+
+// THEME COLORS
+$cyborg_background_color: #020e10;
+$cyborg_panel_color: #0d1b21;
+
+$cyborg_primary_color: #152D3B;
+$cyborg_secundary_color: #0ce3ac;
+
+$cyborg_text_color: #d7d7d7;
+$cyborg_border_color: #133b4a;
+
+// cyborg heading style
+%cyborg-heading {
+	color: #ffffff;
+    background: linear-gradient(rgb(40, 79, 92), #112c35);
+    border-color: #2b5a6a;
+    border: 0px;
+    border-top: 1px solid #2b5a6a;
+    border-left: 1px solid #003f54;
+    border-right: 1px solid #003f54;
+}
+
+$night_primary_color: #152d3b;
+$night_background_color: #232323;
+$night_text_color: #d7d7d7;
+$night_panel_color: #375a7f;
+$night_border_color: #375a7f;
+
+$night_link_color: #0ce3ac;
+$night_accent_color: #555;
+$night_darker_color: #131313;
+
+$night_table_even_color: #2d2d2d;
+$nigh_table_odd_color: #313131;

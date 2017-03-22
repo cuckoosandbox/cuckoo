@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+	
+<!-- config -->
+<main class="flex-grid">
+
+	<header class="flex-grid__header">
+		<ul class="breadcrumbs">
+			<li class="active"><a href="#">submit file</a></li>
+			<li class="todo"><a href="#">configure</a></li>
+			<li class="todo"><a href="#">analyze</a></li>
+		</ul>
+		<h3>
+			<i class="fa fa-upload"></i> Submit a file
+		</h3>
+	</header>
+
+	<section class="flex-grid__body--center background-grey" id="analysis-configuration">
+		<div class="flex-grid__align-horizontal upload-module">
+
+			<div class="upload-module__container">
+
+				<h3>Submit a file via:</h3>
+
+				<nav class="grouped-buttons" role="tablist">
+					<a class="active" data-toggle="tab" href="#tab-upload">File upload</a>
+					<a data-toggle="tab" href="#tab-hash">URL or file hash</a>
+				</nav>
+
+				<div class="tab-content">
+
+					<!-- tab for the uploader -->
+					<div class="tab-pane active" role="tabpanel" id="tab-upload">
+						<div id="dndsubmit"></div>
+
+						<div class="allowed-file-types">
+							<h4>Supported file types:</h4>
+							<ul>
+								<li><i class="fa fa-file-o"></i> <span>DOC</span></li>
+								<li><i class="fa fa-file-o"></i> <span>EXE</span></li>
+								<li><i class="fa fa-file-o"></i> <span>JS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>PDF</span></li>
+								<li><i class="fa fa-file-o"></i> <span>PPT</span></li>
+								<li><i class="fa fa-file-o"></i> <span>PS1</span></li>
+								<li><i class="fa fa-file-o"></i> <span>RAR</span></li>
+								<li><i class="fa fa-file-o"></i> <span>VBS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>XLS</span></li>
+								<li><i class="fa fa-file-o"></i> <span>ZIP</span></li>
+								<li class="footnote">... and various others!</li>
+							</ul>
+						</div>
+					</div>
+
+					<!-- tab for the hash -->
+					<div class="tab-pane" role="tabpanel" id="tab-hash">
+							
+						<textarea id="presubmit_urlhash" class="form-control" rows="10" placeholder="URL or file hash - one per line"></textarea>
+						<div class="text-center">
+							<input type="submit" value="Submit" class="btn btn-primary btn-lg" id="urlhash" />
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+	</section>
+
+	<footer class="flex-grid__footer">
+		<p class="footnote">
+			&copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+		</p>
+		<div class="logo">
+			<img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+		</div>
+	</footer>
+
+</main>
+
+{% endblock %}

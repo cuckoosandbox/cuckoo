@@ -1,0 +1,128 @@
+<nav class="flex-nav__nav" id="analysis-nav">
+	
+	<ul class="cuckoo-nav">
+		{% comment %}
+		<li class="cuckoo-nav__search">
+			<div>
+				<i class="fa fa-search"></i>
+				<span><input type="text" name="sidebar_search" placeholder="Search" /></span>
+				<button>Search</button>
+			</div>
+		</li>
+		{% endcomment %}
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "summary" %}"
+			{% if env.view_kwargs.page == 'summary' %} class="active" {% endif %}>
+				<i class="fa fa-home"></i>
+				<span>Summary</span>
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "static" %}"
+			{% if env.view_kwargs.page == 'static' %} class="active" {% endif %}>
+				<i class="fa fa-book"></i> 
+				<span>Static Analysis</span>
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "behavior" %}"
+			{% if env.view_kwargs.page == 'behavior' %} class="active" {% endif %}>
+				<i class="fa fa-share-alt-square"></i> 
+				<span>Behavioral Analysis</span>
+                {% if report.analysis.behavior %}
+				<em>{{ report.analysis.behavior.processes|filter_key_if_has:"track"|length }}</em>
+                {% endif %}
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "network" %}"
+			{% if env.view_kwargs.page == 'network' %} class="active" {% endif %}>
+				<i class="fa fa-globe"></i> 
+				<span>Network Analysis</span>
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "dropped_files" %}"
+			{% if env.view_kwargs.page == 'dropped_files' %} class="active"	{% endif %}>
+				<i class="fa fa-file-code-o	"></i> 
+				<span>Dropped Files</span>
+				<em>{{ report.analysis.dropped|length }}</em>
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "dropped_buffers" %}"
+			{% if env.view_kwargs.page == 'dropped_buffers' %} class="active" {% endif %}>
+				<i class="fa fa-server"></i> 
+				<span>Dropped Buffers</span>
+                {% if report.analysis.buffer %}
+				<em>{{ report.analysis.buffer|length }}</em>
+                {% endif %}
+			</a>
+		</li>
+
+		{% if report.analysis.misp %}
+			<li>
+				<a href="{% url "analysis" report.analysis.info.id "misp" %}}"
+				{% if env.view_kwargs.page == 'misp' %} class="active" {% endif %}>
+					<i class="fa fa-flag"></i> 
+					<span>MISP</span>
+					<em>{{ report.analysis.misp|length }}</em>
+				</a>
+			</li>            
+        {% endif %}
+
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "procmemory" %}"
+			{% if env.view_kwargs.page == 'procmemory' %} class="active" {% endif %}>
+				<i class="fa fa-qrcode"></i> 
+				<span>Process Memory</span>
+                {% if report.analysis.procmemory %}
+				<em>{{ report.analysis.procmemory|length }}</em>
+                {% endif %}
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis/compare/left" report.analysis.info.id %}"
+			{% if env.view_kwargs.page == 'compare' %} class="active" {% endif %}>
+				<i class="fa fa-random"></i> 
+				<span>Compare Analysis</span>
+			</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "export" %}"
+			{% if env.view_kwargs.page == 'export' %} class="active" {% endif %}>
+				<i class="fa fa-download"></i> 
+				<span>Export Analysis</span>
+			</a>
+		</li>
+		<li>
+		<a href="{% url "analysis/reboot" report.analysis.info.id %}"
+		{% if env.view_kwargs.page == 'behavioral' %} class="active" {% endif %}>
+			<i class="fa fa-power-off"></i> 
+			<span>Reboot Analysis</span>
+		</a>
+		</li>
+		<li>
+			<a href="{% url "analysis" report.analysis.info.id "options" %}"
+			{% if env.view_kwargs.page == 'options' %} class="active" {% endif %}>
+				<i class="fa fa-cogs"></i> 
+				<span>Options</span>
+			</a>
+		</li>
+		<li>
+			<a href="#" data-toggle="modal" data-target="#modal_feedback">
+				<i class="fa fa-bug"></i> 
+				<span>Feedback</span>
+			</a>
+		</li>
+
+		<li class="lock-sidebar">
+			<a href="sidebar:toggle-lock" title="Click to disable collapsing">
+				<i class="fa"></i>
+				<span></span>
+			</a>
+		</li>
+
+	</ul>
+
+</nav>

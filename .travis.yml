@@ -1,21 +1,52 @@
-branches:
-  only:
-    - master
 language: python
+
 python:
     - 2.7
+
+env:
+  - ONLYINSTALL=yes
+
+services:
+  - mongodb
+  - mysql
+  - postgresql
+
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev libxml2-dev libxslt1-dev
-    - wget http://downloads.sourceforge.net/project/ssdeep/ssdeep-2.12/ssdeep-2.12.tar.gz
-    - tar -zxvf ssdeep-2.12.tar.gz
-    - cd ssdeep-2.12
-    - ./configure && make
-    - sudo make install
-    - cd ..
+  - sudo apt-get update -qq
+  - sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
+  - sudo apt-get install libjpeg-dev swig libpq-dev libmysqlclient-dev
+
+  - sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"
+  - sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"
+  - sudo mysql -e "FLUSH PRIVILEGES"
+  - sudo mysql -e "CREATE DATABASE cuckootest"
+  - sudo mysql -e "CREATE DATABASE cuckootest060"
+  - sudo mysql -e "CREATE DATABASE cuckootest11"
+  - sudo mysql -e "CREATE DATABASE distcuckootest"
+  - psql -U postgres -c "CREATE USER cuckoo WITH PASSWORD 'cuckoo'"
+  - psql -U postgres -c "CREATE DATABASE cuckootest"
+  - psql -U postgres -c "CREATE DATABASE cuckootest060"
+  - psql -U postgres -c "CREATE DATABASE cuckootest11"
+  - psql -U postgres -c "CREATE DATABASE distcuckootest"
+
 install:
-    - pip install -r requirements.txt
+  - python setup.py develop
+  - pip install psycopg2 mysql-python
+  - pip install pytest pytest-cov codecov coveralls
+
 script:
-    - python utils/community.py -wafb monitor
-    - python cuckoo.py --debug --test
-    #- nosetests
+  # Create the Cuckoo Working Directory.
+  - cuckoo -d
+
+  # Download Cuckoo Signatures.
+  - cuckoo community
+
+  # Check the code integrity of the Signatures by running Cuckoo.
+  - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
+
+  # Run tests from the "tests" directory.
+  - python setup.py test --addopts --cov=cuckoo
+
+after_success:
+  - coveralls
+  - codecov

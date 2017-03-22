@@ -1,0 +1,55 @@
+2016-08-26 00:44:56,015 [analyzer] DEBUG: Starting analyzer from: C:\fcinv
+2016-08-26 00:44:56,015 [analyzer] DEBUG: Pipe server name: \\.\PIPE\balHffSouqRPoemrkGdvebZVNv
+2016-08-26 00:44:56,015 [analyzer] DEBUG: Log pipe server name: \\.\PIPE\sxbsHliJrqtVUzHwjGGnKqlQ
+2016-08-26 00:44:56,375 [analyzer] DEBUG: Started auxiliary module Disguise
+2016-08-26 00:44:56,530 [analyzer] DEBUG: Loaded monitor into process with pid 484
+2016-08-26 00:44:56,530 [analyzer] DEBUG: Started auxiliary module DumpTLSMasterSecrets
+2016-08-26 00:44:56,530 [analyzer] DEBUG: Started auxiliary module Human
+2016-08-26 00:44:56,530 [analyzer] DEBUG: Started auxiliary module InstallCertificate
+2016-08-26 00:44:56,530 [analyzer] DEBUG: Started auxiliary module Reboot
+2016-08-26 00:44:56,608 [analyzer] DEBUG: Started auxiliary module RecentFiles
+2016-08-26 00:44:56,625 [analyzer] DEBUG: Started auxiliary module Screenshots
+2016-08-26 00:44:56,625 [modules.packages.pdf] INFO: Submitted file is missing extension, added .pdf
+2016-08-26 00:44:56,796 [lib.api.process] INFO: Successfully executed process from path 'C:\\Program Files (x86)\\Adobe\\Reader 9.0\\Reader\\AcroRd32.exe' with arguments [u'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\CVE-2011-0611.pdf_.pdf'] and pid 2844
+2016-08-26 00:44:56,983 [analyzer] DEBUG: Loaded monitor into process with pid 2844
+2016-08-26 00:44:57,280 [analyzer] INFO: insn=1, signature=0x8000000, addr=0x74a9ccf0, handler=0x63beb4c2
+2016-08-26 00:44:57,280 [analyzer] INFO: insn=1, signature=0x1000000, addr=0x74a9b73c, handler=0x63beb576
+2016-08-26 00:44:57,905 [analyzer] INFO: Added new file to list with pid 2844 and path C:\Users\Administrator\AppData\Local\Temp\A9RFBFB.tmp
+2016-08-26 00:44:59,427 [analyzer] INFO: Added new file to list with pid 2844 and path C:\Users\Administrator\AppData\Local\Temp\RTHDCPL.exe
+2016-08-26 00:44:59,469 [analyzer] CRITICAL: Encountered an unknown process while in monitoring mode: C:\Users\ADMINI~1\AppData\Local\Temp\RTHDCPL.exe!
+2016-08-26 00:44:59,493 [analyzer] INFO: Injected into process with pid 752 and name u'RTHDCPL.exe'
+2016-08-26 00:44:59,631 [analyzer] DEBUG: Loaded monitor into process with pid 752
+2016-08-26 00:45:09,039 [analyzer] INFO: Injected into process with pid 2500 and name u'svchost.exe'
+2016-08-26 00:45:09,040 [analyzer] DEBUG: Received request to inject pid=2500, but we are already injected there.
+2016-08-26 00:45:09,105 [lib.api.process] INFO: Memory dump of process with pid 2500 completed
+2016-08-26 00:45:09,142 [analyzer] INFO: Added new file to list with pid 2844 and path C:\Users\Administrator\AppData\Local\Temp\1.pdf
+2016-08-26 00:45:09,144 [analyzer] CRITICAL: Encountered an unknown process while in monitoring mode: C:\Program Files (x86)\Adobe\Reader 9.0\Reader\AcroRd32.exe "C:\Users\ADMINI~1\AppData\Local\Temp\1.pdf"!
+2016-08-26 00:45:09,196 [analyzer] INFO: Injected into process with pid 576 and name u'AcroRd32.exe'
+2016-08-26 00:45:09,443 [analyzer] DEBUG: Loaded monitor into process with pid 2500
+2016-08-26 00:45:09,536 [analyzer] DEBUG: Loaded monitor into process with pid 576
+2016-08-26 00:45:09,552 [analyzer] DEBUG: Received request to inject pid=576, but we are already injected there.
+2016-08-26 00:45:09,615 [analyzer] INFO: Added pid 576 for u'C:\\Users\\Administrator\\AppData\\Local\\Temp\\A9RFBFB.tmp'
+2016-08-26 00:45:10,052 [analyzer] INFO: Process with pid 2844 has terminated
+2016-08-26 00:45:10,457 [analyzer] INFO: Added new file to list with pid 2500 and path C:\Users\Administrator\AppData\Local\Temp\~dfds3.reg
+2016-08-26 00:45:10,473 [analyzer] INFO: Injected into process with pid 2136 and name u'regedit.exe'
+2016-08-26 00:45:10,630 [analyzer] DEBUG: Loaded monitor into process with pid 2136
+2016-08-26 00:45:10,630 [analyzer] DEBUG: Received request to inject pid=2136, but we are already injected there.
+2016-08-26 00:45:11,052 [analyzer] INFO: Process with pid 752 has terminated
+2016-08-26 00:45:11,052 [analyzer] INFO: Process with pid 2136 has terminated
+2016-08-26 00:45:11,645 [analyzer] INFO: Error dumping file from path "C:\Users\Administrator\AppData\Local\Temp\~dfds3.reg": [Errno 13] Permission denied: u'C:\\Users\\Administrator\\AppData\\Local\\Temp\\~dfds3.reg'
+2016-08-26 00:45:12,255 [analyzer] INFO: Added new file to list with pid 576 and path C:\Users\Administrator\AppData\Roaming\Adobe\Acrobat\9.0\SharedDataEvents-journal
+2016-08-26 00:45:12,270 [analyzer] INFO: Added new file to list with pid 576 and path C:\Users\Administrator\AppData\Roaming\Adobe\Acrobat\9.0\SharedDataEvents-journal
+2016-08-26 00:45:15,145 [analyzer] INFO: Added new file to list with pid 576 and path C:\Users\Administrator\AppData\Roaming\Adobe\Acrobat\9.0\UserCache.bin
+2016-08-26 00:45:21,818 [analyzer] INFO: insn=1, signature=0x8000000, addr=0x72beccf0, handler=0x63beb4c2
+2016-08-26 00:45:21,818 [analyzer] INFO: insn=1, signature=0x1000000, addr=0x72beb73c, handler=0x63beb576
+2016-08-26 00:45:21,848 [analyzer] INFO: Added new file to list with pid 576 and path C:\Users\Administrator\AppData\Local\Adobe\Acrobat\9.0\Updater\updater.log
+2016-08-26 00:45:21,895 [analyzer] INFO: Added new file to list with pid 576 and path C:\Users\Administrator\AppData\Local\Adobe\Updater6\aumLib.log
+2016-08-26 00:45:21,957 [analyzer] INFO: Injected into process with pid 1872 and name u'Adobe_Updater.exe'
+2016-08-26 00:45:22,098 [analyzer] DEBUG: Loaded monitor into process with pid 1872
+2016-08-26 00:45:22,115 [analyzer] WARNING: File at path "u'C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\Windows\\Caches\\{AFBF9F1A-8EE8-4C77-AF34-C647E37CA0D9}.1.ver0x0000000000000000.db'" does not exist, skip.
+2016-08-26 00:45:22,130 [analyzer] DEBUG: Received request to inject pid=1872, but we are already injected there.
+2016-08-26 00:45:22,177 [analyzer] INFO: Added new file to list with pid 1872 and path C:\Users\Administrator\AppData\Local\Adobe\Updater6\AdobeUpdaterPrefs.dat
+2016-08-26 00:45:22,193 [analyzer] INFO: Added new file to list with pid 1872 and path C:\Users\Administrator\AppData\Local\Adobe\Updater6\aum.log
+2016-08-26 00:45:41,052 [analyzer] INFO: Analysis timeout hit, terminating analysis.
+2016-08-26 00:45:41,052 [analyzer] WARNING: File at path "u'c:\\users\\administrator\\appdata\\local\\temp\\rthdcpl.exe'" does not exist, skip.
+2016-08-26 00:45:41,068 [analyzer] INFO: Analysis completed.

@@ -1,0 +1,47 @@
+<div class="cuckoo-errors">
+	<h4><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>  Errors</h4>
+
+		{% for action in report.analysis.debug.action %}
+		    {% if action == "host2guest_routing" %}
+            <div class="troubleshoot">
+                <p>It appears that this Virtual Machine hasn't been configured properly as the Cuckoo Host wasn't able to the connect to the Guest. There could be a few reasons for this:</p>
+                <ul>
+                    <li>The IP address of the VM has been configured incorrectly. Please verify that the VM has a static IP address, that it matches the one in the Cuckoo configuration, and that the configured network interface exists and is up. Also, in case of VirtualBox, did you configure the network interface to be a "Host-Only interface"?</li>
+                    <li>Please check that there are no firewalls in-place that hinder the communication between your Host and Guest.</li>
+                    <li>If you've triple-checked the above, then please contact us. Just below the errors you'll find a "Send Feedback" button.</li>
+                </ul>
+            </div>
+            {% endif %}
+
+		    {% if action == "gatherer" %}
+            <div class="troubeshoot">
+                <p>It appears that the environment of your Virtual Machine is partially unknown to us in the sense that we haven't added special support for it yet (for 95% of the time the analysis will work perfectly fine, though). By doing a special, fully automated, analysis you can automatically obtain the environment-specific Windows DLLs and other goodies that the Cuckoo Sandbox Core Developer team can use to add support for your version of Windows. In order to share this data back to us, please click on <a href="WIP"></a>.</p>
+            </div>
+            {% endif %}
+
+        {% endfor %}
+
+	<ul class="errors collapse in">
+
+		{% for err in report.analysis.debug.errors %}
+			{% if err and forloop.counter <= 3 %}
+				<li class="error">
+					<p class="text-danger">{{err}}</p>
+					<a href="#" class="expand-error" title="Expand error message"><i class="fa fa-expand"></i> <span>click to expand / collapse this error</span></a>
+				</li>
+			{% endif %}
+
+		{% endfor %}
+
+	</ul>
+
+	<div class="clearfix">
+		<a class="btn btn-default" href="#modal_feedback" data-toggle="modal">Send feedback</a>
+        {% if report.analysis.debug.errors|length > 3 %}
+		<div class="pull-right show-all-errors">
+			<span>Showing 3 of {{ report.analysis.debug.errors|length }} errors</span>
+		</div>
+        {% endif %}
+	</div>
+
+</div>

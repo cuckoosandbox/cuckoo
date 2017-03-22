@@ -1,0 +1,28 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+        <tr>
+            <th>Parent PID</th>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Create Time</th>
+            <th>Exit Time</th>
+            <th># Threads</th>
+            <th># Handles</th>
+            <th>Session ID</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.pslist.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.parent_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.create_time}}</td>
+            <td class="{{ row.class_ }}">{{row.exit_time}}</td>
+            <td class="{{ row.class_ }}">{{row.num_threads}}</td>
+            <td class="{{ row.class_ }}">{{row.num_handles}}</td>
+            <td class="{{ row.class_ }}">{{row.session_id}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

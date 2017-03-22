@@ -1,0 +1,70 @@
+{
+    "file_selection": [
+        {
+            "arcname": "msg_invoice.msg",
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [
+                "oledata.mso"
+            ],
+            "filename": "oledata.mso",
+            "finger": {
+                "magic": "data",
+                "magic_human": "data",
+                "mime": "application/octet-stream",
+                "mime_human": "octet stream"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": "cuckoo1",
+                "options": {
+                    "enable-services": false,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "enable-injection": true,
+                    "process-memory-dump": false,
+                    "simulated-human-interaction": true
+                },
+                "package": "doc",
+                "priority": 2,
+                "routing": "internet",
+                "timeout": 120
+            },
+            "package": "doc",
+            "password": null,
+            "relapath": "oledata.mso",
+            "selected": true,
+            "size": 234898,
+            "type": "container"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "internet",
+        "options": {
+            "enable-services": false,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "enable-injection": true,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": ""
+    },
+    "submit_id": 1
+}

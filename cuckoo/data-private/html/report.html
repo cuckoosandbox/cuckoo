@@ -1,0 +1,303 @@
+<!--
+  Cuckoo Sandbox - Automated Malware Analysis
+  Copyright (C) 2010-2017 Cuckoo Foundation.
+  http://www.cuckoosandbox.org
+
+  This file is part of Cuckoo.
+
+  Cuckoo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Cuckoo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+
+<html>
+	<head>
+		{{ head }}
+
+        <style>
+            div.img-cuckoo{
+                width: 122px;
+                height: 40px;
+                background-size: contain;
+            }
+        </style>
+	</head>
+
+	<body>
+		<!-- wrapping container, defines the wrapping width of the content -->
+		<div class="container">
+
+			<!-- top header, logo and datetime of the report -->
+			<header class="main-header">
+				<div class="brand">
+                    <div class="img-cuckoo"></div>
+				</div>
+				<h1>Analysis report summary</h1>
+				<div class="main-header-right">
+					<time datetime="{{ constants["date_now"].strftime("%Y-%m-%d, %H:%M") }}">
+                        <i class="fa fa-clock-o"></i> {{ constants["date_now"].strftime("%Y/%m/%d %H:%M") }}
+                    </time>
+				</div>
+			</header>
+
+			<!-- row -->
+			<div class="row">
+
+				<!-- block: summary -->
+				<div class="block block-summary">
+
+					<header class="block-header">
+						<h4><i class="fa fa-file-o"></i> Summary - <em>{{results.target.file.name}}</em></h4>
+					</header>
+
+					<section class="block-section">
+						<!-- file info -->
+						<div class="block-section-col">
+							<h5>File info</h5>
+							<ul class="list-reset key-value-list">
+								<li><strong>name: </strong> {{results.target.file.name}}</li>
+								<li><strong>type: </strong> {{results.target.file.type}}</li>
+								<li><strong>size: </strong> {{results.target.file.size}} bytes</li>
+							</ul>
+						</div>
+
+						<!-- checksum hashes -->
+						<div class="block-section-col">
+							<h5>Checksums</h5>
+							<ul class="list-reset list-checksums">
+								<li><span class="label">SHA1</span> {{results.target.file.sha1}}</li>
+								<li><span class="label">MD5</span> {{results.target.file.md5}}</li>
+							</ul>
+						</div>
+					</section>
+					<!-- <footer class="block-footer"></footer> -->
+				</div>
+
+				<!-- block: status and process messages / information -->
+				<div class="block">
+
+					<header class="block-header">
+						<h4><i class="fa fa-qrcode"></i> Detected signatures</h4>
+					</header>
+
+					<section class="block-section no-padding">
+						<ul class="list-reset list-status">
+							<!-- <li><p>Some non-status signature</p></li> -->
+
+                            {% if signatures %}
+                                {% for severity, _signatures in signatures.iteritems() %}
+                                    {% if severity == 1 %}
+                                        {% set label = "info" %}
+                                    {% elif severity == 2 %}
+                                        {% set label = "warning" %}
+                                    {% elif severity == 3 %}
+                                        {% set label = "danger" %}
+                                    {% else %}
+                                        {% set label = "info" %}
+                                    {% endif %}
+
+                                    <li class="list-status-separator {{ label }}">{{ label.capitalize() }} messages</li>
+
+                                    {% for sig in _signatures %}
+                                        <li class="{{ label }}" data-signature="{{ sig.name }}" data-init="collapse">
+                                            {% set sig_template_mapping = {
+                                                "creates_doc": "creates_ioc.html",
+                                                "creates_exe": "creates_ioc.html",
+                                                "suspicious_process": "creates_ioc.html",
+                                                "persistence_autorun": "creates_ioc.html",
+                                                "antivirus_virustotal": "antivirus_virustotal.html"
+                                                }
+                                            %}
+
+                                            {% if sig.markcount >= 1 and sig.name in sig_template_mapping %}
+                                                {% set collapse_toggle = true %}
+                                            {% else %}
+                                                {% set collapse_toggle = false %}
+                                            {% endif %}
+
+                                            {% if sig.markcount > 1 %}
+                                                {% set event = "events" %}
+                                            {% else %}
+                                                {% set event = "event" %}
+                                            {% endif %}
+
+                                            <p>{{ sig.description }} <small>{{ sig.markcount }} {{ event }}</small>
+                                            {% if collapse_toggle %}
+                                                <a href="#" class="collapse-toggle"><i class="fa"></i></a>
+                                            {% endif %}
+                                            </p>
+
+                                            {% if sig.name in sig_template_mapping %}
+                                                {% include "sections/signatures/" + sig_template_mapping[sig.name] %}
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-status-separator info">No signatures</li>
+                            {% endif %}
+						</ul>
+					</section>
+				</div>
+
+                {% if screenshots %}
+                    <!-- screenshots -->
+                    <style>
+                        {% for shot in screenshots %}
+                            {{ shot.css }}
+                        {% endfor %}
+                    </style>
+
+                    <div class="block">
+                        <header class="block-header">
+                            <h4><i class="fa fa-desktop"></i> Screenshots <small>({{ screenshots|length }}/{{ results.screenshots|length }})</small></h4>
+                        </header>
+
+                        <section class="block-section screenshots">
+                        {% for shot in screenshots %}
+                            <div class="image">
+                                <div class="img-{{ shot.selector }}" id="img-shot-{{ shot.id }}"></div>
+                                <p>{{ shot.name }}.jpg</p>
+                            </div>
+                        {% endfor %}
+                        </section>
+                    </div>
+                {% endif %}
+
+				<!-- processes summary -->
+				<div class="block block-processes">
+					<header class="block-header">
+						<h4><i class="fa fa-cogs"></i> Processes <small>(truncated results)</small></h4>
+					</header>
+
+                    {% for behavior, procs in behavioral.iteritems() %}
+                        <section class="block-section no-padding process-view open" data-init="collapse">
+                            <header class="process-view-header">
+                                <h5>{{ loop.index + 1 }}. {{ behavior.capitalize() }}
+                                <a class="collapse-toggle"><i class="fa"></i></a>
+                                </h5>
+                            </header>
+                            {% for proc_name, proc in procs.iteritems() %}
+                                <ul class="process-display list-reset" data-target="collapse">
+                                    <li class="process-display-title">{{ proc.process_name }} <span class="pid">pid: {{ proc.pid }}</span></li>
+                                    {% for event_type, events in proc.events.iteritems() %}
+                                    <li>
+                                        {{ event_type }}:
+                                        <ul>
+                                            {% for event in events[0:15] %}
+                                                <li>{{ event }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endfor %}
+                        </section>
+                    {% endfor %}
+				</div>
+
+                {% if results.procmemory %}
+                    {% if results.procmemory[0].urls %}
+                        <!-- process memory dump -->
+                        <div class="block block-procmemory">
+                            <header class="block-header">
+                                <h4><i class="fa fa-barcode"></i> Process memory dump</h4>
+                            </header>
+
+                            <ul class="list-reset list-simple">
+                                <li class="list-simple-title">URLs found in process memory</li>
+                                {% for url in results.procmemory[0].urls %}
+                                    <li class="monospace">{{ url }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if results.network.dns or results.network.hosts %}
+                    <!-- network -->
+                    <div class="block block-network">
+
+                        <header class="block-header">
+                            <h4><i class="fa fa-globe"></i> Network</h4>
+                        </header>
+
+                        {% if results.network.dns %}
+                            <section class="block-section no-padding process-view">
+
+                                <header class="process-view-header">
+                                    <h5>DNS (3)</h5>
+                                </header>
+
+                                <!-- table with info -->
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Name</th>
+                                            <th>Response</th>
+                                            <th>Post-analysis lookup</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in results.network.dns %}
+                                            <tr>
+                                                <td>{{ p.type }}</td>
+                                                <td>{{ p.request }}</td>
+                                                {% if "answers" in p and p.answers %}
+                                                    <td>{{ p.answers|length }}</td>
+                                                {% else %}
+                                                    <td>Empty</td>
+                                                {% endif %}
+                                                <td>-</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                            </section>
+                        {% endif %}
+
+                        {% if results.network.hosts %}
+                            <section class="block-section no-padding process-view">
+
+                                <header class="process-view-header">
+                                    <h5>Hosts ({{ results.network.hosts|length }})</h5>
+                                </header>
+
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>IP Address</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for host in results.network.hosts %}
+                                            <tr>
+                                                <td>{{ host }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                            </section>
+                        {% endif %}
+                    </div>
+                {% endif %}
+			</div>
+
+			<footer class="footnote">
+				&copy; 2010 - 2017, Cuckoo Sandbox
+			</footer>
+		</div>
+	</body>
+</html>

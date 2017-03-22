@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+    
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+        <section class="flex-nav__body cuckoo-analysis">
+
+            <header class="page-header cuckoo-analysis__header">
+                <h2><i class="fa fa-book"></i> Static Analysis</h2>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="tabbable tabs">
+                            <ul class="nav nav-pills" style="margin-bottom: 0;">
+                                <li class="active">
+                                    <a href="#static_analysis_tab" data-toggle="tab">Static Analysis</a>
+                                </li>
+                                <li><a href="#static_strings_tab" data-toggle="tab">Strings</a></li>
+                                <li><a href="#static_antivirus_tab" data-toggle="tab">Antivirus</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade in active" id="static_analysis_tab">
+                                    {% if "PE32" in report.analysis.target.file.type %}
+                                        {% include "analysis/pages/static/_pe32.html" %}
+                                    {% elif "office" in report.analysis.static %}
+                                        {% include "analysis/pages/static/_office.html" %}
+                                    {% elif "pdf" in report.analysis.static %}
+                                        {% include "analysis/pages/static/_pdf.html" %}
+                                    {% else %}
+                                        No static analysis available.
+                                    {% endif %}
+                                </div>
+                                <div class="tab-pane fade" id="static_strings_tab">
+                                    {% include "analysis/pages/static/_strings.html" %}
+                                </div>
+                                <div class="tab-pane fade" id="static_antivirus_tab">
+                                    {% include "analysis/pages/static/_antivirus.html" %}
+                                </div>
+                                <div class="tab-pane fade" id="static_irma_tab">
+                                    {% include "analysis/pages/static/_irma.html" %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>
+    </div>
+
+{% endblock %}

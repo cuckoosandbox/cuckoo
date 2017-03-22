@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+
+
+<style>
+    table td#file_url {
+        word-break: break-all;
+    }
+</style>
+
+<script type='text/javascript'>
+    $(function () {
+        $("#hash").submit(function(e) {
+            e.preventDefault();
+            var $choice = $(this).find("input[name='hash']");
+            if ($choice.length) {
+                window.location = $choice.val();
+            }
+        });
+    })
+</script>
+
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+        <section class="flex-nav__body cuckoo-analysis">
+
+            <header class="page-header cuckoo-analysis__header">
+                <h2><i class="fa fa-random"></i> Compare</h2>
+            </header>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6" style="border-right: 1px dashed #878787;">
+                        <h2 style="text-align: center;">Analysis 1</h2>
+                        <hr>
+                        <p>&nbsp;</p>
+                        {% include "analysis/pages/compare/_info.html" with record=left %}
+                    </div>
+                    <div class="col-md-6">
+                        <h2 style="text-align: center;">Analysis 2</h2>
+                        <hr>
+                        <p>You need to select the second analysis.
+                        {% if records.count > 0 %}
+                            Following are all the other analyses of the same file or URL:</p>
+                            {% include "analysis/pages/compare/_summary_table.html" %}
+                        {% else %}
+                            <b>There is no other analysis for the same file or URL.</b></p>
+                        {% endif %}
+
+                        <p>If you want to compare to a different analysis, please provide an MD5 hash or a URL:</p>
+                        <form class="form-inline" action="#" id="hash">
+                            <input class="form-control" type="text" name="hash" /> <button type="submit" class="btn btn-primary btn-small">Search</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+             <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer spread-alignment">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+            
+        </section>
+    </div>
+
+{% endblock %}

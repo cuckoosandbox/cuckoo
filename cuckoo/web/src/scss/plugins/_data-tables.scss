@@ -1,0 +1,79 @@
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+
+.dataTables {
+
+	&_paginate .pagination {
+		margin-top: 20px;
+    	padding: 3px 10px;
+
+    	.active > a {
+    		z-index: 2;
+		    color: #fff;
+		    cursor: default;
+		    background-color: #6d99be;
+		    border-color: #7b93a7;
+    	}
+	}
+
+	&_info {
+		margin-top: 20px;
+    	color: #cecece;	
+	}
+
+	&_filter {
+		label { color: #d1d1d1; }
+		input { border: 1px solid #dddddd; }
+
+		.dataTables_wrapper & {
+			float: right;
+
+			input {
+				float: right;
+				width:60%;
+			    max-width:170px;
+			    margin-top: -4px;
+			}
+
+			label {
+				text-align: right;
+    			padding-top: 4px;
+			}
+		}
+
+		#domains &,
+		#hosts & {
+			padding-top: 18px;
+		}
+
+	}
+
+	&_length {
+		select { width: inherit !important; }
+
+		#domains &,
+		#hosts & {
+			padding-right: 14px;
+    		padding-top: 18px;
+		}
+	}
+
+}
+
+.dataTable {
+
+	&#network_dns,
+	&#network_hosts {
+		border-top: 1px solid #ddd;
+    	border-bottom: 1px solid #ddd;	
+    	tbody { font-size: 13px; }
+	}
+
+	&#network_dns {
+		tr > td:first-child { word-break: break-all; }
+	}
+
+}

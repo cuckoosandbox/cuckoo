@@ -1,0 +1,38 @@
+<style>
+    table td#file_url{
+        word-break: break-all;
+    }
+</style>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Category</th>
+            {% if record.target.category == "url" %}
+            <th>URL</th>
+            {% else %}
+            <th>Name</th>
+            <th>MD5</th>
+            {% endif %}
+            <th>Machine</th>
+            <th>Completed On</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{record.info.id}}</td>
+            <td>{{record.info.category|upper}}</td>
+            {% if record.target.category == "url" %}
+            <td id="file_url"><a href="{% url "analysis" record.info.id "summary" %}">{{record.target.url}}</a></td>
+            {% else %}
+            <td>{{record.target.file.name}}</td>
+            <td id="file_url"><a href="{% url "analysis" record.info.id "summary" %}">{{record.target.file.md5}}</a></td>
+            {% endif %}
+            <td>{{record.info.machine.name}}</td>
+            <td>{{record.info.ended}}</td>
+            <td>{{record.info.duration}} seconds</td>
+        </tr>
+    </tbody>
+</table>
