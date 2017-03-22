@@ -14,7 +14,7 @@ import SocketServer
 import threading
 
 from cuckoo.common.abstracts import ProtocolHandler
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooResultError
@@ -43,21 +43,20 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
     daemon_threads = True
 
     def __init__(self, *args, **kwargs):
-        self.cfg = Config()
         self.analysistasks = {}
         self.analysishandlers = {}
 
-        ip = self.cfg.resultserver.ip
-        self.port = int(self.cfg.resultserver.port)
+        self.ip = config("cuckoo:resultserver:ip")
+        self.port = config("cuckoo:resultserver:port")
         while True:
             try:
-                server_addr = ip, self.port
+                server_addr = self.ip, self.port
                 SocketServer.ThreadingTCPServer.__init__(
                     self, server_addr, ResultHandler, *args, **kwargs
                 )
             except Exception as e:
                 if e.errno == errno.EADDRINUSE:
-                    if self.cfg.resultserver.get("force_port"):
+                    if config("cuckoo:resultserver:force_port"):
                         raise CuckooCriticalError(
                             "Cannot bind ResultServer on port %d, "
                             "bailing." % self.port
@@ -73,15 +72,17 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                         "bringing up the virtual interface associated with "
                         "the ResultServer IP address. Please refer to "
                         "http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
-                        " for more information." % (ip, self.port, e)
+                        " for more information." % (self.ip, self.port, e)
                     )
                 else:
                     raise CuckooCriticalError(
                         "Unable to bind ResultServer on %s:%s: %s" %
-                        (ip, self.port, e)
+                        (self.ip, self.port, e)
                     )
             else:
-                log.debug("ResultServer running on %s:%s.", ip, self.port)
+                log.debug(
+                    "ResultServer running on %s:%s.", self.ip, self.port
+                )
                 self.servethread = threading.Thread(target=self.serve_forever)
                 self.servethread.setDaemon(True)
                 self.servethread.start()
