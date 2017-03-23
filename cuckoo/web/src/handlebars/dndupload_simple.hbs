@@ -1,6 +1,7 @@
 <div class="dndupload__simple" id="{{uid}}">
-	<form id="uploader">
-		<input type="file" name="files[]" id="file" class="holder_input" data-multiple-caption="{count} files selected" multiple="" />
+	<form id="uploader" action="{{formAction}}" method="post" enctype="multipart/form-data">
+
+		<input type="file" name="{{inputName}}[]" id="file" class="holder_input" data-multiple-caption="{count} files selected" multiple="" />
 
 		<h5>{{title}}</h5>
 		
@@ -11,7 +12,3 @@
 		<progress id="uploadprogress" min="0" max="100" value="0">0</progress>
 	</form>
 </div>
-
-<p id="filereader">File API &amp; FileReader API not supported</p>
-<p id="formdata">XHR2's FormData is not supported</p>
-<p id="progress">XHR2's upload progress isn't supported</p>

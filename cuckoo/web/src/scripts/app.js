@@ -250,6 +250,7 @@ $(function() {
     ==================== */
     if($(".omni-uploader").length && window.DnDUpload) {
 
+        // submit uploader
         var submit_uploader = new DnDUpload.Uploader({
             target: 'div#dashboard-submit',
             endpoint: '/submit/api/presubmit',
@@ -276,10 +277,48 @@ $(function() {
             change: function(uploader, holder) {
                 $(holder).addClass('dropped');
             }
-
         });
 
-        submit_uploader.draw();
+        submit_uploader.draw(); 
+
+        // import uploader
+
+        var import_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-import',
+            endpoint: '',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+
+            // disables ajax functionality
+            ajax: false,
+
+            templateData: {
+                title: 'Submit a file to import',
+                html: `<i class="fa fa-upload"></i>\n${$('#import_token').html()}\n<input type="hidden" name="category" type="text" value="file">\n`,
+                // sets form action for submitting the files to (form action=".. etc")
+                formAction: '/analysis/import/',
+                inputName: 'analyses'
+            },
+            dragstart: function(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function(data, holder) {
+                setTimeout(function() {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function(uploader, holder, files) {
+                $(holder).addClass('dropped');
+            }
+        });
+
+        import_uploader.draw();
 
     }
 

@@ -26,6 +26,7 @@ const DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
+    ajax: true,
     templateData: {},
     dragstart: function() {},
     dragend: function() {},
@@ -92,15 +93,17 @@ class Uploader {
                     </div>
                 </form>
             </div>
-
-            <p id="filereader">File API &amp; FileReader API not supported</p>
-            <p id="formdata">XHR2's FormData is not supported</p>
-            <p id="progress">XHR2's upload progress isn't supported</p>
         `;
 
         if(this.options.template) {
             this._usesTemplate = true;
+
             this.options.templateData.uid = this._selectors["uid"];
+
+            if(!this.options.templateData['inputName']) {
+                this.options.templateData.inputName = 'files';
+            }
+
             var html = this.options.template(this.options.templateData);
         }
 
@@ -140,26 +143,44 @@ class Uploader {
         };
 
         "filereader formdata progress".split(" ").forEach(function(api){
+
             if (_self._selectors["tests"][api] === false) {
+                if(!_self._selectors["support"][api]) return;
                 _self._selectors["support"][api].className = "fail";
             } else {
+                if(!_self._selectors["support"][api]) return;
                 _self._selectors["support"][api].className = "hidden";
             }
+
         });
 
         // listen for changes on the input tag. If a user choose a file manually; fire the
         // form submit programmatically
         _self._selectors["holder"].querySelector('input[type="file"]').addEventListener("change", function(e){
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent("submit", true, false);
-            _self._selectors["form"].dispatchEvent( event );
-            _self._change_callback(_self, holder);
+
+            if(_self.options.ajax) {
+
+                var event = document.createEvent("HTMLEvents");
+                event.initEvent("submit", true, false);
+                _self._selectors["form"].dispatchEvent( event );
+                _self._change_callback(_self, holder);
+
+            } else {
+                _self._selectors["form"].submit();
+            }
+            
         });
 
         // do our own thing when the form is submitted
         _self._selectors["form"].addEventListener('submit', function(e){
-            e.preventDefault();
-            this._process_files();
+
+            if(_self.options.ajax) {
+                e.preventDefault();
+                this._process_files();
+            }
+
+            // just submit the file.
+
         }.bind(this));
 
         // test for drag&drop
@@ -191,16 +212,29 @@ class Uploader {
             // process the files on drop
             holder.querySelector("form#uploader").ondrop = function(e){
                 this.className = "";
-                e.preventDefault();
-                var dropCallbackOutput = _self._drop_callback(_self, holder);
 
-                // if this callback returns 'false', don't process the file directly. This 
-                // controls auto-uploading from the configuration. Developer can now
-                // embed an upload-trigger himself, if wanted.
-                if(dropCallbackOutput === false)
-                    return;
+                if(_self.options.ajax) {
 
-                _self._process_files(e.dataTransfer.files);
+                    e.preventDefault();
+                    var dropCallbackOutput = _self._drop_callback(_self, holder);
+
+                    // if this callback returns 'false', don't process the file directly. This 
+                    // controls auto-uploading from the configuration. Developer can now
+                    // embed an upload-trigger himself, if wanted.
+                    if(dropCallbackOutput === false)
+                        return;
+
+                    _self._process_files(e.dataTransfer.files);
+
+                } else {
+
+                    if(e.dataTransfer.files) {
+                        _self._selectors["holder"].querySelector('input[type="file"]').files = e.dataTransfer.files;
+                        _self._selectors["form"].submit();
+                    }
+
+                }
+
             };
         } else {
             this._selectors["upload"].className = "hidden";

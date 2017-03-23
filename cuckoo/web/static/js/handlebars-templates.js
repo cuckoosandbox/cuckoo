@@ -242,11 +242,15 @@ this["HANDLEBARS_TEMPLATES"]["dndupload_simple"] = Handlebars.template({"1":func
 
   return "<div class=\"dndupload__simple\" id=\""
     + alias3(((helper = (helper = helpers.uid || (depth0 != null ? depth0.uid : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"uid","hash":{},"data":data}) : helper)))
-    + "\">\n	<form id=\"uploader\">\n		<input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\" />\n\n		<h5>"
+    + "\">\n	<form id=\"uploader\" action=\""
+    + alias3(((helper = (helper = helpers.formAction || (depth0 != null ? depth0.formAction : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"formAction","hash":{},"data":data}) : helper)))
+    + "\" method=\"post\" enctype=\"multipart/form-data\">\n\n		<input type=\"file\" name=\""
+    + alias3(((helper = (helper = helpers.inputName || (depth0 != null ? depth0.inputName : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"inputName","hash":{},"data":data}) : helper)))
+    + "[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\" />\n\n		<h5>"
     + alias3(((helper = (helper = helpers.title || (depth0 != null ? depth0.title : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"title","hash":{},"data":data}) : helper)))
     + "</h5>\n		\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.html : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "\n		<progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n	</form>\n</div>\n\n<p id=\"filereader\">File API &amp; FileReader API not supported</p>\n<p id=\"formdata\">XHR2's FormData is not supported</p>\n<p id=\"progress\">XHR2's upload progress isn't supported</p>";
+    + "\n		<progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n	</form>\n</div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["header-table"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var helper;
