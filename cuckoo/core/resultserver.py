@@ -26,7 +26,7 @@ from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
-BUFSIZE = 16 * 1024
+BUFSIZE = 1024 * 1024
 
 class Disconnect(Exception):
     pass
@@ -316,8 +316,7 @@ class FileUpload(ProtocolHandler):
     lock = threading.Lock()
 
     def init(self):
-        self.upload_max_size = \
-            self.handler.server.cfg.resultserver.upload_max_size
+        self.upload_max_size = config("cuckoo:resultserver:upload_max_size")
         self.storagepath = self.handler.storagepath
         self.fd = None
 
