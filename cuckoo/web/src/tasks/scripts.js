@@ -10,6 +10,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var chalk = require('chalk');
 var debug = require('gulp-debug');
+var notify = require('gulp-notify');
 
 module.exports = function(done) {
 

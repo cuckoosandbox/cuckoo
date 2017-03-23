@@ -65,7 +65,39 @@
 				padding: 5px;
 				margin: 0; 
 				color: #979797;
+
+				&.align-left {
+					text-align: left;
+					padding-left: 15px;
+					padding-right: 15px;
+				}
+
+				& > i {
+					font-size: 0.9em;
+					margin-right: 5px;
+				}
+
 			}
+		}
+
+		&__lg {
+
+			@extend .dashboard-module;
+
+			.dashboard-module__footer > p {
+				font-size: 14px;
+				padding: 18px;
+
+				&.align-left {
+					padding-left: 25px;
+					padding-right: 25px;
+				}
+
+				i {
+					margin-right: 10px;
+				}
+			}
+
 		}
 
 		table.simple {
@@ -156,6 +188,34 @@
 
 			}
 
+		}
+
+		// omni upload widget
+		.omni-uploader {
+			background-color: #fff;
+			border-bottom-width: 2px;
+
+			.dashboard-module__body--left {
+				border-right-width: 2px;
+			}
+
+			.uploader-area {
+				text-align: center;
+				padding: 65px 0 50px 0;
+
+				h5 {
+					text-transform: uppercase;
+					color: #979797;
+					font-weight: 700;
+					font-size: 16px;
+					margin: 0 0 11px 0;
+				}
+
+				.fa {
+					font-size: 50px;
+					color: #71A1F9;
+				}
+			}
 		}
 
 	}

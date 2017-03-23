@@ -16,6 +16,7 @@ var sass 		= require('gulp-ruby-sass');
 var sourcemaps 	= require('gulp-sourcemaps');
 var insert 		= require('gulp-insert');
 var clean 		= require('gulp-clean-css');
+var notify 		= require('gulp-notify');
 
 /*
 	return Gulp function()
@@ -42,6 +43,7 @@ module.exports = function() {
 		// writes the sourcemap
 		.pipe(gutil.env.production ? gutil.noop() : sourcemaps.write('./'))
 		.pipe(gutil.env.production ? clean() : gutil.noop())
+		.pipe(notify('SCSS compiled to CSS!'))
 
 		// output file to static web dir
 		.pipe(gulp.dest('../static/css'));
