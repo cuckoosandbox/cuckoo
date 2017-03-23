@@ -1025,8 +1025,8 @@ class Memory(Processing):
         @return: volatility results dict.
         """
         self.key = "memory"
-        task_machine = self.task["machine"]["name"]
-        machine_manager = self.task["machine"]["manager"].lower()
+        task_machine = self.task["guest"]["name"]
+        machine_manager = self.task["guest"]["manager"].lower()
 
         results = {}
         if HAVE_VOLATILITY:
