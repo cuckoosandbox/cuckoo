@@ -115,12 +115,45 @@
 
 			&__chart {
 
+				position: relative;
+
 				& > canvas {
 					margin: 0px auto;
 					width: 135px;
 					height: 135px;
 				}
-				
+
+			}
+
+			&__legend {
+
+				position: absolute;
+				width: 95px;
+				height: 95px;
+				top: 20px;
+				left: 50%;
+				margin-left: -47px;
+				border-radius: 50%;
+				overflow: hidden;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				text-align: center;
+
+				p {
+					font-size: 12px;
+					font-weight: 900;
+					color: #BE234A;
+					margin: 0;
+
+					& > strong {
+						font-size: 20px;
+						color: #52B3D9;
+						letter-spacing: -0.6px;
+					}
+				}
+
 			}
 
 		}

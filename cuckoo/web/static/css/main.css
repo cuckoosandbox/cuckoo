@@ -7126,10 +7126,38 @@ body.cyborg .page-freeze.error {
   text-align: center;
   color: #979797;
 }
+.dashboard-module .free-disk-space__chart {
+  position: relative;
+}
 .dashboard-module .free-disk-space__chart > canvas {
   margin: 0px auto;
   width: 135px;
   height: 135px;
+}
+.dashboard-module .free-disk-space__legend {
+  position: absolute;
+  width: 95px;
+  height: 95px;
+  top: 20px;
+  left: 50%;
+  margin-left: -47px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.dashboard-module .free-disk-space__legend p {
+  font-size: 12px;
+  font-weight: 900;
+  color: #BE234A;
+  margin: 0;
+}
+.dashboard-module .free-disk-space__legend p > strong {
+  font-size: 20px;
+  color: #52B3D9;
+  letter-spacing: -0.6px;
 }
 
 /* 

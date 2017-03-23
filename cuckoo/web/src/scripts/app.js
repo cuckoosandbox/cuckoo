@@ -227,7 +227,7 @@ $(function() {
                 ]
             },
             options: {
-                cutoutPercentage: 66,
+                cutoutPercentage: 70,
                 legend: { 
                     // we use a custom legend featuring more awesomeness
                     display: false 
