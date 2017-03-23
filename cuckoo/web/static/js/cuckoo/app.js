@@ -214,6 +214,10 @@ $(function () {
 // dashboard code - gets replaced later into a seperate file
 $(function () {
 
+    /* ====================
+    CHART
+    ==================== */
+
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
@@ -243,6 +247,43 @@ $(function () {
                 }
             }
         });
+    }
+
+    /* ====================
+    OMNI-UPLOADER - uses DnDUpload
+    ==================== */
+    if ($(".omni-uploader").length && window.DnDUpload) {
+
+        var submit_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-submit',
+            endpoint: '/submit/api/presubmit',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+            templateData: {
+                title: 'Submit a file for Analysis',
+                html: '<i class="fa fa-upload"></i>'
+            },
+            dragstart: function dragstart(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function dragend(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function drop(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function success(data, holder) {
+                setTimeout(function () {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function change(uploader, holder) {
+                $(holder).addClass('dropped');
+            }
+
+        });
+
+        submit_uploader.draw();
     }
 });
 

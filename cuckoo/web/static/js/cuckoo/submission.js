@@ -24,6 +24,10 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// temporary fix for accessing DnDUpload from exterbal modules
+// as import doesn't work in the old js files
+window.DnDUpload = DnDUpload;
+
 var DEFAULT_ANALYSIS_CONFIG = {
 	container: null,
 	filetree: FileTree.DEFAULT_FILETREE_CONFIG,
@@ -172,12 +176,14 @@ var DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
+    templateData: {},
     dragstart: function dragstart() {},
     dragend: function dragend() {},
     drop: function drop() {},
     error: function error() {},
     success: function success() {},
-    progress: function progress() {}
+    progress: function progress() {},
+    change: function change() {}
 };
 
 var Uploader = function () {
@@ -185,7 +191,7 @@ var Uploader = function () {
         _classCallCheck(this, Uploader);
 
         var _self = this;
-        this.options = $.extend(options, DEFAULT_UPLOADER_CONFIG);
+        this.options = $.extend(DEFAULT_UPLOADER_CONFIG, options);
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
@@ -195,6 +201,7 @@ var Uploader = function () {
         this._dragend_callback = this.options.dragend;
         this._drop_callback = this.options.drop;
         this._error_callback = this.options.error;
+        this._change_callback = this.options.change;
 
         this._selectors = {
             "uid": "dndupload_" + Uploader.generateUUID(),
@@ -216,17 +223,15 @@ var Uploader = function () {
     _createClass(Uploader, [{
         key: "draw",
         value: function draw() {
+
             $(this._selectors["target"]).empty();
 
             var html = "\n            <div class=\"dndupload\" id=\"" + this._selectors["uid"] + "\">\n                <form id=\"uploader\" action=\"/submit/api/presubmit\" method=\"POST\" enctype=\"multipart/form-data\">\n                    <div id=\"container\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"43\" viewBox=\"0 0 50 43\">\n                            <path d=\"M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z\"/>\n                        </svg>\n    \n                        <input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\">\n                        <label for=\"file\" id=\"info\">\n                            <strong>Choose files</strong>\n                            <span class=\"box__dragndrop\"> or drag them here</span>.\n                        </label>\n    \n                        <button type=\"submit\" class=\"holder_button\">Upload</button>\n    \n                        <progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n                    </div>\n                </form>\n            </div>\n\n            <p id=\"filereader\">File API &amp; FileReader API not supported</p>\n            <p id=\"formdata\">XHR2's FormData is not supported</p>\n            <p id=\"progress\">XHR2's upload progress isn't supported</p>\n        ";
 
             if (this.options.template) {
-
                 this._usesTemplate = true;
-
-                var html = this.options.template({
-                    uid: this._selectors["uid"]
-                });
+                this.options.templateData.uid = this._selectors["uid"];
+                var html = this.options.template(this.options.templateData);
             }
 
             $(this._selectors["target"]).append(html);
@@ -280,6 +285,7 @@ var Uploader = function () {
                 var event = document.createEvent("HTMLEvents");
                 event.initEvent("submit", true, false);
                 _self._selectors["form"].dispatchEvent(event);
+                _self._change_callback(_self, holder);
             });
 
             // do our own thing when the form is submitted
@@ -318,7 +324,13 @@ var Uploader = function () {
                 holder.querySelector("form#uploader").ondrop = function (e) {
                     this.className = "";
                     e.preventDefault();
-                    _self._drop_callback(_self, holder);
+                    var dropCallbackOutput = _self._drop_callback(_self, holder);
+
+                    // if this callback returns 'false', don't process the file directly. This 
+                    // controls auto-uploading from the configuration. Developer can now
+                    // embed an upload-trigger himself, if wanted.
+                    if (dropCallbackOutput === false) return;
+
                     _self._process_files(e.dataTransfer.files);
                 };
             } else {

@@ -26,12 +26,14 @@ const DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
+    templateData: {},
     dragstart: function() {},
     dragend: function() {},
     drop: function() {},
     error: function() {},
     success: function() {},
-    progress: function() {}
+    progress: function() {},
+    change: function() {}
 }
 
 class Uploader {
@@ -39,7 +41,7 @@ class Uploader {
     constructor(options) {
 
         let _self = this;
-        this.options = $.extend(options, DEFAULT_UPLOADER_CONFIG);
+        this.options = $.extend(DEFAULT_UPLOADER_CONFIG, options);
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
@@ -49,6 +51,7 @@ class Uploader {
         this._dragend_callback = this.options.dragend;
         this._drop_callback = this.options.drop;
         this._error_callback = this.options.error;
+        this._change_callback = this.options.change;
 
         this._selectors = {
             "uid": `dndupload_${Uploader.generateUUID()}`,
@@ -66,6 +69,7 @@ class Uploader {
      * @return
      */
     draw(){
+
         $(this._selectors["target"]).empty();
 
         var html = `
@@ -95,13 +99,9 @@ class Uploader {
         `;
 
         if(this.options.template) {
-
             this._usesTemplate = true;
-
-            var html = this.options.template({
-                uid: this._selectors["uid"]
-            });
-
+            this.options.templateData.uid = this._selectors["uid"];
+            var html = this.options.template(this.options.templateData);
         }
 
         $(this._selectors["target"]).append(html);
@@ -120,7 +120,7 @@ class Uploader {
         // _self._selectors to avoid global namespace pollution.
         _self._selectors["holder"] = holder;
         _self._selectors["progress"] = document.querySelector(_self._selectors["target"])
-            .querySelector("progress#uploadprogress");
+                                               .querySelector("progress#uploadprogress");
         _self._selectors["upload"] = holder.querySelector("upload");
         _self._selectors["form"] = holder.querySelector("form#uploader");
 
@@ -153,6 +153,7 @@ class Uploader {
             var event = document.createEvent("HTMLEvents");
             event.initEvent("submit", true, false);
             _self._selectors["form"].dispatchEvent( event );
+            _self._change_callback(_self, holder);
         });
 
         // do our own thing when the form is submitted
@@ -191,7 +192,14 @@ class Uploader {
             holder.querySelector("form#uploader").ondrop = function(e){
                 this.className = "";
                 e.preventDefault();
-                _self._drop_callback(_self, holder);
+                var dropCallbackOutput = _self._drop_callback(_self, holder);
+
+                // if this callback returns 'false', don't process the file directly. This 
+                // controls auto-uploading from the configuration. Developer can now
+                // embed an upload-trigger himself, if wanted.
+                if(dropCallbackOutput === false)
+                    return;
+
                 _self._process_files(e.dataTransfer.files);
             };
         } else {

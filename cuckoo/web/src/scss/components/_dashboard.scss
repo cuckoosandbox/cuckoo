@@ -200,8 +200,9 @@
 			}
 
 			.uploader-area {
+				display: block;
 				text-align: center;
-				padding: 65px 0 50px 0;
+				height: 193px;
 
 				h5 {
 					text-transform: uppercase;

@@ -2,6 +2,10 @@ import * as InterfaceControllers from './InterfaceControllers';
 import * as FileTree from './FileTree';
 import * as DnDUpload from './DnDUpload';
 
+// temporary fix for accessing DnDUpload from exterbal modules
+// as import doesn't work in the old js files
+window.DnDUpload = DnDUpload;
+
 const DEFAULT_ANALYSIS_CONFIG = {
 	container: null,
 	filetree: FileTree.DEFAULT_FILETREE_CONFIG,
