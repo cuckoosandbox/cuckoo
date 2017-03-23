@@ -134,7 +134,6 @@ setuptools.setup(
         ":sys_platform == 'linux2'": [
             "requests[security]==2.7.0",
             "scapy==2.3.2",
-            "weasyprint==0.36",
         ],
         "distributed": [
             "gevent==1.1.1",
@@ -142,6 +141,9 @@ setuptools.setup(
         ],
         "postgresql": [
             "psycopg2==2.6.2",
+        ],
+        "weasyprint": [
+            "weasyprint==0.36",
         ],
     },
     setup_requires=[

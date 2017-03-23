@@ -8,8 +8,8 @@ import codecs
 import datetime
 import glob
 import io
-import logging
 import jinja2
+import logging
 import os
 import random
 
