@@ -395,7 +395,5 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
                     "exception": str(e) if e else None,
                 }), addr)
         except Exception as why:
-            if why == "[Errno 4] Interrupted system call":
-                pass
-            else:
+            if why.message != "[Errno 4] Interrupted system call":
                 log.error(why)
