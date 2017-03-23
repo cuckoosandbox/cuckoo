@@ -171,7 +171,6 @@ $(function () {
 
 // back-to-top replacement for the analysis pages
 $(function () {
-
     $("#analysis .flex-grid__footer .logo a").bind('click', function (e) {
         e.preventDefault();
         $(this).parents('.flex-nav__body').scrollTop(0);
@@ -210,6 +209,41 @@ $(function () {
             $(".app-nav__dropdown").removeClass('in');
         }
     });
+});
+
+// dashboard code - gets replaced later into a seperate file
+$(function () {
+
+    // disable nasty iframes from Chart (?)
+    Chart.defaults.global.responsive = false;
+
+    var chart,
+        chartCanvas = $('.free-disk-space__chart > canvas')[0];
+
+    if (chartCanvas) {
+
+        chart = new Chart(chartCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: ["Free", "Used"],
+                datasets: [{
+                    data: [25, 75], // <== this has to come somewhere from a script
+                    backgroundColor: ["#52B3D9", "#BE234A"]
+                }]
+            },
+            options: {
+                cutoutPercentage: 66,
+                legend: {
+                    // we use a custom legend featuring more awesomeness
+                    display: false
+                },
+                tooltips: {
+                    // tooltips are for 1996
+                    enabled: false
+                }
+            }
+        });
+    }
 });
 
 function alertbox(msg, context, attr_id) {

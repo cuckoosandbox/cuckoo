@@ -113,6 +113,16 @@
 				color: #979797;
 			}
 
+			&__chart {
+
+				& > canvas {
+					margin: 0px auto;
+					width: 135px;
+					height: 135px;
+				}
+				
+			}
+
 		}
 
 	}

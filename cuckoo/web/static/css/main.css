@@ -7126,6 +7126,11 @@ body.cyborg .page-freeze.error {
   text-align: center;
   color: #979797;
 }
+.dashboard-module .free-disk-space__chart > canvas {
+  margin: 0px auto;
+  width: 135px;
+  height: 135px;
+}
 
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
