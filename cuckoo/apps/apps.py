@@ -20,7 +20,7 @@ from cuckoo.common.config import config, emit_options, Config
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
 )
-from cuckoo.common.objects import File
+from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
     Database, TASK_FAILED_PROCESSING, TASK_REPORTED
@@ -295,7 +295,7 @@ def process_task_range(tasks):
             task = task.to_dict()
 
         if os.path.isdir(cwd(analysis=task_id)):
-            process_task(task)
+            process_task(Dictionary(task))
 
 def process_tasks(instance, maxcount):
     count = 0

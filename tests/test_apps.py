@@ -450,6 +450,15 @@ class TestProcessingTasks(object):
         )
         p.assert_called_once()
 
+    def test_empty_reprocess(self):
+        db.connect()
+        mkdir(cwd(analysis=1))
+        logging.basicConfig(level=logging.DEBUG)
+        process_task_range("1")
+        assert os.path.exists(cwd("reports", "report.json", analysis=1))
+        obj = json.load(open(cwd("reports", "report.json", analysis=1), "rb"))
+        assert "contact back" in obj["debug"]["errors"][0]
+
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")
 @mock.patch("cuckoo.apps.apps.RunReporting")

@@ -173,6 +173,7 @@ class TestConnectOnce(object):
     @mock.patch("cuckoo.apps.apps.process")
     def test_process_task(self, q, p1, p2):
         mkdir(cwd(analysis=1))
+        p1.return_value.view_task.return_value = {}
         main.main(
             ("--cwd", cwd(), "process", "-r", "1"),
             standalone_mode=False

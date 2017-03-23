@@ -16,13 +16,6 @@ class TargetInfo(Processing):
         @return: information dict.
         """
         self.key = "target"
-        if not self.task:
-            return {
-                "category": "unknown",
-                "file": {
-                    "name": "unknown",
-                },
-            }
 
         ret = {
             "category": self.task["category"],
@@ -36,6 +29,9 @@ class TargetInfo(Processing):
             # filename if the file is not available anymore.
             if os.path.exists(self.file_path):
                 ret["file"] = File(self.file_path).get_all()
+            else:
+                ret["file"]["path"] = None
+                ret["file"]["yara"] = []
 
             ret["file"]["name"] = File(self.task["target"]).get_name()
         elif self.task["category"] == "archive":
