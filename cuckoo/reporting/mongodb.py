@@ -245,6 +245,8 @@ class MongoDB(Report):
                 procmon.append(self.db.procmon.insert(chunk))
 
             report["procmon"] = procmon
-
+            
+        # Delete previous reports if exists 
+        self.db.analysis.delete_many({"info.id": report.get("info").get("id")})
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
