@@ -67,7 +67,7 @@ if os.path.exists("/usr/bin/swig"):
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
-    except Exception as e:
+    except (SystemExit, Exception) as e:
         print "\x1b[31m"
         print "The following error has occurred while trying to install Cuckoo!"
         print "\x1b[0m"
@@ -81,6 +81,18 @@ def do_setup(**kwargs):
         print "installed but Cuckoo still fails, please feel free to reach "
         print "out to us on IRC / email / Github!"
         print "\x1b[0m"
+
+        if isinstance(e, ValueError) and "jpeg is required" in e.message:
+            print "  This particular error may be resolved as follows:"
+            print "      sudo apt-get install libjpeg-dev"
+
+        if isinstance(e, ValueError) and "zlib is required" in e.message:
+            print "  This particular error may be resolved as follows:"
+            print "      sudo apt-get install zlib1g-dev"
+
+        if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
+            print "  This particular error *may* be resolved as follows:"
+            print "      sudo apt-get install libffi-dev libssl-dev"
 
 do_setup(
     name="Cuckoo",
