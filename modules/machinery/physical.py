@@ -107,19 +107,43 @@ class Physical(Machinery):
             log.debug("Rebooting machine: %s.", label)
             machine = self._get_machine(label)
 
-            args = [
-                "net", "rpc", "shutdown", "-I", machine.ip,
-                "-U", creds, "-r", "-f", "--timeout=5"
-            ]
-            output = subprocess.check_output(args)
-
-            if "Shutdown of remote machine succeeded" not in output:
-                raise CuckooMachineError("Unable to initiate RPC request")
+            #errn 0:ok , 1:fogservice_notrun, 2:netrpc_err
+            aux_errn = 0
+            
+            # Deploy a clean image through FOG, assuming we're using FOG agent. 
+            r = self.fog_queue_task(label)
+            if not(r.status_code == 200):
+                raise CuckooMachineError("Unable to scheduled deploy from FOG")
             else:
-                log.debug("Reboot success: %s." % label)
+                log.debug("Reboot scheduled success: %s." % label)
+                
+                # Reboot machine using Fog Service.
+                args = [
+                    "net", "rpc", "service", "status", "FOGService", 
+                    "-I", machine.ip, "-U", creds
+                ]
 
-            # Deploy a clean image through FOG, assuming we're using FOG.
-            self.fog_queue_task(label)
+                output = subprocess.check_output(args)
+                if "FOGService service is running" not in output:
+                    aux_errn = 1
+                
+                    # Reboot machine using net rpc. It's to handle failover of the Fog Service.
+                    args = [
+                        "net", "rpc", "shutdown", "-I", machine.ip,
+                        "-U", creds, "-r", "-f", "--timeout=5"
+                    ]
+                    output = subprocess.check_output(args)
+
+                    if "Shutdown of remote machine succeeded" not in output:
+                        aux_errn = 2
+                    else:
+                        log.debug("Reboot success: %s." % label)
+
+                if not(aux_errn==0):                
+                    if aux_errn==1:
+                        raise CuckooMachineError("Unable to initiate Fog Service reboot request")    
+                    else:
+                        raise CuckooMachineError("Unable to initiate RPC reboot request")
 
     def _list(self):
         """Lists physical machines installed.
@@ -244,7 +268,7 @@ class Physical(Machinery):
         """Queues a task with FOG to deploy the given machine after reboot."""
         if hostname in self.fog_machines:
             macaddr, download = self.fog_machines[hostname]
-            self.fog_query(download)
+            return self.fog_query(download)
 
     def wake_on_lan(self, hostname):
         """Start a machine that's currently shutdown."""
