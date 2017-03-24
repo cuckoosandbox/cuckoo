@@ -92,7 +92,7 @@ def do_setup(**kwargs):
 
         if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
             print "  This particular error *may* be resolved as follows:"
-            print "      sudo apt-get install libffi-dev libssl-dev"
+            print "      sudo apt-get install python-dev libffi-dev libssl-dev"
 
 do_setup(
     name="Cuckoo",

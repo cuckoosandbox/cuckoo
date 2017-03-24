@@ -18,7 +18,7 @@ The following software packages from the apt repositories are required to get
 Cuckoo to install and run properly::
 
     $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
-    $ sudo apt-get install python-virtualenv libjpeg-dev swig
+    $ sudo apt-get install python-virtualenv python-setuptools libjpeg-dev swig
 
 In order to use the Django-based Web Interface, MongoDB is required::
 
