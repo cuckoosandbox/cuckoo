@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import StringIO
+import datetime
 import fnmatch
 import logging
 import os.path
@@ -9,7 +11,6 @@ import pymongo
 import random
 import requests
 import shutil
-import StringIO
 import subprocess
 import sys
 import tarfile
@@ -371,8 +372,8 @@ def cuckoo_clean():
             index=dated_index, ignore=[400, 404]
         )
 
-        if es.indices.exists_template("%s_template" % dated_index):
-            es.indices.delete_template("%s_template" % dated_index)
+        if elastic.client.indices.exists_template("%s_template" % dated_index):
+            elastic.client.indices.delete_template("%s_template" % dated_index)
 
     # Paths to clean.
     paths = [
