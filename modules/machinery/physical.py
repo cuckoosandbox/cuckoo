@@ -6,7 +6,6 @@ import socket
 import logging
 import xmlrpclib
 import subprocess
-import re
 
 log = logging.getLogger(__name__)
 
@@ -243,7 +242,6 @@ class Physical(Machinery):
             hostname = aux[0]
              
             host_download = row.find_all("td")[2]
-            downlink_regx = re.compile(r'Deploy')
              
             host_links = []
             for l in host_download.children:
