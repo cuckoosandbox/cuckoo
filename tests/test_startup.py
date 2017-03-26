@@ -16,7 +16,7 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_console_logging, HAVE_YARA, init_tasks
+    init_console_logging, HAVE_YARA, init_tasks, init_binaries
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
@@ -229,6 +229,30 @@ def test_version_respnotjson(capsys):
     out, err = capsys.readouterr()
     assert "Checking for" in out
     assert "Error checking for" in out
+
+class TestInitBinaries(object):
+    def test_success(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        open(cwd("monitor", "latest"), "wb").write("A"*40)
+        os.mkdir(cwd("monitor", "A"*40))
+        init_binaries()
+
+    def test_invalid_hash(self):
+        open(cwd("monitor", "latest"), "wb").write("B"*40)
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
+
+    def test_empty_latest(self):
+        open(cwd("monitor", "latest"), "wb").write("")
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
+
+    def test_latest_not_directory(self):
+        os.unlink(cwd("monitor", "latest"))
+        os.mkdir(cwd("monitor", "latest"))
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
 
 @mock.patch("cuckoo.core.startup.socket")
 def test_init_rooter_no(p):

@@ -253,37 +253,29 @@ def init_yara(index):
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
+    def throw():
+        raise CuckooStartupError(
+            "The binaries used for Windows analysis are updated regularly, "
+            "independently from the release line. It appears that you're "
+            "not up-to-date. This may happen when you've just installed the "
+            "latest development version of Cuckoo or when you've updated "
+            "to the latest Cuckoo. In order to get up-to-date, please run "
+            "the following command: `cuckoo community`."
+        )
+
     dirpath = cwd("monitor", "latest")
 
-    # Checks whether the "latest" symlink is available as well as whether
-    # it points to an existing directory.
-    if not os.path.exists(dirpath):
-        raise CuckooStartupError(
-            "The binaries used for Windows analysis are updated regularly, "
-            "independently from the release line. It appears that you're "
-            "not up-to-date. This may happen when you've just installed the "
-            "latest development version of Cuckoo or when you've updated "
-            "to the latest Cuckoo. In order to get up-to-date, please run "
-            "the following command: `cuckoo community`."
-        )
-
-    # If "latest" is a file and not a symbolic link, check if its destination
-    # directory is available.
-    if os.path.isfile(dirpath):
+    # If "latest" is a symbolic link, check that it exists.
+    if os.path.islink(dirpath):
+        if not os.path.exists(dirpath):
+            throw()
+    # If "latest" is a file, check that it contains a legitimate hash.
+    elif os.path.isfile(dirpath):
         monitor = os.path.basename(open(dirpath, "rb").read().strip())
-        dirpath = cwd("monitor", monitor)
+        if not monitor or not os.path.isdir(cwd("monitor", monitor)):
+            throw()
     else:
-        dirpath = None
-
-    if dirpath and not os.path.isdir(dirpath):
-        raise CuckooStartupError(
-            "The binaries used for Windows analysis are updated regularly, "
-            "independently from the release line. It appears that you're "
-            "not up-to-date. This may happen when you've just installed the "
-            "latest development version of Cuckoo or when you've updated "
-            "to the latest Cuckoo. In order to get up-to-date, please run "
-            "the following command: `cuckoo community`."
-        )
+        throw()
 
 def init_rooter():
     """If required, check if the rooter is running and if we can connect
