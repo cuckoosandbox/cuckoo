@@ -13,7 +13,6 @@ from lib.api.adb import take_screenshot
 from lib.api.screenshot import Screenshot
 
 log = logging.getLogger(__name__)
-SHOT_DELAY = 2
 
 class Screenshots(Auxiliary, Thread):
     """Take screenshots."""
@@ -33,8 +32,14 @@ class Screenshots(Auxiliary, Thread):
         img_counter = 0
         img_last = None
 
+        if "screenshots" in self.options:
+            shot_delay = int(self.options["screenshots"])
+            if shot_delay == 0: self.do_run = False
+        else:
+            shot_delay = 1
+
         while self.do_run:
-            time.sleep(SHOT_DELAY)
+            time.sleep(shot_delay)
 
             try:
                 filename = "screenshot%s.jpg" % str(img_counter)
