@@ -1,0 +1,40 @@
+<table class="table table-bordered" style="table-layout: fixed;">
+    <h4><a href=https://exfildetect.com/index.php?page=analyses&query={{analysis.exfildetect.hash}}>View report online</a></h4>
+    <tbody>
+        <tr>
+            <td width=80px><strong>Stream ID</strong></td>
+            <td width=100px><strong>Type</strong></td>
+	    <td><strong>Destination</strong></td>
+	    <td><strong>Domain</strong></td>
+            <td><strong>Duration</strong></td>
+            <td><strong>Packets</strong></td>
+            <td><strong>Bytes</strong></td>
+            <td><strong>Unique Subdomains</strong></td>
+            <td><strong>Mean Subdomain Length</strong></td>
+            <td><strong>Mean Packet Size</strong></td>
+            <td><strong>Unique Data Count</strong></td>
+            <td><strong>Classification</strong></td>
+        </tr>
+        {% for stream in analysis.exfildetect.results %}
+        {% if stream.Classification == "Exfiltration" %}
+        <tr style="background-color:#FF6363">
+        {% elif stream.Classification == "Normal" %}
+        <tr>
+        {% endif %}
+            <td>{{stream.ID}}</td>
+            <td>{{stream.Type}}</td>
+            <td>{{stream.DestIP}}</td>
+            <td>{{stream.Qname}}</td>            
+            <td>{{stream.End}}</td>
+            <td>{{stream.Packets}}</td>
+            <td>{{stream.Bytes}}</td>
+            <td>{{stream.Subdomains}}</td>
+            <td>{{stream.MSUB_LEN}}</td>
+            <td>{{stream.MSIZE_OUT}}</td>
+            <td>{{stream.UniqueData}}</td>
+            <td>{{stream.Classification}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

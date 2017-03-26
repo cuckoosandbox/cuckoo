@@ -52,6 +52,9 @@
             {% if analysis.misp %}
                 <li><a href="#misp" data-toggle="tab">MISP ({{ analysis.misp|length }})</a></li>
             {% endif %}
+	    {% if analysis.exfildetect %}
+                <li><a href="#exfildetect" data-toggle="tab">ExfilDetect ({{ analysis.exfildetect.results|length }})</a></li>
+            {% endif %}
             <li><a href="#admin" data-toggle="tab">
                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                 Admin</a>
@@ -94,6 +97,11 @@
     {% if analysis.misp %}
         <div class="tab-pane fade" id="misp">
             {% include "analysis/misp/index.html" %}
+        </div>
+    {% endif %}
+     {% if analysis.exfildetect %}
+        <div class="tab-pane fade" id="exfildetect">
+            {% include "analysis/exfildetect/index.html" %}
         </div>
     {% endif %}
     <div class="tab-pane fade" id="admin">
