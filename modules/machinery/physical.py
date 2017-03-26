@@ -106,19 +106,43 @@ class Physical(Machinery):
             log.debug("Rebooting machine: %s.", label)
             machine = self._get_machine(label)
 
-            args = [
-                "net", "rpc", "shutdown", "-I", machine.ip,
-                "-U", creds, "-r", "-f", "--timeout=5"
-            ]
-            output = subprocess.check_output(args)
-
-            if "Shutdown of remote machine succeeded" not in output:
-                raise CuckooMachineError("Unable to initiate RPC request")
+            #errn 0:ok , 1:fogservice_notrun, 2:netrpc_err
+            aux_errn = 0
+            
+            # Deploy a clean image through FOG, assuming we're using FOG agent. 
+            r = self.fog_queue_task(label)
+            if not(r.status_code == 200):
+                raise CuckooMachineError("Unable to scheduled deploy from FOG")
             else:
-                log.debug("Reboot success: %s." % label)
+                log.debug("Reboot scheduled success: %s." % label)
+                
+                # Reboot machine using Fog Service.
+                args = [
+                    "net", "rpc", "service", "status", "FOGService", 
+                    "-I", machine.ip, "-U", creds
+                ]
 
-            # Deploy a clean image through FOG, assuming we're using FOG.
-            self.fog_queue_task(label)
+                output = subprocess.check_output(args)
+                if "FOGService service is running" not in output:
+                    aux_errn = 1
+                
+                    # Reboot machine using net rpc. It's to handle failover of the Fog Service.
+                    args = [
+                        "net", "rpc", "shutdown", "-I", machine.ip,
+                        "-U", creds, "-r", "-f", "--timeout=5"
+                    ]
+                    output = subprocess.check_output(args)
+
+                    if "Shutdown of remote machine succeeded" not in output:
+                        aux_errn = 2
+                    else:
+                        log.debug("Reboot success: %s." % label)
+
+                if not(aux_errn==0):                
+                    if aux_errn==1:
+                        raise CuckooMachineError("Unable to initiate Fog Service reboot request")    
+                    else:
+                        raise CuckooMachineError("Unable to initiate RPC reboot request")
 
     def _list(self):
         """Lists physical machines installed.
@@ -183,6 +207,8 @@ class Physical(Machinery):
         data.update({
             "uname": self.options.fog.username,
             "upass": self.options.fog.password,
+            "ulang": "English",
+            "login": "Login",            
         })
 
         return requests.post(url, data=data)
@@ -194,7 +220,7 @@ class Physical(Machinery):
             return
 
         # TODO Handle exceptions such as not being able to connect.
-        r = self.fog_query("node=tasks&sub=listhosts")
+        r = self.fog_query("node=task&sub=listhosts")
 
         # Parse the HTML.
         b = bs4.BeautifulSoup(r.content, "html.parser")
@@ -207,10 +233,24 @@ class Physical(Machinery):
         # Mapping for physical machine hostnames to their mac address and uri
         # for "downloading" a safe image onto the host. Great piece of FOG API
         # usage here.
-        for row in b.find_all("table")[0].find_all("tr")[1:]:
-            hostname, macaddr, download, upload, advanced = row.find_all("td")
-            self.fog_machines[hostname.text] = (
-                macaddr.text, next(download.children).attrs["href"][1:],
+        for row in  b.find_all("table")[0].find_all("tr")[1:]:
+            host_info = row.find_all("td")[0]         
+            host_info_text= host_info.getText(",")
+        
+            aux = host_info_text.split(",")
+            macaddr = aux[1]
+            hostname = aux[0]
+             
+            host_download = row.find_all("td")[2]
+             
+            host_links = []
+            for l in host_download.children:
+                if type(l) == bs4.element.Tag:
+                    host_links.append(l.attrs["href"][1:])    
+                next(host_download.children)
+             
+            self.fog_machines[hostname] = (
+                    macaddr, host_links[1],
             )
 
         # Check whether all our machines are available on FOG.
@@ -226,7 +266,7 @@ class Physical(Machinery):
         """Queues a task with FOG to deploy the given machine after reboot."""
         if hostname in self.fog_machines:
             macaddr, download = self.fog_machines[hostname]
-            self.fog_query(download)
+            return self.fog_query(download)
 
     def wake_on_lan(self, hostname):
         """Start a machine that's currently shutdown."""
