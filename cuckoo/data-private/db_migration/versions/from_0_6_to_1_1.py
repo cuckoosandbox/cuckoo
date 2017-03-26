@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -16,7 +16,6 @@ revision = "5aa718cc79e1"
 mongo_revision = "1"
 down_revision = None
 
-import pymongo
 import sqlalchemy as sa
 import sys
 
@@ -24,8 +23,9 @@ from alembic import op
 from datetime import datetime
 from dateutil.parser import parse
 
-from cuckoo.core.database import Task
 from cuckoo.common.config import config
+from cuckoo.common.mongo import mongo
+from cuckoo.core.database import Task
 
 old_enum = (
     "pending", "processing", "failure", "success",
@@ -229,24 +229,16 @@ def upgrade():
 
 def mongo_upgrade():
     """Migrate mongodb schema and data."""
-    if config("reporting:mongodb:enabled"):
-        host = config("reporting:mongodb:host")
-        port = config("reporting:mongodb:port")
-        database = config("reporting:mongodb:db")
+    if mongo.init():
         print "Starting MongoDB migration."
-
-        try:
-            db = pymongo.MongoClient(host, port)[database]
-        except pymongo.errors.ConnectionFailure:
-            print "Cannot connect to MongoDB"
-            sys.exit()
+        mongo.connect()
 
         # Check for schema version and create it.
-        if "cuckoo_schema" in db.collection_names():
+        if "cuckoo_schema" in mongo.db.collection_names():
             print "Mongo schema version not expected"
             sys.exit()
         else:
-            db.cuckoo_schema.save({"version": mongo_revision})
+            mongo.db.cuckoo_schema.save({"version": mongo_revision})
     else:
         print "Mongo reporting module not enabled, skipping mongo migration."
 
