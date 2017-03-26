@@ -7,8 +7,7 @@ import argparse
 import grp
 import json
 import logging
-import os.path
-import re
+import os
 import socket
 import stat
 import subprocess
@@ -42,13 +41,25 @@ def rt_available(rt_table):
 
 def vpn_status():
     """Gets current VPN status."""
-    ret = {}
-    for line in run(settings.service, "openvpn", "status")[0].split("\n"):
-        x = re.search("'(?P<vpn>\\w+)'\\ is\\ (?P<running>not)?", line)
-        if x:
-            ret[x.group("vpn")] = x.group("running") != "not"
+    def is_running(vpn):
+        running = False
+        run_path = "/var/run/openvpn/"
+        pid_path = os.path.join(run_path, "{0}.pid".format(vpn))
+        status_path = os.path.join(run_path, "{0}.status".format(vpn))
 
-    return ret
+        if os.path.exists(pid_path) and os.path.exists(status_path):
+            running = os.path.getsize(status_path) > 0
+
+        return running
+
+    config_path = "/etc/openvpn/"
+    vpns = {}
+    for filename in os.listdir(config_path):
+        if os.path.isfile(os.path.join(config_path, filename)) and filename.endswith(".conf"):
+            vpn = filename.split(".conf")[0]
+            vpns[vpn] = is_running(vpn)
+
+    return vpns
 
 def vpn_enable(name):
     """Start a VPN."""

@@ -14,12 +14,15 @@ from lib.cuckoo.common.exceptions import CuckooOperationalError
 
 log = logging.getLogger(__name__)
 
+
 class Sniffer(Auxiliary):
     def __init__(self):
         Auxiliary.__init__(self)
         self.proc = None
 
     def start(self):
+        # Get updated machine info
+        self.machine = self.db.view_machine_by_label(self.machine.label)
         if not self.machine.interface:
             log.error("Network interface not defined, network capture aborted")
             return
