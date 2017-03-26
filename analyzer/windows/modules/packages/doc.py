@@ -48,6 +48,79 @@ class DOC(Package):
         ],
         [
             HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\Common\\Security",
+            {
+                "UFIControls": 1,
+                "DisableAllActiveX": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Word\\Security",
+            {
+                "VBAWarnings": 1,
+                "AccessVBOM": 1,
+                "ExtensionHardening": 0,
+            },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\General",
+           {
+               "ShownFirstRunOptin": 1,
+               "FirstRunTime": "0175d569",
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\Internet",
+           {
+                "UseOnlineContent": 1,
+                "IDN_AlertOff": 1,
+                "UseOnlineAppDetect": 0,
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Word\\Security\\FileBlock",
+           {
+                "Word95Files": 0,
+                "Word60Files": 0,
+                "Word2Files": 0,
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Word\\Security\\ProtectedView",
+           {
+                "DisableInternetFilesInPV": 0,
+                "DisableAttachmentsInPV": 0,
+                "DisableUnsafeLocationsInPV": 0,
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Word\\Security\\Trusted Locations",
+           {
+                "AllowNetworkLocations": 1,
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\Research\\Options",
+           {
+                "DiscoveryNeedOptIn": 0,
+           },
+        ],
+        [
+           HKEY_CURRENT_USER,
+           "Software\\Microsoft\\Office\\14.0\\Common\\Security\\FileValidation",
+           {
+                "DisableReporting": 1,
+           },
+        ],
+        [
+            HKEY_CURRENT_USER,
             "Software\\Microsoft\\Office\\16.0\\Word\\Security",
             {
                 # Enable VBA macros in Office 2016.

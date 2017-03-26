@@ -23,6 +23,14 @@ class XLS(Package):
     REGKEYS = [
         [
             HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\Common\\Security",
+            {
+                "UFIControls": 1,
+                "DisableAllActiveX": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
             "Software\\Microsoft\\Office\\12.0\\Common\\General",
             {
                 # "Welcome to the 2007 Microsoft Office system"
@@ -42,6 +50,78 @@ class XLS(Package):
                 # is not corrupted and is from trusted source before opening
                 # the file. Do you want to open the file now?"
                 "ExtensionHardening": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Excel\\Security",
+            {
+                "VBAWarnings": 1,
+                "AccessVBOM": 1,
+                "ExtensionHardening": 0,
+                "EnableDEP": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Common\\General",
+            {
+                "ShownFirstRunOptin": 1,
+                "FirstRunTime": "0175d569",
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Common\\Internet",
+            {
+                "UseOnlineContent": 1,
+                "IDN_AlertOff": 1,
+                "UseOnlineAppDetect": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Excel\\Security\\FileBlock",
+            {
+                "XL4Workbooks": 0,
+                "XL4Worksheets": 0,
+                "XL3Worksheets": 0,
+                "XL2Worksheets": 0,
+                "XL4Macros": 0,
+                "XL3Macros": 0,
+                "XL2Macros": 0,
+                "OpenInProtectedView": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Excel\\Security\\ProtectedView",
+            {
+                "DisableInternetFilesInPV": 0,
+                "DisableAttachmentsInPV": 0,
+                "DisableUnsafeLocationsInPV": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Excel\\Security\\Trusted Locations",
+            {
+                "AllowNetworkLocations": 1,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Common\\Research\\Options",
+            {
+                "DiscoveryNeedOptIn": 0,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\14.0\\Common\\Security\\FileValidation",
+            {
+                "DisableReporting": 1,
+                "EnableOnLoad": 0,
             },
         ],
     ]

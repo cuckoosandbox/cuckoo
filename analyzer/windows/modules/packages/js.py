@@ -6,6 +6,7 @@
 import logging
 import os
 
+from _winreg import HKEY_CURRENT_USER
 from lib.common.abstracts import Package
 
 log = logging.getLogger(__name__)
@@ -14,6 +15,16 @@ class Javascript(Package):
     """Javascript analysis package."""
     PATHS = [
         ("System32", "wscript.exe"),
+    ]
+
+    REGKEYS = [
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\0",
+            {
+                "1201": 0,
+            },
+        ],
     ]
 
     def start(self, path):
