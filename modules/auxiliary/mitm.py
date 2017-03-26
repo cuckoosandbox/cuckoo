@@ -25,6 +25,7 @@ class MITM(Auxiliary):
         port_base = int(self.options.get("port_base", 50000))
         script = self.options.get("script", "data/mitm.py")
         certificate = self.options.get("certificate", "bin/cert.p12")
+        public_certificate = self.options.get("public_cert", "bin/cert.pem")
 
         outpath = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "dump.mitm")
@@ -42,6 +43,13 @@ class MITM(Auxiliary):
         cert_path = os.path.join("analyzer", "windows", certificate)
         if not os.path.exists(cert_path):
             log.error("Mitmdump root certificate not found at path \"%s\" "
+                      "(real path \"%s\"), man in the middle interception "
+                      "aborted.", certificate, cert_path)
+            return
+
+        cert_path = os.path.join("analyzer", "windows", public_certificate)
+        if not os.path.exists(cert_path):
+            log.error("Mitmdump public certificate not found at path \"%s\" "
                       "(real path \"%s\"), man in the middle interception "
                       "aborted.", certificate, cert_path)
             return
@@ -70,9 +78,17 @@ class MITM(Auxiliary):
         mitmerr = os.path.join(CUCKOO_ROOT, "storage", "analyses",
                                "%d" % self.task.id, "mitm.err")
 
+        # Store the TLS master secrets for TLS decryption with Wireshark
+        tls_secrets_path = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                                 "%d" % self.task.id, "mitm_tls_secrets.log")
+
         self.proc = subprocess.Popen(args,
                                      stdout=open(mitmlog, "wb"),
-                                     stderr=open(mitmerr, "wb"))
+                                     stderr=open(mitmerr, "wb"),
+                                     env={
+                                        "MITMPROXY_SSLKEYLOGFILE":
+                                        tls_secrets_path
+                                    })
 
         if "cert" in self.task.options:
             log.warning("A root certificate has been provided for this task, "
@@ -92,6 +108,11 @@ class MITM(Auxiliary):
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)
+
+        # Inform the AVD machinery about MITM being active to install cert.
+        self.task.options["mitmdump_certificate"] = \
+            os.path.join("analyzer", "windows", public_certificate)
+
 
     def stop(self):
         if self.proc and not self.proc.poll():

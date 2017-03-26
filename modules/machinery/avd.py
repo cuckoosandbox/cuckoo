@@ -12,6 +12,7 @@ import shutil
 import shlex
 
 from lib.cuckoo.common.abstracts import Machinery
+from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooCriticalError
 from lib.cuckoo.core.resultserver import ResultServer
 
@@ -76,6 +77,10 @@ class Avd(Machinery):
         self.start_emulator(label, task)
         self.port_forward(label)
         self.start_agent(label)
+        # If mitmdump is active, install its certificate
+        mitmdump_certificate = task.options.get('mitmdump_certificate')
+        if mitmdump_certificate:
+            self.install_certificate(label, task, mitmdump_certificate)
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -292,8 +297,47 @@ class Avd(Machinery):
             "shell", "/data/local/agent.sh",
         ]
         OSCommand.executeAsyncCommand(cmd)
-        # Sleep 10 seconds to allow the agent to startup properly
-        time.sleep(10)
+
+    def install_certificate(self, label, task, mitmdump_certificate):
+        """ Copy the CA certificate for mitmdump to the AVD """
+        # Determine the hash of the certificate
+        file_name = OSCommand.executeCommand(
+            'openssl x509 -inform PEM -subject_hash_old'
+            ' -in %s' % mitmdump_certificate).split('\n', 1)[0]
+        # Write the certificate in the format that Android uses
+        cert_file_name = os.path.join(CUCKOO_ROOT, "storage", "analyses",
+                               "%d" % task.id, '%s.0' % file_name)
+        with open(cert_file_name, 'wb') as cert_file:
+            with open(mitmdump_certificate, 'rb') as c:
+                cert_file.write(c.read())
+            fingerprint = OSCommand.executeCommand('openssl x509 -in %s'
+                ' -text -fingerprint -noout' % mitmdump_certificate)
+            cert_file.write(fingerprint)
+        # Remount /system as writable and push the certifcate to the AVD
+        cmd = [
+            self.options.avd.adb_path,
+            'shell', 'mount', '-o', 'remount,rw', '/system',
+        ]
+        OSCommand.executeCommand(cmd)
+        cmd = [
+            self.options.avd.adb_path,
+            'push', cert_file_name, '/system/etc/security/cacerts/'
+        ]
+        # Set permissions and make /system readonly again
+        OSCommand.executeCommand(cmd)
+        cmd = [
+            self.options.avd.adb_path,
+            'shell', 'chmod', '644',
+            '/system/etc/security/cacerts/%s' % cert_file_name
+        ]
+        OSCommand.executeCommand(cmd)
+        cmd = [
+            self.options.avd.adb_path,
+            'shell', 'mount', '-o', 'remount,ro', '/system',
+        ]
+        OSCommand.executeCommand(cmd)
+        # Delete the certifcate from the buffer
+        os.remove(cert_file_name)
 
     def check_adb_recognize_emulator(self, label):
         """Checks that ADB recognizes the emulator. Returns True if device is
