@@ -15,6 +15,28 @@
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3 class="panel-title">Process {{process.process_name}} ({{process.pid}})</h3></div>
                         <ul class="list-group">
+                        {% if process.summary.file_created %}
+                            <li class="list-group-item">
+                                <p><b>Created files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_created %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_recreated %}
+                            <li class="list-group-item">
+                                <p><b>Overwritten & Superseded files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_recreated %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
                         {% if process.summary.file_opened %}
                             <li class="list-group-item">
                                 <p><b>Opened files</b></p>
@@ -42,6 +64,61 @@
                                 <p><b>Files Read</b></p>
                                 <ul>
                                 {% for entry in process.summary.file_read %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_deleted %}
+                            <li class="list-group-item">
+                                <p><b>Deleted files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_deleted %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_copied %}
+                            <li class="list-group-item">
+                                <p><b>Copied files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_copied %}
+                                <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_moved %}
+                            <li class="list-group-item">
+                                <p><b>Moved files</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_moved %}
+                                <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_failed %}
+                            <li class="list-group-item">
+                                <p><b>Failed file access</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_failed %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.file_exists %}
+                            <li class="list-group-item">
+                                <p><b>Files Attributes Read</b></p>
+                                <ul>
+                                {% for entry in process.summary.file_exists %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>
@@ -85,6 +162,17 @@
                                 <p><b>Registry keys read</b></p>
                                 <ul>
                                 {% for entry in process.summary.regkey_read %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.regkey_deleted %}
+                            <li class="list-group-item">
+                                <p><b>Registry keys deleted</b></p>
+                                <ul>
+                                {% for entry in process.summary.regkey_deleted %}
                                     <li>{{entry}}</li>
                                 {% endfor %}
                                 </ul>
@@ -154,6 +242,29 @@
                                 </ul>
                             </li>
                         {% endif %}
+
+                        {% if process.summary.directory_opened %}
+                            <li class="list-group-item">
+                                <p><b>Directories opened</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_opened %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        {% if process.summary.directory_failed %}
+                            <li class="list-group-item">
+                                <p><b>Directories failed access</b></p>
+                                <ul>
+                                {% for entry in process.summary.directory_failed %}
+                                    <li>{{entry}}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+
                         </ul>
                     </div>
                     {% endif %}
