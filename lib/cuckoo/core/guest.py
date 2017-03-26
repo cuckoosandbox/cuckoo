@@ -180,7 +180,7 @@ class OldGuestManager(object):
             self.upload_analyzer(monitor)
 
             # Give the analysis options to the guest, so it can generate the
-            # analysis.conf inside the guest.
+            # analysis.json inside the guest.
             try:
                 self.server.add_config(options)
             except:
@@ -343,21 +343,23 @@ class GuestManager(object):
         self.post("/extract", files={"zipfile": zip_data}, data=data)
 
     def add_config(self, options):
-        """Upload the analysis.conf for this task to the Virtual Machine."""
-        config = [
-            "[analysis]",
-        ]
+        """Upload the analysis.json for this task to the Virtual Machine."""
+        config = {"analysis" : {}}
         for key, value in options.items():
-            # Encode datetime objects the way xmlrpc encodes them.
-            if isinstance(value, datetime.datetime):
-                config.append("%s = %s" % (key, value.strftime("%Y%m%dT%H:%M:%S")))
+            # Json can only serialize these types
+            if type(value) in [dict, list, str, int, float, bool]:
+                config["analysis"][key] = value
             else:
-                config.append("%s = %s" % (key, value))
+                try:
+                    value = value.__str__()
+                except AttributeError:
+                    value = ""
+                config["analysis"][key] = value
 
         data = {
-            "filepath": os.path.join(self.analyzer_path, "analysis.conf"),
+            "filepath": os.path.join(self.analyzer_path, "analysis.json"),
         }
-        self.post("/store", files={"file": "\n".join(config)}, data=data)
+        self.post("/store", files={"file": json.dumps(config)}, data=data)
 
     def start_analysis(self, options, monitor):
         """Start the analysis by uploading all required files.
@@ -431,7 +433,7 @@ class GuestManager(object):
         # Upload the analyzer.
         self.upload_analyzer(monitor)
 
-        # Pass along the analysis.conf file.
+        # Pass along the analysis.json file.
         self.add_config(options)
 
         # Allow Auxiliary modules to prepare the Guest.

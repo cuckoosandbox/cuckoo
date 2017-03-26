@@ -19,7 +19,7 @@ class STAP(Auxiliary):
     priority = -10 # low prio to wrap tightly around the analysis
 
     def __init__(self):
-        self.config = Config(cfg="analysis.conf")
+        self.config = Config(cfg="analysis.json")
         self.fallback_strace = False
 
     def start(self):

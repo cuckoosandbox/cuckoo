@@ -186,7 +186,7 @@ if __name__ == "__main__":
     error = ""
 
     try:
-        config = Config(cfg="analysis.conf")
+        config = Config(cfg="analysis.json")
         cuckoo = CuckooHost(config.ip, config.port)
         analyzer = Macalyzer(cuckoo, config)
         success = analyzer.run()

@@ -16,7 +16,7 @@ class LKM(Auxiliary):
     """helper LKM for sleep skipping etc"""
 
     def __init__(self):
-        self.config = Config(cfg="analysis.conf")
+        self.config = Config(cfg="analysis.json")
         self.pids_reported = set()
 
     def start(self):

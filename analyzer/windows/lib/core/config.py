@@ -3,33 +3,23 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import json
 import ConfigParser
 
 class Config:
     def __init__(self, cfg):
         """@param cfg: configuration file."""
-        config = ConfigParser.ConfigParser(allow_no_value=True)
-        config.read(cfg)
-
-        for section in config.sections():
-            for name, raw_value in config.items(section):
-                if name == "file_name":
-                    value = config.get(section, name).decode("utf8")
-                elif name == "options":
-                    value = self.parse_options(config.get(section, name))
-                else:
+        config = json.load(open(cfg))
+        for section in config:
+            for name in config[section]:
+                value = config[section][name]
+                # Options can be UTF encoded.
+                if isinstance(value, basestring):
                     try:
-                        value = config.getboolean(section, name)
-                    except ValueError:
-                        try:
-                            value = config.getint(section, name)
-                        except ValueError:
-                            value = config.get(section, name)
+                        value = value.encode("utf-8")
+                    except UnicodeEncodeError:
+                        pass
                 setattr(self, name, value)
-
-        # Just make sure the options field is available.
-        if not hasattr(self, "options"):
-            self.options = {}
 
     def parse_options(self, options):
         """Get analysis options.
@@ -38,11 +28,15 @@ class Config:
         # The analysis package can be provided with some options in the
         # following format:
         #   option1=value1,option2=value2,option3=value3
-        ret = {}
-        for field in options.split(","):
-            if "=" not in field:
-                continue
+        # or in the JSON format
+        try:
+            return json.loads(options)
+        except ValueError:
+            ret = {}
+            for field in options.split(","):
+                if "=" not in field:
+                    continue
 
-            key, value = field.split("=", 1)
-            ret[key.strip()] = value.strip()
-        return ret
+                key, value = field.split("=", 1)
+                ret[key.strip()] = value.strip()
+            return ret

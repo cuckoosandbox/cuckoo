@@ -10,7 +10,7 @@ import random
 def _rand_string(a, b):
     return "".join(random.choice(string.ascii_lowercase) for x in xrange(random.randint(a, b)))
 
-ROOT = os.path.join("/data/local/tmp", _rand_string(6, 10))
+ROOT = os.path.join("/tmp", _rand_string(6, 10))
 
 PATHS = {
     "root"   : ROOT,
