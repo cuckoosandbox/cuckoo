@@ -278,9 +278,7 @@ class Task(Base):
     platform = Column(String(255), nullable=True)
     memory = Column(Boolean, nullable=False, default=False)
     enforce_timeout = Column(Boolean, nullable=False, default=False)
-    clock = Column(DateTime(timezone=False),
-                   default=datetime.now,
-                   nullable=False)
+    clock = Column(DateTime(timezone=False), nullable=True)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now,
                       nullable=False)

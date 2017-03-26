@@ -448,9 +448,10 @@ class Analyzer(object):
         Process.set_config(self.config)
 
         # Set virtual machine clock.
-        set_clock(datetime.datetime.strptime(
-            self.config.clock, "%Y%m%dT%H:%M:%S"
-        ))
+	if self.config.clock:
+		set_clock(datetime.datetime.strptime(
+		    self.config.clock, "%Y%m%dT%H:%M:%S"
+		))
 
         # Set the default DLL to be used for this analysis.
         self.default_dll = self.config.options.get("dll")

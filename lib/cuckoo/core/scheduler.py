@@ -208,8 +208,13 @@ class AnalysisManager(threading.Thread):
         options["package"] = self.task.package
         options["options"] = emit_options(self.task.options)
         options["enforce_timeout"] = self.task.enforce_timeout
-        options["clock"] = self.task.clock
+        
         options["terminate_processes"] = self.cfg.cuckoo.terminate_processes
+
+	if self.task.clock:	
+		options["clock"] = self.task.clock
+	else:
+		options["clock"]= False
 
         if not self.task.timeout:
             options["timeout"] = self.cfg.timeouts.default
