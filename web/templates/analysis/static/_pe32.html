@@ -59,6 +59,78 @@
                 </div>
             </div>
             <hr />
+        {% if analysis.static.signtool %}
+            <div>
+                <h4>Signtool.exe</h4>
+                <div id="signtool">
+                    <table class="table table-striped table-bordered">
+                        <colgroup>
+                            <col width="150" />
+                            <col width="*" />
+                        </colgroup>
+                        <tr>
+                            <th>SHA1</th>
+                            <th>Timestamp</th>
+                            <th>Verified</th>
+                        </tr>
+                        <tr>
+                            <td>{{analysis.static.signtool.sha1}}</td>
+                            <td>{{analysis.static.signtool.timestamp}}</td>
+                            {% if analysis.static.signtool.verified %}
+                            <td><span class="label label-success">Yes</span></td>
+                            {% else %}
+                            <td><span class="label label-danger">No</span></td>
+                            {% endif %}
+                        </tr>
+                    </table>
+                    <h5>Signature Chain</h5>
+                    {% for signature in analysis.static.signtool.signature_chain %}
+                    <table class="table table-striped table-bordered">
+                      <tr>
+                          <th>Issued To</th>
+                          <td>{{signature.issued_to}}</td>
+                      </tr>
+                      <tr>
+                          <th>Issued By</th>
+                          <td>{{signature.issued_by}}</td>
+                      </tr>
+                      <tr>
+                          <th>Expires</th>
+                          <td>{{signature.expires}}</td>
+                      </tr>
+                      <tr>
+                          <th>SHA1</th>
+                          <td>{{signature.sha1}}</td>
+                      </tr>
+                    </table>
+                    {% endfor %}
+                    <h5>Timestamp Chain</h5>
+                    {% for signature in analysis.static.signtool.timestamp_chain %}
+                    <table class="table table-striped table-bordered">
+                      <tr>
+                          <th>Issued To</th>
+                          <td>{{signature.issued_to}}</td>
+                      </tr>
+                      <tr>
+                          <th>Issued By</th>
+                          <td>{{signature.issued_by}}</td>
+                      </tr>
+                      <tr>
+                          <th>Expires</th>
+                          <td>{{signature.expires}}</td>
+                      </tr>
+                      <tr>
+                          <th>SHA1</th>
+                          <td>{{signature.sha1}}</td>
+                      </tr>
+                    </table>
+                    {% endfor %}
+                    <table class="table table-striped table-bordered">
+                        <th>Output</th>
+                        <td><pre>{{analysis.static.signtool.output}}</pre></td>
+                    </table>
+                </div>
+            </div>
         {% endif %}
         {% if analysis.static.pe_versioninfo %}
             <div>

@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import json
 import logging
 import os
 import re
@@ -65,15 +66,153 @@ from lib.cuckoo.misc import dispatch
 
 log = logging.getLogger(__name__)
 
+class SignTool(object):
+    def __init__(self, analysis_path):
+        """
+        A class for signtool.exe data and operations.  The attribute json_data
+        hold the json representation of the signtool output.
+
+        :param analysis_path: The path of the current analysis.
+        """
+        sig_path = os.path.join(analysis_path, "aux", "signtool.json")
+
+        self.signature_chain = list()
+        self.timestamp_chain = list()
+
+        self.json_data = {
+            "sha1": None,
+            "signature_chain": list(),
+            "timestamp": None,
+            "timestamp_chain": list(),
+            "verified": None,
+            "output": None
+        }
+
+        if not os.path.exists(sig_path):
+            self.json_data = None
+            return None
+
+        with open(sig_path,'r') as sigin:
+            sigtxt = sigin.read()
+
+        output = json.loads(sigtxt)
+
+        if output and "verified" in output.keys() and "output" in output.keys():
+            self.json_data["verified"] = output["verified"]
+            self.json_data["output"] = output["output"]
+            self._parse_signtool(self.json_data["output"])
+        else:
+            self.json_data = None
+            return None
+
+    def _parse_chains(self):
+        """
+        This function parses the stored chains into a JSON object.
+
+        :return: Nothing.
+        """
+        current_item = 0
+
+        while current_item < len(self.signature_chain):
+            current = dict()
+            current["issued_to"] = \
+                self.signature_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["issued_by"] = \
+                self.signature_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["expires"] = \
+                self.signature_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["sha1"] = \
+                self.signature_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            self.json_data["signature_chain"].append(current)
+
+        current_item = 0
+
+        while current_item < len(self.timestamp_chain):
+            current = dict()
+            current["issued_to"] = \
+                self.timestamp_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["issued_by"] = \
+                self.timestamp_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["expires"] = \
+                self.timestamp_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            current["sha1"] = \
+                self.timestamp_chain[current_item].split(":", 1)[1].strip()
+            current_item += 1
+            self.json_data["timestamp_chain"].append(current)
+
+    def _store_signature(self, datatype, line):
+        """
+        This function stores the data from signtool's output for later parsing.
+
+        :param datatype:  The type of chain to store.
+        :param line:  The line from the signtool output.
+        :return:  Nothing.
+        """
+        if line and line.strip() != "":
+            if datatype == "cert":
+                self.signature_chain.append(line.strip())
+            if datatype == "time":
+                self.timestamp_chain.append(line.strip())
+
+    def _parse_signtool(self, data):
+        """
+        This function parses the signtool output.
+
+        :param data:  The output data to parse.
+        :return:  Nothing.
+        """
+        current_parser = None
+
+        for line in self.json_data["output"].splitlines():
+            if (line.startswith("Hash of file (sha1)") or
+                    line.startswith("SHA1 hash of file")):
+                if not self.json_data["sha1"]:
+                    self.json_data["sha1"] = line.split(": ")[-1].lower()
+            if line.startswith("Signing Certificate Chain:"):
+                current_parser = "cert"
+                continue
+            if line.startswith("The signature is timestamped:"):
+                current_parser = None
+                if not self.json_data["timestamp"]:
+                    self.json_data["timestamp"] = line.split(": ")[-1]
+            if line.startswith("File is not timestamped."):
+                current_parser = None
+            if line.startswith("Timestamp Verified by:"):
+                current_parser = "time"
+                continue
+            if line.startswith("File has page hashes"):
+                current_parser = None
+            if line.startswith("Number of files"):
+                current_parser = None
+            if line.startswith("Successfully verified"):
+                current_parser = None
+            if line.strip() == "":
+                continue
+            if current_parser == "cert":
+                self._store_signature("cert", line)
+            if current_parser == "time":
+                self._store_signature("time", line)
+
+        self._parse_chains()
+
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
 
 class PortableExecutable(object):
     """PE analysis."""
 
-    def __init__(self, file_path):
-        """@param file_path: file path."""
+    def __init__(self, file_path, analysis_path):
+        """@param file_path: file path.
+        @param analysis_path: The path to the analysis."""
         self.file_path = file_path
+        self.analysis_path = analysis_path
         self.pe = None
 
     def _get_filetype(self, data):
@@ -322,6 +461,22 @@ class PortableExecutable(object):
 
         return ret
 
+    def _get_signature_verification(self):
+        """
+        Pulls the signature verification information for Authenticode.
+
+        :return: None if failure, otherwise a dict with the signtool output.
+        """
+        signtool = SignTool(self.analysis_path)
+
+        if signtool is None:
+            return None
+
+        if signtool.json_data is None:
+            return None
+
+        return signtool.json_data
+
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -345,8 +500,19 @@ class PortableExecutable(object):
         results["pe_timestamp"] = self._get_timestamp()
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
+
+        results["signtool"] = self._get_signature_verification()
+
+        # Get rid of any Windows returns in the output.
+        if (results["signtool"] is not None and
+                    results["signtool"]["output"] is not None):
+            results["signtool"]["output"] = results["signtool"]["output"]\
+                .replace('\r', '')
+
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
+
         return results
+
 
 class WindowsScriptFile(object):
     """Deobfuscates and interprets Windows Script Files."""
@@ -677,7 +843,8 @@ class Static(Processing):
 
         if ext == "exe" or "PE32" in File(self.file_path).get_type():
             if HAVE_PEFILE:
-                static.update(PortableExecutable(self.file_path).run())
+                static.update(PortableExecutable(self.file_path,
+                                                 self.analysis_path).run())
             static["keys"] = self._get_keys()
 
         if package == "wsf" or ext == "wsf":
