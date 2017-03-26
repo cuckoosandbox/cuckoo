@@ -174,6 +174,15 @@ class Agent(object):
         self.current_status = STATUS_RUNNING
         return self.analyzer_pid
 
+    def restart(self):
+        """ Restart the machine (for physical machine analysis). 
+        """
+        try:
+            subprocess.call(["shutdown","-r"])
+            return True
+        except: 
+            return False
+        
     def complete(self, success=True, error="", results=""):
         """Complete analysis.
         @param success: success status.
