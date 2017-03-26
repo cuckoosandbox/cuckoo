@@ -19,7 +19,7 @@ class Apk(Package):
 
     def start(self, path):
         install_sample(path)
-        execute_sample(self.package, self.activity)
+        execute_sample(self.package)
 
     def check(self):
         return True
