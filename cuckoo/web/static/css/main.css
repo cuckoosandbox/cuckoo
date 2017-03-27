@@ -3100,17 +3100,17 @@ html {
 }
 
 body {
-  padding-top: 80px;
+  padding-top: 50px;
   -webkit-font-smoothing: antialiased;
 }
 
 /* note to self: this is very hacky and I need to pick this up later */
 body[id^="analysis"] {
-  padding-top: 80px;
+  padding-top: 50px;
 }
 
 body[id^="submission/"] {
-  padding-top: 80px;
+  padding-top: 50px;
 }
 
 body[id="submission/pre"] footer:not(.flex-grid__footer),
@@ -3328,7 +3328,7 @@ body.night .dns-badge > *.dns-badge__type {
   position: fixed;
   display: flex;
   width: 100%;
-  height: 80px;
+  height: 50px;
   top: 0;
   z-index: 5;
   padding: 0 30px;
@@ -3336,11 +3336,11 @@ body.night .dns-badge > *.dns-badge__type {
   border-bottom: 2px solid #DFE7EE;
 }
 .app-nav .logo {
-  padding: 15px 0 12px 0;
+  padding: 7px 0 12px 0;
   margin-right: 20px;
 }
 .app-nav .logo > img {
-  width: 164px;
+  width: 110px;
 }
 .app-nav a:hover,
 .app-nav a:focus,

@@ -15,13 +15,13 @@
 // general css on the body and the html
 html { background: #1c1c1c; }
 body { 
-	padding-top: 80px;
+	padding-top: 50px;
 	-webkit-font-smoothing: antialiased;
 }
 
 /* note to self: this is very hacky and I need to pick this up later */
-body[id^="analysis"] { padding-top: 80px; }
-body[id^="submission/"] { padding-top: 80px; }
+body[id^="analysis"] { padding-top: 50px; }
+body[id^="submission/"] { padding-top: 50px; }
 body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],

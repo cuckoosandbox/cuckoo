@@ -4,7 +4,7 @@
 	position: fixed;
 	display: flex;
 	width: 100%;
-	height: 80px;
+	height: 50px;
 	top: 0;
 	z-index: 5;
 
@@ -13,9 +13,9 @@
 	border-bottom: 2px solid #DFE7EE;
 
 	.logo {
-		padding: 15px 0 12px 0;
+		padding: 7px 0 12px 0;
 		margin-right: 20px;
-		& > img { width: 164px; }
+		& > img { width: 110px; }
 	}
 
 	a:hover,
