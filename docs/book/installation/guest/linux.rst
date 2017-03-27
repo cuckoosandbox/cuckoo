@@ -3,7 +3,7 @@ Installing the Linux guest
 ==========================
 
 Install dependencies on host::
-    $ sudo apt-get install uml-utilities
+    $ sudo apt-get install uml-utilities bridge-utils
 
 Preconfigure network tap interfaces on host, required to avoid have to start as root::
     Get list of virtual machines to configure interface per vm from conf/qemu.conf
