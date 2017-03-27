@@ -381,7 +381,12 @@ class GuestManager(object):
 
         # Check whether this is the new Agent or the old one (by looking at
         # the status code of the index page).
-        r = self.get("/")
+        try:
+            r = self.get("/", timeout=60)
+        except socket.timeout:
+            self.is_old = True
+            self.old.start_analysis(options, monitor)
+            return
         if r.status_code == 501:
             # log.info("Cuckoo 2.0 features a new Agent which is more "
             #          "feature-rich. It is recommended to make new Virtual "
