@@ -42,7 +42,23 @@ class Uploader {
     constructor(options) {
 
         let _self = this;
-        this.options = $.extend(DEFAULT_UPLOADER_CONFIG, options);
+        
+        this.options = $.extend({
+
+            target: null,
+            endpoint: null,
+            template: null,
+            ajax: true,
+            templateData: {},
+            dragstart: function() {},
+            dragend: function() {},
+            drop: function() {},
+            error: function() {},
+            success: function() {},
+            progress: function() {},
+            change: function() {}
+
+        }, options);
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
@@ -124,6 +140,7 @@ class Uploader {
         _self._selectors["holder"] = holder;
         _self._selectors["progress"] = document.querySelector(_self._selectors["target"])
                                                .querySelector("progress#uploadprogress");
+
         _self._selectors["upload"] = holder.querySelector("upload");
         _self._selectors["form"] = holder.querySelector("form#uploader");
 
@@ -156,7 +173,11 @@ class Uploader {
 
         // listen for changes on the input tag. If a user choose a file manually; fire the
         // form submit programmatically
+
         _self._selectors["holder"].querySelector('input[type="file"]').addEventListener("change", function(e){
+
+            console.log(_self);
+            return;
 
             if(_self.options.ajax) {
 
@@ -166,7 +187,9 @@ class Uploader {
                 _self._change_callback(_self, holder);
 
             } else {
-                _self._selectors["form"].submit();
+
+                $(_self._selectors["form"]).submit();
+
             }
             
         });
@@ -174,12 +197,12 @@ class Uploader {
         // do our own thing when the form is submitted
         _self._selectors["form"].addEventListener('submit', function(e){
 
+            e.preventDefault();
+
             if(_self.options.ajax) {
                 e.preventDefault();
                 this._process_files();
             }
-
-            // just submit the file.
 
         }.bind(this));
 
@@ -230,16 +253,20 @@ class Uploader {
 
                     if(e.dataTransfer.files) {
                         _self._selectors["holder"].querySelector('input[type="file"]').files = e.dataTransfer.files;
-                        _self._selectors["form"].submit();
                     }
 
                 }
 
             };
         } else {
+
             this._selectors["upload"].className = "hidden";
             this._selectors["upload"].querySelector("input").onchange = function(){
-                _self._process_files(this.files);
+
+                if(_self.options.ajax) {
+                    _self._process_files(this.files);
+                }
+
             };
         }
 

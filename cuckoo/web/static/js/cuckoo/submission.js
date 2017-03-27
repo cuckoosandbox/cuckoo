@@ -192,7 +192,23 @@ var Uploader = function () {
         _classCallCheck(this, Uploader);
 
         var _self = this;
-        this.options = $.extend(DEFAULT_UPLOADER_CONFIG, options);
+
+        this.options = $.extend({
+
+            target: null,
+            endpoint: null,
+            template: null,
+            ajax: true,
+            templateData: {},
+            dragstart: function dragstart() {},
+            dragend: function dragend() {},
+            drop: function drop() {},
+            error: function error() {},
+            success: function success() {},
+            progress: function progress() {},
+            change: function change() {}
+
+        }, options);
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
@@ -260,6 +276,7 @@ var Uploader = function () {
             // _self._selectors to avoid global namespace pollution.
             _self._selectors["holder"] = holder;
             _self._selectors["progress"] = document.querySelector(_self._selectors["target"]).querySelector("progress#uploadprogress");
+
             _self._selectors["upload"] = holder.querySelector("upload");
             _self._selectors["form"] = holder.querySelector("form#uploader");
 
@@ -291,7 +308,11 @@ var Uploader = function () {
 
             // listen for changes on the input tag. If a user choose a file manually; fire the
             // form submit programmatically
+
             _self._selectors["holder"].querySelector('input[type="file"]').addEventListener("change", function (e) {
+
+                console.log(_self);
+                return;
 
                 if (_self.options.ajax) {
 
@@ -300,19 +321,20 @@ var Uploader = function () {
                     _self._selectors["form"].dispatchEvent(event);
                     _self._change_callback(_self, holder);
                 } else {
-                    _self._selectors["form"].submit();
+
+                    $(_self._selectors["form"]).submit();
                 }
             });
 
             // do our own thing when the form is submitted
             _self._selectors["form"].addEventListener('submit', function (e) {
 
+                e.preventDefault();
+
                 if (_self.options.ajax) {
                     e.preventDefault();
                     this._process_files();
                 }
-
-                // just submit the file.
             }.bind(this));
 
             // test for drag&drop
@@ -360,14 +382,17 @@ var Uploader = function () {
 
                         if (e.dataTransfer.files) {
                             _self._selectors["holder"].querySelector('input[type="file"]').files = e.dataTransfer.files;
-                            _self._selectors["form"].submit();
                         }
                     }
                 };
             } else {
+
                 this._selectors["upload"].className = "hidden";
                 this._selectors["upload"].querySelector("input").onchange = function () {
-                    _self._process_files(this.files);
+
+                    if (_self.options.ajax) {
+                        _self._process_files(this.files);
+                    }
                 };
             }
 

@@ -253,11 +253,12 @@ $(function() {
         // submit uploader
         var submit_uploader = new DnDUpload.Uploader({
             target: 'div#dashboard-submit',
-            endpoint: '/submit/api/presubmit',
+            endpoint: '/submit/api/presubmit/',
             template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+            ajax: true,
             templateData: {
                 title: 'Submit a file for Analysis',
-                html: `<i class="fa fa-upload"></i>`
+                html: `<i class="fa fa-upload"></i>\n${$("#analysis_token").html()}`
             },
             dragstart: function(uploader, holder) {
                 $(holder).removeClass('dropped');
@@ -270,6 +271,7 @@ $(function() {
                 $(holder).addClass('dropped');
             },
             success: function(data, holder) {
+
                 setTimeout(function() {
                     window.location.href = data.responseURL;
                 }, 1000);
