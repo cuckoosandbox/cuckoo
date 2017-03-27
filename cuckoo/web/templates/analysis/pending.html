@@ -2,50 +2,99 @@
 {% load staticfiles %}
 {% block content %}
 
-    <div class="flex-grid">
-        <header class="flex-grid__header">
-            <div class="container">
-                <h3><i class="fa fa-clock-o"></i> Pending tasks</h3>
-            </div>
-        </header>
-        <section class="flex-grid__body background-grey">
-            <!-- table comes here -->
-            <div class="container">
-                
-                <table class="cuckoo-table">
-
-                    <thead>
-                        <tr>
-                            <th>Task ID</th>
-                            <th>Sample ID</th>
-                            <th>Date</th>
-                            <th>Filename / URL</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {% for task in tasks %}
-
-                            <tr>
-                                <td>{{ task.id }}</td>
-                                <td>{{ task.sample_id }}</td>
-                                <td>{{ task.added_on }}</td>
-                                <td>{{ task.target }}</td>
-                                <td>{{ task.category }}</td>
-                                <td>{{ task.status }}</td>
-                            </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-        </section>
+<header class="flex-grid__header">
+    <div class="container">
+        <h3><i class="fa fa-clock-o"></i> Pending tasks</h3>
     </div>
+</header>
+
+<div class="container">
+    
+    <table class="cuckoo-table" id="pending-table">
+
+        <thead>
+
+            <tr class="table-display-config">
+                <th colspan="6">
+
+                    <ul class="pagination">
+                        <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                        <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                        <li><a href="#">1</a></li>
+                        <li><a href="#">2</a></li>
+                        <li><a href="#">3</a></li>
+                        <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                        <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                    </ul>
+
+                    <div class="results-per-page">
+                        <label for="rpp">Results per page:</label>
+                        <input type="text" name="rpp" />
+                        <i class="fa fa-caret-right"></i>
+                        <button data-action="update-rpp">show</button>
+                        <p>or</p>
+                        <button data-action="rpp-all">show all</button>
+                    </div>
+
+                </th>
+            </tr>
+
+            <tr>
+                <th>Task ID</th>
+                <th>Sample ID</th>
+                <th>Date</th>
+                <th>Filename / URL</th>
+                <th>Category</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for task in tasks %}
+
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td>{{ task.sample_id }}</td>
+                    <td>{{ task.added_on }}</td>
+                    <td>{{ task.target }}</td>
+                    <td>{{ task.category }}</td>
+                    <td>{{ task.status }}</td>
+                </tr>
+
+            {% endfor %}
+
+            <tr>
+                <td>Task ID</td>
+                <td>Sample ID</td>
+                <td>Date</td>
+                <td>Filename / URL</td>
+                <td>Category</td>
+                <td>Status</td>
+            </tr>
+
+            <tr>
+                <td>Task ID</td>
+                <td>Sample ID</td>
+                <td>Date</td>
+                <td>Filename / URL</td>
+                <td>Category</td>
+                <td>Status</td>
+            </tr>
+
+            <tr>
+                <td>Task ID</td>
+                <td>Sample ID</td>
+                <td>Date</td>
+                <td>Filename / URL</td>
+                <td>Category</td>
+                <td>Status</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
 
 {% endblock %}
