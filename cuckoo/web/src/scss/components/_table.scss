@@ -106,7 +106,7 @@
 		align-items: center;
 		list-style: none;
 		padding: 0;
-		margin: 0;
+		margin: 3px 0 0 0;
 
 		& > li { 
 			border: 1px solid #ddd; 
@@ -218,6 +218,35 @@
 		tfoot {
 			border-color: $night_border_color;
 		}
+
+		.table-display-config {
+			background-color: #152d3b;
+		}
+
+		.table-display-config > th,
+		.table-display-config > td {
+			border-color: lighten($night_border_color, 10);
+
+			input {
+				border: 1px solid darken($night_border_color, 10);
+				background-color: lighten($night_primary_color, 5);
+			}
+		}
+
+		.pagination {
+
+			& > li {
+				border-color: lighten($night_border_color, 0);
+
+				& > a {
+					background-color: $night_primary_color;
+					border: 0;
+					color: $night_text_color;
+				}
+			}
+
+		}
+
 	}
 
 	&#submission-task-table {

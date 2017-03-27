@@ -5092,7 +5092,7 @@ table.cuckoo-table .pagination, .network-display__table > table .pagination {
   align-items: center;
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 3px 0 0 0;
 }
 table.cuckoo-table .pagination > li, .network-display__table > table .pagination > li {
   border: 1px solid #ddd;
@@ -5181,6 +5181,28 @@ body.night table.cuckoo-table tbody tr, body.night .network-display__table > tab
 body.night table.cuckoo-table tfoot,
 body.night .network-display__table > table tfoot {
   border-color: #375a7f;
+}
+body.night table.cuckoo-table .table-display-config, body.night .network-display__table > table .table-display-config {
+  background-color: #152d3b;
+}
+body.night table.cuckoo-table .table-display-config > th, body.night .network-display__table > table .table-display-config > th,
+body.night table.cuckoo-table .table-display-config > td,
+body.night .network-display__table > table .table-display-config > td {
+  border-color: #4673a3;
+}
+body.night table.cuckoo-table .table-display-config > th input, body.night .network-display__table > table .table-display-config > th input,
+body.night table.cuckoo-table .table-display-config > td input,
+body.night .network-display__table > table .table-display-config > td input {
+  border: 1px solid #28415b;
+  background-color: #1c3b4e;
+}
+body.night table.cuckoo-table .pagination > li, body.night .network-display__table > table .pagination > li {
+  border-color: #375a7f;
+}
+body.night table.cuckoo-table .pagination > li > a, body.night .network-display__table > table .pagination > li > a {
+  background-color: #152d3b;
+  border: 0;
+  color: #d7d7d7;
 }
 table.cuckoo-table#submission-task-table .status, .network-display__table > table#submission-task-table .status {
   display: inline-block;
