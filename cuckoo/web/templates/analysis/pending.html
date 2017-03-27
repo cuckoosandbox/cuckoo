@@ -2,110 +2,104 @@
 {% load staticfiles %}
 {% block content %}
 
-<header class="flex-grid__header">
-    <div class="container">
-        <h3><i class="fa fa-clock-o"></i> Pending tasks</h3>
-    </div>
-</header>
-
-<div class="container">
+<!-- <header class="flex-grid__header">
+    <h3><i class="fa fa-clock-o"></i> Pending tasks</h3>
+</header> -->
     
-    <table class="cuckoo-table" id="pending-table">
+<table class="cuckoo-table__fullscreen" id="pending-table">
 
-        <thead>
+    <thead>
 
-            <!-- pagination -->
-            <tr class="table-display-config">
-                <th colspan="6">
+        <!-- pagination -->
+        <tr class="table-display-config">
+            <th colspan="6">
 
-                    <ul class="pagination">
-                        <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
-                        <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
-                        <li><a href="#">1</a></li>
-                        <li><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                        <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
-                        <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
-                    </ul>
+                <ul class="pagination">
+                    <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                    <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                    <li><a href="#">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                    <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                </ul>
 
-                    <div class="results-per-page">
-                        <label for="rpp">Results per page:</label>
-                        <input type="text" name="rpp" />
-                        <i class="fa fa-caret-right"></i>
-                        <button class="button" data-action="update-rpp">show</button>
-                        <p>or</p>
-                        <button class="button" data-action="rpp-all">show all</button>
-                    </div>
+                <div class="results-per-page">
+                    <label for="rpp">Results per page:</label>
+                    <input type="text" name="rpp" />
+                    <i class="fa fa-caret-right"></i>
+                    <button class="button" data-action="update-rpp">show</button>
+                    <p>or</p>
+                    <button class="button" data-action="rpp-all">show all</button>
+                </div>
 
-                </th>
-            </tr>
+            </th>
+        </tr>
 
-            <!-- table index -->
+        <!-- table index -->
+        <tr>
+            <th>Task ID</th>
+            <th>Sample ID</th>
+            <th>Date</th>
+            <th>Filename / URL</th>
+            <th>Category</th>
+            <th>Status</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <!-- table content -->
+        {% for task in tasks %}
             <tr>
-                <th>Task ID</th>
-                <th>Sample ID</th>
-                <th>Date</th>
-                <th>Filename / URL</th>
-                <th>Category</th>
-                <th>Status</th>
+                <td>{{ task.id }}</td>
+                <td>{{ task.sample_id }}</td>
+                <td>{{ task.added_on }}</td>
+                <td>{{ task.target }}</td>
+                <td>{{ task.category }}</td>
+                <td>{{ task.status }}</td>
             </tr>
+        {% endfor %}
 
-        </thead>
+    </tbody>
 
-        <tbody>
+    <tfoot>
+        <!-- pagination -->
+        <tr class="table-display-config">
+            <th colspan="6">
 
-            <!-- table content -->
-            {% for task in tasks %}
-                <tr>
-                    <td>{{ task.id }}</td>
-                    <td>{{ task.sample_id }}</td>
-                    <td>{{ task.added_on }}</td>
-                    <td>{{ task.target }}</td>
-                    <td>{{ task.category }}</td>
-                    <td>{{ task.status }}</td>
-                </tr>
-            {% endfor %}
+                <ul class="pagination">
+                    <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                    <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                    <li><a href="#">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                    <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                </ul>
 
-        </tbody>
+                <div class="results-per-page">
+                    <label for="rpp">Results per page:</label>
+                    <input type="text" name="rpp" />
+                    <i class="fa fa-caret-right"></i>
+                    <button data-action="update-rpp" class="button">show</button>
+                    <p>or</p>
+                    <button data-action="rpp-all" class="button">show all</button>
+                </div>
 
-        <tfoot>
-            <!-- pagination -->
-            <tr class="table-display-config">
-                <th colspan="6">
+            </th>
+        </tr>
 
-                    <ul class="pagination">
-                        <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
-                        <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
-                        <li><a href="#">1</a></li>
-                        <li><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                        <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
-                        <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
-                    </ul>
+        <!-- request status -->
+        <tr>
+            <td colspan="6" align="center">
+                <p class="ajax-status">Loading task info...</p>
+            </td>
+        </tr>
 
-                    <div class="results-per-page">
-                        <label for="rpp">Results per page:</label>
-                        <input type="text" name="rpp" />
-                        <i class="fa fa-caret-right"></i>
-                        <button data-action="update-rpp" class="button">show</button>
-                        <p>or</p>
-                        <button data-action="rpp-all" class="button">show all</button>
-                    </div>
+    </tfoot>
 
-                </th>
-            </tr>
-
-            <!-- request status -->
-            <tr>
-                <td colspan="6" align="center">
-                    <p class="ajax-status">Loading task info...</p>
-                </td>
-            </tr>
-
-        </tfoot>
-
-    </table>
-
-</div>
+</table>
 
 {% endblock %}

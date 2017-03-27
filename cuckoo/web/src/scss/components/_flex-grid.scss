@@ -79,6 +79,10 @@
 			border-bottom: 1px solid #071D25;
 		}
 
+		@include cuckoo-theme('night') {
+			border-bottom: 1px solid #5E5A62;
+		}
+
 	}
 
 	&__body {

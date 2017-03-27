@@ -201,6 +201,42 @@
 
 	}
 
+	&__fullscreen {
+
+		@extend .cuckoo-table;
+		font-size: 14px;
+
+		thead {
+			& > tr:first-child th {
+				border-top: 0;
+			}
+		}
+
+		tbody {
+
+			td {
+				padding: 15px;
+			}
+
+		}
+
+		.pagination {
+
+			a {
+				padding: 8px 10px;
+			}
+
+			.first a,
+			.prev a,
+			.next a,
+			.last a {
+				padding: 4px 10px 4px 10px;
+			}
+
+		}
+
+	}
+
 	@include cuckoo-theme('night') {
 		border-color: $night_border_color;
 		background-color: $night_primary_color;
@@ -279,7 +315,7 @@
 	}
 
 	&#pending-table {
-		margin: 30px 0;
+
 	}
 
 }
