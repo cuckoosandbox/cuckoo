@@ -44,6 +44,7 @@
             "package": "exe",
             "password": null,
             "relapath": null,
+            "relaname": null,
             "selected": true,
             "size": 2048,
             "type": "file"

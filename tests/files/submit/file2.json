@@ -43,6 +43,7 @@
             "package": "pdf",
             "password": null,
             "relapath": null,
+            "relaname": null,
             "selected": true,
             "size": 680,
             "type": "file"
