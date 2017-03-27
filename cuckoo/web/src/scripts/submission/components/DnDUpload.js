@@ -176,8 +176,8 @@ class Uploader {
 
         _self._selectors["holder"].querySelector('input[type="file"]').addEventListener("change", function(e){
 
-            console.log(_self);
-            return;
+            // console.log(_self);
+            // return;
 
             if(_self.options.ajax) {
 

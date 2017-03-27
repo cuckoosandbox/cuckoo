@@ -1,51 +1,51 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h3 class="panel-title">Pending Tasks</h3>
+
+    <div class="flex-grid">
+        <header class="flex-grid__header">
+            <div class="container">
+                <h3><i class="fa fa-clock-o"></i> Pending tasks</h3>
+            </div>
+        </header>
+        <section class="flex-grid__body background-grey">
+            <!-- table comes here -->
+            <div class="container">
+                
+                <table class="cuckoo-table">
+
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Sample ID</th>
+                            <th>Date</th>
+                            <th>Filename / URL</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for task in tasks %}
+
+                            <tr>
+                                <td>{{ task.id }}</td>
+                                <td>{{ task.sample_id }}</td>
+                                <td>{{ task.added_on }}</td>
+                                <td>{{ task.target }}</td>
+                                <td>{{ task.category }}</td>
+                                <td>{{ task.status }}</td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </section>
     </div>
-    {% if tasks %}
-    <table class="table table-striped" style="table-layout: fixed;">
-        <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Category</th>
-            <th>Target</th>
-            <th>Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for task in tasks %}
-            <tr>
-                <td>
-                {% if task.status == "reported" %}
-                    {{task.completed_on}}
-                {% else %}
-                    <span class="muted">{{task.added_on}} (added on)</span>
-                {% endif %}
-                </td>
-                <td>{{task.category}}</td>
-                <td>{{task.target}}</td>
-                <td>
-                    {% if task.status == "pending" %}
-                        <span class="text-muted">pending</span>
-                    {% elif task.status == "running" %}
-                        <span class="text-warning">running</span>
-                    {% elif task.status == "completed" %}
-                        <span class="text-info">completed</span>
-                    {% elif task.status == "reported" %}
-                        <span class="text-success">reported</span>
-                    {% else %}
-                        <span class="text-danger">{{task.status}}</span>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="panel-body">No pending tasks.</div>
-    {% endif %}
-        </div>
+
 {% endblock %}
