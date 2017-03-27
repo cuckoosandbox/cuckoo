@@ -946,7 +946,7 @@ class VolatilityManager(object):
             return
 
         # Check if theres a memory profile configured in the machinery config.
-        profile = Config(manager).get(vm).get("mem_profile")
+        profile = config("%s:%s:mem_profile" % (manager, vm))
         if profile == None:
              vol = VolatilityAPI(self.memfile, self.osprofile)
         else:
