@@ -93,8 +93,10 @@
 		}
 
 		input {
+			border: 1px solid #ccc;
 			width: 50px;
 			text-align: center;
+			border-radius: 2px;
 		}
 
 	}
@@ -178,6 +180,23 @@
 		tbody tr, 
 		tfoot {
 			border-color: $cyborg_border_color;
+		}
+
+		.table-display-config > th,
+		.table-display-config > td {
+			border-color: lighten($cyborg_border_color, 10);
+
+			input {
+				border: 1px solid darken($cyborg_border_color, 10);
+			}
+		}
+
+		.pagination {
+
+			& > li {
+				border-color: lighten($cyborg_border_color, 10);
+			}
+
 		}
 
 	}

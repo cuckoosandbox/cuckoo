@@ -3678,6 +3678,8 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
 }
 
 .button, .button--lg {
+  -webkit-appearance: none;
+  border: 0;
   color: #fff;
   font-weight: 600;
   background-color: #6297F8;
@@ -3689,6 +3691,9 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
   color: #fff;
   background-color: #4a87f7;
   border-bottom-color: #3b6dca;
+}
+.button:focus, .button--lg:focus, .button:active, .button--lg:active {
+  outline: none;
 }
 .button--lg {
   font-size: 16px;
@@ -5077,8 +5082,10 @@ table.cuckoo-table .results-per-page > *, .network-display__table > table .resul
   margin: 0 5px;
 }
 table.cuckoo-table .results-per-page input, .network-display__table > table .results-per-page input {
+  border: 1px solid #ccc;
   width: 50px;
   text-align: center;
+  border-radius: 2px;
 }
 table.cuckoo-table .pagination, .network-display__table > table .pagination {
   display: inline-flex;
@@ -5145,6 +5152,19 @@ body.cyborg table.cuckoo-table tbody tr, body.cyborg .network-display__table > t
 body.cyborg table.cuckoo-table tfoot,
 body.cyborg .network-display__table > table tfoot {
   border-color: #133b4a;
+}
+body.cyborg table.cuckoo-table .table-display-config > th, body.cyborg .network-display__table > table .table-display-config > th,
+body.cyborg table.cuckoo-table .table-display-config > td,
+body.cyborg .network-display__table > table .table-display-config > td {
+  border-color: #1d5b73;
+}
+body.cyborg table.cuckoo-table .table-display-config > th input, body.cyborg .network-display__table > table .table-display-config > th input,
+body.cyborg table.cuckoo-table .table-display-config > td input,
+body.cyborg .network-display__table > table .table-display-config > td input {
+  border: 1px solid #091b21;
+}
+body.cyborg table.cuckoo-table .pagination > li, body.cyborg .network-display__table > table .pagination > li {
+  border-color: #1d5b73;
 }
 body.night table.cuckoo-table, body.night .network-display__table > table {
   border-color: #375a7f;

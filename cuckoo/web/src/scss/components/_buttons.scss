@@ -193,6 +193,10 @@
 
 // default button
 .button {
+
+	-webkit-appearance: none;
+	border: 0;
+
 	color: #fff;
 	font-weight: 600;
 	background-color: #6297F8;
@@ -204,6 +208,11 @@
 		color: #fff;
 		background-color: darken(#6297F8, 5);
 		border-bottom-color: darken(#4F7CCF, 5);
+	}
+
+	&:focus,
+	&:active {
+		outline: none;
 	}
 
 	&--lg {
