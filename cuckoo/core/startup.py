@@ -155,11 +155,10 @@ def init_logfile(logfile):
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""
     db = Database()
-    cfg = Config()
 
     log.debug("Checking for locked tasks..")
     for task in db.list_tasks(status=TASK_RUNNING):
-        if cfg.cuckoo.reschedule:
+        if config("cuckoo:cuckoo:reschedule"):
             task_id = db.reschedule(task.id)
             log.info(
                 "Rescheduled task with ID %s and target %s: task #%s",
@@ -167,7 +166,10 @@ def init_tasks():
             )
         else:
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
-            log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
+            log.info(
+                "Updated running task ID %s status to failed_analysis",
+                task.id
+            )
 
     log.debug("Checking for pending service tasks..")
     for task in db.list_tasks(status=TASK_PENDING, category="service"):

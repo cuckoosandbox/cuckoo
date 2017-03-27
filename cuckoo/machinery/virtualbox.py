@@ -74,13 +74,14 @@ class VirtualBox(Machinery):
 
         if machine.snapshot:
             log.debug(
-                "Using snapshot %s for virtual machine %s",
-                machine.snapshot, label
+                "Restoring virtual machine %s to %s",
+                label, machine.snapshot
             )
             args.extend(["restore", machine.snapshot])
         else:
             log.debug(
-                "Using current snapshot for virtual machine %s", label
+                "Restoring virtual machine %s to its current snapshot",
+                label
             )
             args.append("restorecurrent")
 
@@ -110,7 +111,7 @@ class VirtualBox(Machinery):
 
         if self._status(label) == self.RUNNING:
             raise CuckooMachineError(
-                "Trying to start an already started vm %s" % label
+                "Trying to start an already started VM: %s" % label
             )
 
         machine = self.db.view_machine_by_label(label)
@@ -183,9 +184,17 @@ class VirtualBox(Machinery):
         """
         log.debug("Stopping vm %s" % label)
 
-        if self._status(label) in [self.POWEROFF, self.ABORTED]:
+        status = self._status(label)
+
+        # The VM has already been restored, don't shut it down again. This
+        # appears to be a VirtualBox-specific state though, hence we handle
+        # it here rather than in Machinery._initialize_check().
+        if status == self.SAVED:
+            return
+
+        if status == self.POWEROFF or status == self.ABORTED:
             raise CuckooMachineError(
-                "Trying to stop an already stopped vm %s" % label
+                "Trying to stop an already stopped VM: %s" % label
             )
 
         vm_state_timeout = config("cuckoo:timeouts:vm_state")
@@ -305,10 +314,7 @@ class VirtualBox(Machinery):
         @param label: virtual machine name.
         @return: status string.
         """
-        log.debug("Getting status for %s" % label)
         status = self.vminfo(label, "VMState")
-        log.debug("Machine %s status %s" % (label, status))
-
         if status is False:
             status = self.ERROR
 

@@ -454,6 +454,11 @@ class TestVirtualbox(object):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            self.m._status.return_value = self.m.SAVED
+            self.m.stop("label")
+            p.assert_not_called()
+
     def test_stop_failure(self):
         self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
         self.m._wait_status = mock.MagicMock(return_value=None)

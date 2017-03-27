@@ -247,7 +247,7 @@ def clean():
 @click.option("--priority", type=int, help="Priority of this task")
 @click.option("--machine", help="Machine to analyze these tasks on")
 @click.option("--platform", help="Analysis platform")
-@click.option("--memory", is_flag=True, help="Enable memory dumping")
+@click.option("--memory", is_flag=True, help="Enable full VM memory dumping")
 @click.option("--enforce-timeout", is_flag=True, help="Don't terminate the analysis early")
 @click.option("--clock", help="Set the system clock")
 @click.option("--tags", help="Analysis tags")

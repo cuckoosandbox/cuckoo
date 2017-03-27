@@ -13,12 +13,52 @@ from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
 from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_console_logging, HAVE_YARA
+    init_console_logging, HAVE_YARA, init_tasks
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
+
+def test_init_tasks():
+    def init(reschedule):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "reschedule": reschedule,
+                },
+            },
+        })
+        Database().connect()
+
+        statuses = (
+            "pending", "running", "completed", "reported"
+        )
+
+        tasks = []
+        for status in statuses:
+            task_id = Database().add_path(__file__)
+            Database().set_status(task_id, status)
+            tasks.append(task_id)
+
+        init_tasks()
+
+    init(True)
+    assert Database().view_task(1).status == "pending"
+    assert Database().view_task(2).status == "recovered"
+    assert Database().view_task(3).status == "completed"
+    assert Database().view_task(4).status == "reported"
+    assert Database().view_task(5).status == "pending"
+    assert Database().view_task(6) is None
+
+    init(False)
+    assert Database().view_task(1).status == "pending"
+    assert Database().view_task(2).status == "failed_analysis"
+    assert Database().view_task(3).status == "completed"
+    assert Database().view_task(4).status == "reported"
+    assert Database().view_task(5) is None
 
 @mock.patch("cuckoo.reporting.elasticsearch.elastic")
 @mock.patch("cuckoo.reporting.mongodb.mongo")
