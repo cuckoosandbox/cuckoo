@@ -7,7 +7,7 @@ import os
 import shlex
 import shutil
 import platform
-import pefile
+import struct
 
 from lib.common.abstracts import Package
 
@@ -19,9 +19,11 @@ class Dll(Package):
 
     def start(self, path):
         # Check DLL PE Header Machine
-        dll_pe = pefile.PE(path, fast_load=True)
-        dll_machine = dll_pe.FILE_HEADER.Machine
-        dll_pe.close()
+        with open(path, "rb") as dll_pe:
+            dll_pe.seek(0x3c)
+            header_location = struct.unpack('I', dll_pe.read(4))[0] + 4
+            dll_pe.seek(header_location)
+            dll_machine = struct.unpack('H', dll_pe.read(2))[0]
         # Check if Dll and System is AMD64 and 32bit Python then use Sysnative path rundll32
         if dll_machine == 34404 and \
            platform.machine().endswith('64') and \
