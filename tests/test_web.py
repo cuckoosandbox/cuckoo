@@ -412,7 +412,8 @@ class TestWebInterfaceFeedback(object):
         assert client.get("/submit/re/1/").status_code == 302
         submit = Database().view_submit(1)
         assert submit.data["options"] == {
-            "enable-injection": False, "simulated-human-interaction": False,
+            "enable-injection": False,
+            "simulated-human-interaction": False,
         }
 
     def test_resubmit_url(self, client):
@@ -422,7 +423,8 @@ class TestWebInterfaceFeedback(object):
         assert client.get("/submit/re/1/").status_code == 302
         submit = Database().view_submit(1)
         assert submit.data["options"] == {
-            "enable-injection": False, "simulated-human-interaction": False,
+            "enable-injection": False,
+            "simulated-human-interaction": False,
         }
 
     def test_import_analysis(self, client):

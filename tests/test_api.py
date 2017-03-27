@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,27 +13,19 @@ import werkzeug
 from cuckoo.apps import api
 from cuckoo.common.files import Folders, Files
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_RUNNING
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 
-CUCKOO_CONF = """
-[cuckoo]
-tmppath = /tmp
-"""
+db = Database()
 
 class TestAPI(object):
     def setup(self):
-        self.dirpath = tempfile.mkdtemp()
-        set_cwd(self.dirpath)
-        Database().connect()
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        db.connect()
 
         api.app.config["TESTING"] = True
         self.app = api.app.test_client()
-
-        Folders.create(self.dirpath, "conf")
-        Files.create(self.dirpath, "conf/cuckoo.conf", CUCKOO_CONF)
-
-    def teardown(self):
-        shutil.rmtree(self.dirpath)
 
     def test_list_tasks(self):
         # Test an empty task list.
@@ -87,6 +79,57 @@ class TestAPI(object):
         assert task["category"] == "url"
         assert task["target"] == "http://machete.pwn"
 
+    def test_create_submit_multi(self):
+        obj = json.loads(self.app.post("/tasks/create/submit", data={
+            "files": [
+                werkzeug.FileStorage(open("tests/files/pdf0.pdf", "rb")),
+                werkzeug.FileStorage(open("tests/files/pdf0.zip", "rb")),
+                werkzeug.FileStorage(open("tests/files/pdf0.tgz", "rb")),
+            ],
+        }).data)
+        assert obj["submit_id"] == 1
+        assert obj["task_ids"] == [1, 2, 3]
+
+        t1 = db.view_task(1)
+        assert t1.category == "file"
+        assert t1.target.endswith("pdf0.pdf")
+        assert t1.options == {
+            "procmemdump": "yes",
+        }
+        assert os.path.getsize(t1.target) == 680
+
+        t2 = db.view_task(2)
+        assert t2.category == "archive"
+        assert t2.target.endswith("pdf0.zip")
+        assert t2.options == {
+            "filename": "files/pdf0.pdf",
+            "procmemdump": "yes",
+        }
+
+        t3 = db.view_task(3)
+        assert t3.category == "archive"
+        assert t3.target.endswith("pdf0.zip")
+        assert t3.options == {
+            "filename": "files/pdf0.pdf",
+            "procmemdump": "yes",
+        }
+
+    def test_create_submit_opts(self):
+        obj = json.loads(self.app.post("/tasks/create/submit", data={
+            "files": werkzeug.FileStorage(open("tests/files/pdf0.pdf", "rb")),
+            "options": "procmemdump=no,free=yes",
+            "memory": True,
+            "enforce_timeout": True,
+        }).data)
+        assert obj["submit_id"] == 1
+        assert obj["task_ids"] == [1]
+        t = db.view_task(1)
+        assert t.memory is True
+        assert t.enforce_timeout is True
+        assert t.options == {
+            "free": "yes",
+        }
+
     def test_delete_task(self):
         task_id = self.create_task()
 
@@ -94,11 +137,11 @@ class TestAPI(object):
         target = json.loads(r.data)["task"]["target"]
         assert os.path.exists(target)
 
-        Database().set_status(task_id, TASK_RUNNING)
+        db.set_status(task_id, TASK_RUNNING)
         r = self.app.get("/tasks/delete/%s" % task_id)
         assert r.status_code == 500
 
-        Database().set_status(task_id, TASK_COMPLETED)
+        db.set_status(task_id, TASK_COMPLETED)
         r = self.app.get("/tasks/delete/%s" % task_id)
         assert r.status_code == 200
 
@@ -171,11 +214,11 @@ class TestAPI(object):
         b = self.create_task()
 
         t1 = int(time.time())
-        Database().set_status(a, TASK_COMPLETED)
+        db.set_status(a, TASK_COMPLETED)
 
         time.sleep(1)
         t2 = int(time.time())
-        Database().set_status(b, TASK_COMPLETED)
+        db.set_status(b, TASK_COMPLETED)
 
         r = json.loads(self.app.get("/tasks/list", query_string={
             "completed_after": t1,
@@ -191,20 +234,20 @@ class TestAPI(object):
         a = self.create_task()
         b = self.create_task()
 
-        Database().set_status(a, TASK_COMPLETED)
+        db.set_status(a, TASK_COMPLETED)
 
         r = json.loads(self.app.get("/tasks/list", query_string={
             "status": TASK_COMPLETED,
         }).data)
         assert len(r["tasks"]) == 1
 
-        Database().set_status(a, TASK_COMPLETED)
+        db.set_status(a, TASK_COMPLETED)
         r = json.loads(self.app.get("/tasks/list", query_string={
             "status": TASK_COMPLETED,
         }).data)
         assert len(r["tasks"]) == 1
 
-        Database().set_status(b, TASK_COMPLETED)
+        db.set_status(b, TASK_COMPLETED)
         r = json.loads(self.app.get("/tasks/list", query_string={
             "status": TASK_COMPLETED,
         }).data)

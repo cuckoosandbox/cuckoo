@@ -141,7 +141,8 @@ class SubmitManager(object):
                 filepath = os.path.join(submit.tmp_path, filename)
 
                 unpacked = sflock.unpack(
-                    filepath=filepath, password=password, duplicates=duplicates
+                    filepath=filepath, password=password,
+                    duplicates=duplicates
                 )
 
                 if astree:

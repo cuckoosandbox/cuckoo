@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,21 +7,24 @@ import datetime
 import hashlib
 import io
 import os
+import sflock
 import socket
 import tarfile
 import zipfile
 
 from flask import Flask, request, jsonify, make_response
 
+from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
 from cuckoo.common.utils import parse_bool
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
+from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import cwd, version, decide_cwd
 
-# Global Database object.
 db = Database()
+sm = SubmitManager()
 
 # Initialize Flask app.
 app = Flask(__name__)
@@ -137,6 +140,59 @@ def tasks_create_url():
     )
 
     return jsonify(task_id=task_id)
+
+@app.route("/tasks/create/submit", methods=["POST"])
+@app.route("/v1/tasks/create/submit", methods=["POST"])
+def tasks_create_submit():
+    files = []
+    for f in request.files.getlist("file") + request.files.getlist("files"):
+        files.append({
+            # The pseudo-file "f" has a read() method so passing it along to
+            # the Submit Manager as-is should be fine.
+            "name": f.filename, "data": f,
+        })
+
+    # Default options.
+    options = {
+        "procmemdump": "yes",
+    }
+    options.update(parse_options(request.form.get("options", "")))
+
+    submit_id = sm.pre("files", files, sm.translate_options_to(options))
+    if not submit_id:
+        return json_error(500, "Error creating Submit entry")
+
+    files, errors, options = sm.get_files(submit_id, astree=True)
+
+    options["full-memory-dump"] = parse_bool(
+        request.form.get("memory", config("cuckoo:cuckoo:memory_dump"))
+    )
+    options["enforce-timeout"] = parse_bool(
+        request.form.get("enforce_timeout", 0)
+    )
+
+    def selected(files, arcname=None):
+        ret = []
+        for entry in files:
+            if entry.get("selected"):
+                entry["arcname"] = arcname
+                ret.append(entry)
+            ret += selected(entry["children"], arcname or entry["filename"])
+        return ret
+
+    task_ids = sm.submit(submit_id, {
+        "global": {
+            "timeout": request.form.get("timeout", ""),
+            "priority": request.form.get("priority", 1),
+            "tags": request.form.get("tags", None),
+            "custom": request.form.get("custom", ""),
+            "owner": request.form.get("owner", ""),
+            "clock": request.form.get("clock", None),
+            "options": options,
+        },
+        "file_selection": selected(files),
+    })
+    return jsonify(submit_id=submit_id, task_ids=task_ids, errors=errors)
 
 @app.route("/tasks/list")
 @app.route("/v1/tasks/list")

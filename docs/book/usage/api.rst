@@ -131,51 +131,53 @@ Resources
 Following is a list of currently available resources and a brief description of
 each one. For details click on the resource name.
 
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| Resource                          | Description                                                                                                      |
-+===================================+==================================================================================================================+
-| ``POST`` :ref:`tasks_create_file` | Adds a file to the list of pending tasks to be processed and analyzed.                                           |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``POST`` :ref:`tasks_create_url`  | Adds an URL to the list of pending tasks to be processed and analyzed.                                           |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_list`         | Returns the list of tasks stored in the internal Cuckoo database.                                                |
-|                                   | You can optionally specify a limit of entries to return.                                                         |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_view`         | Returns the details on the task assigned to the specified ID.                                                    |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_reschedule`   | Reschedule a task assigned to the specified ID.                                                                  |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_delete`       | Removes the given task from the database and deletes the results.                                                |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_report`       | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
-|                                   | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_shots`        | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_rereport`     | Re-run reporting for task associated with a given analysis task ID.                                              |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`tasks_reboot`       | Reboot a given analysis task ID.                                                                                 |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`memory_list`        | Returns a list of memory dump files associated with a given analysis task ID.                                    |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`memory_get`         | Retrieves one memory dump file associated with a given analysis task ID.                                         |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`files_view`         | Search the analyzed binaries by MD5 hash, SHA256 hash or internal ID (referenced by the tasks details).          |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`files_get`          | Returns the content of the binary with the specified SHA256 hash.                                                |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`pcap_get`           | Returns the content of the PCAP associated with the given task.                                                  |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`machines_list`      | Returns the list of analysis machines available to Cuckoo.                                                       |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`machines_view`      | Returns details on the analysis machine associated with the specified name.                                      |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`cuckoo_status`      | Returns the basic cuckoo status, including version and tasks overview.                                           |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`vpn_status`         | Returns VPN status.                                                                                              |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`exit`               | Shuts down the API server.                                                                                       |
-+-----------------------------------+------------------------------------------------------------------------------------------------------------------+
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| Resource                            | Description                                                                                                      |
++=====================================+==================================================================================================================+
+| ``POST`` :ref:`tasks_create_file`   | Adds a file to the list of pending tasks to be processed and analyzed.                                           |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``POST`` :ref:`tasks_create_url`    | Adds an URL to the list of pending tasks to be processed and analyzed.                                           |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``POST`` :ref:`tasks_create_submit` | Adds one or more files and/or files embedded in archives to the list of pending tasks.
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_list`           | Returns the list of tasks stored in the internal Cuckoo database.                                                |
+|                                     | You can optionally specify a limit of entries to return.                                                         |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_view`           | Returns the details on the task assigned to the specified ID.                                                    |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reschedule`     | Reschedule a task assigned to the specified ID.                                                                  |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_delete`         | Removes the given task from the database and deletes the results.                                                |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_report`         | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
+|                                     | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_shots`          | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_rereport`       | Re-run reporting for task associated with a given analysis task ID.                                              |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_reboot`         | Reboot a given analysis task ID.                                                                                 |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`memory_list`          | Returns a list of memory dump files associated with a given analysis task ID.                                    |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`memory_get`           | Retrieves one memory dump file associated with a given analysis task ID.                                         |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`files_view`           | Search the analyzed binaries by MD5 hash, SHA256 hash or internal ID (referenced by the tasks details).          |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`files_get`            | Returns the content of the binary with the specified SHA256 hash.                                                |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`pcap_get`             | Returns the content of the PCAP associated with the given task.                                                  |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`machines_list`        | Returns the list of analysis machines available to Cuckoo.                                                       |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`machines_view`        | Returns details on the analysis machine associated with the specified name.                                      |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`cuckoo_status`        | Returns the basic cuckoo status, including version and tasks overview.                                           |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`vpn_status`           | Returns VPN status.                                                                                              |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`exit`                 | Shuts down the API server.                                                                                       |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 
 .. _tasks_create_file:
 
@@ -289,6 +291,70 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 * ``options`` *(optional)* - options to pass to the analysis package
 * ``machine`` *(optional)* - label of the analysis machine to use for the analysis
 * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
+* ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
+* ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
+* ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
+* ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
+* ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
+* ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
+
+**Status codes**:
+
+* ``200`` - no error
+
+.. _tasks_create_submit:
+
+/tasks/create/submit
+--------------------
+
+**POST /tasks/create/submit**
+
+Adds one or more files and/or files embedded in archives to the list of
+pending tasks. Returns the submit ID as well as the task IDs of the newly
+created task(s).
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
+
+**Example request using Python**.
+
+.. code-block:: python
+
+    import requests
+
+    r = requests.post("http://localhost:8090/tasks/create/submit", files=[
+        ("files", open("1.exe", "rb")),
+        ("files", open("2.exe", "rb")),
+    ])
+
+    # Add your code to error checking for r.status_code.
+
+    submit_id = r.json()["submit_id"]
+    task_ids = r.json()["task_ids"]
+    errors = r.json()["errors"]
+
+    # Add your code to error checking on "errors".
+
+**Example response**.
+
+.. code-block:: json
+
+    {
+        "submit_id": 1
+        "task_ids": [1, 2],
+        "errors": []
+    }
+
+**Form parameters**:
+
+* ``file`` *(optional)* - backwards compatibility with naming scheme for :ref:`tasks_create_file`
+* ``files`` *(required)* - sample(s) to inspect and add to our pending queue
+* ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
+* ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
+* ``options`` *(optional)* - options to pass to the analysis package
 * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
 * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
 * ``owner`` *(optional)* - task owner in case multiple users can submit files to the same cuckoo instance
