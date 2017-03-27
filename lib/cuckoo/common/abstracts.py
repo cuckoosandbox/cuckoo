@@ -102,6 +102,12 @@ class Machinery(object):
         from lib.cuckoo.core.resultserver import ResultServer
         return ResultServer().port
 
+    def _get_interface(self, mmanager_opts, machine_opts):
+        if machine_opts.get("interface"):
+            return machine_opts["interface"]
+        else:
+            return mmanager_opts.get("interface")
+
     def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
@@ -122,10 +128,8 @@ class Machinery(object):
 
                 # If configured, use specific network interface for this
                 # machine, else use the default value.
-                if machine_opts.get("interface"):
-                    machine.interface = machine_opts["interface"]
-                else:
-                    machine.interface = mmanager_opts.get("interface")
+
+                machine.interface = self._get_interface(mmanager_opts, machine_opts)
 
                 # If configured, use specific snapshot name, else leave it
                 # empty and use default behaviour.
@@ -369,7 +373,7 @@ class LibVirtMachinery(Machinery):
                   "been turned off {0}".format(label)
             raise CuckooMachineError(msg)
 
-        conn = self._connect()
+        conn = self._connect(label)
 
         vm_info = self.db.view_machine_by_label(label)
 
@@ -421,7 +425,7 @@ class LibVirtMachinery(Machinery):
                                      "machine {0}".format(label))
 
         # Force virtual machine shutdown.
-        conn = self._connect()
+        conn = self._connect(label)
         try:
             if not self.vms[label].isActive():
                 log.debug("Trying to stop an already stopped machine %s. "
@@ -449,7 +453,7 @@ class LibVirtMachinery(Machinery):
         """
         log.debug("Dumping memory for machine %s", label)
 
-        conn = self._connect()
+        conn = self._connect(label)
         try:
             # Resolve permission issue as libvirt creates the file as
             # root/root in mode 0600, preventing us from reading it. This
@@ -480,7 +484,7 @@ class LibVirtMachinery(Machinery):
         # VIR_DOMAIN_CRASHED = 6
         # VIR_DOMAIN_PMSUSPENDED = 7
 
-        conn = self._connect()
+        conn = self._connect(label)
         try:
             state = self.vms[label].state(flags=0)
         except libvirt.libvirtError as e:
@@ -507,7 +511,7 @@ class LibVirtMachinery(Machinery):
             raise CuckooMachineError("Unable to get status for "
                                      "{0}".format(label))
 
-    def _connect(self):
+    def _connect(self, label=None):
         """Connects to libvirt subsystem.
         @raise CuckooMachineError: when unable to connect to libvirt.
         """
@@ -545,7 +549,7 @@ class LibVirtMachinery(Machinery):
         @param label: virtual machine name.
         @raise CuckooMachineError: if virtual machine is not found.
         """
-        conn = self._connect()
+        conn = self._connect(label)
         try:
             vm = conn.lookupByName(label)
         except libvirt.libvirtError:
@@ -593,7 +597,7 @@ class LibVirtMachinery(Machinery):
             return xml.findtext("./creationTime")
 
         snapshot = None
-        conn = self._connect()
+        conn = self._connect(label)
         try:
             vm = self.vms[label]
 
