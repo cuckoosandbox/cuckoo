@@ -322,12 +322,12 @@ class AnalysisApi(object):
 
             category = info.get("category")
             if category == "file":
-                f = row["target"]["file"]
+                f = row.get("target", {}).get("file", {})
                 if f.get("name"):
                     target = os.path.basename(f["name"])
                 else:
                     target = None
-                md5 = f.get("md5")
+                md5 = f.get("md5") or "-"
             elif category == "url":
                 target = row["target"]["url"]
                 md5 = "-"
