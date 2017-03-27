@@ -4990,12 +4990,6 @@ table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, .network-d
 .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .fa:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before, .sorting-desc table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before, .sorting-desc .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th div:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th div:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before, .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before, .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before {
   content: "\f0dd";
 }
-table.cuckoo-table thead tr.table-display-config > th, .network-display__table > table thead tr.table-display-config > th {
-  font-weight: 400;
-  padding: 15px;
-  border-bottom: 1px solid #ccc;
-  border-top: 1px solid #ccc;
-}
 table.cuckoo-table tbody tr:not(:last-child), .network-display__table > table tbody tr:not(:last-child) {
   border-bottom: 1px solid #ccc;
 }
@@ -5061,6 +5055,14 @@ table.cuckoo-table tfoot td, .network-display__table > table tfoot td {
 }
 table.cuckoo-table tfoot td p, .network-display__table > table tfoot td p {
   margin: 0;
+}
+table.cuckoo-table .table-display-config > th, .network-display__table > table .table-display-config > th,
+table.cuckoo-table .table-display-config > td,
+.network-display__table > table .table-display-config > td {
+  font-weight: 400;
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
 }
 table.cuckoo-table .small-integer, .network-display__table > table .small-integer {
   width: 50px;

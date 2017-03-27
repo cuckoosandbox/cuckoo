@@ -30,12 +30,6 @@
 			}
 		}
 
-		tr.table-display-config > th {
-			font-weight: 400;
-			padding: 15px;
-			border-bottom: 1px solid #ccc;
-			border-top: 1px solid #ccc;
-		}
 	}
 	
 	tbody {
@@ -75,6 +69,14 @@
 				margin: 0;
 			}
 		}
+	}
+
+	.table-display-config > th,
+	.table-display-config > td {
+		font-weight: 400;
+		padding: 15px;
+		border-bottom: 1px solid #ccc;
+		border-top: 1px solid #ccc;
 	}
 
 	.small-integer { width: 50px; }

@@ -14,6 +14,7 @@
 
         <thead>
 
+            <!-- pagination -->
             <tr class="table-display-config">
                 <th colspan="6">
 
@@ -39,6 +40,7 @@
                 </th>
             </tr>
 
+            <!-- table index -->
             <tr>
                 <th>Task ID</th>
                 <th>Sample ID</th>
@@ -47,12 +49,13 @@
                 <th>Category</th>
                 <th>Status</th>
             </tr>
+
         </thead>
 
         <tbody>
 
+            <!-- table content -->
             {% for task in tasks %}
-
                 <tr>
                     <td>{{ task.id }}</td>
                     <td>{{ task.sample_id }}</td>
@@ -61,37 +64,45 @@
                     <td>{{ task.category }}</td>
                     <td>{{ task.status }}</td>
                 </tr>
-
             {% endfor %}
 
-            <tr>
-                <td>Task ID</td>
-                <td>Sample ID</td>
-                <td>Date</td>
-                <td>Filename / URL</td>
-                <td>Category</td>
-                <td>Status</td>
-            </tr>
-
-            <tr>
-                <td>Task ID</td>
-                <td>Sample ID</td>
-                <td>Date</td>
-                <td>Filename / URL</td>
-                <td>Category</td>
-                <td>Status</td>
-            </tr>
-
-            <tr>
-                <td>Task ID</td>
-                <td>Sample ID</td>
-                <td>Date</td>
-                <td>Filename / URL</td>
-                <td>Category</td>
-                <td>Status</td>
-            </tr>
-
         </tbody>
+
+        <tfoot>
+            <!-- pagination -->
+            <tr class="table-display-config">
+                <th colspan="6">
+
+                    <ul class="pagination">
+                        <li class="first"><a href="#"><i class="fa fa-fast-backward"></i></a></li>
+                        <li class="prev"><a href="#"><i class="fa fa-step-backward"></i></a></li>
+                        <li><a href="#">1</a></li>
+                        <li><a href="#">2</a></li>
+                        <li><a href="#">3</a></li>
+                        <li class="next"><a href="#"><i class="fa fa-step-forward"></i></a></li>
+                        <li class="last"><a href="#"><i class="fa fa-fast-forward"></i></a></li>
+                    </ul>
+
+                    <div class="results-per-page">
+                        <label for="rpp">Results per page:</label>
+                        <input type="text" name="rpp" />
+                        <i class="fa fa-caret-right"></i>
+                        <button data-action="update-rpp">show</button>
+                        <p>or</p>
+                        <button data-action="rpp-all">show all</button>
+                    </div>
+
+                </th>
+            </tr>
+
+            <!-- request status -->
+            <tr>
+                <td colspan="6" align="center">
+                    <p class="ajax-status">Loading task info...</p>
+                </td>
+            </tr>
+
+        </tfoot>
 
     </table>
 
