@@ -408,6 +408,10 @@ class PacketDisplay {
 
     constructor(el, options) {
 
+        this.options   = $.extend({
+            skip_empty: false
+        }, options);
+
         this.nav       = el.find("#requests");
         this.container = el.find("#packets");
         this.loader    = el.find('.network-display__loader');
@@ -450,7 +454,11 @@ class PacketDisplay {
             this.load(params, function(response) {
                 
                 var html = [];
+
                 for(var r in response) {
+
+                    if(_this.options.skip_empty && response[r].raw.length == 0) return;
+
                     var view = new HexView($(_this.template(response[r])), response[r].raw, {
                         container: '[data-draw="source"]',
                         displayBody: 'response'
