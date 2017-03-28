@@ -221,4 +221,9 @@
 		padding: 5px 15px;
 		border-bottom-width: 2px;
 	}
+
+	&.outline {
+		background-color: transparent;
+		border: 2px solid #fff;
+	}
 }

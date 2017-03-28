@@ -24,6 +24,8 @@ body {
 }
 
 /* note to self: this is very hacky and I need to pick this up later */
+body[id^="analysis"] { padding-top: 50px; }
+body[id^="submission/"] { padding-top: 50px; }
 body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],

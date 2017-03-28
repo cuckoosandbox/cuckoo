@@ -3,22 +3,22 @@
 <nav class="app-nav" id="primary-nav">
 
 	<a href="/" class="logo">
-		<img src="{% static "graphic/cuckoo-default.png" %}" />
+		<img src="{% static "graphic/cuckoo_inverse.png" %}" />
 	</a>
 
 	<ul class="app-nav__nav--primary">
-		<li {% if "/dashboard/" in request.path or request.path == "/" %}class="active"{% endif %}><a href="{% url "dashboard.views.index" %}">Dashboard</a></li>
-		<li {% if request.path == "/analysis/" %}class="active"{% endif %}><a href="{% url "analysis/recent" %}">Recent</a></li>
-		<li {% if request.path == "/analysis/pending/" %}class="active"{% endif %}><a href="{% url "analysis.views.pending" %}">Pending</a></li>
-		<li {% if request.path == "/analysis/search/" %}class="active"{% endif %}><a href="{% url "analysis.views.search" %}">Search</a></li>
+		<li {% if "/dashboard/" in request.path or request.path == "/" %}class="active"{% endif %}><a href="{% url "dashboard.views.index" %}"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+		<li {% if request.path == "/analysis/" %}class="active"{% endif %}><a href="{% url "analysis/recent" %}"><i class="fa fa-th-list"></i> Recent</a></li>
+		<li {% if request.path == "/analysis/pending/" %}class="active"{% endif %}><a href="{% url "analysis.views.pending" %}"><i class="fa fa-cogs"></i> Pending</a></li>
+		<li {% if request.path == "/analysis/search/" %}class="active"{% endif %}><a href="{% url "analysis.views.search" %}"><i class="fa fa-search"></i> Search</a></li>
 	</ul>
 
 	<ul class="app-nav__nav--right">
 		<li>
-			<a href="{% url "submission/index" %}" class="button--lg">Submit</a>
+			<a href="{% url "submission/index" %}" class="button outline">Submit</a>
 		</li>
 		<li>
-			<a href="{% url "analysis/import" %}" class="button--lg">Import</a>
+			<a href="{% url "analysis/import" %}" class="button outline">Import</a>
 		</li>
 		<li class="app-nav__dropdown--parent">
 			<a href="#" id="select-theme">

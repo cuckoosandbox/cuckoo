@@ -4,18 +4,23 @@
 	position: fixed;
 	display: flex;
 	width: 100%;
-	height: 80px;
+	height: 50px;
 	top: 0;
 	z-index: 5;
 
 	padding: 0 30px;
-	background-color: #f5f5f5;
-	border-bottom: 2px solid #DFE7EE;
+	background-color: #222;
+	border-bottom: 1px solid #111;
+
+	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 	.logo {
-		padding: 15px 0 12px 0;
+		padding: 7px 0 12px 0;
 		margin-right: 20px;
-		& > img { width: 164px; }
+		& > img { 
+			width: 90px; 
+			margin-top: 4px;
+		}
 	}
 
 	a:hover,
@@ -41,22 +46,31 @@
 			@extend .app-nav__nav;
 
 			& > li {
-				align-items: flex-end;
+
+				align-items: center;
 
 				& > a {
+					color: #ddd !important;
 					font-weight: 700;
 					font-size: 18px;
-					padding: 0 10px 12px 10px;
-				}
+					margin: 0 10px;
+					vertical-align: middle;
 
-				&.active {
-					background-image: linear-gradient(-180deg, #81A9F2 2%, #4F7CCF 100%);
-					box-shadow: 0 2px 0 0 #4366A6;
+					.fa {
+						font-size: 0.9em;
+						margin-right: 5px
+					}
 
-					& > a {
-						color: #fff;
+					&:hover {
+						text-decoration: none !important;
 					}
 				}
+
+				&.active > a {
+					color: #3678b0 !important;
+
+				}
+
 			}
 
 		}
@@ -72,6 +86,17 @@
 
 				.fa {
 					font-size: 24px;
+					color: #777;
+				}
+
+				.button {
+					color: #fff;
+					border-color: #777;
+
+					&:hover {
+						background-color: #777;
+						color: #fff;
+					}
 				}
 
 				&:last-child {
@@ -180,15 +205,6 @@
 	}
 
 	@include cuckoo-theme('cyborg') {
-		@extend %cyborg-heading;
-		border-bottom: 2px solid #1d3f4a;
-
-		.button { color: #fff; }
-
-		.app-nav__nav--primary li.active {
-			background-image: linear-gradient(-180deg, #0ce3ac 2%, #0d9c78 100%);
-			box-shadow: 0 2px 0 0 #095844;
-		}
 
 		.app-nav__dropdown {
 			background-color: $cyborg_background_color;
@@ -213,12 +229,6 @@
 
 	// night theme for the navbar
 	@include cuckoo-theme('night') {
-		background-color: $night_panel_color;
-		border-bottom: 2px solid darken($night_border_color, 5);
-
-		.button {
-			color: #fff;
-		}
 
 		.app-nav__dropdown {
 			background-color: #313131;
