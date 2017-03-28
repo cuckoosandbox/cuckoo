@@ -20,6 +20,7 @@
     "font-roboto": "^0.0.2",
     "string": "stringjs#^3.3.3",
     "moment": "^2.17.1",
-    "chart.js": "^2.5.0"
+    "chart.js": "^2.5.0",
+    "jquery-ui": "^1.12.1"
   }
 }

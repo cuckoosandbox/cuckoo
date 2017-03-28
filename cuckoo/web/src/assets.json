@@ -1,6 +1,7 @@
 {
 	"main": {
 		"js/vendor.js@concat": [
+			"jquery-ui/jquery-ui.js",
 			"handlebars/handlebars.js",
 			"string/dist/string.js",
 			"moment/moment.js",

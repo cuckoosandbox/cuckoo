@@ -491,8 +491,6 @@ var PacketDisplay = function () {
                 // load the data
                 this.load(params, function (response) {
 
-                    console.log('loaded');
-
                     var html = [];
 
                     for (var r in response) {
@@ -514,12 +512,27 @@ var PacketDisplay = function () {
                         partial.initialise();
                     });
 
-                    // stop the loader
-                    HexView.lockAll(false);
-                    _this.loader.removeClass('active');
-                    _this.container.removeClass('is-loading');
+                    // stop the loader and scrolls back to top
 
-                    _this.container.parent().scrollTop(0);
+                    var duration = 0;
+
+                    if (_this.container.parent().scrollTop() > 0) {
+                        duration = 1500;
+                    }
+
+                    _this.container.parent().animate({
+                        scrollTop: 0
+                    }, {
+                        duration: duration,
+                        specialEasing: {
+                            scrollTop: "easeOutBounce"
+                        },
+                        complete: function complete() {
+                            HexView.lockAll(false);
+                            _this.loader.removeClass('active');
+                            _this.container.removeClass('is-loading');
+                        }
+                    });
                 }, function (err) {
 
                     console.log(err);
