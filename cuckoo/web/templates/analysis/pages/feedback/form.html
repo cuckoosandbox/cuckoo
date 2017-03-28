@@ -69,10 +69,10 @@
                 </form>
             </div>
 
-            <div class="panel-footer" style="margin-bottom:-14px;">
+            <div class="panel-footer clearfix">
+                <button type="button" class="btn btn-default btn-close" data-dismiss="modal">Close</button>
                 <input id="submit" disabled type="submit" class="btn btn-success" value="Send"/>
-                <span id="result" style="margin-left: 4px;color: grey;"></span>
-                <button style="float: right;" type="button" class="btn btn-default btn-close" data-dismiss="modal">Close</button>
+                <span id="result"></span>
             </div>
         </div>
     </div>
@@ -86,10 +86,15 @@
         var cb_analysis = true;
 
         $(document).ready(function() {
+
             var sel = $('#modal_feedback');
 
             sel.on("shown.bs.modal", function() {
                 $("input:text:visible:first").focus()
+            });
+
+            sel.modal({
+                show: true
             });
 
             function send_feedback_callback(data){

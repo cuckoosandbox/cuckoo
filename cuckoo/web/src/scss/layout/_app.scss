@@ -94,3 +94,30 @@ section#screenshots .minified{
     max-height: 278px;
 }
 
+// feedback modal
+#modal_feedback {
+
+    .panel-footer {
+
+        margin-bottom: -14px;
+
+        .btn-close {
+            float: left;
+            margin-right: 10px;
+        }
+
+        .btn-success {
+            float: right;
+            margin-left: 10px;
+        }
+
+        span {
+            display: block;
+            text-align: center;
+            padding: 0 5px;
+            color: grey;
+        }
+
+    }    
+
+}

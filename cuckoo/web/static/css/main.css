@@ -3237,6 +3237,24 @@ section#screenshots .minified {
   max-height: 278px;
 }
 
+#modal_feedback .panel-footer {
+  margin-bottom: -14px;
+}
+#modal_feedback .panel-footer .btn-close {
+  float: left;
+  margin-right: 10px;
+}
+#modal_feedback .panel-footer .btn-success {
+  float: right;
+  margin-left: 10px;
+}
+#modal_feedback .panel-footer span {
+  display: block;
+  text-align: center;
+  padding: 0 5px;
+  color: grey;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
