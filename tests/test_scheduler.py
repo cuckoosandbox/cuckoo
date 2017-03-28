@@ -297,3 +297,28 @@ def test_scheduler_initialize(p):
     p.assert_any_call("forward_disable", "int2", "vpnint0", "5.6.7.8")
     p.assert_any_call("forward_disable", "int1", "intern0t", "1.2.3.4")
     p.assert_any_call("forward_disable", "int2", "intern0t", "5.6.7.8")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_scheduler_initialize_novpn(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "machinery": "machin3",
+            },
+        },
+    })
+    Database().connect()
+    s = Scheduler()
+
+    m = mock.MagicMock()
+    m.return_value.machines.return_value = [
+        Dictionary(name="cuckoo1", interface="int1", ip="1.2.3.4"),
+        Dictionary(name="cuckoo2", interface="int2", ip="5.6.7.8"),
+    ]
+
+    with mock.patch.dict(cuckoo.machinery.plugins, {"machin3": m}):
+        s.initialize()
+
+    m.return_value.initialize.assert_called_once_with("machin3")
+    p.assert_not_called()

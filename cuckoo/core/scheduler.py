@@ -832,11 +832,12 @@ class Scheduler(object):
                 continue
 
             # Drop forwarding rule to each VPN.
-            for vpn in config("routing:vpn:vpns"):
-                rooter(
-                    "forward_disable", machine.interface,
-                    config("routing:%s:interface" % vpn), machine.ip
-                )
+            if config("routing:vpn:enabled"):
+                for vpn in config("routing:vpn:vpns"):
+                    rooter(
+                        "forward_disable", machine.interface,
+                        config("routing:%s:interface" % vpn), machine.ip
+                    )
 
             # Drop forwarding rule to the internet / dirty line.
             if config("routing:routing:internet") != "none":
