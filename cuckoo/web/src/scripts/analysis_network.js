@@ -652,11 +652,15 @@ $(function() {
     network_nav.transition('network-analysis-http');
 
     if($("#network-analysis-tcp").length) {
-        let packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
+        let packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"), {
+            skip_empty: true
+        });
     }
 
     if($("#network-analysis-udp").length) {
-        let packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
+        let packet_display_udp = new PacketDisplay($('#network-analysis-udp'), {
+            skip_empty: true
+        });
     }
 
     $("#http-requests .network-display__request").each(function() {

@@ -720,11 +720,15 @@ $(function () {
     network_nav.transition('network-analysis-http');
 
     if ($("#network-analysis-tcp").length) {
-        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
+        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"), {
+            skip_empty: true
+        });
     }
 
     if ($("#network-analysis-udp").length) {
-        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
+        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'), {
+            skip_empty: true
+        });
     }
 
     $("#http-requests .network-display__request").each(function () {
