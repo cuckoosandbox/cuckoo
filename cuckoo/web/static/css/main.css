@@ -3123,8 +3123,8 @@ body[id="submission/index"] footer:not(.flex-grid__footer),
 body[id="submission/index"] #footer-extra,
 body[id="submission/post"] footer:not(.flex-grid__footer),
 body[id="submission/post"] #footer-extra,
-body[id^="analysis"]:not(#analysis.views.pending) footer:not(.flex-grid__footer),
-body[id^="analysis"]:not(#analysis.views.pending) #footer-extra {
+body[id^="analysis"]:not([id="#analysis.views.pending"]) footer:not(.flex-grid__footer),
+body[id^="analysis"]:not([id="#analysis.views.pending"]) #footer-extra {
   display: none;
 }
 
@@ -3940,6 +3940,7 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle) {
 [id^="analysis"] .flex-nav__body > .container-fluid, [id^="analysis"] .flex-nav__body--disable-overflow > .container-fluid {
   width: 100%;
   flex-basis: 100%;
+  margin-bottom: 30px;
 }
 .flex-nav__body--disable-overflow {
   overflow-y: hidden;
@@ -5280,6 +5281,7 @@ table.cuckoo-table#submission-task-table .status.status-reported:before, table#s
   background-color: #fff;
   border: 1px solid #D8D8D8;
   padding: 10px;
+  margin-bottom: 30px;
 }
 .scroll-internal .network-display__outer {
   height: 100%;
@@ -6100,6 +6102,7 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-grid__footer.spread-alignment {
   justify-content: space-between;
+  padding: 20px 30px 15px;
 }
 .flex-grid__nav {
   flex-basis: 350px;

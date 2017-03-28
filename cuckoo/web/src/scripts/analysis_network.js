@@ -418,6 +418,7 @@ class PacketDisplay {
         this.template  = HANDLEBARS_TEMPLATES['packet-display'];
 
         this.initialise();
+
     }
 
     initialise() {
@@ -452,17 +453,20 @@ class PacketDisplay {
 
             // load the data
             this.load(params, function(response) {
+
+                console.log('loaded');
                 
                 var html = [];
 
                 for(var r in response) {
 
-                    if(_this.options.skip_empty && response[r].raw.length == 0) return;
+                    if(_this.options.skip_empty && response[r].raw.length == 0) continue;
 
                     var view = new HexView($(_this.template(response[r])), response[r].raw, {
                         container: '[data-draw="source"]',
                         displayBody: 'response'
                     });
+
                     html.push(view);
                 }
                 
@@ -478,14 +482,25 @@ class PacketDisplay {
                 _this.loader.removeClass('active');
                 _this.container.removeClass('is-loading');
 
+                _this.container.parent().scrollTop(0);
+
+            }, function(err) {
+
+                console.log(err);
+
             });
         }
 
     }
 
-    load(params, callback) {
-        $.get(`/analysis/${window.task_id}/pcapstream/${params}/`, function(response) {
+    load(params, callback, err) {
+
+        $.get(`/analysis/${window.task_id}/pcapstream/${params}/`).done(function(response) {
             if(callback && typeof callback == 'function') callback(response);
+        }).fail(function(e) {
+
+            console.log(e);
+            
         });
     }
 
