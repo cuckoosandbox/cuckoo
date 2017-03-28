@@ -529,6 +529,14 @@ class TestWebInterfaceFeedback(object):
         assert task.priority == 374289732472983
         assert task.custom == ""
 
+        buf.seek(0)
+        r = client.post("/analysis/import/", {
+            "analyses[]": buf,
+        })
+        assert r.status_code == 302
+        submit = db.view_submit(2, tasks=True)
+        assert len(submit.tasks) == 1
+
     def test_import_analysis_exc(self, client):
         @mock.patch("cuckoo.web.controllers.submission.routes.log")
         def get_error(buf, p):
