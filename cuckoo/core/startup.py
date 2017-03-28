@@ -118,8 +118,10 @@ def check_version():
         print(yellow(" Response: %s" % r))
         return
 
+    rc1_responses = "NEW_VERSION", "NO_UPDATES"
+
     # Deprecated response.
-    if r.get("response") == "NEW_VERSION" and r.get("current") == "2.0-rc1":
+    if r.get("response") in rc1_responses and r.get("current") == "2.0-rc1":
         print(green(" You're good to go!"))
         return
 

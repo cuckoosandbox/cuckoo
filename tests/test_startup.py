@@ -154,6 +154,23 @@ def test_version_20rc1(capsys):
     assert "You're good to go" in out
 
 @responses.activate
+def test_version_20rc1_noupd(capsys):
+    set_cwd(tempfile.mkdtemp())
+    responses.add(
+        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        status=200, json={
+            "error": False,
+            "current": "2.0-rc1",
+            "response": "NO_UPDATES",
+        }
+    )
+
+    check_version()
+    out, err = capsys.readouterr()
+    assert "Checking for" in out
+    assert "You're good to go" in out
+
+@responses.activate
 def test_version_newer(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
