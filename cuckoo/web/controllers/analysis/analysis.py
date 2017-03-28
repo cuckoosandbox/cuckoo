@@ -15,44 +15,6 @@ db = Database()
 
 class AnalysisController:
     @staticmethod
-    def task_info(task_id):
-        if not isinstance(task_id, int):
-            raise Exception("Task ID should be integer")
-
-        task = db.view_task(task_id, details=True)
-        if not task:
-            return Http404("Task not found")
-
-        entry = task.to_dict()
-        entry["guest"] = {}
-        if task.guest:
-            entry["guest"] = task.guest.to_dict()
-
-        entry["errors"] = []
-        for error in task.errors:
-            entry["errors"].append(error.message)
-
-        entry["sample"] = {}
-        if task.sample_id:
-            sample = db.view_sample(task.sample_id)
-            entry["sample"] = sample.to_dict()
-
-        if entry["category"] == "file":
-            entry["target"] = os.path.basename(entry["target"])
-        elif entry["category"] == "url":
-            if entry["target"].startswith(("http://", "https://")):
-                entry["target"] = "hxxp" + entry["target"][4:]
-        elif entry["category"] == "archive":
-            entry["target"] = "%s @ %s" % (
-                entry["options"]["filename"],
-                os.path.basename(entry["target"])
-            )
-
-        return {
-            "task": entry,
-        }
-
-    @staticmethod
     def get_report(task_id):
         report = AnalysisController._get_report(task_id)
         if not report:

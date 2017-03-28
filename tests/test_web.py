@@ -24,6 +24,8 @@ from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
 
+db = Database()
+
 class TestWebInterface(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -36,7 +38,7 @@ class TestWebInterface(object):
         })
 
         django.setup()
-        Database().connect()
+        db.connect()
 
         os.environ["CUCKOO_APP"] = "web"
         os.environ["CUCKOO_CWD"] = cwd()
@@ -232,12 +234,12 @@ class TestWebInterface(object):
         assert r.status_code == 500
         assert "Invalid Submit ID" in r.content
 
-        submit_id = Database().add_submit(None, None, None)
+        submit_id = db.add_submit(None, None, None)
         r = client.get("/submit/post/1")
         assert r.status_code == 500
         assert "not associated with any tasks" in r.content
 
-        Database().add_path(__file__, submit_id=submit_id)
+        db.add_path(__file__, submit_id=submit_id)
         r = client.get("/submit/post/1")
         assert r.status_code == 200
         assert r.templates[0].name == "submission/postsubmit.html"
@@ -304,6 +306,21 @@ class TestWebInterface(object):
         assert obj["status"] is False
         assert "Invalid email" in obj["message"]
 
+    # TODO Re-enable this unit test if this API endpoint is enabled.
+    def _test_api_post_task_info_simple(self, client):
+        db.add_path("tests/files/pdf0.pdf")
+        r = client.post(
+            "/analysis/api/task/info/",
+            json.dumps({
+                "task_id": 1,
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        obj = json.loads(r.content)
+        assert obj["data"]["task"]["target"] == "pdf0.pdf"
+
     def test_api_post_not_json(self, client):
         r = client.post(
             "/analysis/api/tasks/info/",
@@ -313,6 +330,60 @@ class TestWebInterface(object):
         )
         assert r.status_code == 501
         assert "not JSON" in r.content
+
+    def test_api_post_tasks_info_simple(self, client):
+        db.add_path(__file__)
+        db.add_url("http://cuckoosandbox.org")
+        db.add_archive("tests/files/pdf0.zip", "pdf0.pdf", "pdf")
+        r = client.post(
+            "/analysis/api/tasks/info/",
+            json.dumps({
+                "task_ids": [1, 2, 3],
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        obj = json.loads(r.content)
+        assert obj["data"]["1"]["category"] == "file"
+        assert obj["data"]["1"]["target"] == "test_web.py"
+        assert obj["data"]["2"]["category"] == "url"
+        assert obj["data"]["2"]["target"] == "hxxp://cuckoosandbox.org"
+        assert obj["data"]["3"]["category"] == "archive"
+        assert obj["data"]["3"]["options"]["filename"] == "pdf0.pdf"
+        assert obj["data"]["3"]["target"] == "pdf0.pdf @ pdf0.zip"
+
+    @mock.patch("cuckoo.web.controllers.analysis.api.db")
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.db")
+    def test_api_post_tasks_info_many(self, p, q, client):
+        class task(object):
+            id = 0
+            guest = None
+            errors = []
+            sample_id = None
+
+            @classmethod
+            def to_dict(cls):
+                cls.id += 1
+                return {
+                    "id": cls.id,
+                    "category": "file",
+                    "target": "/tmp/hello",
+                }
+
+        p.view_tasks.return_value = [task] * 100
+        r = client.post(
+            "/analysis/api/tasks/info/",
+            json.dumps({
+                "task_ids": range(100),
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        p.view_task.assert_not_called()
+        q.view_task.assert_not_called()
+        q.view_tasks.assert_called_once()
 
     def test_view_error_has_envvar(self, client, settings):
         """Ensure that render_template() is used in view_error()."""
@@ -340,7 +411,7 @@ class TestWebInterfaceFeedback(object):
         })
 
         django.setup()
-        Database().connect()
+        db.connect()
 
         os.environ["CUCKOO_APP"] = "web"
         os.environ["CUCKOO_CWD"] = cwd()
@@ -399,29 +470,29 @@ class TestWebInterfaceFeedback(object):
         s.warning.assert_called_once()
 
     def test_submit_reboot(self, client):
-        t0 = Database().add_path(__file__)
+        t0 = db.add_path(__file__)
         r = client.get("/analysis/%s/reboot/" % t0)
         assert r.status_code == 302
-        t1, = Database().view_submit(1, tasks=True).tasks
-        assert Database().view_task(t1.id).custom == "%d" % t0
+        t1, = db.view_submit(1, tasks=True).tasks
+        assert db.view_task(t1.id).custom == "%d" % t0
 
     def test_resubmit_file(self, client):
-        Database().add_path(__file__, options={
+        db.add_path(__file__, options={
             "human": 0, "free": "yes",
         })
         assert client.get("/submit/re/1/").status_code == 302
-        submit = Database().view_submit(1)
+        submit = db.view_submit(1)
         assert submit.data["options"] == {
             "enable-injection": False,
             "simulated-human-interaction": False,
         }
 
     def test_resubmit_url(self, client):
-        Database().add_url("http://bing.com/", options={
+        db.add_url("http://bing.com/", options={
             "human": 0, "free": "yes",
         })
         assert client.get("/submit/re/1/").status_code == 302
-        submit = Database().view_submit(1)
+        submit = db.view_submit(1)
         assert submit.data["options"] == {
             "enable-injection": False,
             "simulated-human-interaction": False,
@@ -447,7 +518,7 @@ class TestWebInterfaceFeedback(object):
         })
         assert r.status_code == 302
 
-        submit = Database().view_submit(1, tasks=True)
+        submit = db.view_submit(1, tasks=True)
         assert len(submit.tasks) == 1
         task = submit.tasks[0]
         assert task.id == 1
@@ -495,30 +566,6 @@ class TestWebInterfaceFeedback(object):
                 "options": {},
             }),
         })
-
-class TestAnalysisController(object):
-    def test_task_info(self):
-        set_cwd(tempfile.mkdtemp())
-        cuckoo_create()
-        Database().connect()
-
-        task_id = Database().add_path(__file__)
-        obj = AnalysisController.task_info(task_id)
-        assert obj["task"]["category"] == "file"
-        assert obj["task"]["target"] == "test_web.py"
-
-        task_id = Database().add_url("http://cuckoosandbox.org")
-        obj = AnalysisController.task_info(task_id)
-        assert obj["task"]["category"] == "url"
-        assert obj["task"]["target"] == "hxxp://cuckoosandbox.org"
-
-        task_id = Database().add_archive(
-            "tests/files/pdf0.zip", "pdf0.pdf", "pdf"
-        )
-        obj = AnalysisController.task_info(task_id)
-        assert obj["task"]["category"] == "archive"
-        assert obj["task"]["options"]["filename"] == "pdf0.pdf"
-        assert obj["task"]["target"] == "pdf0.pdf @ pdf0.zip"
 
 def test_mongodb_disabled():
     set_cwd(tempfile.mkdtemp())

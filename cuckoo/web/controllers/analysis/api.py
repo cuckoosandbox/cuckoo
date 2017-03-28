@@ -31,6 +31,20 @@ from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 db = Database()
 
+# TODO Place this in AnalysisApi once the methods are no longer static.
+def normalize_task(task):
+    if task["category"] == "file":
+        task["target"] = os.path.basename(task["target"])
+    elif task["category"] == "url":
+        if task["target"].startswith(("http://", "https://")):
+            task["target"] = "hxxp" + task["target"][4:]
+    elif task["category"] == "archive":
+        task["target"] = "%s @ %s" % (
+            task["options"]["filename"],
+            os.path.basename(task["target"])
+        )
+    return task
+
 class AnalysisApi(object):
     @api_post
     def tasks_list(request, body):
@@ -78,20 +92,21 @@ class AnalysisApi(object):
     @api_get
     def task_info(request, task_id):
         try:
-            data = AnalysisController.task_info(task_id)
-            return JsonResponse({"status": True, "data": data}, safe=False)
+            return JsonResponse({
+                "status": True,
+                "data": {
+                    # TODO Test correctness of the following.
+                    "task": normalize_task(db.view_task(task_id)),
+                },
+            }, safe=False)
         except Exception as e:
             return json_error_response(str(e))
 
     @api_post
     def tasks_info(request, body):
-        task_ids = body.get("task_ids", [])
         data = {}
-
-        for task_id in task_ids:
-            task_info = AnalysisController.task_info(task_id)
-            data[task_info["task"]["id"]] = task_info["task"]
-
+        for task in db.view_tasks(body.get("task_ids", [])):
+            data[task.id] = normalize_task(task.to_dict())
         return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_get

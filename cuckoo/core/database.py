@@ -1379,7 +1379,11 @@ class Database(object):
         session = self.Session()
         try:
             if details:
-                task = session.query(Task).options(joinedload("guest"), joinedload("errors"), joinedload("tags")).get(task_id)
+                task = session.query(Task).options(
+                    joinedload("guest"),
+                    joinedload("errors"),
+                    joinedload("tags")
+                ).get(task_id)
             else:
                 task = session.query(Task).get(task_id)
         except SQLAlchemyError as e:
@@ -1389,6 +1393,29 @@ class Database(object):
             if task:
                 session.expunge(task)
             return task
+        finally:
+            session.close()
+
+    @classlock
+    def view_tasks(self, task_ids):
+        """Retrieve information on a task.
+        @param task_id: ID of the task to query.
+        @return: details on the task.
+        """
+        session = self.Session()
+        try:
+            tasks = session.query(Task).options(
+                joinedload("guest"),
+                joinedload("errors"),
+                joinedload("tags")
+            ).filter(Task.id.in_(task_ids)).order_by(Task.id).all()
+        except SQLAlchemyError as e:
+            log.debug("Database error viewing tasks: {0}".format(e))
+            return None
+        else:
+            for task in tasks:
+                session.expunge(task)
+            return tasks
         finally:
             session.close()
 

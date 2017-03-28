@@ -162,6 +162,13 @@ class DatabaseEngine(object):
         assert e2.message == "message2"
         assert e2.action == "actionhere"
 
+    def test_view_tasks(self):
+        t1 = self.d.add_path(__file__)
+        t2 = self.d.add_url("http://google.com/")
+        tasks = self.d.view_tasks([t1, t2])
+        assert tasks[0].to_dict() == self.d.view_task(t1).to_dict()
+        assert tasks[1].to_dict() == self.d.view_task(t2).to_dict()
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
