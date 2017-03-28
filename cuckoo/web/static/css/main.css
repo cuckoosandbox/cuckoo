@@ -3100,7 +3100,7 @@ html {
 }
 
 body {
-  padding-top: 80px;
+  padding-top: 50px;
 }
 
 body {
@@ -3126,14 +3126,6 @@ body[id="submission/post"] #footer-extra,
 body[id^="analysis"]:not(#analysis.views.pending) footer:not(.flex-grid__footer),
 body[id^="analysis"]:not(#analysis.views.pending) #footer-extra {
   display: none;
-}
-
-body[id^="analysis"] {
-  padding-top: 80px;
-}
-
-body[id^="submission/"] {
-  padding-top: 80px;
 }
 
 /* 
