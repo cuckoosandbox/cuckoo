@@ -385,6 +385,17 @@ class TestWebInterface(object):
         q.view_task.assert_not_called()
         q.view_tasks.assert_called_once()
 
+    def test_api_post_tasks_info_str(self, client):
+        r = client.post(
+            "/analysis/api/tasks/info/",
+            json.dumps({
+                "task_ids": ["1"],
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 501
+
     def test_view_error_has_envvar(self, client, settings):
         """Ensure that render_template() is used in view_error()."""
         settings.DEBUG = True

@@ -18,7 +18,7 @@ from wsgiref.util import FileWrapper
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
 from cuckoo.common.mongo import mongo
-from cuckoo.common.utils import is_list_of_strings
+from cuckoo.common.utils import list_of_strings, list_of_ints
 from cuckoo.core.database import (
     Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 )
@@ -104,8 +104,12 @@ class AnalysisApi(object):
 
     @api_post
     def tasks_info(request, body):
+        task_ids = body.get("task_ids", [])
+        if not list_of_ints(task_ids):
+            return json_error_response("Invalid task IDs given!")
+
         data = {}
-        for task in db.view_tasks(body.get("task_ids", [])):
+        for task in db.view_tasks(task_ids):
             data[task.id] = normalize_task(task.to_dict())
         return JsonResponse({"status": True, "data": data}, safe=False)
 
@@ -281,12 +285,12 @@ class AnalysisApi(object):
         filters = {}
 
         if cats:
-            if not is_list_of_strings(cats):
+            if not list_of_strings(cats):
                 return json_error_response("invalid categories")
             filters["info.category"] = {"$in": cats}
 
         if packs:
-            if not is_list_of_strings(packs):
+            if not list_of_strings(packs):
                 return json_error_response("invalid packages")
             filters["info.package"] = {"$in": packs}
 

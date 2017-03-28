@@ -374,12 +374,20 @@ def test_validate_url():
     assert utils.validate_url("https://google.com/") == "https://google.com/"
     assert utils.validate_url("ftp://google.com/") is None
 
-def test_is_list_of_strings():
-    utils.is_list_of_strings(1) is False
-    utils.is_list_of_strings("a") is False
-    utils.is_list_of_strings([]) is True
-    utils.is_list_of_strings(["a"]) is True
-    utils.is_list_of_strings(["a", 1]) is False
-    utils.is_list_of_strings(["a", []]) is False
-    utils.is_list_of_strings(["a", ["a"]]) is False
-    utils.is_list_of_strings([lambda x: x]) is False
+def test_list_of():
+    assert utils.list_of_strings(1) is False
+    assert utils.list_of_strings("a") is False
+    assert utils.list_of_strings([]) is True
+    assert utils.list_of_strings(["a"]) is True
+    assert utils.list_of_strings(["a", 1]) is False
+    assert utils.list_of_strings(["a", []]) is False
+    assert utils.list_of_strings(["a", ["a"]]) is False
+    assert utils.list_of_strings([lambda x: x]) is False
+
+    assert utils.list_of_ints(1) is False
+    assert utils.list_of_ints("1") is False
+    assert utils.list_of_ints(["1"]) is False
+    assert utils.list_of_ints([1]) is True
+    assert utils.list_of_ints([1, "1"]) is False
+    assert utils.list_of_ints([1, 2]) is True
+    assert utils.list_of_ints([lambda x: x]) is False
