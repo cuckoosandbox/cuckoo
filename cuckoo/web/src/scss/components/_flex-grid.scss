@@ -193,6 +193,10 @@
 			flex-shrink: 0;
 		}
 
+		&.scrollable {
+			overflow-y: auto;
+		}
+
 	}
 
 	&__horizontal {

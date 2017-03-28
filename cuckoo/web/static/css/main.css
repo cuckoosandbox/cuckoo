@@ -6142,6 +6142,9 @@ body.night .flex-grid__nav {
   flex-grow: 0;
   flex-shrink: 0;
 }
+.flex-grid__column.scrollable, .flex-grid__horizontal .scrollable.flex-grid__column--xs, .flex-grid__horizontal--grow .scrollable.flex-grid__column--xs, .flex-grid__horizontal .scrollable.flex-grid__column--sm, .flex-grid__horizontal--grow .scrollable.flex-grid__column--sm, .flex-grid__horizontal .scrollable.flex-grid__column--md, .flex-grid__horizontal--grow .scrollable.flex-grid__column--md {
+  overflow-y: auto;
+}
 .flex-grid__horizontal, .flex-grid__horizontal--grow {
   flex-direction: row;
 }
