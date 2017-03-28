@@ -4,15 +4,15 @@
 	flex-direction: column;
 
 	width: 100vw;
-	height: -webkit-calc(100vh - 41px);
+	height: -webkit-calc(100vh - 80px);
 
 	font-family: "Roboto", sans-serif;
 
 	&__header {
 		padding: 15px 20px;
-		border-bottom: 1pxs solid #EEEEEE;
+		border-bottom: 1px solid #EEEEEE;
 		
-		& > h3 {
+		h3 {
 			font-size: 20px;
 			font-weight: 400;
 			color: #999999;
@@ -79,6 +79,10 @@
 			border-bottom: 1px solid #071D25;
 		}
 
+		@include cuckoo-theme('night') {
+			border-bottom: 1px solid #5E5A62;
+		}
+
 	}
 
 	&__body {
@@ -115,7 +119,6 @@
 		flex-basis: 50px;
 		background-color: #111;
 		padding: 15px 20px;
-		margin-top: 30px;
 
 		.logo {
 			margin-left: 20px;
@@ -217,6 +220,12 @@
 				@extend .flex-grid__column--fixed;
 				flex-basis: 400px;	
 			}
+		}
+
+		// utility class for 'auto'-ing the height
+		&--grow {
+			@extend .flex-grid__horizontal;
+			height: auto;
 		}
 	}
 

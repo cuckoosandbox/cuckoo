@@ -171,11 +171,161 @@ $(function () {
 
 // back-to-top replacement for the analysis pages
 $(function () {
-
     $("#analysis .flex-grid__footer .logo a").bind('click', function (e) {
         e.preventDefault();
         $(this).parents('.flex-nav__body').scrollTop(0);
     });
+});
+
+// primary navigation things
+$(function () {
+
+    function theme_switch(theme) {
+        Cookies("theme", theme, { expires: 365 * 10 });
+        $('body').removeClass('cyborg night');
+        $('body').addClass(theme);
+        $(".app-nav__dropdown").removeClass('in');
+    }
+
+    $("#select-theme").bind('click', function (e) {
+        e.preventDefault();
+        $(this).parent().find('.app-nav__dropdown').toggleClass('in');
+    });
+
+    $(".theme-selection a").bind('click', function (e) {
+        e.preventDefault();
+        // set active class
+        $(".theme-selection a").removeClass('active');
+        $(this).addClass('active');
+        // toggle theme
+        var theme = $(this).attr("href").split(':')[1];
+        // if(theme == 'default') theme ='';
+        theme_switch(theme);
+    });
+
+    // close the theme dropdown on body click
+    $('body').bind('click', function (e) {
+        if ($(e.target).parents('.app-nav__dropdown--parent').length == 0) {
+            $(".app-nav__dropdown").removeClass('in');
+        }
+    });
+});
+
+// dashboard code - gets replaced later into a seperate file
+$(function () {
+
+    /* ====================
+    CHART
+    ==================== */
+
+    // disable nasty iframes from Chart (?)
+    Chart.defaults.global.responsive = false;
+
+    var chart,
+        chartCanvas = $('.free-disk-space__chart > canvas')[0];
+
+    if (chartCanvas) {
+
+        chart = new Chart(chartCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: ["Free", "Used"],
+                datasets: [{
+                    data: [25, 75], // <== this has to come somewhere from a script
+                    backgroundColor: ["#52B3D9", "#BE234A"]
+                }]
+            },
+            options: {
+                cutoutPercentage: 70,
+                legend: {
+                    // we use a custom legend featuring more awesomeness
+                    display: false
+                },
+                tooltips: {
+                    // tooltips are for 1996
+                    enabled: false
+                }
+            }
+        });
+    }
+
+    /* ====================
+    OMNI-UPLOADER - uses DnDUpload
+    ==================== */
+    if ($(".omni-uploader").length && window.DnDUpload) {
+
+        // submit uploader
+        var submit_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-submit',
+            endpoint: '/submit/api/presubmit/',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+            ajax: true,
+            templateData: {
+                title: 'Submit a file for Analysis',
+                html: '<i class="fa fa-upload"></i>\n' + $("#analysis_token").html()
+            },
+            dragstart: function dragstart(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function dragend(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function drop(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function success(data, holder) {
+
+                setTimeout(function () {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function change(uploader, holder) {
+                $(holder).addClass('dropped');
+            }
+        });
+
+        submit_uploader.draw();
+
+        // import uploader
+
+        var import_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-import',
+            endpoint: '',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+
+            // disables ajax functionality
+            ajax: false,
+
+            templateData: {
+                title: 'Submit a file to import',
+                html: '<i class="fa fa-upload"></i>\n' + $('#import_token').html() + '\n<input type="hidden" name="category" type="text" value="file">\n',
+                // sets form action for submitting the files to (form action=".. etc")
+                formAction: '/analysis/import/',
+                inputName: 'analyses'
+            },
+            dragstart: function dragstart(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function dragend(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function drop(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function success(data, holder) {
+                setTimeout(function () {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function change(uploader, holder, files) {
+                $(holder).addClass('dropped');
+            }
+        });
+
+        import_uploader.draw();
+    }
 });
 
 function alertbox(msg, context, attr_id) {

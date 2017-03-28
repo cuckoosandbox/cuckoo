@@ -1,0 +1,224 @@
+.dashboard {
+
+	background-color: #F7F8FA;
+	padding: 20px 15px 0 15px;
+
+	// divides the two columns a 1/3 2/3 division
+	&__left { 
+		flex-basis: 415px; 
+		flex-grow: 0;
+		flex-shrink: 0;
+	}
+	&__right { flex-basis: 100%; }
+
+	// big titles above the columns
+	&__col-title {
+		font-size: 32px;
+		color: #6297F8;
+	}
+
+	// dashboard module
+	&-module {
+
+		border: 2px solid #DFDFDF;
+		border-radius: 8px;
+		margin-bottom: 25px;
+		overflow: hidden;
+
+		&__header {
+			background-color: #fff;
+			border-bottom: 2px solid #DFDFDF;
+			text-align: center;
+
+			h4 { 
+				font-size: 14px;
+				color: #337AB8;
+				padding: 20px 0 10px 0;
+				margin: 0; 
+			}
+		}
+
+		&__body {
+			display: flex;
+			background-color: #F5F5F5;
+			border-bottom: 1px solid #DFDFDF;
+
+			&--left,
+			&--right {
+				flex-basis: 50%;
+				flex-grow: 0;
+				flex-shrink: 0;
+			}
+
+			&--left {
+				border-right: 2px solid #DFDFDF;
+			}
+		}
+
+		&__footer {
+			background-color: #fff;
+			text-align: center;
+
+			p { 
+				font-weight: 500;
+				font-size: 12px;
+				padding: 5px;
+				margin: 0; 
+				color: #979797;
+
+				&.align-left {
+					text-align: left;
+					padding-left: 15px;
+					padding-right: 15px;
+				}
+
+				& > i {
+					font-size: 0.9em;
+					margin-right: 5px;
+				}
+
+			}
+		}
+
+		&__lg {
+
+			@extend .dashboard-module;
+
+			.dashboard-module__footer > p {
+				font-size: 14px;
+				padding: 18px;
+
+				&.align-left {
+					padding-left: 25px;
+					padding-right: 25px;
+				}
+
+				i {
+					margin-right: 10px;
+				}
+			}
+
+		}
+
+		table.simple {
+			table-layout: fixed;
+			width: 100%;
+
+			tr {
+				border-bottom: 1px solid #DFDFDF;
+
+				&:last-child {
+					border-bottom: 0;
+
+					td {
+						padding-bottom: 20px;
+					}
+				}
+
+				&:first-child td {
+					padding-top: 20px;
+				}
+
+				td {
+					font-size: 12px;
+					padding: 6px;
+					color: #979797;
+
+					&:first-child { 
+						font-weight: 600;
+						border-right: 1px solid #DFDFDF; 
+						text-align: right;
+					}
+
+				}
+
+			}
+		}
+
+		// free disk space widget styling
+		.free-disk-space {
+
+			h5 {
+				text-transform: uppercase;
+				font-weight: 700;
+				text-align: center;
+				color: #979797;
+			}
+
+			&__chart {
+
+				position: relative;
+
+				& > canvas {
+					margin: 0px auto;
+					width: 135px;
+					height: 135px;
+				}
+
+			}
+
+			&__legend {
+
+				position: absolute;
+				width: 95px;
+				height: 95px;
+				top: 20px;
+				left: 50%;
+				margin-left: -47px;
+				border-radius: 50%;
+				overflow: hidden;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				text-align: center;
+
+				p {
+					font-size: 12px;
+					font-weight: 900;
+					color: #BE234A;
+					margin: 0;
+
+					& > strong {
+						font-size: 20px;
+						color: #52B3D9;
+						letter-spacing: -0.6px;
+					}
+				}
+
+			}
+
+		}
+
+		// omni upload widget
+		.omni-uploader {
+			background-color: #fff;
+			border-bottom-width: 2px;
+
+			.dashboard-module__body--left {
+				border-right-width: 2px;
+			}
+
+			.uploader-area {
+				display: block;
+				text-align: center;
+				height: 193px;
+
+				h5 {
+					text-transform: uppercase;
+					color: #979797;
+					font-weight: 700;
+					font-size: 16px;
+					margin: 0 0 11px 0;
+				}
+
+				.fa {
+					font-size: 50px;
+					color: #71A1F9;
+				}
+			}
+		}
+
+	}
+
+}

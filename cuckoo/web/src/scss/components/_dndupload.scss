@@ -107,6 +107,102 @@
 
     }
 
+    &__simple {
+
+        @extend .dndupload;
+
+        form#uploader {
+            outline: 0;
+            outline-offset: 0;
+            padding-top: 55px;
+            transition: padding 100ms ease-in;
+        }
+
+        // this field has to be clickable in its entirety
+        .holder_input {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 5;
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        // progress bar styling
+        progress#uploadprogress {
+            -webkit-appearance: none;
+            position: absolute;
+            bottom: calc(10% + 5px);
+            left: calc(5% + 5px);
+            width: calc(90% - 10px);
+            opacity: 0;
+            transition: opacity 100ms ease-in;
+
+            &::-webkit-progress-bar { 
+                background: #f3f3f3; 
+            }
+
+            &::-webkit-progress-value {
+                background: #71a1f9;
+            }
+
+        }
+
+        &:before {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 90%;
+            height: 80%;
+            left: 5%;
+            top: 10%;
+            border: 5px dashed #ccc;
+            opacity: 0;
+            transition: opacity 100ms ease-in,
+                        border 100ms ease-in;
+        }
+
+        &.dragging,
+        &.dropped {
+
+            form#uploader {
+                padding-top: 45px;
+            }
+
+            progress#uploadprogress {
+                opacity: 1;
+            }
+
+            &:before {
+                opacity: 1;
+            }
+        }
+
+        &.dragging {
+
+            .fa:before {
+                content: "\f063";
+            }
+
+        }
+
+        &.dropped {
+
+            .fa:before {
+                content: "\f00c";
+            }
+
+            &:before {
+                border: 5px solid #71a1f9;
+            }
+
+        }
+
+    }
+
     &__v2 {
 
         @extend .dndupload;
