@@ -236,7 +236,10 @@ if __name__ == "__main__":
             except Exception as e:
                 log.exception("Error executing command")
 
-            server.sendto(json.dumps({
-                "output": output,
-                "exception": str(e) if e else None,
-            }), addr)
+            try:
+                server.sendto(json.dumps({
+                    "output": output,
+                    "exception": str(e) if e else None,
+                }), addr)
+            except Exception as ex:
+                log.exception("Error while sending response to: %r", addr)
