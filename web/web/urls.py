@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import dashboard.views
+import configure.views
 import analysis.views
 
 from django.conf.urls import include, url
@@ -16,4 +17,5 @@ urlpatterns = [
     url(r"^file/(?P<category>\w+)/(?P<object_id>\w+)/$", analysis.views.file),
     url(r"^full_memory/(?P<analysis_number>\w+)/$", analysis.views.full_memory_dump_file),
     url(r"^dashboard/", include("dashboard.urls")),
+    url(r"^configure/", include("configure.urls")),
 ]

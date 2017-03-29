@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<!-- Modal -->
+<div id="create" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Management {{current_machinery}} machine</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Create Machine information</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" role="form" action="/configure/machine/add" method="post" name="submit">
+                            <div class="control-group">
+                                <label class="control-label" for="ethernet">Name: </label>
+                                <input type="text" class="form-control" name="machine" id="machine" placeholder="physical1">
+                            </div>
+                            <div class="control-group">
+                                <label  class="control-label" class=for="compression">Platform: </label>
+                                <select class="form-control" name="platform">
+                                  <option value="windows">windows</option>
+                                  <option value="linux">linux</option>
+                              </select>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="ethernet">Ethernet: </label>
+                                <input type="text" class="form-control" name="ethernet" id="ethernet" placeholder="eth1">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="ipaddress">IP Address: </label>
+                                <input type="text" class="form-control" name="ipaddress" id="ipaddress" placeholder="192.168.1.12">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="snapshot">Snapshot: </label>
+                                <input type="text" class="form-control" name="snapshot" id="snapshot" placeholder="Snapshot Name">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="tags">Tags: </label>
+                                <input type="text" class="form-control" name="tags" id="tags" placeholder="Tags">
+                            </div>
+                            <input type="hidden" class="form-control" name="current_machinery" id="current_machinery" value="{{current_machinery}}">
+                            <hr>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Delete Machine</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-inline" role="form" action="/configure/machine/delete" method="post" name="submit">
+                            <div class="form-group">
+                                <label for="compression">Machine</label>
+                                <select class="form-control" name="machine">
+                                  {% for machine in list_machines %}
+                                  <option value="{{machine}}">{{machine}}</option>
+                                  {% endfor %}
+                              </select>
+                            </div>
+                            <input type="hidden" class="form-control" name="current_machinery" id="current_machinery" value="{{current_machinery}}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<form role="form" action="" method="post">{% csrf_token %}
+<button type="button" class="btn btn-info" data-toggle="modal" data-target="#create">Management {{current_machinery}} machine</button>
+<button type="submit" class="btn btn-success" name="action" value="log">Server Log</button>
+<button type="submit" class="btn btn-warning" name="action" value="reboot" onclick='return confirm("reboot cuckoo");'>Reboot</button>
+<button type="submit" class="btn btn-danger" name="action" value="shutdown" onclick='return confirm("shutdown cuckoo");'>Shutdown</button>
+<button type="submit" class="btn btn-default" name="action" value="clean" onclick='return confirm("clean configuration");'>Clean Configuration</button>
+
+<hr>
+
+
+<datalist id="configName">
+{% for configName in configNames %}
+    <option value="{{configName}}">{{configName}}</option>
+{% endfor %}
+</datalist>
+
+<div class="form-group">
+    <input class="span2" type="text" list="configName" name="configName" placeholder="Configuration Name">
+    <div class="btn-group">
+    <button type="submit" class="btn btn-default" name="action" value="load">Load</button>
+    <button type="submit" class="btn btn-default" name="action" value="save">Save</button>
+    </div>
+<button type="submit" class="btn btn-default" name="action" value="apply">Apply</button>
+<button type="submit" class="btn btn btn-primary" name="action" value="restart">Apply & restart process</button>
+</div>
+
+<hr>
+
+<ul class="nav nav-tabs">
+    {% for cfg_name in configure.keys %}
+        {% if cfg_name == "cuckoo" %}
+            <li class="active"><a href="#{{cfg_name}}" data-toggle="tab">{{cfg_name}}</a>
+        {% else %}
+            <li><a href="#{{cfg_name}}" data-toggle="tab">{{cfg_name}}</a>
+        {% endif %}
+    {% endfor %}
+</ul>
+<div class="tab-content">
+    {% for cfg_name,cfg in configure.items %}
+        {% if cfg_name == "cuckoo" %}
+            <div class="tab-pane fade in active" id="{{cfg_name}}">
+        {% else %}
+            <div class="tab-pane fade" id="{{cfg_name}}">
+        {% endif %}
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{cfg_name}}</h3>
+            </div>
+            <table class="table table-striped" style="table-layout: fixed;">
+            <thead>
+            <tr>
+                <th>key</th>
+                <th>value</th>
+            </tr>
+            </thead>
+                {% for section, items in cfg.items %}
+                    {% for key,value in items %}
+                    <tbody>
+                        <tr>
+                            <td>{{section}}.{{key}}</td>
+                            <td>
+                            {% if cfg_name in machinery%}
+								{% if value|select_config %}
+									<select class="form-control" name="{{cfg_name}}.{{section}}.{{key}}">
+									{% for c in value|select_config %}
+										{% if c == value %}
+											<option value="{{c}}" selected>{{c}}</option>
+										{% else %}
+											<option value="{{c}}">{{c}}</option>
+										{% endif %}
+									{% endfor %}
+									</select>
+								{% else %}
+									<input type="text" class="form-control" name="{{cfg_name}}.{{section}}.{{key}}" value="{{value}}" placeholder="{{value}}" disabled="disabled">
+								{% endif %}
+                            {% else %}
+								{% if value|select_config %}
+									<select class="form-control" name="{{cfg_name}}.{{section}}.{{key}}">
+									{% for c in value|select_config %}
+										{% if c == value %}
+											<option value="{{c}}" selected>{{c}}</option>
+										{% else %}
+											<option value="{{c}}">{{c}}</option>
+										{% endif %}
+									{% endfor %}
+									</select>
+								{% else %}
+									<input type="text" class="form-control" name="{{cfg_name}}.{{section}}.{{key}}" value="{{value}}" placeholder="{{value}}">
+								{% endif %}
+                            {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+</form>
+{% endblock %}
