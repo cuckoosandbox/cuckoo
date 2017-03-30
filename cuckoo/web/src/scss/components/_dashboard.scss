@@ -145,7 +145,6 @@
 				@include cuckoo-theme('cyborg') {
 
 					color: $cyborg_secundary_color;
-					font-weight: 400;
 
 					&.active {
 						background-color: $cyborg_secundary_color;
@@ -153,7 +152,6 @@
 					}
 
 					&[href] {
-						font-weight: 700;
 
 						&:hover:not(.active) {
 							background-color: lighten($cyborg_panel_color, 5);
@@ -166,6 +164,24 @@
 
 					&--right {
 						background-color: transparent;
+					}
+
+				}
+
+				@include cuckoo-theme('night') {
+
+					color: #fff;
+					border-color: darken($night_border_color, 10);
+
+					&[href] {
+						&:hover:not(.active) {
+							background-color: lighten($night_panel_color, 5);
+						}
+
+						&.active {
+							background-color: darken($night_panel_color, 5);
+							box-shadow: 0px 2px 0px darken($night_panel_color, 15);
+						}
 					}
 
 				}
@@ -354,6 +370,71 @@
 				}
 			}
 
+		}
+
+	}
+
+	// night theming
+	@include cuckoo-theme('night') {
+
+		background-color: $night_background_color;
+
+		.dashboard__col-title {
+			color: $night_text_color;
+		}
+
+		.dashboard-module {
+
+			border-color: darken($night_border_color, 10);
+
+			&__header,
+			&__footer,
+			&__body {
+				border-color: darken($night_border_color, 10);
+			}
+
+			&__header {
+				background-color: $night_panel_color;
+
+				h4 {
+					color: #fff;
+				}
+
+			}
+
+			&__body {
+				background-color: #202225;
+
+				&--left {
+					border-color: darken($night_border_color, 10);
+				}
+			}
+
+			&__footer {
+				background-color: $night_panel_color;
+				p { color: #fff; }
+			}
+
+		}
+
+		table.simple {
+
+			tr {
+				border-color: darken($night_border_color, 10);
+
+				td {
+					border-color: darken($night_border_color, 10);
+					color: #fff;
+				}
+
+				&:nth-child(odd) {
+					background-color: #252525;
+				}
+
+				&:nth-child(even) {
+					background-color: #333333;
+				}
+			}
 		}
 
 	}

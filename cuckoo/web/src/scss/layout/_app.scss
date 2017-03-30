@@ -153,4 +153,12 @@ section#screenshots .minified{
         cursor: pointer;
     }
 
+    @include cuckoo-theme('night') {
+        select { background-color: transparent; }
+    }
+
+    @include cuckoo-theme('cyborg') {
+        select { background-color: transparent; }
+    }
+
 }

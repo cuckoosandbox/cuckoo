@@ -3278,6 +3278,12 @@ section#screenshots .minified {
 .custom-select:hover {
   cursor: pointer;
 }
+body.night .custom-select select {
+  background-color: transparent;
+}
+body.cyborg .custom-select select {
+  background-color: transparent;
+}
 
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
@@ -7439,14 +7445,10 @@ body.cyborg .page-freeze.error {
 }
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab, body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right {
   color: #0ce3ac;
-  font-weight: 400;
 }
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab.active, body.cyborg .dashboard-module__tabs > .active.flex-tabs__tab--right {
   background-color: #0ce3ac;
   color: #111;
-}
-body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href], body.cyborg .dashboard-module__tabs > [href].flex-tabs__tab--right {
-  font-weight: 700;
 }
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active), body.cyborg .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active) {
   background-color: #142a33;
@@ -7456,6 +7458,17 @@ body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href].active, body.cyborg 
 }
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right {
   background-color: transparent;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab, body.night .dashboard-module__tabs > .flex-tabs__tab--right {
+  color: #fff;
+  border-color: #28415b;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active), body.night .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active) {
+  background-color: #3f6791;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right {
+  background-color: #2f4d6d;
+  box-shadow: 0px 2px 0px #20344a;
 }
 .dashboard-module table.simple, .dashboard-module__lg table.simple {
   table-layout: fixed;
@@ -7583,6 +7596,49 @@ body.cyborg .dashboard table.simple tr td {
 }
 body.cyborg .dashboard table.simple tr:nth-child(odd) {
   background-color: #09191d;
+}
+body.night .dashboard {
+  background-color: #232323;
+}
+body.night .dashboard .dashboard__col-title {
+  color: #d7d7d7;
+}
+body.night .dashboard .dashboard-module, body.night .dashboard .dashboard-module__lg {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__header, body.night .dashboard .dashboard-module__footer, body.night .dashboard .dashboard-module__body {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__header {
+  background-color: #375a7f;
+}
+body.night .dashboard .dashboard-module__header h4 {
+  color: #fff;
+}
+body.night .dashboard .dashboard-module__body {
+  background-color: #202225;
+}
+body.night .dashboard .dashboard-module__body--left {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__footer {
+  background-color: #375a7f;
+}
+body.night .dashboard .dashboard-module__footer p {
+  color: #fff;
+}
+body.night .dashboard table.simple tr {
+  border-color: #28415b;
+}
+body.night .dashboard table.simple tr td {
+  border-color: #28415b;
+  color: #fff;
+}
+body.night .dashboard table.simple tr:nth-child(odd) {
+  background-color: #252525;
+}
+body.night .dashboard table.simple tr:nth-child(even) {
+  background-color: #333333;
 }
 
 /* 
