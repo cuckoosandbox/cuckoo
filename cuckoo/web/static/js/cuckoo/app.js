@@ -221,32 +221,47 @@ $(function () {
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    var chart,
-        chartCanvas = $('.free-disk-space__chart > canvas')[0];
+    function createChart(data) {
 
-    if (chartCanvas) {
+        var chart,
+            chartCanvas = $('.free-disk-space__chart > canvas')[0],
+            ds_total = data.total,
+            ds_free = data.free,
+            ds_used = data.used,
+            percent_free = 100 / ds_total * ds_free,
+            percent_used = 100 / ds_total * ds_used,
+            human_free = CuckooWeb.human_size(ds_free),
+            human_total = CuckooWeb.human_size(ds_total);
 
-        chart = new Chart(chartCanvas, {
-            type: 'doughnut',
-            data: {
-                labels: ["Free", "Used"],
-                datasets: [{
-                    data: [25, 75], // <== this has to come somewhere from a script
-                    backgroundColor: ["#52B3D9", "#BE234A"]
-                }]
-            },
-            options: {
-                cutoutPercentage: 70,
-                legend: {
-                    // we use a custom legend featuring more awesomeness
-                    display: false
+        if (chartCanvas) {
+
+            chart = new Chart(chartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ["Free", "Used"],
+                    datasets: [{
+                        data: [percent_free, percent_used], // <== this has to come somewhere from a script
+                        backgroundColor: ["#52B3D9", "#BE234A"]
+                    }]
                 },
-                tooltips: {
-                    // tooltips are for 1996
-                    enabled: false
+                options: {
+                    cutoutPercentage: 70,
+                    legend: {
+                        // we use a custom legend featuring more awesomeness
+                        display: false
+                    },
+                    tooltips: {
+                        // tooltips are for 1996
+                        enabled: false
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        return {
+            free: human_free,
+            total: human_total
+        };
     }
 
     /* ====================
@@ -326,10 +341,39 @@ $(function () {
 
         import_uploader.draw();
     }
-});
 
-// custom select helper
-$(function () {});
+    // dashboard components
+    if ($("#cuckoo-dashboard").length) {
+        (function () {
+            var simpleTable = function simpleTable(keys) {
+
+                var rows = $('<div />');
+
+                for (var key in keys) {
+                    var val = keys[key];
+                    var $tr = $("<tr />");
+                    $tr.append('<td>' + key + '</td>');
+                    $tr.append('<td>' + val + '</td>');
+                    rows.append($tr);
+                }
+
+                return rows.html();
+            };
+
+            $.get('/cuckoo/api/status', function (data) {
+
+                // populate tasks information
+                var tasks_info = simpleTable(data.data.tasks);
+                $('[data-populate="statistics"]').html(tasks_info);
+
+                // populate free disk space unit
+                var disk_space = createChart(data.data.diskspace.analyses);
+                $('[data-populate="free-disk-space"]').text(disk_space.free);
+                $('[data-populate="total-disk-space"]').text(disk_space.total);
+            });
+        })();
+    }
+});
 
 function alertbox(msg, context, attr_id) {
     if (context) {

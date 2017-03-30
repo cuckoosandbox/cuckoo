@@ -2,11 +2,13 @@
 {% load staticfiles %}
 {% block content %}
 
+<div id="cuckoo-dashboard" class="hidden"></div>
+
 <div class="flex-grid__horizontal--grow dashboard">
     <div class="flex-grid__column dashboard__left">
         <h2 class="dashboard__col-title">Insights</h2>
 
-        <div class="dashboard-module">
+        <div class="dashboard-module" data-dashboard-module="installation">
             <header class="dashboard-module__header">
                 <h4>Cuckoo Installation</h4>
             </header>
@@ -15,23 +17,7 @@
                     <tbody>
                         <tr>
                             <td>Version</td>
-                            <td>2.0</td>
-                        </tr>
-                        <tr>
-                            <td>Last update</td>
-                            <td>14-03-2017</td>
-                        </tr>
-                        <tr>
-                            <td>Health</td>
-                            <td>OK</td>
-                        </tr>
-                        <tr>
-                            <td>Running</td>
-                            <td>YES</td>
-                        </tr>
-                        <tr>
-                            <td>Status</td>
-                            <td>IDLE</td>
+                            <td>2.0.0</td>
                         </tr>
                     </tbody>
                 </table>
@@ -47,13 +33,11 @@
             </header>
             <section class="dashboard-module__body">
                 <table class="simple">
-                    <tbody>
-                        {% for state, count in report.states_count.items %}
-                            <tr>
-                                <td>{{ state }}</td>
-                                <td>{{ count }}</td>
-                            </tr>
-                        {% endfor %}
+                    <tbody data-populate="statistics">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </tbody>
                 </table>
             </section>
@@ -67,7 +51,7 @@
 
         <h2 class="dashboard__col-title">Cuckoo</h2>
 
-        <div class="dashboard-module__lg">
+        <div class="dashboard-module__lg" data-dashboard-module="upload">
             <div class="dashboard-module__body omni-uploader">
 
                 <div class="dashboard-module__body--left">
@@ -88,47 +72,18 @@
 
         </div>
 
-        <div class="dashboard-module">
+        <div class="dashboard-module" data-dashboard-module="system">
             <header class="dashboard-module__header">
                 <h4>System info</h4>
             </header>
-            <section class="dashboard-module__body">
-                
-                <div class="dashboard-module__body--left">
-                    <table class="simple">
-                        <tbody>
-                            <tr>
-                                <td>Network</td>
-                                <td>YES</td>
-                            </tr>
-                            <tr>
-                                <td>Internet</td>
-                                <td>YES</td>
-                            </tr>
-                            <tr>
-                                <td>OS</td>
-                                <td>Mac OSX 10.11</td>
-                            </tr>
-                            <tr>
-                                <td>VM</td>
-                                <td>VirtualBox</td>
-                            </tr>
-                            <tr>
-                                <td>Routing</td>
-                                <td>HTTP</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <section class="dashboard-module__body free-disk-space">
 
-                </div>
-                <div class="dashboard-module__body--right free-disk-space">
-                    <h5>Free disk space</h5>
-                    <div class="free-disk-space__chart">
-                        <canvas></canvas>
-                        <div class="free-disk-space__legend">
-                            <p><strong>13,37 GB</strong></p>
-                            <p>120,11 GB</p>
-                        </div>
+                <h5>Free disk space</h5>
+                <div class="free-disk-space__chart">
+                    <canvas></canvas>
+                    <div class="free-disk-space__legend">
+                        <p><strong data-populate="free-disk-space"></strong></p>
+                        <p data-populate="total-disk-space"></p>
                     </div>
                 </div>
 
@@ -149,7 +104,7 @@
         <h2 class="dashboard__col-title">Recent processes</h2>
 
         <!-- recent analyses -->
-        <div class="dashboard-module__lg">
+        <div class="dashboard-module__lg" data-dashboard-module="processes">
             <header class="dashboard-module__header">
 
                 <div class="flex-tabs__tabs dashboard-module__tabs">
@@ -198,7 +153,6 @@
                             <td><span class="badge danger">7.8 / 10</span></td>
                             <td>
                                 <a href="#" class="button">View</a>
-                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 
@@ -209,7 +163,6 @@
                             <td><span class="badge success">0.6 / 10</span></td>
                             <td>
                                 <a href="#" class="button">View</a>
-                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 
@@ -220,7 +173,6 @@
                             <td><span class="badge warning">5.7 / 10</span></td>
                             <td>
                                 <a href="#" class="button">View</a>
-                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 

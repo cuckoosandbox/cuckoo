@@ -7496,6 +7496,11 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   border-right: 1px solid #DFDFDF;
   text-align: right;
 }
+.dashboard-module .free-disk-space, .dashboard-module__lg .free-disk-space {
+  display: block;
+  width: 100%;
+  padding: 20px 0;
+}
 .dashboard-module .free-disk-space h5, .dashboard-module__lg .free-disk-space h5 {
   text-transform: uppercase;
   font-weight: 700;
