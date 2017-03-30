@@ -360,6 +360,9 @@ $(function () {
                 return rows.html();
             };
 
+            // retrieve general info about cuckoo
+
+
             $.get('/cuckoo/api/status', function (data) {
 
                 // populate tasks information
@@ -370,6 +373,48 @@ $(function () {
                 var disk_space = createChart(data.data.diskspace.analyses);
                 $('[data-populate="free-disk-space"]').text(disk_space.free);
                 $('[data-populate="total-disk-space"]').text(disk_space.total);
+            });
+
+            // retrieve recent stuff
+            // $.post('/analysis/api/tasks/recent/', {
+            //     cats: [],
+            //     limit: 3,
+            //     offset: 0,
+            //     packs: [],
+            //     score: ""
+            // }, function(data) {
+            //     console.log(data);
+            // }, "json");
+
+            $.ajax({
+                type: "POST",
+                url: "/analysis/api/tasks/recent/",
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify({
+                    cats: [],
+                    limit: 3,
+                    offset: 0,
+                    packs: [],
+                    score: ""
+                }),
+                success: function success(data) {
+
+                    data = data.map(function (item) {
+                        if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                        return item;
+                    });
+
+                    console.log(data);
+
+                    var recent_table = HANDLEBARS_TEMPLATES['dashboard-table']({
+                        entries: data.filter(function (item) {
+                            return item.status === 'reported';
+                        })
+                    });
+
+                    $("[data-populate='dashboard-table-recent']").html(recent_table);
+                }
             });
         })();
     }

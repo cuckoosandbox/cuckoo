@@ -109,9 +109,9 @@
 
                 <div class="flex-tabs__tabs dashboard-module__tabs">
 
-                    <a href="#" class="flex-tabs__tab active">Analyses</a>
+                    <!-- <a href="#" class="flex-tabs__tab active">Analyses</a>
                     <a href="#" class="flex-tabs__tab">Tasks</a>
-                    <a href="#" class="flex-tabs__tab">Failed</a>
+                    <a href="#" class="flex-tabs__tab">Failed</a> -->
 
                     <div class="flex-tabs__tab--right">
                         <div class="custom-select" data-custom="select">
@@ -132,54 +132,12 @@
 
             </header>
             <section class="dashboard-module__body">
-
-                <table class="cuckoo-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Package</th>
-                            <th>Executable</th>
-                            <th>Score</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        <tr>
-                            <td>20/03/2016</td>
-                            <td>10.zip</td>
-                            <td>asdfasdf.exe</td>
-                            <td><span class="badge danger">7.8 / 10</span></td>
-                            <td>
-                                <a href="#" class="button">View</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>20/03/2016</td>
-                            <td>10.zip</td>
-                            <td>asdfasdf.exe</td>
-                            <td><span class="badge success">0.6 / 10</span></td>
-                            <td>
-                                <a href="#" class="button">View</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>20/03/2016</td>
-                            <td>10.zip</td>
-                            <td>asdfasdf.exe</td>
-                            <td><span class="badge warning">5.7 / 10</span></td>
-                            <td>
-                                <a href="#" class="button">View</a>
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
+                <div class="dashboard-module__body--left" data-populate="dashboard-table-recent">
+                    
+                </div>
+                <div class="dashboard-module__body--right" data-populate="dashboard-table-pending">
+                    
+                </div>
             </section>
 
             <footer class="dashboard-module__footer">

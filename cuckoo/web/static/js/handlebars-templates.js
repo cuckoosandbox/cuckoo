@@ -224,6 +224,25 @@ this["HANDLEBARS_TEMPLATES"]["control-top-select"] = Handlebars.template({"1":fu
     + "\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rest_items : depth0),{"name":"if","hash":{},"fn":this.program(22, data, 0, blockParams, depths),"inverse":this.noop,"data":data})) != null ? stack1 : "");
 },"useData":true,"useDepths":true});
+this["HANDLEBARS_TEMPLATES"]["dashboard-table"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+    var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
+
+  return "\n            <tr>\n                <td>"
+    + alias3(((helper = (helper = helpers.added_on || (depth0 != null ? depth0.added_on : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"added_on","hash":{},"data":data}) : helper)))
+    + "</td>\n                <td>"
+    + alias3(((helper = (helper = helpers.filename_url || (depth0 != null ? depth0.filename_url : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"filename_url","hash":{},"data":data}) : helper)))
+    + "</td>\n                <td>"
+    + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
+    + "</td>\n                <td><span class=\"badge\">"
+    + alias3(((helper = (helper = helpers.score || (depth0 != null ? depth0.score : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"score","hash":{},"data":data}) : helper)))
+    + " / 10</span></td>\n            </tr>\n\n";
+},"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return "<table class=\"cuckoo-table\">\n\n    <thead>\n        <tr>\n            <th>Date</th>\n            <th>File</th>\n            <th>Package</th>\n            <th>Score</th>\n        </tr>\n    </thead>\n\n    <tbody>\n\n\n"
+    + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.entries : depth0),{"name":"each","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "\n    </tbody>\n\n</table>";
+},"useData":true});
 this["HANDLEBARS_TEMPLATES"]["dndupload"] = Handlebars.template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var helper;
 

@@ -1,0 +1,48 @@
+<table class="cuckoo-table">
+
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>File</th>
+            <th>Package</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+       {{!--  <tr>
+            <td>20/03/2016</td>
+            <td>10.zip</td>
+            <td>asdfasdf.exe</td>
+            <td><span class="badge danger">7.8 / 10</span></td>
+        </tr>
+
+        <tr>
+            <td>20/03/2016</td>
+            <td>10.zip</td>
+            <td>asdfasdf.exe</td>
+            <td><span class="badge success">0.6 / 10</span></td>
+        </tr>
+
+        <tr>
+            <td>20/03/2016</td>
+            <td>10.zip</td>
+            <td>asdfasdf.exe</td>
+            <td><span class="badge warning">5.7 / 10</span></td>
+        </tr> --}}
+
+        {{#each entries}}
+
+            <tr>
+                <td>{{added_on}}</td>
+                <td>{{filename_url}}</td>
+                <td>{{package}}</td>
+                <td><span class="badge">{{score}} / 10</span></td>
+            </tr>
+
+        {{/each}}
+
+    </tbody>
+
+</table>
