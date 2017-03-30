@@ -245,8 +245,8 @@ each one. For details click on the resource name.
             REST_URL = "http://localhost:8090/tasks/create/url"
             SAMPLE_URL = "http://example.org/malwr.exe"
 
-            multipart_url = {"url": ("", SAMPLE_URL)}
-            request = requests.post(REST_URL, files=multipart_url)
+            payload_url = {"url": SAMPLE_URL}
+            request = requests.post(REST_URL, data=payload_url)
 
             # Add your code to error checking for request.status_code.
 
