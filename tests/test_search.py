@@ -318,8 +318,8 @@ def test_mongo_file_md5():
                    'category':'url'}
               }
 
-    do_search(report1, report2, None, report1['target']['file']['md5'])
-    do_search(report2, report1, None, report2['target']['file']['md5'])
+    do_search(report1, report2, "md5", report1['target']['file']['md5'])
+    do_search(report2, report1, "md5", report2['target']['file']['md5'])
 
 def test_mongo_file_sha1():
     report1 = {'target':
@@ -340,8 +340,8 @@ def test_mongo_file_sha1():
                    'category':'url'}
               }
 
-    do_search(report1, report2, None, report1['target']['file']['sha1'])
-    do_search(report2, report1, None, report2['target']['file']['sha1'])
+    do_search(report1, report2, "sha1", report1['target']['file']['sha1'])
+    do_search(report2, report1, "sha1", report2['target']['file']['sha1'])
 
 def test_mongo_file_sha256():
     report1 = {'target':
@@ -362,8 +362,8 @@ def test_mongo_file_sha256():
                    'category':'url'}
               }
 
-    do_search(report1, report2, None, report1['target']['file']['sha256'])
-    do_search(report2, report1, None, report2['target']['file']['sha256'])
+    do_search(report1, report2, "sha256", report1['target']['file']['sha256'])
+    do_search(report2, report1, "sha256", report2['target']['file']['sha256'])
 
 def test_mongo_file_sha512():
     report1 = {'target':
@@ -384,8 +384,8 @@ def test_mongo_file_sha512():
                    'category':'url'}
               }
 
-    do_search(report1, report2, None, report1['target']['file']['sha512'])
-    do_search(report2, report1, None, report2['target']['file']['sha512'])
+    do_search(report1, report2, "sha512", report1['target']['file']['sha512'])
+    do_search(report2, report1, "sha512", report2['target']['file']['sha512'])
 
 def test_mongo_file():
     report1 = {'behavior':
