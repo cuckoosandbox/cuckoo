@@ -120,7 +120,6 @@ def foreach_window(hwnd, lparam):
                 log.error("No specific handler found for %s", classname.value.lower())
 
         else:
-            log.debug("%s is not specific or to be closed", classname.value.lower())
             USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
     return True
 
@@ -145,6 +144,16 @@ def click_mouse():
     # Mouse up.
     USER32.mouse_event(4, 0, 0, 0, None)
 
+def change_windows():
+    # Press ALT
+    USER32.keybd_event(VK_LMENU, 0x0, KEYEVENTF_EXTENDEDKEY | 0, 0)
+    # Press TAB
+    USER32.keybd_event(VK_TAB, 0x0, KEYEVENTF_EXTENDEDKEY | 0, 0)
+    # Release TAB
+    USER32.keybd_event(VK_TAB, 0x0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+    # Release ALT
+    USER32.keybd_event(VK_LMENU, 0x0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+
 class Human(Auxiliary, Thread):
     """Human after all"""
 
@@ -162,10 +171,12 @@ class Human(Auxiliary, Thread):
             self.do_move_mouse = int(self.options["human"])
             self.do_click_mouse = int(self.options["human"])
             self.do_click_buttons = int(self.options["human"])
+            self.do_change_windows = int(self.options["human"])
         else:
             self.do_move_mouse = True
             self.do_click_mouse = True
             self.do_click_buttons = True
+            self.do_change_windows = True
 
         # Per-feature enable or disable flag.
         if "human.move_mouse" in self.options:
@@ -177,12 +188,31 @@ class Human(Auxiliary, Thread):
         if "human.click_buttons" in self.options:
             self.do_click_buttons = int(self.options["human.click_buttons"])
 
+        if "human.change_windows" in self.options:
+            self.do_change_windows = int(self.options["human.change_windows"])
+
+        if self.do_change_windows:
+            # Pick some random procs and spawn them
+            spawn = [
+                "calc.exe", "notepad.exe", "iexplore.exe", "cmd.exe",
+                "explorer.exe", "wmplayer.exe"
+            ]
+            # Spawn 2 random procs
+            hwnd = USER32.GetForegroundWindow()
+            for i in xrange(2):
+                app = random.choice(spawn)
+                log.debug("[HUMAN.CHANGE_WINDOWS] Spawning %s", app)
+                SHELL32.ShellExecuteA(hwnd, "open", app, "", "", SW_SHOW)
+
         while self.do_run:
             if self.do_click_mouse:
                 click_mouse()
 
             if self.do_move_mouse:
                 move_mouse()
+
+            if self.do_change_windows:
+                change_windows()
 
             if self.do_click_buttons:
                 USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)

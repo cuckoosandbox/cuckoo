@@ -82,6 +82,8 @@ WAIT_TIMEOUT              = 0x00000102
 
 FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 
+SW_SHOW                   = 0x00000005
+
 WM_GETTEXT                = 0x0000000D
 WM_GETTEXTLENGTH          = 0x0000000E
 WM_SYSCOMMAND             = 0x00000112
@@ -96,6 +98,7 @@ VK_MENU                   = 0x00000012
 VK_LMENU                  = 0x000000A4
 VK_RETURN                 = 0x0000000D
 VK_RIGHT                  = 0x00000027
+VK_TAB                    = 0x00000009
 VK_R                      = 0x00000052
 
 KEYEVENTF_EXTENDEDKEY     = 0x00000001
