@@ -15,7 +15,7 @@
                     <tbody>
                         <tr>
                             <td>Version</td>
-                            <td>2.0</td>
+                            <td>{{ report.version }}</td>
                         </tr>
                         <tr>
                             <td>Last update</td>
@@ -98,12 +98,6 @@
             <section class="dashboard-module__body">
                 <table class="simple">
                     <tbody>
-                        {% for state, count in report.states_count.items %}
-                            <tr>
-                                <td>{{ state }}</td>
-                                <td>{{ count }}</td>
-                            </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
             </section>
