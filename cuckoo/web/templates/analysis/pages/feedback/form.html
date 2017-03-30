@@ -93,10 +93,6 @@
                 $("input:text:visible:first").focus()
             });
 
-            sel.modal({
-                show: true
-            });
-
             function send_feedback_callback(data){
                 if(data['status'] == true){
                     sel.find("span#result").html("Successfully sent feedback");
