@@ -130,6 +130,33 @@ class TestAPI(object):
             "free": "yes",
         }
 
+    def test_create_submit_urls(self):
+        obj = json.loads(self.app.post("/tasks/create/submit", data={
+            "strings": "\n".join([
+                "http://google.com",
+                "cuckoosandbox.org",
+                "https://1.2.3.4:9001/wow",
+            ]),
+        }).data)
+        assert obj["submit_id"] == 1
+        assert obj["task_ids"] == [1, 2, 3]
+
+        t1 = db.view_task(1)
+        assert t1.category == "url"
+        assert t1.target == "http://google.com"
+
+        t2 = db.view_task(2)
+        assert t2.category == "url"
+        assert t2.target == "http://cuckoosandbox.org"
+
+        t3 = db.view_task(3)
+        assert t3.category == "url"
+        assert t3.target == "https://1.2.3.4:9001/wow"
+
+    def test_create_submit_none(self):
+        r = self.app.post("/tasks/create/submit")
+        assert r.status_code == 500
+
     def test_delete_task(self):
         task_id = self.create_task()
 

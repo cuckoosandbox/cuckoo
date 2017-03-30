@@ -152,13 +152,23 @@ def tasks_create_submit():
             "name": f.filename, "data": f,
         })
 
+    if files:
+        submit_type = "files"
+    elif request.form.get("strings"):
+        submit_type = "strings"
+        strings = request.form["strings"].split("\n")
+    else:
+        return json_error(500, "No files or strings have been given!")
+
     # Default options.
     options = {
         "procmemdump": "yes",
     }
     options.update(parse_options(request.form.get("options", "")))
 
-    submit_id = sm.pre("files", files, sm.translate_options_to(options))
+    submit_id = sm.pre(
+        submit_type, files or strings, sm.translate_options_to(options)
+    )
     if not submit_id:
         return json_error(500, "Error creating Submit entry")
 
