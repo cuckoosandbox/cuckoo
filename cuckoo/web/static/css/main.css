@@ -7352,6 +7352,33 @@ body.cyborg .page-freeze.error {
 .dashboard-module__lg .dashboard-module__footer > p i {
   margin-right: 10px;
 }
+.dashboard-module__tabs {
+  display: flex;
+}
+.dashboard-module__tabs > .flex-tabs__tab {
+  margin: 0;
+  border-radius: 0;
+  border-width: 0 1px 0 0;
+  background-color: transparent;
+  padding: 20px 20px 10px 20px;
+  font-weight: 700;
+  color: #337AB8;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href] {
+  color: #6297F8;
+  padding: 20px 30px 10px 30px;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href]:hover {
+  text-decoration: none;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active) {
+  background-color: #f1f1f1;
+}
+.dashboard-module__tabs > .flex-tabs__tab.active {
+  background-color: #6297F8;
+  color: #fff;
+  box-shadow: 0px 2px 0px #5F7DB3;
+}
 .dashboard-module table.simple, .dashboard-module__lg table.simple {
   table-layout: fixed;
   width: 100%;

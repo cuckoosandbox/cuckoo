@@ -100,6 +100,41 @@
 
 		}
 
+		&__tabs {
+			display: flex;
+
+			& > .flex-tabs__tab {
+				margin: 0;
+				border-radius: 0;
+				border-width: 0 1px 0 0;
+				background-color: transparent;
+				padding: 20px 20px 10px 20px;
+				font-weight: 700;
+				color: #337AB8;
+
+				// specific style for tabs that are links
+				&[href] {
+					color: #6297F8;
+					padding: 20px 30px 10px 30px;
+
+					&:hover {
+						text-decoration: none;
+						&:not(.active) {
+							background-color: #f1f1f1;
+						}
+					}
+				}
+
+				// active state for a tab
+				&.active {
+					background-color: #6297F8;
+					color: #fff;
+					box-shadow: 0px 2px 0px #5F7DB3;
+				}
+
+			}
+		}
+
 		table.simple {
 			table-layout: fixed;
 			width: 100%;
