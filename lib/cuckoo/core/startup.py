@@ -493,6 +493,24 @@ def cuckoo_clean():
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
 
+    # Check if ElasticSearch reporting is enabled and drop that if it is.
+    cfg = Config("reporting")
+    if cfg.elasticsearch and cfg.elasticsearch.enabled:
+        from elasticsearch import Elasticsearch
+        hosts = []
+        for host in cfg.elasticsearch.get("hosts", "127.0.0.1:9200").split(","):
+            if host.strip():
+                hosts.append(host.strip())
+        cuckoo_index = cfg.elasticsearch.get("index", "cuckoo")
+        try:
+            # Get all indexes stored in ES
+            # Then drop all starting with cuckoo index
+            # prefix (clears previously rotated indexes)
+            es = Elasticsearch(hosts)
+            es.indices.delete(index='%s-*' % cuckoo_index, ignore=[400, 404])           
+        except:
+            log.warning("Unable to drop ElasticSearch database: %s", index)
+
     # Paths to clean.
     paths = [
         os.path.join(CUCKOO_ROOT, "db"),
