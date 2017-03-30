@@ -71,18 +71,8 @@ class Search(object):
             return True
         return False
 
-    def is_domain(self, text):
-        if re.match(r"^([a-zA-Z\d-]{,63}(\.[a-zA-Z\d-]{,63})*)$", text):
-            return True
-        return False
-
     def is_ip(self, text):
-        if re.match(r"^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$", text):
-            return True
-        return False
-
-    def is_ip(self, text):
-        if re.match(r"^(? <= \\)[ ^\\]+?=]$", text):
+        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", text):
             return True
         return False
 
@@ -97,7 +87,7 @@ class Search(object):
     def find(self, term, value):
         """Combines ElasticSearch and MongoDB for search"""
 
-        value = re.escape(value.lstrip().lower())
+        value = value.lstrip().lower()
         term = term.rstrip() if term else term
 
         assert self.mongo.enabled == True
@@ -112,7 +102,7 @@ class Search(object):
             "crc32": self.is_crc32,
             # "": r"",    # type
             # "": r"",    # mutexes
-            "domain": self.is_domain,
+            # "domain": self.is_domain,
             "ip": self.is_ip,
             "url": self.is_url,
             # "": r"",    # imphash
@@ -124,6 +114,7 @@ class Search(object):
                 if type_guesser[key](value):
                     term = key
                     break
+        value = re.escape(value)
 
         if not term or term in mongo_elastic_queries:
             mongo_results = self.mongo.search(term, value)
