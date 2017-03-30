@@ -226,4 +226,8 @@
 		background-color: transparent;
 		border: 2px solid #fff;
 	}
+
+	@include cuckoo-theme('cyborg') {
+		color: #fff; 
+	}
 }

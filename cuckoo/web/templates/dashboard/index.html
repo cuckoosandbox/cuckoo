@@ -43,6 +43,53 @@
 
         <div class="dashboard-module">
             <header class="dashboard-module__header">
+                <h4>Usage statistics</h4>
+            </header>
+            <section class="dashboard-module__body">
+                <table class="simple">
+                    <tbody>
+                        {% for state, count in report.states_count.items %}
+                            <tr>
+                                <td>{{ state }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            <footer class="dashboard-module__footer">
+                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Manage Cuckoo processes</a></p>
+            </footer>
+        </div>
+
+    </div>
+    <div class="flex-grid__column dashboard__right">
+
+        <h2 class="dashboard__col-title">Cuckoo</h2>
+
+        <div class="dashboard-module__lg">
+            <div class="dashboard-module__body omni-uploader">
+
+                <div class="dashboard-module__body--left">
+                    <div class="uploader-area" id="dashboard-submit"></div>
+                    <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+                </div>
+
+                <div class="dashboard-module__body--right">
+                    <div class="uploader-area" id="dashboard-import"></div>
+                    <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
+                </div>
+
+            </div>  
+
+            <div class="dashboard-module__footer">
+                <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into one of the above fields or click the icon to select a file.</p>
+            </div>
+
+        </div>
+
+        <div class="dashboard-module">
+            <header class="dashboard-module__header">
                 <h4>System info</h4>
             </header>
             <section class="dashboard-module__body">
@@ -91,52 +138,15 @@
             </footer>
         </div>
 
-        <div class="dashboard-module">
-            <header class="dashboard-module__header">
-                <h4>Usage statistics</h4>
-            </header>
-            <section class="dashboard-module__body">
-                <table class="simple">
-                    <tbody>
-                        {% for state, count in report.states_count.items %}
-                            <tr>
-                                <td>{{ state }}</td>
-                                <td>{{ count }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </section>
-            <footer class="dashboard-module__footer">
-                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Manage Cuckoo processes</a></p>
-            </footer>
-        </div>
-
     </div>
-    <div class="flex-grid__column dashboard__right">
 
-        <h2 class="dashboard__col-title">Cuckoo</h2>
+</div>
 
-        <div class="dashboard-module__lg">
-            <div class="dashboard-module__body omni-uploader">
+<div class="flex-grid__horizontal--grow dashboard bottom">
 
-                <div class="dashboard-module__body--left">
-                    <div class="uploader-area" id="dashboard-submit"></div>
-                    <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
-                </div>
+    <div class="flex-grid__column">
 
-                <div class="dashboard-module__body--right">
-                    <div class="uploader-area" id="dashboard-import"></div>
-                    <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
-                </div>
-
-            </div>  
-
-            <div class="dashboard-module__footer">
-                <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into one of the above fields or click the icon to select a file.</p>
-            </div>
-
-        </div>
+        <h2 class="dashboard__col-title">Recent processes</h2>
 
         <!-- recent analyses -->
         <div class="dashboard-module__lg">
@@ -144,7 +154,6 @@
 
                 <div class="flex-tabs__tabs dashboard-module__tabs">
 
-                    <div class="flex-tabs__tab">Recent processes</div>
                     <a href="#" class="flex-tabs__tab active">Analyses</a>
                     <a href="#" class="flex-tabs__tab">Tasks</a>
                     <a href="#" class="flex-tabs__tab">Failed</a>
@@ -188,8 +197,8 @@
                             <td>asdfasdf.exe</td>
                             <td><span class="badge danger">7.8 / 10</span></td>
                             <td>
-                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
-                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                                <a href="#" class="button">View</a>
+                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 
@@ -199,8 +208,8 @@
                             <td>asdfasdf.exe</td>
                             <td><span class="badge success">0.6 / 10</span></td>
                             <td>
-                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
-                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                                <a href="#" class="button">View</a>
+                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 
@@ -210,8 +219,8 @@
                             <td>asdfasdf.exe</td>
                             <td><span class="badge warning">5.7 / 10</span></td>
                             <td>
-                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
-                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                                <a href="#" class="button">View</a>
+                                <a href="#" class="button">Resubmit</a>
                             </td>
                         </tr>
 
@@ -228,6 +237,7 @@
         </div>
 
     </div>
+
 </div>
 
 {% endblock %}

@@ -131,6 +131,8 @@ section#screenshots .minified{
         -webkit-appearance: none;
         background-color: transparent;
         border: 0;
+        padding: 0 5px 0 10px;
+        text-align: center;
 
         &:focus {
             outline: 0;
@@ -139,7 +141,6 @@ section#screenshots .minified{
 
     & > span {
         display: inline-block;
-        margin-right: 10px;
     }
 
     &:after {
