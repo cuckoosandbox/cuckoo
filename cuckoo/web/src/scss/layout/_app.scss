@@ -121,3 +121,35 @@ section#screenshots .minified{
     }    
 
 }
+
+// custom select
+.custom-select {
+
+    display: inline-block;
+
+    select {
+        -webkit-appearance: none;
+        background-color: transparent;
+        border: 0;
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    & > span {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    &:after {
+        @extend .fa;
+        content: "\f0d7";
+        display: inline-block;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+}

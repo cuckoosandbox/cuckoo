@@ -68,6 +68,11 @@
 
 		}
 
+		&--right {
+			@extend .flex-tabs__tab;
+			margin-left: auto !important; // forces the element to the right
+		}
+
 	}
 
 	&__tab-group {

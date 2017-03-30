@@ -314,14 +314,17 @@
 
 	}
 
-	&#pending-table {
+	.badge {
+
+		padding: 8px 15px;
+		color: #fff;
+		font-weight: 700;
+		border-radius: 4px;
+
+		&.danger { background-color: #F4014F; }
+		&.warning { background-color: #FF9F00; }
+		&.success { background-color: #94BE69; }
 
 	}
-
-}
-
-#submission-task-table {
-
-	
 
 }

@@ -326,6 +326,11 @@ $(function() {
 
 });
 
+// custom select helper
+$(function() {
+
+});
+
 function alertbox(msg, context, attr_id){
     if(context) { context = `alert-${context}`; }
     if(attr_id) { attr_id = `id="${attr_id}"`; }

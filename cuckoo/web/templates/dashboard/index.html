@@ -141,12 +141,31 @@
         <!-- recent analyses -->
         <div class="dashboard-module__lg">
             <header class="dashboard-module__header">
+
                 <div class="flex-tabs__tabs dashboard-module__tabs">
+
                     <div class="flex-tabs__tab">Recent processes</div>
                     <a href="#" class="flex-tabs__tab active">Analyses</a>
                     <a href="#" class="flex-tabs__tab">Tasks</a>
                     <a href="#" class="flex-tabs__tab">Failed</a>
+
+                    <div class="flex-tabs__tab--right">
+                        <div class="custom-select" data-custom="select">
+                            <span>Show: </span>
+                            <select>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+
                 </div>
+
             </header>
             <section class="dashboard-module__body">
 
@@ -160,12 +179,52 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        
+
+                        <tr>
+                            <td>20/03/2016</td>
+                            <td>10.zip</td>
+                            <td>asdfasdf.exe</td>
+                            <td><span class="badge danger">7.8 / 10</span></td>
+                            <td>
+                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
+                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>20/03/2016</td>
+                            <td>10.zip</td>
+                            <td>asdfasdf.exe</td>
+                            <td><span class="badge success">0.6 / 10</span></td>
+                            <td>
+                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
+                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>20/03/2016</td>
+                            <td>10.zip</td>
+                            <td>asdfasdf.exe</td>
+                            <td><span class="badge warning">5.7 / 10</span></td>
+                            <td>
+                                <a href="#" class="button"><i class="fa fa-eye"></i></a>
+                                <a href="#" class="button"><i class="fa fa-repeat"></i></a>
+                            </td>
+                        </tr>
+
                     </tbody>
+
                 </table>
 
             </section>
+
+            <footer class="dashboard-module__footer">
+                <p><a href="/analysis/">Show all recent processes</a></p>
+            </footer>
+
         </div>
 
     </div>
