@@ -21,9 +21,10 @@ You will get an output similar to this::
      Checking for updates...
      Good! You have the latest version available.
 
-    2013-04-07 15:57:17,459 [lib.cuckoo.core.scheduler] INFO: Using "virtualbox" machine manager
-    2013-04-07 15:57:17,861 [lib.cuckoo.core.scheduler] INFO: Loaded 1 machine/s
-    2013-04-07 15:57:17,862 [lib.cuckoo.core.scheduler] INFO: Waiting for analysis tasks...
+    2017-03-31 17:08:53,527 [cuckoo.core.scheduler] INFO: Using "virtualbox" as machine manager
+    2017-03-31 17:08:53,935 [cuckoo.core.scheduler] INFO: Loaded 1 machine/s
+    2017-03-31 17:08:53,964 [cuckoo.core.scheduler] INFO: Waiting for analysis tasks.
+
 
 Note that Cuckoo checks for updates on a remote API located at
 ``api.cuckoosandbox.org``. You can avoid this by disabling the
@@ -59,17 +60,19 @@ Now Cuckoo is ready to run and it's waiting for submissions.
       --help                  Show this message and exit.
 
     Commands:
-      api
-      clean        Utility to clean the Cuckoo Working Directory...
-      community    Utility to fetch supplies from the Cuckoo...
-      distributed
-      dnsserve
-      machine
-      migrate
+      api          Operate the Cuckoo REST API.
+      clean        Clean the CWD and associated databases.
+      community    Fetch supplies from the Cuckoo Community.
+      distributed  Distributed Cuckoo helper utilities.
+      dnsserve     Custom DNS server.
+      import       Imports an older Cuckoo setup into a new CWD.
+      init         Initializes Cuckoo and its configuration.
+      machine      Dynamically add/remove machines.
+      migrate      Perform database migrations.
       process      Process raw task data into reports.
-      rooter
+      rooter       Instantiates the Cuckoo Rooter.
       submit       Submit one or more files or URLs to Cuckoo.
-      web          Starts the Cuckoo Web Interface or dumps its...
+      web          Operate the Cuckoo Web Interface.
 
 The ``--debug`` and ``--quiet`` flags increase and decrease the logging
 verbosity for the ``cuckoo`` command or any of its subcommands.

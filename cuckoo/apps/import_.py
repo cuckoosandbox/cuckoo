@@ -13,7 +13,7 @@ from cuckoo.common.config import Config
 from cuckoo.common.colors import yellow
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.compat.config import migrate as migrate_conf
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, is_windows
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def sqldump(dburi, dirpath):
             "database URI to make sure it's correct: %s!" % (e, dburi)
         )
 
-def import_cuckoo(username, dirpath):
+def import_cuckoo(username, mode, dirpath):
     version = identify(dirpath)
     if not version:
         raise CuckooOperationalError(
@@ -153,7 +153,7 @@ def import_cuckoo(username, dirpath):
         )
 
     # Link or copy all of the older results to the new CWD.
-    import_legacy_analyses(dirpath)
+    import_legacy_analyses(mode, dirpath)
 
     # Urge the user to run the community command.
     print "You have successfully imported your old version of Cuckoo!"
@@ -163,10 +163,17 @@ def import_cuckoo(username, dirpath):
     print "The community command will fetch the latest monitoring updates"
     print "and Cuckoo Signatures."
 
-def import_legacy_analyses(dirpath):
-    """Imports the raw results of a legacy analysis. Either a symlink (on
-    systems that support those) or a real copy may be used for the import."""
-    reference_or_copy = getattr(os, "symlink", shutil.copytree)
+def import_legacy_analyses(mode, dirpath):
+    """Imports the raw results of a legacy analysis. Using either the 'copy',
+    'move', or 'symlink' mode."""
+    if mode == "copy":
+        import_analysis = shutil.copytree
+    elif mode == "move":
+        import_analysis = shutil.move
+    elif mode == "symlink":
+        if is_windows():
+            raise RuntimeError("Can't use 'symlink' mode under Windows!")
+        import_analysis = os.symlink
 
     analyses = os.path.join(dirpath, "storage", "analyses")
     if not os.path.isdir(analyses):
@@ -178,7 +185,7 @@ def import_legacy_analyses(dirpath):
         if task_id == "latest":
             continue
 
-        reference_or_copy(
+        import_analysis(
             os.path.join(analyses, task_id), cwd(analysis=task_id)
         )
         tasks.append(int(task_id))

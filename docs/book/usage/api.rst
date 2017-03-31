@@ -71,13 +71,9 @@ Enable the app configuration and start the server.
 .. note::
 
    Logs for the application may be found in the standard directory for distribution
-   app instances, i.e.:
-
-   ``/var/log/uwsgi/app/cuckoo-api.log``
-
-   The UNIX socket is created in a conventional location as well:
-
-   ``/run/uwsgi/app/cuckoo-api/socket``
+   app instances, i.e., ``/var/log/uwsgi/app/cuckoo-api.log``.
+   The UNIX socket is created in a conventional location as well,
+   ``/run/uwsgi/app/cuckoo-api/socket``.
 
 nginx setup
 ^^^^^^^^^^^
@@ -95,11 +91,11 @@ configuration as reportd by the ``cuckoo api --nginx`` command::
     }
 
     server {
-        listen 8090;
-        listen [::]:8090 ipv6only=on;
+        listen localhost:8090;
 
         # REST API app
         location / {
+            client_max_body_size 1G;
             uwsgi_pass  _uwsgi_cuckoo_api;
             include     uwsgi_params;
         }
@@ -138,7 +134,7 @@ each one. For details click on the resource name.
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``POST`` :ref:`tasks_create_url`    | Adds an URL to the list of pending tasks to be processed and analyzed.                                           |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``POST`` :ref:`tasks_create_submit` | Adds one or more files and/or files embedded in archives to the list of pending tasks.
+| ``POST`` :ref:`tasks_create_submit` | Adds one or more files and/or files embedded in archives to the list of pending tasks.                           |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_list`           | Returns the list of tasks stored in the internal Cuckoo database.                                                |
 |                                     | You can optionally specify a limit of entries to return.                                                         |
@@ -343,7 +339,7 @@ created task(s).
 .. code-block:: json
 
     {
-        "submit_id": 1
+        "submit_id": 1,
         "task_ids": [1, 2],
         "errors": []
     }

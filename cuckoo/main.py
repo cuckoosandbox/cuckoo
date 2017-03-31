@@ -34,7 +34,7 @@ from cuckoo.core.startup import (
     init_routing
 )
 from cuckoo.misc import (
-    cwd, load_signatures, getuser, decide_cwd, drop_privileges
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows
 )
 
 log = logging.getLogger("cuckoo")
@@ -202,7 +202,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
 @click.pass_context
 @click.option("--conf", type=click.Path(exists=True, file_okay=True, readable=True), help="Flat key/value configuration file")
 def init(ctx, conf):
-    """Initializes a Cuckoo instance and checks its configuration/setup."""
+    """Initializes Cuckoo and its configuration."""
     if conf and os.path.exists(conf):
         cfg = read_kv_conf(conf)
     else:
@@ -221,7 +221,7 @@ def init(ctx, conf):
 @click.option("-b", "--branch", default="master", help="Specify a different community branch rather than master")
 @click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
 def community(force, branch, filepath):
-    """Utility to fetch supplies from the Cuckoo Community."""
+    """Fetch supplies from the Cuckoo Community."""
     try:
         fetch_community(force=force, branch=branch, filepath=filepath)
     except KeyboardInterrupt:
@@ -229,8 +229,7 @@ def community(force, branch, filepath):
 
 @main.command()
 def clean():
-    """Utility to clean the Cuckoo Working Directory and associated
-    databases."""
+    """Clean the CWD and associated databases."""
     try:
         cuckoo_clean()
     except KeyboardInterrupt:
@@ -328,9 +327,10 @@ def process(ctx, instance, report, maxcount):
 @click.option("--service", type=click.Path(exists=True), default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
-@click.option("--sudo", is_flag=True)
+@click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
 def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
+    """Instantiates the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
     if sudo:
@@ -363,6 +363,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def api(ctx, host, port, uwsgi, nginx):
+    """Operate the Cuckoo REST API."""
     username = ctx.parent.user or getuser()
     if uwsgi:
         print "[uwsgi]"
@@ -405,6 +406,7 @@ def api(ctx, host, port, uwsgi, nginx):
 @click.option("--hardcode", help="Hardcoded IP address to return instead of actually doing DNS lookups")
 @click.pass_context
 def dnsserve(ctx, host, port, nxdomain, hardcode):
+    """Custom DNS server."""
     init_console_logging(ctx.parent.level)
     try:
         cuckoo_dnsserve(host, port, nxdomain, hardcode)
@@ -419,7 +421,7 @@ def dnsserve(ctx, host, port, nxdomain, hardcode):
 @click.option("--nginx", is_flag=True, help="Dump nginx configuration")
 @click.pass_context
 def web(ctx, args, host, port, uwsgi, nginx):
-    """Starts the Cuckoo Web Interface or dumps its uwsgi/nginx configuration.
+    """Operate the Cuckoo Web Interface.
 
     Use "--help" to get this help message and "help" to find Django's
     manage.py potential subcommands.
@@ -499,6 +501,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.pass_context
 def machine(ctx, vmname, ip, action, platform, options, tags, interface,
             snapshot, resultserver):
+    """Dynamically add/remove machines."""
     init_console_logging(level=ctx.parent.level)
     Database().connect()
     cuckoo_machine(
@@ -509,6 +512,7 @@ def machine(ctx, vmname, ip, action, platform, options, tags, interface,
 @main.command()
 @click.option("--revision", default="head", help="Migrate to a certain revision")
 def migrate(revision):
+    """Perform database migrations."""
     if not migrate_database(revision):
         print red(">>> Error migrating your database..")
         exit(1)
@@ -516,18 +520,34 @@ def migrate(revision):
     print yellow(">>> Your database migration was successful!")
 
 @main.command("import")
+@click.option("--copy", "mode", flag_value="copy", default=True, help="Copy all existing analyses to the new CWD (default)")
+@click.option("--move", "mode", flag_value="move", help="Move all existing analyses to the new CWD")
+@click.option("--symlink", "mode", flag_value="symlink", help="Symlink all existing analyses to the new CWD")
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
 @click.pass_context
-def import_(ctx, path):
+def import_(ctx, mode, path):
+    """Imports an older Cuckoo setup into a new CWD. The old setup should be
+    identified by PATH and the new CWD may be specified with the --cwd
+    parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
+    if mode == "symlink" and is_windows():
+        sys.exit(red(
+            "You can only use the 'symlink' mode on non-Windows platforms."
+        ))
+
     print yellow("You are importing an existing Cuckoo setup. Please")
-    print yellow("understand that if you remove the old Cuckoo setup")
-    print yellow("after this import you will still ")
-    print " "*20, red("loose ALL of your data!")
+    print yellow("understand that, depending on the mode taken, if ")
+    print yellow("you remove the old Cuckoo setup after this import ")
+    print yellow("you may still"), red("loose ALL of your data!")
     print
     print yellow("Additionally, database migrations will be performed ")
     print yellow("in-place. You won't be able to use your old Cuckoo ")
     print yellow("setup anymore afterwards! However, we'll provide ")
     print yellow("you with the option to create a SQL backup beforehand.")
+    print
+    print red("TL;DR Cleaning the old setup after the import may")
+    print red("corrupt your new setup: its SQL, MongoDB, and ")
+    print red("ElasticSearch database may be dropped and, in 'symlink'")
+    print red("mode, the analyses removed.")
     print
 
     value = click.confirm(
@@ -537,13 +557,13 @@ def import_(ctx, path):
         sys.exit(red("Aborting operation.. please try again!"))
 
     try:
-        import_cuckoo(ctx.parent.user, path)
+        import_cuckoo(ctx.parent.user, mode, path)
     except KeyboardInterrupt:
         print(red("Aborting import of Cuckoo instance.."))
 
 @main.group()
 def distributed():
-    pass
+    """Distributed Cuckoo helper utilities."""
 
 @distributed.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the Distributed Cuckoo server on")

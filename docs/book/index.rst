@@ -4,16 +4,24 @@
 Cuckoo Sandbox Book
 ===================
 
-Cuckoo Sandbox is an *Open Source* software for automating analysis of suspicious files.
-To do so it makes use of custom components that monitor the behavior of the malicious
-processes while running in an isolated environment.
+Cuckoo Sandbox is an *open source* software for automating analysis of
+suspicious files. To do so it makes use of custom components that monitor the
+behavior of the malicious processes while running in an isolated environment.
 
-This guide will explain how to set up Cuckoo, use it and customize it.
+This guide will explain how to set up Cuckoo, use it, and customize it.
 
-Installing the new Cuckoo Package?
-==================================
+Using the new Cuckoo Package?
+=============================
 
-Please read the :doc:`installation/host/cwd` and :doc:`usage/cwd` documents!
+There are various big improvements related to usability in the newly released
+Cuckoo Package. To get the most out of it, start reading on the different
+subjects related to it. Following are some of the highlights:
+
+* :doc:`installation/host/cwd`
+* :doc:`usage/cwd`
+* :doc:`installation/host/installation`
+* :doc:`installation/upgrade`
+* :doc:`usage/feedback`
 
 Having troubles?
 ================

@@ -7,7 +7,6 @@ Here you can find answers for various Frequently Asked Questions:
 .. contents::
    :local:
 
-
 General Questions
 =================
 
@@ -17,13 +16,13 @@ Can I analyze URLs with Cuckoo?
 -------------------------------
 
 .. versionadded:: 0.5
-    Native support for URL analysis was added to Cuckoo.
+   Native support for URL analysis was added to Cuckoo.
 
 .. versionchanged:: 2.0-rc1
-    Cuckoo will not only start the browser (i.e., Internet Explorer) but will
-    also attempt to actively instrument it in order to extract interesting
-    results such as executed Javascript, iframe URLs, etc. See also our
-    `2.0-rc1 blogpost`_.
+   Cuckoo will not only start the browser (i.e., Internet Explorer) but will
+   also attempt to actively instrument it in order to extract interesting
+   results such as executed Javascript, iframe URLs, etc. See also our
+   `2.0-rc1 blogpost`_.
 
 Additional details on URL submissions is documented at :doc:`../usage/submit`,
 but it boils down to::
@@ -38,9 +37,9 @@ Can I use Volatility with Cuckoo?
 ---------------------------------
 
 .. versionadded:: 0.5
-    Cuckoo introduces support for optional full memory dumps, which are
-    created at the end of the analysis process. You can use these memory dumps to
-    perform additional memory forensic analysis with `Volatility`_.
+   Cuckoo introduces support for optional full memory dumps, which are created
+   at the end of the analysis process. You can use these memory dumps to
+   perform additional memory forensic analysis with `Volatility`_.
 
 Please also consider that we don't particularly encourage this: since Cuckoo
 employs some rootkit-like technologies to perform its operations, the results
@@ -385,7 +384,7 @@ one of the following reasons:
   the VM has a static IP address, that it matches the one in the Cuckoo
   configuration, and that the configured network interface exists and is up.
   Also, in case of VirtualBox, did you configure the network interface to be a
-  "Host-Only interface"?
+  ``Host-Only interface``?
 * Check that there are no firewalls in-place that hinder the communication
   between your Host and Guest and double check that the Host and Guest can
   ping each other as well as connect to each other.
@@ -395,7 +394,7 @@ around don't, then some additional problems may be at hand:
 
 * Is the network configuration equivalent on the host and in the VM? If not,
   e.g., if the VM sees different IP ranges, then you'll have to configure the
-  "resultserver_ip" and "resultserver_port", for which we have separate
+  ``resultserver_ip`` and ``resultserver_port``, for which we have separate
   documentation.
 * If you've modified the Cuckoo Analyzer (located at ``$CWD/analyzer``) this
   error message may indicate that a syntax error or other exception was

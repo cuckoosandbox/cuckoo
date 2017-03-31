@@ -10,7 +10,7 @@ import shutil
 import tempfile
 
 from cuckoo.apps.import_ import (
-    identify, import_legacy_analyses, dumpcmd, sqldump, import_cuckoo
+    identify, import_legacy_analyses, dumpcmd, sqldump
 )
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -280,23 +280,61 @@ def init_legacy_analyses():
     Files.create((dirpath, "storage", "analyses"), "latest", "last!!1")
     return dirpath
 
-def test_import_legacy_analyses():
+def init_import_legacy(mode):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
     dirpath = init_legacy_analyses()
-    assert sorted(import_legacy_analyses(dirpath)) == [1, 2]
+    assert sorted(import_legacy_analyses(mode, dirpath)) == [1, 2]
     assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
     assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
     assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
     assert not os.path.exists(cwd(analysis="latest"))
+    return dirpath
 
-    if not is_windows():
+def test_import_legacy_analyses_copy():
+    dirpath = init_import_legacy("copy")
+
+    dirpath1 = os.path.join(dirpath, "storage", "analyses", "1")
+    assert os.path.isdir(dirpath1)
+    filepath = os.path.join(dirpath1, "logs", "a.txt")
+    assert open(filepath, "rb").read() == "a"
+
+    dirpath2 = os.path.join(dirpath, "storage", "analyses", "2")
+    assert os.path.isdir(dirpath2)
+
+    assert os.path.isdir(cwd(analysis=1))
+    assert os.path.isdir(cwd(analysis=2))
+
+def test_import_legacy_analyses_move():
+    dirpath = init_import_legacy("move")
+
+    dirpath1 = os.path.join(dirpath, "storage", "analyses", "1")
+    assert not os.path.isdir(dirpath1)
+
+    dirpath2 = os.path.join(dirpath, "storage", "analyses", "2")
+    assert not os.path.isdir(dirpath2)
+
+    assert os.path.isdir(cwd(analysis=1))
+    assert os.path.isdir(cwd(analysis=2))
+
+if not is_windows():
+    def test_import_legacy_analyses_symlink():
+        dirpath = init_import_legacy("symlink")
+
         assert os.path.islink(cwd(analysis=1))
         assert os.path.islink(cwd(analysis=2))
-    else:
-        assert os.path.isdir(cwd(analysis=1))
-        assert os.path.isdir(cwd(analysis=2))
+
+        dirpath1 = os.path.join(dirpath, "storage", "analyses", "1")
+        assert os.path.isdir(dirpath1)
+        filepath = os.path.join(dirpath1, "logs", "a.txt")
+        assert open(filepath, "rb").read() == "a"
+
+        assert os.readlink(cwd(analysis=1)) == dirpath1
+
+        dirpath2 = os.path.join(dirpath, "storage", "analyses", "2")
+        assert os.path.isdir(dirpath2)
+        assert os.readlink(cwd(analysis=2)) == dirpath2
 
 def test_dumpcmd():
     assert dumpcmd(None, "/tmp") == (

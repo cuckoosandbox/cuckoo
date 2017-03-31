@@ -20,13 +20,13 @@ Some additional configuration options exist in the
 .. literalinclude:: ../../../cuckoo/data/web/local_settings.py
     :language: python
 
-It is recommended to change the ``DEBUG`` variable to ``False`` in production
+It is recommended to keep the ``DEBUG`` variable at ``False`` in production
 setups and to configure at least one ``ADMIN`` entry to enable error
 notification by email.
 
-If you are submitting relatively large files, it is also required to increase
-the maximum allowed file size by bumping the ``MAX_UPLOAD_SIZE`` variable
-(which defaults to 25MB).
+.. versionchanged:: 2.0.0
+   The default maximum upload size has been bumped from 25 MB to 10 GB so that
+   virtually any file should be accepted.
 
 Starting the Web Interface
 ==========================
@@ -42,7 +42,8 @@ with the desired port number)::
 
     $ cuckoo web runserver 0.0.0.0:PORT
 
-Or directly without the ``runserver`` part as follows by specifying the host::
+Or directly without the ``runserver`` part as follows while also specifying
+the host to listen on::
 
     $ cuckoo web -H 0
 
@@ -56,7 +57,7 @@ many cases, some users may wish to deploy the server in a more robust manner.
 This can be done by exposing the Web Interface as a WSGI application to a web
 server. This section shows a simple example of deploying the Web Interface via
 `uWSGI`_ and `nginx`_. These instructions are written with Ubuntu GNU/Linux in
-mind, but may be adapted for other platforms.
+mind, but may be adapted to other platforms.
 
 This solution requires ``uWSGI``, the ``uWSGI Python plugin``, and ``nginx``.
 All are available as packages::
@@ -104,13 +105,9 @@ Enable the app configuration and start the server.
 .. note::
 
    Logs for the application may be found in the standard directory for distribution
-   app instances, i.e.:
-
-   ``/var/log/uwsgi/app/cuckoo-web.log``
-
-   The UNIX socket is created in a conventional location as well:
-
-   ``/run/uwsgi/app/cuckoo-web/socket``
+   app instances, i.e., ``/var/log/uwsgi/app/cuckoo-web.log``.
+   The UNIX socket is created in a conventional location as well,
+   ``/run/uwsgi/app/cuckoo-web/socket``.
 
 nginx setup
 ^^^^^^^^^^^
@@ -128,11 +125,11 @@ configuration as reported by the ``cuckoo web --nginx`` command::
     }
 
     server {
-        listen 8090;
-        listen [::]:8090 ipv6only=on;
+        listen localhost:8000;
 
         # Cuckoo Web Interface
         location / {
+            client_max_body_size 1G;
             uwsgi_pass  _uwsgi_cuckoo_web;
             include     uwsgi_params;
         }

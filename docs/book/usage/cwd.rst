@@ -8,8 +8,7 @@ Cuckoo Working Directory Usage
 Before we go into the subject of using the ``CWD`` we're first going to walk
 you through the many improvements on your Quality of Life during your daily
 usage of Cuckoo Sandbox with the introduction of the ``Cuckoo Package`` and
-``CWD`` and some of the new features that come along with this. If only so our
-users will be excited to try out the new Cuckoo Package and CWD system as us.
+``CWD`` and some of the new features that come along with this.
 
 So simply put, the ``CWD`` is a per-Cuckoo instance configuration directory.
 While people generally speaking only run one Cuckoo instance per server, this
@@ -21,9 +20,10 @@ still yields a lot of maintenance-related improvements:
   control on how its installed on users' systems. No longer will users have
   incorrect versions of third party libraries installed breaking their setup.
 * Because updating is much easier (again, ``pip install -U cuckoo``) we will
-  be able to **put out new versions more often**. E.g., when a bug has hit us
-  that dozens of people run in because they're all using the bugged version
-  (this has happened several times).
+  be able to **put out new versions more often**. E.g., when one or more users
+  run into a bug, we'll be able to put out a fix quickly - this has happened a
+  few times in the past in a way that we weren't able to properly mitigate
+  such issues (leaving users high & dry for months).
 * **The Cuckoo Configuration is no longer part of the Git repository**. Users
   who have updated Cuckoo in the past will have seen the effort involved in
   making a backup of their configuration, pulling a new version of Cuckoo, and
@@ -111,8 +111,8 @@ any bigger setup.
     Performing system checks...
 
     System check identified no issues (0 silenced).
-    August 21, 2016 - 20:28:26
-    Django version 1.8.4, using settings 'web.settings'
+    March 31, 2017 - 12:10:46
+    Django version 1.8.4, using settings 'cuckoo.web.web.settings'
     Starting development server at http://localhost:8000/
     Quit the server with CONTROL-C.
 

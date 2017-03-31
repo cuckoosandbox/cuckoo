@@ -13,7 +13,6 @@ import tempfile
 from cuckoo.apps.apps import (
     process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
 )
-from cuckoo.apps.import_ import import_legacy_analyses
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
@@ -187,9 +186,9 @@ class TestAppsWithCWD(object):
             ("--cwd", cwd(), "import", dirpath),
             standalone_mode=False
         )
-        p.assert_called_once_with(None, dirpath)
+        p.assert_called_once_with(None, "copy", dirpath)
         out, err = capsys.readouterr()
-        assert "understand that if you remove the old" in out
+        assert "understand that, depending on the mode" in out
 
     @mock.patch("click.confirm")
     def test_import_noconfirm(self, p, capsys):
