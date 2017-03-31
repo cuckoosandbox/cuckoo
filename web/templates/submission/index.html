@@ -103,6 +103,12 @@ $(document).ready( function() {
                     <div class="panel-body">
                         <select class="form-control" id="form_route" name="route">
                             <option value="none">None (no internet access)</option>
+                            {% if inetsim %}
+                                <option value="inetsim">inetsim</option>
+                            {% endif %}
+                            {% if tor %}
+                                <option value="tor">tor</option>
+                            {% endif %}
                             {% if internet != "none" %}
                                 <option value="internet"{% if route == "internet" %} selected{% endif %}>Internet (dirty line, {{ internet }})</option>
                             {% endif %}

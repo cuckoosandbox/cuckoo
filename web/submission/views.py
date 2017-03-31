@@ -80,6 +80,8 @@ def render_index(request, kwargs={}):
         "vpns": vpns.values(),
         "route": cfg.routing.route,
         "internet": cfg.routing.internet,
+        "inetsim": cfg.routing.inetsim,
+        "tor": cfg.routing.tor,
     }
 
     values.update(kwargs)
