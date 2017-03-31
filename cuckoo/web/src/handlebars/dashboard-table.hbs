@@ -11,27 +11,6 @@
 
     <tbody>
 
-       {{!--  <tr>
-            <td>20/03/2016</td>
-            <td>10.zip</td>
-            <td>asdfasdf.exe</td>
-            <td><span class="badge danger">7.8 / 10</span></td>
-        </tr>
-
-        <tr>
-            <td>20/03/2016</td>
-            <td>10.zip</td>
-            <td>asdfasdf.exe</td>
-            <td><span class="badge success">0.6 / 10</span></td>
-        </tr>
-
-        <tr>
-            <td>20/03/2016</td>
-            <td>10.zip</td>
-            <td>asdfasdf.exe</td>
-            <td><span class="badge warning">5.7 / 10</span></td>
-        </tr> --}}
-
         {{#each entries}}
 
             <tr>
@@ -42,6 +21,12 @@
             </tr>
 
         {{/each}}
+
+        {{#if lessEntries}}
+            <tr class="less-entries">
+                <td colspan="4"><span class="badge">No more results</span></td>
+            </tr>
+        {{/if}}
 
     </tbody>
 

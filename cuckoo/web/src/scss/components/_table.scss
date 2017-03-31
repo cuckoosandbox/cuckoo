@@ -237,6 +237,18 @@
 
 	}
 
+	.less-entries > td {
+		text-align: center;
+
+		.badge {
+			background-color: #ccc;
+		}
+
+		&:nth-child(odd) {
+			background-color: #f5f5f5;
+		}
+	}
+
 	@include cuckoo-theme('night') {
 		border-color: $night_border_color;
 		background-color: $night_primary_color;

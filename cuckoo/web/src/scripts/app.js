@@ -372,17 +372,6 @@ $(function() {
 
         });
 
-        // retrieve recent stuff
-        // $.post('/analysis/api/tasks/recent/', {
-        //     cats: [],
-        //     limit: 3,
-        //     offset: 0,
-        //     packs: [],
-        //     score: ""
-        // }, function(data) {
-        //     console.log(data);
-        // }, "json");
-
         $.ajax({
             type: "POST",
             url: "/analysis/api/tasks/recent/",
@@ -402,15 +391,26 @@ $(function() {
                     return item;
                 });
 
-                console.log(data);
+                var recentTableEntries = data.filter(function(item) {
+                    return item.status === 'reported';
+                }).slice(0,3);
+
+                var pendingTableEntries = data.filter(function(item) {
+                    return item.status === 'pending';
+                }).slice(0,3)
 
                 var recent_table = HANDLEBARS_TEMPLATES['dashboard-table']({
-                    entries: data.filter(function(item) {
-                        return item.status === 'reported';
-                    })
+                    entries: recentTableEntries,
+                    lessEntries: (recentTableEntries.length < 3)
+                });
+
+                var pending_table = HANDLEBARS_TEMPLATES['dashboard-table']({
+                    entries: pendingTableEntries,
+                    lessEntries: (pendingTableEntries < 3)
                 });
 
                 $("[data-populate='dashboard-table-recent']").html(recent_table);
+                $("[data-populate='dashboard-table-pending']").html(pending_table);
 
             }
         })
