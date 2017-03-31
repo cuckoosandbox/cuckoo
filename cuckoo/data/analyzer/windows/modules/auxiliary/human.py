@@ -1,23 +1,20 @@
-#!/usr/bin/env python
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import random
 import logging
-from threading import Thread
-from ctypes import WINFUNCTYPE, POINTER
-from ctypes import c_bool, c_int, create_unicode_buffer
+import threading
 
 from lib.common.abstracts import Auxiliary
-from lib.common.defines import KERNEL32, USER32
-from lib.common.defines import WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK
+from lib.common.defines import (
+    KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK,
+    EnumWindowsProc, EnumChildProc, create_unicode_buffer
+)
 
 log = logging.getLogger(__name__)
 
-EnumWindowsProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
-EnumChildProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
 
 RESOLUTION = {
     "x": USER32.GetSystemMetrics(0),
@@ -119,11 +116,11 @@ def click_mouse():
     # Mouse up.
     USER32.mouse_event(4, 0, 0, 0, None)
 
-class Human(Auxiliary, Thread):
+class Human(threading.Thread, Auxiliary):
     """Human after all"""
 
     def __init__(self, options={}, analyzer=None):
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 

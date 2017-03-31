@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -208,3 +208,6 @@ class UNICODE_STRING(Structure):
         ("MaximumLength", c_ushort),
         ("Buffer", c_wchar_p),
     ]
+
+EnumWindowsProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
+EnumChildProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
