@@ -39,7 +39,7 @@ Install dependencies inside of the virtual machine::
 
 Compile Kernel extension::
 
-    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/data/strace.stp
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/strace.stp
     $ sudo stap -p4 -r $(uname -r) strace.stp -m stap_ -v
 
 Once the compilation finishes you should see the file ``stap_.ko`` in the same
