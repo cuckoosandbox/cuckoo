@@ -35,7 +35,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1 console=tty0",
-            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
             "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
         ],
         "params": {
@@ -48,7 +48,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1 console=tty0",
-            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname}",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
             "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
         ],
         "params": {
@@ -61,7 +61,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}",
             "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
             "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
-            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
@@ -73,7 +73,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}", "-initrd", "{initrd}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1",
-            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "memory": "256M",  # 512 didn't work for some reason
@@ -85,7 +85,7 @@ QEMU_ARGS = {
         "cmdline": [
             "qemu-system-x86_64", "-display", "none", "-m", "{memory}",
             "-hda", "{snapshot_path}",
-            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "memory": "1024M",
@@ -95,7 +95,7 @@ QEMU_ARGS = {
         "cmdline": [
             "qemu-system-i386", "-display", "none", "-m", "{memory}",
             "-hda", "{snapshot_path}",
-            "-net", "tap,ifname=tap_{vmname}", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
         ],
         "params": {
             "memory": "1024M",
