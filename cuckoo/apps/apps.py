@@ -18,7 +18,7 @@ import time
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import config, emit_options, Config
 from cuckoo.common.exceptions import (
-    CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
+    CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
 from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode

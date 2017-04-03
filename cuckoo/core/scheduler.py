@@ -27,7 +27,7 @@ from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.resultserver import ResultServer
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, version
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -533,12 +533,13 @@ class AnalysisManager(threading.Thread):
                 "matter: %s",
                 self.machine.name,
                 faq("troubleshooting-vm-network-configuration"),
-            extra={
-                "error_action": "vmrouting",
-                "action": "guest.handle",
-                "status": "error",
-                "task_id": self.task.id,
-            })
+                extra={
+                    "error_action": "vmrouting",
+                    "action": "guest.handle",
+                    "status": "error",
+                    "task_id": self.task.id,
+                }
+            )
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()

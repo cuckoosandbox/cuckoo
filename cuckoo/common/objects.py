@@ -18,7 +18,6 @@ import zipfile
 
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.compat import magic
-from cuckoo.misc import cwd
 
 try:
     import pydeep
@@ -359,7 +358,6 @@ class File(object):
         """Extract all URLs embedded in this file through a simple regex."""
         if not os.path.getsize(self.file_path):
             return []
-
 
         # http://stackoverflow.com/a/454589
         urls, f = set(), open(self.file_path, "rb")

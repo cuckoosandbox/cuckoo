@@ -57,4 +57,3 @@ def from_buffer(*args, **kwargs):
 
     patch()
     return magic.from_buffer(*args, **kwargs)
-

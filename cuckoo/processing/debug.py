@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -66,13 +66,15 @@ class Debug(Processing):
                 "Machine hasn't been able to contact back to "
                 "the Cuckoo Host. There could be a few reasons for this, "
                 "please refer to our documentation on the matter: %s",
-                self.task.id, faq("troubleshooting-vm-network-configuration"),
-            extra={
-                "error_action": "vmrouting",
-                "action": "guest.communication",
-                "status": "error",
-                "task_id": self.task.id,
-            })
+                self.task.id,
+                faq("troubleshooting-vm-network-configuration"),
+                extra={
+                    "error_action": "vmrouting",
+                    "action": "guest.communication",
+                    "status": "error",
+                    "task_id": self.task.id,
+                }
+            )
 
         if os.path.exists(self.cuckoolog_path):
             debug["cuckoo"] = Logfile(self.cuckoolog_path)

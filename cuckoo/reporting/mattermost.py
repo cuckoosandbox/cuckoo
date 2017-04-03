@@ -6,7 +6,7 @@ import hashlib
 import requests
 
 from cuckoo.common.abstracts import Report
-from cuckoo.common.exceptions import CuckooReportError, CuckooOperationalError
+from cuckoo.common.exceptions import CuckooReportError
 
 class Mattermost(Report):
     """Notifies about finished analysis via Mattermost webhook."""
@@ -63,7 +63,7 @@ class Mattermost(Report):
 
             # Note that POST max size is 4000 chars by default.
             if r.status_code != 200:
-                raise CuckooReportError (
+                raise CuckooReportError(
                     "Failed posting message due to : {0}".format(r.text)
                 )
         except Exception as e:

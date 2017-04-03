@@ -54,11 +54,13 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
         return [name for name in names if name.endswith(".pyc")]
 
     # The following effectively nops the first os.makedirs() call that
-    # shutil.copytree() does as we've already created the destination directory
-    # ourselves (assuming it didn't exist already).
+    # shutil.copytree() does as we've already created the destination
+    # directory ourselves (assuming it didn't exist already).
     orig_makedirs = shutil.os.makedirs
+
     def _ignore_first_makedirs(dst):
         shutil.os.makedirs = orig_makedirs
+
     shutil.os.makedirs = _ignore_first_makedirs
 
     shutil.copytree(
