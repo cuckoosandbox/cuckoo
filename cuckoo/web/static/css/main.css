@@ -3152,9 +3152,6 @@ pre {
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-.app {
-  padding: 30px;
-}
 [id^="analysis"] .app, [id^="submission/"] .app, [id="dashboard"] .app, [id="dashboard.views.index"] .app {
   padding: 0;
 }
@@ -3694,9 +3691,11 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
   color: #fff;
   background-color: #4a87f7;
   border-bottom-color: #3b6dca;
+  text-decoration: none;
 }
 .button:focus, .button--lg:focus, .button:active, .button--lg:active {
   outline: none;
+  text-decoration: none;
 }
 .button--lg {
   font-size: 16px;
@@ -3706,6 +3705,17 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
 .button.outline, .outline.button--lg {
   background-color: transparent;
   border: 2px solid #fff;
+}
+.button.inversed, .inversed.button--lg {
+  background-color: transparent;
+  border: 0;
+  color: #6297F8;
+}
+.button.inversed:hover, .inversed.button--lg:hover {
+  color: #4a87f7;
+}
+.button .fa, .button--lg .fa, .button .dns-badge__content:before, .button--lg .dns-badge__content:before, .button table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .button .status.status-reported:before, .button--lg table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .button--lg .status.status-reported:before, .button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before, .button--lg table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before, .button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .button .status.status-reported:before, .button--lg .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .button--lg .status.status-reported:before, .button .cuckoo-files ul div:before, .cuckoo-files ul .button div:before, .button--lg .cuckoo-files ul div:before, .cuckoo-files ul .button--lg div:before, .button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .button .extension-select:after, .button--lg .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .button--lg .extension-select:after, .button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .button .extension-select:before, .button--lg .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .button--lg .extension-select:before, .button .flex-form__header .custom-checkbox > input + span, .flex-form__header .button .custom-checkbox > input + span, .button--lg .flex-form__header .custom-checkbox > input + span, .flex-form__header .button--lg .custom-checkbox > input + span, .button .breadcrumbs > li:not(:last-child):after, .button--lg .breadcrumbs > li:not(:last-child):after {
+  margin-right: 5px;
 }
 
 /* 
@@ -4543,26 +4553,62 @@ button .panel-heading .glyphicon {
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-#page_error .error {
-  margin: 0 auto;
+.app-error__header {
   text-align: center;
+  text-shadow: 0px 1px 0px #fff;
+  color: #D0011B;
+  margin-bottom: 25px;
 }
-#page_error .error-code {
-  bottom: 60%;
-  font-size: 96px;
-  line-height: 100px;
+.app-error__header h1, .app-error__header h5 {
+  margin: 0;
 }
-#page_error .error-desc {
-  font-size: 12px;
+.app-error__header h1 {
+  font-size: 118px;
+  font-weight: 200;
 }
-#page_error .m-b-10 {
-  margin-bottom: 10px !important;
+.app-error__header h5 {
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: 900;
 }
-#page_error .m-b-20 {
-  margin-bottom: 20px !important;
+.app-error__balloon {
+  position: relative;
+  border: 1px solid #DFDFDF;
+  background-color: #fff;
+  width: 500px;
+  padding: 25px;
+  box-shadow: 0px 2px 4px rgba(178, 178, 178, 0.13);
+  border-radius: 8px;
 }
-#page_error .m-t-20 {
-  margin-top: 20px !important;
+.app-error__balloon:after, .app-error__balloon:before {
+  bottom: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.app-error__balloon:after {
+  border-color: rgba(255, 255, 255, 0);
+  border-bottom-color: #FFF;
+  border-width: 13px;
+  margin-left: -13px;
+}
+.app-error__balloon:before {
+  border-color: rgba(223, 223, 223, 0);
+  border-bottom-color: #DFDFDF;
+  border-width: 14px;
+  margin-left: -14px;
+}
+.app-error__message {
+  font-size: 18px;
+  font-weight: 500;
+  color: #818181;
+  border-bottom: 1px solid #dfdfdf;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 /* 
@@ -5918,6 +5964,9 @@ body.night .flex-tabs__tab .btn:not(.active):hover {
   width: 100vw;
   height: -webkit-calc(100vh - 80px);
   font-family: "Roboto", sans-serif;
+}
+.flex-grid.include-footer, .include-footer.flex-grid__horizontal, .include-footer.flex-grid__horizontal--grow {
+  height: -webkit-calc(100vh - 140px);
 }
 .flex-grid__header {
   padding: 15px 20px;

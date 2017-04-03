@@ -6,7 +6,9 @@
 			"moment/moment.js",
 			"chart.js/dist/Chart.js"
 		],
-		"css/vendor.css@concat": [],
+		"css/vendor.css@concat": [
+			"font-roboto/dist/styles/roboto.css"
+		],
 		"fonts@copy": [
 			"font-awesome/fonts/*",
 			"font-roboto/dist/fonts/*"

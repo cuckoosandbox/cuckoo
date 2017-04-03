@@ -50,7 +50,8 @@
         {% elif request.COOKIES.theme == "cyborg" %}
             <link href="{% static "js/jstree/default/style.min.css" %}" rel="stylesheet" />
         {% endif %}
-        
+            
+        <link href="{% static "css/vendor.css"%}" rel="stylesheet" type="text/css" />
         <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
     </head>

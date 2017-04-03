@@ -208,11 +208,13 @@
 		color: #fff;
 		background-color: darken(#6297F8, 5);
 		border-bottom-color: darken(#4F7CCF, 5);
+		text-decoration: none;
 	}
 
 	&:focus,
 	&:active {
 		outline: none;
+		text-decoration: none;
 	}
 
 	&--lg {
@@ -226,4 +228,19 @@
 		background-color: transparent;
 		border: 2px solid #fff;
 	}
+
+	&.inversed {
+		background-color: transparent;
+		border: 0;
+		color: #6297F8;
+
+		&:hover {
+			color: darken(#6297F8, 5);
+		}
+	}
+
+	.fa {
+		margin-right: 5px;
+	}
+
 }
