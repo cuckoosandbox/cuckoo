@@ -228,6 +228,8 @@ this["HANDLEBARS_TEMPLATES"]["dashboard-table"] = Handlebars.template({"1":funct
     var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
   return "\n            <tr>\n                <td>"
+    + alias3(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
+    + "</td>\n                <td>"
     + alias3(((helper = (helper = helpers.added_on || (depth0 != null ? depth0.added_on : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"added_on","hash":{},"data":data}) : helper)))
     + "</td>\n                <td>"
     + alias3(((helper = (helper = helpers.filename_url || (depth0 != null ? depth0.filename_url : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"filename_url","hash":{},"data":data}) : helper)))
@@ -237,11 +239,11 @@ this["HANDLEBARS_TEMPLATES"]["dashboard-table"] = Handlebars.template({"1":funct
     + alias3(((helper = (helper = helpers.score || (depth0 != null ? depth0.score : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"score","hash":{},"data":data}) : helper)))
     + " / 10</span></td>\n            </tr>\n\n";
 },"3":function(depth0,helpers,partials,data) {
-    return "            <tr class=\"less-entries\">\n                <td colspan=\"4\"><span class=\"badge\">No more results</span></td>\n            </tr>\n";
+    return "            <tr class=\"less-entries\">\n                <td colspan=\"5\"><span class=\"badge\">No more results</span></td>\n            </tr>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 
-  return "<table class=\"cuckoo-table\">\n\n    <thead>\n        <tr>\n            <th>Date</th>\n            <th>File</th>\n            <th>Package</th>\n            <th>Score</th>\n        </tr>\n    </thead>\n\n    <tbody>\n\n"
+  return "<table class=\"cuckoo-table\">\n\n    <thead>\n        <tr>\n            <th>#</th>\n            <th>Date</th>\n            <th>File</th>\n            <th>Package</th>\n            <th>Score</th>\n        </tr>\n    </thead>\n\n    <tbody>\n\n"
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.entries : depth0),{"name":"each","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\n"
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.lessEntries : depth0),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")

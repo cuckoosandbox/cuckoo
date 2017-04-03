@@ -198,6 +198,127 @@ $(function() {
 
 });
 
+// utility class for controlling the dashboard
+// table views
+class DashboardTable {
+
+    // constructs the dashboardtable class
+    constructor(el, options) {
+
+        this.options = $.extend({
+            limit: 3,
+            afterLoad: function() {},
+            afterRender: function() {}
+        }, options);
+
+        this.el = el;
+        this.limitSelect = this.el.find('[data-select="limit"]');
+
+        this.initialise();
+
+    }
+
+    initialise() {
+
+        var _this = this;
+
+        this.limitSelect.bind('change', function() {
+            var value = $(this).val();
+            _this.changeLimit(value);
+        });
+
+        this.load();
+
+    }
+
+    changeLimit(val) {
+        this.options.limit = val;
+        this.load();
+    }
+
+    load() {
+
+        var _this = this;
+        var limit = parseInt(this.options.limit);
+
+        $.ajax({
+            type: "POST",
+            url: "/analysis/api/tasks/recent/",
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                cats: [],
+                limit: isNaN(limit) ? 3 : limit,
+                offset: 0,
+                packs: [],
+                score: ""
+            }),
+            success: function(response) {
+
+                response = response.map(function(item) {
+                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                    return item;
+                });
+
+                _this.afterLoad(response);
+            }
+        });
+
+    }
+
+    afterLoad(data) {
+
+        var limit = parseInt(this.options.limit);
+
+        var completed_table = this.generateTable(data.filter(function(item) {
+            return item.status === 'reported';
+        }).slice(0,limit));
+
+        var pending_table = this.generateTable(data.filter(function(item) {
+            return item.status === 'pending';
+        }).slice(0,limit));
+
+        this.el.find("[data-populate='dashboard-table-recent']").html(completed_table);
+        this.el.find("[data-populate='dashboard-table-pending']").html(pending_table);
+
+        this.options.afterRender({
+            $recent: this.el.find("[data-populate='dashboard-table-recent']"),
+            $pending: this.el.find("[data-populate='dashboard-table-pending']")
+        });
+
+    }
+
+    generateTable(data) {
+
+        var limit = this.options.limit;
+
+        return HANDLEBARS_TEMPLATES['dashboard-table']({
+            entries: data,
+            lessEntries: (data.length < limit)
+        });
+
+    }
+
+    // generates a simple table <tbody> output
+    // following an object
+    static simpleTable(keys) {
+
+        var rows = $('<div />');
+
+        for(var key in keys) {
+            var val = keys[key];
+            var $tr = $("<tr />");
+            $tr.append(`<td>${key}</td>`);
+            $tr.append(`<td>${val}</td>`);
+            rows.append($tr);
+        }
+
+        return rows.html();
+
+    }
+
+}
+
 // dashboard code - gets replaced later into a seperate file
 $(function() {
 
@@ -343,26 +464,25 @@ $(function() {
     // dashboard components
     if($("#cuckoo-dashboard").length) {
 
-        function simpleTable(keys) {
+        var dashboard_table = new DashboardTable($("#dashboard-tables"), {
+            limit: 3,
+            limitOptions: [1,2,3,5,10,20,50,100],
 
-            var rows = $('<div />');
+            afterRender: function(elements) {
 
-            for(var key in keys) {
-                var val = keys[key];
-                var $tr = $("<tr />");
-                $tr.append(`<td>${key}</td>`);
-                $tr.append(`<td>${val}</td>`);
-                rows.append($tr);
+                elements.$recent.find('tr').bind('click', function(e) {
+                    var id = $(this).find('td:first-child').text();
+                    window.location = `/analysis/${id}/summary/`;
+                });
+
             }
+        });
 
-            return rows.html();
-        }
-
-        // retrieve general info about cuckoo
+        // // retrieve general info about cuckoo
         $.get('/cuckoo/api/status', function(data) {
 
             // populate tasks information
-            var tasks_info = simpleTable(data.data.tasks);
+            var tasks_info = DashboardTable.simpleTable(data.data.tasks);
             $('[data-populate="statistics"]').html(tasks_info);
 
             // populate free disk space unit
@@ -372,48 +492,6 @@ $(function() {
 
         });
 
-        $.ajax({
-            type: "POST",
-            url: "/analysis/api/tasks/recent/",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({
-                cats: [],
-                limit: 3,
-                offset: 0,
-                packs: [],
-                score: ""
-            }),
-            success: function(data) {
-
-                data = data.map(function(item) {
-                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY')
-                    return item;
-                });
-
-                var recentTableEntries = data.filter(function(item) {
-                    return item.status === 'reported';
-                }).slice(0,3);
-
-                var pendingTableEntries = data.filter(function(item) {
-                    return item.status === 'pending';
-                }).slice(0,3)
-
-                var recent_table = HANDLEBARS_TEMPLATES['dashboard-table']({
-                    entries: recentTableEntries,
-                    lessEntries: (recentTableEntries.length < 3)
-                });
-
-                var pending_table = HANDLEBARS_TEMPLATES['dashboard-table']({
-                    entries: pendingTableEntries,
-                    lessEntries: (pendingTableEntries < 3)
-                });
-
-                $("[data-populate='dashboard-table-recent']").html(recent_table);
-                $("[data-populate='dashboard-table-pending']").html(pending_table);
-
-            }
-        })
 
     }
 

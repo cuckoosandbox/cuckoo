@@ -2,6 +2,7 @@
 
     <thead>
         <tr>
+            <th>#</th>
             <th>Date</th>
             <th>File</th>
             <th>Package</th>
@@ -14,6 +15,7 @@
         {{#each entries}}
 
             <tr>
+                <td>{{id}}</td>
                 <td>{{added_on}}</td>
                 <td>{{filename_url}}</td>
                 <td>{{package}}</td>
@@ -24,7 +26,7 @@
 
         {{#if lessEntries}}
             <tr class="less-entries">
-                <td colspan="4"><span class="badge">No more results</span></td>
+                <td colspan="5"><span class="badge">No more results</span></td>
             </tr>
         {{/if}}
 
