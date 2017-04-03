@@ -35,14 +35,19 @@ class TargetInfo(Processing):
 
             ret["file"]["name"] = File(self.task["target"]).get_name()
         elif self.task["category"] == "archive":
-            ret["archive"] = File(self.file_path).get_all()
-            ret["archive"]["name"] = File(self.task["target"]).get_name()
             ret["filename"] = self.task["options"]["filename"]
+
+            if os.path.exists(self.file_path):
+                ret["archive"] = File(self.file_path).get_all()
+                a = Archive(self.file_path)
+                ret["file"] = a.get_file(ret["filename"]).get_all()
+            else:
+                ret["archive"] = {}
+                ret["file"] = {}
+
+            ret["archive"]["name"] = File(self.task["target"]).get_name()
             ret["human"] = "%s @ %s" % (
                 ret["filename"], ret["archive"]["name"]
-            )
-            ret["file"] = (
-                Archive(self.file_path).get_file(ret["filename"]).get_all()
             )
             ret["file"]["name"] = os.path.basename(ret["filename"])
         elif self.task["category"] == "url":

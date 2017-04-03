@@ -351,6 +351,39 @@ class TestProcessing(object):
             "url": "http://google.com",
         }
 
+    def test_targetinfo_empty(self):
+        ti = TargetInfo()
+        ti.file_path = "file404"
+        ti.set_task({
+            "category": "file",
+            "target": "file404",
+        })
+        obj = ti.run()
+        assert obj["category"] == "file"
+        assert obj["file"] == {
+            "name": "file404", "path": None, "yara": [],
+        }
+
+        ti = TargetInfo()
+        ti.file_path = "file404"
+        ti.set_task({
+            "category": "archive",
+            "target": "file404",
+            "options": {
+                "filename": "files/pdf0.pdf",
+            },
+        })
+        obj = ti.run()
+        assert obj["category"] == "archive"
+        assert obj["filename"] == "files/pdf0.pdf"
+        assert obj["human"] == "files/pdf0.pdf @ file404"
+        assert obj["archive"] == {
+            "name": "file404",
+        }
+        assert obj["file"] == {
+            "name": "pdf0.pdf",
+        }
+
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     @mock.patch("cuckoo.processing.screenshots.log")
     def test_ignore_notesseract(self, p, q):
