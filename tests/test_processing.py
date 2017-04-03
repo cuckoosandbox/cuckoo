@@ -754,10 +754,16 @@ class TestPcap2(object):
         assert len(obj["smtp_ex"]) == 1
         assert obj["smtp_ex"][0]["req"]["username"] == "galunt"
         assert obj["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
-        assert obj["smtp_ex"][0]["req"]["mail_to"] == ['xxxxxx.xxxx@xxxxx.com']
-        assert obj["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
+        assert obj["smtp_ex"][0]["req"]["mail_to"] == [
+            "xxxxxx.xxxx@xxxxx.com",
+        ]
+        assert obj["smtp_ex"][0]["req"]["mail_from"] == [
+            "xxxxxx@xxxxx.co.uk",
+        ]
         assert len(obj["smtp_ex"][0]["req"]["headers"]) == 10
-        assert obj["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+        assert obj["smtp_ex"][0]["resp"]["banner"] == (
+            "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+        )
 
     def test_http_status(self):
         obj = Pcap2(
@@ -766,6 +772,12 @@ class TestPcap2(object):
         assert len(obj["http_ex"]) == 1
         assert not obj["https_ex"]
         assert obj["http_ex"][0]["status"] == 301
+
+    def test_http_nostatus(self):
+        obj = Pcap2(
+            "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
+        ).run()
+        assert len(obj["http_ex"]) == 1
 
 def test_parse_cmdline():
     rb = RebootReconstructor()
