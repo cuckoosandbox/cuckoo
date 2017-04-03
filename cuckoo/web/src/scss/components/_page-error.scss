@@ -78,4 +78,100 @@
 		margin-bottom: 20px;
 	}
 
+	// theme for cyborg
+	@include cuckoo-theme('cyborg') {
+
+		&__header {
+			text-shadow: none;
+			color: #d22f43;
+		}
+
+		&__balloon {
+			@extend %cyborg-heading;
+
+			&:after {
+				border-bottom-color: #284F60;
+			}
+
+			&:before {
+				border-bottom-color: #2b5a6a;
+			}
+
+			.button {
+
+				color: $cyborg_secundary_color;
+
+				&:not(.inversed) {
+					@extend .outline;
+					border-color: $cyborg_secundary_color;
+
+					&:hover {
+						background-color: $cyborg_secundary_color;
+						color: #2b5a6a;
+					}
+				}
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+		}
+
+		&__message {
+			color: $cyborg_text_color;
+			border-bottom-color: #51666B;
+		}
+
+	}
+
+	// theme for night
+	@include cuckoo-theme('night') {
+
+		&__header {
+			text-shadow: none;
+			color: #d22f43;
+		}
+
+		&__balloon {
+
+			background-color: $night_panel_color;
+			border-color: #21282f;
+			box-shadow: 0px 2px 4px rgba(26,31,35,1);
+
+			&:after {
+				border-bottom-color: $night_panel_color;
+			}
+
+			&:before {
+				border-bottom-color: #21282f;				
+			}
+
+			.button {
+
+				color: $night_text_color;
+
+				&:not(.inversed) {
+					@extend .outline;
+					border-color: $night_text_color;
+
+					&:hover {
+						background-color: $night_text_color;
+						color: $night_accent_color;
+					}
+				}
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+
+		}
+
+		&__message {
+			color: $night_text_color;
+			border-bottom-color: #2a3e53;
+		}
+
+	}
+
 }

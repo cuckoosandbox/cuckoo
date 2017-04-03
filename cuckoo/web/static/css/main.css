@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
+body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -3702,7 +3702,7 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
   padding: 5px 15px;
   border-bottom-width: 2px;
 }
-.button.outline, .outline.button--lg {
+.button.outline, .outline.button--lg, body.cyborg .app-error__balloon .button:not(.inversed), body.cyborg .app-error__balloon .button--lg:not(.inversed), body.night .app-error__balloon .button:not(.inversed), body.night .app-error__balloon .button--lg:not(.inversed) {
   background-color: transparent;
   border: 2px solid #fff;
 }
@@ -4609,6 +4609,65 @@ button .panel-heading .glyphicon {
   border-bottom: 1px solid #dfdfdf;
   padding-bottom: 20px;
   margin-bottom: 20px;
+}
+body.cyborg .app-error__header {
+  text-shadow: none;
+  color: #d22f43;
+}
+body.cyborg .app-error__balloon:after {
+  border-bottom-color: #284F60;
+}
+body.cyborg .app-error__balloon:before {
+  border-bottom-color: #2b5a6a;
+}
+body.cyborg .app-error__balloon .button, body.cyborg .app-error__balloon .button--lg {
+  color: #0ce3ac;
+}
+body.cyborg .app-error__balloon .button:not(.inversed), body.cyborg .app-error__balloon .button--lg:not(.inversed) {
+  border-color: #0ce3ac;
+}
+body.cyborg .app-error__balloon .button:not(.inversed):hover, body.cyborg .app-error__balloon .button--lg:not(.inversed):hover {
+  background-color: #0ce3ac;
+  color: #2b5a6a;
+}
+body.cyborg .app-error__balloon .button:hover, body.cyborg .app-error__balloon .button--lg:hover {
+  text-decoration: none;
+}
+body.cyborg .app-error__message {
+  color: #d7d7d7;
+  border-bottom-color: #51666B;
+}
+body.night .app-error__header {
+  text-shadow: none;
+  color: #d22f43;
+}
+body.night .app-error__balloon {
+  background-color: #375a7f;
+  border-color: #21282f;
+  box-shadow: 0px 2px 4px #1a1f23;
+}
+body.night .app-error__balloon:after {
+  border-bottom-color: #375a7f;
+}
+body.night .app-error__balloon:before {
+  border-bottom-color: #21282f;
+}
+body.night .app-error__balloon .button, body.night .app-error__balloon .button--lg {
+  color: #d7d7d7;
+}
+body.night .app-error__balloon .button:not(.inversed), body.night .app-error__balloon .button--lg:not(.inversed) {
+  border-color: #d7d7d7;
+}
+body.night .app-error__balloon .button:not(.inversed):hover, body.night .app-error__balloon .button--lg:not(.inversed):hover {
+  background-color: #d7d7d7;
+  color: #555;
+}
+body.night .app-error__balloon .button:hover, body.night .app-error__balloon .button--lg:hover {
+  text-decoration: none;
+}
+body.night .app-error__message {
+  color: #d7d7d7;
+  border-bottom-color: #2a3e53;
 }
 
 /* 
