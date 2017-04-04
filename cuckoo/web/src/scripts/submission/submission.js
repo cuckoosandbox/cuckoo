@@ -428,8 +428,6 @@ $(function() {
 						default: default_analysis_options['options'],
 						extraOptions: true,
 						options: submission_options
-					}).on('change', function() {
-						console.log(arguments);
 					});
 
 					var machine = new this.SimpleSelect({
