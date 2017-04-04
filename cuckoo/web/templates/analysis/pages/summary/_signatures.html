@@ -85,6 +85,10 @@
             </section>            
         {% endfor %}
 
+        {% if not report.analysis.signatures %}
+            <p>No signatures</p>
+        {% endif %}
+
     </div>
 
 </section>

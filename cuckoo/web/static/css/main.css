@@ -3971,6 +3971,7 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle) {
   display: block;
   margin: 0;
   padding: 15px;
+  font-weight: 700;
 }
 .warning .cuckoo-analysis__panel--toggle {
   color: #8A6D40;
@@ -3981,9 +3982,9 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle) {
 .danger .cuckoo-analysis__panel--toggle {
   color: #A94441;
 }
-.cuckoo-analysis__panel--toggle:hover {
+.cuckoo-analysis__panel--toggle:hover, .cuckoo-analysis__panel--toggle:focus, .cuckoo-analysis__panel--toggle:active {
   background-color: rgba(0, 0, 0, 0.05);
-  text-decoration: none;
+  text-decoration: none !important;
 }
 .cuckoo-analysis__panel--toggle:after {
   float: right;
@@ -3995,6 +3996,58 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle) {
 }
 .cuckoo-analysis__panel--body .cuckoo-table, .cuckoo-analysis__panel--body table.cuckoo-table__fullscreen, .cuckoo-analysis__panel--body .network-display__table > table {
   border: 0;
+  font-size: 14px;
+}
+body.cyborg .cuckoo-analysis__panel.warning {
+  background-color: #1F1E02;
+  border-color: #352913;
+}
+body.cyborg .cuckoo-analysis__panel.warning .collapse.in {
+  border-top: 1px solid #352913;
+}
+body.cyborg .cuckoo-analysis__panel.info {
+  background-color: #1c2e4a;
+  border-color: #304667;
+}
+body.cyborg .cuckoo-analysis__panel.info .collapse.in {
+  border-top: 1px solid #304667;
+}
+body.cyborg .cuckoo-analysis__panel.danger {
+  background-color: #5c2330;
+  border-color: #733244;
+}
+body.cyborg .cuckoo-analysis__panel.danger .collapse.in {
+  border-top: 1px solid #733244;
+}
+body.night .cuckoo-analysis__panel.info {
+  background-color: #375a7f;
+  border-color: #132233;
+}
+body.night .cuckoo-analysis__panel.info .collapse.in {
+  border-top: 1px solid #132233;
+}
+body.night .cuckoo-analysis__panel.info > a {
+  color: #B4BFCA;
+}
+body.night .cuckoo-analysis__panel.warning {
+  background-color: #5a5a5a;
+  border-color: #4a4a4a;
+}
+body.night .cuckoo-analysis__panel.warning .collapse.in {
+  border-top: 1px solid #4a4a4a;
+}
+body.night .cuckoo-analysis__panel.warning > a {
+  color: #d2891a;
+}
+body.night .cuckoo-analysis__panel.danger {
+  background-color: #371d1d;
+  border-color: #06030C;
+}
+body.night .cuckoo-analysis__panel.danger .collapse.in {
+  border-top: 1px solid #06030C;
+}
+body.night .cuckoo-analysis__panel.danger > a {
+  color: #D43237;
 }
 
 /* 

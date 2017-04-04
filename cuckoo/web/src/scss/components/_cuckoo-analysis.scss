@@ -194,6 +194,7 @@
 			display: block;
 			margin: 0;
 			padding: 15px;
+			font-weight: 700;
 
 			.warning & {
 				color: #8A6D40;
@@ -207,9 +208,11 @@
 				color: #A94441;
 			}
 
-			&:hover {
+			&:hover,
+			&:focus,
+			&:active {
 				background-color: rgba(0,0,0,.05);
-				text-decoration: none;
+				text-decoration: none !important;
 			}
 
 			&:after {
@@ -227,7 +230,65 @@
 		&--body {
 			.cuckoo-table { 
 				border: 0; 
+				font-size: 14px;
 			}
+		}
+
+		// cyborg optimized
+		@include cuckoo-theme('cyborg') {
+
+			&.warning {
+				background-color: #1F1E02;
+				border-color: #352913;
+				.collapse.in { border-top: 1px solid #352913; }
+			}
+
+			&.info {
+				background-color: #1c2e4a;
+				border-color: #304667;
+				.collapse.in { border-top: 1px solid #304667; }
+			}
+
+			&.danger {
+				background-color: #5c2330;
+				border-color: #733244;
+				.collapse.in { border-top: 1px solid #733244; }
+			}
+
+		}
+
+		@include cuckoo-theme('night') {
+
+			&.info {
+				background-color: #375a7f;
+				border-color: #132233;
+				.collapse.in { border-top: 1px solid #132233; }
+
+				& > a {
+					color: #B4BFCA;
+				}
+			}
+
+			&.warning {
+				background-color: #5a5a5a;
+				border-color: #4a4a4a;
+				.collapse.in { border-top: 1px solid #4a4a4a; }
+
+				& > a {
+					color: #d2891a;
+				}
+			}
+
+			&.danger {
+				background-color: #371d1d;
+				border-color: #06030C;
+				.collapse.in { border-top: 1px solid #06030C; }
+
+				& > a {
+					color: #D43237;
+				}
+			}
+
 		}
 
 	}
