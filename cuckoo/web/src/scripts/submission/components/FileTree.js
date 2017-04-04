@@ -259,7 +259,7 @@ function bubbleItemParentsUp(item, cb) {
 
 	function iterate(item) {
 
-		cb(item);
+		if(cb) cb(item);
 
 		if(item && item.parent) {
 			iterate(item.parent);
@@ -314,6 +314,7 @@ function parentSelectedState(item, checked) {
 		});
 		
 	} else {
+
 		bubbleItemParentsUp(item.parent, function(item) {
 
 			var has_selected_child = false;
@@ -329,6 +330,7 @@ function parentSelectedState(item, checked) {
 			}
 
 		});
+
 	}
 }
 
@@ -481,6 +483,7 @@ class FileTree {
 		};
 
 		this.construct();
+
 		if(this.options.events.ready) this.options.events.ready.call(this);
 		if(this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
 	}
@@ -494,15 +497,15 @@ class FileTree {
 		var html = build.call(this, this.data.children, document.createElement('ul'));
 		this.el.appendChild(html);
 
-		this.each(function(item) {
-			if(item.parent) {
-				parentSelectedState(item, item.selected);
-			}
-		});
-
 		this.connectListeners();
 		this.update();
 		this.selectionView();
+
+		this.each(function(item) {
+			if(item.selected && item.parent) {
+				parentSelectedState(item, item.selected);
+			}
+		});
 
 	}
 
