@@ -1662,6 +1662,7 @@ var SimpleSelect = function (_UserInputController) {
 		var _this = _possibleConstructorReturn(this, (SimpleSelect.__proto__ || Object.getPrototypeOf(SimpleSelect)).call(this, config));
 
 		_this.options = config.options;
+
 		_this.initialise();
 		return _this;
 	}
@@ -1714,6 +1715,7 @@ var TopSelect = function (_UserInputController2) {
 		_this2.options = _this2.config.options;
 		_this2.extra_select = _this2.config.extra_select;
 		_this2.units = _this2.config.units;
+
 		_this2.initialise();
 		return _this2;
 	}
@@ -1738,6 +1740,7 @@ var TopSelect = function (_UserInputController2) {
 			}
 
 			if (this.default) {
+
 				this.options.forEach(function (opt) {
 
 					if (opt.value == self.default) {
@@ -1746,6 +1749,11 @@ var TopSelect = function (_UserInputController2) {
 						snapped = true;
 					}
 				});
+
+				if (!snapped) {
+					self.setValue(self.default);
+					$(self.view.html).find('.manual-input > input').val(self.getValue());
+				}
 			}
 
 			// controller configures the view

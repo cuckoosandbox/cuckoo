@@ -184,6 +184,7 @@ class SimpleSelect extends UserInputController {
 	constructor(config) {
 		super(config);
 		this.options = config.options;
+
 		this.initialise();
 	}
 
@@ -222,9 +223,11 @@ class TopSelect extends UserInputController {
 	constructor(config) {
 		if(!config) config = {};
 		super(config);
+
 		this.options = this.config.options;
 		this.extra_select = this.config.extra_select;
 		this.units = this.config.units;
+
 		this.initialise();
 	}
 
@@ -246,6 +249,7 @@ class TopSelect extends UserInputController {
 		}
 
 		if(this.default) {
+
 			this.options.forEach(function(opt) {
 
 				if(opt.value == self.default) {
@@ -255,6 +259,12 @@ class TopSelect extends UserInputController {
 				}
 
 			});
+
+			if(!snapped) {
+				self.setValue(self.default);
+				$(self.view.html).find('.manual-input > input').val(self.getValue());
+			}
+
 		}
 
 		// controller configures the view
