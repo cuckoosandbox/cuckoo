@@ -5,7 +5,6 @@
 from __future__ import absolute_import
 
 import datetime
-import elasticsearch
 import json
 import logging
 import time
@@ -14,7 +13,6 @@ import os
 from cuckoo.common.abstracts import Report
 from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import CuckooReportError, CuckooOperationalError
-from cuckoo.common.utils import convert_to_printable
 from cuckoo.misc import cwd
 
 logging.getLogger("elasticsearch").setLevel(logging.WARNING)
@@ -38,41 +36,44 @@ class ElasticSearch(Report):
         if not elastic.init():
             return
 
+        cls.template_name = "%s_template" % elastic.index
+
         try:
             elastic.connect()
-            cls.es = elastic.client
         except CuckooOperationalError as e:
             raise CuckooReportError(
                 "Error running ElasticSearch reporting module: %s" % e
             )
 
         # check to see if the template exists apply it if it does not
-        if not cls.es.indices.exists_template("cuckoo_template"):
+        if not elastic.client.indices.exists_template(cls.template_name):
             if not cls.apply_template():
                 raise CuckooReportError("Cannot apply Elasticsearch template")
 
-    def apply_template(self):
+    @classmethod
+    def apply_template(cls):
         template_path = cwd("elasticsearch", "template.json")
         if not os.path.exists(template_path):
             return False
 
-        with open(template_path, "rw") as f:
-            try:
-                cuckoo_template = json.loads(f.read())
-            except ValueError:
-                raise CuckooReportError(
-                    "Unable to read valid JSON from the ElasticSearch "
-                    "template JSON file located at: %s" % template_path
-                )
+        try:
+            template = json.loads(open(template_path, "rb").read())
+        except ValueError:
+            raise CuckooReportError(
+                "Unable to read valid JSON from the ElasticSearch "
+                "template JSON file located at: %s" % template_path
+            )
 
-            # Create an index wildcard based off of the index name specified
-            # in the config file, this overwrites the settings in
-            # template.json.
-            cuckoo_template["template"] = elastic.index + "-*"
+        # Create an index wildcard based off of the index name specified
+        # in the config file, this overwrites the settings in
+        # template.json.
+        template["template"] = elastic.index + "-*"
 
-        self.es.indices.put_template(
-            name="cuckoo_template", body=json.dumps(cuckoo_template)
-        )
+        # if the template does not already exist then create it
+        if not elastic.client.indices.exists_template(cls.template_name):
+            elastic.client.indices.put_template(
+                name=cls.template_name, body=json.dumps(template)
+            )
         return True
 
     def get_base_document(self):
@@ -91,7 +92,7 @@ class ElasticSearch(Report):
         base_document.update(obj)
 
         try:
-            self.es.create(
+            elastic.client.index(
                 index=self.dated_index,
                 doc_type=self.report_type,
                 body=base_document
@@ -104,28 +105,43 @@ class ElasticSearch(Report):
 
     def do_bulk_index(self, bulk_reqs):
         try:
-            elasticsearch.helpers.bulk(self.es, bulk_reqs)
+            elastic.client.bulk(bulk_reqs)
         except Exception as e:
             raise CuckooReportError(
                 "Failed to save results in ElasticSearch for "
                 "task #%d: %s" % (self.task["id"], e)
             )
 
-    def process_call(self, call):
-        """This function converts all arguments to strings to allow ES to map
-        them properly."""
-        if "arguments" not in call or type(call["arguments"]) != dict:
-            return call
+    def process_signatures(self, signatures):
+        new_signatures = []
 
-        new_arguments = {}
-        for key, value in call["arguments"].iteritems():
-            if type(value) is unicode or type(value) is str:
-                new_arguments[key] = convert_to_printable(value)
-            else:
-                new_arguments[key] = str(value)
+        for signature in signatures:
+            new_signature = signature.copy()
 
-        call["arguments"] = new_arguments
-        return call
+            if "marks" in signature:
+                new_signature["marks"] = []
+                for mark in signature["marks"]:
+                    new_mark = {}
+                    for k, v in mark.iteritems():
+                        if k != "call" and type(v) == dict:
+                            # If marks is a dictionary we need to explicitly define it for the ES mapping
+                            # this is in the case that a key in marks is sometimes a string and sometimes a dictionary
+                            # if the first document indexed into ES is a string it will not accept a signature
+                            # and through a ES mapping exception.  To counter this dicts will be explicitly stated
+                            # in the key except for calls which are always dictionaries.
+                            # This presented itself in testing with signatures.marks.section which would sometimes be a
+                            # PE section string such as "UPX"  and other times full details about the section as a
+                            # dictionary in the case of packer_upx and packer_entropy signatures
+                            new_mark["%s_dict" % k] = v
+                        else:
+                            # If it is not a mark it is fine to leave key as is
+                            new_mark[k] = v
+
+                    new_signature["marks"].append(new_mark)
+
+            new_signatures.append(new_signature)
+
+        return new_signatures
 
     def process_behavior(self, results, bulk_submit_size=1000):
         """Index the behavioral data."""
@@ -137,7 +153,7 @@ class ElasticSearch(Report):
                 call_document = {
                     "pid": process["pid"],
                 }
-                call_document.update(self.process_call(call))
+                call_document.update(call)
                 call_document.update(base_document)
                 bulk_index.append({
                     "_index": self.dated_index,
@@ -170,15 +186,35 @@ class ElasticSearch(Report):
 
         # Index target information, the behavioral summary, and
         # VirusTotal results.
-        self.do_index({
+        doc = {
             "cuckoo_node": elastic.cuckoo_node,
             "target": results.get("target"),
             "summary": results.get("behavior", {}).get("summary"),
-            "virustotal": results.get("virustotal"),
-            "irma": results.get("irma"),
-            "signatures": results.get("signatures"),
-            "dropped": results.get("dropped"),
-        })
+            "info": results.get("info"),
+        }
+
+        # index elements that are not empty ES should not index blank fields
+        virustotal = results.get("virustotal")
+        if virustotal:
+            doc["virustotal"] = virustotal
+
+        irma = results.get("irma")
+        if irma:
+            doc["irma"] = irma
+
+        signatures = results.get("signatures")
+        if signatures:
+            doc["signatures"] = self.process_signatures(signatures)
+
+        dropped = results.get("dropped")
+        if dropped:
+            doc["dropped"] = dropped
+
+        procmemory = results.get("procmemory")
+        if procmemory:
+            doc["procmemory"] = procmemory
+
+        self.do_index(doc)
 
         # Index the API calls.
         if elastic.calls:

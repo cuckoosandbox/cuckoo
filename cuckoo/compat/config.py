@@ -580,6 +580,7 @@ def _20c2_200(c):
         "reporting:elasticsearch:hosts",
         c["reporting"]["elasticsearch"]["hosts"]
     )
+    c["reporting"]["elasticsearch"]["timeout"] = 300
     c["reporting"]["feedback"] = {
         "enabled": False,
     }
