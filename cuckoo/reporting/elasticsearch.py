@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 
 import datetime
+import elasticsearch.helpers
 import json
 import logging
 import time
@@ -105,7 +106,7 @@ class ElasticSearch(Report):
 
     def do_bulk_index(self, bulk_reqs):
         try:
-            elastic.client.bulk(bulk_reqs)
+            elasticsearch.helpers.bulk(elastic.client, bulk_reqs)
         except Exception as e:
             raise CuckooReportError(
                 "Failed to save results in ElasticSearch for "
