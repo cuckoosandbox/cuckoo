@@ -2,9 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import StringIO
 import datetime
 import fnmatch
+import io
 import logging
 import os.path
 import pymongo
@@ -20,7 +20,7 @@ from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import config, emit_options, Config
 from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
-    CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
+    CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
 from cuckoo.common.objects import File
 from cuckoo.common.utils import to_unicode
@@ -50,7 +50,7 @@ def fetch_community(branch="master", force=False, filepath=None):
 
         buf = r.content
 
-    t = tarfile.TarFile.open(fileobj=StringIO.StringIO(buf), mode="r:gz")
+    t = tarfile.TarFile.open(fileobj=io.BytesIO(buf), mode="r:gz")
 
     folders = {
         "modules/signatures": "signatures",
@@ -344,6 +344,7 @@ def cuckoo_clean():
                     "it manually. Error description: %s", e)
 
     # Check if MongoDB reporting is enabled and drop that if it is.
+    # TODO Move to the MongoDB abstract.
     if config("reporting:mongodb:enabled"):
         host = config("reporting:mongodb:host")
         port = config("reporting:mongodb:port")
@@ -356,11 +357,12 @@ def cuckoo_clean():
             log.warning("Unable to drop MongoDB database: %s", mdb)
 
     # Check if ElasticSearch reporting is enabled and drop its data if it is.
-    elastic.init()
-    if elastic.enabled:
+    if elastic.init():
         elastic.connect()
 
-        # This should be moved to the elastic abstract.
+        # TODO This should be moved to the elastic abstract.
+        # TODO We should also drop historic data, i.e., from pervious days,
+        # months, and years.
         date_index = datetime.datetime.utcnow().strftime({
             "yearly": "%Y",
             "monthly": "%Y-%m",
@@ -372,8 +374,9 @@ def cuckoo_clean():
             index=dated_index, ignore=[400, 404]
         )
 
-        if elastic.client.indices.exists_template("%s_template" % dated_index):
-            elastic.client.indices.delete_template("%s_template" % dated_index)
+        template_name = "%s_template" % dated_index
+        if elastic.client.indices.exists_template(template_name):
+            elastic.client.indices.delete_template(template_name)
 
     # Paths to clean.
     paths = [
