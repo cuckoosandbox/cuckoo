@@ -384,6 +384,21 @@ def remove(request, task_id):
 
         # Delete screenshots.
         for shot in analysis["shots"]:
+            if isinstance(shot, dict):
+                if "small" in shot:
+                    if results_db.analysis.find({
+                        "shots": ObjectId(shot["small"]),
+                    }).count() == 1:
+                        fs.delete(ObjectId(shot["small"]))
+
+                if "original" in shot:
+                    if results_db.analysis.find({
+                        "shots": ObjectId(shot["original"]),
+                    }).count() == 1:
+                        fs.delete(ObjectId(shot["original"]))
+
+                continue
+
             if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
                 fs.delete(ObjectId(shot))
 
