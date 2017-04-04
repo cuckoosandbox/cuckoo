@@ -34,13 +34,250 @@
         </div>
     </div>
 
-    <script src="{% static "js/vendor.js" %}"></script>
-    <script src="{% static "js/handlebars-templates.js" %}"></script>
-    <script src="{% static "js/bootstrap/bootstrap.min.js" %}"></script>
-    <script src="{% static "js/bootstrap/bootstrap-fileupload.js" %}"></script>
-    <script src="{% static "js/misc/lightbox.js" %}"></script>
-    <script src="{% static "js/cuckoo/analysis_sidebar.js" %}"></script>
-    <script src="{% static "js/cuckoo/submission.js" %}"></script>
-    <script src="{% static "js/cuckoo/app.js" %}"></script>
+    <!-- FEEDBACK MODAL (_form.html) -->
+     <script>
+
+        // unless set elsewhere, define task_id as an empty variable of type String
+        if(!task_id)
+            var task_id = '';
+
+        var taken_files = [];
+        var taken_dirs = [];
+        var cb_analysis = true;
+
+        $(document).ready(function() {
+
+            var sel = $('#modal_feedback');
+
+            sel.on("shown.bs.modal", function() {
+                $("input:text:visible:first").focus()
+            });
+
+            function send_feedback_callback(data){
+                if(data['status'] == true){
+                    sel.find("span#result").html("Successfully sent feedback");
+
+                    setTimeout(function(){
+                        location.reload();
+                    }, 1000);
+                } else {
+                    sel.find("span#result").html("error: " + data["message"]);
+                }
+            }
+
+            function send_feedback(){
+                var email = sel.find("input#email").val();
+                var company = sel.find("input#company").val();
+                var message = sel.find("textarea#message").val();
+                var name = sel.find("input#name").val();
+
+                var include_analysis = sel.find("input#analysis").is(":checked");
+                var include_memory = false;
+
+                if(include_analysis){
+                    if(sel.find("input#memory").is(":checked")) include_memory = true;
+                }
+
+                feedback_send(task_id, name, email, company, message, include_analysis, include_memory, send_feedback_callback)
+            }
+
+            function initFeedbackForm(data){
+                taken_files = data['files'];
+
+                function estimate_size(){
+                    var dirs = [];
+                    var files = [];
+
+                    if(sel.find("input#analysis").is(":checked")){
+                        dirs = taken_dirs;
+                        files = taken_files;
+                    }
+
+                    var memory = sel.find("input#memory").is(":checked");
+
+                    export_estimate_size(task_id, dirs, files, "#modal_feedback small#export_estimate_size", "Estimated size: ");
+                }
+
+                sel.find("input#analysis").change("click", function(){
+                    if(!this.checked){
+                        cb_analysis = false;
+
+                        var memory = sel.find("input#memory");
+                        if(memory.is(":checked")) $(memory).removeAttr("checked");
+                    } else {
+                        cb_analysis = true;
+                    }
+
+                    estimate_size();
+                });
+
+                sel.find("input#memory").on("click", function(e) {
+                    if(!cb_analysis) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        return;
+                    }
+
+                    if(this.checked) {
+                        taken_dirs.push("memory");
+                    } else {
+                        taken_dirs.pop();
+                    }
+
+                    estimate_size();
+                });
+
+                // Dont include the memory dump by default
+                data["dirs"].forEach(function(obj, i){
+                    if(obj[0] != "memory") taken_dirs.push(obj[0]);
+                });
+
+                sel.find("input#submit").prop("disabled", false);
+                sel.find("input#submit").click(function(){
+                    send_feedback()
+                });
+
+                estimate_size();
+            }
+
+            export_get_files(task_id, initFeedbackForm);
+        });
+    </script>
+
+    <!-- HIGHLIGHT (_office.html, _pdf.html) -->
+    <script>
+        $(document).ready(function() {
+            hljs.initHighlightingOnLoad();
+        });
+    </script>
+
+    <!-- RECENT PAGE CODE (analysis/index.html) -->
+    <script>
+
+        $(document).ready(function() {
+
+            // only do this if we are on the recent page
+            if(!$('table#recent').length) return;
+
+            var recent;
+            
+            $('body').on('click', 'div.nav_container>div', function() {
+
+                var btn_id = $(this).find("a").attr("data-filter");
+                var btn_active = $(this).attr('class');
+                var btn_categories = ["cat_files", "cat_urls"];
+
+                if($('a[data-filter^="score"]', this).length) {
+                    var score_choice = $(this).find('a').attr('data-filter');
+
+                    $('.nav_container>div#item>a[data-filter^="score"]').each(function(i, obj){
+                        obj = $(obj);
+                        var uid = obj.attr('data-filter');
+
+                        if(uid != score_choice){
+                            obj.parent().removeClass('active');
+                        }
+                    });
+                }
+
+                if(!btn_active){
+                    // when a category button is clicked, force deselection of adjacent categories
+                    if(btn_id.startsWith("cat_")){
+                        btn_categories.forEach(function (category) {
+                            if (category != btn_id) {
+                                category = $('.nav_container>div#item>a[data-filter="' + category + '"]').parent();
+
+                                if (category.hasClass("active")) { category.removeClass("active"); }
+                            }
+                        });
+                    }
+
+                    $(this).addClass('active');
+                    var filter = $(this).attr('data-filter');
+                    recent.load();
+                } else {
+                    $(this).removeClass('active');
+                    recent.load();
+                }
+            });
+
+            recent = new Recent();
+            recent.load();
+
+            // Detect end of page scroll
+            $(window).scroll(function() {
+               if($(window).scrollTop() + $(window).height() == $(document).height()) {
+                    if(!recent.empty_results) recent.lazy_load();
+               }
+            });
+
+        });
+    </script>
+
+    <!-- IMPORT PAGE (import.html) -->
+    <script type='text/javascript'>
+
+        if(document.getElementById('analysis/import') !== null) {
+
+            $(document)
+                .on('change', '.btn-file :file', function() {
+                    var input = $(this),
+                    numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+                    input.trigger('fileselect', [numFiles, label]);
+            });
+
+            $(document).ready( function() {
+                $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+
+                    var input = $(this).parents('.input-group').find(':text'),
+                        log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+                    if( input.length ) {
+                        input.val(log);
+                    } else {
+                        if( log ) alert(log);
+                    }
+
+                });
+            });
+
+        }
+
+    </script>
+
+    <!-- WEBIF ANALYSIS  -->
+    <script>
+
+        $(document).ready(function(){
+
+            $("#btn_screenshots_toggle").click(function(){
+                $(this).parent().parent().parent().find('.panel-body').toggleClass("minified");
+            });
+
+            if($("table#network-hosts, table#network-dns").length) {
+
+                setTimeout(function () {
+                    ["network_hosts", "network_dns"].forEach(function (x) {
+                        $('#' + x).DataTable({
+                            responsive: true,
+                            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                            "pageLength": 10,
+                            "language": {
+                                "lengthMenu": "Show _MENU_ results",
+                                "zeroRecords": "No results",
+                                "info": "_PAGE_/_PAGES_"
+                            }
+                        });
+                    });                         
+                }, 200);
+
+            }
+
+        });
+
+    </script>
+
 </body>
 </html>

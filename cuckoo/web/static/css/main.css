@@ -3234,6 +3234,29 @@ section#screenshots .minified {
   max-height: 278px;
 }
 
+#recent table tr td:first-child, #recent table tr td:nth-child(2) {
+  word-wrap: break-word;
+}
+
+body[id="analysis/import"] .btn-file {
+  position: relative;
+  overflow: hidden;
+}
+body[id="analysis/import"] .btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 999px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  background: red;
+  cursor: inherit;
+  display: block;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -9735,7 +9758,7 @@ body.cyborg .jstree-default-dark .jstree-checked {
 }
 body[data-theme="cyborg"] .jstree-grid-midwrapper,
 body.cyborg .jstree-grid-midwrapper {
-  background: url("/static/img/theme_cyborg/table_bg_22px.png");
+  background: url("/static/images/theme_cyborg/table_bg_22px.png");
   background-position-y: 3px;
 }
 body[data-theme="cyborg"] a[filetree_duplicate=true],
@@ -11819,7 +11842,7 @@ body.night .jstree-default-dark .jstree-checked {
 }
 body[data-theme="night"] .jstree-grid-midwrapper,
 body.night .jstree-grid-midwrapper {
-  background: url("/static/img/theme_night/table_bg_22px.png");
+  background: url("/static/images/theme_night/table_bg_22px.png");
   background-position-y: 3px;
 }
 body[data-theme="night"] a[filetree_duplicate=true],
