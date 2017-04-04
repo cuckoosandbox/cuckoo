@@ -748,10 +748,12 @@ class Pcap2(object):
             25: httpreplay.cut.smtp_handler,
             80: httpreplay.cut.http_handler,
             443: lambda: httpreplay.cut.https_handler(tlsmaster),
+            465: httpreplay.cut.smtp_handler,
             587: httpreplay.cut.smtp_handler,
             4443: lambda: httpreplay.cut.https_handler(tlsmaster),
             8000: httpreplay.cut.http_handler,
             8080: httpreplay.cut.http_handler,
+            8443: lambda: httpreplay.cut.https_handler(tlsmaster),
         }
 
     def run(self):
