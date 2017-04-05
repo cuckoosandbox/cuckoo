@@ -25,24 +25,11 @@ from cuckoo.core.database import (
 from cuckoo.core.feedback import CuckooFeedback
 from cuckoo.misc import cwd
 from cuckoo.web.bin.utils import (
-    api_post, api_get, file_response, json_error_response, json_fatal_response
+    api_post, api_get, file_response, json_error_response,
+    json_fatal_response, normalize_task
 )
 
 db = Database()
-
-# TODO Place this in AnalysisApi once the methods are no longer static.
-def normalize_task(task):
-    if task["category"] == "file":
-        task["target"] = os.path.basename(task["target"])
-    elif task["category"] == "url":
-        if task["target"].startswith(("http://", "https://")):
-            task["target"] = "hxxp" + task["target"][4:]
-    elif task["category"] == "archive":
-        task["target"] = "%s @ %s" % (
-            task["options"]["filename"],
-            os.path.basename(task["target"])
-        )
-    return task
 
 class AnalysisApi(object):
     @api_post

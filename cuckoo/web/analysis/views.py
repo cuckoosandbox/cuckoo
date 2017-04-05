@@ -24,19 +24,16 @@ from cuckoo.common.elastic import elastic
 from cuckoo.common.mongo import mongo
 from cuckoo.misc import cwd
 from cuckoo.processing import network
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.bin.utils import view_error, render_template, normalize_task
 
 results_db = mongo.db
 fs = mongo.grid
 
 @require_safe
 def pending(request):
-    db = Database()
-    tasks = db.list_tasks(status=TASK_PENDING)
-
     pending = []
-    for task in tasks:
-        pending.append(task.to_dict())
+    for task in Database().list_tasks(status=TASK_PENDING, limit=500):
+        pending.append(normalize_task(task.to_dict()))
 
     return render_template(request, "analysis/pending.html", **{
         "tasks": pending,
