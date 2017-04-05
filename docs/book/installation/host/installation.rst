@@ -46,6 +46,11 @@ is recommended to first upgrade the ``pip`` and ``setuptools`` libraries as
 they're often outdated, leading to issues when trying to install Cuckoo (see
 also :ref:`pip_install_issue`).
 
+.. warning::
+   It is not unlikely that you'll be missing one or more system packages
+   required to build various Python dependencies. Please read and re-read
+   :doc:`requirements` to resolve these sorts of issues.
+
 .. code-block:: bash
 
     $ sudo pip install -U pip setuptools
