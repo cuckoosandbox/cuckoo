@@ -39,12 +39,14 @@ body[id^="analysis"]:not([id="#analysis.views.pending"]) {
 }
 
 body#analysis {
+
 	overflow: hidden;
 
 	.flex-grid__footer {
 		position: relative;
 		top: -20px;
 	}
+
 }
 
 // layout utils

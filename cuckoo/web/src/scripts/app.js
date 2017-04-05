@@ -497,6 +497,18 @@ $(function() {
 
 });
 
+// focus fix on analysis page
+$(function() {
+
+    if($("body#analysis").length) {
+        $(".cuckoo-analysis").focus();
+        $("#analysis-nav, #primary-nav").bind('click', function() {
+            $(".cuckoo-analysis").focus();            
+        });
+    }
+
+});
+
 function alertbox(msg, context, attr_id){
     if(context) { context = `alert-${context}`; }
     if(attr_id) { attr_id = `id="${attr_id}"`; }
