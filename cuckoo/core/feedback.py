@@ -282,27 +282,20 @@ class CuckooFeedbackObject(object):
         return True
 
     def to_dict(self):
-        data = {
+        return {
             "version": version,
             "errors": self.errors,
             "traceback": self.traceback,
             "contact": self.contact,
             "automated": self.automated,
             "message": self.message,
+            "info": self.info,
             "cuckoo": {
                 "cwd": cwd(),
                 "app": os.environ.get("CUCKOO_APP"),
                 "config": Config.from_confdir(cwd("conf"), sanitize=True),
             },
         }
-
-        if self.info:
-            data["info"] = self.info
-
-        if self.export:
-            data["export"] = self.export
-
-        return data
 
     def to_files(self):
         buf = io.BytesIO()
