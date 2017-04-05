@@ -8,6 +8,11 @@
 
 	font-family: "Roboto";
 	background-color: #fafafa;
+	margin-top: 20px;
+
+	&:focus {
+		outline: none;
+	}
 
 	& > .container-fluid {
 		padding: 0 25px;
