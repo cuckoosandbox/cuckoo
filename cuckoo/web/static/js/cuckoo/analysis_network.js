@@ -445,6 +445,10 @@ var PacketDisplay = function () {
     function PacketDisplay(el, options) {
         _classCallCheck(this, PacketDisplay);
 
+        this.options = $.extend({
+            skip_empty: false
+        }, options);
+
         this.nav = el.find("#requests");
         this.container = el.find("#packets");
         this.loader = el.find('.network-display__loader');
@@ -488,11 +492,16 @@ var PacketDisplay = function () {
                 this.load(params, function (response) {
 
                     var html = [];
+
                     for (var r in response) {
+
+                        if (_this.options.skip_empty && response[r].raw.length == 0) continue;
+
                         var view = new HexView($(_this.template(response[r])), response[r].raw, {
                             container: '[data-draw="source"]',
                             displayBody: 'response'
                         });
+
                         html.push(view);
                     }
 
@@ -503,18 +512,42 @@ var PacketDisplay = function () {
                         partial.initialise();
                     });
 
-                    // stop the loader
-                    HexView.lockAll(false);
-                    _this.loader.removeClass('active');
-                    _this.container.removeClass('is-loading');
+                    // stop the loader and scrolls back to top
+
+                    var duration = 0;
+
+                    if (_this.container.parent().scrollTop() > 0) {
+                        duration = 1500;
+                    }
+
+                    _this.container.parent().animate({
+                        scrollTop: 0
+                    }, {
+                        duration: duration,
+                        specialEasing: {
+                            scrollTop: "easeOutBounce"
+                        },
+                        complete: function complete() {
+                            HexView.lockAll(false);
+                            _this.loader.removeClass('active');
+                            _this.container.removeClass('is-loading');
+                        }
+                    });
+                }, function (err) {
+
+                    console.log(err);
                 });
             }
         }
     }, {
         key: 'load',
-        value: function load(params, callback) {
-            $.get('/analysis/' + window.task_id + '/pcapstream/' + params + '/', function (response) {
+        value: function load(params, callback, err) {
+
+            $.get('/analysis/' + window.task_id + '/pcapstream/' + params + '/').done(function (response) {
                 if (callback && typeof callback == 'function') callback(response);
+            }).fail(function (e) {
+
+                console.log(e);
             });
         }
     }]);
@@ -712,11 +745,15 @@ $(function () {
     network_nav.transition('network-analysis-http');
 
     if ($("#network-analysis-tcp").length) {
-        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"));
+        var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"), {
+            skip_empty: true
+        });
     }
 
     if ($("#network-analysis-udp").length) {
-        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'));
+        var packet_display_udp = new PacketDisplay($('#network-analysis-udp'), {
+            skip_empty: true
+        });
     }
 
     $("#http-requests .network-display__request").each(function () {

@@ -2,11 +2,13 @@
 {% load staticfiles %}
 {% block content %}
 
+<div id="cuckoo-dashboard" class="hidden"></div>
+
 <div class="flex-grid__horizontal--grow dashboard">
     <div class="flex-grid__column dashboard__left">
         <h2 class="dashboard__col-title">Insights</h2>
 
-        <div class="dashboard-module">
+        <div class="dashboard-module" data-dashboard-module="installation">
             <header class="dashboard-module__header">
                 <h4>Cuckoo Installation</h4>
             </header>
@@ -16,22 +18,6 @@
                         <tr>
                             <td>Version</td>
                             <td>{{ report.version }}</td>
-                        </tr>
-                        <tr>
-                            <td>Last update</td>
-                            <td>14-03-2017</td>
-                        </tr>
-                        <tr>
-                            <td>Health</td>
-                            <td>OK</td>
-                        </tr>
-                        <tr>
-                            <td>Running</td>
-                            <td>YES</td>
-                        </tr>
-                        <tr>
-                            <td>Status</td>
-                            <td>IDLE</td>
                         </tr>
                     </tbody>
                 </table>
@@ -43,61 +29,15 @@
 
         <div class="dashboard-module">
             <header class="dashboard-module__header">
-                <h4>System info</h4>
-            </header>
-            <section class="dashboard-module__body">
-                
-                <div class="dashboard-module__body--left">
-                    <table class="simple">
-                        <tbody>
-                            <tr>
-                                <td>Network</td>
-                                <td>YES</td>
-                            </tr>
-                            <tr>
-                                <td>Internet</td>
-                                <td>YES</td>
-                            </tr>
-                            <tr>
-                                <td>OS</td>
-                                <td>Mac OSX 10.11</td>
-                            </tr>
-                            <tr>
-                                <td>VM</td>
-                                <td>VirtualBox</td>
-                            </tr>
-                            <tr>
-                                <td>Routing</td>
-                                <td>HTTP</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
-                <div class="dashboard-module__body--right free-disk-space">
-                    <h5>Free disk space</h5>
-                    <div class="free-disk-space__chart">
-                        <canvas></canvas>
-                        <div class="free-disk-space__legend">
-                            <p><strong>13,37 GB</strong></p>
-                            <p>120,11 GB</p>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-            <footer class="dashboard-module__footer">
-                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Configure Cuckoo system options</a></p>
-            </footer>
-        </div>
-
-        <div class="dashboard-module">
-            <header class="dashboard-module__header">
                 <h4>Usage statistics</h4>
             </header>
             <section class="dashboard-module__body">
                 <table class="simple">
-                    <tbody>
+                    <tbody data-populate="statistics">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </tbody>
                 </table>
             </section>
@@ -111,7 +51,7 @@
 
         <h2 class="dashboard__col-title">Cuckoo</h2>
 
-        <div class="dashboard-module__lg">
+        <div class="dashboard-module__lg" data-dashboard-module="upload">
             <div class="dashboard-module__body omni-uploader">
 
                 <div class="dashboard-module__body--left">
@@ -132,7 +72,82 @@
 
         </div>
 
+        <div class="dashboard-module" data-dashboard-module="system">
+            <header class="dashboard-module__header">
+                <h4>System info</h4>
+            </header>
+            <section class="dashboard-module__body free-disk-space">
+
+                <h5>Free disk space</h5>
+                <div class="free-disk-space__chart">
+                    <canvas></canvas>
+                    <div class="free-disk-space__legend">
+                        <p><strong data-populate="free-disk-space"></strong></p>
+                        <p data-populate="total-disk-space"></p>
+                    </div>
+                </div>
+
+            </section>
+            <footer class="dashboard-module__footer">
+                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Configure Cuckoo system options</a></p>
+            </footer>
+        </div>
+
     </div>
+
+</div>
+
+<div class="flex-grid__horizontal--grow dashboard bottom">
+
+    <div class="flex-grid__column" id="dashboard-tables">
+
+        <h2 class="dashboard__col-title">Recent processes</h2>
+
+        <!-- recent analyses -->
+        <div class="dashboard-module__lg" data-dashboard-module="processes">
+            <header class="dashboard-module__header">
+
+                <div class="flex-tabs__tabs dashboard-module__tabs">
+
+                    <!-- <a href="#" class="flex-tabs__tab active">Analyses</a>
+                    <a href="#" class="flex-tabs__tab">Tasks</a>
+                    <a href="#" class="flex-tabs__tab">Failed</a> -->
+
+                    <div class="flex-tabs__tab--right">
+                        <div class="custom-select" data-custom="select">
+                            <span>Show: </span>
+                            <select data-select="limit">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+            </header>
+            <section class="dashboard-module__body">
+                <div class="dashboard-module__body--left" data-populate="dashboard-table-recent">
+                    
+                </div>
+                <div class="dashboard-module__body--right" data-populate="dashboard-table-pending">
+                    
+                </div>
+            </section>
+
+            <footer class="dashboard-module__footer">
+                <p><a href="/analysis/">Show all recent processes</a></p>
+            </footer>
+
+        </div>
+
+    </div>
+
 </div>
 
 {% endblock %}

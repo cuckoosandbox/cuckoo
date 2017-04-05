@@ -243,4 +243,7 @@
 		margin-right: 5px;
 	}
 
+	@include cuckoo-theme('cyborg') {
+		color: #fff; 
+	}
 }

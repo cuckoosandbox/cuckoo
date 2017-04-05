@@ -145,6 +145,7 @@
 
 		&.spread-alignment {
 			justify-content: space-between;
+			padding: 20px 30px 15px;
 		}
 
 	}
@@ -194,6 +195,10 @@
 		&--fixed {
 			flex-grow: 0;
 			flex-shrink: 0;
+		}
+
+		&.scrollable {
+			overflow-y: auto;
 		}
 
 	}

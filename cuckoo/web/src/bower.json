@@ -25,6 +25,7 @@
     "js-cookie": "^2.1.4",
     "datatables": "^1.10.13",
     "highlight": "^9.10.0",
-    "lightbox2": "lightbox#^2.9.0"
+    "lightbox2": "lightbox#^2.9.0",
+    "jquery-ui": "^1.12.1"
   }
 }

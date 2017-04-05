@@ -8,6 +8,7 @@
 			"dataTables/media/js/dataTables.responsive.js",
 			"highlight/src/highlight.js",
 			"js-cookie/src/js.cookie.js",
+			"jquery-ui/jquery-ui.js",
 			"handlebars/handlebars.js",
 			"string/dist/string.js",
 			"moment/moment.js",

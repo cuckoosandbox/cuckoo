@@ -9,7 +9,7 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls {
+body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead, body.cyborg .network-display__request-summary, body.cyborg .source-destination .title, body.cyborg .cuckoo-files__controls, body.cyborg .dashboard .dashboard-module__header {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
   border-color: #2b5a6a;
@@ -37,7 +37,7 @@ body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.
   font-weight: normal;
   font-style: normal;
 }
-.fa, .dns-badge__content:before, .cuckoo-analysis__panel--toggle:before, .cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, .network-display__table > table#submission-task-table .status.status-reported:before, .cuckoo-files ul div:before, .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .extension-select:before, .flex-form__header .custom-checkbox > input + span, .breadcrumbs > li:not(:last-child):after {
+.fa, .custom-select:after, .dns-badge__content:before, .cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, .network-display__table > table#submission-task-table .status.status-reported:before, .cuckoo-files ul div:before, .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .extension-select:before, .flex-form__header .custom-checkbox > input + span, .breadcrumbs > li:not(:last-child):after {
   display: inline-block;
   font: normal normal normal 14px/1 FontAwesome;
   font-size: inherit;
@@ -108,10 +108,10 @@ body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.
   float: right;
 }
 
-.fa.fa-pull-left, .fa-pull-left.dns-badge__content:before, .fa-pull-left.cuckoo-analysis__panel--toggle:before, .fa-pull-left.cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .fa-pull-left.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .fa-pull-left.status.status-reported:before, .network-display__table > table#submission-task-table .fa-pull-left.status.status-reported:before, .cuckoo-files ul div.fa-pull-left:before, .cuckoo-files #selection-overview .fa-pull-left.extension-select:after, .cuckoo-files #selection-overview .fa-pull-left.extension-select:before, .flex-form__header .custom-checkbox > input + span.fa-pull-left, .breadcrumbs > li.fa-pull-left:not(:last-child):after {
+.fa.fa-pull-left, .fa-pull-left.custom-select:after, .fa-pull-left.dns-badge__content:before, table.cuckoo-table#submission-task-table .fa-pull-left.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .fa-pull-left.status.status-reported:before, .network-display__table > table#submission-task-table .fa-pull-left.status.status-reported:before, .cuckoo-files ul div.fa-pull-left:before, .cuckoo-files #selection-overview .fa-pull-left.extension-select:after, .cuckoo-files #selection-overview .fa-pull-left.extension-select:before, .flex-form__header .custom-checkbox > input + span.fa-pull-left, .breadcrumbs > li.fa-pull-left:not(:last-child):after {
   margin-right: .3em;
 }
-.fa.fa-pull-right, .fa-pull-right.dns-badge__content:before, .fa-pull-right.cuckoo-analysis__panel--toggle:before, .fa-pull-right.cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .fa-pull-right.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .fa-pull-right.status.status-reported:before, .network-display__table > table#submission-task-table .fa-pull-right.status.status-reported:before, .cuckoo-files ul div.fa-pull-right:before, .cuckoo-files #selection-overview .fa-pull-right.extension-select:after, .cuckoo-files #selection-overview .fa-pull-right.extension-select:before, .flex-form__header .custom-checkbox > input + span.fa-pull-right, .breadcrumbs > li.fa-pull-right:not(:last-child):after {
+.fa.fa-pull-right, .fa-pull-right.custom-select:after, .fa-pull-right.dns-badge__content:before, table.cuckoo-table#submission-task-table .fa-pull-right.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .fa-pull-right.status.status-reported:before, .network-display__table > table#submission-task-table .fa-pull-right.status.status-reported:before, .cuckoo-files ul div.fa-pull-right:before, .cuckoo-files #selection-overview .fa-pull-right.extension-select:after, .cuckoo-files #selection-overview .fa-pull-right.extension-select:before, .flex-form__header .custom-checkbox > input + span.fa-pull-right, .breadcrumbs > li.fa-pull-right:not(:last-child):after {
   margin-left: .3em;
 }
 
@@ -124,10 +124,10 @@ body.cyborg .app-error__balloon, body.cyborg .cuckoo-errors .troubleshoot, body.
   float: left;
 }
 
-.fa.pull-left, .pull-left.dns-badge__content:before, .pull-left.cuckoo-analysis__panel--toggle:before, .pull-left.cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .pull-left.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .pull-left.status.status-reported:before, .network-display__table > table#submission-task-table .pull-left.status.status-reported:before, .cuckoo-files ul div.pull-left:before, .cuckoo-files #selection-overview .pull-left.extension-select:after, .cuckoo-files #selection-overview .pull-left.extension-select:before, .flex-form__header .custom-checkbox > input + span.pull-left, .breadcrumbs > li.pull-left:not(:last-child):after {
+.fa.pull-left, .pull-left.custom-select:after, .pull-left.dns-badge__content:before, table.cuckoo-table#submission-task-table .pull-left.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .pull-left.status.status-reported:before, .network-display__table > table#submission-task-table .pull-left.status.status-reported:before, .cuckoo-files ul div.pull-left:before, .cuckoo-files #selection-overview .pull-left.extension-select:after, .cuckoo-files #selection-overview .pull-left.extension-select:before, .flex-form__header .custom-checkbox > input + span.pull-left, .breadcrumbs > li.pull-left:not(:last-child):after {
   margin-right: .3em;
 }
-.fa.pull-right, .pull-right.dns-badge__content:before, .pull-right.cuckoo-analysis__panel--toggle:before, .pull-right.cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table .pull-right.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .pull-right.status.status-reported:before, .network-display__table > table#submission-task-table .pull-right.status.status-reported:before, .cuckoo-files ul div.pull-right:before, .cuckoo-files #selection-overview .pull-right.extension-select:after, .cuckoo-files #selection-overview .pull-right.extension-select:before, .flex-form__header .custom-checkbox > input + span.pull-right, .breadcrumbs > li.pull-right:not(:last-child):after {
+.fa.pull-right, .pull-right.custom-select:after, .pull-right.dns-badge__content:before, table.cuckoo-table#submission-task-table .pull-right.status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .pull-right.status.status-reported:before, .network-display__table > table#submission-task-table .pull-right.status.status-reported:before, .cuckoo-files ul div.pull-right:before, .cuckoo-files #selection-overview .pull-right.extension-select:after, .cuckoo-files #selection-overview .pull-right.extension-select:before, .flex-form__header .custom-checkbox > input + span.pull-right, .breadcrumbs > li.pull-right:not(:last-child):after {
   margin-left: .3em;
 }
 
@@ -3123,8 +3123,8 @@ body[id="submission/index"] footer:not(.flex-grid__footer),
 body[id="submission/index"] #footer-extra,
 body[id="submission/post"] footer:not(.flex-grid__footer),
 body[id="submission/post"] #footer-extra,
-body[id^="analysis"]:not(#analysis.views.pending) footer:not(.flex-grid__footer),
-body[id^="analysis"]:not(#analysis.views.pending) #footer-extra {
+body[id^="analysis"]:not([id="#analysis.views.pending"]) footer:not(.flex-grid__footer),
+body[id^="analysis"]:not([id="#analysis.views.pending"]) #footer-extra {
   display: none;
 }
 
@@ -3255,6 +3255,54 @@ body[id="analysis/import"] .btn-file input[type=file] {
   background: red;
   cursor: inherit;
   display: block;
+}
+
+#modal_feedback .panel-footer {
+  margin-bottom: -14px;
+}
+#modal_feedback .panel-footer .btn-close {
+  float: left;
+  margin-right: 10px;
+}
+#modal_feedback .panel-footer .btn-success {
+  float: right;
+  margin-left: 10px;
+}
+#modal_feedback .panel-footer span {
+  display: block;
+  text-align: center;
+  padding: 0 5px;
+  color: grey;
+}
+
+.custom-select {
+  display: inline-block;
+}
+.custom-select select {
+  -webkit-appearance: none;
+  background-color: transparent;
+  border: 0;
+  padding: 0 5px 0 10px;
+  text-align: center;
+}
+.custom-select select:focus {
+  outline: 0;
+}
+.custom-select > span {
+  display: inline-block;
+}
+.custom-select:after {
+  content: "\f0d7";
+  display: inline-block;
+}
+.custom-select:hover {
+  cursor: pointer;
+}
+body.night .custom-select select {
+  background-color: transparent;
+}
+body.cyborg .custom-select select {
+  background-color: transparent;
 }
 
 /* 
@@ -3394,7 +3442,7 @@ body.night .dns-badge > *.dns-badge__type {
   margin: 0 10px;
   vertical-align: middle;
 }
-.app-nav__nav--primary > li > a .fa, .app-nav__nav--primary > li > a .dns-badge__content:before, .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:before, .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:after, .app-nav__nav--primary > li > a table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a .cuckoo-files ul div:before, .cuckoo-files ul .app-nav__nav--primary > li > a div:before, .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:after, .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:before, .app-nav__nav--primary > li > a .flex-form__header .custom-checkbox > input + span, .flex-form__header .app-nav__nav--primary > li > a .custom-checkbox > input + span, .app-nav__nav--primary > li > a .breadcrumbs > li:not(:last-child):after {
+.app-nav__nav--primary > li > a .fa, .app-nav__nav--primary > li > a .custom-select:after, .app-nav__nav--primary > li > a .dns-badge__content:before, .app-nav__nav--primary > li > a table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before, .app-nav__nav--primary > li > a .cuckoo-files ul div:before, .cuckoo-files ul .app-nav__nav--primary > li > a div:before, .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:after, .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:before, .app-nav__nav--primary > li > a .flex-form__header .custom-checkbox > input + span, .flex-form__header .app-nav__nav--primary > li > a .custom-checkbox > input + span, .app-nav__nav--primary > li > a .breadcrumbs > li:not(:last-child):after {
   font-size: 0.9em;
   margin-right: 5px;
 }
@@ -3411,7 +3459,7 @@ body.night .dns-badge > *.dns-badge__type {
   align-items: center;
   padding: 0 10px;
 }
-.app-nav__nav--right > li .fa, .app-nav__nav--right > li .dns-badge__content:before, .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:before, .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:after, .app-nav__nav--right > li table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li .cuckoo-files ul div:before, .cuckoo-files ul .app-nav__nav--right > li div:before, .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:after, .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:before, .app-nav__nav--right > li .flex-form__header .custom-checkbox > input + span, .flex-form__header .app-nav__nav--right > li .custom-checkbox > input + span, .app-nav__nav--right > li .breadcrumbs > li:not(:last-child):after {
+.app-nav__nav--right > li .fa, .app-nav__nav--right > li .custom-select:after, .app-nav__nav--right > li .dns-badge__content:before, .app-nav__nav--right > li table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .app-nav__nav--right > li .status.status-reported:before, .app-nav__nav--right > li .cuckoo-files ul div:before, .cuckoo-files ul .app-nav__nav--right > li div:before, .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:after, .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:before, .app-nav__nav--right > li .flex-form__header .custom-checkbox > input + span, .flex-form__header .app-nav__nav--right > li .custom-checkbox > input + span, .app-nav__nav--right > li .breadcrumbs > li:not(:last-child):after {
   font-size: 24px;
   color: #777;
 }
@@ -3739,6 +3787,9 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
 }
 .button .fa, .button--lg .fa, .button .dns-badge__content:before, .button--lg .dns-badge__content:before, .button .cuckoo-analysis__panel--toggle:before, .button--lg .cuckoo-analysis__panel--toggle:before, .button .cuckoo-analysis__panel--toggle:after, .button--lg .cuckoo-analysis__panel--toggle:after, .button table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .button .status.status-reported:before, .button--lg table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .button--lg .status.status-reported:before, .button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before, .button--lg table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before, .button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .button .status.status-reported:before, .button--lg .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .button--lg .status.status-reported:before, .button .cuckoo-files ul div:before, .cuckoo-files ul .button div:before, .button--lg .cuckoo-files ul div:before, .cuckoo-files ul .button--lg div:before, .button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .button .extension-select:after, .button--lg .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .button--lg .extension-select:after, .button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .button .extension-select:before, .button--lg .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .button--lg .extension-select:before, .button .flex-form__header .custom-checkbox > input + span, .flex-form__header .button .custom-checkbox > input + span, .button--lg .flex-form__header .custom-checkbox > input + span, .flex-form__header .button--lg .custom-checkbox > input + span, .button .breadcrumbs > li:not(:last-child):after, .button--lg .breadcrumbs > li:not(:last-child):after {
   margin-right: 5px;
+}
+body.cyborg .button, body.cyborg .button--lg {
+  color: #fff;
 }
 
 /* 
@@ -4105,6 +4156,7 @@ body.night .cuckoo-analysis__panel.danger > a {
 [id^="analysis"] .flex-nav__body > .container-fluid, [id^="analysis"] .flex-nav__body--disable-overflow > .container-fluid {
   width: 100%;
   flex-basis: 100%;
+  margin-bottom: 30px;
 }
 .flex-nav__body--disable-overflow {
   overflow-y: hidden;
@@ -4497,7 +4549,7 @@ body.night .dndupload__v2 {
   margin: 0 7px;
   padding: 5px 0;
 }
-.upload-module .allowed-file-types ul li .fa, .upload-module .allowed-file-types ul li .dns-badge__content:before, .upload-module .allowed-file-types ul li .cuckoo-analysis__panel--toggle:before, .upload-module .allowed-file-types ul li .cuckoo-analysis__panel--toggle:after, .upload-module .allowed-file-types ul li table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types ul li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types ul li .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types .cuckoo-files ul li div:before, .cuckoo-files .upload-module .allowed-file-types ul li div:before, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:after, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:before, .upload-module .allowed-file-types ul li .flex-form__header .custom-checkbox > input + span, .flex-form__header .upload-module .allowed-file-types ul li .custom-checkbox > input + span, .upload-module .allowed-file-types ul li .breadcrumbs > li:not(:last-child):after {
+.upload-module .allowed-file-types ul li .fa, .upload-module .allowed-file-types ul li .custom-select:after, .upload-module .allowed-file-types ul li .dns-badge__content:before, .upload-module .allowed-file-types ul li table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types ul li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types ul li .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before, .upload-module .allowed-file-types .cuckoo-files ul li div:before, .cuckoo-files .upload-module .allowed-file-types ul li div:before, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:after, .upload-module .allowed-file-types ul li .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .upload-module .allowed-file-types ul li .extension-select:before, .upload-module .allowed-file-types ul li .flex-form__header .custom-checkbox > input + span, .flex-form__header .upload-module .allowed-file-types ul li .custom-checkbox > input + span, .upload-module .allowed-file-types ul li .breadcrumbs > li:not(:last-child):after {
   font-size: 41px;
   color: #B5B5B5;
 }
@@ -5180,11 +5232,11 @@ body.night .cuckoo-errors .troubleshoot {
   font-size: 12px;
   text-decoration: none;
 }
-.errors .expand-error .fa, .errors .expand-error .dns-badge__content:before, .errors .expand-error .cuckoo-analysis__panel--toggle:before, .errors .expand-error .cuckoo-analysis__panel--toggle:after, .errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:before, .errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:before, .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:before, .errors .expand-error .cuckoo-files ul div:before, .cuckoo-files ul .errors .expand-error div:before, .errors .expand-error .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .errors .expand-error .extension-select:after, .errors .expand-error .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .errors .expand-error .extension-select:before, .errors .expand-error .flex-form__header .custom-checkbox > input + span, .flex-form__header .errors .expand-error .custom-checkbox > input + span, .errors .expand-error .breadcrumbs > li:not(:last-child):after {
+.errors .expand-error .fa, .errors .expand-error .custom-select:after, .errors .expand-error .dns-badge__content:before, .errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:before, .errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:before, .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:before, .errors .expand-error .cuckoo-files ul div:before, .cuckoo-files ul .errors .expand-error div:before, .errors .expand-error .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .errors .expand-error .extension-select:after, .errors .expand-error .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .errors .expand-error .extension-select:before, .errors .expand-error .flex-form__header .custom-checkbox > input + span, .flex-form__header .errors .expand-error .custom-checkbox > input + span, .errors .expand-error .breadcrumbs > li:not(:last-child):after {
   vertical-align: middle;
   margin-right: 10px;
 }
-.errors .expand-error .fa:hover + span, .errors .expand-error .dns-badge__content:hover:before + span, .errors .expand-error .cuckoo-analysis__panel--toggle:hover:before + span, .errors .expand-error .cuckoo-analysis__panel--toggle:hover:after + span, .errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:hover:before + span, table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:hover:before + span, table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:hover:before + span, .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error .cuckoo-files ul div:hover:before + span, .cuckoo-files ul .errors .expand-error div:hover:before + span, .errors .expand-error .cuckoo-files #selection-overview .extension-select:hover:after + span, .cuckoo-files #selection-overview .errors .expand-error .extension-select:hover:after + span, .errors .expand-error .cuckoo-files #selection-overview .extension-select:hover:before + span, .cuckoo-files #selection-overview .errors .expand-error .extension-select:hover:before + span, .errors .expand-error .flex-form__header .custom-checkbox > input + span:hover + span, .flex-form__header .errors .expand-error .custom-checkbox > input + span:hover + span, .errors .expand-error .breadcrumbs > li:hover:not(:last-child):after + span {
+.errors .expand-error .fa:hover + span, .errors .expand-error .custom-select:hover:after + span, .errors .expand-error .dns-badge__content:hover:before + span, .errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:hover:before + span, table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:hover:before + span, table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:hover:before + span, .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span, .errors .expand-error .cuckoo-files ul div:hover:before + span, .cuckoo-files ul .errors .expand-error div:hover:before + span, .errors .expand-error .cuckoo-files #selection-overview .extension-select:hover:after + span, .cuckoo-files #selection-overview .errors .expand-error .extension-select:hover:after + span, .errors .expand-error .cuckoo-files #selection-overview .extension-select:hover:before + span, .cuckoo-files #selection-overview .errors .expand-error .extension-select:hover:before + span, .errors .expand-error .flex-form__header .custom-checkbox > input + span:hover + span, .flex-form__header .errors .expand-error .custom-checkbox > input + span:hover + span, .errors .expand-error .breadcrumbs > li:hover:not(:last-child):after + span {
   display: inline;
 }
 .errors .expand-error span {
@@ -5250,7 +5302,7 @@ table.cuckoo-table thead, table.cuckoo-table__fullscreen thead, .network-display
 table.cuckoo-table thead th, table.cuckoo-table__fullscreen thead th, .network-display__table > table thead th {
   white-space: nowrap;
 }
-table.cuckoo-table thead tr:not(.table-display-config) th .fa, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa, .network-display__table > table thead tr:not(.table-display-config) th .fa, table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before, .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after, table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .network-display__table > table thead tr:not(.table-display-config) th div:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:after, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:after, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span, .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span, table.cuckoo-table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after, .network-display__table > table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after {
+table.cuckoo-table thead tr:not(.table-display-config) th .fa, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa, .network-display__table > table thead tr:not(.table-display-config) th .fa, table.cuckoo-table thead tr:not(.table-display-config) th .custom-select:after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-select:after, .network-display__table > table thead tr:not(.table-display-config) th .custom-select:after, table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before, .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .network-display__table > table thead tr:not(.table-display-config) th div:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:after, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:after, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span, .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span, table.cuckoo-table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after, .network-display__table > table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after {
   margin-right: 10px;
 }
 table.cuckoo-table thead tr:not(.table-display-config) th .fa:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before, .network-display__table > table thead tr:not(.table-display-config) th .fa:before, table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before, .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before, table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before, .network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before, .cuckoo-files ul .network-display__table > table thead tr:not(.table-display-config) th div:before, table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before, .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before, table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before, table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before, .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before, .flex-form__header .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before {
@@ -5467,6 +5519,15 @@ table.cuckoo-table__fullscreen .pagination .next a,
 table.cuckoo-table__fullscreen .pagination .last a {
   padding: 4px 10px 4px 10px;
 }
+table.cuckoo-table .less-entries > td, table.cuckoo-table__fullscreen .less-entries > td, .network-display__table > table .less-entries > td {
+  text-align: center;
+}
+table.cuckoo-table .less-entries > td .badge, table.cuckoo-table__fullscreen .less-entries > td .badge, .network-display__table > table .less-entries > td .badge {
+  background-color: #ccc;
+}
+table.cuckoo-table .less-entries > td:nth-child(odd), table.cuckoo-table__fullscreen .less-entries > td:nth-child(odd), .network-display__table > table .less-entries > td:nth-child(odd) {
+  background-color: #f5f5f5;
+}
 body.night table.cuckoo-table, body.night table.cuckoo-table__fullscreen, body.night .network-display__table > table {
   border-color: #375a7f;
   background-color: #152d3b;
@@ -5534,12 +5595,28 @@ table.cuckoo-table#submission-task-table .status.status-reported, table#submissi
 table.cuckoo-table#submission-task-table .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, .network-display__table > table#submission-task-table .status.status-reported:before {
   content: "\f00c";
 }
+table.cuckoo-table .badge, table.cuckoo-table__fullscreen .badge, .network-display__table > table .badge {
+  padding: 8px 15px;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 4px;
+}
+table.cuckoo-table .badge.danger, table.cuckoo-table__fullscreen .badge.danger, .network-display__table > table .badge.danger {
+  background-color: #F4014F;
+}
+table.cuckoo-table .badge.warning, table.cuckoo-table__fullscreen .badge.warning, .network-display__table > table .badge.warning {
+  background-color: #FF9F00;
+}
+table.cuckoo-table .badge.success, table.cuckoo-table__fullscreen .badge.success, .network-display__table > table .badge.success {
+  background-color: #94BE69;
+}
 
 .network-display__outer {
   border-radius: 5px;
   background-color: #fff;
   border: 1px solid #D8D8D8;
   padding: 10px;
+  margin-bottom: 30px;
 }
 .scroll-internal .network-display__outer {
   height: 100%;
@@ -5629,7 +5706,7 @@ body.night .network-display__outer {
   background-color: #E0E5EE;
   border-color: #CCD2DF;
 }
-.network-display__request-summary:hover .fa, .network-display__request-summary:hover .dns-badge__content:before, .network-display__request-summary:hover .cuckoo-analysis__panel--toggle:before, .network-display__request-summary:hover .cuckoo-analysis__panel--toggle:after, .network-display__request-summary:hover table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-summary:hover div:before, .network-display__request-summary:hover .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-summary:hover .extension-select:after, .network-display__request-summary:hover .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-summary:hover .extension-select:before, .network-display__request-summary:hover .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-summary:hover .custom-checkbox > input + span, .network-display__request-summary:hover .breadcrumbs > li:not(:last-child):after {
+.network-display__request-summary:hover .fa, .network-display__request-summary:hover .custom-select:after, .network-display__request-summary:hover .dns-badge__content:before, .network-display__request-summary:hover table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-summary:hover .status.status-reported:before, .network-display__request-summary:hover .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-summary:hover div:before, .network-display__request-summary:hover .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-summary:hover .extension-select:after, .network-display__request-summary:hover .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-summary:hover .extension-select:before, .network-display__request-summary:hover .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-summary:hover .custom-checkbox > input + span, .network-display__request-summary:hover .breadcrumbs > li:not(:last-child):after {
   color: #69778F;
 }
 .network-display__request-summary:hover .fa-long-arrow-right {
@@ -5679,7 +5756,7 @@ body.cyborg .network-display__request-summary .method, body.cyborg .network-disp
   border-color: #133b4a;
   color: #0ce3ac;
 }
-body.cyborg .network-display__request-summary .fa, body.cyborg .network-display__request-summary .dns-badge__content:before, body.cyborg .network-display__request-summary .cuckoo-analysis__panel--toggle:before, body.cyborg .network-display__request-summary .cuckoo-analysis__panel--toggle:after, body.cyborg .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.cyborg .network-display__request-summary div:before, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:after, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:before, body.cyborg .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.cyborg .network-display__request-summary .custom-checkbox > input + span, body.cyborg .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.cyborg .network-display__request-summary .url {
+body.cyborg .network-display__request-summary .fa, body.cyborg .network-display__request-summary .custom-select:after, body.cyborg .network-display__request-summary .dns-badge__content:before, body.cyborg .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before, body.cyborg .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.cyborg .network-display__request-summary div:before, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:after, body.cyborg .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.cyborg .network-display__request-summary .extension-select:before, body.cyborg .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.cyborg .network-display__request-summary .custom-checkbox > input + span, body.cyborg .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.cyborg .network-display__request-summary .url {
   color: #0ce3ac;
 }
 body.cyborg .network-display__request-summary .fa-long-arrow-right {
@@ -5698,7 +5775,7 @@ body.night .network-display__request-summary .method, body.night .network-displa
   background-color: #333;
   border-color: #444;
 }
-body.night .network-display__request-summary .fa, body.night .network-display__request-summary .dns-badge__content:before, body.night .network-display__request-summary .cuckoo-analysis__panel--toggle:before, body.night .network-display__request-summary .cuckoo-analysis__panel--toggle:after, body.night .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.night .network-display__request-summary div:before, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:after, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:before, body.night .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.night .network-display__request-summary .custom-checkbox > input + span, body.night .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.night .network-display__request-summary .url {
+body.night .network-display__request-summary .fa, body.night .network-display__request-summary .custom-select:after, body.night .network-display__request-summary .dns-badge__content:before, body.night .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table body.night .network-display__request-summary .status.status-reported:before, body.night .network-display__request-summary .cuckoo-files ul div:before, .cuckoo-files ul body.night .network-display__request-summary div:before, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:after, body.night .network-display__request-summary .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview body.night .network-display__request-summary .extension-select:before, body.night .network-display__request-summary .flex-form__header .custom-checkbox > input + span, .flex-form__header body.night .network-display__request-summary .custom-checkbox > input + span, body.night .network-display__request-summary .breadcrumbs > li:not(:last-child):after, body.night .network-display__request-summary .url {
   color: #d7d7d7;
 }
 body.night .network-display__request-summary .fa-long-arrow-right {
@@ -5741,7 +5818,7 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   color: #ACAFB6;
   padding-bottom: 5px;
 }
-.network-display__request-details .detail-field__header .fa, .network-display__request-details--single .detail-field__header .fa, .network-display__request-details .detail-field__header .dns-badge__content:before, .network-display__request-details--single .detail-field__header .dns-badge__content:before, .network-display__request-details .detail-field__header .cuckoo-analysis__panel--toggle:before, .network-display__request-details--single .detail-field__header .cuckoo-analysis__panel--toggle:before, .network-display__request-details .detail-field__header .cuckoo-analysis__panel--toggle:after, .network-display__request-details--single .detail-field__header .cuckoo-analysis__panel--toggle:after, .network-display__request-details .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details .detail-field__header div:before, .network-display__request-details--single .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details--single .detail-field__header div:before, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:after, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:after, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:before, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:before, .network-display__request-details .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details .detail-field__header .custom-checkbox > input + span, .network-display__request-details--single .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details--single .detail-field__header .custom-checkbox > input + span, .network-display__request-details .detail-field__header .breadcrumbs > li:not(:last-child):after, .network-display__request-details--single .detail-field__header .breadcrumbs > li:not(:last-child):after {
+.network-display__request-details .detail-field__header .fa, .network-display__request-details--single .detail-field__header .fa, .network-display__request-details .detail-field__header .custom-select:after, .network-display__request-details--single .detail-field__header .custom-select:after, .network-display__request-details .detail-field__header .dns-badge__content:before, .network-display__request-details--single .detail-field__header .dns-badge__content:before, .network-display__request-details .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before, .network-display__request-details--single .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before, .network-display__request-details .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details .detail-field__header div:before, .network-display__request-details--single .detail-field__header .cuckoo-files ul div:before, .cuckoo-files ul .network-display__request-details--single .detail-field__header div:before, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:after, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:after, .network-display__request-details .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details .detail-field__header .extension-select:before, .network-display__request-details--single .detail-field__header .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .network-display__request-details--single .detail-field__header .extension-select:before, .network-display__request-details .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details .detail-field__header .custom-checkbox > input + span, .network-display__request-details--single .detail-field__header .flex-form__header .custom-checkbox > input + span, .flex-form__header .network-display__request-details--single .detail-field__header .custom-checkbox > input + span, .network-display__request-details .detail-field__header .breadcrumbs > li:not(:last-child):after, .network-display__request-details--single .detail-field__header .breadcrumbs > li:not(:last-child):after {
   margin-right: 10px;
 }
 .network-display__request-details .detail-field__header.with-tabs, .network-display__request-details--single .detail-field__header.with-tabs {
@@ -5751,7 +5828,7 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   position: relative;
   top: 2px;
 }
-.network-display__request-details .detail-field__header.with-tabs .flex-tabs__tab .empty-body, .network-display__request-details--single .detail-field__header.with-tabs .flex-tabs__tab .empty-body {
+.network-display__request-details .detail-field__header.with-tabs .flex-tabs__tab .empty-body, .network-display__request-details--single .detail-field__header.with-tabs .flex-tabs__tab .empty-body, .network-display__request-details .detail-field__header.with-tabs .flex-tabs__tab--right .empty-body, .network-display__request-details--single .detail-field__header.with-tabs .flex-tabs__tab--right .empty-body {
   opacity: 0.2;
 }
 .network-display__request-details .detail-field__body, .network-display__request-details--single .detail-field__body {
@@ -5846,7 +5923,9 @@ body.cyborg .network-display__request-details .detail-field__header, body.cyborg
 }
 body.cyborg .network-display__request-details .detail-field__body, body.cyborg .network-display__request-details--single .detail-field__body,
 body.cyborg .network-display__request-details .flex-tabs__tab,
-body.cyborg .network-display__request-details--single .flex-tabs__tab {
+body.cyborg .network-display__request-details--single .flex-tabs__tab,
+body.cyborg .network-display__request-details .flex-tabs__tab--right,
+body.cyborg .network-display__request-details--single .flex-tabs__tab--right {
   background-color: #1b3946;
   border-color: #184b5e !important;
 }
@@ -5869,7 +5948,9 @@ body.night .network-display__request-details .detail-field__header, body.night .
 }
 body.night .network-display__request-details .detail-field__body, body.night .network-display__request-details--single .detail-field__body,
 body.night .network-display__request-details .flex-tabs__tab,
-body.night .network-display__request-details--single .flex-tabs__tab {
+body.night .network-display__request-details--single .flex-tabs__tab,
+body.night .network-display__request-details .flex-tabs__tab--right,
+body.night .network-display__request-details--single .flex-tabs__tab--right {
   background-color: #333;
   border-color: #222 !important;
 }
@@ -6111,7 +6192,7 @@ body.night .source-destination .content > ul > li a.active .destination-address:
 .flex-tabs__tabs {
   display: inline-flex;
 }
-.flex-tabs__tab {
+.flex-tabs__tab, .flex-tabs__tab--right {
   background-color: #fff;
   border: 1px solid #E3E3E3;
   border-bottom: 0;
@@ -6120,54 +6201,57 @@ body.night .source-destination .content > ul > li a.active .destination-address:
   margin: 0 7px;
   padding: 5px;
 }
-.flex-tabs__tab .btn {
+.flex-tabs__tab .btn, .flex-tabs__tab--right .btn {
   padding: 2px 5px;
   font-weight: 700;
   color: #6297F8;
 }
-.flex-tabs__tab .btn.active {
+.flex-tabs__tab .btn.active, .flex-tabs__tab--right .btn.active {
   background-color: #6297F8;
   color: #fff;
 }
-.flex-tabs__tab .btn:not(.active):hover {
+.flex-tabs__tab .btn:not(.active):hover, .flex-tabs__tab--right .btn:not(.active):hover {
   background-color: #F0F0F0;
 }
-body.cyborg .flex-tabs__tab {
+body.cyborg .flex-tabs__tab, body.cyborg .flex-tabs__tab--right {
   background-color: #0d1b21;
   border-color: #133b4a;
 }
-body.cyborg .flex-tabs__tab .btn {
+body.cyborg .flex-tabs__tab .btn, body.cyborg .flex-tabs__tab--right .btn {
   color: #d7d7d7;
 }
-body.cyborg .flex-tabs__tab .btn.active {
+body.cyborg .flex-tabs__tab .btn.active, body.cyborg .flex-tabs__tab--right .btn.active {
   background-color: #152D3B;
   color: #0ce3ac;
 }
-body.cyborg .flex-tabs__tab .btn:not(.active):hover {
+body.cyborg .flex-tabs__tab .btn:not(.active):hover, body.cyborg .flex-tabs__tab--right .btn:not(.active):hover {
   background-color: rgba(21, 45, 59, 0.5);
 }
-body.night .flex-tabs__tab .btn {
+body.night .flex-tabs__tab .btn, body.night .flex-tabs__tab--right .btn {
   color: #d7d7d7;
 }
-body.night .flex-tabs__tab .btn.active {
+body.night .flex-tabs__tab .btn.active, body.night .flex-tabs__tab--right .btn.active {
   background-color: #152d3b;
   color: #d7d7d7;
 }
-body.night .flex-tabs__tab .btn:not(.active):hover {
+body.night .flex-tabs__tab .btn:not(.active):hover, body.night .flex-tabs__tab--right .btn:not(.active):hover {
   background-color: rgba(21, 45, 59, 0.5);
+}
+.flex-tabs__tab--right {
+  margin-left: auto !important;
 }
 .flex-tabs__tab-group {
   display: flex;
 }
-.flex-tabs__tab-group .flex-tabs__tab {
+.flex-tabs__tab-group .flex-tabs__tab, .flex-tabs__tab-group .flex-tabs__tab--right {
   margin: 0;
   border-right-width: 0;
   border-radius: 0;
 }
-.flex-tabs__tab-group .flex-tabs__tab:first-child {
+.flex-tabs__tab-group .flex-tabs__tab:first-child, .flex-tabs__tab-group .flex-tabs__tab--right:first-child {
   border-top-left-radius: 4px;
 }
-.flex-tabs__tab-group .flex-tabs__tab:last-child {
+.flex-tabs__tab-group .flex-tabs__tab:last-child, .flex-tabs__tab-group .flex-tabs__tab--right:last-child {
   border-top-right-radius: 4px;
   border-right-width: 1px;
 }
@@ -6210,10 +6294,13 @@ body.night .flex-tabs__tab .btn:not(.active):hover {
   margin-top: -3px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
-.flex-grid__header h3 button .fa, .flex-grid__header h3 button .dns-badge__content:before, .flex-grid__header h3 button .cuckoo-analysis__panel--toggle:before, .flex-grid__header h3 button .cuckoo-analysis__panel--toggle:after, .flex-grid__header h3 button table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button .cuckoo-files ul div:before, .cuckoo-files ul .flex-grid__header h3 button div:before, .flex-grid__header h3 button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .flex-grid__header h3 button .extension-select:after, .flex-grid__header h3 button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .flex-grid__header h3 button .extension-select:before, .flex-grid__header h3 button .flex-form__header .custom-checkbox > input + span, .flex-form__header .flex-grid__header h3 button .custom-checkbox > input + span, .flex-grid__header h3 button .breadcrumbs > li:not(:last-child):after,
+.flex-grid__header h3 button .fa, .flex-grid__header h3 button .custom-select:after, .flex-grid__header h3 button .dns-badge__content:before, .flex-grid__header h3 button table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .flex-grid__header h3 button .status.status-reported:before, .flex-grid__header h3 button .cuckoo-files ul div:before, .cuckoo-files ul .flex-grid__header h3 button div:before, .flex-grid__header h3 button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .flex-grid__header h3 button .extension-select:after, .flex-grid__header h3 button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .flex-grid__header h3 button .extension-select:before, .flex-grid__header h3 button .flex-form__header .custom-checkbox > input + span, .flex-form__header .flex-grid__header h3 button .custom-checkbox > input + span, .flex-grid__header h3 button .breadcrumbs > li:not(:last-child):after,
 .flex-grid__header h3 .flex-grid__button .fa,
 .flex-grid__header h3 button--description .fa,
 .flex-grid__header h3 .flex-grid__button--description .fa,
+.flex-grid__header h3 .flex-grid__button .custom-select:after,
+.flex-grid__header h3 button--description .custom-select:after,
+.flex-grid__header h3 .flex-grid__button--description .custom-select:after,
 .flex-grid__header h3 .flex-grid__button .dns-badge__content:before,
 .flex-grid__header h3 button--description .dns-badge__content:before,
 .flex-grid__header h3 .flex-grid__button--description .dns-badge__content:before,
@@ -6369,6 +6456,7 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
 }
 .flex-grid__footer.spread-alignment {
   justify-content: space-between;
+  padding: 20px 30px 15px;
 }
 .flex-grid__nav {
   flex-basis: 350px;
@@ -6407,6 +6495,9 @@ body.night .flex-grid__nav {
 .flex-grid__column--fixed, .flex-grid__horizontal .flex-grid__column--xs, .flex-grid__horizontal--grow .flex-grid__column--xs, .flex-grid__horizontal .flex-grid__column--sm, .flex-grid__horizontal--grow .flex-grid__column--sm, .flex-grid__horizontal .flex-grid__column--md, .flex-grid__horizontal--grow .flex-grid__column--md {
   flex-grow: 0;
   flex-shrink: 0;
+}
+.flex-grid__column.scrollable, .flex-grid__horizontal .scrollable.flex-grid__column--xs, .flex-grid__horizontal--grow .scrollable.flex-grid__column--xs, .flex-grid__horizontal .scrollable.flex-grid__column--sm, .flex-grid__horizontal--grow .scrollable.flex-grid__column--sm, .flex-grid__horizontal .scrollable.flex-grid__column--md, .flex-grid__horizontal--grow .scrollable.flex-grid__column--md {
+  overflow-y: auto;
 }
 .flex-grid__horizontal, .flex-grid__horizontal--grow {
   flex-direction: row;
@@ -7524,6 +7615,9 @@ body.cyborg .page-freeze.error {
   background-color: #F7F8FA;
   padding: 20px 15px 0 15px;
 }
+.dashboard.bottom {
+  padding-top: 0;
+}
 .dashboard__left {
   flex-basis: 415px;
   flex-grow: 0;
@@ -7566,6 +7660,9 @@ body.cyborg .page-freeze.error {
 .dashboard-module__body--left {
   border-right: 2px solid #DFDFDF;
 }
+.dashboard-module__body .cuckoo-table, .dashboard-module__body table.cuckoo-table__fullscreen, .dashboard-module__body .network-display__table > table {
+  border: 0;
+}
 .dashboard-module__footer {
   background-color: #fff;
   text-align: center;
@@ -7597,6 +7694,60 @@ body.cyborg .page-freeze.error {
 .dashboard-module__lg .dashboard-module__footer > p i {
   margin-right: 10px;
 }
+.dashboard-module__tabs {
+  display: flex;
+}
+.dashboard-module__tabs > .flex-tabs__tab, .dashboard-module__tabs > .flex-tabs__tab--right {
+  margin: 0;
+  border-radius: 0;
+  border-width: 0 1px 0 0;
+  background-color: transparent;
+  padding: 20px 20px 10px 20px;
+  font-weight: 700;
+  color: #337AB8;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href], .dashboard-module__tabs > [href].flex-tabs__tab--right {
+  color: #6297F8;
+  padding: 20px 30px 10px 30px;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href]:hover, .dashboard-module__tabs > [href].flex-tabs__tab--right:hover {
+  text-decoration: none;
+}
+.dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active), .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active) {
+  background-color: #f1f1f1;
+}
+.dashboard-module__tabs > .flex-tabs__tab.active, .dashboard-module__tabs > .active.flex-tabs__tab--right {
+  background-color: #6297F8;
+  color: #fff;
+  box-shadow: 0px 2px 0px #5F7DB3;
+}
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab, body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right {
+  color: #0ce3ac;
+}
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab.active, body.cyborg .dashboard-module__tabs > .active.flex-tabs__tab--right {
+  background-color: #0ce3ac;
+  color: #111;
+}
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active), body.cyborg .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active) {
+  background-color: #142a33;
+}
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href].active, body.cyborg .dashboard-module__tabs > [href].active.flex-tabs__tab--right {
+  box-shadow: 0px 2px 0px #144337;
+}
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right {
+  background-color: transparent;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab, body.night .dashboard-module__tabs > .flex-tabs__tab--right {
+  color: #fff;
+  border-color: #28415b;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active), body.night .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active) {
+  background-color: #3f6791;
+}
+body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right {
+  background-color: #2f4d6d;
+  box-shadow: 0px 2px 0px #20344a;
+}
 .dashboard-module table.simple, .dashboard-module__lg table.simple {
   table-layout: fixed;
   width: 100%;
@@ -7622,6 +7773,11 @@ body.cyborg .page-freeze.error {
   font-weight: 600;
   border-right: 1px solid #DFDFDF;
   text-align: right;
+}
+.dashboard-module .free-disk-space, .dashboard-module__lg .free-disk-space {
+  display: block;
+  width: 100%;
+  padding: 20px 0;
 }
 .dashboard-module .free-disk-space h5, .dashboard-module__lg .free-disk-space h5 {
   text-transform: uppercase;
@@ -7681,9 +7837,91 @@ body.cyborg .page-freeze.error {
   font-size: 16px;
   margin: 0 0 11px 0;
 }
-.dashboard-module .omni-uploader .uploader-area .fa, .dashboard-module__lg .omni-uploader .uploader-area .fa, .dashboard-module .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module__lg .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module .omni-uploader .uploader-area div:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module__lg .omni-uploader .uploader-area div:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:after, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:before, .dashboard-module .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module__lg .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module__lg .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after, .dashboard-module__lg .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after {
+.dashboard-module .omni-uploader .uploader-area .fa, .dashboard-module__lg .omni-uploader .uploader-area .fa, .dashboard-module .omni-uploader .uploader-area .custom-select:after, .dashboard-module__lg .omni-uploader .uploader-area .custom-select:after, .dashboard-module .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module__lg .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module .omni-uploader .uploader-area div:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module__lg .omni-uploader .uploader-area div:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:after, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:before, .dashboard-module .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module__lg .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module__lg .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after, .dashboard-module__lg .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after {
   font-size: 50px;
   color: #71A1F9;
+}
+body.cyborg .dashboard {
+  background-color: #020e10;
+}
+body.cyborg .dashboard .dashboard__col-title {
+  color: #d7d7d7;
+}
+body.cyborg .dashboard .dashboard-module, body.cyborg .dashboard .dashboard-module__lg {
+  border-color: #133b4a;
+}
+body.cyborg .dashboard .dashboard-module__header, body.cyborg .dashboard .dashboard-module__footer, body.cyborg .dashboard .dashboard-module__body {
+  border-color: #133b4a;
+}
+body.cyborg .dashboard .dashboard-module__body {
+  background-color: #0d1b21;
+}
+body.cyborg .dashboard .dashboard-module__body--left {
+  border-color: #133b4a;
+}
+body.cyborg .dashboard .dashboard-module__footer {
+  background-color: #0d1b21;
+}
+body.cyborg .dashboard .dashboard-module__header {
+  border-bottom: 1px solid #133b4a;
+}
+body.cyborg .dashboard .dashboard-module__header h4 {
+  color: #d7d7d7;
+}
+body.cyborg .dashboard .dashboard-module__header select {
+  background-color: transparent;
+}
+body.cyborg .dashboard table.simple tr {
+  border-color: #133b4a;
+}
+body.cyborg .dashboard table.simple tr td {
+  border-color: #133b4a;
+}
+body.cyborg .dashboard table.simple tr:nth-child(odd) {
+  background-color: #09191d;
+}
+body.night .dashboard {
+  background-color: #232323;
+}
+body.night .dashboard .dashboard__col-title {
+  color: #d7d7d7;
+}
+body.night .dashboard .dashboard-module, body.night .dashboard .dashboard-module__lg {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__header, body.night .dashboard .dashboard-module__footer, body.night .dashboard .dashboard-module__body {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__header {
+  background-color: #375a7f;
+}
+body.night .dashboard .dashboard-module__header h4 {
+  color: #fff;
+}
+body.night .dashboard .dashboard-module__body {
+  background-color: #202225;
+}
+body.night .dashboard .dashboard-module__body--left {
+  border-color: #28415b;
+}
+body.night .dashboard .dashboard-module__footer {
+  background-color: #375a7f;
+}
+body.night .dashboard .dashboard-module__footer p {
+  color: #fff;
+}
+body.night .dashboard table.simple tr {
+  border-color: #28415b;
+}
+body.night .dashboard table.simple tr td {
+  border-color: #28415b;
+  color: #fff;
+}
+body.night .dashboard table.simple tr:nth-child(odd) {
+  background-color: #252525;
+}
+body.night .dashboard table.simple tr:nth-child(even) {
+  background-color: #333333;
 }
 
 /* 
@@ -7865,7 +8103,7 @@ a.jstree-grid-col-0.highlight {
     max-width: 260px;
   }
 }
-body[data-theme="cyborg"],
+bade[data-theme="cyborg"],
 body.cyborg {
   color: #d7d7d7;
   background-color: #020e10;
@@ -7888,82 +8126,78 @@ body.cyborg {
   /* jstree */
   /* cyborg */
 }
-body[data-theme="cyborg"] .cuckoo-analysis,
+bade[data-theme="cyborg"] .cuckoo-analysis,
 body.cyborg .cuckoo-analysis {
   background-color: #020e10;
 }
-body[data-theme="cyborg"] .cuckoo-analysis__header,
+bade[data-theme="cyborg"] .cuckoo-analysis__header,
 body.cyborg .cuckoo-analysis__header {
   text-shadow: none;
   box-shadow: none;
   border-bottom-color: #444;
 }
-body[data-theme="cyborg"] html,
+bade[data-theme="cyborg"] html,
 body.cyborg html {
   background: transparent;
 }
-body[data-theme="cyborg"] hr,
+bade[data-theme="cyborg"] hr,
 body.cyborg hr {
   border-top: 1px solid #345274;
 }
-body[data-theme="cyborg"] .dns_badge,
+bade[data-theme="cyborg"] .dns_badge,
 body.cyborg .dns_badge {
   background-color: #3b3b3b;
   color: #bcbcbc;
 }
-body[data-theme="cyborg"] .badge,
-body.cyborg .badge {
-  border-radius: 0px;
-}
-body[data-theme="cyborg"] pre,
+bade[data-theme="cyborg"] pre,
 body.cyborg pre {
   background-color: #434343;
   color: inherit;
   border: 1px solid #464545;
 }
-body[data-theme="cyborg"] .gray,
+bade[data-theme="cyborg"] .gray,
 body.cyborg .gray {
   color: #919191;
 }
-body[data-theme="cyborg"] .jumbotron,
+bade[data-theme="cyborg"] .jumbotron,
 body.cyborg .jumbotron {
   background-color: #132a32;
   border: 1px solid #142b33;
 }
-body[data-theme="cyborg"] .text-danger,
+bade[data-theme="cyborg"] .text-danger,
 body.cyborg .text-danger {
   color: #db302c;
 }
-body[data-theme="cyborg"] .text-success,
+bade[data-theme="cyborg"] .text-success,
 body.cyborg .text-success {
   color: #249926;
 }
-body[data-theme="cyborg"] .process,
+bade[data-theme="cyborg"] .process,
 body.cyborg .process {
   background-color: #345274;
 }
-body[data-theme="cyborg"] .panel,
+bade[data-theme="cyborg"] .panel,
 body.cyborg .panel {
   border: 1px solid #1a293b;
 }
-body[data-theme="cyborg"] .panel-heading .glyphicon,
+bade[data-theme="cyborg"] .panel-heading .glyphicon,
 body.cyborg .panel-heading .glyphicon {
   color: #b8b8b8;
 }
-body[data-theme="cyborg"] .panel-title,
+bade[data-theme="cyborg"] .panel-title,
 body.cyborg .panel-title {
   text-shadow: #152d36 0px -1px 0px;
 }
-body[data-theme="cyborg"] section#summary span.load_more, body[data-theme="cyborg"] section#summary span.load_all,
+bade[data-theme="cyborg"] section#summary span.load_more, bade[data-theme="cyborg"] section#summary span.load_all,
 body.cyborg section#summary span.load_more,
 body.cyborg section#summary span.load_all {
   color: #0ce3ac !important;
 }
-body[data-theme="cyborg"] section#summary .list-group li ul,
+bade[data-theme="cyborg"] section#summary .list-group li ul,
 body.cyborg section#summary .list-group li ul {
   list-style-type: initial;
 }
-body[data-theme="cyborg"] input, body[data-theme="cyborg"] textarea, body[data-theme="cyborg"] select, body[data-theme="cyborg"] pre, body[data-theme="cyborg"] .well, body[data-theme="cyborg"] .pagination > li > a,
+bade[data-theme="cyborg"] input, bade[data-theme="cyborg"] textarea, bade[data-theme="cyborg"] select, bade[data-theme="cyborg"] pre, bade[data-theme="cyborg"] .well, bade[data-theme="cyborg"] .pagination > li > a,
 body.cyborg input,
 body.cyborg textarea,
 body.cyborg select,
@@ -7974,129 +8208,129 @@ body.cyborg .pagination > li > a {
   border-color: #162c56;
   color: #e8e8e8;
 }
-body[data-theme="cyborg"] .pagination > li.active > a,
+bade[data-theme="cyborg"] .pagination > li.active > a,
 body.cyborg .pagination > li.active > a {
   background-color: #244d69 !important;
 }
-body[data-theme="cyborg"] input[readonly],
+bade[data-theme="cyborg"] input[readonly],
 body.cyborg input[readonly] {
   background-color: inherit !important;
   cursor: text !important;
 }
-body[data-theme="cyborg"] input:focus, body[data-theme="cyborg"] textarea:focus, body[data-theme="cyborg"] select:focus,
+bade[data-theme="cyborg"] input:focus, bade[data-theme="cyborg"] textarea:focus, bade[data-theme="cyborg"] select:focus,
 body.cyborg input:focus,
 body.cyborg textarea:focus,
 body.cyborg select:focus {
   box-shadow: 0 0 0px #59595a !important;
 }
-body[data-theme="cyborg"] .dataTables_paginate .pagination > .active > a,
+bade[data-theme="cyborg"] .dataTables_paginate .pagination > .active > a,
 body.cyborg .dataTables_paginate .pagination > .active > a {
   color: #fff;
   background-color: #4a7191;
   border-color: #3e5f7a;
 }
-body[data-theme="cyborg"] .cuckoo-box input[type="radio"]:empty ~ label:before, body[data-theme="cyborg"] .cuckoo-box input[type="checkbox"]:empty ~ label:before,
+bade[data-theme="cyborg"] .cuckoo-box input[type="radio"]:empty ~ label:before, bade[data-theme="cyborg"] .cuckoo-box input[type="checkbox"]:empty ~ label:before,
 body.cyborg .cuckoo-box input[type="radio"]:empty ~ label:before,
 body.cyborg .cuckoo-box input[type="checkbox"]:empty ~ label:before {
   background: #345274;
 }
-body[data-theme="cyborg"] .cuckoo-box-primary input[type="radio"]:checked ~ label:before, body[data-theme="cyborg"] .cuckoo-box-primary input[type="checkbox"]:checked ~ label:before,
+bade[data-theme="cyborg"] .cuckoo-box-primary input[type="radio"]:checked ~ label:before, bade[data-theme="cyborg"] .cuckoo-box-primary input[type="checkbox"]:checked ~ label:before,
 body.cyborg .cuckoo-box-primary input[type="radio"]:checked ~ label:before,
 body.cyborg .cuckoo-box-primary input[type="checkbox"]:checked ~ label:before {
   color: inherit;
   background-color: #375a7f;
 }
-body[data-theme="cyborg"] .cuckoo-box input[type="radio"]:checked ~ label, body[data-theme="cyborg"] .cuckoo-box input[type="checkbox"]:checked ~ label,
+bade[data-theme="cyborg"] .cuckoo-box input[type="radio"]:checked ~ label, bade[data-theme="cyborg"] .cuckoo-box input[type="checkbox"]:checked ~ label,
 body.cyborg .cuckoo-box input[type="radio"]:checked ~ label,
 body.cyborg .cuckoo-box input[type="checkbox"]:checked ~ label {
   color: inherit;
 }
-body[data-theme="cyborg"] .cuckoo-box label,
+bade[data-theme="cyborg"] .cuckoo-box label,
 body.cyborg .cuckoo-box label {
   border: 1px solid #345274;
 }
-body[data-theme="cyborg"] section#summary .panel-default .list-group > li > p > b,
+bade[data-theme="cyborg"] section#summary .panel-default .list-group > li > p > b,
 body.cyborg section#summary .panel-default .list-group > li > p > b {
   color: #f39c12;
   font-size: 12px;
 }
-body[data-theme="cyborg"] .analysis_menu-usermenu ul li,
+bade[data-theme="cyborg"] .analysis_menu-usermenu ul li,
 body.cyborg .analysis_menu-usermenu ul li {
   border-bottom: 1px solid #345274;
 }
-body[data-theme="cyborg"] .analysis_menu-usermenu ul li a:hover,
+bade[data-theme="cyborg"] .analysis_menu-usermenu ul li a:hover,
 body.cyborg .analysis_menu-usermenu ul li a:hover {
   background-color: transparent;
   color: #0ce3ac;
   text-decoration: none;
 }
-body[data-theme="cyborg"] .analysis_menu-usermenu ul li span.label,
+bade[data-theme="cyborg"] .analysis_menu-usermenu ul li span.label,
 body.cyborg .analysis_menu-usermenu ul li span.label {
   color: #e7e7e7;
   background-color: #375a7f;
   border-color: #375a7f;
 }
-body[data-theme="cyborg"] .analysis_menu-usermenu ul li.active a,
+bade[data-theme="cyborg"] .analysis_menu-usermenu ul li.active a,
 body.cyborg .analysis_menu-usermenu ul li.active a {
   color: #0ce3ac;
   border-left: 1px solid #0ce3ac;
   margin-left: -2px;
   background: inherit;
 }
-body[data-theme="cyborg"] .navbar-inverse,
+bade[data-theme="cyborg"] .navbar-inverse,
 body.cyborg .navbar-inverse {
   border-color: #122539;
   background: linear-gradient(#3a4f6f, #16292f);
 }
-body[data-theme="cyborg"] .navbar-inverse .navbar-nav > li > a,
+bade[data-theme="cyborg"] .navbar-inverse .navbar-nav > li > a,
 body.cyborg .navbar-inverse .navbar-nav > li > a {
   color: #dfdfdf;
 }
-body[data-theme="cyborg"] .alert-success,
+bade[data-theme="cyborg"] .alert-success,
 body.cyborg .alert-success {
   color: #ffffff;
   background-color: #00bc8c;
   border-color: #00bc8c;
   opacity: 0.8;
 }
-body[data-theme="cyborg"] .panel-default,
+bade[data-theme="cyborg"] .panel-default,
 body.cyborg .panel-default {
   border-color: #505050;
 }
-body[data-theme="cyborg"] .panel,
+bade[data-theme="cyborg"] .panel,
 body.cyborg .panel {
   background-color: #0d1b21;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
-body[data-theme="cyborg"] .panel-default > .panel-heading,
+bade[data-theme="cyborg"] .panel-default > .panel-heading,
 body.cyborg .panel-default > .panel-heading {
   color: #d8d8d8;
   background-color: #313131;
   border-color: #505050;
 }
-body[data-theme="cyborg"] .panel-group .panel-heading + .panel-collapse > .panel-body,
-body[data-theme="cyborg"] .panel-group .panel-heading + .panel-collapse > .list-group,
+bade[data-theme="cyborg"] .panel-group .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-group .panel-heading + .panel-collapse > .list-group,
 body.cyborg .panel-group .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-group .panel-heading + .panel-collapse > .list-group {
   border-top: 1px solid #464545;
 }
-body[data-theme="cyborg"] .panel-group .panel-footer,
+bade[data-theme="cyborg"] .panel-group .panel-footer,
 body.cyborg .panel-group .panel-footer {
   border-top: 0;
 }
-body[data-theme="cyborg"] .panel-group .panel-footer + .panel-collapse .panel-body,
+bade[data-theme="cyborg"] .panel-group .panel-footer + .panel-collapse .panel-body,
 body.cyborg .panel-group .panel-footer + .panel-collapse .panel-body {
   border-bottom: 1px solid #464545;
 }
-body[data-theme="cyborg"] .panel-default,
+bade[data-theme="cyborg"] .panel-default,
 body.cyborg .panel-default {
   border-color: #001e28;
   border-top: 1px solid #001e28;
   border-left: 1px solid #001e28;
   border-right: 1px solid #001e28;
 }
-body[data-theme="cyborg"] .panel-default > .panel-heading,
+bade[data-theme="cyborg"] .panel-default > .panel-heading,
 body.cyborg .panel-default > .panel-heading {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
@@ -8106,24 +8340,24 @@ body.cyborg .panel-default > .panel-heading {
   border-left: 1px solid #003f54;
   border-right: 1px solid #003f54;
 }
-body[data-theme="cyborg"] .panel-default > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-default > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-default > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #464545;
 }
-body[data-theme="cyborg"] .panel-default > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-default > .panel-heading .badge,
 body.cyborg .panel-default > .panel-heading .badge {
   color: #303030;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-default > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-default > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-default > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #464545;
 }
-body[data-theme="cyborg"] .panel-primary,
+bade[data-theme="cyborg"] .panel-primary,
 body.cyborg .panel-primary {
   border-color: #000000;
 }
-body[data-theme="cyborg"] .panel-primary > .panel-heading,
+bade[data-theme="cyborg"] .panel-primary > .panel-heading,
 body.cyborg .panel-primary > .panel-heading {
   color: #ffffff;
   background: linear-gradient(#284f5c, #112c35);
@@ -8133,130 +8367,130 @@ body.cyborg .panel-primary > .panel-heading {
   border-left: 1px solid #003f54;
   border-right: 1px solid #003f54;
 }
-body[data-theme="cyborg"] .panel-primary > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-primary > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-primary > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #375a7f;
 }
-body[data-theme="cyborg"] .panel-primary > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-primary > .panel-heading .badge,
 body.cyborg .panel-primary > .panel-heading .badge {
   color: #375a7f;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-primary > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-primary > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-primary > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #375a7f;
 }
-body[data-theme="cyborg"] .panel-success,
+bade[data-theme="cyborg"] .panel-success,
 body.cyborg .panel-success {
   border-color: #00bc8c;
 }
-body[data-theme="cyborg"] .panel-success > .panel-heading,
+bade[data-theme="cyborg"] .panel-success > .panel-heading,
 body.cyborg .panel-success > .panel-heading {
   color: #ffffff;
   background-color: #00bc8c;
   border-color: #00bc8c;
 }
-body[data-theme="cyborg"] .panel-success > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-success > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-success > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #00bc8c;
 }
-body[data-theme="cyborg"] .panel-success > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-success > .panel-heading .badge,
 body.cyborg .panel-success > .panel-heading .badge {
   color: #00bc8c;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-success > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-success > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-success > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #00bc8c;
 }
-body[data-theme="cyborg"] .panel-info,
+bade[data-theme="cyborg"] .panel-info,
 body.cyborg .panel-info {
   border-color: #3498db;
 }
-body[data-theme="cyborg"] .panel-info > .panel-heading,
+bade[data-theme="cyborg"] .panel-info > .panel-heading,
 body.cyborg .panel-info > .panel-heading {
   color: #ffffff;
   background-color: #3498db;
   border-color: #3498db;
 }
-body[data-theme="cyborg"] .panel-info > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-info > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-info > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #3498db;
 }
-body[data-theme="cyborg"] .panel-info > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-info > .panel-heading .badge,
 body.cyborg .panel-info > .panel-heading .badge {
   color: #3498db;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-info > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-info > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-info > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #3498db;
 }
-body[data-theme="cyborg"] .panel-warning,
+bade[data-theme="cyborg"] .panel-warning,
 body.cyborg .panel-warning {
   border-color: #f39c12;
 }
-body[data-theme="cyborg"] .panel-warning > .panel-heading,
+bade[data-theme="cyborg"] .panel-warning > .panel-heading,
 body.cyborg .panel-warning > .panel-heading {
   color: #ffffff;
   background-color: #f39c12;
   border-color: #f39c12;
 }
-body[data-theme="cyborg"] .panel-warning > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-warning > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-warning > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #f39c12;
 }
-body[data-theme="cyborg"] .panel-warning > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-warning > .panel-heading .badge,
 body.cyborg .panel-warning > .panel-heading .badge {
   color: #f39c12;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-warning > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-warning > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-warning > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #f39c12;
 }
-body[data-theme="cyborg"] .panel-danger,
+bade[data-theme="cyborg"] .panel-danger,
 body.cyborg .panel-danger {
   border-color: #e74c3c;
 }
-body[data-theme="cyborg"] .panel-danger > .panel-heading,
+bade[data-theme="cyborg"] .panel-danger > .panel-heading,
 body.cyborg .panel-danger > .panel-heading {
   color: #ffffff;
   background-color: #e74c3c;
   border-color: #e74c3c;
 }
-body[data-theme="cyborg"] .panel-danger > .panel-heading + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-danger > .panel-heading + .panel-collapse > .panel-body,
 body.cyborg .panel-danger > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #e74c3c;
 }
-body[data-theme="cyborg"] .panel-danger > .panel-heading .badge,
+bade[data-theme="cyborg"] .panel-danger > .panel-heading .badge,
 body.cyborg .panel-danger > .panel-heading .badge {
   color: #e74c3c;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .panel-danger > .panel-footer + .panel-collapse > .panel-body,
+bade[data-theme="cyborg"] .panel-danger > .panel-footer + .panel-collapse > .panel-body,
 body.cyborg .panel-danger > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #e74c3c;
 }
-body[data-theme="cyborg"] .panel-body,
+bade[data-theme="cyborg"] .panel-body,
 body.cyborg .panel-body {
   background-color: #0d1b21;
 }
-body[data-theme="cyborg"] .panel-footer,
+bade[data-theme="cyborg"] .panel-footer,
 body.cyborg .panel-footer {
   background-color: #0d1b21;
   border-top: 1px solid #0d1b21;
 }
-body[data-theme="cyborg"] .list-group-item,
+bade[data-theme="cyborg"] .list-group-item,
 body.cyborg .list-group-item {
   background-color: #2d2d2d;
   border: 0px;
 }
-body[data-theme="cyborg"] .list-group-item:nth-child(odd),
+bade[data-theme="cyborg"] .list-group-item:nth-child(odd),
 body.cyborg .list-group-item:nth-child(odd) {
   background-color: #363636;
 }
-body[data-theme="cyborg"] .pagination > .disabled > a, body[data-theme="cyborg"] .pagination > .disabled > a:focus, body[data-theme="cyborg"] .pagination > .disabled > a:hover, body[data-theme="cyborg"] .pagination > .disabled > span, body[data-theme="cyborg"] .pagination > .disabled > span:focus, body[data-theme="cyborg"] .pagination > .disabled > span:hover,
+bade[data-theme="cyborg"] .pagination > .disabled > a, bade[data-theme="cyborg"] .pagination > .disabled > a:focus, bade[data-theme="cyborg"] .pagination > .disabled > a:hover, bade[data-theme="cyborg"] .pagination > .disabled > span, bade[data-theme="cyborg"] .pagination > .disabled > span:focus, bade[data-theme="cyborg"] .pagination > .disabled > span:hover,
 body.cyborg .pagination > .disabled > a,
 body.cyborg .pagination > .disabled > a:focus,
 body.cyborg .pagination > .disabled > a:hover,
@@ -8267,36 +8501,36 @@ body.cyborg .pagination > .disabled > span:hover {
   background-color: #464545;
   border-color: #464545;
 }
-body[data-theme="cyborg"] footer,
+bade[data-theme="cyborg"] footer,
 body.cyborg footer {
   background: #0d1c21;
 }
-body[data-theme="cyborg"] #footer-extra,
+bade[data-theme="cyborg"] #footer-extra,
 body.cyborg #footer-extra {
   background: inherit;
 }
-body[data-theme="cyborg"] .table > thead,
+bade[data-theme="cyborg"] .table > thead,
 body.cyborg .table > thead {
   background-color: #0d1b21;
   color: #97a4a4;
 }
-body[data-theme="cyborg"] .table > tbody > tr,
+bade[data-theme="cyborg"] .table > tbody > tr,
 body.cyborg .table > tbody > tr {
   border-bottom: 1px solid #061a1d;
 }
-body[data-theme="cyborg"] .table > thead > tr > th,
+bade[data-theme="cyborg"] .table > thead > tr > th,
 body.cyborg .table > thead > tr > th {
   border-bottom: 0px solid #8d8d8d;
 }
-body[data-theme="cyborg"] .table-striped > tbody > tr:nth-of-type(even),
+bade[data-theme="cyborg"] .table-striped > tbody > tr:nth-of-type(even),
 body.cyborg .table-striped > tbody > tr:nth-of-type(even) {
   background-color: #0b1d21;
 }
-body[data-theme="cyborg"] .table-striped > tbody > tr:nth-of-type(odd),
+bade[data-theme="cyborg"] .table-striped > tbody > tr:nth-of-type(odd),
 body.cyborg .table-striped > tbody > tr:nth-of-type(odd) {
   background-color: #030e10;
 }
-body[data-theme="cyborg"] .table > tbody > tr > td, body[data-theme="cyborg"] .table > tbody > tr > th, body[data-theme="cyborg"] .table > tfoot > tr > td, body[data-theme="cyborg"] .table > tfoot > tr > th, body[data-theme="cyborg"] .table > thead > tr > td, body[data-theme="cyborg"] .table > thead > tr > th,
+bade[data-theme="cyborg"] .table > tbody > tr > td, bade[data-theme="cyborg"] .table > tbody > tr > th, bade[data-theme="cyborg"] .table > tfoot > tr > td, bade[data-theme="cyborg"] .table > tfoot > tr > th, bade[data-theme="cyborg"] .table > thead > tr > td, bade[data-theme="cyborg"] .table > thead > tr > th,
 body.cyborg .table > tbody > tr > td,
 body.cyborg .table > tbody > tr > th,
 body.cyborg .table > tfoot > tr > td,
@@ -8308,11 +8542,11 @@ body.cyborg .table > thead > tr > th {
   vertical-align: top;
   border-top: 0px solid #ddd;
 }
-body[data-theme="cyborg"] .row-active,
+bade[data-theme="cyborg"] .row-active,
 body.cyborg .row-active {
   background-color: #545454;
 }
-body[data-theme="cyborg"] .table-bordered > tbody > tr > td, body[data-theme="cyborg"] .table-bordered > tbody > tr > th, body[data-theme="cyborg"] .table-bordered > tfoot > tr > td, body[data-theme="cyborg"] .table-bordered > tfoot > tr > th, body[data-theme="cyborg"] .table-bordered > thead > tr > td, body[data-theme="cyborg"] .table-bordered > thead > tr > th,
+bade[data-theme="cyborg"] .table-bordered > tbody > tr > td, bade[data-theme="cyborg"] .table-bordered > tbody > tr > th, bade[data-theme="cyborg"] .table-bordered > tfoot > tr > td, bade[data-theme="cyborg"] .table-bordered > tfoot > tr > th, bade[data-theme="cyborg"] .table-bordered > thead > tr > td, bade[data-theme="cyborg"] .table-bordered > thead > tr > th,
 body.cyborg .table-bordered > tbody > tr > td,
 body.cyborg .table-bordered > tbody > tr > th,
 body.cyborg .table-bordered > tfoot > tr > td,
@@ -8321,113 +8555,113 @@ body.cyborg .table-bordered > thead > tr > td,
 body.cyborg .table-bordered > thead > tr > th {
   border: 1px solid #132b3b;
 }
-body[data-theme="cyborg"] .table-bordered,
+bade[data-theme="cyborg"] .table-bordered,
 body.cyborg .table-bordered {
   border: 1px solid #434343;
 }
-body[data-theme="cyborg"] table#network_dns, body[data-theme="cyborg"] table#network_hosts,
+bade[data-theme="cyborg"] table#network_dns, bade[data-theme="cyborg"] table#network_hosts,
 body.cyborg table#network_dns,
 body.cyborg table#network_hosts {
   border-top: inherit;
   border-bottom: inherit;
 }
-body[data-theme="cyborg"] table.dataTable thead,
+bade[data-theme="cyborg"] table.dataTable thead,
 body.cyborg table.dataTable thead {
   color: #bfbfbf;
 }
-body[data-theme="cyborg"] table.dataTable thead th:after,
+bade[data-theme="cyborg"] table.dataTable thead th:after,
 body.cyborg table.dataTable thead th:after {
   color: #0ce3ac;
 }
-body[data-theme="cyborg"] .table-hover > tbody > tr:hover,
+bade[data-theme="cyborg"] .table-hover > tbody > tr:hover,
 body.cyborg .table-hover > tbody > tr:hover {
   background-color: #545454;
 }
-body[data-theme="cyborg"] .table-hover > tbody > tr:hover:not(.row-active),
+bade[data-theme="cyborg"] .table-hover > tbody > tr:hover:not(.row-active),
 body.cyborg .table-hover > tbody > tr:hover:not(.row-active) {
   background-color: #404040;
 }
-body[data-theme="cyborg"] mark,
-body[data-theme="cyborg"] .mark,
+bade[data-theme="cyborg"] mark,
+bade[data-theme="cyborg"] .mark,
 body.cyborg mark,
 body.cyborg .mark {
   background-color: #f39c12;
   padding: .2em;
 }
-body[data-theme="cyborg"] .text-left,
+bade[data-theme="cyborg"] .text-left,
 body.cyborg .text-left {
   text-align: left;
 }
-body[data-theme="cyborg"] .text-right,
+bade[data-theme="cyborg"] .text-right,
 body.cyborg .text-right {
   text-align: right;
 }
-body[data-theme="cyborg"] .text-center,
+bade[data-theme="cyborg"] .text-center,
 body.cyborg .text-center {
   text-align: center;
 }
-body[data-theme="cyborg"] .text-justify,
+bade[data-theme="cyborg"] .text-justify,
 body.cyborg .text-justify {
   text-align: justify;
 }
-body[data-theme="cyborg"] .text-nowrap,
+bade[data-theme="cyborg"] .text-nowrap,
 body.cyborg .text-nowrap {
   white-space: nowrap;
 }
-body[data-theme="cyborg"] .text-lowercase,
+bade[data-theme="cyborg"] .text-lowercase,
 body.cyborg .text-lowercase {
   text-transform: lowercase;
 }
-body[data-theme="cyborg"] .text-uppercase,
+bade[data-theme="cyborg"] .text-uppercase,
 body.cyborg .text-uppercase {
   text-transform: uppercase;
 }
-body[data-theme="cyborg"] .text-capitalize,
+bade[data-theme="cyborg"] .text-capitalize,
 body.cyborg .text-capitalize {
   text-transform: capitalize;
 }
-body[data-theme="cyborg"] .text-muted,
+bade[data-theme="cyborg"] .text-muted,
 body.cyborg .text-muted {
   color: #999999;
 }
-body[data-theme="cyborg"] .text-primary,
+bade[data-theme="cyborg"] .text-primary,
 body.cyborg .text-primary {
   color: #375a7f;
 }
-body[data-theme="cyborg"] .alert,
+bade[data-theme="cyborg"] .alert,
 body.cyborg .alert {
   padding: 15px;
   margin-bottom: 21px;
   border: 1px solid transparent;
   border-radius: 4px;
 }
-body[data-theme="cyborg"] .alert h4,
+bade[data-theme="cyborg"] .alert h4,
 body.cyborg .alert h4 {
   margin-top: 0;
   color: inherit;
 }
-body[data-theme="cyborg"] .alert .alert-link,
+bade[data-theme="cyborg"] .alert .alert-link,
 body.cyborg .alert .alert-link {
   font-weight: bold;
 }
-body[data-theme="cyborg"] .alert > p,
-body[data-theme="cyborg"] .alert > ul,
+bade[data-theme="cyborg"] .alert > p,
+bade[data-theme="cyborg"] .alert > ul,
 body.cyborg .alert > p,
 body.cyborg .alert > ul {
   margin-bottom: 0;
 }
-body[data-theme="cyborg"] .alert > p + p,
+bade[data-theme="cyborg"] .alert > p + p,
 body.cyborg .alert > p + p {
   margin-top: 5px;
 }
-body[data-theme="cyborg"] .alert-dismissable,
-body[data-theme="cyborg"] .alert-dismissible,
+bade[data-theme="cyborg"] .alert-dismissable,
+bade[data-theme="cyborg"] .alert-dismissible,
 body.cyborg .alert-dismissable,
 body.cyborg .alert-dismissible {
   padding-right: 35px;
 }
-body[data-theme="cyborg"] .alert-dismissable .close,
-body[data-theme="cyborg"] .alert-dismissible .close,
+bade[data-theme="cyborg"] .alert-dismissable .close,
+bade[data-theme="cyborg"] .alert-dismissible .close,
 body.cyborg .alert-dismissable .close,
 body.cyborg .alert-dismissible .close {
   position: relative;
@@ -8435,65 +8669,65 @@ body.cyborg .alert-dismissible .close {
   right: -21px;
   color: inherit;
 }
-body[data-theme="cyborg"] .alert-success,
+bade[data-theme="cyborg"] .alert-success,
 body.cyborg .alert-success {
   background-color: #008664;
   border-color: #005741;
   opacity: 1;
   color: #e9e9e9;
 }
-body[data-theme="cyborg"] .alert-success hr,
+bade[data-theme="cyborg"] .alert-success hr,
 body.cyborg .alert-success hr {
   border-top-color: #00a379;
 }
-body[data-theme="cyborg"] .alert-success .alert-link,
+bade[data-theme="cyborg"] .alert-success .alert-link,
 body.cyborg .alert-success .alert-link {
   color: #e6e6e6;
 }
-body[data-theme="cyborg"] .alert-success a,
+bade[data-theme="cyborg"] .alert-success a,
 body.cyborg .alert-success a {
   color: white;
   font-weight: bold;
 }
-body[data-theme="cyborg"] .alert-info,
+bade[data-theme="cyborg"] .alert-info,
 body.cyborg .alert-info {
   background-color: #152d3d;
   border-color: #152d3d;
   color: #ffffff;
 }
-body[data-theme="cyborg"] .alert-info hr,
+bade[data-theme="cyborg"] .alert-info hr,
 body.cyborg .alert-info hr {
   border-top-color: #258cd1;
 }
-body[data-theme="cyborg"] .alert-info .alert-link,
+bade[data-theme="cyborg"] .alert-info .alert-link,
 body.cyborg .alert-info .alert-link {
   color: #e6e6e6;
 }
-body[data-theme="cyborg"] .alert-warning,
+bade[data-theme="cyborg"] .alert-warning,
 body.cyborg .alert-warning {
   background-color: #a48554;
   border-color: #a48554;
   color: #ffffff;
 }
-body[data-theme="cyborg"] .alert-warning hr,
+bade[data-theme="cyborg"] .alert-warning hr,
 body.cyborg .alert-warning hr {
   border-top-color: #e08e0b;
 }
-body[data-theme="cyborg"] .alert-warning .alert-link,
+bade[data-theme="cyborg"] .alert-warning .alert-link,
 body.cyborg .alert-warning .alert-link {
   color: #e6e6e6;
 }
-body[data-theme="cyborg"] .alert-danger,
+bade[data-theme="cyborg"] .alert-danger,
 body.cyborg .alert-danger {
   background-color: #9c4c43;
   border-color: #9c4c43;
   color: #ffffff;
 }
-body[data-theme="cyborg"] .alert-danger hr,
+bade[data-theme="cyborg"] .alert-danger hr,
 body.cyborg .alert-danger hr {
   border-top-color: #e43725;
 }
-body[data-theme="cyborg"] .alert-danger .alert-link,
+bade[data-theme="cyborg"] .alert-danger .alert-link,
 body.cyborg .alert-danger .alert-link {
   color: #e6e6e6;
 }
@@ -8521,7 +8755,7 @@ body.cyborg .alert-danger .alert-link {
     background-position: 0 0;
   }
 }
-body[data-theme="cyborg"] .progress,
+bade[data-theme="cyborg"] .progress,
 body.cyborg .progress {
   overflow: hidden;
   height: 21px;
@@ -8531,7 +8765,7 @@ body.cyborg .progress {
   -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-body[data-theme="cyborg"] .progress-bar,
+bade[data-theme="cyborg"] .progress-bar,
 body.cyborg .progress-bar {
   float: left;
   width: 0%;
@@ -8547,8 +8781,8 @@ body.cyborg .progress-bar {
   -o-transition: width 0.6s ease;
   transition: width 0.6s ease;
 }
-body[data-theme="cyborg"] .progress-striped .progress-bar,
-body[data-theme="cyborg"] .progress-bar-striped,
+bade[data-theme="cyborg"] .progress-striped .progress-bar,
+bade[data-theme="cyborg"] .progress-bar-striped,
 body.cyborg .progress-striped .progress-bar,
 body.cyborg .progress-bar-striped {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
@@ -8557,55 +8791,55 @@ body.cyborg .progress-bar-striped {
   -webkit-background-size: 40px 40px;
   background-size: 40px 40px;
 }
-body[data-theme="cyborg"] .progress.active .progress-bar,
-body[data-theme="cyborg"] .progress-bar.active,
+bade[data-theme="cyborg"] .progress.active .progress-bar,
+bade[data-theme="cyborg"] .progress-bar.active,
 body.cyborg .progress.active .progress-bar,
 body.cyborg .progress-bar.active {
   -webkit-animation: progress-bar-stripes 2s linear infinite;
   -o-animation: progress-bar-stripes 2s linear infinite;
   animation: progress-bar-stripes 2s linear infinite;
 }
-body[data-theme="cyborg"] .progress-bar-success,
+bade[data-theme="cyborg"] .progress-bar-success,
 body.cyborg .progress-bar-success {
   background-color: #00bc8c;
 }
-body[data-theme="cyborg"] .progress-striped .progress-bar-success,
+bade[data-theme="cyborg"] .progress-striped .progress-bar-success,
 body.cyborg .progress-striped .progress-bar-success {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
-body[data-theme="cyborg"] .progress-bar-info,
+bade[data-theme="cyborg"] .progress-bar-info,
 body.cyborg .progress-bar-info {
   background-color: #3498db;
 }
-body[data-theme="cyborg"] .progress-striped .progress-bar-info,
+bade[data-theme="cyborg"] .progress-striped .progress-bar-info,
 body.cyborg .progress-striped .progress-bar-info {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
-body[data-theme="cyborg"] .progress-bar-warning,
+bade[data-theme="cyborg"] .progress-bar-warning,
 body.cyborg .progress-bar-warning {
   background-color: #f39c12;
 }
-body[data-theme="cyborg"] .progress-striped .progress-bar-warning,
+bade[data-theme="cyborg"] .progress-striped .progress-bar-warning,
 body.cyborg .progress-striped .progress-bar-warning {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
-body[data-theme="cyborg"] .progress-bar-danger,
+bade[data-theme="cyborg"] .progress-bar-danger,
 body.cyborg .progress-bar-danger {
   background-color: #e74c3c;
 }
-body[data-theme="cyborg"] .progress-striped .progress-bar-danger,
+bade[data-theme="cyborg"] .progress-striped .progress-bar-danger,
 body.cyborg .progress-striped .progress-bar-danger {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
-body[data-theme="cyborg"] .well,
+bade[data-theme="cyborg"] .well,
 body.cyborg .well {
   min-height: 20px;
   padding: 19px;
@@ -8616,22 +8850,22 @@ body.cyborg .well {
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
-body[data-theme="cyborg"] .well blockquote,
+bade[data-theme="cyborg"] .well blockquote,
 body.cyborg .well blockquote {
   border-color: #ddd;
   border-color: rgba(0, 0, 0, 0.15);
 }
-body[data-theme="cyborg"] .well-lg,
+bade[data-theme="cyborg"] .well-lg,
 body.cyborg .well-lg {
   padding: 24px;
   border-radius: 6px;
 }
-body[data-theme="cyborg"] .well-sm,
+bade[data-theme="cyborg"] .well-sm,
 body.cyborg .well-sm {
   padding: 9px;
   border-radius: 3px;
 }
-body[data-theme="cyborg"] .close,
+bade[data-theme="cyborg"] .close,
 body.cyborg .close {
   float: right;
   font-size: 22.5px;
@@ -8642,8 +8876,8 @@ body.cyborg .close {
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
-body[data-theme="cyborg"] .close:hover,
-body[data-theme="cyborg"] .close:focus,
+bade[data-theme="cyborg"] .close:hover,
+bade[data-theme="cyborg"] .close:focus,
 body.cyborg .close:hover,
 body.cyborg .close:focus {
   color: #ffffff;
@@ -8652,7 +8886,7 @@ body.cyborg .close:focus {
   opacity: 0.5;
   filter: alpha(opacity=50);
 }
-body[data-theme="cyborg"] button.close,
+bade[data-theme="cyborg"] button.close,
 body.cyborg button.close {
   padding: 0;
   cursor: pointer;
@@ -8660,11 +8894,11 @@ body.cyborg button.close {
   border: 0;
   -webkit-appearance: none;
 }
-body[data-theme="cyborg"] .modal-open,
+bade[data-theme="cyborg"] .modal-open,
 body.cyborg .modal-open {
   overflow: hidden;
 }
-body[data-theme="cyborg"] .modal,
+bade[data-theme="cyborg"] .modal,
 body.cyborg .modal {
   display: none;
   overflow: hidden;
@@ -8677,7 +8911,7 @@ body.cyborg .modal {
   -webkit-overflow-scrolling: touch;
   outline: 0;
 }
-body[data-theme="cyborg"] .modal.fade .modal-dialog,
+bade[data-theme="cyborg"] .modal.fade .modal-dialog,
 body.cyborg .modal.fade .modal-dialog {
   -webkit-transform: translate(0, -25%);
   -ms-transform: translate(0, -25%);
@@ -8687,26 +8921,26 @@ body.cyborg .modal.fade .modal-dialog {
   -o-transition: -o-transform 0.3s ease-out;
   transition: transform 0.3s ease-out;
 }
-body[data-theme="cyborg"] .modal.in .modal-dialog,
+bade[data-theme="cyborg"] .modal.in .modal-dialog,
 body.cyborg .modal.in .modal-dialog {
   -webkit-transform: translate(0, 0);
   -ms-transform: translate(0, 0);
   -o-transform: translate(0, 0);
   transform: translate(0, 0);
 }
-body[data-theme="cyborg"] .modal-open .modal,
+bade[data-theme="cyborg"] .modal-open .modal,
 body.cyborg .modal-open .modal {
   overflow-x: hidden;
   overflow-y: auto;
 }
-body[data-theme="cyborg"] .modal-dialog,
+bade[data-theme="cyborg"] .modal-dialog,
 body.cyborg .modal-dialog {
   position: relative;
   width: auto;
   margin: 10px;
   z-index: 6666;
 }
-body[data-theme="cyborg"] .modal-content,
+bade[data-theme="cyborg"] .modal-content,
 body.cyborg .modal-content {
   position: relative;
   background-color: #303030;
@@ -8719,7 +8953,7 @@ body.cyborg .modal-content {
   background-clip: padding-box;
   outline: 0;
 }
-body[data-theme="cyborg"] .modal-backdrop,
+bade[data-theme="cyborg"] .modal-backdrop,
 body.cyborg .modal-backdrop {
   position: fixed;
   top: 0;
@@ -8729,55 +8963,55 @@ body.cyborg .modal-backdrop {
   z-index: 1040;
   background-color: #000000;
 }
-body[data-theme="cyborg"] .modal-backdrop.fade,
+bade[data-theme="cyborg"] .modal-backdrop.fade,
 body.cyborg .modal-backdrop.fade {
   opacity: 0;
   filter: alpha(opacity=0);
 }
-body[data-theme="cyborg"] .modal-backdrop.in,
+bade[data-theme="cyborg"] .modal-backdrop.in,
 body.cyborg .modal-backdrop.in {
   opacity: 0.75;
   filter: alpha(opacity=70);
 }
-body[data-theme="cyborg"] .modal-header,
+bade[data-theme="cyborg"] .modal-header,
 body.cyborg .modal-header {
   padding: 15px;
   border-bottom: 1px solid #464545;
 }
-body[data-theme="cyborg"] .modal-header .close,
+bade[data-theme="cyborg"] .modal-header .close,
 body.cyborg .modal-header .close {
   margin-top: -2px;
 }
-body[data-theme="cyborg"] .modal-title,
+bade[data-theme="cyborg"] .modal-title,
 body.cyborg .modal-title {
   margin: 0;
   line-height: 1.42857143;
 }
-body[data-theme="cyborg"] .modal-body,
+bade[data-theme="cyborg"] .modal-body,
 body.cyborg .modal-body {
   position: relative;
   padding: 20px;
 }
-body[data-theme="cyborg"] .modal-footer,
+bade[data-theme="cyborg"] .modal-footer,
 body.cyborg .modal-footer {
   padding: 20px;
   text-align: right;
   border-top: 1px solid #464545;
 }
-body[data-theme="cyborg"] .modal-footer .btn + .btn,
+bade[data-theme="cyborg"] .modal-footer .btn + .btn,
 body.cyborg .modal-footer .btn + .btn {
   margin-left: 5px;
   margin-bottom: 0;
 }
-body[data-theme="cyborg"] .modal-footer .btn-group .btn + .btn,
+bade[data-theme="cyborg"] .modal-footer .btn-group .btn + .btn,
 body.cyborg .modal-footer .btn-group .btn + .btn {
   margin-left: -1px;
 }
-body[data-theme="cyborg"] .modal-footer .btn-block + .btn-block,
+bade[data-theme="cyborg"] .modal-footer .btn-block + .btn-block,
 body.cyborg .modal-footer .btn-block + .btn-block {
   margin-left: 0;
 }
-body[data-theme="cyborg"] .modal-scrollbar-measure,
+bade[data-theme="cyborg"] .modal-scrollbar-measure,
 body.cyborg .modal-scrollbar-measure {
   position: absolute;
   top: -9999px;
@@ -8786,28 +9020,28 @@ body.cyborg .modal-scrollbar-measure {
   overflow: scroll;
 }
 @media (min-width: 768px) {
-  body[data-theme="cyborg"] .modal-dialog,
+  bade[data-theme="cyborg"] .modal-dialog,
   body.cyborg .modal-dialog {
     width: 600px;
     margin: 30px auto;
   }
-  body[data-theme="cyborg"] .modal-content,
+  bade[data-theme="cyborg"] .modal-content,
   body.cyborg .modal-content {
     -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   }
-  body[data-theme="cyborg"] .modal-sm,
+  bade[data-theme="cyborg"] .modal-sm,
   body.cyborg .modal-sm {
     width: 300px;
   }
 }
 @media (min-width: 992px) {
-  body[data-theme="cyborg"] .modal-lg,
+  bade[data-theme="cyborg"] .modal-lg,
   body.cyborg .modal-lg {
     width: 900px;
   }
 }
-body[data-theme="cyborg"] .tooltip,
+bade[data-theme="cyborg"] .tooltip,
 body.cyborg .tooltip {
   position: absolute;
   z-index: 1070;
@@ -8831,32 +9065,32 @@ body.cyborg .tooltip {
   opacity: 0;
   filter: alpha(opacity=0);
 }
-body[data-theme="cyborg"] .tooltip.in,
+bade[data-theme="cyborg"] .tooltip.in,
 body.cyborg .tooltip.in {
   opacity: 0.9;
   filter: alpha(opacity=90);
 }
-body[data-theme="cyborg"] .tooltip.top,
+bade[data-theme="cyborg"] .tooltip.top,
 body.cyborg .tooltip.top {
   margin-top: -3px;
   padding: 5px 0;
 }
-body[data-theme="cyborg"] .tooltip.right,
+bade[data-theme="cyborg"] .tooltip.right,
 body.cyborg .tooltip.right {
   margin-left: 3px;
   padding: 0 5px;
 }
-body[data-theme="cyborg"] .tooltip.bottom,
+bade[data-theme="cyborg"] .tooltip.bottom,
 body.cyborg .tooltip.bottom {
   margin-top: 3px;
   padding: 5px 0;
 }
-body[data-theme="cyborg"] .tooltip.left,
+bade[data-theme="cyborg"] .tooltip.left,
 body.cyborg .tooltip.left {
   margin-left: -3px;
   padding: 0 5px;
 }
-body[data-theme="cyborg"] .tooltip-inner,
+bade[data-theme="cyborg"] .tooltip-inner,
 body.cyborg .tooltip-inner {
   max-width: 200px;
   padding: 3px 8px;
@@ -8865,7 +9099,7 @@ body.cyborg .tooltip-inner {
   background-color: #000000;
   border-radius: 4px;
 }
-body[data-theme="cyborg"] .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip-arrow,
 body.cyborg .tooltip-arrow {
   position: absolute;
   width: 0;
@@ -8873,7 +9107,7 @@ body.cyborg .tooltip-arrow {
   border-color: transparent;
   border-style: solid;
 }
-body[data-theme="cyborg"] .tooltip.top .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.top .tooltip-arrow,
 body.cyborg .tooltip.top .tooltip-arrow {
   bottom: 0;
   left: 50%;
@@ -8881,7 +9115,7 @@ body.cyborg .tooltip.top .tooltip-arrow {
   border-width: 5px 5px 0;
   border-top-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.top-left .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.top-left .tooltip-arrow,
 body.cyborg .tooltip.top-left .tooltip-arrow {
   bottom: 0;
   right: 5px;
@@ -8889,7 +9123,7 @@ body.cyborg .tooltip.top-left .tooltip-arrow {
   border-width: 5px 5px 0;
   border-top-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.top-right .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.top-right .tooltip-arrow,
 body.cyborg .tooltip.top-right .tooltip-arrow {
   bottom: 0;
   left: 5px;
@@ -8897,7 +9131,7 @@ body.cyborg .tooltip.top-right .tooltip-arrow {
   border-width: 5px 5px 0;
   border-top-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.right .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.right .tooltip-arrow,
 body.cyborg .tooltip.right .tooltip-arrow {
   top: 50%;
   left: 0;
@@ -8905,7 +9139,7 @@ body.cyborg .tooltip.right .tooltip-arrow {
   border-width: 5px 5px 5px 0;
   border-right-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.left .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.left .tooltip-arrow,
 body.cyborg .tooltip.left .tooltip-arrow {
   top: 50%;
   right: 0;
@@ -8913,7 +9147,7 @@ body.cyborg .tooltip.left .tooltip-arrow {
   border-width: 5px 0 5px 5px;
   border-left-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.bottom .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.bottom .tooltip-arrow,
 body.cyborg .tooltip.bottom .tooltip-arrow {
   top: 0;
   left: 50%;
@@ -8921,7 +9155,7 @@ body.cyborg .tooltip.bottom .tooltip-arrow {
   border-width: 0 5px 5px;
   border-bottom-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.bottom-left .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.bottom-left .tooltip-arrow,
 body.cyborg .tooltip.bottom-left .tooltip-arrow {
   top: 0;
   right: 5px;
@@ -8929,7 +9163,7 @@ body.cyborg .tooltip.bottom-left .tooltip-arrow {
   border-width: 0 5px 5px;
   border-bottom-color: #000000;
 }
-body[data-theme="cyborg"] .tooltip.bottom-right .tooltip-arrow,
+bade[data-theme="cyborg"] .tooltip.bottom-right .tooltip-arrow,
 body.cyborg .tooltip.bottom-right .tooltip-arrow {
   top: 0;
   left: 5px;
@@ -8937,7 +9171,7 @@ body.cyborg .tooltip.bottom-right .tooltip-arrow {
   border-width: 0 5px 5px;
   border-bottom-color: #000000;
 }
-body[data-theme="cyborg"] .btn,
+bade[data-theme="cyborg"] .btn,
 body.cyborg .btn {
   display: inline-block;
   margin-bottom: 0;
@@ -8958,12 +9192,12 @@ body.cyborg .btn {
   user-select: none;
   color: #dfdfdf;
 }
-body[data-theme="cyborg"] .btn:focus,
-body[data-theme="cyborg"] .btn:active:focus,
-body[data-theme="cyborg"] .btn.active:focus,
-body[data-theme="cyborg"] .btn.focus,
-body[data-theme="cyborg"] .btn:active.focus,
-body[data-theme="cyborg"] .btn.active.focus,
+bade[data-theme="cyborg"] .btn:focus,
+bade[data-theme="cyborg"] .btn:active:focus,
+bade[data-theme="cyborg"] .btn.active:focus,
+bade[data-theme="cyborg"] .btn.focus,
+bade[data-theme="cyborg"] .btn:active.focus,
+bade[data-theme="cyborg"] .btn.active.focus,
 body.cyborg .btn:focus,
 body.cyborg .btn:active:focus,
 body.cyborg .btn.active:focus,
@@ -8974,17 +9208,17 @@ body.cyborg .btn.active.focus {
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
-body[data-theme="cyborg"] .btn:hover,
-body[data-theme="cyborg"] .btn:focus,
-body[data-theme="cyborg"] .btn.focus,
+bade[data-theme="cyborg"] .btn:hover,
+bade[data-theme="cyborg"] .btn:focus,
+bade[data-theme="cyborg"] .btn.focus,
 body.cyborg .btn:hover,
 body.cyborg .btn:focus,
 body.cyborg .btn.focus {
   color: #ffffff;
   text-decoration: none;
 }
-body[data-theme="cyborg"] .btn:active,
-body[data-theme="cyborg"] .btn.active,
+bade[data-theme="cyborg"] .btn:active,
+bade[data-theme="cyborg"] .btn.active,
 body.cyborg .btn:active,
 body.cyborg .btn.active {
   outline: 0;
@@ -8992,9 +9226,9 @@ body.cyborg .btn.active {
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
-body[data-theme="cyborg"] .btn.disabled,
-body[data-theme="cyborg"] .btn[disabled],
-body[data-theme="cyborg"] fieldset[disabled] .btn,
+bade[data-theme="cyborg"] .btn.disabled,
+bade[data-theme="cyborg"] .btn[disabled],
+bade[data-theme="cyborg"] fieldset[disabled] .btn,
 body.cyborg .btn.disabled,
 body.cyborg .btn[disabled],
 body.cyborg fieldset[disabled] .btn {
@@ -9004,35 +9238,35 @@ body.cyborg fieldset[disabled] .btn {
   -webkit-box-shadow: none;
   box-shadow: none;
 }
-body[data-theme="cyborg"] a.btn.disabled,
-body[data-theme="cyborg"] fieldset[disabled] a.btn,
+bade[data-theme="cyborg"] a.btn.disabled,
+bade[data-theme="cyborg"] fieldset[disabled] a.btn,
 body.cyborg a.btn.disabled,
 body.cyborg fieldset[disabled] a.btn {
   pointer-events: none;
 }
-body[data-theme="cyborg"] .btn-default,
+bade[data-theme="cyborg"] .btn-default,
 body.cyborg .btn-default {
   color: #c9c9c9;
   background-color: #464545;
   border-color: #464545;
 }
-body[data-theme="cyborg"] .btn-default:focus,
-body[data-theme="cyborg"] .btn-default.focus,
+bade[data-theme="cyborg"] .btn-default:focus,
+bade[data-theme="cyborg"] .btn-default.focus,
 body.cyborg .btn-default:focus,
 body.cyborg .btn-default.focus {
   color: #ffffff;
   background-color: #2c2c2c;
   border-color: #060606;
 }
-body[data-theme="cyborg"] .btn-default:hover,
+bade[data-theme="cyborg"] .btn-default:hover,
 body.cyborg .btn-default:hover {
   color: #ffffff;
   background-color: #2c2c2c;
   border-color: #272727;
 }
-body[data-theme="cyborg"] .btn-default:active,
-body[data-theme="cyborg"] .btn-default.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-default,
+bade[data-theme="cyborg"] .btn-default:active,
+bade[data-theme="cyborg"] .btn-default.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-default,
 body.cyborg .btn-default:active,
 body.cyborg .btn-default.active,
 body.cyborg .open > .dropdown-toggle.btn-default {
@@ -9040,15 +9274,15 @@ body.cyborg .open > .dropdown-toggle.btn-default {
   background-color: #2c2c2c;
   border-color: #272727;
 }
-body[data-theme="cyborg"] .btn-default:active:hover,
-body[data-theme="cyborg"] .btn-default.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-default:hover,
-body[data-theme="cyborg"] .btn-default:active:focus,
-body[data-theme="cyborg"] .btn-default.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-default:focus,
-body[data-theme="cyborg"] .btn-default:active.focus,
-body[data-theme="cyborg"] .btn-default.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-default.focus,
+bade[data-theme="cyborg"] .btn-default:active:hover,
+bade[data-theme="cyborg"] .btn-default.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-default:hover,
+bade[data-theme="cyborg"] .btn-default:active:focus,
+bade[data-theme="cyborg"] .btn-default.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-default:focus,
+bade[data-theme="cyborg"] .btn-default:active.focus,
+bade[data-theme="cyborg"] .btn-default.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-default.focus,
 body.cyborg .btn-default:active:hover,
 body.cyborg .btn-default.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-default:hover,
@@ -9062,23 +9296,23 @@ body.cyborg .open > .dropdown-toggle.btn-default.focus {
   background-color: #1a1a1a;
   border-color: #060606;
 }
-body[data-theme="cyborg"] .btn-default:active,
-body[data-theme="cyborg"] .btn-default.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-default,
+bade[data-theme="cyborg"] .btn-default:active,
+bade[data-theme="cyborg"] .btn-default.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-default,
 body.cyborg .btn-default:active,
 body.cyborg .btn-default.active,
 body.cyborg .open > .dropdown-toggle.btn-default {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-default.disabled:hover,
-body[data-theme="cyborg"] .btn-default[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-default:hover,
-body[data-theme="cyborg"] .btn-default.disabled:focus,
-body[data-theme="cyborg"] .btn-default[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-default:focus,
-body[data-theme="cyborg"] .btn-default.disabled.focus,
-body[data-theme="cyborg"] .btn-default[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-default.focus,
+bade[data-theme="cyborg"] .btn-default.disabled:hover,
+bade[data-theme="cyborg"] .btn-default[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-default:hover,
+bade[data-theme="cyborg"] .btn-default.disabled:focus,
+bade[data-theme="cyborg"] .btn-default[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-default:focus,
+bade[data-theme="cyborg"] .btn-default.disabled.focus,
+bade[data-theme="cyborg"] .btn-default[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-default.focus,
 body.cyborg .btn-default.disabled:hover,
 body.cyborg .btn-default[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-default:hover,
@@ -9091,34 +9325,34 @@ body.cyborg fieldset[disabled] .btn-default.focus {
   background-color: #464545;
   border-color: #464545;
 }
-body[data-theme="cyborg"] .btn-default .badge,
+bade[data-theme="cyborg"] .btn-default .badge,
 body.cyborg .btn-default .badge {
   color: #464545;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-primary,
+bade[data-theme="cyborg"] .btn-primary,
 body.cyborg .btn-primary {
   color: #ffffff;
   background-color: #375a7f;
   border-color: #375a7f;
 }
-body[data-theme="cyborg"] .btn-primary:focus,
-body[data-theme="cyborg"] .btn-primary.focus,
+bade[data-theme="cyborg"] .btn-primary:focus,
+bade[data-theme="cyborg"] .btn-primary.focus,
 body.cyborg .btn-primary:focus,
 body.cyborg .btn-primary.focus {
   color: #ffffff;
   background-color: #28415b;
   border-color: #101b26;
 }
-body[data-theme="cyborg"] .btn-primary:hover,
+bade[data-theme="cyborg"] .btn-primary:hover,
 body.cyborg .btn-primary:hover {
   color: #ffffff;
   background-color: #28415b;
   border-color: #253c54;
 }
-body[data-theme="cyborg"] .btn-primary:active,
-body[data-theme="cyborg"] .btn-primary.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary,
+bade[data-theme="cyborg"] .btn-primary:active,
+bade[data-theme="cyborg"] .btn-primary.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary,
 body.cyborg .btn-primary:active,
 body.cyborg .btn-primary.active,
 body.cyborg .open > .dropdown-toggle.btn-primary {
@@ -9126,15 +9360,15 @@ body.cyborg .open > .dropdown-toggle.btn-primary {
   background-color: #28415b;
   border-color: #253c54;
 }
-body[data-theme="cyborg"] .btn-primary:active:hover,
-body[data-theme="cyborg"] .btn-primary.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary:hover,
-body[data-theme="cyborg"] .btn-primary:active:focus,
-body[data-theme="cyborg"] .btn-primary.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary:focus,
-body[data-theme="cyborg"] .btn-primary:active.focus,
-body[data-theme="cyborg"] .btn-primary.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary.focus,
+bade[data-theme="cyborg"] .btn-primary:active:hover,
+bade[data-theme="cyborg"] .btn-primary.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary:hover,
+bade[data-theme="cyborg"] .btn-primary:active:focus,
+bade[data-theme="cyborg"] .btn-primary.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary:focus,
+bade[data-theme="cyborg"] .btn-primary:active.focus,
+bade[data-theme="cyborg"] .btn-primary.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary.focus,
 body.cyborg .btn-primary:active:hover,
 body.cyborg .btn-primary.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-primary:hover,
@@ -9148,23 +9382,23 @@ body.cyborg .open > .dropdown-toggle.btn-primary.focus {
   background-color: #1d2f43;
   border-color: #101b26;
 }
-body[data-theme="cyborg"] .btn-primary:active,
-body[data-theme="cyborg"] .btn-primary.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary,
+bade[data-theme="cyborg"] .btn-primary:active,
+bade[data-theme="cyborg"] .btn-primary.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-primary,
 body.cyborg .btn-primary:active,
 body.cyborg .btn-primary.active,
 body.cyborg .open > .dropdown-toggle.btn-primary {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-primary.disabled:hover,
-body[data-theme="cyborg"] .btn-primary[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-primary:hover,
-body[data-theme="cyborg"] .btn-primary.disabled:focus,
-body[data-theme="cyborg"] .btn-primary[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-primary:focus,
-body[data-theme="cyborg"] .btn-primary.disabled.focus,
-body[data-theme="cyborg"] .btn-primary[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-primary.focus,
+bade[data-theme="cyborg"] .btn-primary.disabled:hover,
+bade[data-theme="cyborg"] .btn-primary[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-primary:hover,
+bade[data-theme="cyborg"] .btn-primary.disabled:focus,
+bade[data-theme="cyborg"] .btn-primary[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-primary:focus,
+bade[data-theme="cyborg"] .btn-primary.disabled.focus,
+bade[data-theme="cyborg"] .btn-primary[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-primary.focus,
 body.cyborg .btn-primary.disabled:hover,
 body.cyborg .btn-primary[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-primary:hover,
@@ -9177,34 +9411,34 @@ body.cyborg fieldset[disabled] .btn-primary.focus {
   background-color: #375a7f;
   border-color: #375a7f;
 }
-body[data-theme="cyborg"] .btn-primary .badge,
+bade[data-theme="cyborg"] .btn-primary .badge,
 body.cyborg .btn-primary .badge {
   color: #375a7f;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-success,
+bade[data-theme="cyborg"] .btn-success,
 body.cyborg .btn-success {
   color: #ffffff;
   background-color: #00bc8c;
   border-color: #00bc8c;
 }
-body[data-theme="cyborg"] .btn-success:focus,
-body[data-theme="cyborg"] .btn-success.focus,
+bade[data-theme="cyborg"] .btn-success:focus,
+bade[data-theme="cyborg"] .btn-success.focus,
 body.cyborg .btn-success:focus,
 body.cyborg .btn-success.focus {
   color: #ffffff;
   background-color: #008966;
   border-color: #003d2d;
 }
-body[data-theme="cyborg"] .btn-success:hover,
+bade[data-theme="cyborg"] .btn-success:hover,
 body.cyborg .btn-success:hover {
   color: #ffffff;
   background-color: #008966;
   border-color: #007f5e;
 }
-body[data-theme="cyborg"] .btn-success:active,
-body[data-theme="cyborg"] .btn-success.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-success,
+bade[data-theme="cyborg"] .btn-success:active,
+bade[data-theme="cyborg"] .btn-success.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-success,
 body.cyborg .btn-success:active,
 body.cyborg .btn-success.active,
 body.cyborg .open > .dropdown-toggle.btn-success {
@@ -9212,15 +9446,15 @@ body.cyborg .open > .dropdown-toggle.btn-success {
   background-color: #008966;
   border-color: #007f5e;
 }
-body[data-theme="cyborg"] .btn-success:active:hover,
-body[data-theme="cyborg"] .btn-success.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-success:hover,
-body[data-theme="cyborg"] .btn-success:active:focus,
-body[data-theme="cyborg"] .btn-success.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-success:focus,
-body[data-theme="cyborg"] .btn-success:active.focus,
-body[data-theme="cyborg"] .btn-success.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-success.focus,
+bade[data-theme="cyborg"] .btn-success:active:hover,
+bade[data-theme="cyborg"] .btn-success.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-success:hover,
+bade[data-theme="cyborg"] .btn-success:active:focus,
+bade[data-theme="cyborg"] .btn-success.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-success:focus,
+bade[data-theme="cyborg"] .btn-success:active.focus,
+bade[data-theme="cyborg"] .btn-success.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-success.focus,
 body.cyborg .btn-success:active:hover,
 body.cyborg .btn-success.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-success:hover,
@@ -9234,23 +9468,23 @@ body.cyborg .open > .dropdown-toggle.btn-success.focus {
   background-color: #00654b;
   border-color: #003d2d;
 }
-body[data-theme="cyborg"] .btn-success:active,
-body[data-theme="cyborg"] .btn-success.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-success,
+bade[data-theme="cyborg"] .btn-success:active,
+bade[data-theme="cyborg"] .btn-success.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-success,
 body.cyborg .btn-success:active,
 body.cyborg .btn-success.active,
 body.cyborg .open > .dropdown-toggle.btn-success {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-success.disabled:hover,
-body[data-theme="cyborg"] .btn-success[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-success:hover,
-body[data-theme="cyborg"] .btn-success.disabled:focus,
-body[data-theme="cyborg"] .btn-success[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-success:focus,
-body[data-theme="cyborg"] .btn-success.disabled.focus,
-body[data-theme="cyborg"] .btn-success[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-success.focus,
+bade[data-theme="cyborg"] .btn-success.disabled:hover,
+bade[data-theme="cyborg"] .btn-success[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-success:hover,
+bade[data-theme="cyborg"] .btn-success.disabled:focus,
+bade[data-theme="cyborg"] .btn-success[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-success:focus,
+bade[data-theme="cyborg"] .btn-success.disabled.focus,
+bade[data-theme="cyborg"] .btn-success[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-success.focus,
 body.cyborg .btn-success.disabled:hover,
 body.cyborg .btn-success[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-success:hover,
@@ -9263,34 +9497,34 @@ body.cyborg fieldset[disabled] .btn-success.focus {
   background-color: #00bc8c;
   border-color: #00bc8c;
 }
-body[data-theme="cyborg"] .btn-success .badge,
+bade[data-theme="cyborg"] .btn-success .badge,
 body.cyborg .btn-success .badge {
   color: #00bc8c;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-info,
+bade[data-theme="cyborg"] .btn-info,
 body.cyborg .btn-info {
   color: #ffffff;
   background-color: #3498db;
   border-color: #3498db;
 }
-body[data-theme="cyborg"] .btn-info:focus,
-body[data-theme="cyborg"] .btn-info.focus,
+bade[data-theme="cyborg"] .btn-info:focus,
+bade[data-theme="cyborg"] .btn-info.focus,
 body.cyborg .btn-info:focus,
 body.cyborg .btn-info.focus {
   color: #ffffff;
   background-color: #217dbb;
   border-color: #16527a;
 }
-body[data-theme="cyborg"] .btn-info:hover,
+bade[data-theme="cyborg"] .btn-info:hover,
 body.cyborg .btn-info:hover {
   color: #ffffff;
   background-color: #217dbb;
   border-color: #2077b2;
 }
-body[data-theme="cyborg"] .btn-info:active,
-body[data-theme="cyborg"] .btn-info.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-info,
+bade[data-theme="cyborg"] .btn-info:active,
+bade[data-theme="cyborg"] .btn-info.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-info,
 body.cyborg .btn-info:active,
 body.cyborg .btn-info.active,
 body.cyborg .open > .dropdown-toggle.btn-info {
@@ -9298,15 +9532,15 @@ body.cyborg .open > .dropdown-toggle.btn-info {
   background-color: #217dbb;
   border-color: #2077b2;
 }
-body[data-theme="cyborg"] .btn-info:active:hover,
-body[data-theme="cyborg"] .btn-info.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-info:hover,
-body[data-theme="cyborg"] .btn-info:active:focus,
-body[data-theme="cyborg"] .btn-info.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-info:focus,
-body[data-theme="cyborg"] .btn-info:active.focus,
-body[data-theme="cyborg"] .btn-info.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-info.focus,
+bade[data-theme="cyborg"] .btn-info:active:hover,
+bade[data-theme="cyborg"] .btn-info.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-info:hover,
+bade[data-theme="cyborg"] .btn-info:active:focus,
+bade[data-theme="cyborg"] .btn-info.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-info:focus,
+bade[data-theme="cyborg"] .btn-info:active.focus,
+bade[data-theme="cyborg"] .btn-info.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-info.focus,
 body.cyborg .btn-info:active:hover,
 body.cyborg .btn-info.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-info:hover,
@@ -9320,23 +9554,23 @@ body.cyborg .open > .dropdown-toggle.btn-info.focus {
   background-color: #1c699d;
   border-color: #16527a;
 }
-body[data-theme="cyborg"] .btn-info:active,
-body[data-theme="cyborg"] .btn-info.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-info,
+bade[data-theme="cyborg"] .btn-info:active,
+bade[data-theme="cyborg"] .btn-info.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-info,
 body.cyborg .btn-info:active,
 body.cyborg .btn-info.active,
 body.cyborg .open > .dropdown-toggle.btn-info {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-info.disabled:hover,
-body[data-theme="cyborg"] .btn-info[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-info:hover,
-body[data-theme="cyborg"] .btn-info.disabled:focus,
-body[data-theme="cyborg"] .btn-info[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-info:focus,
-body[data-theme="cyborg"] .btn-info.disabled.focus,
-body[data-theme="cyborg"] .btn-info[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-info.focus,
+bade[data-theme="cyborg"] .btn-info.disabled:hover,
+bade[data-theme="cyborg"] .btn-info[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-info:hover,
+bade[data-theme="cyborg"] .btn-info.disabled:focus,
+bade[data-theme="cyborg"] .btn-info[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-info:focus,
+bade[data-theme="cyborg"] .btn-info.disabled.focus,
+bade[data-theme="cyborg"] .btn-info[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-info.focus,
 body.cyborg .btn-info.disabled:hover,
 body.cyborg .btn-info[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-info:hover,
@@ -9349,34 +9583,34 @@ body.cyborg fieldset[disabled] .btn-info.focus {
   background-color: #3498db;
   border-color: #3498db;
 }
-body[data-theme="cyborg"] .btn-info .badge,
+bade[data-theme="cyborg"] .btn-info .badge,
 body.cyborg .btn-info .badge {
   color: #3498db;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-warning,
+bade[data-theme="cyborg"] .btn-warning,
 body.cyborg .btn-warning {
   color: #ffffff;
   background-color: #c8800e;
   border-color: #d38710;
 }
-body[data-theme="cyborg"] .btn-warning:focus,
-body[data-theme="cyborg"] .btn-warning.focus,
+bade[data-theme="cyborg"] .btn-warning:focus,
+bade[data-theme="cyborg"] .btn-warning.focus,
 body.cyborg .btn-warning:focus,
 body.cyborg .btn-warning.focus {
   color: #ffffff;
   background-color: #c87f0a;
   border-color: #7f5006;
 }
-body[data-theme="cyborg"] .btn-warning:hover,
+bade[data-theme="cyborg"] .btn-warning:hover,
 body.cyborg .btn-warning:hover {
   color: #ffffff;
   background-color: #c87f0a;
   border-color: #be780a;
 }
-body[data-theme="cyborg"] .btn-warning:active,
-body[data-theme="cyborg"] .btn-warning.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning,
+bade[data-theme="cyborg"] .btn-warning:active,
+bade[data-theme="cyborg"] .btn-warning.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning,
 body.cyborg .btn-warning:active,
 body.cyborg .btn-warning.active,
 body.cyborg .open > .dropdown-toggle.btn-warning {
@@ -9384,15 +9618,15 @@ body.cyborg .open > .dropdown-toggle.btn-warning {
   background-color: #c87f0a;
   border-color: #be780a;
 }
-body[data-theme="cyborg"] .btn-warning:active:hover,
-body[data-theme="cyborg"] .btn-warning.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning:hover,
-body[data-theme="cyborg"] .btn-warning:active:focus,
-body[data-theme="cyborg"] .btn-warning.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning:focus,
-body[data-theme="cyborg"] .btn-warning:active.focus,
-body[data-theme="cyborg"] .btn-warning.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning.focus,
+bade[data-theme="cyborg"] .btn-warning:active:hover,
+bade[data-theme="cyborg"] .btn-warning.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning:hover,
+bade[data-theme="cyborg"] .btn-warning:active:focus,
+bade[data-theme="cyborg"] .btn-warning.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning:focus,
+bade[data-theme="cyborg"] .btn-warning:active.focus,
+bade[data-theme="cyborg"] .btn-warning.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning.focus,
 body.cyborg .btn-warning:active:hover,
 body.cyborg .btn-warning.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-warning:hover,
@@ -9406,23 +9640,23 @@ body.cyborg .open > .dropdown-toggle.btn-warning.focus {
   background-color: #a66908;
   border-color: #7f5006;
 }
-body[data-theme="cyborg"] .btn-warning:active,
-body[data-theme="cyborg"] .btn-warning.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning,
+bade[data-theme="cyborg"] .btn-warning:active,
+bade[data-theme="cyborg"] .btn-warning.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-warning,
 body.cyborg .btn-warning:active,
 body.cyborg .btn-warning.active,
 body.cyborg .open > .dropdown-toggle.btn-warning {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-warning.disabled:hover,
-body[data-theme="cyborg"] .btn-warning[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-warning:hover,
-body[data-theme="cyborg"] .btn-warning.disabled:focus,
-body[data-theme="cyborg"] .btn-warning[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-warning:focus,
-body[data-theme="cyborg"] .btn-warning.disabled.focus,
-body[data-theme="cyborg"] .btn-warning[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-warning.focus,
+bade[data-theme="cyborg"] .btn-warning.disabled:hover,
+bade[data-theme="cyborg"] .btn-warning[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-warning:hover,
+bade[data-theme="cyborg"] .btn-warning.disabled:focus,
+bade[data-theme="cyborg"] .btn-warning[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-warning:focus,
+bade[data-theme="cyborg"] .btn-warning.disabled.focus,
+bade[data-theme="cyborg"] .btn-warning[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-warning.focus,
 body.cyborg .btn-warning.disabled:hover,
 body.cyborg .btn-warning[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-warning:hover,
@@ -9435,39 +9669,39 @@ body.cyborg fieldset[disabled] .btn-warning.focus {
   background-color: #f39c12;
   border-color: #f39c12;
 }
-body[data-theme="cyborg"] .btn-warning .badge,
+bade[data-theme="cyborg"] .btn-warning .badge,
 body.cyborg .btn-warning .badge {
   color: #f39c12;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .badge-danger,
+bade[data-theme="cyborg"] .badge-danger,
 body.cyborg .badge-danger {
   background-color: #ca4747;
   color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-danger,
+bade[data-theme="cyborg"] .btn-danger,
 body.cyborg .btn-danger {
   color: #ffffff;
   background-color: #e74c3c;
   border-color: #e74c3c;
 }
-body[data-theme="cyborg"] .btn-danger:focus,
-body[data-theme="cyborg"] .btn-danger.focus,
+bade[data-theme="cyborg"] .btn-danger:focus,
+bade[data-theme="cyborg"] .btn-danger.focus,
 body.cyborg .btn-danger:focus,
 body.cyborg .btn-danger.focus {
   color: #ffffff;
   background-color: #d62c1a;
   border-color: #921e12;
 }
-body[data-theme="cyborg"] .btn-danger:hover,
+bade[data-theme="cyborg"] .btn-danger:hover,
 body.cyborg .btn-danger:hover {
   color: #ffffff;
   background-color: #d62c1a;
   border-color: #cd2a19;
 }
-body[data-theme="cyborg"] .btn-danger:active,
-body[data-theme="cyborg"] .btn-danger.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger,
+bade[data-theme="cyborg"] .btn-danger:active,
+bade[data-theme="cyborg"] .btn-danger.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger,
 body.cyborg .btn-danger:active,
 body.cyborg .btn-danger.active,
 body.cyborg .open > .dropdown-toggle.btn-danger {
@@ -9475,15 +9709,15 @@ body.cyborg .open > .dropdown-toggle.btn-danger {
   background-color: #d62c1a;
   border-color: #cd2a19;
 }
-body[data-theme="cyborg"] .btn-danger:active:hover,
-body[data-theme="cyborg"] .btn-danger.active:hover,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger:hover,
-body[data-theme="cyborg"] .btn-danger:active:focus,
-body[data-theme="cyborg"] .btn-danger.active:focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger:focus,
-body[data-theme="cyborg"] .btn-danger:active.focus,
-body[data-theme="cyborg"] .btn-danger.active.focus,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger.focus,
+bade[data-theme="cyborg"] .btn-danger:active:hover,
+bade[data-theme="cyborg"] .btn-danger.active:hover,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger:hover,
+bade[data-theme="cyborg"] .btn-danger:active:focus,
+bade[data-theme="cyborg"] .btn-danger.active:focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger:focus,
+bade[data-theme="cyborg"] .btn-danger:active.focus,
+bade[data-theme="cyborg"] .btn-danger.active.focus,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger.focus,
 body.cyborg .btn-danger:active:hover,
 body.cyborg .btn-danger.active:hover,
 body.cyborg .open > .dropdown-toggle.btn-danger:hover,
@@ -9497,23 +9731,23 @@ body.cyborg .open > .dropdown-toggle.btn-danger.focus {
   background-color: #b62516;
   border-color: #921e12;
 }
-body[data-theme="cyborg"] .btn-danger:active,
-body[data-theme="cyborg"] .btn-danger.active,
-body[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger,
+bade[data-theme="cyborg"] .btn-danger:active,
+bade[data-theme="cyborg"] .btn-danger.active,
+bade[data-theme="cyborg"] .open > .dropdown-toggle.btn-danger,
 body.cyborg .btn-danger:active,
 body.cyborg .btn-danger.active,
 body.cyborg .open > .dropdown-toggle.btn-danger {
   background-image: none;
 }
-body[data-theme="cyborg"] .btn-danger.disabled:hover,
-body[data-theme="cyborg"] .btn-danger[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-danger:hover,
-body[data-theme="cyborg"] .btn-danger.disabled:focus,
-body[data-theme="cyborg"] .btn-danger[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-danger:focus,
-body[data-theme="cyborg"] .btn-danger.disabled.focus,
-body[data-theme="cyborg"] .btn-danger[disabled].focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-danger.focus,
+bade[data-theme="cyborg"] .btn-danger.disabled:hover,
+bade[data-theme="cyborg"] .btn-danger[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-danger:hover,
+bade[data-theme="cyborg"] .btn-danger.disabled:focus,
+bade[data-theme="cyborg"] .btn-danger[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-danger:focus,
+bade[data-theme="cyborg"] .btn-danger.disabled.focus,
+bade[data-theme="cyborg"] .btn-danger[disabled].focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-danger.focus,
 body.cyborg .btn-danger.disabled:hover,
 body.cyborg .btn-danger[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-danger:hover,
@@ -9526,22 +9760,22 @@ body.cyborg fieldset[disabled] .btn-danger.focus {
   background-color: #e74c3c;
   border-color: #e74c3c;
 }
-body[data-theme="cyborg"] .btn-danger .badge,
+bade[data-theme="cyborg"] .btn-danger .badge,
 body.cyborg .btn-danger .badge {
   color: #e74c3c;
   background-color: #ffffff;
 }
-body[data-theme="cyborg"] .btn-link,
+bade[data-theme="cyborg"] .btn-link,
 body.cyborg .btn-link {
   color: #0ce3ac;
   font-weight: normal;
   border-radius: 0;
 }
-body[data-theme="cyborg"] .btn-link,
-body[data-theme="cyborg"] .btn-link:active,
-body[data-theme="cyborg"] .btn-link.active,
-body[data-theme="cyborg"] .btn-link[disabled],
-body[data-theme="cyborg"] fieldset[disabled] .btn-link,
+bade[data-theme="cyborg"] .btn-link,
+bade[data-theme="cyborg"] .btn-link:active,
+bade[data-theme="cyborg"] .btn-link.active,
+bade[data-theme="cyborg"] .btn-link[disabled],
+bade[data-theme="cyborg"] fieldset[disabled] .btn-link,
 body.cyborg .btn-link,
 body.cyborg .btn-link:active,
 body.cyborg .btn-link.active,
@@ -9551,28 +9785,28 @@ body.cyborg fieldset[disabled] .btn-link {
   -webkit-box-shadow: none;
   box-shadow: none;
 }
-body[data-theme="cyborg"] .btn-link,
-body[data-theme="cyborg"] .btn-link:hover,
-body[data-theme="cyborg"] .btn-link:focus,
-body[data-theme="cyborg"] .btn-link:active,
+bade[data-theme="cyborg"] .btn-link,
+bade[data-theme="cyborg"] .btn-link:hover,
+bade[data-theme="cyborg"] .btn-link:focus,
+bade[data-theme="cyborg"] .btn-link:active,
 body.cyborg .btn-link,
 body.cyborg .btn-link:hover,
 body.cyborg .btn-link:focus,
 body.cyborg .btn-link:active {
   border-color: transparent;
 }
-body[data-theme="cyborg"] .btn-link:hover,
-body[data-theme="cyborg"] .btn-link:focus,
+bade[data-theme="cyborg"] .btn-link:hover,
+bade[data-theme="cyborg"] .btn-link:focus,
 body.cyborg .btn-link:hover,
 body.cyborg .btn-link:focus {
   color: #0ce3ac;
   text-decoration: underline;
   background-color: transparent;
 }
-body[data-theme="cyborg"] .btn-link[disabled]:hover,
-body[data-theme="cyborg"] fieldset[disabled] .btn-link:hover,
-body[data-theme="cyborg"] .btn-link[disabled]:focus,
-body[data-theme="cyborg"] fieldset[disabled] .btn-link:focus,
+bade[data-theme="cyborg"] .btn-link[disabled]:hover,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-link:hover,
+bade[data-theme="cyborg"] .btn-link[disabled]:focus,
+bade[data-theme="cyborg"] fieldset[disabled] .btn-link:focus,
 body.cyborg .btn-link[disabled]:hover,
 body.cyborg fieldset[disabled] .btn-link:hover,
 body.cyborg .btn-link[disabled]:focus,
@@ -9580,7 +9814,7 @@ body.cyborg fieldset[disabled] .btn-link:focus {
   color: #999999;
   text-decoration: none;
 }
-body[data-theme="cyborg"] a,
+bade[data-theme="cyborg"] a,
 body.cyborg a {
   color: #0ce3ac;
   text-decoration: none;
@@ -9591,121 +9825,121 @@ body.cyborg a {
   /* ...and now for the proper property */
   transition: .5s;
 }
-body[data-theme="cyborg"] a:hover,
-body[data-theme="cyborg"] a:focus,
+bade[data-theme="cyborg"] a:hover,
+bade[data-theme="cyborg"] a:focus,
 body.cyborg a:hover,
 body.cyborg a:focus {
   color: #0ce3ac;
   text-decoration: underline;
 }
-body[data-theme="cyborg"] a:focus,
+bade[data-theme="cyborg"] a:focus,
 body.cyborg a:focus {
   outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
-body[data-theme="cyborg"] .processes .tab-content .file,
+bade[data-theme="cyborg"] .processes .tab-content .file,
 body.cyborg .processes .tab-content .file {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .registry,
+bade[data-theme="cyborg"] .processes .tab-content .registry,
 body.cyborg .processes .tab-content .registry {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .process,
+bade[data-theme="cyborg"] .processes .tab-content .process,
 body.cyborg .processes .tab-content .process {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .services,
+bade[data-theme="cyborg"] .processes .tab-content .services,
 body.cyborg .processes .tab-content .services {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .device,
+bade[data-theme="cyborg"] .processes .tab-content .device,
 body.cyborg .processes .tab-content .device {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .network,
+bade[data-theme="cyborg"] .processes .tab-content .network,
 body.cyborg .processes .tab-content .network {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .synchronisation,
+bade[data-theme="cyborg"] .processes .tab-content .synchronisation,
 body.cyborg .processes .tab-content .synchronisation {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .system,
+bade[data-theme="cyborg"] .processes .tab-content .system,
 body.cyborg .processes .tab-content .system {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .windows,
+bade[data-theme="cyborg"] .processes .tab-content .windows,
 body.cyborg .processes .tab-content .windows {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .iexplore,
+bade[data-theme="cyborg"] .processes .tab-content .iexplore,
 body.cyborg .processes .tab-content .iexplore {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .office,
+bade[data-theme="cyborg"] .processes .tab-content .office,
 body.cyborg .processes .tab-content .office {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content .pdf,
+bade[data-theme="cyborg"] .processes .tab-content .pdf,
 body.cyborg .processes .tab-content .pdf {
   background-color: inherit;
 }
-body[data-theme="cyborg"] .processes .tab-content a.file,
+bade[data-theme="cyborg"] .processes .tab-content a.file,
 body.cyborg .processes .tab-content a.file {
   background-color: #ffe3c5;
 }
-body[data-theme="cyborg"] .processes .tab-content a.registry,
+bade[data-theme="cyborg"] .processes .tab-content a.registry,
 body.cyborg .processes .tab-content a.registry {
   background-color: #ffc5c5;
 }
-body[data-theme="cyborg"] .processes .tab-content a.process,
+bade[data-theme="cyborg"] .processes .tab-content a.process,
 body.cyborg .processes .tab-content a.process {
   background-color: #c5e0ff;
 }
-body[data-theme="cyborg"] .processes .tab-content a.services,
+bade[data-theme="cyborg"] .processes .tab-content a.services,
 body.cyborg .processes .tab-content a.services {
   background-color: #ccc5ff;
 }
-body[data-theme="cyborg"] .processes .tab-content a.device,
+bade[data-theme="cyborg"] .processes .tab-content a.device,
 body.cyborg .processes .tab-content a.device {
   background-color: #ccc5ff;
 }
-body[data-theme="cyborg"] .processes .tab-content a.network,
+bade[data-theme="cyborg"] .processes .tab-content a.network,
 body.cyborg .processes .tab-content a.network {
   background-color: #d3ffc5;
 }
-body[data-theme="cyborg"] .processes .tab-content a.synchronisation,
+bade[data-theme="cyborg"] .processes .tab-content a.synchronisation,
 body.cyborg .processes .tab-content a.synchronisation {
   background-color: #f9c5ff;
 }
-body[data-theme="cyborg"] .processes .tab-content a.system,
+bade[data-theme="cyborg"] .processes .tab-content a.system,
 body.cyborg .processes .tab-content a.system {
   background-color: #fffcc5;
 }
-body[data-theme="cyborg"] .processes .tab-content a.windows,
+bade[data-theme="cyborg"] .processes .tab-content a.windows,
 body.cyborg .processes .tab-content a.windows {
   background-color: #ffc5ee;
 }
-body[data-theme="cyborg"] .processes .tab-content a.iexplore,
+bade[data-theme="cyborg"] .processes .tab-content a.iexplore,
 body.cyborg .processes .tab-content a.iexplore {
   background-color: #ccddbb;
 }
-body[data-theme="cyborg"] .processes .tab-content a.office,
+bade[data-theme="cyborg"] .processes .tab-content a.office,
 body.cyborg .processes .tab-content a.office {
   background-color: #ccddbb;
 }
-body[data-theme="cyborg"] .processes .tab-content a.pdf,
+bade[data-theme="cyborg"] .processes .tab-content a.pdf,
 body.cyborg .processes .tab-content a.pdf {
   background-color: #ccddbb;
 }
-body[data-theme="cyborg"] .nav-pills li > a:hover, body[data-theme="cyborg"] .nav-pills li > a:focus,
+bade[data-theme="cyborg"] .nav-pills li > a:hover, bade[data-theme="cyborg"] .nav-pills li > a:focus,
 body.cyborg .nav-pills li > a:hover,
 body.cyborg .nav-pills li > a:focus {
   background-color: #2a2a2a;
 }
-body[data-theme="cyborg"] .nav-tabs > li.active > a, body[data-theme="cyborg"] .nav-tabs > li.active > a:hover, body[data-theme="cyborg"] .nav-tabs > li.active > a:focus,
+bade[data-theme="cyborg"] .nav-tabs > li.active > a, bade[data-theme="cyborg"] .nav-tabs > li.active > a:hover, bade[data-theme="cyborg"] .nav-tabs > li.active > a:focus,
 body.cyborg .nav-tabs > li.active > a,
 body.cyborg .nav-tabs > li.active > a:hover,
 body.cyborg .nav-tabs > li.active > a:focus {
@@ -9716,265 +9950,265 @@ body.cyborg .nav-tabs > li.active > a:focus {
   border-bottom-color: transparent;
   cursor: default;
 }
-body[data-theme="cyborg"] .nav-tabs > li > a, body[data-theme="cyborg"] .nav-pills > li > a,
+bade[data-theme="cyborg"] .nav-tabs > li > a, bade[data-theme="cyborg"] .nav-pills > li > a,
 body.cyborg .nav-tabs > li > a,
 body.cyborg .nav-pills > li > a {
   color: #fff;
 }
-body[data-theme="cyborg"] .nav-tabs > li > a,
+bade[data-theme="cyborg"] .nav-tabs > li > a,
 body.cyborg .nav-tabs > li > a {
   border: 1px solid transparent;
   border-radius: 4px 4px 0 0;
 }
-body[data-theme="cyborg"] .nav > li > a,
+bade[data-theme="cyborg"] .nav > li > a,
 body.cyborg .nav > li > a {
   position: relative;
   display: block;
 }
-body[data-theme="cyborg"] .nav > li.disabled > a,
+bade[data-theme="cyborg"] .nav > li.disabled > a,
 body.cyborg .nav > li.disabled > a {
   color: #605e5e;
 }
-body[data-theme="cyborg"] .nav-tabs > li > a:hover,
+bade[data-theme="cyborg"] .nav-tabs > li > a:hover,
 body.cyborg .nav-tabs > li > a:hover {
   border-color: #464545 #464545 #464545;
 }
-body[data-theme="cyborg"] .nav > li > a:hover, body[data-theme="cyborg"] .nav > li > a:focus,
+bade[data-theme="cyborg"] .nav > li > a:hover, bade[data-theme="cyborg"] .nav > li > a:focus,
 body.cyborg .nav > li > a:hover,
 body.cyborg .nav > li > a:focus {
   text-decoration: none;
   background-color: #5277a2;
   border-color: #5277a2;
 }
-body[data-theme="cyborg"] .nav-tabs,
+bade[data-theme="cyborg"] .nav-tabs,
 body.cyborg .nav-tabs {
   border-bottom: 1px solid #345274;
 }
-body[data-theme="cyborg"] .tcp-out pre, body[data-theme="cyborg"] .tcp-in pre,
+bade[data-theme="cyborg"] .tcp-out pre, bade[data-theme="cyborg"] .tcp-in pre,
 body.cyborg .tcp-out pre,
 body.cyborg .tcp-in pre {
   background-color: #434343;
 }
-body[data-theme="cyborg"] #recent_analysis,
+bade[data-theme="cyborg"] #recent_analysis,
 body.cyborg #recent_analysis {
   border: 1px solid #151D1F;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container,
 body.cyborg #recent_analysis div.nav_container {
   margin-top: 0px;
   margin-bottom: 10px !important;
   padding-top: 0px;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent .badge-default,
+bade[data-theme="cyborg"] #recent_analysis table#recent .badge-default,
 body.cyborg #recent_analysis table#recent .badge-default {
   background-color: #417a4b;
   color: #efefef;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent a,
+bade[data-theme="cyborg"] #recent_analysis table#recent a,
 body.cyborg #recent_analysis table#recent a {
   color: #9aa9a9;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent td:first-child,
+bade[data-theme="cyborg"] #recent_analysis table#recent td:first-child,
 body.cyborg #recent_analysis table#recent td:first-child {
   color: #859292;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(2),
+bade[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(2),
 body.cyborg #recent_analysis table#recent td:nth-child(2) {
   color: white !important;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(2) a,
+bade[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(2) a,
 body.cyborg #recent_analysis table#recent td:nth-child(2) a {
   color: #e3e3e3 !important;
 }
-body[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(3),
+bade[data-theme="cyborg"] #recent_analysis table#recent td:nth-child(3),
 body.cyborg #recent_analysis table#recent td:nth-child(3) {
   font-size: 12px;
   font-weight: normal;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container,
 body.cyborg #recent_analysis div.nav_container {
   border-bottom: 1px solid #182932;
   background: #172d38;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container > div#item.active,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container > div#item.active,
 body.cyborg #recent_analysis div.nav_container > div#item.active {
   color: #555;
   background-color: #364f5c;
   border: 1px solid #000000;
   border-radius: 0px;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container > div.active > a:hover, body[data-theme="cyborg"] div.nav_container > div.active > a:focus,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container > div.active > a:hover, bade[data-theme="cyborg"] div.nav_container > div.active > a:focus,
 body.cyborg #recent_analysis div.nav_container > div.active > a:hover,
 body.cyborg div.nav_container > div.active > a:focus {
   background-color: #293c46 !important;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container > div#item > a,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container > div#item > a,
 body.cyborg #recent_analysis div.nav_container > div#item > a {
   color: white;
   cursor: pointer;
 }
-body[data-theme="cyborg"] #recent_analysis div.nav_container > div#item > a:hover,
+bade[data-theme="cyborg"] #recent_analysis div.nav_container > div#item > a:hover,
 body.cyborg #recent_analysis div.nav_container > div#item > a:hover {
   background-color: #364f5c !important;
 }
-body[data-theme="cyborg"] #recent_analysis #no_more_results,
+bade[data-theme="cyborg"] #recent_analysis #no_more_results,
 body.cyborg #recent_analysis #no_more_results {
   padding: 30px;
 }
-body[data-theme="cyborg"] div.loading,
+bade[data-theme="cyborg"] div.loading,
 body.cyborg div.loading {
   border-color: grey;
 }
-body[data-theme="cyborg"] div.loading .spinner > div,
+bade[data-theme="cyborg"] div.loading .spinner > div,
 body.cyborg div.loading .spinner > div {
   background-color: dimgrey;
 }
-body[data-theme="cyborg"] .nav-pills > li.active > a, body[data-theme="cyborg"] .nav-pills > li.active > a:focus, body[data-theme="cyborg"] .nav-pills > li.active > a:hover,
+bade[data-theme="cyborg"] .nav-pills > li.active > a, bade[data-theme="cyborg"] .nav-pills > li.active > a:focus, bade[data-theme="cyborg"] .nav-pills > li.active > a:hover,
 body.cyborg .nav-pills > li.active > a,
 body.cyborg .nav-pills > li.active > a:focus,
 body.cyborg .nav-pills > li.active > a:hover {
   color: inherit;
   background-color: #375a7f;
 }
-body[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a, body[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a:focus, body[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a:hover,
+bade[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a, bade[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a:focus, bade[data-theme="cyborg"] .navbar-inverse .navbar-nav > .open > a:hover,
 body.cyborg .navbar-inverse .navbar-nav > .open > a,
 body.cyborg .navbar-inverse .navbar-nav > .open > a:focus,
 body.cyborg .navbar-inverse .navbar-nav > .open > a:hover {
   color: #fff;
   background-color: inherit;
 }
-body[data-theme="cyborg"] .tab-behaviour_summary ul li ul li,
+bade[data-theme="cyborg"] .tab-behaviour_summary ul li ul li,
 body.cyborg .tab-behaviour_summary ul li ul li {
   padding-top: 0px !important;
 }
-body[data-theme="cyborg"] div#network_dns_wrapper,
+bade[data-theme="cyborg"] div#network_dns_wrapper,
 body.cyborg div#network_dns_wrapper {
   background-color: #0d1b21;
 }
-body[data-theme="cyborg"] img.opaque,
+bade[data-theme="cyborg"] img.opaque,
 body.cyborg img.opaque {
   opacity: 0.8;
 }
-body[data-theme="cyborg"] .jstree-grid-header-regular,
+bade[data-theme="cyborg"] .jstree-grid-header-regular,
 body.cyborg .jstree-grid-header-regular {
   background-color: #0d1b21 !important;
   margin-bottom: 21px !important;
 }
-body[data-theme="cyborg"] .jstree-grid-separator-regular,
+bade[data-theme="cyborg"] .jstree-grid-separator-regular,
 body.cyborg .jstree-grid-separator-regular {
   border-color: #313131 !important;
 }
-body[data-theme="cyborg"] .jstree-default .jstree-hovered,
+bade[data-theme="cyborg"] .jstree-default .jstree-hovered,
 body.cyborg .jstree-default .jstree-hovered {
   box-shadow: none !important;
 }
-body[data-theme="cyborg"] .jstree-grid-cell,
+bade[data-theme="cyborg"] .jstree-grid-cell,
 body.cyborg .jstree-grid-cell {
   padding-right: 20px !important;
 }
-body[data-theme="cyborg"] .jstree-default-dark,
+bade[data-theme="cyborg"] .jstree-default-dark,
 body.cyborg .jstree-default-dark {
   background: transparent !important;
 }
-body[data-theme="cyborg"] .jstree-default-dark .jstree-clicked, body[data-theme="cyborg"] .jstree-default-dark .jstree-checked,
+bade[data-theme="cyborg"] .jstree-default-dark .jstree-clicked, bade[data-theme="cyborg"] .jstree-default-dark .jstree-checked,
 body.cyborg .jstree-default-dark .jstree-clicked,
 body.cyborg .jstree-default-dark .jstree-checked {
   color: #e0e0e0 !important;
 }
-body[data-theme="cyborg"] .jstree-anchor,
+bade[data-theme="cyborg"] .jstree-anchor,
 body.cyborg .jstree-anchor {
   color: #9c9c9c !important;
 }
-body[data-theme="cyborg"] li[aria-expanded] > a.jstree-anchor,
+bade[data-theme="cyborg"] li[aria-expanded] > a.jstree-anchor,
 body.cyborg li[aria-expanded] > a.jstree-anchor {
   color: white;
 }
-body[data-theme="cyborg"] .jstree-default-dark .jstree-clicked, body[data-theme="cyborg"] .jstree-default-dark .jstree-checked,
+bade[data-theme="cyborg"] .jstree-default-dark .jstree-clicked, bade[data-theme="cyborg"] .jstree-default-dark .jstree-checked,
 body.cyborg .jstree-default-dark .jstree-clicked,
 body.cyborg .jstree-default-dark .jstree-checked {
   color: #e8e8e8 !important;
 }
-body[data-theme="cyborg"] .jstree-grid-midwrapper,
+bade[data-theme="cyborg"] .jstree-grid-midwrapper,
 body.cyborg .jstree-grid-midwrapper {
   background: url("/static/images/theme_cyborg/table_bg_22px.png");
   background-position-y: 3px;
 }
-body[data-theme="cyborg"] a[filetree_duplicate=true],
+bade[data-theme="cyborg"] a[filetree_duplicate=true],
 body.cyborg a[filetree_duplicate=true] {
   color: red !important;
 }
-body[data-theme="cyborg"] a.jstree-anchor[filetree_type=container],
+bade[data-theme="cyborg"] a.jstree-anchor[filetree_type=container],
 body.cyborg a.jstree-anchor[filetree_type=container] {
   color: white !important;
 }
-body[data-theme="cyborg"] .jstree-grid-cell,
+bade[data-theme="cyborg"] .jstree-grid-cell,
 body.cyborg .jstree-grid-cell {
   color: #9c9c9c !important;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5) !important;
 }
-body[data-theme="cyborg"] .calltable tr span.gray, body[data-theme="cyborg"] .calltable tr strong,
+bade[data-theme="cyborg"] .calltable tr span.gray, bade[data-theme="cyborg"] .calltable tr strong,
 body.cyborg .calltable tr span.gray,
 body.cyborg .calltable tr strong {
   color: #0ce3ac;
 }
-body[data-theme="cyborg"] table > tbody > tr:nth-child(even),
+bade[data-theme="cyborg"] table > tbody > tr:nth-child(even),
 body.cyborg table > tbody > tr:nth-child(even) {
   background-color: #0b1d21;
 }
-body[data-theme="cyborg"] .network_http_request > .panel,
+bade[data-theme="cyborg"] .network_http_request > .panel,
 body.cyborg .network_http_request > .panel {
   background-color: #152d3d;
 }
-body[data-theme="cyborg"] .network_http_request > .panel > .panel-heading,
+bade[data-theme="cyborg"] .network_http_request > .panel > .panel-heading,
 body.cyborg .network_http_request > .panel > .panel-heading {
   background: #152d3d;
 }
-body[data-theme="cyborg"] .network_http_request,
+bade[data-theme="cyborg"] .network_http_request,
 body.cyborg .network_http_request {
   border: 1px solid #0f2b45;
 }
-body[data-theme="cyborg"] .analysis_menu-usermenu ul li a,
+bade[data-theme="cyborg"] .analysis_menu-usermenu ul li a,
 body.cyborg .analysis_menu-usermenu ul li a {
   color: #b6d7fc;
 }
-body[data-theme="cyborg"] .btn-success,
+bade[data-theme="cyborg"] .btn-success,
 body.cyborg .btn-success {
   color: #fff !important;
   background-color: #008664 !important;
   border-color: #005741 !important;
 }
-body[data-theme="cyborg"] .btn-default,
+bade[data-theme="cyborg"] .btn-default,
 body.cyborg .btn-default {
   background-color: #152d3d !important;
   border-color: #162c56 !important;
   color: #e8e8e8 !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container > .main-svg,
+bade[data-theme="cyborg"] .plotly > .svg-container > .main-svg,
 body.cyborg .plotly > .svg-container > .main-svg {
   background: rgba(255, 255, 255, 0) !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container g.subplot > rect,
+bade[data-theme="cyborg"] .plotly > .svg-container g.subplot > rect,
 body.cyborg .plotly > .svg-container g.subplot > rect {
   fill: rgba(255, 255, 255, 0) !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container text,
+bade[data-theme="cyborg"] .plotly > .svg-container text,
 body.cyborg .plotly > .svg-container text {
   fill: white !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container path.xgrid, body[data-theme="cyborg"] .plotly > .svg-container path.ygrid,
+bade[data-theme="cyborg"] .plotly > .svg-container path.xgrid, bade[data-theme="cyborg"] .plotly > .svg-container path.ygrid,
 body.cyborg .plotly > .svg-container path.xgrid,
 body.cyborg .plotly > .svg-container path.ygrid {
   stroke: #535353 !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container g.legend > rect.bg,
+bade[data-theme="cyborg"] .plotly > .svg-container g.legend > rect.bg,
 body.cyborg .plotly > .svg-container g.legend > rect.bg {
   fill: rgba(255, 255, 255, 0) !important;
 }
-body[data-theme="cyborg"] .plotly > .svg-container rect.drag,
+bade[data-theme="cyborg"] .plotly > .svg-container rect.drag,
 body.cyborg .plotly > .svg-container rect.drag {
   pointer-events: none !important;
 }
-body[data-theme="cyborg"] .cuckoo-errors .errors > li,
+bade[data-theme="cyborg"] .cuckoo-errors .errors > li,
 body.cyborg .cuckoo-errors .errors > li {
   border-bottom: 1px solid #0f2b45;
 }

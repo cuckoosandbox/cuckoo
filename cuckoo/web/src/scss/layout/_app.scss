@@ -1,5 +1,5 @@
 /* 
-   Copyright (C) 2016 Cuckoo Foundation.
+   Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
@@ -120,4 +120,73 @@ body[id="analysis/import"] {
         display: block;
     }
     
+}
+
+// feedback modal
+#modal_feedback {
+
+    .panel-footer {
+
+        margin-bottom: -14px;
+
+        .btn-close {
+            float: left;
+            margin-right: 10px;
+        }
+
+        .btn-success {
+            float: right;
+            margin-left: 10px;
+        }
+
+        span {
+            display: block;
+            text-align: center;
+            padding: 0 5px;
+            color: grey;
+        }
+
+    }    
+
+}
+
+// custom select
+.custom-select {
+
+    display: inline-block;
+
+    select {
+        -webkit-appearance: none;
+        background-color: transparent;
+        border: 0;
+        padding: 0 5px 0 10px;
+        text-align: center;
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    & > span {
+        display: inline-block;
+    }
+
+    &:after {
+        @extend .fa;
+        content: "\f0d7";
+        display: inline-block;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    @include cuckoo-theme('night') {
+        select { background-color: transparent; }
+    }
+
+    @include cuckoo-theme('cyborg') {
+        select { background-color: transparent; }
+    }
+
 }

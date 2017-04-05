@@ -31,7 +31,7 @@ body[id^="submission/"] { padding-top: 50px; }
 body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],
-body[id^="analysis"]:not(#analysis.views.pending) {
+body[id^="analysis"]:not([id="#analysis.views.pending"]) {
 	footer:not(.flex-grid__footer), 
 	#footer-extra {
 		display: none;
