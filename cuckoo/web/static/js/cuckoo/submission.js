@@ -640,6 +640,11 @@ function createSelectable(item, name, text) {
 	_$l.setAttribute('data-index', item.filetree.index);
 	_$c.setAttribute('value', item.filetree.index);
 
+	// deselect duplicates if they're selected.
+	if (item.duplicate) {
+		item.selected = false;
+	}
+
 	if (item.selected) {
 		_$c.setAttribute('checked', true);
 	}
@@ -1023,10 +1028,7 @@ var FileTree = function () {
 			this.selectionView();
 
 			this.each(function (item) {
-
-				console.log(item);
-
-				if (item.selected && item.parent) {
+				if (item.parent) {
 					parentSelectedState(item, item.selected);
 				}
 			});
