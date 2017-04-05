@@ -1023,6 +1023,9 @@ var FileTree = function () {
 			this.selectionView();
 
 			this.each(function (item) {
+
+				console.log(item);
+
 				if (item.selected && item.parent) {
 					parentSelectedState(item, item.selected);
 				}
