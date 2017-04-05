@@ -27,7 +27,6 @@ from cuckoo.misc import cwd
 from cuckoo.web.bin.utils import (
     api_post, api_get, file_response, json_error_response, json_fatal_response
 )
-from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 db = Database()
 
@@ -451,8 +450,7 @@ class AnalysisApi(object):
                 email=body.get("email"),
                 message=body.get("message"),
                 json_report=body.get("include_analysis", False),
-                memdump=body.get("include_memdump", False),
-                automated=False
+                memdump=body.get("include_memdump", False)
             )
         except CuckooFeedbackError as e:
             return json_error_response(str(e))
