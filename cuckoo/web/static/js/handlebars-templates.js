@@ -232,7 +232,7 @@ this["HANDLEBARS_TEMPLATES"]["dashboard-table"] = Handlebars.template({"1":funct
     + "</td>\n                <td>"
     + alias3(((helper = (helper = helpers.added_on || (depth0 != null ? depth0.added_on : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"added_on","hash":{},"data":data}) : helper)))
     + "</td>\n                <td>"
-    + alias3(((helper = (helper = helpers.filename_url || (depth0 != null ? depth0.filename_url : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"filename_url","hash":{},"data":data}) : helper)))
+    + alias3(((helper = (helper = helpers.target || (depth0 != null ? depth0.target : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"target","hash":{},"data":data}) : helper)))
     + "</td>\n                <td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
     + "</td>\n                <td><span class=\"badge\">"

@@ -101,7 +101,7 @@
 
     <div class="flex-grid__column" id="dashboard-tables">
 
-        <h2 class="dashboard__col-title">Recent processes</h2>
+        <h2 class="dashboard__col-title">Recent analyses</h2>
 
         <!-- recent analyses -->
         <div class="dashboard-module__lg" data-dashboard-module="processes">
@@ -119,7 +119,7 @@
                             <select data-select="limit">
                                 <option value="1">1</option>
                                 <option value="2">2</option>
-                                <option value="3">3</option>
+                                <option value="3" selected="selected">3</option>
                                 <option value="5">5</option>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
@@ -133,15 +133,16 @@
             </header>
             <section class="dashboard-module__body">
                 <div class="dashboard-module__body--left" data-populate="dashboard-table-recent">
-                    
                 </div>
+
+                <!--
                 <div class="dashboard-module__body--right" data-populate="dashboard-table-pending">
-                    
                 </div>
+                -->
             </section>
 
             <footer class="dashboard-module__footer">
-                <p><a href="/analysis/">Show all recent processes</a></p>
+                <p><a href="/analysis/">Show all recent analyses</a></p>
             </footer>
 
         </div>
