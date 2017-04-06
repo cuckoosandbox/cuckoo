@@ -8,7 +8,7 @@ import logging
 import time
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -929,10 +929,12 @@ class VolatilityManager(object):
                 self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
-        if self.voptions.basic.guest_profile:
+        if osprofile:
+            self.osprofile = osprofile
+        elif self.voptions.basic.guest_profile:
             self.osprofile = self.voptions.basic.guest_profile
         else:
-            self.osprofile = osprofile or self.get_osprofile()
+            self.osprofile = self.get_osprofile()
 
     def get_osprofile(self):
         """Get the OS profile"""
@@ -1020,12 +1022,16 @@ class Memory(Processing):
         @return: volatility results dict.
         """
         self.key = "memory"
+        task_machine = self.task.get("guest", {}).get("name", "")
+        machine_manager = self.task.get("guest", {}).get("manager", "").lower()
 
         results = {}
         if HAVE_VOLATILITY:
             if self.memory_path and os.path.exists(self.memory_path):
                 try:
-                    results = VolatilityManager(self.memory_path).run()
+                    #Check if theres a memory profile configured in the machinery config.
+                    profile = config("%s:%s:mem_profile" % (machine_manager, task_machine))
+                    results = VolatilityManager(self.memory_path, profile).run()
                 except Exception:
                     log.exception("Generic error executing volatility")
             else:
