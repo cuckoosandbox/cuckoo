@@ -12,15 +12,13 @@
 			"handlebars/handlebars.js",
 			"string/dist/string.js",
 			"moment/moment.js",
-			"chart.js/dist/Chart.js",
-			"lightbox2/dist/lightbox.js"
+			"chart.js/dist/Chart.js"
 		],
 		"css/vendor.css@concat": [
 			"font-roboto/dist/styles/roboto.css",
 			"bootstrap/dist/css/bootstrap.css",
 			"highlight/src/styles/default.css",
-			"datatables/media/src/dataTables.bootstrap.css",
-			"lightbox2/dist/css/lightbox.css"
+			"datatables/media/src/dataTables.bootstrap.css"
 		],
 		"fonts@copy": [
 			"font-awesome/fonts/*",

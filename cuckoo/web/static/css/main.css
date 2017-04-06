@@ -7986,7 +7986,7 @@ body.night .dashboard table.simple tr:nth-child(even) {
 }
 
 .jstree-grid-midwrapper {
-  background: url("/static/img/theme_default/table_bg_22px.png");
+  background: url("/static/images/theme_default/table_bg_22px.png");
   background-position-y: 2px;
 }
 
