@@ -1,7 +1,7 @@
 ![Cuckoo](http://cuckoosandbox.org/graphic/cuckoo.png)
 
-In three words, [Cuckoo Sandbox](http://www.cuckoosandbox.org) is a malware
-analysis system.
+[Cuckoo Sandbox](http://www.cuckoosandbox.org) is the leading open source
+automated malware analysis system.
 
 What does that mean? It simply means that you can throw any suspicious file at
 it and in a matter of seconds Cuckoo will provide you back some detailed
@@ -14,6 +14,20 @@ If you want to contribute to development, please read
 check our Issues and Pull Requests and that you join our IRC channel.
 
 <hr />
+
+This branch represents the new **cuckoo package**. Its setup instructions may
+be found [in](https://cuckoo.sh/docs/installation/host/requirements.html)
+[our](https://cuckoo.sh/docs/development/package.html)
+[documentation](https://cuckoo.sh/docs/index.html).
+
+We also feature a
+[legacy](https://github.com/cuckoosandbox/cuckoo/tree/legacy) branch where
+the code is laid out as you have known for the last years up until the
+**2.0.0** release. In the foreseeable future we'll allow our users to do pull
+requests against the legacy branch and in return we'll help out with merging
+to the new master branch. In other words, if you care to see your custom
+functionality still present after upgrading to the latest version of Cuckoo,
+we suggest to start on those pull requests.
 
 This is a development version, we do not recommend its use in production.
 
