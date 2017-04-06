@@ -10,6 +10,7 @@ from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
+from bson.objectid import ObjectId
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -245,6 +246,14 @@ class MongoDB(Report):
                 procmon.append(self.db.procmon.insert(chunk))
 
             report["procmon"] = procmon
-
+            
+        # remove previous report
+        analyses = self.db.analysis.find({"info.id": report.get("info").get("id")})
+        for analysis in analyses:
+            # Delete calls.
+            for process in analysis.get("behavior", {}).get("processes", []):
+                for call in process["calls"]:
+                    self.db.calls.remove({"_id": ObjectId(call)})
+            self.db.analysis.remove({"_id": ObjectId(analysis["_id"])})
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
