@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,8 +16,7 @@ log = logging.getLogger(__name__)
 class Irma(Processing):
     """Gets antivirus signatures from IRMA for various results.
 
-    Currently obtains IRMA results for the target sample or URL and the
-    dropped files.
+    Currently obtains IRMA results for the target sample.
     """
     # IRMA statuses https://github.com/quarkslab/irma-cli/blob/master/irma/apiclient.py
     IRMA_FINISHED_STATUS = 50
@@ -99,6 +98,11 @@ class Irma(Processing):
         """
         self.key = "irma"
 
+        """ Fall off if we don't deal with files """
+        if self.results.get("info", {}).get("category") != "file":
+            log.debug("IRMA supports only file scanning !")
+            return {}
+
         self.url = self.options.get("url")
         self.timeout = int(self.options.get("timeout", 60))
         self.scan = int(self.options.get("scan", 0))
@@ -108,9 +112,23 @@ class Irma(Processing):
 
         results = self._get_results(sha256)
 
-        if self.force or (not results and self.scan):
+        if not self.force and not self.scan and not results:
+            return {}
+        elif self.force or (not results and self.scan):
             log.info("File scan requested: %s", sha256)
             self._scan_file(self.file_path, self.force)
-            return self._get_results(sha256) or {}
+            results = self._get_results(sha256) or {}
+
+        """ FIXME! could use a proper fix here
+        that probably needs changes on IRMA side aswell
+        --
+        related to  https://github.com/elastic/elasticsearch/issues/15377
+        entropy value is sometimes 0 and sometimes like  0.10191042566270775
+        other issue is that results type changes between string and object :/
+        """
+        for idx, result in enumerate(results["probe_results"]):
+            if result["name"] == "PE Static Analyzer":
+                log.debug("Ignoring PE results at index {0}".format(idx))
+                results["probe_results"][idx]["results"] = "... scrapped ..."
 
         return results
