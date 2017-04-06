@@ -272,10 +272,16 @@ var DashboardTable = function () {
                 }),
                 success: function success(response) {
 
-                    response = response.map(function (item) {
-                        if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-                        return item;
-                    });
+                    if (response.tasks && $.isArray(response.tasks)) {
+
+                        response = response.tasks.map(function (item) {
+                            if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                            return item;
+                        });
+                    } else {
+
+                        response = [];
+                    }
 
                     _this.afterLoad(response);
                 }
@@ -499,6 +505,17 @@ $(function () {
             var disk_space = createChart(data.data.diskspace.analyses);
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
+        });
+    }
+});
+
+// focus fix on analysis page
+$(function () {
+
+    if ($("body#analysis").length) {
+        $(".cuckoo-analysis").focus();
+        $("#analysis-nav, #primary-nav").bind('click', function () {
+            $(".cuckoo-analysis").focus();
         });
     }
 });

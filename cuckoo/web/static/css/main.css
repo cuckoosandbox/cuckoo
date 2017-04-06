@@ -3128,6 +3128,10 @@ body[id^="analysis"]:not([id="#analysis.views.pending"]) #footer-extra {
   display: none;
 }
 
+body#analysis {
+  overflow: hidden;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
@@ -3864,6 +3868,10 @@ body.cyborg .button, body.cyborg .button--lg {
 .cuckoo-analysis {
   font-family: "Roboto";
   background-color: #fafafa;
+  margin-top: 20px;
+}
+.cuckoo-analysis:focus {
+  outline: none;
 }
 .cuckoo-analysis > .container-fluid {
   padding: 0 25px;

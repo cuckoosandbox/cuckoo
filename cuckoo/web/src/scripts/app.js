@@ -255,10 +255,18 @@ class DashboardTable {
             }),
             success: function(response) {
 
-                response = response.map(function(item) {
-                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-                    return item;
-                });
+            	if(response.tasks && $.isArray(response.tasks)) {
+
+            		response = response.tasks.map(function(item) {
+	                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+	                    return item;
+	                });
+
+            	} else {
+
+            		response = [];
+
+            	}
 
                 _this.afterLoad(response);
             }
