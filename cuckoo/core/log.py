@@ -46,7 +46,7 @@ class TaskHandler(logging.Handler):
             return
 
         with open(cwd("cuckoo.log", analysis=task_id), "a+b") as f:
-            f.write("%s\n" % self.format(record))
+            f.write("%s\n" % self.format(record).encode("utf-8"))
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
