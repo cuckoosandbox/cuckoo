@@ -229,7 +229,7 @@ def file(request, category, object_id, fetch="fetch"):
 
         response = HttpResponse(file_item.read(), content_type=content_type)
 
-        if fetch is not "nofetch":
+        if fetch != "nofetch":
             response["Content-Disposition"] = "attachment; filename=%s" % file_name
 
         return response
