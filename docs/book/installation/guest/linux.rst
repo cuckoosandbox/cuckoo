@@ -6,7 +6,7 @@ Install dependencies on host::
     $ sudo apt-get install uml-utilities bridge-utils
 
 Sparc and PowerPC dependencies::
-    $ sudo apt-get install openbios-spark openbios-ppc
+    $ sudo apt-get install openbios-spark openbios-ppc qemu-slof
 
 Preconfigure network tap interfaces on host, required to avoid have to start as root::
     Get list of virtual machines to configure interface per vm from conf/qemu.conf
