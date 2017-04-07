@@ -61,7 +61,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}",
             "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
             "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
-            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
         ],
         "params": {
             "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
@@ -73,7 +73,7 @@ QEMU_ARGS = {
             "-kernel", "{kernel}", "-initrd", "{initrd}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1",
-            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
         ],
         "params": {
             "memory": "256M",  # 512 didn't work for some reason
@@ -85,7 +85,7 @@ QEMU_ARGS = {
         "cmdline": [
             "qemu-system-x86_64", "-display", "none", "-m", "{memory}",
             "-hda", "{snapshot_path}",
-            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
         ],
         "params": {
             "memory": "1024M",
@@ -95,10 +95,45 @@ QEMU_ARGS = {
         "cmdline": [
             "qemu-system-i386", "-display", "none", "-m", "{memory}",
             "-hda", "{snapshot_path}",
-            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",  # this by default needs /etc/qemu-ifup to add the tap to the bridge, slightly awkward
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
         ],
         "params": {
             "memory": "1024M",
+        }
+    },
+    "powerpc": {
+        "cmdline": [
+            "qemu-system-ppc", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+        ],
+        "params": {
+            "memory": "256M",
+        }
+    },
+    "powerpc64": {
+        "cmdline": [
+            "qemu-system-ppc64", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+        ],
+        "params": {
+            "memory": "512M",
+        }
+    },
+    "sh4": {
+        "cmdline": [
+            "qemu-system-sh4", "-display", "none", "-M", "r2d", "-m", "{memory}",
+            "-kernel", "{kernel}", "-initrd", "{initrd}",
+            "-hda", "{snapshot_path}",
+            "-append", "root=/dev/sda1 noiotrap",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
+            "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+        ],
+        "params": {
+            "memory": "64M",
+            "kernel": "{imagepath}/vmlinuz-2.6.32-5-sh7751r",
+            "initrd": "{imagepath}/initrd.img-2.6.32-5-sh7751r",
         }
     },
 }
