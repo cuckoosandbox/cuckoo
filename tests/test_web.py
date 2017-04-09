@@ -13,6 +13,7 @@ import tempfile
 import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError
+from cuckoo.common.files import temppath
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.feedback import CuckooFeedback
@@ -20,7 +21,6 @@ from cuckoo.core.submit import SubmitManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
-from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
 
@@ -736,6 +736,22 @@ class TestMongoInteraction(object):
             assert self.req(client, packs="exe").status_code == 501
             assert self.req(client, packs=["doc", 1]).status_code == 501
             assert self.req(client, packs=["xls", "doc"]).status_code == 200
+
+class TestApiEndpoints(object):
+    @mock.patch("os.unlink")
+    def test_status(self, p, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "moloch": {
+                    "enabled": True,
+                },
+            },
+        })
+        db.connect()
+        r = client.get("/cuckoo/api/status/")
+        assert r.status_code == 200
+        assert p.call_args_list[0][0][0].startswith(temppath())
 
 class TestMoloch(object):
     def test_disabled(self, client):

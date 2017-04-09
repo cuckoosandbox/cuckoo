@@ -122,6 +122,26 @@ class TestSubmitManager(object):
             "route": "internet",
         }
 
+    def test_submit_url2(self):
+        assert self.submit_manager.pre(
+            "strings", ["http://google.com"]
+        ) == 1
+        config = json.load(open("tests/files/submit/url2.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target == "http://google.com"
+        assert t.package == "ie"
+        assert t.timeout == 120
+        assert t.category == "url"
+        assert t.status == "pending"
+        assert not t.enforce_timeout
+        assert not t.memory
+        assert not t.machine
+        assert t.options == {
+            "procmemdump": "yes",
+            "route": "vpn0",
+        }
+
     def test_submit_file1(self):
         assert self.submit_manager.pre("files", [{
             "name": "icardres.dll",
