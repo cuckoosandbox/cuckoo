@@ -136,6 +136,28 @@ QEMU_ARGS = {
             "initrd": "{imagepath}/initrd.img-2.6.32-5-sh7751r",
         }
     },
+    "sparc": {
+        "cmdline": [
+            "qemu-system-sparc", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
+            "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+        ],
+        "params": {
+            "memory": "256M",
+        }
+    },
+    "sparc64": {
+        "cmdline": [
+            "qemu-system-sparc64", "-display", "none", "-m", "{memory}",
+            "-hda", "{snapshot_path}",
+            "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
+            "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+        ],
+        "params": {
+            "memory": "256M",
+        }
+    },
 }
 
 class QEMU(Machinery):
