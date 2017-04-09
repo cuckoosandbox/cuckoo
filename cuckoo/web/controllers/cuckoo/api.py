@@ -25,12 +25,12 @@ class CuckooApi:
         """
         # In order to keep track of the diskspace statistics of the temporary
         # directory we create a temporary file so we can statvfs() on that.
-        temp_file = Files.temp_put("", "status")
+        temp_file = Files.temp_put("")
 
         paths = dict(
-            binaries=os.path.join(cwd(), "storage", "binaries"),
-            analyses=os.path.join(cwd(), "storage", "analyses"),
-            temporary=temp_file,
+            binaries=cwd("storage", "binaries"),
+            analyses=cwd("storage", "analyses"),
+            temporary=os.path.dirname(temp_file),
         )
 
         diskspace = {}
@@ -45,7 +45,6 @@ class CuckooApi:
 
         # Now we remove the temporary file and its parent directory.
         os.unlink(temp_file)
-        os.rmdir(os.path.dirname(temp_file))
 
         # Get the CPU load.
         if hasattr(os, "getloadavg"):
