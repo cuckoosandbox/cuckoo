@@ -65,7 +65,11 @@ class SubmitManager(object):
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
 
-        if entry.get("network-routing"):
+        # VPN takes precedence over the network-routing option (this should
+        # actually be resolved in the frontend, though).
+        if entry.get("vpn"):
+            ret["route"] = entry["vpn"]
+        elif entry.get("network-routing"):
             ret["route"] = entry["network-routing"]
 
         return ret

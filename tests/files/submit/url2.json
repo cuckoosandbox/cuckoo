@@ -1,0 +1,71 @@
+{
+    "file_selection": [
+        {
+            "changed_properties": [
+                "package"
+            ],
+            "duplicate": false,
+            "extrpath": [],
+            "filename": "http://google.com",
+            "filepath": "",
+            "finger": {
+                "magic": "url",
+                "magic_human": "url"
+            },
+            "mime": "text/html",
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [
+                    {
+                        "name": "vpn0",
+                        "value": "vpn0"
+                    }
+                ],
+                "machine": "",
+                "network-routing": "none",
+                "options": {
+                    "enable-injection": true,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "process-memory-dump": true,
+                    "simulated-human-interaction": true
+                },
+                "package": "ie",
+                "priority": 2,
+                "routing": "none",
+                "timeout": 120,
+                "vpn": "vpn0"
+            },
+            "package": "ie",
+            "relapath": "",
+            "selected": true,
+            "size": 0,
+            "type": "url"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "none",
+        "options": {
+            "enable-injection": true,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": "vpn0"
+    },
+    "submit_id": 7
+}
