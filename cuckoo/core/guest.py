@@ -339,7 +339,7 @@ class GuestManager(object):
         directory in the systemdrive, i.e., C:\\."""
         if self.platform == "windows":
             systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
-        elif self.platform in ("linux", "darwin"):
+        elif self.platform == "linux" or self.platform == "darwin"::
             systemdrive = self.environ["HOME"]
 
         options = parse_options(self.options["options"])
@@ -463,15 +463,14 @@ class GuestManager(object):
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
-
             if self.platform in ("linux", "darwin"):
-                temp = "/tmp"
+                tempdir = "/tmp"
             else:
-                temp = self.environ["TEMP"]
+                tempdir = self.environ["TEMP"]
 
             data = {
                 "filepath": os.path.join(
-                    temp, options["file_name"]
+                    tempdir, options["file_name"]
                 ),
             }
             files = {
