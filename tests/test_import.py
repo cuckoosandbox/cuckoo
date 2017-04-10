@@ -5,7 +5,6 @@
 import logging
 import mock
 import os
-import pytest
 import shutil
 import tempfile
 
@@ -348,6 +347,9 @@ def test_dumpcmd():
     )
     assert dumpcmd("mysql://foo:bar@localh0st/baz", "/tmp") == (
         ["mysqldump", "-u", "foo", "-pbar", "-h", "localh0st", "baz"], {}
+    )
+    assert dumpcmd("mysql://cuckoo:random!@localhost/cuckoo", "/tmp") == (
+        ["mysqldump", "-u", "cuckoo", "-prandom!", "cuckoo"], {}
     )
     assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
         ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
