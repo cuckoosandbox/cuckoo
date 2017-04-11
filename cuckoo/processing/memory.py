@@ -8,7 +8,7 @@ import logging
 import time
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -915,24 +915,16 @@ class VolatilityManager(object):
         self.taint_pid = set()
         self.memfile = memfile
 
-        conf_path = cwd("conf", "memory.conf")
-        if not os.path.exists(conf_path):
-            log.error("Configuration file %s not found", conf_path)
-            self.voptions = False
-            return
-
-        self.voptions = Config("memory")
-
-        for pid in self.voptions.mask.pid_generic.split(","):
-            pid = pid.strip()
-            if pid:
+        for pid in config("memory:mask:pid_generic"):
+            if pid and pid.isdigit():
                 self.mask_pid.append(int(pid))
 
-        self.no_filter = not self.voptions.mask.enabled
-        if self.voptions.basic.guest_profile:
-            self.osprofile = self.voptions.basic.guest_profile
-        else:
-            self.osprofile = osprofile or self.get_osprofile()
+        self.no_filter = not config("memory:mask:enabled")
+        self.osprofile = (
+            config("memory:basic:guest_profile") or
+            osprofile or
+            self.get_osprofile()
+        )
 
     def get_osprofile(self):
         """Get the OS profile"""
@@ -940,10 +932,6 @@ class VolatilityManager(object):
 
     def run(self):
         results = {}
-
-        # Exit if options were not loaded.
-        if not self.voptions:
-            return
 
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
@@ -963,8 +951,7 @@ class VolatilityManager(object):
                 if profiles:
                     continue
 
-            plugin = self.voptions.get(plugin_name)
-            if not plugin or not plugin.enabled:
+            if not config("memory:%s:enabled" % plugin_name):
                 log.debug("Skipping '%s' volatility module", plugin_name)
                 continue
 
@@ -983,11 +970,11 @@ class VolatilityManager(object):
 
         for akey in old.keys():
             new[akey] = {"config": old[akey]["config"], "data": []}
-            conf = getattr(self.voptions, akey, None)
-            new[akey]["config"]["filter"] = conf.filter
+            do_filter = config("memory:%s:filter" % akey)
+            new[akey]["config"]["filter"] = do_filter
             for item in old[akey]["data"]:
                 # TODO: need to improve this logic.
-                if not conf.filter:
+                if not do_filter:
                     new[akey]["data"].append(item)
                 elif "process_id" in item and \
                         item["process_id"] in self.mask_pid and \
@@ -1006,7 +993,7 @@ class VolatilityManager(object):
     def cleanup(self):
         """Delete the memory dump (if configured to do so)."""
 
-        if self.voptions.basic.delete_memdump:
+        if config("memory:basic:delete_memdump"):
             try:
                 os.remove(self.memfile)
             except OSError:

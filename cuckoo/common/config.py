@@ -484,7 +484,7 @@ class Config(object):
             },
             "mask": {
                 "enabled": Boolean(False),
-                "pid_generic": String(),
+                "pid_generic": List(String, None),
             },
         },
         "physical": {

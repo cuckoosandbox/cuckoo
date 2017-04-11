@@ -576,6 +576,19 @@ def _20c2_200(c):
     for vm in c["qemu"]:
         if "kernel_path" in c["qemu"][vm]:
             c["qemu"][vm]["kernel"] = c["qemu"][vm].pop("kernel_path")
+    if c["qemu"]["qemu"]["machines"] == ["vm1", "vm2"]:
+        c["qemu"]["qemu"]["machines"].append("vm3")
+        c["qemu"]["vm3"] = {
+            "label": "vm3",
+            "image": "/home/rep/vms/qvm_wheezy64_1.qcow2",
+            "arch": "arm",
+            "platform": "linux",
+            "ip": "192.168.55.4",
+            "interface": "qemubr",
+            "tags": "debian_wheezy,arm",
+            "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
+            "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
+        }
     c["reporting"]["elasticsearch"]["hosts"] = cast(
         "reporting:elasticsearch:hosts",
         c["reporting"]["elasticsearch"]["hosts"]
@@ -659,6 +672,12 @@ def _20c2_200(c):
     c["vsphere"]["vsphere"]["unverified_ssl"] = False
     return c
 
+def _200_201(c):
+    c["memory"]["mask"]["pid_generic"] = cast(
+        "memory:mask:pid_generic", c["memory"]["mask"]["pid_generic"]
+    )
+    return c
+
 def _20dev(c):
     return c
 
@@ -674,6 +693,7 @@ migrations = {
     "1.2.0": ("2.0-rc1", _120_20c1),
     "2.0-rc1": ("2.0-rc2", _20c1_20c2),
     "2.0-rc2": ("2.0.0", _20c2_200),
+    "2.0.0": ("2.0.1", _200_201),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.

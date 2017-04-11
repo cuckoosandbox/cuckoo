@@ -1049,6 +1049,17 @@ interface = eth0
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
 
+def test_migration_200_201():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "memory.conf", """
+[mask]
+pid_generic =
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.0", "2.0.1")
+    assert cfg["memory"]["mask"]["pid_generic"] == []
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None
@@ -1138,6 +1149,9 @@ def test_cast():
     assert cast("virtualbox:cuckoo1:options", "") == []
     assert cast("virtualbox:cuckoo1:options", "a b c") == ["a", "b", "c"]
     assert cast("virtualbox:cuckoo1:options", "a, b c") == ["a", "b", "c"]
+
+    assert cast("memory:mask:pid_generic", "") == []
+    assert cast("memory:mask:pid_generic", "1, 2, 3") == ["1", "2", "3"]
 
 def test_list_split():
     set_cwd(tempfile.mkdtemp())
