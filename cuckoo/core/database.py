@@ -69,7 +69,7 @@ class JsonType(TypeDecorator):
     def process_result_value(self, value, dialect):
         return json.loads(value)
 
-class JsonType255(TypeDecorator):
+class JsonTypeList255(TypeDecorator):
     """Custom JSON type."""
     impl = String(255)
 
@@ -77,7 +77,7 @@ class JsonType255(TypeDecorator):
         return json.dumps(value)
 
     def process_result_value(self, value, dialect):
-        return json.loads(value)
+        return json.loads(value) if value else []
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -90,7 +90,7 @@ class Machine(Base):
     platform = Column(String(255), nullable=False)
     tags = relationship("Tag", secondary=machines_tags, single_parent=True,
                         backref="machine")
-    options = Column(JsonType255(), nullable=True)
+    options = Column(JsonTypeList255(), nullable=True)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)

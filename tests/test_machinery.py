@@ -167,6 +167,7 @@ class TestVirtualbox(object):
         self.m.stop = mock.MagicMock()
         p.return_value.returncode = 1
         p.return_value.communicate.return_value = "out", "err"
+
         class machine1(object):
             label = "machine1"
             snapshot = None
@@ -201,6 +202,7 @@ class TestVirtualbox(object):
         self.m._status = mock.MagicMock(return_value="poweroff")
         p.return_value.returncode = 0
         p.return_value.communicate.return_value = "", ""
+
         class machine1(object):
             label = "machine1"
             snapshot = None
@@ -263,7 +265,7 @@ class TestVirtualbox(object):
     def test_start_no_snapshot(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -300,7 +302,7 @@ class TestVirtualbox(object):
     def test_start_with_snapshot(self):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -328,7 +330,7 @@ class TestVirtualbox(object):
     def test_start_restore_currentsnapshot_error(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -352,7 +354,7 @@ class TestVirtualbox(object):
     def test_start_restore_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -375,7 +377,7 @@ class TestVirtualbox(object):
     def test_start_startvm_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -405,7 +407,7 @@ class TestVirtualbox(object):
     def test_start_restore_with_snapshot_error(self):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -606,7 +608,7 @@ class TestBrokenMachine(object):
     def test_missing_snapshot(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -625,8 +627,8 @@ class TestBrokenMachine(object):
 
         p.assert_called_once_with(
             [
-               config("virtualbox:virtualbox:path"),
-               "snapshot", "label", "restorecurrent"
+                config("virtualbox:virtualbox:path"),
+                "snapshot", "label", "restorecurrent"
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
@@ -661,7 +663,7 @@ class TestVirtualboxInitialize(object):
         assert m.label == "cuckoo1"
         assert m.interface == "vboxnet0"
         assert m.ip == "192.168.56.101"
-        assert m.options is None
+        assert m.options == []
         assert m.platform == "windows"
         assert m.resultserver_ip == "127.0.0.1"
         assert m.resultserver_port == 3000
