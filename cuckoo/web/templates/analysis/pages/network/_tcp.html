@@ -9,7 +9,7 @@
                 
                 <ul class="source-destination">
                     <li class="title">TCP Requests</li>
-                    <li class="content">
+                    <li class="content" tabindex="2">
                         <ul>
                              {% for p in report.analysis.network.tcp %}
                                 <li>
@@ -38,7 +38,7 @@
             <div class="network-display__loader">
                 {% include "components/loader.html" %}
             </div>
-            <div class="network-display__outer">
+            <div class="network-display__outer" tabindex="3">
                 <div class="network-display__requests" id="packets"></div>
             </div>
         </div>

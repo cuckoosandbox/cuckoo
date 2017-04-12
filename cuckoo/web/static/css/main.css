@@ -5757,6 +5757,10 @@ table.cuckoo-table .badge.success, table.cuckoo-table__fullscreen .badge.success
   padding: 10px;
   margin-bottom: 30px;
 }
+.network-display__outer:focus {
+  border-color: #C8C8C8;
+  outline: none;
+}
 .scroll-internal .network-display__outer {
   height: 100%;
   overflow-y: auto;
@@ -6206,6 +6210,9 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 .source-destination .content {
   padding: 0;
   border-radius: 0;
+}
+.source-destination .content:focus {
+  outline: none;
 }
 .source-destination li {
   background-color: #fff;

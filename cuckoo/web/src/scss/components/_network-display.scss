@@ -7,6 +7,11 @@
 		padding: 10px;
 		margin-bottom: 30px;
 
+		&:focus {
+			border-color: #C8C8C8;
+			outline: none;
+		}
+
 		.scroll-internal & {
 			height: 100%;
 			overflow-y: auto;
@@ -545,6 +550,10 @@
 	.content {
 		padding: 0;
 		border-radius: 0;
+
+		&:focus {
+			outline: none;
+		}
 	}
 
 	li {
