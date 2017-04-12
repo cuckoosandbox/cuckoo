@@ -4,12 +4,14 @@
 	flex-direction: column;
 
 	width: 100vw;
-	height: -webkit-calc(100vh - 80px);
+	height: calc(100vh - 80px);
 
 	font-family: "Roboto", sans-serif;
 
 	&.include-footer {
 		height: -webkit-calc(100vh - 140px);
+		height: -moz-calc(100vh - 140px);
+		height: calc(100vh - 140px);
 	}
 
 	&__header {
