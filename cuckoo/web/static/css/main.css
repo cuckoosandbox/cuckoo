@@ -4130,7 +4130,7 @@ body.night .cuckoo-analysis__panel.danger > a {
   display: flex;
   position: relative;
   width: 100vw;
-  height: -webkit-calc(100vh - 30px);
+  height: calc(100vh - 30px);
 }
 .flex-nav__nav {
   background-color: #444;

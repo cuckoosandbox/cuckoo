@@ -10,7 +10,7 @@
 	position: relative;
 
 	width: 100vw;
-	height: -webkit-calc(100vh - 30px);
+	height: calc(100vh - 30px);
 
 	&__nav {
 		background-color: #444;
