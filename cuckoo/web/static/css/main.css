@@ -3892,6 +3892,87 @@ body.cyborg .button, body.cyborg .button--lg {
 }
 
 /* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+.flex-nav {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 30px);
+}
+.flex-nav__nav {
+  background-color: #444;
+  overflow: hidden;
+  -ms-flex-preferred-size: 65px;
+      flex-basis: 65px;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  -webkit-box-flex: 0;
+      -ms-flex-positive: 0;
+          flex-grow: 0;
+  -webkit-transition: -webkit-flex-basis 200ms ease-in-out;
+  transition: -webkit-flex-basis 200ms ease-in-out;
+  transition: flex-basis 200ms ease-in-out;
+  transition: flex-basis 200ms ease-in-out, -webkit-flex-basis 200ms ease-in-out, -ms-flex-preferred-size 200ms ease-in-out;
+  overflow-y: auto;
+}
+.flex-nav__nav .cuckoo-nav {
+  -webkit-transition: -webkit-transform 0 linear;
+  transition: -webkit-transform 0 linear;
+  transition: transform 0 linear;
+  transition: transform 0 linear, -webkit-transform 0 linear;
+}
+.flex-nav__nav .cuckoo-nav em, .flex-nav__nav .cuckoo-nav span, .flex-nav__nav .cuckoo-nav button {
+  opacity: 0;
+  -webkit-transition: opacity 100ms linear;
+  transition: opacity 100ms linear;
+}
+.flex-nav__nav.open, .flex-nav__nav.locked, .flex-nav__nav.locked-silent {
+  -ms-flex-preferred-size: 280px;
+      flex-basis: 280px;
+}
+.flex-nav__nav.open .cuckoo-nav em, .flex-nav__nav.open .cuckoo-nav span, .flex-nav__nav.open .cuckoo-nav input, .flex-nav__nav.open .cuckoo-nav button, .flex-nav__nav.locked .cuckoo-nav em, .flex-nav__nav.locked .cuckoo-nav span, .flex-nav__nav.locked .cuckoo-nav input, .flex-nav__nav.locked .cuckoo-nav button, .flex-nav__nav.locked-silent .cuckoo-nav em, .flex-nav__nav.locked-silent .cuckoo-nav span, .flex-nav__nav.locked-silent .cuckoo-nav input, .flex-nav__nav.locked-silent .cuckoo-nav button {
+  opacity: 1;
+}
+.flex-nav__body, .flex-nav__body--disable-overflow {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -ms-flex-preferred-size: 100%;
+      flex-basis: 100%;
+  overflow-y: auto;
+  padding: 15px 0 0 0;
+}
+[id^="analysis"] .flex-nav__body > .container-fluid, [id^="analysis"] .flex-nav__body--disable-overflow > .container-fluid {
+  width: 100%;
+  -ms-flex-preferred-size: 100%;
+      flex-basis: 100%;
+  margin-bottom: 30px;
+}
+.flex-nav__body--disable-overflow {
+  overflow-y: hidden;
+  -ms-flex-preferred-size: 100%;
+      flex-basis: 100%;
+}
+.flex-nav__body--disable-overflow .cuckoo-analysis__header {
+  -ms-flex-preferred-size: 99px;
+      flex-basis: 99px;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  -webkit-box-flex: 0;
+      -ms-flex-positive: 0;
+          flex-grow: 0;
+}
+
+/* 
    Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -3899,6 +3980,8 @@ body.cyborg .button, body.cyborg .button--lg {
 .cuckoo-analysis {
   font-family: "Roboto";
   background-color: #fafafa;
+  margin-top: -20px;
+  padding-top: 80px;
 }
 .cuckoo-analysis:focus {
   outline: none;
@@ -3928,7 +4011,7 @@ body.cyborg .button, body.cyborg .button--lg {
   font-size: 36px;
   color: #555;
   margin: 0;
-  padding-top: 30px;
+  padding-top: 0px;
 }
 body.cyborg .cuckoo-analysis__header > h1 {
   color: #d7d7d7;
@@ -4173,87 +4256,6 @@ body.night .cuckoo-analysis__panel.danger .collapse.in {
 }
 body.night .cuckoo-analysis__panel.danger > a {
   color: #D43237;
-}
-
-/* 
-   Copyright (C) 2016 Cuckoo Foundation.
-   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-   see the file 'docs/LICENSE' for copying permission.
- */
-.flex-nav {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  position: relative;
-  width: 100vw;
-  height: calc(100vh - 30px);
-}
-.flex-nav__nav {
-  background-color: #444;
-  overflow: hidden;
-  -ms-flex-preferred-size: 65px;
-      flex-basis: 65px;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  -webkit-box-flex: 0;
-      -ms-flex-positive: 0;
-          flex-grow: 0;
-  -webkit-transition: -webkit-flex-basis 200ms ease-in-out;
-  transition: -webkit-flex-basis 200ms ease-in-out;
-  transition: flex-basis 200ms ease-in-out;
-  transition: flex-basis 200ms ease-in-out, -webkit-flex-basis 200ms ease-in-out, -ms-flex-preferred-size 200ms ease-in-out;
-  overflow-y: auto;
-}
-.flex-nav__nav .cuckoo-nav {
-  -webkit-transition: -webkit-transform 0 linear;
-  transition: -webkit-transform 0 linear;
-  transition: transform 0 linear;
-  transition: transform 0 linear, -webkit-transform 0 linear;
-}
-.flex-nav__nav .cuckoo-nav em, .flex-nav__nav .cuckoo-nav span, .flex-nav__nav .cuckoo-nav button {
-  opacity: 0;
-  -webkit-transition: opacity 100ms linear;
-  transition: opacity 100ms linear;
-}
-.flex-nav__nav.open, .flex-nav__nav.locked, .flex-nav__nav.locked-silent {
-  -ms-flex-preferred-size: 280px;
-      flex-basis: 280px;
-}
-.flex-nav__nav.open .cuckoo-nav em, .flex-nav__nav.open .cuckoo-nav span, .flex-nav__nav.open .cuckoo-nav input, .flex-nav__nav.open .cuckoo-nav button, .flex-nav__nav.locked .cuckoo-nav em, .flex-nav__nav.locked .cuckoo-nav span, .flex-nav__nav.locked .cuckoo-nav input, .flex-nav__nav.locked .cuckoo-nav button, .flex-nav__nav.locked-silent .cuckoo-nav em, .flex-nav__nav.locked-silent .cuckoo-nav span, .flex-nav__nav.locked-silent .cuckoo-nav input, .flex-nav__nav.locked-silent .cuckoo-nav button {
-  opacity: 1;
-}
-.flex-nav__body, .flex-nav__body--disable-overflow {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
-  overflow-y: auto;
-  padding: 15px 0 0 0;
-}
-[id^="analysis"] .flex-nav__body > .container-fluid, [id^="analysis"] .flex-nav__body--disable-overflow > .container-fluid {
-  width: 100%;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
-  margin-bottom: 30px;
-}
-.flex-nav__body--disable-overflow {
-  overflow-y: hidden;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
-}
-.flex-nav__body--disable-overflow .cuckoo-analysis__header {
-  -ms-flex-preferred-size: 99px;
-      flex-basis: 99px;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  -webkit-box-flex: 0;
-      -ms-flex-positive: 0;
-          flex-grow: 0;
 }
 
 /* 
@@ -5993,6 +5995,11 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right {
   background-color: #fff;
   padding: 15px;
   border-bottom: 1px solid #D8D8D8;
+}
+.network-display__request-details .detail-field__body textarea, .network-display__request-details--single .detail-field__body textarea {
+  font-family: monospace;
+  overflow-x: scroll;
+  width: 100%;
 }
 .network-display__request-details .detail-field__body pre, .network-display__request-details--single .detail-field__body pre {
   padding: 0;

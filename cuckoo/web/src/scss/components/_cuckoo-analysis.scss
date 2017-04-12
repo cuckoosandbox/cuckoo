@@ -8,6 +8,8 @@
 
 	font-family: "Roboto";
 	background-color: #fafafa;
+	margin-top: -20px;
+	padding-top: 80px;
 
 	&:focus {
 		outline: none;
@@ -35,7 +37,7 @@
 			font-size: 36px;
 			color: #555;
 			margin: 0;
-			padding-top: 30px;
+			padding-top: 0px;
 
 			@include cuckoo-theme('cyborg') { color: $cyborg_text_color; }
 			@include cuckoo-theme('night') { color: $night_text_color; }
