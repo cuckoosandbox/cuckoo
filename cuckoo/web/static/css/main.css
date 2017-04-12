@@ -3868,7 +3868,6 @@ body.cyborg .button, body.cyborg .button--lg {
 .cuckoo-analysis {
   font-family: "Roboto";
   background-color: #fafafa;
-  margin-top: 20px;
 }
 .cuckoo-analysis:focus {
   outline: none;
