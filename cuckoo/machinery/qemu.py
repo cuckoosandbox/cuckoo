@@ -227,7 +227,7 @@ class QEMU(Machinery):
 
         # allow some overrides from the vm specific options
         # also do another round of parameter formatting
-        for var in ["mac", "kernel", "initrd"]:
+        for var in ["mac", "kernel", "initrd", "memory"]:
             val = getattr(vm_options, var, params.get(var, None))
             if not val:
                 continue
