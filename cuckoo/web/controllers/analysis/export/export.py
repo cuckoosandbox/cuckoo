@@ -10,8 +10,8 @@ import zipfile
 from django.template.defaultfilters import filesizeformat
 
 from cuckoo.common.utils import json_default
-from cuckoo.web.bin.utils import get_directory_size
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
+from cuckoo.web.utils import get_directory_size
 
 class ExportController:
     """Class for creating task exports"""

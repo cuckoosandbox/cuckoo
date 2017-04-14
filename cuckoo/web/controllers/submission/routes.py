@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
-from cuckoo.web.bin.utils import view_error, render_template, dropped_filepath
+from cuckoo.web.utils import view_error, render_template, dropped_filepath
 
 log = logging.getLogger(__name__)
 submit_manager = SubmitManager()

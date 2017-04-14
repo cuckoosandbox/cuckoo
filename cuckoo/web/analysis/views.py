@@ -24,7 +24,7 @@ from cuckoo.common.elastic import elastic
 from cuckoo.common.mongo import mongo
 from cuckoo.misc import cwd
 from cuckoo.processing import network
-from cuckoo.web.bin.utils import view_error, render_template, normalize_task
+from cuckoo.web.utils import view_error, render_template, normalize_task
 
 results_db = mongo.db
 fs = mongo.grid

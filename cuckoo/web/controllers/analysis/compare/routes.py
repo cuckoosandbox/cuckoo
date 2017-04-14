@@ -1,12 +1,11 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-from django.shortcuts import render
-
-from cuckoo.web.controllers.analysis.compare.compare import AnalysisCompareController
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.controllers.analysis.compare.compare import (
+    AnalysisCompareController
+)
+from cuckoo.web.utils import view_error, render_template
 
 class AnalysisCompareRoutes:
     @staticmethod
