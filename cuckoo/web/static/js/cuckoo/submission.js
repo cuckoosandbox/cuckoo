@@ -2320,6 +2320,7 @@ var SubmissionTaskTable = function () {
 				item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 				item.time_added = moment(item.added_on).format('HH:mm');
 				item.is_ready = item.status == 'reported';
+				item.name = item.guest.name;
 				return item;
 			});
 
