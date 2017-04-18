@@ -447,8 +447,12 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + alias3(((helper = (helper = helpers.time_added || (depth0 != null ? depth0.time_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"time_added","hash":{},"data":data}) : helper)))
     + "\n		</td>\n		<td>"
     + alias3(((helper = (helper = helpers.target || (depth0 != null ? depth0.target : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"target","hash":{},"data":data}) : helper)))
+    + "</td>\n      <td>"
+    + alias3(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"name","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
+    + "</td>\n          <td>"
+    + alias3(((helper = (helper = helpers['route'] || (depth0 != null ? depth0['route'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"route","hash":{},"data":data}) : helper)))
     + "</td>\n		<td><span class=\"status status-"
     + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
     + "\"></span> "
