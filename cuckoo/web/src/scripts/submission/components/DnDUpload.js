@@ -182,7 +182,7 @@ class Uploader {
             if(_self.options.ajax) {
 
                 var event = document.createEvent("HTMLEvents");
-                event.initEvent("submit", true, false);
+                event.initEvent("submit", true, true);
                 _self._selectors["form"].dispatchEvent( event );
                 _self._change_callback(_self, holder);
 
@@ -195,12 +195,11 @@ class Uploader {
         });
 
         // do our own thing when the form is submitted
-        _self._selectors["form"].addEventListener('submit', function(e){
 
-            e.preventDefault();
+        $(_self._selectors["form"]).bind('submit', function(event){
 
             if(_self.options.ajax) {
-                e.preventDefault();
+                event.preventDefault();
                 this._process_files();
             }
 

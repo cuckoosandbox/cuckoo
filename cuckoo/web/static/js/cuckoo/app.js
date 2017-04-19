@@ -426,7 +426,6 @@ $(function () {
                 $(holder).addClass('dropped');
             },
             success: function success(data, holder) {
-
                 setTimeout(function () {
                     window.location.href = data.responseURL;
                 }, 1000);
@@ -439,7 +438,6 @@ $(function () {
         submit_uploader.draw();
 
         // import uploader
-
         var import_uploader = new DnDUpload.Uploader({
             target: 'div#dashboard-import',
             endpoint: '',
