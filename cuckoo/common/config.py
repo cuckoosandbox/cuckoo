@@ -780,6 +780,7 @@ class Config(object):
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
+                "port": String("5354"),
             },
             "tor": {
                 "enabled": Boolean(False),
