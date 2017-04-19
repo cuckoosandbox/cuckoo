@@ -476,7 +476,9 @@ $(function() {
 
             afterRender: function(elements) {
 
-                elements.$recent.find('tr').bind('click', function(e) {
+                elements.$recent.find('tr:not(.less-entries)').addClass('clickable');
+
+                elements.$recent.find('tr:not(.less-entries)').bind('click', function(e) {
                     var id = $(this).find('td:first-child').text();
                     window.location = `/analysis/${id}/summary/`;
                 });
