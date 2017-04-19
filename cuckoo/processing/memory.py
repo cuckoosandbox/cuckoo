@@ -1,14 +1,15 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import logging
+import os
 import time
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import config
+from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -37,12 +38,19 @@ try:
     logging.getLogger("volatility.utils").setLevel(rootlogger.level)
 except ImportError as e:
     if e.message == "No module named Crypto.Hash":
-        log.error(
-            "The PyCrypto package is missing (install with "
-            "`pip install pycrypto`)"
+        raise CuckooStartupError(
+            "Could not load Volatility: the PyCrypto package is missing "
+            "(install with `pip install pycrypto`)"
         )
 
     HAVE_VOLATILITY = False
+except NameError as e:
+    if "distorm3" in e.message:
+        raise CuckooStartupError(
+            "Could not load Volatility: the distorm3 package is missing "
+            "(install with `pip install distorm3`)"
+        )
+    raise
 
 class VolatilityAPI(object):
     """ Volatility API interface."""
