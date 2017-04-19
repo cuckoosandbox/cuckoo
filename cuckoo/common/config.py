@@ -7,6 +7,7 @@ import ConfigParser
 import click
 import os
 import logging
+import re
 import sys
 
 from cuckoo.common.colors import red
@@ -176,6 +177,9 @@ class List(Type):
         super(List, self).__init__(default)
 
     def parse(self, value):
+        if value is None:
+            return []
+
         try:
             ret = []
 
@@ -184,7 +188,7 @@ class List(Type):
                     ret.append(self.subclass().parse(entry))
                 return ret
 
-            for entry in value.split(self.sep):
+            for entry in re.split("[%s]" % self.sep, value):
                 if self.strip:
                     entry = entry.strip()
                     if not entry:
@@ -203,7 +207,7 @@ class List(Type):
             return False
 
     def emit(self, value):
-        return (", " if self.sep == "," else self.sep).join(value)
+        return (", " if self.sep[0] == "," else self.sep[0]).join(value or "")
 
 class Config(object):
     """Configuration file parser."""
@@ -279,7 +283,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
-                "options": String(),
+                "options": List(String, None, ",\\s"),
             },
             "__star__": ("virtualbox", "machines"),
         },
@@ -480,7 +484,7 @@ class Config(object):
             },
             "mask": {
                 "enabled": Boolean(False),
-                "pid_generic": String(),
+                "pid_generic": List(String, None),
             },
         },
         "physical": {

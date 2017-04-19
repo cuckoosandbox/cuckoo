@@ -7,6 +7,11 @@
 		padding: 10px;
 		margin-bottom: 30px;
 
+		&:focus {
+			border-color: #C8C8C8;
+			outline: none;
+		}
+
 		.scroll-internal & {
 			height: 100%;
 			overflow-y: auto;
@@ -306,6 +311,12 @@
 				padding: 15px;
 				border-bottom: 1px solid #D8D8D8;
 
+				textarea {
+					font-family: monospace;
+					overflow-x: scroll;
+					width: 100%;
+				}
+
 				pre {
 					padding: 0;
 					margin: 0;
@@ -545,6 +556,10 @@
 	.content {
 		padding: 0;
 		border-radius: 0;
+
+		&:focus {
+			outline: none;
+		}
 	}
 
 	li {

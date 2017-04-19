@@ -17,7 +17,7 @@ from cuckoo.misc import cwd, is_windows
 
 log = logging.getLogger(__name__)
 
-SQLRE = "(\\w+)://(?:(\\w*):?(\\w*)@)?([\\w.-]+)/([\\w-]+)"
+SQLRE = "(\\w+)://(?:(\\w*):?([^@]*)@)?([\\w.-]+)/([\\w-]+)"
 
 def identify(dirpath):
     filepath = os.path.join(dirpath, "lib", "cuckoo", "common", "constants.py")

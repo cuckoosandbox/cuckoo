@@ -6,7 +6,7 @@ from django.views.decorators.http import require_safe
 
 from cuckoo.common.config import config
 from cuckoo.misc import version
-from cuckoo.web.bin.utils import render_template
+from cuckoo.web.utils import render_template
 
 @require_safe
 def index(request):

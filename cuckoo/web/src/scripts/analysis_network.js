@@ -171,7 +171,8 @@ class HexView {
 
         var displayBody,
             outputMode,
-            content = this.raw;
+            content = this.raw,
+            textArea = true;
 
         let body = this.displayBody;
         let output = this.displayOutput;
@@ -188,7 +189,7 @@ class HexView {
             // this.container.removeClass('empty-body');
         }
 
-        this.container.empty().text(content);
+        this.container.empty().text(HexView.unescapeHTML(content));
 
     }
 
@@ -243,6 +244,15 @@ class HexView {
         } else {
             HexView.persistProperty('locked', false);
         }
+    }
+
+    // http://stackoverflow.com/questions/22279231/using-js-jquery-how-can-i-unescape-html-and-put-quotes-back-in-the-str
+    static unescapeHTML(safe) {
+        return safe.replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'");
     }
 
 }
@@ -352,12 +362,15 @@ class RequestDisplay {
     	this.el.removeClass('is-loading');
     	summaryElement.find('.fa-chevron-right').removeClass('fa-spinner fa-spin');
 
+
         this.hex_view = new HexView(this.el, {
             request: self.request_body,
             response: self.response_body
         }, {
             container: '[data-draw="source"]'
         }).initialise();
+
+        console.log(this.hex_view)
 
 
         self.open();
@@ -680,15 +693,19 @@ $(function() {
     network_nav.transition('network-analysis-http');
 
     if($("#network-analysis-tcp").length) {
+
         let packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"), {
             skip_empty: true
         });
+
     }
 
     if($("#network-analysis-udp").length) {
+
         let packet_display_udp = new PacketDisplay($('#network-analysis-udp'), {
             skip_empty: true
         });
+
     }
 
     $("#http-requests .network-display__request").each(function() {

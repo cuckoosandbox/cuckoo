@@ -79,3 +79,33 @@ Some reasons for using a ``virtualenv``:
 
 Please refer to :doc:`cwd` and :doc:`../../usage/cwd` to learn more about the
 ``Cuckoo Working Directory`` and how to operate it.
+
+Install Cuckoo from file
+========================
+
+By downloading a hard copy of the Cuckoo Package and installing it *offline*,
+one may set up Cuckoo using a cached copy and/or have a backup copy of current
+Cuckoo versions in the future. We also feature the option to download such a
+tarball on our website.
+
+Obtaining the tarball of Cuckoo and all of its dependencies manually may be
+done as follows::
+
+    $ pip download cuckoo
+
+You will end up with a file ``Cuckoo-2.0.0.tar.gz`` (or a higher number,
+depending on the latest released stable version) as well as all of its
+dependencies (e.g., ``alembic-0.8.8.tar.gz``).
+
+Installing that exact version of Cuckoo may be done as you're familiar with
+from installing it using ``pip`` directly, except now using the filename of
+the tarball::
+
+    $ pip install Cuckoo-2.0.0.tar.gz
+
+On systems where no internet connection is available, the ``$ pip download
+cuckoo`` command may be used to fetch all of the required dependencies and as
+such one should be able to - in theory - install Cuckoo completely offline
+using those files, i.e., by executing something like the following::
+
+    $ pip install *.tar.gz

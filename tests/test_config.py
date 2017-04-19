@@ -9,7 +9,7 @@ import tempfile
 
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
-    config2
+    config2, List, String
 )
 from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
@@ -1049,6 +1049,17 @@ interface = eth0
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
 
+def test_migration_200_201():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "memory.conf", """
+[mask]
+pid_generic =
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.0", "2.0.1")
+    assert cfg["memory"]["mask"]["pid_generic"] == []
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None
@@ -1134,6 +1145,35 @@ def test_cast():
     assert cast("cuckoo:cuckoo:machinery", "1") == "1"
 
     assert cast("cuckoo:cuckoo:freespace", "1234") == 1234
+
+    assert cast("virtualbox:cuckoo1:options", "") == []
+    assert cast("virtualbox:cuckoo1:options", "a b c") == ["a", "b", "c"]
+    assert cast("virtualbox:cuckoo1:options", "a, b c") == ["a", "b", "c"]
+
+    assert cast("memory:mask:pid_generic", "") == []
+    assert cast("memory:mask:pid_generic", "1, 2, 3") == ["1", "2", "3"]
+
+def test_list_split():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config("virtualbox:cuckoo1:options") == []
+
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "virtualbox": {
+            "cuckoo1": {
+                "options": ["noagent", "nictrace"],
+            },
+        },
+    })
+    assert config("virtualbox:cuckoo1:options") == [
+        "noagent", "nictrace",
+    ]
+
+@mock.patch("cuckoo.common.config.log_error")
+def test_list_default_none(p):
+    List(String, None, ",")
+    p.assert_not_called()
 
 def test_path():
     assert Path(allow_empty=True).check("") is True

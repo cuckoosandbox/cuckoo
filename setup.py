@@ -103,9 +103,7 @@ do_setup(
         "cuckoo",
     ],
     classifiers=[
-        "Development Status :: 4 - Beta",
-        # TODO: should become stable.
-        # "Development Status :: 5 - Production/Stable",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Environment :: Web Environment",
         "Framework :: Django",
@@ -119,9 +117,14 @@ do_setup(
         "Programming Language :: Python :: 2.7",
         "Topic :: Security",
     ],
+    keywords=(
+        "cuckoo sandbox automated malware analysis project threat "
+        "intelligence cert soc"
+    ),
     url="https://cuckoosandbox.org/",
     license="GPLv3",
     description="Automated Malware Analysis System",
+    long_description=open("README.rst", "rb").read(),
     include_package_data=True,
     entry_points={
         "console_scripts": [

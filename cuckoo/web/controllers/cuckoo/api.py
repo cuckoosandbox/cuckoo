@@ -11,7 +11,7 @@ from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd, version
-from cuckoo.web.bin.utils import json_fatal_response, api_get
+from cuckoo.web.utils import json_fatal_response, api_get
 
 db = Database()
 

@@ -62,7 +62,7 @@
 
 		{% if report.analysis.misp %}
 			<li>
-				<a href="{% url "analysis" report.analysis.info.id "misp" %}}"
+				<a href="{% url "analysis" report.analysis.info.id "misp" %}"
 				{% if env.view_kwargs.page == 'misp' %} class="active" {% endif %}>
 					<i class="fa fa-flag"></i> 
 					<span>MISP</span>

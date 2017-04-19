@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
 from cuckoo.core.database import Database
 from cuckoo.web.controllers.analysis.export.export import ExportController
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.utils import view_error, render_template
 
 class AnalysisRoutes:
     @staticmethod

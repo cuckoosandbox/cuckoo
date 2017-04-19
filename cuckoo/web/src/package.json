@@ -18,6 +18,7 @@
     "event-stream": "^3.3.4",
     "glob": "^7.1.1",
     "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.1",
     "gulp-babel": "^6.1.2",
     "gulp-bower-assets": "0.0.3",
     "gulp-clean-css": "^3.0.2",

@@ -12,7 +12,6 @@ from sqlalchemy.orm.exc import DetachedInstanceError
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.core.startup import index_yara
 from cuckoo.distributed.app import create_app
-from cuckoo.distributed.misc import settings
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
@@ -168,6 +167,32 @@ class DatabaseEngine(object):
         tasks = self.d.view_tasks([t1, t2])
         assert tasks[0].to_dict() == self.d.view_task(t1).to_dict()
         assert tasks[1].to_dict() == self.d.view_task(t2).to_dict()
+
+    def test_add_machine(self):
+        self.d.add_machine(
+            "name1", "label", "1.2.3.4", "windows", None,
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "name2", "label", "1.2.3.4", "windows", "",
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "name3", "label", "1.2.3.4", "windows", "opt1 opt2",
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "name4", "label", "1.2.3.4", "windows", ["opt3", "opt4"],
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        m1 = self.d.view_machine("name1")
+        m2 = self.d.view_machine("name2")
+        m3 = self.d.view_machine("name3")
+        m4 = self.d.view_machine("name4")
+        assert m1.options == []
+        assert m2.options == []
+        assert m3.options == ["opt1", "opt2"]
+        assert m4.options == ["opt3", "opt4"]
 
 class TestConnectOnce(object):
     def setup(self):

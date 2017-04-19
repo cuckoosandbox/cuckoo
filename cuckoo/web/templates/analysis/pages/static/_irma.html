@@ -1,8 +1,8 @@
-<section id="static_antivirus">
+<section id="static_irma">
     {% if report.analysis.irma and report.analysis.irma.status %}
     <table class="table table-striped table-bordered">
         <tr>
-            <th>Antivirus</th>
+            <th>IRMA</th>
             {% if report.analysis.info.category == "file" %}
                 <th>Signature</th>
             {% else %}
@@ -25,6 +25,6 @@
         {% endfor %}
     </table>
     {% else %}
-        No antivirus signatures available.
+        No IRMA results available.
     {% endif %}
 </section>

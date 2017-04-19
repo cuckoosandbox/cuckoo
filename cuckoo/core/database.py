@@ -69,6 +69,16 @@ class JsonType(TypeDecorator):
     def process_result_value(self, value, dialect):
         return json.loads(value)
 
+class JsonTypeList255(TypeDecorator):
+    """Custom JSON type."""
+    impl = String(255)
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        return json.loads(value) if value else []
+
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
     __tablename__ = "machines"
@@ -80,7 +90,7 @@ class Machine(Base):
     platform = Column(String(255), nullable=False)
     tags = relationship("Tag", secondary=machines_tags, single_parent=True,
                         backref="machine")
-    options = Column(String(255), nullable=True)
+    options = Column(JsonTypeList255(), nullable=True)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -564,6 +574,11 @@ class Database(object):
         @param resultserver_ip: IP address of the Result Server
         @param resultserver_port: port of the Result Server
         """
+        if options is None:
+            options = []
+        if not isinstance(options, (tuple, list)):
+            options = options.split()
+
         session = self.Session()
         machine = Machine(name=name,
                           label=label,

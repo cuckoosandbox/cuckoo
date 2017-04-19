@@ -753,6 +753,22 @@ class TestApiEndpoints(object):
         assert r.status_code == 200
         assert p.call_args_list[0][0][0].startswith(temppath())
 
+    def test_api_status200(self, client):
+        r = client.get("/cuckoo/api/status")
+        assert r.status_code == 200
+
+    @mock.patch("cuckoo.web.controllers.cuckoo.api.rooter")
+    def test_api_vpnstatus(self, p, client):
+        p.return_value = []
+        r = client.get("/cuckoo/api/vpn/status")
+        assert r.status_code == 200
+
+    @mock.patch("cuckoo.web.controllers.analysis.routes.AnalysisController")
+    def test_analysis_summary(self, p, client):
+        p.get_report.side_effect = Exception
+        with pytest.raises(Exception):
+            client.get("/analysis/1/summary")
+
 class TestMoloch(object):
     def test_disabled(self, client):
         set_cwd(tempfile.mkdtemp())

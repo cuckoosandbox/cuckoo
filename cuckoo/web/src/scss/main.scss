@@ -21,6 +21,7 @@ body {
 body {
 	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* note to self: this is very hacky and I need to pick this up later */
@@ -51,8 +52,8 @@ body#analysis {
 @import "components/app-nav";
 @import "components/buttons";
 @import "components/analysis-sidebar";
-@import "components/cuckoo-analysis";
 @import "components/flex-navigation";
+@import "components/cuckoo-analysis";
 @import "components/network-http-request";
 @import "components/dndupload";
 @import "components/nav";

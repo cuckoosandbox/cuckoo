@@ -24,7 +24,7 @@ from cuckoo.core.database import (
 )
 from cuckoo.core.feedback import CuckooFeedback
 from cuckoo.misc import cwd
-from cuckoo.web.bin.utils import (
+from cuckoo.web.utils import (
     api_post, api_get, file_response, json_error_response,
     json_fatal_response, normalize_task
 )
