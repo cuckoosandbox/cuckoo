@@ -241,7 +241,7 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
         elif self.route == "inetsim":
-            self.interface = cfg.inetsim.interface
+            pass
         elif self.route == "tor":
             pass
         elif self.route == "internet":
