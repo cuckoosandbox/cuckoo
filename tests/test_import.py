@@ -5,6 +5,7 @@
 import logging
 import mock
 import os
+import pytest
 import shutil
 import tempfile
 
@@ -354,6 +355,20 @@ def test_dumpcmd():
     assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
         ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
     )
+    assert dumpcmd("postgresql://user name!:bar@localhost/baz", "/tmp") == (
+        ["pg_dump", "-U", "user name!", "baz"], {"PGPASSWORD": "bar"}
+    )
+    assert dumpcmd("postgresql://:b@c/d", "/tmp") == (
+        ["pg_dump", "-h", "c", "d"], {"PGPASSWORD": "b"}
+    )
+
+    with pytest.raises(CuckooOperationalError) as e:
+        dumpcmd("notadatabaseuri", "/tmp")
+    e.match("URI wasn't understood")
+
+    with pytest.raises(CuckooOperationalError) as e:
+        dumpcmd("notadatabase://a:b@c/d", "/tmp")
+    e.match("URI wasn't understood")
 
 @mock.patch("cuckoo.apps.import_.subprocess")
 @mock.patch("click.confirm")

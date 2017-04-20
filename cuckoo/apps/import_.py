@@ -5,9 +5,9 @@
 import click
 import os.path
 import logging
-import re
 import shutil
 import subprocess
+import sqlalchemy
 
 from cuckoo.common.config import Config
 from cuckoo.common.colors import yellow
@@ -16,8 +16,6 @@ from cuckoo.compat.config import migrate as migrate_conf
 from cuckoo.misc import cwd, is_windows
 
 log = logging.getLogger(__name__)
-
-SQLRE = "(\\w+)://(?:(\\w*):?([^@]*)@)?([\\w.-]+)/([\\w-]+)"
 
 def identify(dirpath):
     filepath = os.path.join(dirpath, "lib", "cuckoo", "common", "constants.py")
@@ -43,40 +41,43 @@ def dumpcmd(dburi, dirpath):
         ], {}
 
     env = {}
-    l = re.match(SQLRE, dburi).groups()
-    engine, username, password, hostname, database = l
+    try:
+        engine = sqlalchemy.create_engine(dburi).engine
+    except sqlalchemy.exc.ArgumentError:
+        raise CuckooOperationalError(
+            "Error creating SQL database backup as your SQL database URI "
+            "wasn't understood by us: %r!" % dburi
+        )
 
-    if engine == "mysql":
+    if engine.name == "mysql":
         args = ["mysqldump"]
-        if username:
-            args += ["-u", username]
-        if password:
-            args.append("-p%s" % password)
-        if hostname and hostname != "localhost":
-            args += ["-h", hostname]
-        args.append(database)
+        if engine.url.username:
+            args += ["-u", engine.url.username]
+        if engine.url.password:
+            args.append("-p%s" % engine.url.password)
+        if engine.url.host and engine.url.host != "localhost":
+            args += ["-h", engine.url.host]
+        args.append(engine.url.database)
         return args, {}
 
-    if engine == "postgresql":
+    if engine.name == "postgresql":
         args = ["pg_dump"]
-        if username:
-            args += ["-U", username]
-        if password:
-            env["PGPASSWORD"] = password
-        if hostname and hostname != "localhost":
-            args += ["-h", hostname]
-        args.append(database)
+        if engine.url.username:
+            args += ["-U", engine.url.username]
+        if engine.url.password:
+            env["PGPASSWORD"] = engine.url.password
+        if engine.url.host and engine.url.host != "localhost":
+            args += ["-h", engine.url.host]
+        args.append(engine.url.database)
         return args, env
 
-    return None, None
+    raise CuckooOperationalError(
+        "Error creating SQL database backup as your SQL database URI "
+        "wasn't understood by us: %r!" % dburi
+    )
 
 def sqldump(dburi, dirpath):
     args, env = dumpcmd(dburi, dirpath)
-    if not args:
-        raise CuckooOperationalError(
-            "Error creating SQL database backup as your SQL database "
-            "configuration wasn't understood by us (database URI=%s)!" % dburi
-        )
 
     envargs = " ".join("%s=%s" % (k, v) for k, v in env.items())
     cmdline = " ".join('"%s"' % arg if " " in arg else arg for arg in args)
