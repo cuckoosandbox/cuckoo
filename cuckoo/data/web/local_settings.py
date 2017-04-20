@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -27,6 +27,11 @@ MANAGERS = ADMINS
 # web application from a web server front-end (i.e. Apache).
 DEBUG = False
 DEBUG404 = False
+
+# If you've setup Cuckoo to be behind a proxy with SSL, then uncomment the
+# SECURE_PROXY_SSL_HEADER line, see also the following issue for more
+# information https://github.com/cuckoosandbox/cuckoo/issues/1397.
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # A list of strings representing the host/domain names that this Django site
 # can serve.
