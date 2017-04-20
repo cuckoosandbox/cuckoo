@@ -17618,7 +17618,7 @@ if (typeof jQuery === 'undefined') {
 		// Correct DOM ordering for colgroup - comes before the thead
 		table.children('colgroup').insertBefore( table.children('thead') );
 	
-		/* Adjust the position of the header in case we lose the y-scrollbar */
+		/* Adjust the position of the header in case we loose the y-scrollbar */
 		divBody.scroll();
 	
 		// If sorting or filtering has occurred, jump the scrolling back to the top
