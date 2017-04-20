@@ -103,5 +103,5 @@ channels that we've put in-place.
 
 .. warning::
    One should **not** clean the old Cuckoo setup after the import. By
-   attempting to do so you may loose the existing analyses (if ``symlink``
+   attempting to do so you may lose the existing analyses (if ``symlink``
    mode is used) and the SQL, MongoDB, and ElasticSearch databases.

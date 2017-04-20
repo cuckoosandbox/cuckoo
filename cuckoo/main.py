@@ -539,7 +539,7 @@ def import_(ctx, mode, path):
     print yellow("You are importing an existing Cuckoo setup. Please")
     print yellow("understand that, depending on the mode taken, if ")
     print yellow("you remove the old Cuckoo setup after this import ")
-    print yellow("you may still"), red("loose ALL of your data!")
+    print yellow("you may still"), red("lose ALL of your data!")
     print
     print yellow("Additionally, database migrations will be performed ")
     print yellow("in-place. You won't be able to use your old Cuckoo ")
