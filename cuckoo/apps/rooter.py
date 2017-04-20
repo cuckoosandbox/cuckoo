@@ -135,7 +135,7 @@ def flush_rttable(rt_table):
 
     run(s.ip, "route", "flush", "table", rt_table)
 
-def dns_forward(action, vm_ip, dns_ip, dns_port):
+def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
     """Route DNS requests from the VM to a custom DNS on a separate network."""
     run(
         s.iptables, "-t", "nat", action, "PREROUTING", "-p", "tcp",
@@ -177,11 +177,16 @@ def srcroute_disable(rt_table, ipaddr):
     run(s.ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(s.ip, "route", "flush", "cache")
 
-def inetsim_enable(ipaddr, inetsim_ip, inetsim_port, resultserver_port):
+def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
-        "-j", "DNAT", "--to-destination", inetsim_ip)
+        "-j", "DNAT", "--to-destination", inetsim_ip
+    )
+
+    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+        "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
+    )
 
     run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP")
@@ -189,13 +194,21 @@ def inetsim_enable(ipaddr, inetsim_ip, inetsim_port, resultserver_port):
     run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP")
 
-    dns_forward( "-A", ipaddr, inetsim_ip, inetsim_port)
+    dns_forward("-A", ipaddr, inetsim_ip)
+    forward_enable(machinery_iface, machinery_iface, ipaddr)
 
-def inetsim_disable(ipaddr, inetsim_ip, inetsim_port, resultserver_port):
+    run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
+
+
+def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
-        "--to-destination", inetsim_ip)
+        "--to-destination", inetsim_ip
+    )
+    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+        "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
+    )
 
     run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP")
@@ -203,7 +216,10 @@ def inetsim_disable(ipaddr, inetsim_ip, inetsim_port, resultserver_port):
     run(s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP")
 
-    dns_forward("-D", ipaddr, inetsim_ip, inetsim_port)
+    dns_forward("-D", ipaddr, inetsim_ip)
+    forward_disable(machinery_iface, machinery_iface, ipaddr)
+
+    run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
 def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
     """Toggle Tor iptables routing rules."""
@@ -222,6 +238,7 @@ def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
         "-j", "DNAT", "--to-destination",
         "%s:%s" % (resultserver_ip, proxy_port)
     )
+    run(s.iptables, action, "OUTPUT", "-s", vm_ip, "-j", "DROP")
 
 def tor_enable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""

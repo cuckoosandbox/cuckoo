@@ -307,7 +307,7 @@ class AnalysisManager(threading.Thread):
             rooter(
                 "inetsim_enable", self.machine.ip,
                 config("routing:inetsim:server"),
-                config("routing:inetsim:port"),
+                config("%s:%s:interface" % (self.cfg.cuckoo.machinery, self.cfg.cuckoo.machinery)),
                 str(config("cuckoo:resultserver:port"))
             )
 
@@ -358,7 +358,7 @@ class AnalysisManager(threading.Thread):
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,
                    config("routing:inetsim:server"),
-                   config("routing:inetsim:port"),
+                   config("%s:%s:interface" % (self.cfg.cuckoo.machinery, self.cfg.cuckoo.machinery)),
                    str(cfg.resultserver.port))
 
         if self.route == "tor":
