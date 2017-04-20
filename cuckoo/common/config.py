@@ -658,6 +658,7 @@ class Config(object):
                     "tags": String("debian_wheezy,64_bit"),
                     "kernel": String(),
                     "initrd": String(),
+                    "mac": String(),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -675,6 +676,7 @@ class Config(object):
                     "kernel": String(
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
                     ),
+                    "mac": String(),
                 }, {
                     "__section__": "vm3",
                     "label": String("vm3"),
@@ -693,6 +695,7 @@ class Config(object):
                     "initrd": String(
                         "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
+                    "mac": String(),
                 },
             ],
             "__star__": ("qemu", "machines"),
@@ -778,7 +781,6 @@ class Config(object):
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
-                "port": String("5354"),
             },
             "tor": {
                 "enabled": Boolean(False),
