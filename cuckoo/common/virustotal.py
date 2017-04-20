@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -14,7 +13,6 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.objects import File
-from cuckoo.common.utils import validate_hash
 
 class VirusTotalError(CuckooOperationalError):
     """VirusTotal operational error"""
@@ -165,10 +163,6 @@ class VirusTotalAPI(object):
         return dict(summary=dict(permalink=r.get("permalink")))
 
     def hash_fetch(self, file_hash):
-        file_hash = validate_hash(file_hash)
-        if not file_hash:
-            raise VirusTotalError("Invalid hash")
-
         return self._request_hash(file_hash=file_hash)
 
     def file_scan(self, filepath):
