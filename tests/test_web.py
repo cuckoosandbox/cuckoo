@@ -659,6 +659,14 @@ class TestMongoInteraction(object):
                     }
                 mongo.db.analysis.save(d)
 
+            # Handle analyses that somehow don't have a "target" field.
+            mongo.db.analysis.save({
+                "info": {
+                    "id": 999,
+                    "category": "archive",
+                },
+            })
+
         def req(self, client, **kw):
             return client.post(
                 "/analysis/api/tasks/recent/",
@@ -671,11 +679,11 @@ class TestMongoInteraction(object):
             r = self.req(client)
             assert r.status_code == 200
             obj = json.loads(r.content)
-            assert len(obj["tasks"]) == 6
-            assert obj["tasks"][0]["id"] == 6
-            assert obj["tasks"][0]["target"] == "pdf0.pdf @ pdf0.zip"
-            assert obj["tasks"][5]["id"] == 1
-            assert obj["tasks"][5]["target"] == "target.exe"
+            assert len(obj["tasks"]) == 7
+            assert obj["tasks"][1]["id"] == 6
+            assert obj["tasks"][1]["target"] == "pdf0.pdf @ pdf0.zip"
+            assert obj["tasks"][6]["id"] == 1
+            assert obj["tasks"][6]["target"] == "target.exe"
 
         def test_limit2(self, client):
             r = self.req(client, limit=2)
@@ -702,7 +710,7 @@ class TestMongoInteraction(object):
             r = self.req(client, cats=["archive"])
             assert r.status_code == 200
             obj = json.loads(r.content)
-            assert len(obj["tasks"]) == 1
+            assert len(obj["tasks"]) == 2
 
         def test_doc_packages(self, client):
             r = self.req(client, packs=["doc", "vbs", "xls", "js"])
