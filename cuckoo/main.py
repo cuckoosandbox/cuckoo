@@ -542,7 +542,7 @@ def import_(ctx, mode, path):
     print yellow("you may still"), red("lose ALL of your data!")
     print
     print yellow("Additionally, database migrations will be performed ")
-    print yellow("in-place. You won't be able to use your old Cuckoo ")
+    print yellow("in-place*. You won't be able to use your old Cuckoo ")
     print yellow("setup anymore afterwards! However, we'll provide ")
     print yellow("you with the option to create a SQL backup beforehand.")
     print
@@ -550,6 +550,9 @@ def import_(ctx, mode, path):
     print red("corrupt your new setup: its SQL, MongoDB, and ")
     print red("ElasticSearch database may be dropped and, in 'symlink'")
     print red("mode, the analyses removed.")
+    print
+    print yellow("*: Except for sqlite3 databases in combination with")
+    print yellow("   the import 'copy' approach.")
     print
 
     value = click.confirm(

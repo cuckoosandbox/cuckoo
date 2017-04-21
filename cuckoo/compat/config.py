@@ -606,7 +606,7 @@ def _20c2_200(c):
         new_item = old_item.replace("-", "_")
         c["reporting"]["mattermost"][new_item] = cast(
             "reporting:mattermost:%s" % new_item,
-            c["reporting"]["mattermost"].pop(old_item, None)
+            c["reporting"]["mattermost"].pop(old_item, False)
         )
 
     c["reporting"]["moloch"]["insecure"] = False
@@ -672,9 +672,6 @@ def _200_201(c):
     )
     return c
 
-def _20dev(c):
-    return c
-
 migrations = {
     "0.4.0": ("0.4.1", None),
     "0.4.1": ("0.4.2", _041_042),
@@ -695,7 +692,7 @@ migrations = {
     # TODO Most likely we'll have to work out some tweaks in the migrations.
     # TODO Provide the option to push out feedback to the Core Developers if
     # an exception occurs during the configuration migration phase.
-    "2.0-dev": ("1.2.0", _20dev),
+    "2.0-dev": ("1.2.0", None),
 }
 
 # Mapping from actual version numbers to "full" / beautified version numbers.
