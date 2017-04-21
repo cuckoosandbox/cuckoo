@@ -30,6 +30,10 @@ class TestSubmitManager(object):
         })
 
         db.connect()
+        db.add_machine(
+            "cuckoo1", "cuckoo2", "1.2.3.4", "windows", None, None, "int0",
+            None, "5.6.7.8", 2042
+        )
         self.submit_manager = SubmitManager()
 
     def test_pre_file(self):
@@ -230,7 +234,7 @@ class TestSubmitManager(object):
         assert t.timeout == 120
         assert t.category == "archive"
         assert t.status == "pending"
-        assert t.machine == "cuckoo1"
+        assert t.machine == "cuckoo2"
         assert not t.enforce_timeout
         assert not t.memory
         assert t.options == {
