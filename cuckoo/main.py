@@ -458,6 +458,8 @@ def web(ctx, args, host, port, uwsgi, nginx):
         print "    # Cuckoo Web Interface"
         print "    location / {"
         print "        client_max_body_size 1G;"
+        print "        proxy_redirect off;"
+        print "        proxy_set_header X-Forwarded-Proto $scheme;"
         print "        uwsgi_pass  _uwsgi_cuckoo_web;"
         print "        include     uwsgi_params;"
         print "    }"

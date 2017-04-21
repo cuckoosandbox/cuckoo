@@ -28,11 +28,6 @@ MANAGERS = ADMINS
 DEBUG = False
 DEBUG404 = False
 
-# If you've setup Cuckoo to be behind a proxy with SSL, then uncomment the
-# SECURE_PROXY_SSL_HEADER line, see also the following issue for more
-# information https://github.com/cuckoosandbox/cuckoo/issues/1397.
-# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
 # A list of strings representing the host/domain names that this Django site
 # can serve.
 # Values in this list can be fully qualified names (e.g. 'www.example.com').
