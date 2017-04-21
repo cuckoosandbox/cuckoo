@@ -117,7 +117,7 @@ class StapParser(object):
                 parts = re.match("^(.+)?@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) =()()$", rest)
 
             if not parts:
-                print "Could not parse syscall trace line: %s", line.strip()
+                log.warning("Could not parse syscall trace line: %s", line)
                 continue
 
             pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
