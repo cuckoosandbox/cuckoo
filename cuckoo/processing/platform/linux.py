@@ -112,9 +112,12 @@ class StapParser(object):
             dtms = datetime.timedelta(0, 0, int(datetimepart.split(".", 1)[1]))
             dt = dateutil.parser.parse(datetimepart.split(".", 1)[0]) + dtms
 
-            parts = re.match("^(.+)@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) = (\S+){0,1}\s{0,1}(\(\w+\)){0,1}$", rest)
+            parts = re.match("^(.+)?@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) = (\S+){0,1}\s{0,1}(\(\w+\)){0,1}$", rest)
             if not parts:
-                log.warning("Could not parse syscall trace line: %s", line)
+                parts = re.match("^(.+)?@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) =()()$", rest)
+
+            if not parts:
+                print "Could not parse syscall trace line: %s", line.strip()
                 continue
 
             pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
