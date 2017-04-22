@@ -13,7 +13,7 @@ import tempfile
 import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError
-from cuckoo.common.files import temppath
+from cuckoo.common.files import temppath, Files
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.feedback import CuckooFeedback
@@ -508,6 +508,14 @@ class TestWebInterfaceFeedback(object):
             "enable-injection": False,
             "simulated-human-interaction": False,
         }
+
+    def test_resubmit_file_missing(self, client):
+        filepath = Files.temp_put("hello world")
+        db.add_path(filepath, options={
+            "human": 0, "free": "yes",
+        })
+        os.unlink(filepath)
+        assert client.get("/submit/re/1/").status_code == 500
 
     def test_import_analysis(self, client):
         # Pack sample_analysis_storage into an importable .zip analysis.
