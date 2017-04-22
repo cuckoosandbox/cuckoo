@@ -111,6 +111,25 @@ class TestWebInterface(object):
         assert "Microsoft Word 8.0" in r
         assert "This is a test PDF file" in r
 
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_summary_pdf_nometadata(self, p, request):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": __file__,
+        })
+        s.set_options({
+            "pdf_timeout": 10,
+        })
+        s.file_path = __file__
+
+        p._get_report.return_value = {
+            "static": s.run(),
+        }
+        r = AnalysisRoutes.detail(request, 1, "static").content
+        assert "No PDF metadata could be extracted!" in r
+
     def test_submit_defaults(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
