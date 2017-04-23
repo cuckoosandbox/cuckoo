@@ -5614,33 +5614,14 @@ table.cuckoo-table.table-key-value td:last-child, table.table-key-value.cuckoo-t
 table.cuckoo-table .loading, table.cuckoo-table__fullscreen .loading, .network-display__table > table .loading {
   margin: 0;
 }
-body.cyborg table.cuckoo-table, body.cyborg table.cuckoo-table__fullscreen, body.cyborg .network-display__table > table {
-  border-color: #133b4a;
-  background-color: #152D3B;
+table.cuckoo-table .less-entries > td, table.cuckoo-table__fullscreen .less-entries > td, .network-display__table > table .less-entries > td {
+  text-align: center;
 }
-body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead {
-  border-bottom: 1px solid #133b4a;
+table.cuckoo-table .less-entries > td .badge, table.cuckoo-table__fullscreen .less-entries > td .badge, .network-display__table > table .less-entries > td .badge {
+  background-color: #ccc;
 }
-body.cyborg table.cuckoo-table tbody tr, body.cyborg table.cuckoo-table__fullscreen tbody tr, body.cyborg .network-display__table > table tbody tr,
-body.cyborg table.cuckoo-table tfoot,
-body.cyborg table.cuckoo-table__fullscreen tfoot,
-body.cyborg .network-display__table > table tfoot {
-  border-color: #133b4a;
-}
-body.cyborg table.cuckoo-table .table-display-config > th, body.cyborg table.cuckoo-table__fullscreen .table-display-config > th, body.cyborg .network-display__table > table .table-display-config > th,
-body.cyborg table.cuckoo-table .table-display-config > td,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > td,
-body.cyborg .network-display__table > table .table-display-config > td {
-  border-color: #1d5b73;
-}
-body.cyborg table.cuckoo-table .table-display-config > th input, body.cyborg table.cuckoo-table__fullscreen .table-display-config > th input, body.cyborg .network-display__table > table .table-display-config > th input,
-body.cyborg table.cuckoo-table .table-display-config > td input,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > td input,
-body.cyborg .network-display__table > table .table-display-config > td input {
-  border: 1px solid #091b21;
-}
-body.cyborg table.cuckoo-table .pagination > li, body.cyborg table.cuckoo-table__fullscreen .pagination > li, body.cyborg .network-display__table > table .pagination > li {
-  border-color: #1d5b73;
+table.cuckoo-table .less-entries > td:nth-child(odd), table.cuckoo-table__fullscreen .less-entries > td:nth-child(odd), .network-display__table > table .less-entries > td:nth-child(odd) {
+  background-color: #f5f5f5;
 }
 table.cuckoo-table__fullscreen {
   font-size: 14px;
@@ -5660,14 +5641,43 @@ table.cuckoo-table__fullscreen .pagination .next a,
 table.cuckoo-table__fullscreen .pagination .last a {
   padding: 4px 10px 4px 10px;
 }
-table.cuckoo-table .less-entries > td, table.cuckoo-table__fullscreen .less-entries > td, .network-display__table > table .less-entries > td {
-  text-align: center;
+body.cyborg table.cuckoo-table, body.cyborg table.cuckoo-table__fullscreen, body.cyborg .network-display__table > table {
+  border-color: #133b4a;
+  background-color: #152D3B;
 }
-table.cuckoo-table .less-entries > td .badge, table.cuckoo-table__fullscreen .less-entries > td .badge, .network-display__table > table .less-entries > td .badge {
-  background-color: #ccc;
+body.cyborg table.cuckoo-table thead, body.cyborg table.cuckoo-table__fullscreen thead, body.cyborg .network-display__table > table thead {
+  border-bottom: 1px solid #133b4a;
 }
-table.cuckoo-table .less-entries > td:nth-child(odd), table.cuckoo-table__fullscreen .less-entries > td:nth-child(odd), .network-display__table > table .less-entries > td:nth-child(odd) {
-  background-color: #f5f5f5;
+body.cyborg table.cuckoo-table tbody tr, body.cyborg table.cuckoo-table__fullscreen tbody tr, body.cyborg .network-display__table > table tbody tr,
+body.cyborg table.cuckoo-table tfoot,
+body.cyborg table.cuckoo-table__fullscreen tfoot,
+body.cyborg .network-display__table > table tfoot {
+  border-color: #133b4a;
+}
+body.cyborg table.cuckoo-table tbody tr.clickable:hover, body.cyborg table.cuckoo-table__fullscreen tbody tr.clickable:hover, body.cyborg .network-display__table > table tbody tr.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+body.cyborg table.cuckoo-table .table-display-config > th, body.cyborg table.cuckoo-table__fullscreen .table-display-config > th, body.cyborg .network-display__table > table .table-display-config > th,
+body.cyborg table.cuckoo-table .table-display-config > td,
+body.cyborg table.cuckoo-table__fullscreen .table-display-config > td,
+body.cyborg .network-display__table > table .table-display-config > td {
+  border-color: #1d5b73;
+}
+body.cyborg table.cuckoo-table .table-display-config > th input, body.cyborg table.cuckoo-table__fullscreen .table-display-config > th input, body.cyborg .network-display__table > table .table-display-config > th input,
+body.cyborg table.cuckoo-table .table-display-config > td input,
+body.cyborg table.cuckoo-table__fullscreen .table-display-config > td input,
+body.cyborg .network-display__table > table .table-display-config > td input {
+  border: 1px solid #091b21;
+}
+body.cyborg table.cuckoo-table .pagination > li, body.cyborg table.cuckoo-table__fullscreen .pagination > li, body.cyborg .network-display__table > table .pagination > li {
+  border-color: #1d5b73;
+}
+body.cyborg table.cuckoo-table .less-entries td, body.cyborg table.cuckoo-table__fullscreen .less-entries td, body.cyborg .network-display__table > table .less-entries td {
+  background-color: #0e1f28;
+}
+body.cyborg table.cuckoo-table .less-entries td .badge, body.cyborg table.cuckoo-table__fullscreen .less-entries td .badge, body.cyborg .network-display__table > table .less-entries td .badge {
+  background-color: #152D3B;
 }
 body.night table.cuckoo-table, body.night table.cuckoo-table__fullscreen, body.night .network-display__table > table {
   border-color: #375a7f;
@@ -5685,6 +5695,9 @@ body.night table.cuckoo-table tfoot,
 body.night table.cuckoo-table__fullscreen tfoot,
 body.night .network-display__table > table tfoot {
   border-color: #375a7f;
+}
+body.night table.cuckoo-table tbody tr.clickable:hover, body.night table.cuckoo-table__fullscreen tbody tr.clickable:hover, body.night .network-display__table > table tbody tr.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 body.night table.cuckoo-table .table-display-config, body.night table.cuckoo-table__fullscreen .table-display-config, body.night .network-display__table > table .table-display-config {
   background-color: #152d3b;
@@ -5709,6 +5722,12 @@ body.night table.cuckoo-table .pagination > li > a, body.night table.cuckoo-tabl
   background-color: #152d3b;
   border: 0;
   color: #d7d7d7;
+}
+body.night table.cuckoo-table .less-entries td, body.night table.cuckoo-table__fullscreen .less-entries td, body.night .network-display__table > table .less-entries td {
+  background-color: #202225;
+}
+body.night table.cuckoo-table .less-entries td .badge, body.night table.cuckoo-table__fullscreen .less-entries td .badge, body.night .network-display__table > table .less-entries td .badge {
+  background-color: #3a3e44;
 }
 table.cuckoo-table#submission-task-table .status, table#submission-task-table.cuckoo-table__fullscreen .status, .network-display__table > table#submission-task-table .status {
   display: inline-block;
@@ -6148,6 +6167,7 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 }
 .network-display__table {
   padding: 0;
+  overflow: auto;
 }
 .network-display__table > table {
   background-color: transparent;
@@ -8000,6 +8020,9 @@ body.cyborg .page-freeze.error {
 .dashboard-module__footer p > i {
   font-size: 0.9em;
   margin-right: 5px;
+}
+.dashboard-module__footer p a:hover {
+  cursor: pointer;
 }
 .dashboard-module__lg .dashboard-module__footer > p {
   font-size: 14px;

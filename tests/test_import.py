@@ -5,15 +5,16 @@
 import logging
 import mock
 import os
+import pytest
 import shutil
 import tempfile
 
 from cuckoo.apps.import_ import (
-    identify, import_legacy_analyses, dumpcmd, sqldump
+    identify, import_legacy_analyses, dumpcmd, movesql, sqldump
 )
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.files import Files
+from cuckoo.common.files import Files, temppath
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create, main
 from cuckoo.misc import cwd, set_cwd, mkdir, is_windows, is_linux
@@ -337,7 +338,7 @@ if not is_windows():
 
 def test_dumpcmd():
     assert dumpcmd(None, "/tmp") == (
-        ["sqlite3", os.path.join("/tmp", "db", "cuckoo.db"), ".dump"], {}
+        ["sqlite3", os.path.join("/tmp", "db/cuckoo.db"), ".dump"], {}
     )
     assert dumpcmd("sqlite:///db/cuckoo.db", "/tmp") == (
         ["sqlite3", os.path.join("/tmp", "db/cuckoo.db"), ".dump"], {}
@@ -354,6 +355,61 @@ def test_dumpcmd():
     assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
         ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
     )
+    assert dumpcmd("postgresql://user name!:bar@localhost/baz", "/tmp") == (
+        ["pg_dump", "-U", "user name!", "baz"], {"PGPASSWORD": "bar"}
+    )
+    assert dumpcmd("postgresql://:b@c/d", "/tmp") == (
+        ["pg_dump", "-h", "c", "d"], {"PGPASSWORD": "b"}
+    )
+
+    with pytest.raises(CuckooOperationalError) as e:
+        dumpcmd("notadatabaseuri", "/tmp")
+    e.match("URI wasn't understood")
+
+    with pytest.raises(CuckooOperationalError) as e:
+        dumpcmd("notadatabase://a:b@c/d", "/tmp")
+    e.match("URI wasn't understood")
+
+class TestMoveSQL(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    def test_mysql(self):
+        movesql("mysql://foo:bar@localh0st/baz", None, None)
+
+    def test_postgresql(self):
+        movesql("postgresql://user:bar@localhost/baz", None, None)
+
+    def test_empty_copy(self):
+        oldfilepath = Files.temp_put("hello")
+        movesql("sqlite:///%s" % oldfilepath, "copy", temppath())
+        assert os.path.exists(oldfilepath)
+        assert os.path.exists(cwd("cuckoo.db"))
+        assert not os.path.islink(cwd("cuckoo.db"))
+        assert open(cwd("cuckoo.db"), "rb").read() == "hello"
+
+    def test_empty_move(self):
+        oldfilepath = Files.temp_put("hello")
+        movesql("sqlite:///%s" % oldfilepath, "move", temppath())
+        assert not os.path.exists(oldfilepath)
+        assert os.path.exists(cwd("cuckoo.db"))
+        assert not os.path.islink(cwd("cuckoo.db"))
+        assert open(cwd("cuckoo.db"), "rb").read() == "hello"
+
+    def test_empty_symlink(self):
+        oldfilepath = Files.temp_put("hello")
+        try:
+            movesql("sqlite:///%s" % oldfilepath, "symlink", temppath())
+
+            # Following is non-windows.
+            assert os.path.exists(oldfilepath)
+            assert os.path.exists(cwd("cuckoo.db"))
+            assert os.path.islink(cwd("cuckoo.db"))
+            assert open(cwd("cuckoo.db"), "rb").read() == "hello"
+        except RuntimeError as e:
+            assert is_windows()
+            assert "'symlink'" in e.message
 
 @mock.patch("cuckoo.apps.import_.subprocess")
 @mock.patch("click.confirm")

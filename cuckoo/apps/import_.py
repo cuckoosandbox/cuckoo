@@ -5,19 +5,17 @@
 import click
 import os.path
 import logging
-import re
 import shutil
 import subprocess
+import sqlalchemy
 
 from cuckoo.common.config import Config
-from cuckoo.common.colors import yellow
+from cuckoo.common.colors import yellow, red
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.compat.config import migrate as migrate_conf
 from cuckoo.misc import cwd, is_windows
 
 log = logging.getLogger(__name__)
-
-SQLRE = "(\\w+)://(?:(\\w*):?([^@]*)@)?([\\w.-]+)/([\\w-]+)"
 
 def identify(dirpath):
     filepath = os.path.join(dirpath, "lib", "cuckoo", "common", "constants.py")
@@ -26,57 +24,79 @@ def identify(dirpath):
             if line.startswith("CUCKOO_VERSION"):
                 return line.split('"')[1]
 
-def dumpcmd(dburi, dirpath):
+def _dburi_engine(dburi):
+    # Defaults to a sqlite3 database.
     if not dburi:
-        # Defaults to a SQLite3 database.
-        return [
-            "sqlite3", os.path.join(dirpath, "db", "cuckoo.db"), ".dump"
-        ], {}
+        dburi = "sqlite:///db/cuckoo.db"
 
-    if dburi.startswith("sqlite:///"):
+    try:
+        return sqlalchemy.create_engine(dburi).engine
+    except sqlalchemy.exc.ArgumentError:
+        raise CuckooOperationalError(
+            "Error creating SQL database backup as your SQL database URI "
+            "wasn't understood by us: %r!" % dburi
+        )
+
+def dumpcmd(dburi, dirpath):
+    engine = _dburi_engine(dburi)
+
+    if engine.name == "sqlite":
         # If the SQLite3 database filepath is relative, then make it relative
         # against the old Cuckoo setup. If it's absolute, os.path.join() will
         # keep it absolute as-is (see also our version 1.1.1 release :-P).
-        filepath = dburi.split(":///", 1)[1]
         return [
-            "sqlite3", os.path.join(dirpath, filepath), ".dump"
+            "sqlite3", os.path.join(dirpath, engine.url.database), ".dump"
         ], {}
 
-    env = {}
-    l = re.match(SQLRE, dburi).groups()
-    engine, username, password, hostname, database = l
-
-    if engine == "mysql":
+    if engine.name == "mysql":
         args = ["mysqldump"]
-        if username:
-            args += ["-u", username]
-        if password:
-            args.append("-p%s" % password)
-        if hostname and hostname != "localhost":
-            args += ["-h", hostname]
-        args.append(database)
+        if engine.url.username:
+            args += ["-u", engine.url.username]
+        if engine.url.password:
+            args.append("-p%s" % engine.url.password)
+        if engine.url.host and engine.url.host != "localhost":
+            args += ["-h", engine.url.host]
+        args.append(engine.url.database)
         return args, {}
 
-    if engine == "postgresql":
-        args = ["pg_dump"]
-        if username:
-            args += ["-U", username]
-        if password:
-            env["PGPASSWORD"] = password
-        if hostname and hostname != "localhost":
-            args += ["-h", hostname]
-        args.append(database)
+    if engine.name == "postgresql":
+        args, env = ["pg_dump"], {}
+        if engine.url.username:
+            args += ["-U", engine.url.username]
+        if engine.url.password:
+            env["PGPASSWORD"] = engine.url.password
+        if engine.url.host and engine.url.host != "localhost":
+            args += ["-h", engine.url.host]
+        args.append(engine.url.database)
         return args, env
 
-    return None, None
+    raise CuckooOperationalError(
+        "Error creating SQL database backup as your SQL database URI "
+        "wasn't understood by us: %r!" % dburi
+    )
+
+def movesql(dburi, mode, dirpath):
+    engine = _dburi_engine(dburi)
+    if engine.name != "sqlite":
+        return
+
+    if mode == "copy":
+        import_file = shutil.copy
+    elif mode == "move":
+        import_file = shutil.move
+    elif mode == "symlink":
+        if is_windows():
+            raise RuntimeError("Can't use 'symlink' mode under Windows!")
+        import_file = os.symlink
+
+    # For more information on the os.path.join() usage see also dumpcmd().
+    import_file(
+        os.path.abspath(os.path.join(dirpath, engine.url.database)),
+        cwd("cuckoo.db")
+    )
 
 def sqldump(dburi, dirpath):
     args, env = dumpcmd(dburi, dirpath)
-    if not args:
-        raise CuckooOperationalError(
-            "Error creating SQL database backup as your SQL database "
-            "configuration wasn't understood by us (database URI=%s)!" % dburi
-        )
 
     envargs = " ".join("%s=%s" % (k, v) for k, v in env.items())
     cmdline = " ".join('"%s"' % arg if " " in arg else arg for arg in args)
@@ -86,7 +106,7 @@ def sqldump(dburi, dirpath):
     print "input cmd  =>", cmd
     print "output SQL =>", cwd("backup.sql")
 
-    if not click.confirm("Would you like to make a backup"):
+    if not click.confirm("Would you like to make a backup", default=True):
         return
 
     try:
@@ -143,8 +163,12 @@ def import_cuckoo(username, mode, dirpath):
     # Create a fresh Cuckoo Working Directory.
     cuckoo_create(username, cfg, quiet=True)
 
-    # Ask if the user would like to make a backup of the SQL database.
-    sqldump(cfg["cuckoo"]["database"]["connection"], dirpath)
+    dburi = cfg["cuckoo"]["database"]["connection"]
+
+    # Ask if the user would like to make a backup of the SQL database and in
+    # the case of sqlite3, copy/move/symlink cuckoo.db to the CWD.
+    sqldump(dburi, dirpath)
+    movesql(dburi, mode, dirpath)
 
     # Run database migrations.
     if not migrate_database():
@@ -156,10 +180,11 @@ def import_cuckoo(username, mode, dirpath):
     import_legacy_analyses(mode, dirpath)
 
     # Urge the user to run the community command.
+    print
     print "You have successfully imported your old version of Cuckoo!"
     print "However, in order to get up-to-date, you'll probably want to"
-    print " "*10, yellow("run the community command")
-    print "by running 'cuckoo community' manually."
+    print yellow("run the community command"),
+    print "by running", red("'cuckoo community'"), "manually."
     print "The community command will fetch the latest monitoring updates"
     print "and Cuckoo Signatures."
 

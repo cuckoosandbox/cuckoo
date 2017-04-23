@@ -30,6 +30,7 @@ class AnalysisRoutes:
             "misp": "misp/index",
             "dropped_files": "dropped/dropped_files",
             "dropped_buffers": "dropped/dropped_buffers",
+            "memory": "memory/index",
             "procmemory": "procmemory/index",
             "options": "options/index",
             "feedback": "feedback/index"

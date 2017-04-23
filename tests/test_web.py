@@ -13,7 +13,7 @@ import tempfile
 import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError
-from cuckoo.common.files import temppath
+from cuckoo.common.files import temppath, Files
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.feedback import CuckooFeedback
@@ -110,6 +110,25 @@ class TestWebInterface(object):
         r = AnalysisRoutes.detail(request, 1, "static").content
         assert "Microsoft Word 8.0" in r
         assert "This is a test PDF file" in r
+
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_summary_pdf_nometadata(self, p, request):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": __file__,
+        })
+        s.set_options({
+            "pdf_timeout": 10,
+        })
+        s.file_path = __file__
+
+        p._get_report.return_value = {
+            "static": s.run(),
+        }
+        r = AnalysisRoutes.detail(request, 1, "static").content
+        assert "No PDF metadata could be extracted!" in r
 
     def test_submit_defaults(self):
         set_cwd(tempfile.mkdtemp())
@@ -509,6 +528,14 @@ class TestWebInterfaceFeedback(object):
             "simulated-human-interaction": False,
         }
 
+    def test_resubmit_file_missing(self, client):
+        filepath = Files.temp_put("hello world")
+        db.add_path(filepath, options={
+            "human": 0, "free": "yes",
+        })
+        os.unlink(filepath)
+        assert client.get("/submit/re/1/").status_code == 500
+
     def test_import_analysis(self, client):
         # Pack sample_analysis_storage into an importable .zip analysis.
         buf = io.BytesIO()
@@ -659,6 +686,14 @@ class TestMongoInteraction(object):
                     }
                 mongo.db.analysis.save(d)
 
+            # Handle analyses that somehow don't have a "target" field.
+            mongo.db.analysis.save({
+                "info": {
+                    "id": 999,
+                    "category": "archive",
+                },
+            })
+
         def req(self, client, **kw):
             return client.post(
                 "/analysis/api/tasks/recent/",
@@ -671,11 +706,11 @@ class TestMongoInteraction(object):
             r = self.req(client)
             assert r.status_code == 200
             obj = json.loads(r.content)
-            assert len(obj["tasks"]) == 6
-            assert obj["tasks"][0]["id"] == 6
-            assert obj["tasks"][0]["target"] == "pdf0.pdf @ pdf0.zip"
-            assert obj["tasks"][5]["id"] == 1
-            assert obj["tasks"][5]["target"] == "target.exe"
+            assert len(obj["tasks"]) == 7
+            assert obj["tasks"][1]["id"] == 6
+            assert obj["tasks"][1]["target"] == "pdf0.pdf @ pdf0.zip"
+            assert obj["tasks"][6]["id"] == 1
+            assert obj["tasks"][6]["target"] == "target.exe"
 
         def test_limit2(self, client):
             r = self.req(client, limit=2)
@@ -702,7 +737,7 @@ class TestMongoInteraction(object):
             r = self.req(client, cats=["archive"])
             assert r.status_code == 200
             obj = json.loads(r.content)
-            assert len(obj["tasks"]) == 1
+            assert len(obj["tasks"]) == 2
 
         def test_doc_packages(self, client):
             r = self.req(client, packs=["doc", "vbs", "xls", "js"])

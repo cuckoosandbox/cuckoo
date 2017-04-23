@@ -50,7 +50,8 @@ an output directory and a couple of different *modes*. The rest is done by
 
 The three different modes are best described as follows. Keep in mind that
 these modes only inform the importing process on what to do with the existing
-analyses - these modes do not apply to any used databases or other data.
+analyses and, in the case of sqlite3 usage, the database file. These modes do
+not apply to any other used databases or data not mentioned in this document.
 
 * ``copy``: **Copies** all the analyses from the old setup to the new CWD. In
   this mode the old ``storage/`` folder will be copied to ``$CWD/storage/``.
@@ -103,5 +104,5 @@ channels that we've put in-place.
 
 .. warning::
    One should **not** clean the old Cuckoo setup after the import. By
-   attempting to do so you may loose the existing analyses (if ``symlink``
+   attempting to do so you may lose the existing analyses (if ``symlink``
    mode is used) and the SQL, MongoDB, and ElasticSearch databases.

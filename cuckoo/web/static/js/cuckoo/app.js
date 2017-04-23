@@ -426,7 +426,6 @@ $(function () {
                 $(holder).addClass('dropped');
             },
             success: function success(data, holder) {
-
                 setTimeout(function () {
                     window.location.href = data.responseURL;
                 }, 1000);
@@ -439,7 +438,6 @@ $(function () {
         submit_uploader.draw();
 
         // import uploader
-
         var import_uploader = new DnDUpload.Uploader({
             target: 'div#dashboard-import',
             endpoint: '',
@@ -487,7 +485,9 @@ $(function () {
 
             afterRender: function afterRender(elements) {
 
-                elements.$recent.find('tr').bind('click', function (e) {
+                elements.$recent.find('tr:not(.less-entries)').addClass('clickable');
+
+                elements.$recent.find('tr:not(.less-entries)').bind('click', function (e) {
                     var id = $(this).find('td:first-child').text();
                     window.location = '/analysis/' + id + '/summary/';
                 });

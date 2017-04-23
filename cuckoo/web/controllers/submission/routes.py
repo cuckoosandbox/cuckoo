@@ -77,6 +77,12 @@ class SubmissionRoutes(object):
                 task.target,
             ], submit_manager.translate_options_to(task.options))
         else:
+            if not os.path.exists(task.target):
+                return view_error(
+                    request, "The file you're trying to resubmit "
+                    "no longer exists. Please resubmit it altogether!"
+                )
+
             # TODO There's a very good chance this won't work properly for
             # analyses of type "archive".
             submit_id = submit_manager.pre("files", [{

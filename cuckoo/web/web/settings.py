@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -86,6 +86,11 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = (
     os.path.join(os.getcwd(), "static"),
 )
+
+# If you've setup Cuckoo to be behind a proxy with SSL, then the following
+# setting will inform the Web Interface to redirect to https when necessary
+# (in combination with X-Forwarded-Proto header in nginx configuration).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # List of finder classes that know how to find static files in
 # various locations.

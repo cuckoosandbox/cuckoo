@@ -29,6 +29,10 @@
 </style>
 
 <section id="static_analysis">
+    {% if report.analysis.static.pdf|length == 1 and not p.modification %}
+        No PDF metadata could be extracted!
+    {% endif %}
+
     {% for p in report.analysis.static.pdf %}
 	    {% if p.modification %}
             <div class="row">

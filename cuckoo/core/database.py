@@ -1426,7 +1426,7 @@ class Database(object):
             ).filter(Task.id.in_(task_ids)).order_by(Task.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing tasks: {0}".format(e))
-            return None
+            return []
         else:
             for task in tasks:
                 session.expunge(task)

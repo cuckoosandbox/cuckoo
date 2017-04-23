@@ -8,6 +8,7 @@ import json
 import os.path
 import pytest
 import shutil
+import sys
 import tempfile
 
 from cuckoo.common.abstracts import Processing
@@ -428,6 +429,12 @@ class TestProcessing(object):
             })
             v.run()
         e.match("Unsupported task category")
+
+class TestVolatilityLoading(object):
+    def test_no_volatility(self):
+        sys.modules.pop("volatility", None)
+        from cuckoo.processing.memory import HAVE_VOLATILITY
+        assert HAVE_VOLATILITY is False
 
 class TestBehavior(object):
     def test_process_tree_regular(self):

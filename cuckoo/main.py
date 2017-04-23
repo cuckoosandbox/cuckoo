@@ -458,6 +458,8 @@ def web(ctx, args, host, port, uwsgi, nginx):
         print "    # Cuckoo Web Interface"
         print "    location / {"
         print "        client_max_body_size 1G;"
+        print "        proxy_redirect off;"
+        print "        proxy_set_header X-Forwarded-Proto $scheme;"
         print "        uwsgi_pass  _uwsgi_cuckoo_web;"
         print "        include     uwsgi_params;"
         print "    }"
@@ -539,10 +541,10 @@ def import_(ctx, mode, path):
     print yellow("You are importing an existing Cuckoo setup. Please")
     print yellow("understand that, depending on the mode taken, if ")
     print yellow("you remove the old Cuckoo setup after this import ")
-    print yellow("you may still"), red("loose ALL of your data!")
+    print yellow("you may still"), red("lose ALL of your data!")
     print
     print yellow("Additionally, database migrations will be performed ")
-    print yellow("in-place. You won't be able to use your old Cuckoo ")
+    print yellow("in-place*. You won't be able to use your old Cuckoo ")
     print yellow("setup anymore afterwards! However, we'll provide ")
     print yellow("you with the option to create a SQL backup beforehand.")
     print
@@ -550,6 +552,9 @@ def import_(ctx, mode, path):
     print red("corrupt your new setup: its SQL, MongoDB, and ")
     print red("ElasticSearch database may be dropped and, in 'symlink'")
     print red("mode, the analyses removed.")
+    print
+    print yellow("*: Except for sqlite3 databases in combination with")
+    print yellow("   the import 'copy' approach.")
     print
 
     value = click.confirm(

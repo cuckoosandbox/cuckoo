@@ -184,6 +184,8 @@ class SubmitManager(object):
         ret = []
         submit = db.view_submit(submit_id)
 
+        machines = {}
+
         for entry in config["file_selection"]:
             # Merge the global & per-file analysis options.
             info = copy.deepcopy(config["global"])
@@ -191,6 +193,17 @@ class SubmitManager(object):
             info.update(entry.get("options", {}))
             options = copy.deepcopy(config["global"]["options"])
             options.update(entry.get("options", {}).get("options", {}))
+
+            machine = info.get("machine")
+            if machine:
+                if machine not in machines:
+                    m = db.view_machine(machine)
+                    # TODO Add error handling for missing machine entry.
+                    machines[machine] = m.label if m else None
+
+                machine = machines[machine]
+            else:
+                machine = None
 
             kw = {
                 "package": info.get("package"),
@@ -201,7 +214,7 @@ class SubmitManager(object):
                 "tags": info.get("tags"),
                 "memory": options.get("full-memory-dump"),
                 "enforce_timeout": options.get("enforce-timeout"),
-                "machine": info.get("machine"),
+                "machine": machine,
                 "platform": info.get("platform"),
                 "options": self.translate_options_from(info, options),
                 "submit_id": submit_id,

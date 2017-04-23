@@ -317,7 +317,7 @@ var Uploader = function () {
                 if (_self.options.ajax) {
 
                     var event = document.createEvent("HTMLEvents");
-                    event.initEvent("submit", true, false);
+                    event.initEvent("submit", true, true);
                     _self._selectors["form"].dispatchEvent(event);
                     _self._change_callback(_self, holder);
                 } else {
@@ -327,12 +327,11 @@ var Uploader = function () {
             });
 
             // do our own thing when the form is submitted
-            _self._selectors["form"].addEventListener('submit', function (e) {
 
-                e.preventDefault();
+            $(_self._selectors["form"]).bind('submit', function (event) {
 
                 if (_self.options.ajax) {
-                    e.preventDefault();
+                    event.preventDefault();
                     this._process_files();
                 }
             }.bind(this));
@@ -2425,7 +2424,7 @@ var submission_options = [{
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'jar', 'js', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes

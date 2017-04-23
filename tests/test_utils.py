@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import cStringIO
+import hashlib
 import io
 import mock
 import os
@@ -373,6 +374,22 @@ def test_validate_url():
     assert utils.validate_url("google.com/test") == "http://google.com/test"
     assert utils.validate_url("https://google.com/") == "https://google.com/"
     assert utils.validate_url("ftp://google.com/") is None
+
+def test_validate_hash():
+    assert utils.validate_hash("a") is False
+    assert utils.validate_hash("a"*32) is True
+    assert utils.validate_hash("A") is False
+    assert utils.validate_hash("A"*40) is True
+    assert utils.validate_hash("A"*31 + "g") is False
+    assert utils.validate_hash("A"*127 + "z") is False
+    assert utils.validate_hash("A"*128 + "g") is False
+
+    assert utils.validate_hash(hashlib.md5().hexdigest()) is True
+    assert utils.validate_hash(hashlib.sha1().hexdigest()) is True
+    assert utils.validate_hash(hashlib.sha256().hexdigest()) is True
+    assert utils.validate_hash(hashlib.sha512().hexdigest()) is True
+
+    assert utils.validate_hash("http://cuckoosandbox.org/1234567") is False
 
 def test_list_of():
     assert utils.list_of_strings(1) is False

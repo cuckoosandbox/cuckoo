@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
 <div class="alert alert-info center">
     <a class="btn btn-primary btn-small" href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}">Download Full Memory Dump</a>
 </div>
@@ -67,3 +72,5 @@
         </div>
     </div>
 </div>
+
+{% endblock %}

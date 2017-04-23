@@ -60,12 +60,12 @@ def convert_to_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
 
-def validate_hash(hash):
-    """Validates a hash by length and contents"""
-    if len(hash) not in (32, 40, 64, 128):
-        return
+def validate_hash(h):
+    """Validates a hash by length and contents."""
+    if len(h) not in (32, 40, 64, 128):
+        return False
 
-    return "".join(ch for ch in hash if re.match("\\w", ch))
+    return bool(re.match("[0-9a-fA-F]*$", h))
 
 def validate_url(url):
     """Validates an URL using Django's built-in URL validator"""
