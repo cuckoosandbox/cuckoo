@@ -4677,11 +4677,27 @@ body.night .dndupload__v2 {
 .upload-module__container {
   width: 325px;
 }
+.upload-module__body {
+  width: 650px;
+  margin-left: -160px;
+}
+.upload-module__body--left {
+  width: 335px;
+  float: left;
+}
+.upload-module__body--right {
+  float: right;
+  margin-top: 131px;
+}
 .upload-module h3 {
   color: #B0B0B0;
   font-weight: 900;
   font-size: 18px;
   margin-bottom: 15px;
+}
+.upload-module .allowed-file-types {
+  width: 300px;
+  padding-left: 30px;
 }
 .upload-module .allowed-file-types h4 {
   font-weight: 400;

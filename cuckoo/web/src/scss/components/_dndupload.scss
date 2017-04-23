@@ -372,6 +372,23 @@
         width: 325px;
     }
 
+    &__body {
+
+        width: 650px;
+        margin-left: -160px;
+
+        &--left {
+            width: 335px;
+            float: left;
+        }
+
+        &--right {
+            float: right;
+            margin-top: 131px;
+        }
+
+    }
+
     h3 {
         color: #B0B0B0;
         font-weight: 900;
@@ -380,6 +397,9 @@
     }
 
     .allowed-file-types {
+
+        width: 300px;
+        padding-left: 30px;
 
         h4 {
             font-weight: 400;
