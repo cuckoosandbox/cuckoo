@@ -29,10 +29,11 @@ body[id^="analysis"] { padding-top: 50px; }
 body[id^="submission/"] { padding-top: 50px; }
 
 // hides the footer when it needs to be hidden
+// mostly pages are excluded that have not really been updated yet.
 body[id="submission/pre"],
-body[id="submission/index"],
+body[id="submission/index"],x
 body[id="submission/post"],
-body[id^="analysis"]:not([id="#analysis.views.pending"]) {
+body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) {
 	footer:not(.flex-grid__footer), 
 	#footer-extra {
 		display: none;

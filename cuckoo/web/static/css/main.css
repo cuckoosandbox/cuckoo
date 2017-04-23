@@ -3118,11 +3118,12 @@ body[id^="submission/"] {
 body[id="submission/pre"] footer:not(.flex-grid__footer),
 body[id="submission/pre"] #footer-extra,
 body[id="submission/index"] footer:not(.flex-grid__footer),
-body[id="submission/index"] #footer-extra,
+body[id="submission/index"] #footer-extra, x
 body[id="submission/post"] footer:not(.flex-grid__footer),
+x
 body[id="submission/post"] #footer-extra,
-body[id^="analysis"]:not([id="#analysis.views.pending"]) footer:not(.flex-grid__footer),
-body[id^="analysis"]:not([id="#analysis.views.pending"]) #footer-extra {
+body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) footer:not(.flex-grid__footer),
+body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) #footer-extra {
   display: none;
 }
 
@@ -6540,7 +6541,7 @@ body.night .flex-tabs__tab .btn:not(.active):hover, body.night .flex-tabs__tab--
       -ms-flex-direction: column;
           flex-direction: column;
   width: 100vw;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 50px);
   font-family: "Roboto", sans-serif;
 }
 .flex-grid.include-footer, .include-footer.flex-grid__horizontal, .include-footer.flex-grid__horizontal--grow {
