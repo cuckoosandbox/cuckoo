@@ -1089,7 +1089,7 @@ class FullMigration(object):
         )
 
         for machinery in machineries:
-            for machine in config("%s:%s:machines" % (machinery, machinery)):
+            for machine in cfg[machinery][machinery]["machines"]:
                 assert machine in cfg[machinery]
                 type_ = Config.configuration[machinery]["*"]
                 if isinstance(type_, (tuple, list)):
@@ -1098,7 +1098,7 @@ class FullMigration(object):
                 for key, value in cfg[machinery][machine].items():
                     assert value == type_[key].parse(value)
 
-        for vpn in config("routing:vpn:vpns"):
+        for vpn in cfg["routing"]["vpn"]["vpns"]:
             assert vpn in cfg["routing"]
             type_ = Config.configuration["routing"]["*"]
             if isinstance(type_, (tuple, list)):
@@ -1124,6 +1124,17 @@ class TestFullMigration110(FullMigration):
 class TestFullMigration120(FullMigration):
     DIRPATH = "tests/files/conf/120_plain"
     VERSION = "1.2"
+
+class TestFullMigration120Production(FullMigration):
+    DIRPATH = "tests/files/conf/120_5vms"
+    VERSION = "1.2"
+
+    def test_vms_count(self):
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
+        assert cfg["virtualbox"]["virtualbox"]["mode"] == "headless"
+        assert len(cfg["virtualbox"]["virtualbox"]["machines"]) == 5
+        assert cfg["virtualbox"]["cuckoo3"]["ip"] == "192.168.56.103"
 
 class TestFullMigration20c1(FullMigration):
     DIRPATH = "tests/files/conf/20c1_plain"
