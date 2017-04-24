@@ -181,6 +181,7 @@ class RunProcessing(object):
     def __init__(self, task):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
+        self.machine = {}
         self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
         self.baseline_path = cwd("storage", "baseline")
 
@@ -224,9 +225,11 @@ class RunProcessing(object):
         current.set_path(self.analysis_path)
         # Give it the analysis task object.
         current.set_task(self.task)
+        # Give it the configuration information on the machine.
+        current.set_machine(self.machine)
         # Give it the options from the relevant processing.conf section.
         current.set_options(options)
-        # Give the results that we have obtained so far.
+        # Give it the results that we have obtained so far.
         current.set_results(results)
 
         try:
@@ -259,6 +262,20 @@ class RunProcessing(object):
 
         return None, None
 
+    def populate_machine_info(self):
+        if not self.task.get("guest"):
+            return
+
+        # TODO Actually fill out all of the fields as done for this analysis.
+        try:
+            self.machine["name"] = self.task["guest"]["name"]
+            self.machine.update(config2(
+                self.task["guest"]["manager"].lower(),
+                self.task["guest"]["name"]
+            ))
+        except CuckooConfigurationError:
+            pass
+
     def run(self):
         """Run all processing modules and all signatures.
         @return: processing results.
@@ -272,6 +289,9 @@ class RunProcessing(object):
         results = {
             "_temp": {},
         }
+
+        # Uses plain machine configuration as input.
+        self.populate_machine_info()
 
         # Order modules using the user-defined sequence number.
         # If none is specified for the modules, they are selected in

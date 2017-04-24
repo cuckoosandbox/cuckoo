@@ -607,6 +607,7 @@ class Processing(object):
         self.baseline_path = ""
         self.logs_path = ""
         self.task = None
+        self.machine = None
         self.options = None
         self.results = {}
 
@@ -625,6 +626,10 @@ class Processing(object):
         @param task: task dictionary.
         """
         self.task = task
+
+    def set_machine(self, machine):
+        """Add machine information."""
+        self.machine = machine
 
     def set_baseline(self, baseline_path):
         """Set the path to the baseline directory."""

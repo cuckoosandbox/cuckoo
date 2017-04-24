@@ -16,6 +16,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
+from cuckoo.core.plugins import RunProcessing
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
@@ -435,6 +436,47 @@ class TestVolatilityLoading(object):
         sys.modules.pop("volatility", None)
         from cuckoo.processing.memory import HAVE_VOLATILITY
         assert HAVE_VOLATILITY is False
+
+class TestProcessingMachineInfo(object):
+    def test_machine_info_empty(self):
+        set_cwd(tempfile.mkdtemp())
+        rp = RunProcessing({
+            "id": 1,
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {}
+
+    def test_machine_info_cuckoo1(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo1",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine["name"] == "cuckoo1"
+        assert rp.machine["label"] == "cuckoo1"
+        assert rp.machine["ip"] == "192.168.56.101"
+
+    def test_machine_info_cuckoo2(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo2",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {
+            "name": "cuckoo2",
+        }
 
 class TestBehavior(object):
     def test_process_tree_regular(self):
