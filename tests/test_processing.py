@@ -8,7 +8,6 @@ import json
 import os.path
 import pytest
 import shutil
-import sys
 import tempfile
 
 from cuckoo.common.abstracts import Processing
@@ -431,12 +430,6 @@ class TestProcessing(object):
             v.run()
         e.match("Unsupported task category")
 
-class TestVolatilityLoading(object):
-    def test_no_volatility(self):
-        sys.modules.pop("volatility", None)
-        from cuckoo.processing.memory import HAVE_VOLATILITY
-        assert HAVE_VOLATILITY is False
-
 class TestProcessingMachineInfo(object):
     def test_machine_info_empty(self):
         set_cwd(tempfile.mkdtemp())
@@ -516,7 +509,7 @@ class TestBehavior(object):
     def test_process_tree_pid_reuse(self):
         pt = ProcessTree(None)
 
-        # Parent PID of the initial malicious process (pid=2624) is later on
+        # Parent PID of the initial malicious process (pid=2104) is later on
         # created again, confusing our earlier code and therefore not
         # displaying any of the malicious processes in our Web Interface.
         l = [

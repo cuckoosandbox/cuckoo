@@ -43,7 +43,10 @@ except ImportError as e:
             "(install with `pip install pycrypto`)"
         )
 
-    HAVE_VOLATILITY = False
+    if e.message.startswith("No module named volatility"):
+        HAVE_VOLATILITY = False
+    else:
+        raise
 except NameError as e:
     if "distorm3" in e.message:
         raise CuckooStartupError(
