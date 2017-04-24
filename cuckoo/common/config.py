@@ -284,6 +284,7 @@ class Config(object):
                 "resultserver_port": Int(),
                 "tags": String(),
                 "options": List(String, None, ",\\s"),
+                "osprofile": String(required=False),
             },
             "__star__": ("virtualbox", "machines"),
         },
@@ -347,6 +348,7 @@ class Config(object):
                 "emulator_port": Int(5554),
                 "resultserver_ip": String("10.0.2.2"),
                 "resultserver_port": Int(2042),
+                "osprofile": String(required=False),
             },
             "__star__": ("avd", "machines"),
         },
@@ -368,6 +370,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("esx", "machines"),
         },
@@ -386,6 +389,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("kvm", "machines"),
         },
@@ -504,6 +508,7 @@ class Config(object):
                 "label": String("physical1"),
                 "platform": String("windows"),
                 "ip": String("192.168.56.101"),
+                "osprofile": String(required=False),
             },
             "__star__": ("physical", "machines"),
         },
@@ -658,6 +663,7 @@ class Config(object):
                     "tags": String("debian_wheezy,64_bit"),
                     "kernel": String(),
                     "initrd": String(),
+                    "osprofile": String(required=False),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -675,6 +681,7 @@ class Config(object):
                     "kernel": String(
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
                     ),
+                    "osprofile": String(""),
                 }, {
                     "__section__": "vm3",
                     "label": String("vm3"),
@@ -693,6 +700,7 @@ class Config(object):
                     "initrd": String(
                         "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
+                    "osprofile": String(""),
                 },
             ],
             "__star__": ("qemu", "machines"),
@@ -820,6 +828,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("vmware", "machines"),
         },
@@ -843,6 +852,7 @@ class Config(object):
                 "resultserver_ip": String(required=False),
                 "resultserver_port": Int(required=False),
                 "tags": String(required=False),
+                "osprofile": String(required=False),
             },
             "__star__": ("vsphere", "machines"),
         },
@@ -864,6 +874,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("xenserver", "machines"),
         },

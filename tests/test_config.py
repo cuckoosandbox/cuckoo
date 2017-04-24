@@ -1060,6 +1060,32 @@ pid_generic =
     cfg = migrate(cfg, "2.0.0", "2.0.1")
     assert cfg["memory"]["mask"]["pid_generic"] == []
 
+def test_migration_201_202():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "virtualbox.conf", """
+[virtualbox]
+machines = cuckoo1, cuckoo2
+[cuckoo1]
+platform = windows
+[cuckoo2]
+platform = windows
+""")
+    # Except for virtualbox.
+    machineries = (
+        "avd", "esx", "kvm", "physical", "qemu",
+        "vmware", "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        Files.create(
+            cwd("conf"), "%s.conf" % machinery,
+            "[%s]\nmachines =" % machinery
+        )
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.1", "2.0.2")
+    assert cfg["virtualbox"]["cuckoo1"]["osprofile"] is None
+    assert cfg["virtualbox"]["cuckoo2"]["osprofile"] is None
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None
@@ -1135,6 +1161,7 @@ class TestFullMigration120Production(FullMigration):
         assert cfg["virtualbox"]["virtualbox"]["mode"] == "headless"
         assert len(cfg["virtualbox"]["virtualbox"]["machines"]) == 5
         assert cfg["virtualbox"]["cuckoo3"]["ip"] == "192.168.56.103"
+        assert cfg["virtualbox"]["cuckoo3"]["osprofile"] is None
 
 class TestFullMigration20c1(FullMigration):
     DIRPATH = "tests/files/conf/20c1_plain"
