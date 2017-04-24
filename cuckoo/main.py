@@ -222,10 +222,13 @@ def init(ctx, conf):
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
 @click.option("-b", "--branch", default="master", help="Specify a different community branch rather than master")
 @click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
-def community(force, branch, filepath):
+@click.pass_context
+def community(ctx, force, branch, filepath):
     """Fetch supplies from the Cuckoo Community."""
+    init_console_logging(level=ctx.parent.level)
     try:
         fetch_community(force=force, branch=branch, filepath=filepath)
+        log.info("Finished fetching & extracting the community files!")
     except KeyboardInterrupt:
         print(yellow("Aborting fetching of the Cuckoo Community resources.."))
 

@@ -41,6 +41,7 @@ def fetch_community(branch="master", force=False, filepath=None):
     if filepath:
         buf = open(filepath, "rb").read()
     else:
+        log.info("Downloading.. %s", URL % branch)
         r = requests.get(URL % branch)
         if r.status_code != 200:
             raise CuckooOperationalError(
@@ -79,9 +80,9 @@ def fetch_community(branch="master", force=False, filepath=None):
 
             # TODO Ask for confirmation as we used to do.
             if os.path.exists(filepath) and not force:
-                log.info(
+                log.debug(
                     "Not overwriting file which already exists: %s",
-                    member.name
+                    member.name[len(name_start)+1:]
                 )
                 continue
 
@@ -89,6 +90,7 @@ def fetch_community(branch="master", force=False, filepath=None):
                 t.makelink(member, filepath)
                 continue
 
+            log.debug("Extracted %s..", member.name[len(name_start)+1:])
             open(filepath, "wb").write(t.extractfile(member).read())
 
 def enumerate_files(path, pattern):
