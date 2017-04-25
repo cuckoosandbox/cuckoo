@@ -90,7 +90,7 @@ class VolatilityAPI(object):
         registry.register_global_options(self.config, commands.Command)
 
         base_conf = {
-            "profile": "WinXPSP2x86",
+            "profile": self.osprofile,
             "use_old_as": None,
             "kdbg": None,
             "help": False,
@@ -112,9 +112,6 @@ class VolatilityAPI(object):
             "verbose": None,
             "write": False
         }
-
-        if self.osprofile:
-            base_conf["profile"] = self.osprofile
 
         for key, value in base_conf.items():
             self.config.update(key, value)
@@ -958,30 +955,44 @@ class VolatilityManager(object):
         ["netscan", "vista", "win7"],
     ]
 
-    def __init__(self, memfile, osprofile=None):
+    def __init__(self, memfile, osprofile):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
+        self.osprofile = osprofile
 
         for pid in config("memory:mask:pid_generic"):
             if pid and pid.isdigit():
                 self.mask_pid.append(int(pid))
 
-        self.no_filter = not config("memory:mask:enabled")
-        self.osprofile = (
-            config("memory:basic:guest_profile") or
-            osprofile or
-            self.get_osprofile()
-        )
+        self.vol = VolatilityAPI(self.memfile, self.osprofile)
 
     def get_osprofile(self):
         """Get the OS profile"""
-        return VolatilityAPI(self.memfile).imageinfo()["data"][0]["osprofile"]
+        return self.vol.imageinfo()["data"][0]["osprofile"]
+
+    def enabled(self, plugin_name, profiles):
+        # Some plugins can only run in certain profiles (i.e., only in
+        # Windows XP/Vista/7, or only in x86 or x64).
+        osprofile = self.osprofile.lower()
+        for profile in profiles:
+            if osprofile.startswith(profile) or osprofile.endswith(profile):
+                break
+        else:
+            if profiles:
+                return False
+
+        if not config("memory:%s:enabled" % plugin_name):
+            log.debug("Skipping '%s' volatility module", plugin_name)
+            return False
+
+        if plugin_name not in self.vol.plugins:
+            return False
+
+        return True
 
     def run(self):
         results = {}
-
-        vol = VolatilityAPI(self.memfile, self.osprofile)
 
         for plugin_name in self.PLUGINS:
             if isinstance(plugin_name, list):
@@ -989,23 +1000,11 @@ class VolatilityManager(object):
             else:
                 profiles = []
 
-            # Some plugins can only run in certain profiles (i.e., only in
-            # Windows XP/Vista/7, or only in x86 or x64).
-            osp = self.osprofile.lower()
-            for profile in profiles:
-                if osp.startswith(profile) or osp.endswith(profile):
-                    break
-            else:
-                if profiles:
-                    continue
-
-            if not config("memory:%s:enabled" % plugin_name):
-                log.debug("Skipping '%s' volatility module", plugin_name)
+            if not self.enabled(plugin_name, profiles):
                 continue
 
-            if plugin_name in vol.plugins:
-                log.debug("Executing volatility '%s' module.", plugin_name)
-                results[plugin_name] = getattr(vol, plugin_name)()
+            log.debug("Executing volatility '%s' module.", plugin_name)
+            results[plugin_name] = getattr(self.vol, plugin_name)()
 
         self.find_taint(results)
         self.cleanup()
@@ -1056,16 +1055,34 @@ class Memory(Processing):
         """
         self.key = "memory"
 
-        results = {}
-        if HAVE_VOLATILITY:
-            if self.memory_path and os.path.exists(self.memory_path):
-                try:
-                    results = VolatilityManager(self.memory_path).run()
-                except Exception:
-                    log.exception("Generic error executing volatility")
-            else:
-                log.error("Memory dump not found: to run volatility you have to enable memory_dump")
-        else:
-            log.error("Cannot run volatility module: volatility library not available")
+        if not HAVE_VOLATILITY:
+            log.error(
+                "Cannot run volatility module: the volatility library "
+                "is not available. Please install it according to their "
+                "documentation."
+            )
+            return
 
-        return results
+        if not self.memory_path or not os.path.exists(self.memory_path):
+            log.error(
+                "VM memory dump not found: to create VM memory dumps you "
+                "have to enable memory_dump in cuckoo.conf!"
+            )
+            return
+
+        osprofile = (
+            self.machine.get("osprofile") or
+            config("memory:basic:guest_profile")
+        )
+        if not osprofile:
+            log.error(
+                "Can't continue to process the VM memory dump for machine "
+                "'%s' if no OS profile has been defined for it. One may "
+                "define its OS profile using the 'osprofile' field for the "
+                "VM in its machinery configuration or set a global default "
+                "using 'guest_profile' in memory.conf" %
+                (self.machine.get("name") or "unknown VM name")
+            )
+            return
+
+        return VolatilityManager(self.memory_path, osprofile).run()

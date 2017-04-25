@@ -21,6 +21,7 @@ from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
+from cuckoo.processing.memory import Memory, VolatilityManager
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
@@ -429,6 +430,91 @@ class TestProcessing(object):
             })
             v.run()
         e.match("Unsupported task category")
+
+class TestVolatility(object):
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_no_mempath(self, p):
+        m = Memory()
+        m.memory_path = None
+        assert m.run() is None
+        p.error.assert_called_once()
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_invalid_mempath(self, p):
+        m = Memory()
+        m.memory_path = "notafile"
+        assert m.run() is None
+        p.error.assert_called_once()
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_global_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({})
+        m.run()
+        p.assert_called_once_with(filepath, "profile0")
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_vm_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({
+            "osprofile": "profile1",
+        })
+        m.run()
+        p.assert_called_once_with(filepath, "profile1")
+
+    @mock.patch("volatility.utils.load_as")
+    def test_plugin_enabled(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "pslist": {
+                    "enabled": True,
+                },
+                "psxview": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        p.return_value = 12345
+        m = VolatilityManager(None, "WinXPSP2x86")
+        assert m.vol.addr_space == 12345
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is True
+        assert m.enabled("netscan", ["vista", "win7"]) is False
+
+        m = VolatilityManager(None, "Win7SP1x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is True
+
+        m = VolatilityManager(None, "Win10x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is False
 
 class TestProcessingMachineInfo(object):
     def test_machine_info_empty(self):
