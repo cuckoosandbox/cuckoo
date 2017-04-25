@@ -11,7 +11,9 @@ import shutil
 import tempfile
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import (
+    CuckooProcessingError, CuckooOperationalError
+)
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
@@ -481,6 +483,11 @@ class TestVolatility(object):
         })
         m.run()
         p.assert_called_once_with(filepath, "profile1")
+
+    def test_invalid_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "invalid_profile").run()
+        e.match("does not exist!")
 
     @mock.patch("volatility.utils.load_as")
     def test_plugin_enabled(self, p):

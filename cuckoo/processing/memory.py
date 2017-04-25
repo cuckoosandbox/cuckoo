@@ -9,7 +9,9 @@ import time
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import config
-from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.exceptions import (
+    CuckooStartupError, CuckooOperationalError
+)
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -58,7 +60,7 @@ except NameError as e:
 class VolatilityAPI(object):
     """ Volatility API interface."""
 
-    def __init__(self, memdump, osprofile=None):
+    def __init__(self, memdump, osprofile):
         """@param memdump: the memdump file path
         @param osprofile: the profile (OS type)
         """
@@ -67,6 +69,7 @@ class VolatilityAPI(object):
         self.osprofile = osprofile
         self.config = None
         self.addr_space = None
+        self.profiles = registry.get_plugin_classes(obj.Profile).keys()
         self.init_config()
 
     def get_dtb(self):
@@ -84,6 +87,13 @@ class VolatilityAPI(object):
         """Creates a volatility configuration."""
         if self.config is not None and self.addr_space is not None:
             return
+
+        if self.osprofile not in self.profiles:
+            raise CuckooOperationalError(
+                "The profile '%s' does not exist! Please pick one of the "
+                "following profiles for your VMs: %s" %
+                (self.osprofile, ", ".join(sorted(self.profiles)))
+            )
 
         self.config = conf.ConfObject()
         self.config.optparser.set_conflict_handler("resolve")
@@ -1085,4 +1095,7 @@ class Memory(Processing):
             )
             return
 
-        return VolatilityManager(self.memory_path, osprofile).run()
+        try:
+            return VolatilityManager(self.memory_path, osprofile).run()
+        except CuckooOperationalError as e:
+            log.error("Error running Volatility: %s", e)
