@@ -160,13 +160,13 @@ do_setup(
     ] + install_requires,
     extras_require={
         ":sys_platform == 'win32'": [
-            "requests==2.7.0",
+            "requests==2.13.0",
         ],
         ":sys_platform == 'darwin'": [
-            "requests==2.7.0",
+            "requests==2.13.0",
         ],
         ":sys_platform == 'linux2'": [
-            "requests[security]==2.7.0",
+            "requests[security]==2.13.0",
             "scapy==2.3.2",
         ],
         "distributed": [
