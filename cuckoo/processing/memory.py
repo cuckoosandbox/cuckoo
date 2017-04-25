@@ -36,6 +36,7 @@ try:
 
     # Inherit Cuckoo debugging level for Volatility commands.
     rootlogger = logging.getLogger()
+    logging.getLogger("volatility.debug").setLevel(rootlogger.level)
     logging.getLogger("volatility.obj").setLevel(rootlogger.level)
     logging.getLogger("volatility.utils").setLevel(rootlogger.level)
 except ImportError as e:
@@ -56,6 +57,11 @@ except NameError as e:
             "(install with `pip install distorm3`)"
         )
     raise
+
+def s(o):
+    if isinstance(o, obj.NoneObject):
+        return None
+    return str(o)
 
 class VolatilityAPI(object):
     """ Volatility API interface."""
@@ -153,8 +159,8 @@ class VolatilityAPI(object):
                 "process_id": int(process.UniqueProcessId),
                 "parent_id": int(process.InheritedFromUniqueProcessId),
                 "num_threads": str(process.ActiveThreads),
-                "num_handles": str(process.ObjectTable.HandleCount),
-                "session_id": str(process.SessionId),
+                "num_handles": s(process.ObjectTable.HandleCount),
+                "session_id": s(process.SessionId),
                 "create_time": str(process.CreateTime or ""),
                 "exit_time": str(process.ExitTime or ""),
             })
@@ -854,7 +860,7 @@ class VolatilityAPI(object):
                 "service_name": str(rec.ServiceName.dereference()),
                 "service_display_name": str(rec.DisplayName.dereference()),
                 "service_type": str(rec.Type),
-                "service_binary_path": str(rec.Binary),
+                "service_binary_path": s(rec.Binary),
                 "service_state": str(rec.State)
             })
 
@@ -929,9 +935,9 @@ class VolatilityAPI(object):
             results.append({
                 "offset": "{0:#010x}".format(net_obj.obj_offset),
                 "process_id": str(net_obj.Owner.UniqueProcessId),
-                "local_address": str(laddr),
+                "local_address": s(laddr),
                 "local_port": str(lport),
-                "remote_address": str(raddr),
+                "remote_address": s(raddr),
                 "remote_port": str(rport),
                 "protocol": str(proto),
             })

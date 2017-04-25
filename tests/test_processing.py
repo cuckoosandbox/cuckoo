@@ -23,7 +23,7 @@ from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
-from cuckoo.processing.memory import Memory, VolatilityManager
+from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
@@ -32,6 +32,12 @@ from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
+
+try:
+    from cuckoo.processing.memory import obj as vol_obj
+    HAVE_VOLATILITY = True
+except ImportError:
+    HAVE_VOLATILITY = False
 
 db = Database()
 
@@ -522,6 +528,14 @@ class TestVolatility(object):
         assert m.enabled("psxview", []) is False
         assert m.enabled("sockscan", ["winxp"]) is False
         assert m.enabled("netscan", ["vista", "win7"]) is False
+
+    def test_s(self):
+        if not HAVE_VOLATILITY:
+            return
+
+        assert obj_s(1) == "1"
+        assert obj_s("foo") == "foo"
+        assert obj_s(vol_obj.NoneObject()) is None
 
 class TestProcessingMachineInfo(object):
     def test_machine_info_empty(self):
