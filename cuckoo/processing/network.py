@@ -1005,7 +1005,8 @@ class SortCap(object):
 
     def close(self):
         if self.fd:
-            self.fd.close()
+            if type(self.fd) is dpkt.pcap.Writer:
+                self.fd.close()
             self.fd = None
 
     def next(self):
