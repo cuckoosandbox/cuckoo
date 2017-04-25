@@ -439,6 +439,7 @@ class TestProcessing(object):
             v.run()
         e.match("Unsupported task category")
 
+@pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
 class TestVolatility(object):
     @mock.patch("cuckoo.processing.memory.log")
     def test_no_mempath(self, p):
@@ -530,9 +531,6 @@ class TestVolatility(object):
         assert m.enabled("netscan", ["vista", "win7"]) is False
 
     def test_s(self):
-        if not HAVE_VOLATILITY:
-            return
-
         assert obj_s(1) == "1"
         assert obj_s("foo") == "foo"
         assert obj_s(vol_obj.NoneObject()) is None
