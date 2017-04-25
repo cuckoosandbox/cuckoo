@@ -40,6 +40,11 @@ install:
   - pip install psycopg2 mysql-python yara-python==3.5.0
   - pip install pytest pytest-cov codecov coveralls weasyprint
 
+  # Install Volatility.
+  - git clone https://github.com/volatilityfoundation/volatility vol-setup
+  - cd vol-setup && python setup.py install && cd ..
+  - pip install distorm3 pycrypto
+
   # Fetch monitor & stuff which is required for CWD migration tests.
   - python stuff/monitor.py
 
