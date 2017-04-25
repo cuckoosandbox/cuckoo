@@ -309,3 +309,10 @@
 	}
 
 }
+
+// page switcher defaults
+.page-switcher {
+	&__pages > div:not(.active) {
+		display: none;
+	}
+}
