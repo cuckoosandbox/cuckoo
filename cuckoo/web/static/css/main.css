@@ -5664,6 +5664,8 @@ table.cuckoo-table .less-entries > td:nth-child(odd), table.cuckoo-table__fullsc
   background-color: #f5f5f5;
 }
 table.cuckoo-table__fullscreen {
+  table-layout: fixed;
+  max-width: 100%;
   font-size: 14px;
 }
 table.cuckoo-table__fullscreen thead > tr:first-child th {
@@ -5671,6 +5673,7 @@ table.cuckoo-table__fullscreen thead > tr:first-child th {
 }
 table.cuckoo-table__fullscreen tbody td {
   padding: 15px;
+  word-wrap: break-word;
 }
 table.cuckoo-table__fullscreen .pagination a {
   padding: 8px 10px;
