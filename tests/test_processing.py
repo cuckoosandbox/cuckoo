@@ -138,6 +138,21 @@ class TestProcessing(object):
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
+    def test_phishing0_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "phishing0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/phishing0.pdf"
+        assert "googleattachmentsigned" in s.run()["pdf"][0]["urls"][0]
+
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
         set_cwd(tempfile.mkdtemp())

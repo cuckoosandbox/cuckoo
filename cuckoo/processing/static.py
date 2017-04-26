@@ -537,6 +537,49 @@ class PdfDocument(object):
     def _sanitize(self, d, key):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
+    def walk_object(self, obj, entry):
+        if isinstance(obj, peepdf.PDFCore.PDFStream):
+            stream = obj.decodedStream
+
+            # Is this actually Javascript code?
+            if not peepdf.JSAnalysis.isJavascript(stream):
+                return
+
+            javascript = stream.decode("latin-1")
+            entry["javascript"].append({
+                "orig_code": javascript,
+                "beautified": jsbeautify(javascript),
+                "urls": [],
+            })
+            return
+
+        if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+            for url in obj.urlsFound:
+                entry["urls"].append(self._parse_string(url))
+
+            for url in obj.uriList:
+                entry["urls"].append(self._parse_string(url))
+
+            # TODO We should probably add some more criteria here.
+            uri_obj = obj.elements.get("/URI")
+            if uri_obj:
+                if isinstance(uri_obj, peepdf.PDFCore.PDFString):
+                    entry["urls"].append(uri_obj.value)
+                else:
+                    log.warning(
+                        "Identified a potential URL, but its associated "
+                        "type is not a string?"
+                    )
+
+            for element in obj.elements.values():
+                self.walk_object(element, entry)
+            return
+
+        if isinstance(obj, peepdf.PDFCore.PDFArray):
+            for element in obj.elements:
+                self.walk_object(element, entry)
+            return
+
     def run(self):
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
@@ -564,29 +607,10 @@ class PdfDocument(object):
                 "urls": [],
             }
 
-            for obj in f.body[version].objects.values():
-                if obj.object.type == "stream":
-                    stream = obj.object.decodedStream
+            for idx, obj in enumerate(f.body[version].objects.values()):
+                self.walk_object(obj.object, row)
 
-                    # Is this actually Javascript code?
-                    if not peepdf.JSAnalysis.isJavascript(stream):
-                        continue
-
-                    javascript = stream.decode("latin-1")
-                    row["javascript"].append({
-                        "orig_code": javascript,
-                        "beautified": jsbeautify(javascript),
-                        "urls": [],
-                    })
-                    continue
-
-                if obj.object.type == "dictionary":
-                    for url in obj.object.urlsFound:
-                        row["urls"].append(self._parse_string(url))
-
-                    for url in obj.object.uriList:
-                        row["urls"].append(self._parse_string(url))
-
+            row["urls"] = sorted(set(row["urls"]))
             ret.append(row)
 
         return ret
