@@ -658,7 +658,6 @@ class Config(object):
                     "kernel": String(),
                     "initrd": String(),
                     "osprofile": String(required=False),
-                    "mac": String(),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -677,7 +676,6 @@ class Config(object):
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
                     ),
                     "osprofile": String(""),
-                    "mac": String(),
                 }, {
                     "__section__": "vm3",
                     "label": String("vm3"),
@@ -697,7 +695,6 @@ class Config(object):
                         "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
                     "osprofile": String(""),
-                    "mac": String(),
                 },
             ],
             "__star__": ("qemu", "machines"),
