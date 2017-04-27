@@ -322,6 +322,18 @@ class TestProcessing(object):
         assert os.path.exists(shotpath)
         os.unlink(shotpath)
 
+    @mock.patch("cuckoo.processing.screenshots.PIL.Image")
+    def test_screenshot_truncated(self, p):
+        s = Screenshots()
+        s.shots_path = os.path.join(
+            "tests", "files", "sample_analysis_storage", "shots"
+        )
+        s.set_options({})
+        p.open.return_value.save.side_effect = IOError(
+            "image file is truncated (42 bytes not processed)"
+        )
+        assert s.run() == []
+
     def test_targetinfo(self):
         ti = TargetInfo()
         ti.file_path = __file__
