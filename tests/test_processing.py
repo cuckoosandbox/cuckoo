@@ -455,17 +455,30 @@ class TestProcessing(object):
 class TestVolatility(object):
     @mock.patch("cuckoo.processing.memory.log")
     def test_no_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
         m = Memory()
         m.memory_path = None
         assert m.run() is None
         p.error.assert_called_once()
+        assert "dump not found" in p.error.call_args_list[0][0][0]
 
     @mock.patch("cuckoo.processing.memory.log")
     def test_invalid_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
         m = Memory()
         m.memory_path = "notafile"
         assert m.run() is None
         p.error.assert_called_once()
+        assert "dump not found" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_empty_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+        m = Memory()
+        m.memory_path = Files.temp_put("")
+        assert m.run() is None
+        p.error.assert_called_once()
+        assert "dump empty" in p.error.call_args_list[0][0][0]
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_global_osprofile(self, p):
@@ -477,7 +490,7 @@ class TestVolatility(object):
                 },
             },
         })
-        filepath = Files.temp_named_put("", "memory.dmp")
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
         m = Memory()
         m.set_path(os.path.dirname(filepath))
         m.set_machine({})
@@ -494,7 +507,7 @@ class TestVolatility(object):
                 },
             },
         })
-        filepath = Files.temp_named_put("", "memory.dmp")
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
         m = Memory()
         m.set_path(os.path.dirname(filepath))
         m.set_machine({

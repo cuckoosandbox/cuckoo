@@ -1095,6 +1095,13 @@ class Memory(Processing):
             )
             return
 
+        if not os.path.getsize(self.memory_path):
+            log.error(
+                "VM memory dump empty: to properly create VM memory dumps "
+                "you have to enable memory_dump in cuckoo.conf!"
+            )
+            return
+
         osprofile = (
             self.machine.get("osprofile") or
             config("memory:basic:guest_profile")
