@@ -4,13 +4,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import hashlib
+import logging
 import os
-import sys
+import pkgutil
 import socket
 import struct
-import pkgutil
-import logging
-import hashlib
+import sys
 import threading
 import traceback
 import urllib
@@ -22,8 +22,7 @@ from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32
-from lib.common.exceptions import CuckooError, CuckooPackageError
-from lib.common.exceptions import CuckooDisableModule
+from lib.common.exceptions import CuckooError, CuckooDisableModule
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
@@ -434,6 +433,13 @@ class Analyzer(object):
 
         self.reboot = []
 
+    def get_pipe_path(self, name):
+        """Returns \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
+        version = sys.getwindowsversion()
+        if version.major == 5 and version.minor == 1:
+            return "\\\\.\\PIPE\\%s" % name
+        return "\\??\\PIPE\\%s" % name
+
     def prepare(self):
         """Prepare env for analysis."""
         # Get SeDebugPrivilege for the Python process. It will be needed in
@@ -459,13 +465,12 @@ class Analyzer(object):
         self.default_dll = self.config.options.get("dll")
 
         # If a pipe name has not set, then generate a random one.
-        if "pipe" in self.config.options:
-            self.config.pipe = "\\??\\PIPE\\%s" % self.config.options["pipe"]
-        else:
-            self.config.pipe = "\\??\\PIPE\\%s" % random_string(16, 32)
+        self.config.pipe = self.get_pipe_path(
+            self.config.options.get("pipe", random_string(16, 32))
+        )
 
         # Generate a random name for the logging pipe server.
-        self.config.logpipe = "\\??\\PIPE\\%s" % random_string(16, 32)
+        self.config.logpipe = self.get_pipe_path(random_string(16, 32))
 
         # Initialize and start the Command Handler pipe server. This is going
         # to be used for communicating with the monitored processes.
