@@ -22,7 +22,7 @@ from cuckoo.core.database import Database
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
 from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
+from cuckoo.misc import set_cwd, cwd, mkdir, is_linux
 
 db = Database()
 
@@ -384,29 +384,6 @@ class TestProcessingTasks(object):
         p.return_value.view_task.assert_any_call(3)
         p.return_value.view_task.assert_any_call(42)
 
-    @mock.patch("cuckoo.apps.apps.process_task")
-    def test_process_task_range_multi(self, p):
-        mkdir(cwd(analysis=1234))
-        mkdir(cwd(analysis=2345))
-        process_task_range("1234,2345")
-        assert p.call_count == 2
-        p.assert_any_call({
-            "id": 1234,
-            "category": "file",
-            "target": "",
-            "options": {},
-            "package": None,
-            "custom": None,
-        })
-        p.assert_any_call({
-            "id": 2345,
-            "category": "file",
-            "target": "",
-            "options": {},
-            "package": None,
-            "custom": None,
-        })
-
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_tasks")
     def test_process_many(self, p, q):
@@ -454,7 +431,6 @@ class TestProcessingTasks(object):
     def test_empty_reprocess(self):
         db.connect()
         mkdir(cwd(analysis=1))
-        logging.basicConfig(level=logging.DEBUG)
         process_task_range("1")
         assert os.path.exists(cwd("reports", "report.json", analysis=1))
         obj = json.load(open(cwd("reports", "report.json", analysis=1), "rb"))

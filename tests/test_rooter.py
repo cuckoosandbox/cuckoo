@@ -206,7 +206,7 @@ def do_cuckoo_rooter():
             }), None), SystemExit
         )
         r.cuckoo_rooter(
-            socket_path , "group", __file__, __file__, __file__, __file__
+            socket_path, "group", __file__, __file__, __file__, __file__
         )
 
     nic_available.assert_called_once_with("interface")

@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
-import logging
 import os
 import pytest
 import responses
@@ -16,7 +15,7 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_console_logging, HAVE_YARA, init_tasks, init_binaries
+    HAVE_YARA, init_tasks, init_binaries
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd

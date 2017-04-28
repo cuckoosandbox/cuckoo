@@ -79,7 +79,7 @@ def test_process_json_logging():
     def process_tasks(instance, maxcount):
         logger("foo bar", action="hello.world", status="success")
 
-    with mock.patch("cuckoo.main.Database") as p0:
+    with mock.patch("cuckoo.main.Database"):
         with mock.patch("cuckoo.main.process_tasks") as p1:
             with mock.patch("time.time") as p2:
                 p1.side_effect = process_tasks

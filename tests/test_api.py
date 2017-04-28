@@ -5,13 +5,12 @@
 import io
 import json
 import os.path
-import shutil
 import tempfile
 import time
 import werkzeug
 
 from cuckoo.apps import api
-from cuckoo.common.files import Folders, Files
+from cuckoo.common.files import Files
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
