@@ -145,9 +145,16 @@ class VolatilityAPI(object):
         # See: #464.
         try:
             self.addr_space = utils.load_as(self.config)
-        except exc.AddrSpaceError:
+        except exc.AddrSpaceError as e:
             if self.get_dtb():
                 self.addr_space = utils.load_as(self.config)
+            elif "No suitable address space mapping found" in e.message:
+                raise CuckooOperationalError(
+                    "An incorrect OS has been specified for this machine! "
+                    "Please provide the correct one or Cuckoo won't be able "
+                    "to provide Volatility-based results for analyses with "
+                    "this VM."
+                )
             else:
                 raise
 

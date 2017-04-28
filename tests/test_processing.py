@@ -34,7 +34,7 @@ from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
 try:
-    from cuckoo.processing.memory import obj as vol_obj
+    from cuckoo.processing.memory import obj as vol_obj, exc as vol_exc
     HAVE_VOLATILITY = True
 except ImportError:
     HAVE_VOLATILITY = False
@@ -525,6 +525,18 @@ class TestVolatility(object):
         with pytest.raises(CuckooOperationalError) as e:
             VolatilityManager(None, "invalid_profile").run()
         e.match("does not exist!")
+
+    @mock.patch("volatility.utils.load_as")
+    @mock.patch("volatility.plugins.filescan.PSScan")
+    def test_wrong_profile(self, p, q):
+        q.side_effect = vol_exc.AddrSpaceError()
+        q.side_effect.append_reason(
+            "hello", "No suitable address space mapping found"
+        )
+        p.return_value.calculate.return_value = []
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "WinXPSP2x86").run()
+        e.match("An incorrect OS has been specified")
 
     @mock.patch("volatility.utils.load_as")
     def test_plugin_enabled(self, p):
