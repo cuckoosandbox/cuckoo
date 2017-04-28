@@ -7,7 +7,6 @@ import logging
 import mock
 import tempfile
 
-from cuckoo.common.config import log_error
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
 from cuckoo.core.startup import (
@@ -104,6 +103,7 @@ def test_init_logging_info(capsys):
     cuckoo_create()
 
     reset_logging()
+    init_console_logging(logging.WARNING)
     init_logging(logging.WARNING)
 
     log = logging.getLogger("testing")
@@ -175,21 +175,3 @@ def test_log_error_action():
     assert errors[0].action == "erroraction"
     assert errors[1].message == "message2"
     assert errors[1].action is None
-
-@mock.patch("cuckoo.common.config.log")
-@mock.patch("cuckoo.common.config.logging")
-def test_config_log_error_nohandler(p, q, capsys):
-    p.getLogger.return_value.handlers = None
-    log_error("%s %s", "foo", "bar")
-    out, err = capsys.readouterr()
-    assert "Configuration error: foo bar" in err
-    q.error.assert_not_called()
-
-@mock.patch("cuckoo.common.config.log")
-@mock.patch("cuckoo.common.config.logging")
-def test_config_log_error_yeshandler(p, q, capsys):
-    p.getLogger.return_value.handlers = [1]
-    log_error("%s %s", "foo", "bar")
-    out, err = capsys.readouterr()
-    assert "Configuration error: foo bar" not in err
-    q.error.assert_called_once_with("%s %s", "foo", "bar")

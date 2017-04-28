@@ -8,9 +8,7 @@ import click
 import os
 import logging
 import re
-import sys
 
-from cuckoo.common.colors import red
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import parse_bool
@@ -19,13 +17,6 @@ from cuckoo.misc import cwd
 log = logging.getLogger(__name__)
 
 _cache = {}
-
-def log_error(message, *args):
-    """Prints to stderr if no logging has been initialized yet."""
-    if not logging.getLogger().handlers:
-        print>>sys.stderr, red("Configuration error: " + message % args)
-    else:
-        log.error(message, *args)
 
 class Type(object):
     """Base Class for Type Definitions"""
@@ -134,7 +125,7 @@ class Boolean(Type):
         try:
             return parse_bool(value)
         except:
-            log_error("Incorrect Boolean %s", value)
+            log.error("Incorrect Boolean %s", value)
 
     def check(self, value):
         try:
@@ -154,7 +145,7 @@ class UUID(Type):
             c = click.UUID(value)
             return str(c)
         except:
-            log_error("Incorrect UUID %s", value)
+            log.error("Incorrect UUID %s", value)
 
     def check(self, value):
         """Checks if the value is of type UUID."""
@@ -197,7 +188,7 @@ class List(Type):
                 ret.append(self.subclass().parse(entry))
             return ret
         except:
-            log_error("Incorrect list: %s", value)
+            log.error("Incorrect list: %s", value)
 
     def check(self, value):
         try:
@@ -884,7 +875,7 @@ class Config(object):
         """Get types for a section entry."""
         section_types = get_section_types(file_name, section)
         if not section_types and not loose:
-            log_error(
+            log.error(
                 "Config section %s:%s not found!", file_name, section
             )
             if strict:
@@ -927,7 +918,7 @@ class Config(object):
             )
 
         if file_name not in self.configuration and not loose:
-            log_error("Unknown config file %s.conf", file_name)
+            log.error("Unknown config file %s.conf", file_name)
             return
 
         for section in config.sections():
@@ -941,7 +932,7 @@ class Config(object):
             try:
                 items = config.items(section)
             except ConfigParser.InterpolationMissingOptionError as e:
-                log_error("Missing environment variable(s): %s", e)
+                log.error("Missing environment variable(s): %s", e)
                 raise CuckooConfigurationError(
                     "Missing environment variable: %s" % e
                 )
@@ -977,7 +968,7 @@ class Config(object):
                     value = types[name].parse(raw_value)
                 else:
                     if not loose:
-                        log_error(
+                        log.error(
                             "Type of config parameter %s:%s:%s not found! "
                             "This may indicate that you've incorrectly filled "
                             "out the Cuckoo configuration, please double "

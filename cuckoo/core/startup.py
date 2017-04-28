@@ -141,12 +141,10 @@ def init_logging(level):
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("cuckoo.log", level)
     init_logger("cuckoo.json")
-    init_logger("console", level)
-    init_logger("database")
     init_logger("task")
 
 def init_console_logging(level=logging.INFO):
-    """Initializes logging only to console."""
+    """Initializes logging only to console and database."""
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("console", level)
     init_logger("database")

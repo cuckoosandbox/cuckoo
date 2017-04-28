@@ -1208,10 +1208,10 @@ def test_list_split():
         "noagent", "nictrace",
     ]
 
-@mock.patch("cuckoo.common.config.log_error")
+@mock.patch("cuckoo.common.config.log")
 def test_list_default_none(p):
     List(String, None, ",")
-    p.assert_not_called()
+    p.error.assert_not_called()
 
 def test_path():
     assert Path(allow_empty=True).check("") is True
@@ -1361,14 +1361,14 @@ def test_config2_liststar():
     cuckoo_create()
     assert config2("qemu", "vm1").interface == "qemubr"
 
-@mock.patch("cuckoo.common.config.log_error")
+@mock.patch("cuckoo.common.config.log")
 def test_no_superfluous_conf(p):
     """Tests that upon CWD creation no superfluous configuration values are
     writted out (which may happen after a configuration migration)."""
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     Config.from_confdir(cwd("conf"))
-    p.assert_not_called()
+    p.error.assert_not_called()
 
 def test_faq():
     assert faq("hehe").startswith("http")

@@ -101,20 +101,19 @@ def cuckoo_init(level, ctx, cfg=None):
             "along the correct directory?"
         )
 
+    init_console_logging(level)
+
+    check_configs()
+    check_version()
+
+    ctx.log and init_logging(level)
+
     # Determine if any CWD updates are required and if so, do them.
     current = open(cwd(".cwd"), "rb").read().strip()
     latest = open(cwd(".cwd", private=True), "rb").read().strip()
     if current != latest:
         migrate_cwd()
         open(cwd(".cwd"), "wb").write(latest)
-
-    check_configs()
-    check_version()
-
-    if ctx.log:
-        init_logging(level)
-    else:
-        init_console_logging(level)
 
     Database().connect()
 
