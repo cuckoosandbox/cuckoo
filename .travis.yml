@@ -40,6 +40,9 @@ install:
   - pip install psycopg2 mysql-python yara-python==3.5.0
   - pip install pytest pytest-cov codecov coveralls weasyprint
 
+  # Fetch monitor & stuff which is required for CWD migration tests.
+  - python stuff/monitor.py
+
 script:
   # Create the Cuckoo Working Directory.
   - cuckoo -d

@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import json
 import logging
 import mock
@@ -11,7 +12,8 @@ import shutil
 import tempfile
 
 from cuckoo.apps.apps import (
-    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
+    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine,
+    migrate_cwd
 )
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooConfigurationError
@@ -626,3 +628,62 @@ def test_config_load_once():
         assert p.return_value.read.call_count == 2
         p.return_value.read.assert_any_call(cwd("conf", "processing.conf"))
         p.return_value.read.assert_any_call(cwd("conf", "reporting.conf"))
+
+class TestMigrateCWD(object):
+    @mock.patch("shutil.copy")
+    def test_up_to_date(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        migrate_cwd()
+        p.assert_not_called()
+
+    @mock.patch("cuckoo.apps.apps.log")
+    @mock.patch("shutil.copy")
+    def test_modified_file(self, p, q):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        open(cwd("agent", "agent.py"), "wb").write("newer agent")
+        with pytest.raises(SystemExit):
+            migrate_cwd()
+        assert q.error.call_count == 2
+        assert "One or more files" in q.error.call_args_list[0][0][0]
+        assert q.warning.call_args_list[1][0][1] == "agent/agent.py"
+        p.assert_not_called()
+
+    @mock.patch("shutil.copy")
+    def test_missing_file(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        # We're going to restore a file that has been removed by the user for
+        # one reason or the other, namely, web/local_settings.py.
+        os.unlink(cwd("web", "local_settings.py"))
+
+        migrate_cwd()
+        p.assert_called_once_with(
+            cwd("..", "data", "web/local_settings.py", private=True),
+            cwd("web/local_settings.py")
+        )
+
+    @mock.patch("cuckoo.apps.apps.hashlib")
+    @mock.patch("shutil.copy")
+    def test_outdated_file(self, p, q):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        # We're going to pretend like web/local_settings.py is outdated by
+        # replacing its sha1 by that of its initial version.
+        our_buf = open(cwd("web", "local_settings.py"), "rb").read()
+
+        def our_sha1(buf):
+            class obj(object):
+                def hexdigest(self):
+                    return "d90bb80df2ed51d393823438f1975c1075523ec8"
+            return obj() if buf == our_buf else hashlib.sha1(buf)
+
+        q.sha1.side_effect = our_sha1
+        migrate_cwd()
+        p.assert_called_once_with(
+            cwd("..", "data", "web/local_settings.py", private=True),
+            cwd("web/local_settings.py")
+        )
