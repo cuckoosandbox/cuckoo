@@ -503,6 +503,11 @@ class TestVolatility(object):
         m.run()
         p.assert_called_once_with(filepath, "profile1")
 
+    def test_empty_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, None).run()
+        e.match("no OS profile has been defined")
+
     def test_invalid_profile(self):
         with pytest.raises(CuckooOperationalError) as e:
             VolatilityManager(None, "invalid_profile").run()
