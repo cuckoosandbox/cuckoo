@@ -227,7 +227,10 @@ def index_yara():
 def init_yara(index):
     """Initialize & load/compile Yara rules."""
     if not HAVE_YARA:
-        log.warning("Unable to import yara (please compile from sources)")
+        log.warning(
+            "Unable to import yara (install with "
+            "`pip install yara-python==3.5.0`)"
+        )
         return
 
     if index:
