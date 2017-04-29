@@ -305,9 +305,17 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
-    # Initialize all modules & Yara rules.
-    init_modules()
-    init_yara(False)
+    try:
+        # Initialize all modules & Yara rules.
+        init_modules()
+        init_yara(False)
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
     try:
         # Regenerate one or more reports.
@@ -487,12 +495,19 @@ def web(ctx, args, host, port, uwsgi, nginx):
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
-    if not args:
+    try:
         execute_from_command_line(
             ("cuckoo", "runserver", "%s:%d" % (host, port))
+            if not args else
+            ("cuckoo",) + args
         )
-    else:
-        execute_from_command_line(("cuckoo",) + args)
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
 @main.command()
 @click.argument("vmname")

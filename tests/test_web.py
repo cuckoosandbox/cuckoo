@@ -7,12 +7,14 @@ import io
 import json
 import mock
 import os
+import pymongo
 import pytest
 import responses
+import socket
 import tempfile
 import zipfile
 
-from cuckoo.common.exceptions import CuckooFeedbackError
+from cuckoo.common.exceptions import CuckooFeedbackError, CuckooCriticalError
 from cuckoo.common.files import temppath, Files
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
@@ -626,6 +628,30 @@ def test_mongodb_disabled():
         import cuckoo.web.web.settings
         cuckoo.web.web.settings.red("...")  # Fake usage.
     e.match("to have MongoDB up-and-running")
+
+@mock.patch("cuckoo.common.mongo.log")
+@mock.patch("cuckoo.common.mongo.socket.create_connection")
+@mock.patch("cuckoo.common.mongo.gridfs")
+@mock.patch("cuckoo.common.mongo.pymongo.MongoClient")
+def test_mongodb_offline(p, q, r, s):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "reporting": {
+            "mongodb": {
+                "enabled": True,
+            },
+        },
+    })
+
+    r.side_effect = socket.error("error")
+    db = p.return_value.__getitem__.return_value
+    db.collection_names.side_effect = pymongo.errors.PyMongoError("error")
+
+    with pytest.raises(CuckooCriticalError) as e:
+        mongo.init()
+        mongo.connect()
+    e.match("Unable to connect to MongoDB")
+    s.warning.assert_called_once()
 
 @pytest.mark.skipif("sys.platform != 'linux2'")
 class TestMongoInteraction(object):

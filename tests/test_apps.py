@@ -123,24 +123,26 @@ class TestAppsWithCWD(object):
         out, _ = capsys.readouterr()
         assert "Aborting Cuckoo DNS Serve" in out
 
-    def test_web(self):
+    @mock.patch("django.core.management.execute_from_command_line")
+    def test_web_noargs(self, p):
         curdir = os.getcwd()
 
-        s = "django.core.management.execute_from_command_line"
-        with mock.patch(s) as p:
-            p.return_value = None
-            main.main(("--cwd", cwd(), "web"), standalone_mode=False)
-            p.assert_called_once_with(
-                ("cuckoo", "runserver", "localhost:8000")
-            )
+        main.main(("--cwd", cwd(), "web"), standalone_mode=False)
+        p.assert_called_once_with(
+            ("cuckoo", "runserver", "localhost:8000")
+        )
 
-        with mock.patch(s) as p:
-            p.return_value = None
-            main.main(
-                ("--cwd", cwd(), "web", "foo", "bar"),
-                standalone_mode=False
-            )
-            p.assert_called_once_with(("cuckoo", "foo", "bar"))
+        os.chdir(curdir)
+
+    @mock.patch("django.core.management.execute_from_command_line")
+    def test_web_args(self, p):
+        curdir = os.getcwd()
+
+        main.main(
+            ("--cwd", cwd(), "web", "foo", "bar"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with(("cuckoo", "foo", "bar"))
 
         os.chdir(curdir)
 

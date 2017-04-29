@@ -31,7 +31,7 @@ class MongoDB(Report):
         cls.fs = mongo.grid
 
         # Set MongoDB schema version.
-        if "cuckoo_schema" in mongo.db.collection_names():
+        if "cuckoo_schema" in mongo.collection_names:
             version = mongo.db.cuckoo_schema.find_one()["version"]
             if version != cls.SCHEMA_VERSION:
                 raise CuckooReportError(
