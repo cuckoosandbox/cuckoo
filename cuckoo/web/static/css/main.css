@@ -4725,6 +4725,7 @@ body.night .dndupload__v2 {
 }
 .upload-module .allowed-file-types ul li span {
   position: absolute;
+  left: 0;
   width: 100%;
   text-align: center;
   bottom: 14px;
