@@ -49,6 +49,7 @@
 
 			&--left,
 			&--right {
+				position: relative;
 				flex-basis: 50%;
 				flex-grow: 0;
 				flex-shrink: 0;
@@ -299,6 +300,58 @@
 
 			.dashboard-module__body--left {
 				border-right-width: 2px;
+
+				#uploader {
+					padding-top: 30px;
+				}
+
+				.toggle-submit-type {
+					position: absolute;
+					width: 100%;
+					text-align: center;
+					bottom: 30px;
+					left: 0;
+					z-index: 10;
+				}
+
+				#submit-with-link {
+					padding: 30px;
+
+					.toggle-submit-type {
+						
+						padding: 0 30px;
+						clear: both;
+
+						a.button { 
+							float: left; 
+							background-color: #999;
+							border-bottom: 1px solid #555;
+						}
+						button.button { 
+							float: right; 
+						}
+
+						@include cuckoo-theme('cyborg') {
+
+							a.button { 
+								background-color: #555; 
+								border-bottom-color: #222;
+							}
+
+						}
+
+						@include cuckoo-theme('night') {
+
+							a.button { 
+								background-color: #555; 
+								border-bottom-color: #222;
+							}
+							
+						}
+
+					}
+
+				}
 			}
 
 			.uploader-area {

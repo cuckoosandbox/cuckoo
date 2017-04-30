@@ -252,6 +252,17 @@
 	padding: 5px 10px;
 	border-radius: 4px;
 	border-bottom: 1px solid #4F7CCF;
+	line-height: 16px; // small fix for having <button.button> and <a.button> the same height
+
+	@include cuckoo-theme('cyborg') {
+		color: #fff;
+		&:hover { color: #fff; text-decoration: none; }
+	}
+
+	@include cuckoo-theme('night') {
+		color: #fff;
+		&:hover { color: #fff; text-decoration: none; }
+	}
 
 	&:hover {
 		color: #fff;

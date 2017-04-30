@@ -101,6 +101,25 @@ class CuckooWeb {
         $('.page-freeze__options').removeClass('hidden');
     }
 
+    // shorthand for posting urls to /submit because this method 
+    // is used in multiple contexts (dashboard, submit)
+    static submit_url(urls) {
+
+        if (urls == "") {
+            return false;
+        }
+
+        CuckooWeb.api_post("/submit/api/presubmit", {
+            "data": urls,
+            "type": "strings"
+        }, function (data) {
+            CuckooWeb.redirect("/submit/pre/" + data.submit_id);
+        }, function (data) {
+            console.log("err: " + data);
+        });
+
+    }
+
 }
 
 /*
@@ -645,6 +664,12 @@ $(function() {
             });
         });
 
+        // submit the dashboard url submitter
+        $("#submit-with-link form").bind('submit', function(e) {
+            e.preventDefault();
+            var urls = $("#submit-with-link textarea").val();
+            CuckooWeb.submit_url(urls);
+        });
 
     }
 
