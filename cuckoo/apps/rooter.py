@@ -199,7 +199,13 @@ def inetsim_enable(ipaddr, inetsim_ip, resultserver_port):
     run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP")
 
-    remote_dns_forward(ipaddr, inetsim_ip, "-A")
+    run(
+        s.iptables, "-A", "INPUT", "--source", ipaddr, "-p", "udp",
+        "--destination", inetsim_ip, "--dport", "53",
+        "-j", "ACCEPT"
+    )
+
+    remote_dns_forward("-A", ipaddr, inetsim_ip, 53)
 
 def inetsim_disable(ipaddr, inetsim_ip, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
@@ -213,7 +219,13 @@ def inetsim_disable(ipaddr, inetsim_ip, resultserver_port):
     run(s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP")
 
-    remote_dns_forward(ipaddr, inetsim_ip, "-D")
+    run(
+        s.iptables, "-D", "INPUT", "--source", ipaddr, "-p", "udp",
+        "--destination", inetsim_ip, "--dport", "53",
+        "-j", "ACCEPT"
+    )
+
+    remote_dns_forward("-D", ipaddr, inetsim_ip, 53)
 
 def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
     """Toggle Tor iptables routing rules."""
@@ -224,6 +236,12 @@ def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
         "--source", vm_ip, "!", "--destination", resultserver_ip,
         "-j", "DNAT", "--to-destination",
         "%s:%s" % (resultserver_ip, proxy_port)
+    )
+
+    run(
+        s.iptables, action, "INPUT", "--source", vm_ip, "-p", "udp",
+        "--destination", resultserver_ip, "--dport", "53",
+        "-j", "ACCEPT"
     )
 
 def tor_enable(vm_ip, resultserver_ip, dns_port, proxy_port):
@@ -264,6 +282,28 @@ def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
         "-D", vm_ip, resultserver_ip, resultserver_port, agent_port
     )
 
+def internet_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
+    """Enable complete dropping of all non-Cuckoo traffic by default."""
+    run(
+        s.iptables, "-A", "INPUT", "--source", vm_ip, "-p", "udp",
+        "--destination", resultserver_ip, "--dport", "53",
+        "-j", "ACCEPT"
+    )
+    return drop_toggle(
+        "-A", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
+
+def internet_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
+    """Disable complete dropping of all non-Cuckoo traffic by default."""
+    run(
+        s.iptables, "-D", "INPUT", "--source", vm_ip, "-p", "udp",
+        "--destination", resultserver_ip, "--dport", "53",
+        "-j", "ACCEPT"
+    )
+    return drop_toggle(
+        "-D", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
+
 handlers = {
     "version": version,
     "nic_available": nic_available,
@@ -287,6 +327,8 @@ handlers = {
     "tor_enable": tor_enable,
     "tor_disable": tor_disable,
     "drop_enable": drop_enable,
+    "internet_enable": internet_enable,
+    "internet_disable": internet_disable,
     "drop_disable": drop_disable,
 }
 

@@ -296,9 +296,16 @@ class AnalysisManager(threading.Thread):
             self.rt_table = None
 
         # For now this doesn't work yet in combination with tor routing.
-        if self.route == "drop" or self.route == "internet":
+        if self.route == "drop":
             rooter(
                 "drop_enable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
+                str(config("cuckoo:resultserver:port"))
+            )
+
+        if self.route == "internet":
+            rooter(
+                "internet_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(config("cuckoo:resultserver:port"))
             )
@@ -347,9 +354,16 @@ class AnalysisManager(threading.Thread):
                 "srcroute_disable", self.rt_table, self.machine.ip
             )
 
-        if self.route != "none":
+        if self.route == "drop":
             rooter(
                 "drop_disable", self.machine.ip,
+                config("cuckoo:resultserver:ip"),
+                str(config("cuckoo:resultserver:port"))
+            )
+
+        if self.route == "internet":
+            rooter(
+                "internet_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(config("cuckoo:resultserver:port"))
             )
@@ -357,7 +371,7 @@ class AnalysisManager(threading.Thread):
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,
                    cfg.inetsim.server,
-                   str(cfg.resultserver.port))
+                   str(self.machine.resultserver_port))
 
         if self.route == "tor":
             rooter(
