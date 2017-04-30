@@ -632,8 +632,18 @@ $(function() {
                 used: data.data.cpuload[1],
                 free: data.data.cpuload[2]
             });
-            $('[data-populate="free-memory"]').text(cpu_load.free);
-            $('[data-populate="total-memory"]').text(cpu_load.total);
+
+            var avgload;
+            var cores = 4;
+            var lsum = 0;
+            for(var load in data.data.cpuload) {
+                lsum += parseInt(data.data.cpuload[load]);
+            }
+            avgload = lsum/data.data.cpuload.length;
+            console.log(avgload / 100 * cores);
+
+            $('[data-populate="memory-load"]').text(`${avgload}%`);
+            $('[data-populate="total-cores"]').text(`${cores} cores`);
 
         });
 
