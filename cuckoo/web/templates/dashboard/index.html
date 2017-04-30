@@ -58,36 +58,30 @@
         <div class="dashboard-module__lg" data-dashboard-module="upload">
             <div class="dashboard-module__body omni-uploader">
 
-                <div class="dashboard-module__body--left page-switcher">
+                <div class="dashboard-module__body--left">
 
-                    <div class="page-switcher__pages">
-                        <div id="submit-with-file" class="active">
-                            <div class="uploader-area" id="dashboard-submit"></div>
-                            <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+                    <div class="stack">
+                        <div class="uploader-area" id="dashboard-submit"></div>
+                        <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+                    </div>
 
-                            <div class="toggle-submit-type page-switcher__nav">
-                                <a href="#submit-with-link" class="button">Submit URL</a>
-                            </div>
-
-                        </div>
-                        <div id="submit-with-link">
-                                
-                            <form>
-                                <textarea rows="4" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
-                                <div class="toggle-submit-type page-switcher__nav">
-                                    <a href="#submit-with-file" class="button">Submit File</a>
-                                    <button type="submit" class="button">Submit</button>
-                                </div>
-                            </form>
-
-                        </div>
+                    <div class="stack">
+                        <div class="uploader-area" id="dashboard-import"></div>
+                        <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
                     </div>
 
                 </div>
 
                 <div class="dashboard-module__body--right">
-                    <div class="uploader-area" id="dashboard-import"></div>
-                    <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
+                    <div id="submit-with-link">
+                        <form>
+                            <h5>Submit via URL</h5>
+                            <textarea rows="11" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
+                            <div class="text-center">
+                                <button type="submit" class="button--lg">Submit</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
             </div>  

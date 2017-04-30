@@ -53,6 +53,10 @@
 				flex-basis: 50%;
 				flex-grow: 0;
 				flex-shrink: 0;
+
+				.stack:not(:last-child) {
+					border-bottom: 1px solid #DFDFDF;
+				}
 			}
 
 			&--left {
@@ -298,59 +302,19 @@
 			background-color: #fff;
 			border-bottom-width: 2px;
 
+			h5 {
+				text-transform: uppercase;
+				color: #979797;
+				font-weight: 700;
+				font-size: 16px;
+				margin: 0 0 11px 0;
+			}
+
 			.dashboard-module__body--left {
 				border-right-width: 2px;
 
 				#uploader {
-					padding-top: 30px;
-				}
-
-				.toggle-submit-type {
-					position: absolute;
-					width: 100%;
-					text-align: center;
-					bottom: 30px;
-					left: 0;
-					z-index: 10;
-				}
-
-				#submit-with-link {
-					padding: 30px;
-
-					.toggle-submit-type {
-						
-						padding: 0 30px;
-						clear: both;
-
-						a.button { 
-							float: left; 
-							background-color: #999;
-							border-bottom: 1px solid #555;
-						}
-						button.button { 
-							float: right; 
-						}
-
-						@include cuckoo-theme('cyborg') {
-
-							a.button { 
-								background-color: #555; 
-								border-bottom-color: #222;
-							}
-
-						}
-
-						@include cuckoo-theme('night') {
-
-							a.button { 
-								background-color: #555; 
-								border-bottom-color: #222;
-							}
-							
-						}
-
-					}
-
+					padding: 50px 20px 20px 20px;
 				}
 			}
 
@@ -359,19 +323,25 @@
 				text-align: center;
 				height: 193px;
 
-				h5 {
-					text-transform: uppercase;
-					color: #979797;
-					font-weight: 700;
-					font-size: 16px;
-					margin: 0 0 11px 0;
-				}
-
 				.fa {
 					font-size: 50px;
 					color: #71A1F9;
 				}
 			}
+
+			#submit-with-link {
+				padding: 30px;
+
+				h5 {
+					margin-bottom: 20px;
+				}
+
+				textarea {
+					margin-bottom: 30px;
+				}
+
+			}
+
 		}
 
 	}
@@ -419,6 +389,10 @@
 				}
 
 			}
+
+			.stack:not(:last-child) {
+				border-color: $cyborg_border_color;	
+			}
 		}
 
 		table.simple {
@@ -460,11 +434,9 @@
 
 			&__header {
 				background-color: $night_panel_color;
-
 				h4 {
 					color: #fff;
 				}
-
 			}
 
 			&__body {
@@ -480,6 +452,10 @@
 				p { color: #fff; }
 			}
 
+		}
+
+		.stack:not(:last-child) {
+			border-color: $night_border_color;	
 		}
 
 		table.simple {

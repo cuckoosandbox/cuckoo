@@ -8071,6 +8071,9 @@ body.cyborg .page-freeze.error {
   -ms-flex-negative: 0;
       flex-shrink: 0;
 }
+.dashboard-module__body--left .stack:not(:last-child), .dashboard-module__body--right .stack:not(:last-child) {
+  border-bottom: 1px solid #DFDFDF;
+}
 .dashboard-module__body--left {
   border-right: 2px solid #DFDFDF;
 }
@@ -8246,58 +8249,36 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   background-color: #fff;
   border-bottom-width: 2px;
 }
-.dashboard-module .omni-uploader .dashboard-module__body--left, .dashboard-module__lg .omni-uploader .dashboard-module__body--left {
-  border-right-width: 2px;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left #uploader, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #uploader {
-  padding-top: 30px;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left .toggle-submit-type, .dashboard-module__lg .omni-uploader .dashboard-module__body--left .toggle-submit-type {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  bottom: 30px;
-  left: 0;
-  z-index: 10;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link {
-  padding: 30px;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type {
-  padding: 0 30px;
-  clear: both;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg {
-  float: left;
-  background-color: #999;
-  border-bottom: 1px solid #555;
-}
-.dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type button.button, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type button.button, .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type button.button--lg, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type button.button--lg {
-  float: right;
-}
-body.cyborg .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, body.cyborg .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, body.cyborg .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg, body.cyborg .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg {
-  background-color: #555;
-  border-bottom-color: #222;
-}
-body.night .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, body.night .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button, body.night .dashboard-module .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg, body.night .dashboard-module__lg .omni-uploader .dashboard-module__body--left #submit-with-link .toggle-submit-type a.button--lg {
-  background-color: #555;
-  border-bottom-color: #222;
-}
-.dashboard-module .omni-uploader .uploader-area, .dashboard-module__lg .omni-uploader .uploader-area {
-  display: block;
-  text-align: center;
-  height: 193px;
-}
-.dashboard-module .omni-uploader .uploader-area h5, .dashboard-module__lg .omni-uploader .uploader-area h5 {
+.dashboard-module .omni-uploader h5, .dashboard-module__lg .omni-uploader h5 {
   text-transform: uppercase;
   color: #979797;
   font-weight: 700;
   font-size: 16px;
   margin: 0 0 11px 0;
 }
+.dashboard-module .omni-uploader .dashboard-module__body--left, .dashboard-module__lg .omni-uploader .dashboard-module__body--left {
+  border-right-width: 2px;
+}
+.dashboard-module .omni-uploader .dashboard-module__body--left #uploader, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #uploader {
+  padding: 50px 20px 20px 20px;
+}
+.dashboard-module .omni-uploader .uploader-area, .dashboard-module__lg .omni-uploader .uploader-area {
+  display: block;
+  text-align: center;
+  height: 193px;
+}
 .dashboard-module .omni-uploader .uploader-area .fa, .dashboard-module__lg .omni-uploader .uploader-area .fa, .dashboard-module .omni-uploader .uploader-area .custom-select:after, .dashboard-module__lg .omni-uploader .uploader-area .custom-select:after, .dashboard-module .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module__lg .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module .omni-uploader .uploader-area div:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module__lg .omni-uploader .uploader-area div:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:after, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:before, .dashboard-module .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module__lg .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module__lg .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after, .dashboard-module__lg .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after {
   font-size: 50px;
   color: #71A1F9;
+}
+.dashboard-module .omni-uploader #submit-with-link, .dashboard-module__lg .omni-uploader #submit-with-link {
+  padding: 30px;
+}
+.dashboard-module .omni-uploader #submit-with-link h5, .dashboard-module__lg .omni-uploader #submit-with-link h5 {
+  margin-bottom: 20px;
+}
+.dashboard-module .omni-uploader #submit-with-link textarea, .dashboard-module__lg .omni-uploader #submit-with-link textarea {
+  margin-bottom: 30px;
 }
 body.cyborg .dashboard {
   background-color: #020e10;
@@ -8328,6 +8309,9 @@ body.cyborg .dashboard .dashboard-module__header h4 {
 }
 body.cyborg .dashboard .dashboard-module__header select {
   background-color: transparent;
+}
+body.cyborg .dashboard .dashboard-module .stack:not(:last-child), body.cyborg .dashboard .dashboard-module__lg .stack:not(:last-child) {
+  border-color: #133b4a;
 }
 body.cyborg .dashboard table.simple tr {
   border-color: #133b4a;
@@ -8367,6 +8351,9 @@ body.night .dashboard .dashboard-module__footer {
 }
 body.night .dashboard .dashboard-module__footer p {
   color: #fff;
+}
+body.night .dashboard .stack:not(:last-child) {
+  border-color: #375a7f;
 }
 body.night .dashboard table.simple tr {
   border-color: #28415b;
