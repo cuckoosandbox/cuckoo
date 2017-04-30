@@ -507,16 +507,16 @@ var DashboardTable = function () {
 $(function () {
 
     /* ====================
-    CHART
+    CHART - free disk space
     ==================== */
 
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    function createChart(data) {
+    function createChart(cSelector, data) {
 
         var chart,
-            chartCanvas = $('.free-disk-space__chart > canvas')[0],
+            chartCanvas = cSelector[0],
             ds_total = data.total,
             ds_free = data.free,
             ds_used = data.used,
@@ -658,9 +658,18 @@ $(function () {
             $('[data-populate="statistics"]').html(tasks_info);
 
             // populate free disk space unit
-            var disk_space = createChart(data.data.diskspace.analyses);
+            var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
+
+            // populate cpu load unit
+            var cpu_load = createChart($("#cpu-stat > canvas"), {
+                total: data.data.cpuload[0],
+                used: data.data.cpuload[1],
+                free: data.data.cpuload[2]
+            });
+            $('[data-populate="free-memory"]').text(cpu_load.free);
+            $('[data-populate="total-memory"]').text(cpu_load.total);
         });
     }
 

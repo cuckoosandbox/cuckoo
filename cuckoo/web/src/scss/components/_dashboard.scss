@@ -232,9 +232,9 @@
 		// free disk space widget styling
 		.free-disk-space {
 
-			display: block;
-			width: 100%;
-			padding: 20px 0;
+			& > div {
+				padding: 20px 0;
+			}
 
 			h5 {
 				text-transform: uppercase;
@@ -253,6 +253,10 @@
 					height: 135px;
 				}
 
+			}
+
+			&__cpu {
+				@extend .free-disk-space__chart;
 			}
 
 			&__legend {

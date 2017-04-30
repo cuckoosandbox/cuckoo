@@ -8177,9 +8177,7 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   border-right: 1px solid #DFDFDF;
   text-align: right;
 }
-.dashboard-module .free-disk-space, .dashboard-module__lg .free-disk-space {
-  display: block;
-  width: 100%;
+.dashboard-module .free-disk-space > div, .dashboard-module__lg .free-disk-space > div {
   padding: 20px 0;
 }
 .dashboard-module .free-disk-space h5, .dashboard-module__lg .free-disk-space h5 {
@@ -8188,10 +8186,10 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   text-align: center;
   color: #979797;
 }
-.dashboard-module .free-disk-space__chart, .dashboard-module__lg .free-disk-space__chart {
+.dashboard-module .free-disk-space__chart, .dashboard-module__lg .free-disk-space__chart, .dashboard-module .free-disk-space__cpu, .dashboard-module__lg .free-disk-space__cpu {
   position: relative;
 }
-.dashboard-module .free-disk-space__chart > canvas, .dashboard-module__lg .free-disk-space__chart > canvas {
+.dashboard-module .free-disk-space__chart > canvas, .dashboard-module__lg .free-disk-space__chart > canvas, .dashboard-module .free-disk-space__cpu > canvas, .dashboard-module__lg .free-disk-space__cpu > canvas {
   margin: 0px auto;
   width: 135px;
   height: 135px;
