@@ -646,6 +646,7 @@ class Processing(object):
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.dropped_meta_path = os.path.join(self.analysis_path, "files.json")
+        self.extracted_path = os.path.join(self.analysis_path, "extracted")
         self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")

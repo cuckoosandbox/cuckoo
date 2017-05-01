@@ -10,6 +10,7 @@ import os
 
 from cuckoo.common.abstracts import Processing, BehaviorHandler
 from cuckoo.common.config import config
+from cuckoo.common.scripting import Scripting
 from cuckoo.core.database import Database
 
 from .platform.windows import WindowsMonitor
@@ -210,6 +211,39 @@ class ActionInformation(BehaviorHandler):
         for action in set(self.actions):
             Database().add_error("", self.analysis.task["id"], action)
 
+class ExtractScripts(BehaviorHandler):
+    """Extracts embedded scripts in command-line parameters."""
+    key = "extracted"
+    event_types = ["process"]
+
+    def __init__(self, *args, **kwargs):
+        super(ExtractScripts, self).__init__(*args, **kwargs)
+        self.scr = Scripting()
+        self.scripts = {}
+
+    def handle_event(self, process):
+        command = self.scr.parse_command(process["command_line"])
+        if command and command.get_script():
+            # TODO We need to move this somewhere else. Just a temporary
+            # hack in case old reports are processed that don't have the
+            # "extracted" directory in-place yet.
+            if not os.path.exists(self.analysis.extracted_path):
+                os.mkdir(self.analysis.extracted_path)
+
+            filepath = os.path.join(
+                self.analysis.extracted_path,
+                "%d.%s" % (len(self.scripts), command.ext)
+            )
+            open(filepath, "wb").write(command.get_script().encode("utf8"))
+            self.scripts[process["first_seen"], process["pid"]] = {
+                "pid": process["pid"],
+                "program": command.program,
+                "script": filepath,
+            }
+
+    def run(self):
+        return [v for k, v in sorted(self.scripts.items())]
+
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
 
@@ -286,6 +320,9 @@ class BehaviorAnalysis(Processing):
 
             # User feedback action information.
             ActionInformation(self),
+
+            # Extracts embedded scripts in the command-line.
+            ExtractScripts(self),
         ]
 
         # doesn't really work if there's no task, let's rely on the file name for now
