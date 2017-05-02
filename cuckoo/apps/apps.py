@@ -479,6 +479,10 @@ def migrate_cwd():
         "of our own."
     )
 
+    # Migration from 2.0.2 to 2.0.3. TODO Abstract this away.
+    if not os.path.exists(cwd("yara", "index_scripts.yar")):
+        open(cwd("yara", "index_scripts.yar"), "wb").close()
+
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
         if not line.strip():
@@ -526,6 +530,8 @@ def migrate_cwd():
 
     for filename in outdated:
         log.debug("Upgraded %s", filename)
+        if not os.path.exists(os.path.dirname(cwd(filename))):
+            os.makedirs(os.path.dirname(cwd(filename)))
         shutil.copy(cwd("..", "data", filename, private=True), cwd(filename))
 
     log.info(

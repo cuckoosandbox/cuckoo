@@ -670,6 +670,15 @@ class TestMigrateCWD(object):
             cwd("web/local_settings.py")
         )
 
+    def test_new_directory(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        shutil.rmtree(cwd("yara", "scripts"))
+        migrate_cwd()
+        # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
+        assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
+        assert os.path.exists(cwd("yara", "index_scripts.yar"))
+
 class TestCommunitySuggestion(object):
     @property
     def ctx(self):

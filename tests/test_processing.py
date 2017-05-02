@@ -25,6 +25,7 @@ from cuckoo.processing.behavior import (
 )
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
+from cuckoo.processing.extracted import Extracted
 from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
@@ -734,6 +735,9 @@ class TestBehavior(object):
 
         ba = BehaviorAnalysis()
         ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
 
         mkdir(cwd(analysis=1))
         mkdir(cwd("logs", analysis=1))
@@ -759,6 +763,9 @@ class TestBehavior(object):
 
         ba = BehaviorAnalysis()
         ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
 
         es = ExtractScripts(ba)
         es.handle_event({
@@ -774,15 +781,27 @@ class TestBehavior(object):
             "first_seen": 2,
             "pid": 1235,
         })
-        out = es.run()
+        assert es.run() is None
+
+        e = Extracted()
+        e.set_task(Dictionary({
+            "id": 1,
+        }))
+        out = e.run()
         assert out == [{
+            "category": "script",
+            "first_seen": 1,
             "pid": 1234,
             "program": "cmd",
             "script": cwd("extracted", "0.bat", analysis=1),
+            "yara": [],
         }, {
+            "category": "script",
+            "first_seen": 2,
             "pid": 1235,
             "program": "powershell",
             "script": cwd("extracted", "1.ps1", analysis=1),
+            "yara": [],
         }]
         assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
         assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
