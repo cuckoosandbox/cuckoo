@@ -662,24 +662,23 @@ $(function () {
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
 
-            // populate cpu load unit
-            var cpu_load = createChart($("#cpu-stat > canvas"), {
-                total: data.data.cpuload[0],
-                used: data.data.cpuload[1],
-                free: data.data.cpuload[2]
-            });
-
-            var avgload;
-            var cores = 4;
+            var cores = data.data.cpucount;
             var lsum = 0;
             for (var load in data.data.cpuload) {
                 lsum += parseInt(data.data.cpuload[load]);
             }
-            avgload = lsum / data.data.cpuload.length;
-            console.log(avgload / 100 * cores);
-
+            var avgload = parseInt(
+                lsum / data.data.cpuload.length * 100 / cores
+            );
             $('[data-populate="memory-load"]').text(avgload + '%');
             $('[data-populate="total-cores"]').text(cores + ' cores');
+
+            // populate cpu load unit
+            var cpu_load = createChart($("#cpu-stat > canvas"), {
+                total: cores * 100,
+                used: avgload,
+                free: 100 - avgload,
+            });
         });
     }
 

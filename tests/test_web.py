@@ -815,8 +815,21 @@ class TestApiEndpoints(object):
         assert p.call_args_list[0][0][0].startswith(temppath())
 
     def test_api_status200(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        Database().connect()
         r = client.get("/cuckoo/api/status")
         assert r.status_code == 200
+
+    @mock.patch("multiprocessing.cpu_count")
+    def _test_api_status_cpucount(self, p, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        Database().connect()
+        p.return_value = 2
+        r = client.get("/cuckoo/api/status")
+        assert r.status_code == 200
+        assert json.loads(r.content)["cpucount"] == 2
 
     @mock.patch("cuckoo.web.controllers.cuckoo.api.rooter")
     def test_api_vpnstatus(self, p, client):
