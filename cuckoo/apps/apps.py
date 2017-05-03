@@ -57,6 +57,7 @@ def fetch_community(branch="master", force=False, filepath=None):
     folders = {
         "modules/signatures": "signatures",
         "data/monitor": "monitor",
+        "data/yara": "yara",
         "agent": "agent",
         "analyzer": "analyzer",
     }
@@ -90,6 +91,9 @@ def fetch_community(branch="master", force=False, filepath=None):
             if member.issym():
                 t.makelink(member, filepath)
                 continue
+
+            if not os.path.exists(os.path.dirname(filepath)):
+                os.makedirs(os.path.dirname(filepath))
 
             log.debug("Extracted %s..", member.name[len(name_start)+1:])
             open(filepath, "wb").write(t.extractfile(member).read())
