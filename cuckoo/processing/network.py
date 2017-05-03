@@ -420,8 +420,16 @@ class Pcap(object):
             if reqtuple not in self.dns_requests:
                 self.dns_requests[reqtuple] = query
             else:
-                new_answers = set((i["type"], i["data"]) for i in query["answers"]) - self.dns_answers
-                self.dns_requests[reqtuple]["answers"] += [dict(type=i[0], data=i[1]) for i in new_answers]
+                new_answers = set(
+                    (i["type"], i["data"]) for i in query["answers"]
+                )
+                for type_, data in new_answers - self.dns_answers:
+                    entry = {
+                        "type": type_,
+                        "data": data,
+                    }
+                    if entry not in self.dns_requests[reqtuple]["answers"]:
+                        self.dns_requests[reqtuple]["answers"].append(entry)
 
         return True
 

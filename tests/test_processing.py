@@ -716,6 +716,8 @@ class TestBehavior(object):
 class TestPcap(object):
     @classmethod
     def setup_class(cls):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
         cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
 
     def test_dns_server_list(self):
@@ -933,6 +935,20 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+
+    def test_duplicate_dns_requests(self):
+        results = Pcap(
+            "tests/files/pcap/duplicate-dns-requests.pcap", {}
+        ).run()
+        assert len(results["dns"]) == 1
+        assert results["dns"][0] == {
+            "type": "A",
+            "request": "hanxi88.f3322.net",
+            "answers": [{
+                "data": "192.168.3.253",
+                "type": "A"
+            }],
+        }
 
 class TestPcap2(object):
     def test_smtp_ex(self):
