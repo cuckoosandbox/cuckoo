@@ -255,17 +255,15 @@ class Sample(Base):
         return json.dumps(self.to_dict())
 
     def __init__(self, md5, crc32, sha1, sha256, sha512,
-                 file_size, file_type=None, ssdeep=None):
+                 file_size, file_type, ssdeep):
         self.md5 = md5
         self.sha1 = sha1
         self.crc32 = crc32
         self.sha256 = sha256
         self.sha512 = sha512
         self.file_size = file_size
-        if file_type:
-            self.file_type = file_type
-        if ssdeep:
-            self.ssdeep = ssdeep
+        self.file_type = file_type
+        self.ssdeep = ssdeep
 
 class Error(Base):
     """Analysis errors."""
