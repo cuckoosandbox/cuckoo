@@ -584,7 +584,7 @@ $(function() {
             ajax: false,
 
             templateData: {
-                title: 'Submit a file to import',
+                title: 'Submit an analysis to import',
                 html: `<i class="fa fa-upload"></i>\n${$('#import_token').html()}\n<input type="hidden" name="category" type="text" value="file">\n`,
                 // sets form action for submitting the files to (form action=".. etc")
                 formAction: '/analysis/import/',
