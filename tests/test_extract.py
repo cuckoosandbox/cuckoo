@@ -48,7 +48,9 @@ rule Shellcode1 {
        all of them
 }
 """)
-    init_yara(True)
+    # No Yara has been installed.
+    if not init_yara(True):
+        return
 
     class Shellcode1(Extractor):
         yara_rules = "Shellcode1"

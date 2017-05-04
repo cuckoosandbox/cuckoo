@@ -231,7 +231,7 @@ def init_yara(index):
             "Unable to import yara (install with "
             "`pip install yara-python==3.5.0`)"
         )
-        return
+        return False
 
     if index:
         index_yara()
@@ -252,6 +252,7 @@ def init_yara(index):
             raise CuckooStartupError(
                 "There was a syntax error in one or more Yara rules: %s" % e
             )
+    return True
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
