@@ -1264,3 +1264,20 @@ class ProtocolHandler(object):
 
     def close(self):
         pass
+
+class Extractor(object):
+    """One piece in a series of recursive extractors & unpackers."""
+    yara_rules = []
+
+    @classmethod
+    def init_once(cls):
+        pass
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def handle_yara(self, filepath, match):
+        raise NotImplementedError
+
+    def push_shellcode(self, sc):
+        self.parent.push_shellcode(sc)

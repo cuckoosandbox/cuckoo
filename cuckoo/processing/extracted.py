@@ -3,10 +3,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.core.extract import Extractor
+from cuckoo.core.extract import ExtractManager
 
 class Extracted(Processing):
     key = "extracted"
 
     def run(self):
-        return Extractor.for_task(self.task.id).results()
+        return ExtractManager.for_task(self.task.id).results()

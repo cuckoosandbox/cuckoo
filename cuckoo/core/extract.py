@@ -4,26 +4,28 @@
 
 import os
 
+from cuckoo.common.abstracts import Extractor
+from cuckoo.common.objects import File, YaraMatch
 from cuckoo.misc import cwd
-from cuckoo.common.objects import File
 
-class Extractor(object):
+class ExtractManager(object):
     _instances = {}
 
     @staticmethod
     def for_task(task_id):
-        if task_id not in Extractor._instances:
-            Extractor._instances[task_id] = Extractor(task_id)
-        return Extractor._instances[task_id]
+        if task_id not in ExtractManager._instances:
+            ExtractManager._instances[task_id] = ExtractManager(task_id)
+        return ExtractManager._instances[task_id]
 
     def __init__(self, task_id):
         self.task_id = task_id
         self.items = []
+        self.payloads = {}
 
     def __del__(self):
-        del Extractor._instances[self.task_id]
+        del ExtractManager._instances[self.task_id]
 
-    def push_script(self, process, command):
+    def write_extracted(self, ext, payload):
         dirpath = cwd("extracted", analysis=self.task_id)
 
         # TODO We need to move this somewhere else. Just a temporary
@@ -32,18 +34,60 @@ class Extractor(object):
         if not os.path.exists(dirpath):
             os.mkdir(dirpath)
 
-        filepath = os.path.join(
-            dirpath, "%d.%s" % (len(self.items), command.ext)
+        # Handle duplicate payloads.
+        if payload in self.payloads:
+            return
+
+        self.payloads[payload] = True
+
+        # TODO Implement some rate-limiting here.
+
+        filepath = os.path.join(dirpath, "%d.%s" % (len(self.items), ext))
+        open(filepath, "wb").write(payload)
+        return filepath
+
+    def push_script(self, process, command):
+        filepath = self.write_extracted(
+            command.ext, command.get_script().encode("utf8")
         )
-        open(filepath, "wb").write(command.get_script().encode("utf8"))
+        if not filepath:
+            return
+
+        yara_matches = File(filepath).get_yara("scripts")
         self.items.append({
             "category": "script",
             "program": command.program,
             "pid": process["pid"],
             "first_seen": process["first_seen"],
             "script": filepath,
-            "yara": File(filepath).get_yara("scripts"),
+            "yara": yara_matches,
         })
+        for match in yara_matches:
+            match = YaraMatch(match, "script")
+            self.handle_yara(filepath, match)
+
+    def push_shellcode(self, sc):
+        filepath = self.write_extracted("bin", sc)
+        if not filepath:
+            return
+
+        yara_matches = File(filepath).get_yara("shellcode")
+        self.items.append({
+            "category": "shellcode",
+            "shellcode": filepath,
+            "yara": yara_matches,
+        })
+        for match in yara_matches:
+            match = YaraMatch(match, "shellcode")
+            self.handle_yara(filepath, match)
+
+    def handle_yara(self, filepath, match):
+        # TODO Also handle nested subclasses.
+        for plugin in Extractor.__subclasses__():
+            # TODO Handle both str & tuple/list properly.
+            if match.name in plugin.yara_rules:
+                plugin(self).handle_yara(filepath, match)
 
     def results(self):
-        return sorted(self.items, key=lambda x: x["first_seen"])
+        # TODO Apply some sort of sorting here.
+        return self.items

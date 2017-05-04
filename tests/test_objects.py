@@ -9,7 +9,9 @@ import re
 import tempfile
 
 from cuckoo.common.files import Files
-from cuckoo.common.objects import Dictionary, File, Archive, URL_REGEX
+from cuckoo.common.objects import (
+    Dictionary, File, Archive, YaraMatch, URL_REGEX
+)
 from cuckoo.core.startup import init_yara, HAVE_YARA
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
@@ -215,3 +217,19 @@ class TestPubPrivKeys(object):
             "HELLOWORLD\n"
             "-----END RSA PRIVATE KEY-----"
         ]
+
+class TestYaraMatch(object):
+    def test_basics(self):
+        ym = YaraMatch({
+            "name": "foo",
+            "meta": {},
+            "offsets": {
+                "a": [
+                    (1, 0),
+                ],
+            },
+            "strings": [
+                "bar".encode("base64"),
+            ],
+        })
+        assert ym.string("a", 0) == "bar"

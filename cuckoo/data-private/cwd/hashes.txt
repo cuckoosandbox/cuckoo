@@ -178,4 +178,6 @@ b598b93ab13ee2e7595ae54a3a5f1e4090e68f4d elasticsearch/template.json
 d0841c3bc6c97668213d0116dfe5dc1eaf82a3c2 web/local_settings.py
 
 b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
+5966e9db6bcd3adcd70998f4c51072c7f81b4564 signatures/__init__.py
+70c56915693b3be5eee4907e91aaaa30b6192c86 signatures/extractor/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
