@@ -16,7 +16,7 @@ services:
 install:
   - "set PATH=%PYTHON%;%PYTHON%/Scripts;%PATH%"
 
-  - "python.exe setup.py develop"
+  - "pip.exe install -e ."
   - "pip.exe install psycopg2 mysqlclient==1.3.9 codecov"
   - "pip.exe install pytest pytest-cov pytest-django pytest-pythonpath"
   - "pip.exe install flask-sqlalchemy==2.1 mock==2.0.0 responses==0.5.1"
