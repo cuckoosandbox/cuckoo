@@ -607,7 +607,7 @@ class PdfDocument(object):
                 "urls": [],
             }
 
-            for idx, obj in enumerate(f.body[version].objects.values()):
+            for obj in f.body[version].objects.values():
                 self.walk_object(obj.object, row)
 
             row["urls"] = sorted(set(row["urls"]))

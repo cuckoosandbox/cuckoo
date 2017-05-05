@@ -917,3 +917,23 @@ class TestTemplates(object):
         }, page="static")
         assert "No PDF metadata" not in r.content
         assert "<li>http://thisisaurl.com/hello</li>" in r.content
+
+    def test_pdf_has_javascript(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "creation": "",
+                        "modification": "",
+                        "urls": [],
+                        "javascript": [{
+                            "orig_code": "alert(1)",
+                            "beautified": "alert(2)",
+                        }],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" not in r.content
+        assert '<code class="js">alert(1)</code>' in r.content
+        assert '<code class="js">alert(2)</code>' in r.content
