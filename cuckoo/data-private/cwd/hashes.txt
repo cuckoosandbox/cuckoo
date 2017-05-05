@@ -181,3 +181,4 @@ b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/huma
 5966e9db6bcd3adcd70998f4c51072c7f81b4564 signatures/__init__.py
 70c56915693b3be5eee4907e91aaaa30b6192c86 signatures/extractor/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
+da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore

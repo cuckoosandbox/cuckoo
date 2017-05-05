@@ -487,6 +487,9 @@ def migrate_cwd():
     if not os.path.exists(cwd("yara", "index_scripts.yar")):
         open(cwd("yara", "index_scripts.yar"), "wb").close()
 
+    if not os.path.exists(cwd("yara", "index_shellcode.yar")):
+        open(cwd("yara", "index_shellcode.yar"), "wb").close()
+
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
         if not line.strip():

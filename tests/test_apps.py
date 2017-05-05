@@ -674,10 +674,13 @@ class TestMigrateCWD(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         shutil.rmtree(cwd("yara", "scripts"))
+        shutil.rmtree(cwd("yara", "shellcode"))
         migrate_cwd()
         # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
         assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
         assert os.path.exists(cwd("yara", "index_scripts.yar"))
+        assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
+        assert os.path.exists(cwd("yara", "index_shellcode.yar"))
 
 class TestCommunitySuggestion(object):
     @property

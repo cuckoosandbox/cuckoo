@@ -204,7 +204,7 @@ def index_yara():
     log.debug("Initializing Yara...")
 
     indexed = []
-    for category in ("binaries", "urls", "memory", "scripts"):
+    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
         # Check if there is a directory for the given category.
         dirpath = cwd("yara", category)
         if not os.path.exists(dirpath):
@@ -236,7 +236,7 @@ def init_yara(index):
     if index:
         index_yara()
 
-    for category in ("binaries", "urls", "memory", "scripts"):
+    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
         rulepath = cwd("yara", "index_%s.yar" % category)
         if not os.path.exists(rulepath) and not index:
             raise CuckooStartupError(
