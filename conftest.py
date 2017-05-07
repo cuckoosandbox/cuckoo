@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
+import shutil
 import sys
 
 from cuckoo.misc import is_windows, is_linux, is_macosx
@@ -15,6 +17,14 @@ if is_windows():
     sys.path.insert(0, "cuckoo/data/analyzer/windows")
     collect_ignore.append("tests/linux")
     collect_ignore.append("tests/darwin")
+
+    # Copy over the monitoring binaries as if we were in a real analysis.
+    monitor = open("cuckoo/data/monitor/latest", "rb").read().strip()
+    for filename in os.listdir("cuckoo/data/monitor/%s" % monitor):
+        shutil.copy(
+            "cuckoo/data/monitor/%s/%s" % (monitor, filename),
+            "cuckoo/data/analyzer/windows/bin/%s" % filename
+        )
 
 if is_linux():
     sys.path.insert(0, "cuckoo/data/analyzer/linux")

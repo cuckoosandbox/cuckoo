@@ -201,13 +201,15 @@ class Process(object):
         elif os.path.isdir("C:\\Windows\\Sysnative") and \
                 path.lower().startswith("c:\\windows\\system32"):
             return False
+        elif not os.path.exists(path):
+            raise CuckooError("File not found: %s" % path)
         else:
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
         try:
             bitsize = int(subprocess_checkoutput(args))
         except subprocess.CalledProcessError as e:
-            raise CuckooError("Error returned by is32bit: %s" % e)
+            raise CuckooError("Error returned by is32bit: %s" % e.output)
 
         return bitsize == 32
 

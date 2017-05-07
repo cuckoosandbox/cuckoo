@@ -220,9 +220,11 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 
 # TBD release
 0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
+457a3637f98bcfc2127120777c7cf0d9fb518593 analyzer/windows/lib/api/process.py
 bbae2a651067491925b2f52144575d3b821525fa analyzer/windows/lib/common/defines.py
 d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py
 4666fdb85f4b30b21bbc83d42210b6fb2964ffe6 analyzer/windows/lib/core/packages.py
+015897ffdaebeac241169748ac1d63fb46397b9f analyzer/windows/modules/auxiliary/dumptls.py
 2fc97fdf9d8c91d212792c65da036908b80973e0 analyzer/windows/modules/auxiliary/recentfiles.py
 a3972ab99da81061920481af1a4808f21a191adf analyzer/windows/modules/packages/hta.py
 f4778b82df8758ededfbd04ce5abb5b90a45c214 analyzer/windows/modules/packages/ps1.py

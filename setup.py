@@ -70,6 +70,8 @@ def update_hashes():
     for dirpath, dirnames, filenames in os.walk(cwd_public):
         dirname = dirpath[len(cwd_public)+1:]
         for filename in filenames:
+            if filename.endswith(".pyc"):
+                continue
             filepath = os.path.join(dirname, filename).replace("\\", "/")
             buf = open(os.path.join(cwd_public, filepath), "rb").read()
             hash_ = hashlib.sha1(buf).hexdigest()
