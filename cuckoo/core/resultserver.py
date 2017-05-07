@@ -116,7 +116,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         """Return state for this IP's task."""
         x = self.analysistasks.get(ip)
         if not x:
-            log.critical("ResultServer unable to map ip to context: %s.", ip)
+            log.debug("ResultServer unable to map ip to context: %s.", ip)
             return None, None
 
         return x
