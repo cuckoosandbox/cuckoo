@@ -65,7 +65,9 @@ class CuckooApi:
                 values[key.strip()] = value.replace("kB", "").strip()
 
             if "MemAvailable" in values and "MemTotal" in values:
-                memory = 100.0 * int(values["MemFree"]) / int(values["MemTotal"])
+                avail = int(values["MemAvailable"])
+                total = int(values["MemTotal"])
+                memory = 100 - 100.0 * avail / total
             else:
                 memory = None
         else:
