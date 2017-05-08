@@ -3864,6 +3864,8 @@ body.night .button:hover, body.night .button--lg:hover {
 .button.outline, .outline.button--lg, body.cyborg .app-error__balloon .button:not(.inversed), body.cyborg .app-error__balloon .button--lg:not(.inversed), body.night .app-error__balloon .button:not(.inversed), body.night .app-error__balloon .button--lg:not(.inversed) {
   background-color: transparent;
   border: 2px solid #fff;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 .button.inversed, .inversed.button--lg {
   background-color: transparent;
@@ -8367,6 +8369,32 @@ body.night .dashboard table.simple tr:nth-child(odd) {
 }
 body.night .dashboard table.simple tr:nth-child(even) {
   background-color: #333333;
+}
+
+.app-message {
+  position: fixed;
+  bottom: 25px;
+  left: 25px;
+  width: 400px;
+  height: auto;
+  background-color: #222;
+  border-radius: 4px;
+  color: #fff;
+  padding: 15px;
+  z-index: 1000;
+}
+.app-message > h5 {
+  margin-top: 0;
+}
+.app-message > h5 .fa, .app-message > h5 .custom-select:after, .app-message > h5 .dns-badge__content:before, .app-message > h5 .cuckoo-analysis__panel--toggle:before, .app-message > h5 .cuckoo-analysis__panel--toggle:after, .app-message > h5 table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .app-message > h5 .status.status-reported:before, .app-message > h5 table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .app-message > h5 .status.status-reported:before, .app-message > h5 .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .app-message > h5 .status.status-reported:before, .app-message > h5 .cuckoo-files ul div:before, .cuckoo-files ul .app-message > h5 div:before, .app-message > h5 .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .app-message > h5 .extension-select:after, .app-message > h5 .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .app-message > h5 .extension-select:before, .app-message > h5 .flex-form__header .custom-checkbox > input + span, .flex-form__header .app-message > h5 .custom-checkbox > input + span, .app-message > h5 .breadcrumbs > li:not(:last-child):after {
+  margin-right: 10px;
+}
+.app-message > p {
+  margin-bottom: 15px;
+}
+.app-message > p a {
+  color: #6297F8;
+  font-weight: 700;
 }
 
 /* 

@@ -155,7 +155,10 @@ var CuckooWeb = function () {
                 }
             }
 
-            return isRecommended;
+            return {
+                recommended: isRecommended,
+                browser: bowser.name
+            };
         }
     }]);
 
@@ -319,8 +322,35 @@ var PageSwitcher = function () {
 }();
 
 $(document).ready(function () {
+
+    // warn the user about a browser recommendation if we are not using
+    // a recommended browser.
+    var browser_message = $(".app-message[data-message=browser-recommendation]");
+    var recommended = CuckooWeb.isRecommendedBrowser();
+    if (!recommended.recommended) {
+        browser_message.find('.browser').text(recommended.browser);
+        if (!window.localStorage.getItem('hide-browser-warning') === true) {
+            browser_message.removeClass('hidden');
+        }
+    }
+
+    // dismiss the error (once)
+    browser_message.find('.button[href="#dismiss"]').bind('click', function (e) {
+        e.preventDefault();
+        browser_message.addClass('hidden');
+    });
+
+    // hide the browser error if the user is OK with lacking support
+    browser_message.find('.button[href="#hide"]').bind('click', function (e) {
+        e.preventDefault();
+        window.localStorage.setItem('hide-browser-warning', true);
+        browser_message.addClass('hidden');
+    });
+
+    // enable popovers (bootstrap)
     $("[data-toggle=popover]").popover();
 
+    // close the page freeze
     $('.close-page-freeze').bind('click', function () {
         CuckooWeb.toggle_page_freeze(false);
         setTimeout(function () {
