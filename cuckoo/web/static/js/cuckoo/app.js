@@ -145,7 +145,7 @@ var CuckooWeb = function () {
         key: 'isRecommendedBrowser',
         value: function isRecommendedBrowser() {
 
-            var recommended = ['chrome', 'firefox'];
+            var recommended = ['firefox', 'chrome', 'webkit'];
             var isRecommended = false;
 
             for (var recommendation in recommended) {
