@@ -709,11 +709,14 @@ $(function() {
                     free: memoryAvail
                 }, true);
 
-                $('[data-populate="memory-used"]').text(`${memory_chart.free}%`);
-                $('[data-populate="memory-total"]').text(`${memory_chart.used}%`);
+                var memoryTotalSize = CuckooWeb.human_size(memoryTotal * 1000);
+                var memoryAvailSize = CuckooWeb.human_size(memoryAvail * 1000);
+                var memoryUsedSize = CuckooWeb.human_size((memoryTotal - memoryAvail) * 1000);
+
+                $('[data-populate="memory-used"]').text(`${memoryAvailSize}`);
+                $('[data-populate="memory-total"]').text(`${memoryUsedSize}`);
 
             } else {
-                // show 'no data available' if this data is not available
                 $("#memory-stat").addClass('no-data');
             }
 
