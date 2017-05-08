@@ -532,7 +532,7 @@ $(function() {
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    function createChart(cSelector, data) {
+    function createChart(cSelector, data, outputPercent) {
 
         var chart,
             chartCanvas = cSelector[0],
@@ -541,8 +541,8 @@ $(function() {
             ds_used = data.used,
             percent_free = 100 / ds_total * ds_free,
             percent_used = 100 / ds_total * ds_used,
-            human_free = CuckooWeb.human_size(ds_free),
-            human_total = CuckooWeb.human_size(ds_total);
+            nFree = CuckooWeb.human_size(ds_free),
+            nTotal = CuckooWeb.human_size(ds_total);
 
         if(chartCanvas) {
 
@@ -578,9 +578,15 @@ $(function() {
 
         }
 
+        if(outputPercent) {
+            nFree = Math.round(percent_free);
+            nTotal = 100;
+        }
+
         return {
-            free: human_free,
-            total: human_total
+            free: nFree,
+            total: nTotal,
+            used: Math.round(percent_used)
         }
 
     }
@@ -713,15 +719,18 @@ $(function() {
             });
 
             // memory data
-            var memory = Math.round(data.data.memory ? data.data.memory : 40.8445324);
-            $('[data-populate="memory-used"]').text(`${memory}%`);
+            var memoryTotal = data.data.memtotal ? data.data.memtotal : 11989568;
+            var memoryAvail = data.data.memavail ? data.data.memavail : 2899792;
 
             // create the memory chart
             var memory_chart = createChart($("#memory-stat > canvas"), {
-                total: 100,
-                used: memory,
-                free: 100 - memory
-            });
+                total: memoryTotal,
+                used: memoryTotal - memoryAvail,
+                free: memoryAvail
+            }, true);
+
+            $('[data-populate="memory-used"]').text(`${memory_chart.free}%`);
+            $('[data-populate="memory-total"]').text(`${memory_chart.used}%`);
 
         });
 
