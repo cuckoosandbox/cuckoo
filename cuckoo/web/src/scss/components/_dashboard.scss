@@ -307,15 +307,20 @@
 				color: #979797;
 				font-weight: 700;
 				font-size: 16px;
-				margin: 0 0 30px 0;
+				margin: 0 0 45px 0;
 			}
 
 			.dashboard-module__body--left {
 				border-right-width: 2px;
 
-				#uploader {
-					padding: 50px 20px 20px 20px;
+				.dndupload__simple {
+
+					#uploader {
+						padding: 75px 20px 20px 20px;
+					}
+
 				}
+
 			}
 
 			.uploader-area {
@@ -327,16 +332,13 @@
 					font-size: 50px;
 					color: #71A1F9;
 				}
-
-				#uploader {
-					padding-top: 86px;
-				}
 			}
 
 			#submit-with-link {
 				padding: 30px;
 
 				h5 {
+					margin-top: 0;
 					margin-bottom: 20px;
 				}
 
