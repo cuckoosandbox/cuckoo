@@ -124,7 +124,7 @@ class CuckooWeb {
     // recommended browser list.
     static isRecommendedBrowser() {
 
-        var recommended = ['firefox','chrome','webkit'];
+        var recommended = ['firefox', 'chrome', 'webkit', 'chromium'];
         var isRecommended = false;
 
         for(var recommendation in recommended) {
