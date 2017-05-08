@@ -8396,6 +8396,13 @@ body.night .dashboard table.simple tr:nth-child(even) {
   color: #6297F8;
   font-weight: 700;
 }
+body.cyborg .app-message {
+  border: 2px solid #999;
+}
+body.night .app-message {
+  background-color: #000;
+  border: 2px solid #999;
+}
 
 /* 
    Copyright (C) 2016 Cuckoo Foundation.

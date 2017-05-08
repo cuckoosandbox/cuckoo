@@ -27,4 +27,13 @@
 			font-weight: 700;
 		}
 	}
+
+	@include cuckoo-theme('cyborg') {
+		border: 2px solid #999;
+	}
+
+	@include cuckoo-theme('night') {
+		background-color: #000;
+		border: 2px solid #999;
+	}
 }
