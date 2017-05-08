@@ -8056,6 +8056,24 @@ body.cyborg .page-freeze.error {
   padding: 20px 0 10px 0;
   margin: 0;
 }
+.dashboard-module__header h4.align-left {
+  padding: 20px 20px 10px 20px;
+  text-align: left;
+}
+.dashboard-module__header h4.align-left .pull-right {
+  margin-top: -9px;
+}
+.dashboard-module__header h4 .label-used {
+  background-color: #BE234A;
+}
+.dashboard-module__header h4 .label-free {
+  background-color: #52B3D9;
+}
+.dashboard-module__header h4 .label {
+  display: inline-block;
+  font-size: 14px;
+  padding: 5px 10px;
+}
 .dashboard-module__body {
   display: -webkit-box;
   display: -ms-flexbox;

@@ -39,6 +39,25 @@
 				color: #337AB8;
 				padding: 20px 0 10px 0;
 				margin: 0; 
+
+				&.align-left {
+					padding: 20px 20px 10px 20px;
+					text-align: left;
+
+					.pull-right {
+						margin-top: -9px;
+					}
+				}
+
+				.label-used { background-color: #BE234A; }
+				.label-free { background-color: #52B3D9; }
+
+				.label {
+					display: inline-block;
+					font-size: 14px;
+					padding: 5px 10px;
+				}
+
 			}
 		}
 
