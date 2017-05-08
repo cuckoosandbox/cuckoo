@@ -10,11 +10,21 @@ development sequence doesn't work out-of-the-box as it used to do.
 Following we outline how to develop and test new features while using the
 Cuckoo Package.
 
-* Initialize a new ``virtualenv``.
+* Initialize a new ``virtualenv``. Note that any virtualenv's in ``/tmp``
+  won't survive a reboot and as such a more convenient location may be, e.g.,
+  ``~/venv/cuckoo-development`` (i.e., place the ``cuckoo-development``
+  virtualenv in a generic ``~/venv/`` directory for all your virtualenv's).
 
   .. code-block:: bash
 
       $ virtualenv /tmp/cuckoo-development
+
+* Activate the ``virtualenv``. This has to be done every time you start a new
+  shell session (unless you put the command in ``~/.bashrc`` or similar, of
+  course).
+
+  .. code-block:: bash
+
       $ . /tmp/cuckoo-development/bin/activate
 
 * In order to create a Cuckoo distribution package it is required to obtain
