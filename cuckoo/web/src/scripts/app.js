@@ -675,12 +675,12 @@ $(function() {
                 var cores = data.data.cpucount;
                 var lsum = 0;
                 for(var load in data.data.cpuload) {
-                    lsum += parseInt(data.data.cpuload[load]);
+                    lsum += data.data.cpuload[load];
                 }
                 var avgload = parseInt(
                     lsum / data.data.cpuload.length * 100 / cores
                 );
-                $('[data-populate="memory-load"]').text(`${avgload}%`);
+                $('[data-populate="cpu-load"]').text(`${avgload}%`);
                 $('[data-populate="total-cores"]').text(`${cores} cores`);
 
                 // populate cpu load unit
