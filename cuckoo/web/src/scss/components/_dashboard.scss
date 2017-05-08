@@ -59,6 +59,15 @@
 				}
 			}
 
+			&--flex {
+				flex-basis: 100%;
+				border-right: 2px solid #DFDFDF;
+
+				&:last-child {
+					border: 0;
+				}
+			}
+
 			&--left {
 				border-right: 2px solid #DFDFDF;
 			}

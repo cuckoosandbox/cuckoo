@@ -8076,6 +8076,14 @@ body.cyborg .page-freeze.error {
 .dashboard-module__body--left .stack:not(:last-child), .dashboard-module__body--right .stack:not(:last-child) {
   border-bottom: 1px solid #DFDFDF;
 }
+.dashboard-module__body--flex {
+  -ms-flex-preferred-size: 100%;
+      flex-basis: 100%;
+  border-right: 2px solid #DFDFDF;
+}
+.dashboard-module__body--flex:last-child {
+  border: 0;
+}
 .dashboard-module__body--left {
   border-right: 2px solid #DFDFDF;
 }

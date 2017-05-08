@@ -98,7 +98,7 @@
             </header>
             <section class="dashboard-module__body free-disk-space">
 
-                <div class="dashboard-module__body--left">
+                <div class="dashboard-module__body--flex">
                     <h5>Free disk space</h5>
                     <div class="free-disk-space__chart" id="ds-stat">
                         <canvas></canvas>
@@ -109,7 +109,7 @@
                     </div>
                 </div>
 
-                <div class="dashboard-module__body--right">
+                <div class="dashboard-module__body--flex">
                     <h5>CPU Load</h5>
                     <div class="free-disk-space__chart" id="cpu-stat">
                         <canvas></canvas>
@@ -119,6 +119,17 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="dashboard-module__body--flex">
+                    <h5>Memory usage</h5>
+                    <div class="free-disk-space__chart" id="memory-stat">
+                        <canvas></canvas>
+                        <div class="free-disk-space__legend">
+                            <p><strong data-populate="memory-used"></strong></p>
+                        </div>
+                    </div>
+                </div>
+
             </section>
             <!--
             <footer class="dashboard-module__footer">

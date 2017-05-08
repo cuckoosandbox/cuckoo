@@ -733,6 +733,7 @@ $(function () {
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
 
+            // cpu load calculation mechanism
             var cores = data.data.cpucount;
             var lsum = 0;
             for (var load in data.data.cpuload) {
@@ -747,6 +748,17 @@ $(function () {
                 total: cores * 100,
                 used: avgload,
                 free: 100 - avgload
+            });
+
+            // memory data
+            var memory = Math.round(data.data.memory ? data.data.memory : 40.8445324);
+            $('[data-populate="memory-used"]').text(memory + '%');
+
+            // create the memory chart
+            var memory_chart = createChart($("#memory-stat > canvas"), {
+                total: 100,
+                used: memory,
+                free: 100 - memory
             });
         });
 
