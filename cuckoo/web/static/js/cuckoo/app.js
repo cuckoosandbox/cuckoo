@@ -137,6 +137,26 @@ var CuckooWeb = function () {
                 console.log("err: " + data);
             });
         }
+
+        // returns true if the client browser is in the 
+        // recommended browser list.
+
+    }, {
+        key: 'isRecommendedBrowser',
+        value: function isRecommendedBrowser() {
+
+            var recommended = ['chrome', 'firefox'];
+            var isRecommended = false;
+
+            for (var recommendation in recommended) {
+                if (bowser[recommended[recommendation]]) {
+                    isRecommended = true;
+                    break;
+                }
+            }
+
+            return isRecommended;
+        }
     }]);
 
     return CuckooWeb;
@@ -688,9 +708,7 @@ $(function () {
             for (var load in data.data.cpuload) {
                 lsum += parseInt(data.data.cpuload[load]);
             }
-            var avgload = parseInt(
-                lsum / data.data.cpuload.length * 100 / cores
-            );
+            var avgload = parseInt(lsum / data.data.cpuload.length * 100 / cores);
             $('[data-populate="memory-load"]').text(avgload + '%');
             $('[data-populate="total-cores"]').text(cores + ' cores');
 
@@ -698,7 +716,7 @@ $(function () {
             var cpu_load = createChart($("#cpu-stat > canvas"), {
                 total: cores * 100,
                 used: avgload,
-                free: 100 - avgload,
+                free: 100 - avgload
             });
         });
 

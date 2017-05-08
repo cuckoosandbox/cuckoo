@@ -120,6 +120,24 @@ class CuckooWeb {
 
     }
 
+    // returns true if the client browser is in the 
+    // recommended browser list.
+    static isRecommendedBrowser() {
+
+        var recommended = ['chrome','firefox'];
+        var isRecommended = false;
+
+        for(var recommendation in recommended) {
+            if(bowser[recommended[recommendation]]) {
+                isRecommended = true;
+                break;
+            }
+        }
+
+        return isRecommended;
+
+    }
+
 }
 
 /*
