@@ -286,6 +286,19 @@
 					height: 135px;
 				}
 
+				&.no-data:after {
+					content: "no data available";
+					display: block;
+					position: absolute;
+					width: 100%;
+					top: 50%;
+					margin-top: -10px;
+					text-align: center;
+					text-transform: uppercase;
+					font-weight: 900;
+					color: #ccc;
+				}
+
 			}
 
 			&__cpu {

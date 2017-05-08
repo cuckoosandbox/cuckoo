@@ -628,44 +628,6 @@ $(function() {
 
         submit_uploader.draw(); 
 
-        // import uploader
-        // var import_uploader = new DnDUpload.Uploader({
-        //     target: 'div#dashboard-import',
-        //     endpoint: '',
-        //     template: HANDLEBARS_TEMPLATES['dndupload_simple'],
-
-        //     // disables ajax functionality
-        //     ajax: false,
-
-        //     templateData: {
-        //         title: 'Submit an analysis to import',
-        //         html: `<i class="fa fa-upload"></i>\n${$('#import_token').html()}\n<input type="hidden" name="category" type="text" value="file">\n`,
-        //         // sets form action for submitting the files to (form action=".. etc")
-        //         formAction: '/analysis/import/',
-        //         inputName: 'analyses'
-        //     },
-        //     dragstart: function(uploader, holder) {
-        //         $(holder).removeClass('dropped');
-        //         $(holder).addClass('dragging');
-        //     },
-        //     dragend: function(uploader, holder) {
-        //         $(holder).removeClass('dragging');
-        //     },
-        //     drop: function(uploader, holder) {
-        //         $(holder).addClass('dropped');
-        //     },
-        //     success: function(data, holder) {
-        //         setTimeout(function() {
-        //             window.location.href = data.responseURL;
-        //         }, 1000);
-        //     },
-        //     change: function(uploader, holder, files) {
-        //         $(holder).addClass('dropped');
-        //     }
-        // });
-
-        // import_uploader.draw();
-
     }
 
     // dashboard components
@@ -694,43 +656,66 @@ $(function() {
             var tasks_info = DashboardTable.simpleTable(data.data.tasks);
             $('[data-populate="statistics"]').html(tasks_info);
 
-            // populate free disk space unit
-            var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
-            $('[data-populate="free-disk-space"]').text(disk_space.free);
-            $('[data-populate="total-disk-space"]').text(disk_space.total);
+            if(data.data.diskspace.analyses) {
+                // populate free disk space unit
+                var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
+                $('[data-populate="free-disk-space"]').text(disk_space.free);
+                $('[data-populate="total-disk-space"]').text(disk_space.total);
 
-            // cpu load calculation mechanism
-            var cores = data.data.cpucount;
-            var lsum = 0;
-            for(var load in data.data.cpuload) {
-                lsum += parseInt(data.data.cpuload[load]);
+            } else {
+                // show 'no data available' if this data is not available
+                $("#ds-stat").addClass('no-data');
             }
-            var avgload = parseInt(
-                lsum / data.data.cpuload.length * 100 / cores
-            );
-            $('[data-populate="memory-load"]').text(`${avgload}%`);
-            $('[data-populate="total-cores"]').text(`${cores} cores`);
 
-            // populate cpu load unit
-            var cpu_load = createChart($("#cpu-stat > canvas"), {
-                total: cores * 100,
-                used: avgload,
-                free: 100 - avgload,
-            });
 
-            // memory data
-            var memoryTotal = data.data.memtotal ? data.data.memtotal : 11989568;
-            var memoryAvail = data.data.memavail ? data.data.memavail : 2899792;
+            // cpu load chart
+            if(data.data.cpucount) {
 
-            // create the memory chart
-            var memory_chart = createChart($("#memory-stat > canvas"), {
-                total: memoryTotal,
-                used: memoryTotal - memoryAvail,
-                free: memoryAvail
-            }, true);
+                // cpu load calculation mechanism
+                var cores = data.data.cpucount;
+                var lsum = 0;
+                for(var load in data.data.cpuload) {
+                    lsum += parseInt(data.data.cpuload[load]);
+                }
+                var avgload = parseInt(
+                    lsum / data.data.cpuload.length * 100 / cores
+                );
+                $('[data-populate="memory-load"]').text(`${avgload}%`);
+                $('[data-populate="total-cores"]').text(`${cores} cores`);
 
-            $('[data-populate="memory-used"]').text(`${memory_chart.free}%`);
-            $('[data-populate="memory-total"]').text(`${memory_chart.used}%`);
+                // populate cpu load unit
+                var cpu_load = createChart($("#cpu-stat > canvas"), {
+                    total: cores * 100,
+                    used: avgload,
+                    free: 100 - avgload,
+                });
+
+            } else {
+                // show 'no data available' if this data is not available
+                $("#cpu-stat").addClass('no-data');
+            }
+
+            // memory chart 
+            if(data.data.memtotal) {
+
+                // memory data
+                var memoryTotal = data.data.memtotal;
+                var memoryAvail = data.data.memavail;
+
+                // create the memory chart
+                var memory_chart = createChart($("#memory-stat > canvas"), {
+                    total: memoryTotal,
+                    used: memoryTotal - memoryAvail,
+                    free: memoryAvail
+                }, true);
+
+                $('[data-populate="memory-used"]').text(`${memory_chart.free}%`);
+                $('[data-populate="memory-total"]').text(`${memory_chart.used}%`);
+
+            } else {
+                // show 'no data available' if this data is not available
+                $("#memory-stat").addClass('no-data');
+            }
 
         });
 
