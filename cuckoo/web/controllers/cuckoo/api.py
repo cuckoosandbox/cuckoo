@@ -65,13 +65,13 @@ class CuckooApi:
                 values[key.strip()] = value.replace("kB", "").strip()
 
             if "MemAvailable" in values and "MemTotal" in values:
-                avail = int(values["MemAvailable"])
-                total = int(values["MemTotal"])
-                memory = 100 - 100.0 * avail / total
+                memavail = int(values["MemAvailable"])
+                memtotal = int(values["MemTotal"])
+                memory = 100 - 100.0 * memavail / memtotal
             else:
-                memory = None
+                memory = memavail = memtotal = None
         else:
-            memory = None
+            memory = memavail = memtotal = None
 
         data = dict(
             version=version,
@@ -91,6 +91,8 @@ class CuckooApi:
             cpucount=cpucount,
             cpuload=cpuload,
             memory=memory,
+            memavail=memavail,
+            memtotal=memtotal,
         )
 
         return JsonResponse({"status": True, "data": data})
