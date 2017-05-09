@@ -37,61 +37,45 @@
 	    {% if p.modification %}
             <div class="row">
                 <div class="col-md-6">
-                    <div class="panel" id="accordion1">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <label class="accordion-toggle">Metadata</label>
-                            </div>
-
-                            <div id="pdf_metadata" class="panel-collapse collapse in" style="text-align: left;">
-                                <div class="panel-body">
-                                    <table>
-                                        <tr>
-                                            <td>Version</td>
-                                            <td>{{ p.version }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Creator</td>
-                                            <td>{{ p.creator }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>creation</td>
-                                            <td>{{ p.creation }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>title</td>
-                                            <td>{{ p.title }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>subject</td>
-                                            <td>{{ p.subject }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>producer</td>
-                                            <td>{{ p.producer }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>author</td>
-                                            <td>{{ p.author }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>modification</td>
-                                            <td>{{ p.modification }}</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
+                    <div class="panel panel-default list-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Metadata</h3>
                         </div>
+                        <div class="panel-body"></div>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="item-label">Version:</span> {{ p.version }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Creator:</span> {{ p.creator }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Creation:</span> {{ p.creation }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Title:</span> {{ p.title }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Subject:</span> {{ p.subject }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Producer:</span> {{ p.producer }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Author:</span> {{ p.author }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Modification:</span> <span data-transform="date">{{ p.modification }}</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         {% endif %}
         {% if p.urls %}
-
             <div class="row">
                 <div class="col-md-6">
-                    <div class="panel panel-default select-panel">
+                    <div class="panel panel-default list-panel">
                         <div class="panel-heading">
                             <h3 class="panel-title clearfix">
                             	URLs 
@@ -111,7 +95,6 @@
                     </div>
                 </div>
             </div>
-
         {% endif %}
         {% if p.javascript %}
             {% for code in p.javascript %}

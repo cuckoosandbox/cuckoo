@@ -9,7 +9,7 @@
 	- bootstrap component .list-group
  */
 
-.select-panel {
+.list-panel {
 
 	.panel-title {
 
@@ -21,6 +21,17 @@
 			display: inline-block;
 		}
 
+	}
+
+	.list-group-item {
+		.item-label {
+			display: inline-block;
+			width: 100px;
+			font-weight: 500;
+			color: $cuckoo-secundary-color;
+			text-align: right;
+			margin-right: 10px;
+		}
 	}
 
 	.list-group-option {

@@ -769,7 +769,7 @@ $(function() {
     // pre-submits a list of urls to the presubmit form (uses urlhash submission)
     $("#submit-extracted-urls").bind('click', function(e) {
         e.preventDefault();
-        var listItems = $(this).parents('.select-panel').find('.list-group-item');
+        var listItems = $(this).parents('.list-panel').find('.list-group-item');
         var urls = [];
 
         listItems.each(function() {
@@ -777,8 +777,7 @@ $(function() {
         });
 
         urls = urls.join('\n');
-        CuckooWeb.submit_url(urls);
-        
+        CuckooWeb.submit_url(urls); 
     });
 
 });
