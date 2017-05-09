@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import subprocess
 from lib.common.abstracts import Package
 
 class Generic(Package):

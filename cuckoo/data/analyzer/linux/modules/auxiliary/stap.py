@@ -71,7 +71,7 @@ class STAP(Auxiliary):
         stderrfd = open("strace/strace.stderr", "wb")
         self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
         self.fallback_strace = True
-        """
+
         traced_fn = "strace/straced.%u" % os.getpid()
         while True:
             time.sleep(1)
@@ -92,7 +92,7 @@ class STAP(Auxiliary):
                 # something wrong
                 log.warning(e)
 
-        """
+
         return True
 
     def get_pids(self):
