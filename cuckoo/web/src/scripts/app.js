@@ -154,6 +154,23 @@ class CuckooWeb {
       Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
       page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
     - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
+
+    default pageswitcher html structure:
+
+    <div class="page-switcher">
+    
+        <nav class="page-switcher__nav">
+            <a href="page-switcher-page-1" class="active">page 1</a>
+            <a href="page-switcher-page-2">page 2</a>
+        </nav>
+
+        <div class="page-switcher__pages">
+            <div id="page-switcher-page-1" class="active">content for page 1</div>
+            <div id="page-switcher-page-2">content for page 2</div>
+        </div>
+
+    </div>
+
  */
 class PageSwitcher {
 
@@ -790,6 +807,7 @@ $(function() {
     $("pre code").each(function(i, element) {
         hljs.highlightBlock(element);
     });
+
 
 });
 

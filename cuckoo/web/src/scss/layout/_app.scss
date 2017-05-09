@@ -190,3 +190,8 @@ body[id="analysis/import"] {
     }
 
 }
+
+// fixes for hljs
+pre code.hljs {
+    white-space: pre;
+}

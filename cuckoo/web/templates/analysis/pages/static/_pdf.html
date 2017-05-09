@@ -100,23 +100,44 @@
             {% for code in p.javascript %}
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="panel panel-primary">
+                        <div class="panel panel-default list-panel page-switcher">
+
                             <div class="panel-heading">
-                                Javascript <small>(original / beautified)</small>
+                                <h3 class="panel-title">
+                                    Javascript
+                                    <span class="pull-right page-switcher__nav">
+                                        <a href="original-code" class="button active" id="submit-extracted-urls">original</a>
+                                        <a href="beautified-code" class="button" id="submit-extracted-urls">beautified</a>
+                                    </span>
+                                </h3>
                             </div>
 
                             <div id="pdf_js" class="panel-collapse collapse in" style="text-align: left;">
                                 <div class="panel-body">
-                                    <div class="col-md-5" style="padding-right:0;">
+
+                                    <div class="page-switcher__pages">
+                                        <div id="original-code" class="active">
+                                            <pre>
+                                                <code class="javascript">{{ code.orig_code }}</code>
+                                            </pre>
+                                        </div>
+                                        <div id="beautified-code">
+                                            <pre>
+                                                <code class="javascript">{{ code.beautified }}</code>
+                                            </pre>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="col-md-5 split-left" style="padding-right:0;">
                                         <pre>
                                             <code class="javascript">{{ code.orig_code }}</code>
                                         </pre>
                                     </div>
-                                    <div class="col-md-7" style="padding-left:0;border-left: 1px solid #d4d4d4;">
+                                    <div class="col-md-7 split-right" style="padding-left:0;border-left: 1px solid #d4d4d4;">
                                         <pre>
                                             <code class="javascript">{{ code.beautified }}</code>
                                         </pre>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </div>

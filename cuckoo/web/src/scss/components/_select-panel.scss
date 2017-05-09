@@ -62,4 +62,17 @@
 
 	}
 
+	// add some support for the page switcher module
+	// in this grouped list element
+	&.page-switcher {
+
+		// set the active page visual effect
+		.page-switcher__nav {
+			& > .button:not(.active) {
+				@extend .button.inversed;
+			}
+		}
+
+	}
+
 }
