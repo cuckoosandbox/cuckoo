@@ -1,0 +1,54 @@
+/*
+	This is a panel that is able to select multiple or 
+	single items in that list, a javascript controller
+	picks up on this selection and delivers methods for 
+	handling the selected values.
+
+	external prerequisites (may be unified / customised in the future):
+	- bootstrap component .panel
+	- bootstrap component .list-group
+ */
+
+.select-panel {
+
+	.panel-title {
+
+		// correctly align button container in the title
+		.pull-right { margin-top: -6px; }
+
+		.button {
+			@extend .button--sm;
+			display: inline-block;
+		}
+
+	}
+
+	.list-group-option {
+
+		display: block;
+		font-weight: 400;
+		margin: 0;
+
+		&:hover {
+			cursor: pointer;
+		}
+
+		input[type="radio"],
+		input[type="checkbox"] {
+			display: none;
+
+			& + span:before {
+				@extend .fa;
+				color: $cuckoo-secundary-color;
+				width: 25px;
+				content: "\f096";
+			}
+
+			&:checked + span:before {
+				content: "\f14a";
+			}
+		}
+
+	}
+
+}

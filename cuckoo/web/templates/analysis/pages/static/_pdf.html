@@ -88,31 +88,57 @@
             </div>
         {% endif %}
         {% if p.urls %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel" id="accordion2">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <label class="accordion-toggle">URLs</label>
-                                </div>
 
-                                <div id="pdf_urls" class="panel-collapse collapse in" style="text-align: left;">
-                                    <div class="panel-body">
-                                        <div class="col-md-12">
-                                            <ul>
-                                                {% for url in p.urls %}
-                                                    {% if url %}
-                                                         <li>{{ url }}</li>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-default select-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title clearfix">
+                            	URLs 
+                            	<span class="pull-right">
+                            		<a href="#" class="button">select all</a>
+                            		<a href="#" class="button">submit selected urls</a>
+                            	</span>
+                            </h3>
                         </div>
+                        <div class="panel-body"></div>
+                        <ul class="list-group">
+                                {# {% for url in p.urls %} #}
+                                    {# {% if url %} #}
+                                        {# <li class="list-group-item">{{ url }}</li> #}
+                                    {# {% endif %} #}
+                                {# {% endfor %} #}
+
+                            <li class="list-group-item">
+                            	<label class="list-group-option" for="url-1">
+                            		<input type="checkbox" name="submit-url" id="url-1">
+                            		<span>item 1</span>
+                            	</label>
+                            </li>
+
+                            <li class="list-group-item">
+                            	<label class="list-group-option" for="url-2">
+                            		<input type="checkbox" name="submit-url" id="url-2">
+                            		<span>item 2</span>
+                            	</label>
+                            </li>
+
+                            <li class="list-group-item">
+                            	<label class="list-group-option" for="url-3">
+                            		<input type="checkbox" name="submit-url" id="url-3">
+                            		<span>item 3</span>
+                            	</label>
+                            </li>
+
+                            <!-- <li class="list-group-item">item</li>
+                            <li class="list-group-item">item</li>
+                            <li class="list-group-item">item</li>
+                            <li class="list-group-item">item</li> -->
+                        </ul>
                     </div>
                 </div>
+            </div>
+
         {% endif %}
         {% if p.javascript %}
             {% for code in p.javascript %}
