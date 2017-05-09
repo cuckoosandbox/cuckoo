@@ -4,6 +4,7 @@
 
 import datetime
 import fnmatch
+import hashlib
 import io
 import logging
 import os.path
@@ -468,3 +469,66 @@ def migrate_database(revision="head"):
     except subprocess.CalledProcessError:
         return False
     return True
+
+def migrate_cwd():
+    log.warning(
+        "This is the first time you're running Cuckoo after updating your "
+        "local version of Cuckoo. We're going to update files in your CWD "
+        "that require updating. Note that we'll first ensure that no custom "
+        "patches have been applied by you before applying any modifications "
+        "of our own."
+    )
+
+    hashes = {}
+    for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
+        if not line.strip():
+            continue
+        hash_, filename = line.split()
+        hashes[filename] = hashes.get(filename, []) + [hash_]
+
+    modified, outdated = [], []
+    for filename, hashes in hashes.items():
+        if not os.path.exists(cwd(filename)):
+            outdated.append(filename)
+            continue
+        hash_ = hashlib.sha1(open(cwd(filename), "rb").read()).hexdigest()
+        if hash_ not in hashes:
+            modified.append(filename)
+        if hash_ != hashes[-1]:
+            outdated.append(filename)
+
+    if modified:
+        log.error(
+            "One or more files in the CWD have been modified outside of "
+            "regular Cuckoo usage. Due to these changes Cuckoo isn't able to "
+            "automatically upgrade your setup."
+        )
+
+        for filename in sorted(modified):
+            log.warning("Modified file: %s (=> %s)", filename, cwd(filename))
+
+        log.error("Moving forward you have two options:")
+        log.warning(
+            "1) You make a backup of the affected files, remove their "
+            "presence in the CWD (yes, actually 'rm -f' the file), and "
+            "re-run Cuckoo to automatically restore the new version of the "
+            "file. Afterwards you'll be able to re-apply any changes as you "
+            "like."
+        )
+        log.warning(
+            "2) You revert back to the version of Cuckoo you were on "
+            "previously and accept that manual changes that have not been "
+            "merged upstream require additional maintenance that you'll "
+            "pick up at a later point in time."
+        )
+
+        sys.exit(1)
+
+    for filename in outdated:
+        log.debug("Upgraded %s", filename)
+        shutil.copy(cwd("..", "data", filename, private=True), cwd(filename))
+
+    log.info(
+        "Automated migration of your CWD was successful! Continuing "
+        "execution of Cuckoo as expected."
+    )

@@ -335,6 +335,7 @@ def test_all_config_written():
 
     class LookupDict(dict):
         parents = []
+
         def __getitem__(self, key):
             lookups.append(":".join(self.parents + [key]))
             return dict.__getitem__(key)

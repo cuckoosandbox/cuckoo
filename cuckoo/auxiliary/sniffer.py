@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,7 +8,7 @@ import os
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
-from cuckoo.common.constants import CUCKOO_GUEST_PORT
+from cuckoo.common.constants import CUCKOO_GUEST_PORT, faq
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import cwd, getuser, Popen
 
@@ -147,7 +147,8 @@ class Sniffer(Auxiliary):
                 "the analysis; stdout = %r and stderr = %r. Did you enable "
                 "the extra capabilities to allow running tcpdump as non-root "
                 "user and disable AppArmor properly (the latter only applies "
-                "to Ubuntu-based distributions with AppArmor)?" % (out, err)
+                "to Ubuntu-based distributions with AppArmor, see also %s)?" %
+                (out, err, faq("permission-denied-for-tcpdump"))
             )
 
         try:

@@ -9,7 +9,7 @@ import struct
 import tempfile
 
 from cuckoo.common.abstracts import Signature
-from cuckoo.common.objects import Dictionary, File
+from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunSignatures, RunProcessing
 from cuckoo.core.startup import init_yara, init_modules, HAVE_YARA

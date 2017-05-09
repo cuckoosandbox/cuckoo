@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import os
 import setuptools
 import sys
@@ -53,8 +54,36 @@ def githash():
         if os.path.exists(git_ref):
             return open(git_ref, "rb").read().strip()
 
-cwd_path = os.path.join("cuckoo", "data-private", ".cwd")
-open(cwd_path, "wb").write(githash() or "")
+cwd_public = os.path.join("cuckoo", "data")
+cwd_private = os.path.join("cuckoo", "data-private")
+
+open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
+
+def update_hashes():
+    hashes = {}
+    for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
+        if not line.strip():
+            continue
+        hash_, filename = line.split()
+        hashes[filename] = hashes.get(filename, []) + [hash_]
+
+    new_hashes = []
+    for dirpath, dirnames, filenames in os.walk(cwd_public):
+        dirname = dirpath[len(cwd_public)+1:]
+        for filename in filenames:
+            filepath = os.path.join(dirname, filename).replace("\\", "/")
+            buf = open(os.path.join(cwd_public, filepath), "rb").read()
+            hash_ = hashlib.sha1(buf).hexdigest()
+            if filepath not in hashes or hash_ not in hashes[filepath]:
+                new_hashes.append((filepath, hash_))
+
+    with open(os.path.join(cwd_private, "cwd", "hashes.txt"), "a+b") as f:
+        new_hashes and f.write("\n")
+        for filename, hash_ in sorted(new_hashes):
+            f.write("%s %s\n" % (hash_, filename))
+
+# Provide hashes for our CWD migration process.
+update_hashes()
 
 install_requires = []
 
@@ -154,7 +183,7 @@ do_setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock>=0.2.7, <0.3",
+        "sflock>=0.2.8, <0.3",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
     ] + install_requires,

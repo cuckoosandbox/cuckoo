@@ -39,6 +39,9 @@ before_test:
   - "psql -c \"CREATE DATABASE cuckootestimport\""
   - "psql cuckootestimport <tests/files/sql/11pg.sql >NUL"
 
+  # Fetch monitor & stuff which is required for CWD migration tests.
+  - "python.exe stuff/monitor.py"
+
 test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"

@@ -94,6 +94,15 @@ class VolatilityAPI(object):
         if self.config is not None and self.addr_space is not None:
             return
 
+        if not self.osprofile:
+            raise CuckooOperationalError(
+                "Can't continue to process the VM memory dump if no OS "
+                "profile has been defined for it. One may define its OS "
+                "profile using the 'osprofile' field for the VM in its "
+                "machinery configuration or set a global default using "
+                "'guest_profile' in memory.conf"
+            )
+
         if self.osprofile not in self.profiles:
             raise CuckooOperationalError(
                 "The profile '%s' does not exist! Please pick one of the "
@@ -136,9 +145,16 @@ class VolatilityAPI(object):
         # See: #464.
         try:
             self.addr_space = utils.load_as(self.config)
-        except exc.AddrSpaceError:
+        except exc.AddrSpaceError as e:
             if self.get_dtb():
                 self.addr_space = utils.load_as(self.config)
+            elif "No suitable address space mapping found" in e.message:
+                raise CuckooOperationalError(
+                    "An incorrect OS has been specified for this machine! "
+                    "Please provide the correct one or Cuckoo won't be able "
+                    "to provide Volatility-based results for analyses with "
+                    "this VM."
+                )
             else:
                 raise
 
@@ -1086,10 +1102,18 @@ class Memory(Processing):
             )
             return
 
+        if not os.path.getsize(self.memory_path):
+            log.error(
+                "VM memory dump empty: to properly create VM memory dumps "
+                "you have to enable memory_dump in cuckoo.conf!"
+            )
+            return
+
         osprofile = (
             self.machine.get("osprofile") or
             config("memory:basic:guest_profile")
         )
+
         if not osprofile:
             log.error(
                 "Can't continue to process the VM memory dump for machine "
@@ -1104,4 +1128,7 @@ class Memory(Processing):
         try:
             return VolatilityManager(self.memory_path, osprofile).run()
         except CuckooOperationalError as e:
-            log.error("Error running Volatility: %s", e)
+            log.error(
+                "Error running Volatility on machine '%s': %s",
+                (self.machine.get("name") or "unknown VM name"), e
+            )

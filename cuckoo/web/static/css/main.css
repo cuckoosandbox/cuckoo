@@ -3121,8 +3121,8 @@ body[id="submission/index"] footer:not(.flex-grid__footer),
 body[id="submission/index"] #footer-extra,
 body[id="submission/post"] footer:not(.flex-grid__footer),
 body[id="submission/post"] #footer-extra,
-body[id^="analysis"]:not([id="#analysis.views.pending"]) footer:not(.flex-grid__footer),
-body[id^="analysis"]:not([id="#analysis.views.pending"]) #footer-extra {
+body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) footer:not(.flex-grid__footer),
+body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) #footer-extra {
   display: none;
 }
 
@@ -3418,7 +3418,7 @@ body.night .dns-badge > *.dns-badge__type {
   width: 100%;
   height: 50px;
   top: 0;
-  z-index: 5;
+  z-index: 50;
   padding: 0 30px;
   background-color: #222;
   border-bottom: 1px solid #111;
@@ -3830,6 +3830,21 @@ body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons_
   padding: 5px 10px;
   border-radius: 4px;
   border-bottom: 1px solid #4F7CCF;
+  line-height: 16px;
+}
+body.cyborg .button, body.cyborg .button--lg {
+  color: #fff;
+}
+body.cyborg .button:hover, body.cyborg .button--lg:hover {
+  color: #fff;
+  text-decoration: none;
+}
+body.night .button, body.night .button--lg {
+  color: #fff;
+}
+body.night .button:hover, body.night .button--lg:hover {
+  color: #fff;
+  text-decoration: none;
 }
 .button:hover, .button--lg:hover {
   color: #fff;
@@ -4677,11 +4692,27 @@ body.night .dndupload__v2 {
 .upload-module__container {
   width: 325px;
 }
+.upload-module__body {
+  width: 650px;
+  margin-left: -160px;
+}
+.upload-module__body--left {
+  width: 335px;
+  float: left;
+}
+.upload-module__body--right {
+  float: right;
+  margin-top: 131px;
+}
 .upload-module h3 {
   color: #B0B0B0;
   font-weight: 900;
   font-size: 18px;
   margin-bottom: 15px;
+}
+.upload-module .allowed-file-types {
+  width: 300px;
+  padding-left: 30px;
 }
 .upload-module .allowed-file-types h4 {
   font-weight: 400;
@@ -4709,6 +4740,7 @@ body.night .dndupload__v2 {
 }
 .upload-module .allowed-file-types ul li span {
   position: absolute;
+  left: 0;
   width: 100%;
   text-align: center;
   bottom: 14px;
@@ -6524,7 +6556,7 @@ body.night .flex-tabs__tab .btn:not(.active):hover, body.night .flex-tabs__tab--
       -ms-flex-direction: column;
           flex-direction: column;
   width: 100vw;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 50px);
   font-family: "Roboto", sans-serif;
 }
 .flex-grid.include-footer, .include-footer.flex-grid__horizontal, .include-footer.flex-grid__horizontal--grow {
@@ -8030,6 +8062,7 @@ body.cyborg .page-freeze.error {
   border-bottom: 1px solid #DFDFDF;
 }
 .dashboard-module__body--left, .dashboard-module__body--right {
+  position: relative;
   -ms-flex-preferred-size: 50%;
       flex-basis: 50%;
   -webkit-box-flex: 0;
@@ -8037,6 +8070,9 @@ body.cyborg .page-freeze.error {
           flex-grow: 0;
   -ms-flex-negative: 0;
       flex-shrink: 0;
+}
+.dashboard-module__body--left .stack:not(:last-child), .dashboard-module__body--right .stack:not(:last-child) {
+  border-bottom: 1px solid #DFDFDF;
 }
 .dashboard-module__body--left {
   border-right: 2px solid #DFDFDF;
@@ -8160,9 +8196,7 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   border-right: 1px solid #DFDFDF;
   text-align: right;
 }
-.dashboard-module .free-disk-space, .dashboard-module__lg .free-disk-space {
-  display: block;
-  width: 100%;
+.dashboard-module .free-disk-space > div, .dashboard-module__lg .free-disk-space > div {
   padding: 20px 0;
 }
 .dashboard-module .free-disk-space h5, .dashboard-module__lg .free-disk-space h5 {
@@ -8171,10 +8205,10 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   text-align: center;
   color: #979797;
 }
-.dashboard-module .free-disk-space__chart, .dashboard-module__lg .free-disk-space__chart {
+.dashboard-module .free-disk-space__chart, .dashboard-module__lg .free-disk-space__chart, .dashboard-module .free-disk-space__cpu, .dashboard-module__lg .free-disk-space__cpu {
   position: relative;
 }
-.dashboard-module .free-disk-space__chart > canvas, .dashboard-module__lg .free-disk-space__chart > canvas {
+.dashboard-module .free-disk-space__chart > canvas, .dashboard-module__lg .free-disk-space__chart > canvas, .dashboard-module .free-disk-space__cpu > canvas, .dashboard-module__lg .free-disk-space__cpu > canvas {
   margin: 0px auto;
   width: 135px;
   height: 135px;
@@ -8215,24 +8249,36 @@ body.night .dashboard-module__tabs > .flex-tabs__tab[href].active, body.night .d
   background-color: #fff;
   border-bottom-width: 2px;
 }
-.dashboard-module .omni-uploader .dashboard-module__body--left, .dashboard-module__lg .omni-uploader .dashboard-module__body--left {
-  border-right-width: 2px;
-}
-.dashboard-module .omni-uploader .uploader-area, .dashboard-module__lg .omni-uploader .uploader-area {
-  display: block;
-  text-align: center;
-  height: 193px;
-}
-.dashboard-module .omni-uploader .uploader-area h5, .dashboard-module__lg .omni-uploader .uploader-area h5 {
+.dashboard-module .omni-uploader h5, .dashboard-module__lg .omni-uploader h5 {
   text-transform: uppercase;
   color: #979797;
   font-weight: 700;
   font-size: 16px;
   margin: 0 0 11px 0;
 }
+.dashboard-module .omni-uploader .dashboard-module__body--left, .dashboard-module__lg .omni-uploader .dashboard-module__body--left {
+  border-right-width: 2px;
+}
+.dashboard-module .omni-uploader .dashboard-module__body--left #uploader, .dashboard-module__lg .omni-uploader .dashboard-module__body--left #uploader {
+  padding: 50px 20px 20px 20px;
+}
+.dashboard-module .omni-uploader .uploader-area, .dashboard-module__lg .omni-uploader .uploader-area {
+  display: block;
+  text-align: center;
+  height: 193px;
+}
 .dashboard-module .omni-uploader .uploader-area .fa, .dashboard-module__lg .omni-uploader .uploader-area .fa, .dashboard-module .omni-uploader .uploader-area .custom-select:after, .dashboard-module__lg .omni-uploader .uploader-area .custom-select:after, .dashboard-module .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module__lg .omni-uploader .uploader-area .dns-badge__content:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after, .dashboard-module .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before, table.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, table#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module__lg .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module .omni-uploader .uploader-area div:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files ul div:before, .cuckoo-files ul .dashboard-module__lg .omni-uploader .uploader-area div:before, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:after, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:after, .dashboard-module .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module .omni-uploader .uploader-area .extension-select:before, .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .dashboard-module__lg .omni-uploader .uploader-area .extension-select:before, .dashboard-module .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module__lg .omni-uploader .uploader-area .flex-form__header .custom-checkbox > input + span, .flex-form__header .dashboard-module__lg .omni-uploader .uploader-area .custom-checkbox > input + span, .dashboard-module .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after, .dashboard-module__lg .omni-uploader .uploader-area .breadcrumbs > li:not(:last-child):after {
   font-size: 50px;
   color: #71A1F9;
+}
+.dashboard-module .omni-uploader #submit-with-link, .dashboard-module__lg .omni-uploader #submit-with-link {
+  padding: 30px;
+}
+.dashboard-module .omni-uploader #submit-with-link h5, .dashboard-module__lg .omni-uploader #submit-with-link h5 {
+  margin-bottom: 20px;
+}
+.dashboard-module .omni-uploader #submit-with-link textarea, .dashboard-module__lg .omni-uploader #submit-with-link textarea {
+  margin-bottom: 30px;
 }
 body.cyborg .dashboard {
   background-color: #020e10;
@@ -8263,6 +8309,9 @@ body.cyborg .dashboard .dashboard-module__header h4 {
 }
 body.cyborg .dashboard .dashboard-module__header select {
   background-color: transparent;
+}
+body.cyborg .dashboard .dashboard-module .stack:not(:last-child), body.cyborg .dashboard .dashboard-module__lg .stack:not(:last-child) {
+  border-color: #133b4a;
 }
 body.cyborg .dashboard table.simple tr {
   border-color: #133b4a;
@@ -8302,6 +8351,9 @@ body.night .dashboard .dashboard-module__footer {
 }
 body.night .dashboard .dashboard-module__footer p {
   color: #fff;
+}
+body.night .dashboard .stack:not(:last-child) {
+  border-color: #375a7f;
 }
 body.night .dashboard table.simple tr {
   border-color: #28415b;

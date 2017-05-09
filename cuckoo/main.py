@@ -17,7 +17,7 @@ from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task_range,
     cuckoo_rooter, cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
     cuckoo_clean, cuckoo_dnsserve, cuckoo_machine, import_cuckoo,
-    migrate_database
+    migrate_database, migrate_cwd
 )
 from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -101,19 +101,19 @@ def cuckoo_init(level, ctx, cfg=None):
             "along the correct directory?"
         )
 
-    # Determine if any CWD updates are required.
-    current = open(cwd(".cwd"), "rb").read()
-    latest = open(cwd(".cwd", private=True), "rb").read()
-    if current != latest:
-        pass
+    init_console_logging(level)
 
     check_configs()
     check_version()
 
-    if ctx.log:
-        init_logging(level)
-    else:
-        init_console_logging(level)
+    ctx.log and init_logging(level)
+
+    # Determine if any CWD updates are required and if so, do them.
+    current = open(cwd(".cwd"), "rb").read().strip()
+    latest = open(cwd(".cwd", private=True), "rb").read().strip()
+    if current != latest:
+        migrate_cwd()
+        open(cwd(".cwd"), "wb").write(latest)
 
     Database().connect()
 
@@ -305,9 +305,17 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
-    # Initialize all modules & Yara rules.
-    init_modules()
-    init_yara(False)
+    try:
+        # Initialize all modules & Yara rules.
+        init_modules()
+        init_yara(False)
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
     try:
         # Regenerate one or more reports.
@@ -487,12 +495,19 @@ def web(ctx, args, host, port, uwsgi, nginx):
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
-    if not args:
+    try:
         execute_from_command_line(
             ("cuckoo", "runserver", "%s:%d" % (host, port))
+            if not args else
+            ("cuckoo",) + args
         )
-    else:
-        execute_from_command_line(("cuckoo",) + args)
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
 @main.command()
 @click.argument("vmname")

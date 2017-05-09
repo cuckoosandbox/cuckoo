@@ -59,13 +59,29 @@
             <div class="dashboard-module__body omni-uploader">
 
                 <div class="dashboard-module__body--left">
-                    <div class="uploader-area" id="dashboard-submit"></div>
-                    <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+
+                    <div class="stack">
+                        <div class="uploader-area" id="dashboard-submit"></div>
+                        <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+                    </div>
+
+                    <div class="stack">
+                        <div class="uploader-area" id="dashboard-import"></div>
+                        <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
+                    </div>
+
                 </div>
 
                 <div class="dashboard-module__body--right">
-                    <div class="uploader-area" id="dashboard-import"></div>
-                    <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
+                    <div id="submit-with-link">
+                        <form>
+                            <h5>Submit via URL</h5>
+                            <textarea rows="11" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
+                            <div class="text-center">
+                                <button type="submit" class="button--lg">Submit</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
             </div>  
@@ -82,15 +98,27 @@
             </header>
             <section class="dashboard-module__body free-disk-space">
 
-                <h5>Free disk space</h5>
-                <div class="free-disk-space__chart">
-                    <canvas></canvas>
-                    <div class="free-disk-space__legend">
-                        <p><strong data-populate="free-disk-space"></strong></p>
-                        <p data-populate="total-disk-space"></p>
+                <div class="dashboard-module__body--left">
+                    <h5>Free disk space</h5>
+                    <div class="free-disk-space__chart" id="ds-stat">
+                        <canvas></canvas>
+                        <div class="free-disk-space__legend">
+                            <p><strong data-populate="free-disk-space"></strong></p>
+                            <p data-populate="total-disk-space"></p>
+                        </div>
                     </div>
                 </div>
 
+                <div class="dashboard-module__body--right">
+                    <h5>CPU Load</h5>
+                    <div class="free-disk-space__chart" id="cpu-stat">
+                        <canvas></canvas>
+                        <div class="free-disk-space__legend">
+                            <p><strong data-populate="memory-load"></strong></p>
+                            <p data-populate="total-cores"></p>
+                        </div>
+                    </div>
+                </div>
             </section>
             <!--
             <footer class="dashboard-module__footer">

@@ -2907,20 +2907,7 @@ $(function () {
 
 		// taken from the previous submit functionality
 		$("input#urlhash").click(function () {
-
-			var urls = $("textarea#presubmit_urlhash").val();
-			if (urls == "") {
-				return;
-			}
-
-			CuckooWeb.api_post("/submit/api/presubmit", {
-				"data": urls,
-				"type": "strings"
-			}, function (data) {
-				CuckooWeb.redirect("/submit/pre/" + data.submit_id);
-			}, function (data) {
-				console.log("err: " + data);
-			});
+			CuckooWeb.submit_url($("textarea#presubmit_urlhash").val());
 		});
 	}
 

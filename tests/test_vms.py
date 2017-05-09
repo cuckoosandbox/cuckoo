@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -48,6 +48,7 @@ platform = windows
 ip = 1.3.5.7
 resultserver_port = 4242
 """)
+
     class mock(object):
         port = 9001
 

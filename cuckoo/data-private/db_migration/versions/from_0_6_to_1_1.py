@@ -23,7 +23,6 @@ from alembic import op
 from datetime import datetime
 from dateutil.parser import parse
 
-from cuckoo.common.config import config
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Task
 

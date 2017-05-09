@@ -101,6 +101,153 @@ class CuckooWeb {
         $('.page-freeze__options').removeClass('hidden');
     }
 
+    // shorthand for posting urls to /submit because this method 
+    // is used in multiple contexts (dashboard, submit)
+    static submit_url(urls) {
+
+        if (urls == "") {
+            return false;
+        }
+
+        CuckooWeb.api_post("/submit/api/presubmit", {
+            "data": urls,
+            "type": "strings"
+        }, function (data) {
+            CuckooWeb.redirect("/submit/pre/" + data.submit_id);
+        }, function (data) {
+            console.log("err: " + data);
+        });
+
+    }
+
+}
+
+/*
+    class PageSwitcher
+    - a class that handles 'tabbed' navigation
+    - primarily [now] used at the network analysis page as proof of concept
+    - this class will be traversible and highly configurable using hooks (will improve overall page performance)
+    - this technique might open a few windows on asynchronous page loading, which I will highly recommend for this page
+    - also in mind to do this all using Handlebars, which works overall nice with these kind of pages, but that'll 
+      require some back-end logistics for getting its required data. but this needs to be discussed at some point.
+      Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
+      page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
+    - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
+ */
+class PageSwitcher {
+
+    constructor(options) {
+        this.nav = options.nav;
+        this.container = options.container;
+
+        this.pages = [];
+
+        this.events = $.extend({
+            transition: function(){},
+            beforeTransition: function(){},
+            afterTransition: function(){}
+        }, options.events ? options.events : {});
+
+        this.initialise();
+    }
+
+    /*
+        Called on instance construction
+     */
+    initialise() {
+
+        var _this = this;
+
+        this.indexPages();
+
+        this.nav.find('a').bind('click', function(e) {
+            e.preventDefault();
+            _this._beforeTransition($(this));
+        });
+
+    }
+
+    /*
+        Creates a short summary about the pages and their names
+     */
+    indexPages() {
+        var _this = this;
+        this.container.children('div').each(function() {
+            _this.pages.push({
+                name: $(this).attr('id'),
+                el: $(this),
+                initialised: false
+            });
+        });
+    }
+
+    /*
+        Prepares a transition
+        - a transition is traversing from page A to page B
+     */
+    _beforeTransition(el) {
+
+        var name = el.attr('href').replace('#','');
+        var targetPage;
+
+        if(this.exists(name)) {
+            this.nav.find('a').removeClass('active');
+            this.container.children('div').removeClass('active');
+
+            targetPage = this.getPage(name);
+
+            this.events.beforeTransition.apply(this, [name, targetPage]);
+            this._transition(targetPage, el);
+        } else {
+            this._afterTransition();
+        }
+
+    }
+
+    /*
+        Executes the transition
+     */
+    _transition(page, link) {
+        page.el.addClass('active');
+        link.addClass('active');
+        this.events.transition.apply(this, [page, link]);
+        this._afterTransition(page);
+    }
+
+    /*
+        Finishes the transition
+     */
+    _afterTransition(page) {
+        this.events.afterTransition.apply(this, [page]);
+    }
+
+    /*
+        returns a page by name
+     */
+    getPage(name) {
+        return this.pages.filter(function(element) {
+            return element.name == name;
+        })[0];
+    }
+
+    /*
+        quick-validates if a page exists
+     */
+    exists(name) {
+        return this.getPage(name) !== undefined;
+    }
+
+    /*
+        public method for transitioning programatically
+     */
+    transition(name) { 
+        if(this.exists(name)) {
+            this._beforeTransition(this.nav.children(`[href=${name}]`));
+        } else {
+            return false;
+        }
+    }
+
 }
 
 /*
@@ -459,16 +606,16 @@ class DashboardTable {
 $(function() {
 
     /* ====================
-    CHART
+    CHART - free disk space
     ==================== */
 
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    function createChart(data) {
+    function createChart(cSelector, data) {
 
         var chart,
-            chartCanvas = $('.free-disk-space__chart > canvas')[0],
+            chartCanvas = cSelector[0],
             ds_total = data.total,
             ds_free = data.free,
             ds_used = data.used,
@@ -565,7 +712,7 @@ $(function() {
             ajax: false,
 
             templateData: {
-                title: 'Submit a file to import',
+                title: 'Submit an analysis to import',
                 html: `<i class="fa fa-upload"></i>\n${$('#import_token').html()}\n<input type="hidden" name="category" type="text" value="file">\n`,
                 // sets form action for submitting the files to (form action=".. etc")
                 formAction: '/analysis/import/',
@@ -622,12 +769,35 @@ $(function() {
             $('[data-populate="statistics"]').html(tasks_info);
 
             // populate free disk space unit
-            var disk_space = createChart(data.data.diskspace.analyses);
+            var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
 
+            var cores = data.data.cpucount;
+            var lsum = 0;
+            for(var load in data.data.cpuload) {
+                lsum += parseInt(data.data.cpuload[load]);
+            }
+            var avgload = parseInt(
+                lsum / data.data.cpuload.length * 100 / cores
+            );
+            $('[data-populate="memory-load"]').text(`${avgload}%`);
+            $('[data-populate="total-cores"]').text(`${cores} cores`);
+
+            // populate cpu load unit
+            var cpu_load = createChart($("#cpu-stat > canvas"), {
+                total: cores * 100,
+                used: avgload,
+                free: 100 - avgload,
+            });
         });
 
+        // submit the dashboard url submitter
+        $("#submit-with-link form").bind('submit', function(e) {
+            e.preventDefault();
+            var urls = $("#submit-with-link textarea").val();
+            CuckooWeb.submit_url(urls);
+        });
 
     }
 

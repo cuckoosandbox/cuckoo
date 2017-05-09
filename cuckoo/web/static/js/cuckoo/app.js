@@ -116,6 +116,27 @@ var CuckooWeb = function () {
             $('.page-freeze__message').text(text);
             $('.page-freeze__options').removeClass('hidden');
         }
+
+        // shorthand for posting urls to /submit because this method 
+        // is used in multiple contexts (dashboard, submit)
+
+    }, {
+        key: 'submit_url',
+        value: function submit_url(urls) {
+
+            if (urls == "") {
+                return false;
+            }
+
+            CuckooWeb.api_post("/submit/api/presubmit", {
+                "data": urls,
+                "type": "strings"
+            }, function (data) {
+                CuckooWeb.redirect("/submit/pre/" + data.submit_id);
+            }, function (data) {
+                console.log("err: " + data);
+            });
+        }
     }]);
 
     return CuckooWeb;
@@ -507,16 +528,16 @@ var DashboardTable = function () {
 $(function () {
 
     /* ====================
-    CHART
+    CHART - free disk space
     ==================== */
 
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    function createChart(data) {
+    function createChart(cSelector, data) {
 
         var chart,
-            chartCanvas = $('.free-disk-space__chart > canvas')[0],
+            chartCanvas = cSelector[0],
             ds_total = data.total,
             ds_free = data.free,
             ds_used = data.used,
@@ -603,7 +624,7 @@ $(function () {
             ajax: false,
 
             templateData: {
-                title: 'Submit a file to import',
+                title: 'Submit an analysis to import',
                 html: '<i class="fa fa-upload"></i>\n' + $('#import_token').html() + '\n<input type="hidden" name="category" type="text" value="file">\n',
                 // sets form action for submitting the files to (form action=".. etc")
                 formAction: '/analysis/import/',
@@ -658,9 +679,34 @@ $(function () {
             $('[data-populate="statistics"]').html(tasks_info);
 
             // populate free disk space unit
-            var disk_space = createChart(data.data.diskspace.analyses);
+            var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
             $('[data-populate="free-disk-space"]').text(disk_space.free);
             $('[data-populate="total-disk-space"]').text(disk_space.total);
+
+            var cores = data.data.cpucount;
+            var lsum = 0;
+            for (var load in data.data.cpuload) {
+                lsum += parseInt(data.data.cpuload[load]);
+            }
+            var avgload = parseInt(
+                lsum / data.data.cpuload.length * 100 / cores
+            );
+            $('[data-populate="memory-load"]').text(avgload + '%');
+            $('[data-populate="total-cores"]').text(cores + ' cores');
+
+            // populate cpu load unit
+            var cpu_load = createChart($("#cpu-stat > canvas"), {
+                total: cores * 100,
+                used: avgload,
+                free: 100 - avgload,
+            });
+        });
+
+        // submit the dashboard url submitter
+        $("#submit-with-link form").bind('submit', function (e) {
+            e.preventDefault();
+            var urls = $("#submit-with-link textarea").val();
+            CuckooWeb.submit_url(urls);
         });
     }
 

@@ -34,7 +34,11 @@ from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
 try:
+<<<<<<< HEAD
     from cuckoo.processing.memory import obj as vol_obj
+=======
+    from cuckoo.processing.memory import obj as vol_obj, exc as vol_exc
+>>>>>>> cuckoosandbox/master
     HAVE_VOLATILITY = True
 except ImportError:
     HAVE_VOLATILITY = False
@@ -322,6 +326,18 @@ class TestProcessing(object):
         assert os.path.exists(shotpath)
         os.unlink(shotpath)
 
+    @mock.patch("cuckoo.processing.screenshots.PIL.Image")
+    def test_screenshot_truncated(self, p):
+        s = Screenshots()
+        s.shots_path = os.path.join(
+            "tests", "files", "sample_analysis_storage", "shots"
+        )
+        s.set_options({})
+        p.open.return_value.save.side_effect = IOError(
+            "image file is truncated (42 bytes not processed)"
+        )
+        assert s.run() == []
+
     def test_targetinfo(self):
         ti = TargetInfo()
         ti.file_path = __file__
@@ -443,17 +459,42 @@ class TestProcessing(object):
 class TestVolatility(object):
     @mock.patch("cuckoo.processing.memory.log")
     def test_no_mempath(self, p):
+<<<<<<< HEAD
+=======
+        set_cwd(tempfile.mkdtemp())
+>>>>>>> cuckoosandbox/master
         m = Memory()
         m.memory_path = None
         assert m.run() is None
         p.error.assert_called_once()
+<<<<<<< HEAD
 
     @mock.patch("cuckoo.processing.memory.log")
     def test_invalid_mempath(self, p):
+=======
+        assert "dump not found" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_invalid_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+>>>>>>> cuckoosandbox/master
         m = Memory()
         m.memory_path = "notafile"
         assert m.run() is None
         p.error.assert_called_once()
+<<<<<<< HEAD
+=======
+        assert "dump not found" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_empty_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+        m = Memory()
+        m.memory_path = Files.temp_put("")
+        assert m.run() is None
+        p.error.assert_called_once()
+        assert "dump empty" in p.error.call_args_list[0][0][0]
+>>>>>>> cuckoosandbox/master
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_global_osprofile(self, p):
@@ -465,7 +506,11 @@ class TestVolatility(object):
                 },
             },
         })
+<<<<<<< HEAD
         filepath = Files.temp_named_put("", "memory.dmp")
+=======
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
+>>>>>>> cuckoosandbox/master
         m = Memory()
         m.set_path(os.path.dirname(filepath))
         m.set_machine({})
@@ -482,7 +527,11 @@ class TestVolatility(object):
                 },
             },
         })
+<<<<<<< HEAD
         filepath = Files.temp_named_put("", "memory.dmp")
+=======
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
+>>>>>>> cuckoosandbox/master
         m = Memory()
         m.set_path(os.path.dirname(filepath))
         m.set_machine({
@@ -491,12 +540,35 @@ class TestVolatility(object):
         m.run()
         p.assert_called_once_with(filepath, "profile1")
 
+<<<<<<< HEAD
+=======
+    def test_empty_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, None).run()
+        e.match("no OS profile has been defined")
+
+>>>>>>> cuckoosandbox/master
     def test_invalid_profile(self):
         with pytest.raises(CuckooOperationalError) as e:
             VolatilityManager(None, "invalid_profile").run()
         e.match("does not exist!")
 
     @mock.patch("volatility.utils.load_as")
+<<<<<<< HEAD
+=======
+    @mock.patch("volatility.plugins.filescan.PSScan")
+    def test_wrong_profile(self, p, q):
+        q.side_effect = vol_exc.AddrSpaceError()
+        q.side_effect.append_reason(
+            "hello", "No suitable address space mapping found"
+        )
+        p.return_value.calculate.return_value = []
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "WinXPSP2x86").run()
+        e.match("An incorrect OS has been specified")
+
+    @mock.patch("volatility.utils.load_as")
+>>>>>>> cuckoosandbox/master
     def test_plugin_enabled(self, p):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={

@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -39,6 +39,10 @@ class PopenStdout(BasePopen):
 class PopenStderr(BasePopen):
     def communicate(self):
         return "", "not a standard error message"
+
+class PopenPermissionDenied(BasePopen):
+    def poll(self):
+        return True
 
 class task(object):
     id = 42
@@ -118,6 +122,16 @@ def test_sniffer():
     with mock.patch("os.path.exists") as p:
         p.return_value = False
         assert s.start() is False
+
+    # Test permission denied on tcpdump.
+    with mock.patch("subprocess.Popen") as p:
+        p.return_value = PopenPermissionDenied()
+        assert s.start() is True
+
+    with pytest.raises(CuckooOperationalError) as e:
+        assert s.stop()
+    e.match("the network traffic during the")
+    e.match("denied-for-tcpdump")
 
     # Test stdout output from tcpdump.
     with mock.patch("subprocess.Popen") as p:

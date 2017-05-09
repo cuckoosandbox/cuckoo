@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import multiprocessing
 import os
 import socket
 
@@ -52,6 +53,11 @@ class CuckooApi:
         else:
             cpuload = []
 
+        try:
+            cpucount = multiprocessing.cpu_count()
+        except NotImplementedError:
+            cpucount = 1
+
         if os.path.isfile("/proc/meminfo"):
             values = {}
             for line in open("/proc/meminfo"):
@@ -80,6 +86,7 @@ class CuckooApi:
                 reported=db.count_tasks("reported")
             ),
             diskspace=diskspace,
+            cpucount=cpucount,
             cpuload=cpuload,
             memory=memory,
         )

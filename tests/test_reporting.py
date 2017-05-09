@@ -278,16 +278,6 @@ def test_mongodb_init_once_new(p):
     })
     p.db.fs.files.ensure_index.assert_called_once()
 
-@mock.patch("cuckoo.reporting.mongodb.mongo")
-def test_mongodb_init_once_new(p):
-    p.init.return_value = True
-    MongoDB().init_once()
-    p.db.collection_names.return_value = []
-    p.db.cuckoo_schema.save.assert_called_once_with({
-        "version": "1",
-    })
-    p.db.fs.files.ensure_index.assert_called_once()
-
 def test_feedback_empty():
     r = Feedback()
     r.set_path("tests/files/sample_analysis_storage")
