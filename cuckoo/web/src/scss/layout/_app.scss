@@ -198,6 +198,50 @@ pre code.hljs {
     font-size: 13px;
     padding: 15px;
     line-height: 22px;
+
+    @include cuckoo-theme('cyborg') {
+
+        background-color: #1d1f21;
+        color: #999;
+
+        .hljs-type, 
+        .hljs-string, 
+        .hljs-number, 
+        .hljs-selector-id, 
+        .hljs-selector-class, 
+        .hljs-quote, 
+        .hljs-template-tag, 
+        .hljs-deletion {
+            color: #6f9ab3;
+        }
+
+        .hljs-keyword {
+            color: $cyborg_secundary_color;
+        }
+    }
+
+    @include cuckoo-theme('night') {
+
+        background-color: #1d1f21;
+        color: #999;
+
+        .hljs-type, 
+        .hljs-string, 
+        .hljs-number, 
+        .hljs-selector-id, 
+        .hljs-selector-class, 
+        .hljs-quote, 
+        .hljs-template-tag, 
+        .hljs-deletion {
+            color: #6f9ab3;
+        }
+
+        .hljs-keyword {
+            color: $cyborg_secundary_color;
+        }
+
+    }
+
 }
 
 // say no to bootstrap 'pre' styling

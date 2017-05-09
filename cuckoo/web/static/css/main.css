@@ -3319,6 +3319,40 @@ pre code.hljs {
   padding: 15px;
   line-height: 22px;
 }
+body.cyborg pre code.hljs {
+  background-color: #1d1f21;
+  color: #999;
+}
+body.cyborg pre code.hljs .hljs-type,
+body.cyborg pre code.hljs .hljs-string,
+body.cyborg pre code.hljs .hljs-number,
+body.cyborg pre code.hljs .hljs-selector-id,
+body.cyborg pre code.hljs .hljs-selector-class,
+body.cyborg pre code.hljs .hljs-quote,
+body.cyborg pre code.hljs .hljs-template-tag,
+body.cyborg pre code.hljs .hljs-deletion {
+  color: #6f9ab3;
+}
+body.cyborg pre code.hljs .hljs-keyword {
+  color: #0ce3ac;
+}
+body.night pre code.hljs {
+  background-color: #1d1f21;
+  color: #999;
+}
+body.night pre code.hljs .hljs-type,
+body.night pre code.hljs .hljs-string,
+body.night pre code.hljs .hljs-number,
+body.night pre code.hljs .hljs-selector-id,
+body.night pre code.hljs .hljs-selector-class,
+body.night pre code.hljs .hljs-quote,
+body.night pre code.hljs .hljs-template-tag,
+body.night pre code.hljs .hljs-deletion {
+  color: #6f9ab3;
+}
+body.night pre code.hljs .hljs-keyword {
+  color: #0ce3ac;
+}
 
 pre.reset {
   border: 0 solid #ccc;
@@ -8614,6 +8648,12 @@ body.night .app-message {
 .list-panel pre code.hljs {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
+}
+body.cyborg .list-panel pre code.hljs {
+  background-color: #1d1f21;
+}
+body.night .list-panel pre code.hljs {
+  background-color: #1d1f21;
 }
 
 /* 

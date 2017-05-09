@@ -19,7 +19,7 @@
 		"css/vendor.css@concat": [
 			"font-roboto/dist/styles/roboto.css",
 			"bootstrap/dist/css/bootstrap.css",
-			"highlight/src/styles/hybrid.css",
+			"highlight/src/styles/default.css",
 			"datatables/media/src/dataTables.bootstrap.css",
 			"lightbox2/dist/css/lightbox.css"
 		],
