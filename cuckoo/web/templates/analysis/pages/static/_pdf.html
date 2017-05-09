@@ -1,33 +1,3 @@
-<style>
-    section#static_analysis pre{
-        background-color: transparent;
-        border: 0 solid #ccc;
-        border-radius: 0;
-        margin: 0 0 0;
-        padding: 0;
-        display: flex;
-        width: 100%;
-    }
-
-    section#static_analysis .panel-body{
-        padding:0;
-    }
-
-    section#static_analysis pre code{
-        padding: 6px 14px 14px;
-        width: 100%;
-        background-color: white;
-        font-size:12px;
-        margin: 20px 10px 10px;
-    }
-
-    section#static_analysis .panel-body h4{
-        margin-left:12px;
-        margin-bottom:0px;
-        margin-top:20px;
-    }
-</style>
-
 <section id="static_analysis">
     {% if report.analysis.static.pdf|length == 1 and not report.analysis.static.pdf.0.modification and not report.analysis.static.pdf.0.urls and not report.analysis.static.pdf.0.javascript %}
         No PDF metadata could be extracted!
@@ -117,12 +87,12 @@
 
                                     <div class="page-switcher__pages">
                                         <div id="original-code" class="active">
-                                            <pre>
+                                            <pre class="reset">
                                                 <code class="javascript">{{ code.orig_code }}</code>
                                             </pre>
                                         </div>
                                         <div id="beautified-code">
-                                            <pre>
+                                            <pre class="reset">
                                                 <code class="javascript">{{ code.beautified }}</code>
                                             </pre>
                                         </div>

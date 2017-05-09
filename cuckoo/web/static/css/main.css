@@ -3314,6 +3314,21 @@ body.cyborg .custom-select select {
 
 pre code.hljs {
   white-space: pre;
+  width: 100%;
+  font-size: 13px;
+  padding: 15px;
+  line-height: 22px;
+}
+
+pre.reset {
+  border: 0 solid #ccc;
+  border-radius: 0;
+  margin: 0 0 0;
+  padding: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
 }
 
 /* 
@@ -8563,6 +8578,9 @@ body.night .app-message {
 .list-panel .panel-title .button--lg, .list-panel .panel-title .button--sm, .list-panel .panel-title .button {
   display: inline-block;
 }
+.list-panel .panel-body {
+  padding: 0;
+}
 .list-panel .list-group-item .item-label {
   display: inline-block;
   width: 100px;
@@ -8592,6 +8610,10 @@ body.night .app-message {
 .list-panel .list-group-option input[type="radio"]:checked + span:before,
 .list-panel .list-group-option input[type="checkbox"]:checked + span:before {
   content: "\f14a";
+}
+.list-panel pre code.hljs {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 /* 

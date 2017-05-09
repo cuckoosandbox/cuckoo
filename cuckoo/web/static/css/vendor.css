@@ -6788,95 +6788,98 @@ button.close {
 
 /*
 
-Original highlight.js style (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
+vim-hybrid theme by w0ng (https://github.com/w0ng/vim-hybrid)
 
 */
 
+/*background color*/
 .hljs {
   display: block;
   overflow-x: auto;
   padding: 0.5em;
-  background: #F0F0F0;
+  background: #1d1f21;
 }
 
-
-/* Base color: saturation 0; */
-
-.hljs,
-.hljs-subst {
-  color: #444;
+/*selection color*/
+.hljs::selection,
+.hljs span::selection {
+  background: #373b41;
 }
 
-.hljs-comment {
-  color: #888888;
+.hljs::-moz-selection,
+.hljs span::-moz-selection {
+  background: #373b41;
 }
 
-.hljs-keyword,
-.hljs-attribute,
-.hljs-selector-tag,
-.hljs-meta-keyword,
-.hljs-doctag,
-.hljs-name {
-  font-weight: bold;
+/*foreground color*/
+.hljs {
+  color: #c5c8c6;
 }
 
-
-/* User color: hue: 0 */
-
-.hljs-type,
-.hljs-string,
-.hljs-number,
-.hljs-selector-id,
-.hljs-selector-class,
-.hljs-quote,
-.hljs-template-tag,
-.hljs-deletion {
-  color: #880000;
-}
-
+/*color: fg_yellow*/
 .hljs-title,
-.hljs-section {
-  color: #880000;
-  font-weight: bold;
+.hljs-name {
+  color: #f0c674;
 }
 
-.hljs-regexp,
+/*color: fg_comment*/
+.hljs-comment,
+.hljs-meta,
+.hljs-meta .hljs-keyword {
+  color: #707880;
+}
+
+/*color: fg_red*/
+.hljs-number,
 .hljs-symbol,
-.hljs-variable,
-.hljs-template-variable,
-.hljs-link,
+.hljs-literal,
+.hljs-deletion,
+.hljs-link {
+ color: #cc6666
+}
+
+/*color: fg_green*/
+.hljs-string,
+.hljs-doctag,
+.hljs-addition,
+.hljs-regexp,
 .hljs-selector-attr,
 .hljs-selector-pseudo {
-  color: #BC6060;
+  color: #b5bd68;
 }
 
-
-/* Language color: hue: 90; */
-
-.hljs-literal {
-  color: #78A960;
-}
-
-.hljs-built_in,
-.hljs-bullet,
+/*color: fg_purple*/
+.hljs-attribute,
 .hljs-code,
-.hljs-addition {
-  color: #397300;
+.hljs-selector-id {
+ color: #b294bb;
 }
 
-
-/* Meta color: hue: 200 */
-
-.hljs-meta {
-  color: #1f7199;
+/*color: fg_blue*/
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-bullet,
+.hljs-tag {
+ color: #81a2be;
 }
 
-.hljs-meta-string {
-  color: #4d99bf;
+/*color: fg_aqua*/
+.hljs-subst,
+.hljs-variable,
+.hljs-template-tag,
+.hljs-template-variable {
+  color: #8abeb7;
 }
 
-
-/* Misc effects */
+/*color: fg_orange*/
+.hljs-type,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-quote,
+.hljs-section,
+.hljs-selector-class {
+  color: #de935f;
+}
 
 .hljs-emphasis {
   font-style: italic;
