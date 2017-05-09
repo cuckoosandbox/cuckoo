@@ -780,6 +780,17 @@ $(function() {
         CuckooWeb.submit_url(urls); 
     });
 
+    // initialise hljs
+    hljs.configure({
+        languages: ['js']
+    });
+
+    hljs.initHighlightingOnLoad();
+
+    $("pre code").each(function(i, element) {
+        hljs.highlightBlock(element);
+    });
+
 });
 
 function alertbox(msg, context, attr_id){
