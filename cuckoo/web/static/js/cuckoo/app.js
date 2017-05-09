@@ -29,7 +29,7 @@ var CuckooWeb = function () {
             if (Math.abs(bytes) < thresh) {
                 return bytes + ' B';
             }
-            var units = si ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+            var units = si ? ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'] : ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             var u = -1;
             do {
                 bytes /= thresh;
@@ -596,6 +596,15 @@ $(function () {
             nFree = CuckooWeb.human_size(ds_free),
             nTotal = CuckooWeb.human_size(ds_total);
 
+        var freeColor = "#52B3D9";
+        var freeDangerColor = "#afb200";
+        var usedColor = "#999";
+        var totalColor = "#BE234A";
+
+        if (percent_used > 75) {
+            freeColor = freeDangerColor;
+        }
+
         if (chartCanvas) {
 
             chart = new Chart(chartCanvas, {
@@ -604,7 +613,7 @@ $(function () {
                     labels: ["Free", "Used"],
                     datasets: [{
                         data: [percent_free, percent_used], // <== this has to come somewhere from a script
-                        backgroundColor: ["#52B3D9", "#BE234A"]
+                        backgroundColor: [freeColor, usedColor]
                     }]
                 },
                 options: {
@@ -730,6 +739,9 @@ $(function () {
                 $("#cpu-stat").addClass('no-data');
             }
 
+            // data.data.memtotal = 11989568;
+            // data.data.memavail = 2899792;
+
             // memory chart 
             if (data.data.memtotal) {
 
@@ -749,7 +761,7 @@ $(function () {
                 var memoryUsedSize = CuckooWeb.human_size((memoryTotal - memoryAvail) * 1000);
 
                 $('[data-populate="memory-used"]').text('' + memoryAvailSize);
-                $('[data-populate="memory-total"]').text('' + memoryUsedSize);
+                $('[data-populate="memory-total"]').text('' + memoryTotalSize);
             } else {
                 $("#memory-stat").addClass('no-data');
             }

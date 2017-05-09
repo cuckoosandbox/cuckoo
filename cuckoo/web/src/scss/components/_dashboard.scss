@@ -49,8 +49,11 @@
 					}
 				}
 
-				.label-used { background-color: #BE234A; }
-				.label-free { background-color: #52B3D9; }
+				.label-used { background-color: #999; }
+				.label-free { 
+					background: linear-gradient(to right, #7db9e8 50%,#afb200 50%);
+				}
+				.label-total { background-color: #BE234A; }
 
 				.label {
 					display: inline-block;
@@ -84,6 +87,14 @@
 
 				&:last-child {
 					border: 0;
+				}
+
+				@include cuckoo-theme('cyborg') {
+					border-color: $cyborg_border_color;
+				}
+
+				@include cuckoo-theme('night') {
+					border-color: $night_border_color;
 				}
 			}
 

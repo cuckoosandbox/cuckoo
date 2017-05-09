@@ -8064,10 +8064,14 @@ body.cyborg .page-freeze.error {
   margin-top: -9px;
 }
 .dashboard-module__header h4 .label-used {
-  background-color: #BE234A;
+  background-color: #999;
 }
 .dashboard-module__header h4 .label-free {
-  background-color: #52B3D9;
+  background: -webkit-linear-gradient(left, #7db9e8 50%, #afb200 50%);
+  background: linear-gradient(to right, #7db9e8 50%, #afb200 50%);
+}
+.dashboard-module__header h4 .label-total {
+  background-color: #BE234A;
 }
 .dashboard-module__header h4 .label {
   display: inline-block;
@@ -8101,6 +8105,12 @@ body.cyborg .page-freeze.error {
 }
 .dashboard-module__body--flex:last-child {
   border: 0;
+}
+body.cyborg .dashboard-module__body--flex {
+  border-color: #133b4a;
+}
+body.night .dashboard-module__body--flex {
+  border-color: #375a7f;
 }
 .dashboard-module__body--left {
   border-right: 2px solid #DFDFDF;
