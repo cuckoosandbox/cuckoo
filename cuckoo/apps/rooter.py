@@ -362,48 +362,51 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     s.ip = ip
 
     while True:
-        command, addr = server.recvfrom(4096)
-
         try:
-            obj = json.loads(command)
-        except:
-            log.info("Received invalid request: %r", command)
-            continue
+            command, addr = server.recvfrom(4096)
 
-        command = obj.get("command")
-        args = obj.get("args", [])
-        kwargs = obj.get("kwargs", {})
-
-        if not isinstance(command, basestring) or command not in handlers:
-            log.info("Received incorrect command: %r", command)
-            continue
-
-        if not isinstance(args, (tuple, list)):
-            log.info("Invalid arguments type: %r", args)
-            continue
-
-        if not isinstance(kwargs, dict):
-            log.info("Invalid keyword arguments: %r", kwargs)
-            continue
-
-        for arg in args + kwargs.keys() + kwargs.values():
-            if not isinstance(arg, basestring):
-                log.info("Invalid argument detected: %r", arg)
-                break
-        else:
-            log.debug(
-                "Processing command: %s %s %s", command,
-                " ".join(args),
-                " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
-            )
-
-            output = e = None
             try:
-                output = handlers[command](*args, **kwargs)
-            except Exception as e:
-                log.exception("Error executing command: %s", e)
+                obj = json.loads(command)
+            except:
+                log.info("Received invalid request: %r", command)
+                continue
 
-            server.sendto(json.dumps({
-                "output": output,
-                "exception": str(e) if e else None,
-            }), addr)
+            command = obj.get("command")
+            args = obj.get("args", [])
+            kwargs = obj.get("kwargs", {})
+
+            if not isinstance(command, basestring) or command not in handlers:
+                log.info("Received incorrect command: %r", command)
+                continue
+
+            if not isinstance(args, (tuple, list)):
+                log.info("Invalid arguments type: %r", args)
+                continue
+
+            if not isinstance(kwargs, dict):
+                log.info("Invalid keyword arguments: %r", kwargs)
+                continue
+
+            for arg in args + kwargs.keys() + kwargs.values():
+                if not isinstance(arg, basestring):
+                    log.info("Invalid argument detected: %r", arg)
+                    break
+            else:
+                log.debug(
+                    "Processing command: %s %s %s", command,
+                    " ".join(args),
+                    " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                )
+
+                output = e = None
+                try:
+                    output = handlers[command](*args, **kwargs)
+                except Exception as e:
+                    log.exception("Error executing command: %s", e)
+
+                server.sendto(json.dumps({
+                    "output": output,
+                    "exception": str(e) if e else None,
+                }), addr)
+        except:
+            pass

@@ -1,18 +1,12 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""
-XenServer machinery.
-"""
-
-import threading
 import logging
+import threading
 
 from cuckoo.common.abstracts import Machinery
-from cuckoo.common.exceptions import CuckooMachineError
-from cuckoo.common.exceptions import CuckooDependencyError
+from cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError
 
 try:
     import XenAPI
@@ -22,7 +16,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-class XenServerMachinery(Machinery):
+class XenServer(Machinery):
     """Virtualization layer for XenServer using the XenAPI XML-RPC interface."""
 
     LABEL = "uuid"
@@ -65,7 +59,7 @@ class XenServerMachinery(Machinery):
             else:
                 self._check_disks_reset(vm)
 
-        super(XenServerMachinery, self)._initialize_check()
+        super(XenServer, self)._initialize_check()
 
     @property
     def session(self):

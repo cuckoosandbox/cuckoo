@@ -454,7 +454,7 @@ class BehaviorReconstructor(object):
     _api_gethostbyname = _api_DnsQuery_A
 
     def _api_connect(self, return_value, arguments, flags):
-        return single("connects_ip", arguments["ip_address"])
+        return single("connects_ip", arguments.get("ip_address", ""))
 
     # Mutex stuff
 

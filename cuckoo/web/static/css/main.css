@@ -3784,6 +3784,42 @@ body.night .grouped-buttons__bordered button:not(.active):not(.disabled):not([da
 body.night .grouped-buttons__bordered button:hover, body.night .grouped-buttons__bordered button:active, body.night .grouped-buttons__bordered button:focus, body.night .grouped-buttons__bordered a:hover, body.night .grouped-buttons__bordered a:active, body.night .grouped-buttons__bordered a:focus {
   text-decoration: none;
 }
+.grouped-buttons.justify button, .justify.grouped-buttons__bordered button, .grouped-buttons.justify a, .justify.grouped-buttons__bordered a {
+  -ms-flex-preferred-size: 100%;
+      flex-basis: 100%;
+  -ms-flex-negative: 1;
+      flex-shrink: 1;
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+.grouped-buttons__rows > div:not(:last-child) {
+  margin-bottom: 0;
+}
+.grouped-buttons__rows > div:not(:last-child) > button, .grouped-buttons__rows > div:not(:last-child) > a {
+  border-bottom: 0;
+}
+.grouped-buttons__rows > .grouped-buttons > a, .grouped-buttons__rows > .grouped-buttons__bordered > a, .grouped-buttons__rows > .grouped-buttons > button, .grouped-buttons__rows > .grouped-buttons__bordered > button, .grouped-buttons__rows > .grouped-buttons__bordered > a, .grouped-buttons__rows > .grouped-buttons__bordered > button {
+  border-radius: 0;
+}
+.grouped-buttons__rows > div:first-child > *:first-child {
+  border-top-left-radius: 8px;
+}
+.grouped-buttons__rows > div:first-child > *:last-child {
+  border-top-right-radius: 8px;
+}
+.grouped-buttons__rows > div:last-child > *:first-child {
+  border-bottom-left-radius: 8px;
+}
+.grouped-buttons__rows > div:last-child > *:last-child {
+  border-bottom-right-radius: 8px;
+}
 
 .button, .button--lg {
   -webkit-appearance: none;
@@ -4256,6 +4292,10 @@ body.night .cuckoo-analysis__panel.danger .collapse.in {
 }
 body.night .cuckoo-analysis__panel.danger > a {
   color: #D43237;
+}
+
+.page-switcher__pages > div:not(.active) {
+  display: none;
 }
 
 /* 
@@ -5624,6 +5664,8 @@ table.cuckoo-table .less-entries > td:nth-child(odd), table.cuckoo-table__fullsc
   background-color: #f5f5f5;
 }
 table.cuckoo-table__fullscreen {
+  table-layout: fixed;
+  max-width: 100%;
   font-size: 14px;
 }
 table.cuckoo-table__fullscreen thead > tr:first-child th {
@@ -5631,6 +5673,7 @@ table.cuckoo-table__fullscreen thead > tr:first-child th {
 }
 table.cuckoo-table__fullscreen tbody td {
   padding: 15px;
+  word-wrap: break-word;
 }
 table.cuckoo-table__fullscreen .pagination a {
   padding: 8px 10px;

@@ -280,6 +280,7 @@ class BehaviorAnalysis(Processing):
             # platform specific stuff
             WindowsMonitor(self),
             LinuxSystemTap(self),
+            LinuxStrace(self),
 
             # Reboot information.
             RebootInformation(self),

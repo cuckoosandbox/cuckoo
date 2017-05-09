@@ -5,11 +5,14 @@
 
 import gridfs
 import os
+import logging
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
+
+log = logging.getLogger()
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -20,6 +23,26 @@ class MongoDB(Report):
 
     db = None
     fs = None
+
+    def debug_dict_size(self, dct):
+        totals = dict((k, 0) for k in dct)
+        def walk(root, key, val):
+            if isinstance(val, dict):
+                for k, v in val.iteritems():
+                    walk(root, k, v)
+
+            elif isinstance(val, (list, tuple, set)):
+                for el in val:
+                    walk(root, None, el)
+
+            elif isinstance(val, basestring):
+                totals[root] += len(val)
+
+        for key, val in dct.iteritems():
+            walk(key, key, val)
+
+        return sorted(totals.items(), key=lambda item: item[1], reverse=True)
+
 
     @classmethod
     def init_once(cls):
@@ -247,4 +270,33 @@ class MongoDB(Report):
             report["procmon"] = procmon
 
         # Store the report and retrieve its object id.
-        self.db.analysis.save(report)
+        try:
+            self.db.analysis.save(report)
+        except Exception as e:
+            parent_key, psize = self.debug_dict_size(report)[0]
+            child_key, csize = self.debug_dict_size(report[parent_key])[0]
+            """
+            if not self.options.get("fix_large_docs", False):
+                # Just log the error and problem keys
+                log.error(str(e))
+                log.error("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / 1048576))
+                log.error("Largest child key: %s (%d MB)" % (child_key, int(csize) / 1048576))
+            else:
+            """
+            if True:
+                # Delete the problem keys and check for more
+                error_saved = True
+                while error_saved:
+                    log.warn("results['%s']['%s'] deleted due to >16MB size (%dMB)" %
+                             (parent_key, child_key, int(psize) / 1048576))
+                    del report[parent_key][child_key]
+                    try:
+                        self.db.analysis.save(report)
+                        error_saved = False
+                    except Exception as e:
+                        parent_key, psize = self.debug_dict_size(report)[0]
+                        child_key, csize = self.debug_dict_size(report[parent_key])[0]
+                        log.error(str(e))
+                        log.error("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / 1048576))
+                        log.error("Largest child key: %s (%d MB)" % (child_key, int(csize) / 1048576))
+

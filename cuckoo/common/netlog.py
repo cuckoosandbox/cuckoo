@@ -232,6 +232,8 @@ class BsonParser(ProtocolHandler):
                 parsed["message"] = dec.get("msg", "")
                 log.info("Debug message from monitor: %s", parsed["message"])
             else:
+                log.info(self.infomap)
+                lo.info(index)
                 # Regular api call from monitor
                 if index not in self.infomap:
                     log.warning("Got API with unknown index - monitor needs "
@@ -240,7 +242,8 @@ class BsonParser(ProtocolHandler):
 
                 apiname, arginfo, argnames, converters, category = self.infomap[index]
                 args = dec.get("args", [])
-
+                log.info(args)
+                log.info(arguments)
                 if len(args) != len(argnames):
                     log.warning(
                         "Inconsistent arg count (compared to arg names) "
@@ -264,6 +267,10 @@ class BsonParser(ProtocolHandler):
                         parsed["ppid"] = argdict["ParentProcessIdentifier"]
                         modulepath = argdict["ModulePath"]
 
+                        # FILETIME is 100-nanoseconds from 1601 :/
+                        vmtimeunix = (timelow + (timehigh << 32))
+                        vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+
                     elif "time_low" in argdict:
                         timelow = argdict["time_low"]
                         timehigh = argdict["time_high"]
@@ -276,6 +283,18 @@ class BsonParser(ProtocolHandler):
                             parsed["ppid"] = argdict["parent_process_identifier"]
 
                         modulepath = argdict["module_path"]
+
+                         # FILETIME is 100-nanoseconds from 1601 :/
+                        vmtimeunix = (timelow + (timehigh << 32))
+                        vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
+
+                    elif "TimeStamp" in argdict:
+                        vmtimeunix = argdict["TimeStamp"] / 1000.0
+                        vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
+
+                        parsed["pid"] = pid = argdict["ProcessIdentifier"]
+                        parsed["ppid"] = argdict["ParentProcessIdentifier"]
+                        modulepath = argdict["ModulePath"]
 
                     else:
                         raise CuckooResultError(

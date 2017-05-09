@@ -8,19 +8,22 @@ import json
 import os.path
 import pytest
 import shutil
-import sys
 import tempfile
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import (
+    CuckooProcessingError, CuckooOperationalError
+)
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
+from cuckoo.core.plugins import RunProcessing
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
+from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
@@ -29,6 +32,12 @@ from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
+
+try:
+    from cuckoo.processing.memory import obj as vol_obj
+    HAVE_VOLATILITY = True
+except ImportError:
+    HAVE_VOLATILITY = False
 
 db = Database()
 
@@ -430,11 +439,142 @@ class TestProcessing(object):
             v.run()
         e.match("Unsupported task category")
 
-class TestVolatilityLoading(object):
-    def test_no_volatility(self):
-        sys.modules.pop("volatility", None)
-        from cuckoo.processing.memory import HAVE_VOLATILITY
-        assert HAVE_VOLATILITY is False
+@pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
+class TestVolatility(object):
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_no_mempath(self, p):
+        m = Memory()
+        m.memory_path = None
+        assert m.run() is None
+        p.error.assert_called_once()
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_invalid_mempath(self, p):
+        m = Memory()
+        m.memory_path = "notafile"
+        assert m.run() is None
+        p.error.assert_called_once()
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_global_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({})
+        m.run()
+        p.assert_called_once_with(filepath, "profile0")
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_vm_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({
+            "osprofile": "profile1",
+        })
+        m.run()
+        p.assert_called_once_with(filepath, "profile1")
+
+    def test_invalid_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "invalid_profile").run()
+        e.match("does not exist!")
+
+    @mock.patch("volatility.utils.load_as")
+    def test_plugin_enabled(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "pslist": {
+                    "enabled": True,
+                },
+                "psxview": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        p.return_value = 12345
+        m = VolatilityManager(None, "WinXPSP2x86")
+        assert m.vol.addr_space == 12345
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is True
+        assert m.enabled("netscan", ["vista", "win7"]) is False
+
+        m = VolatilityManager(None, "Win7SP1x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is True
+
+        m = VolatilityManager(None, "Win10x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is False
+
+    def test_s(self):
+        assert obj_s(1) == "1"
+        assert obj_s("foo") == "foo"
+        assert obj_s(vol_obj.NoneObject()) is None
+
+class TestProcessingMachineInfo(object):
+    def test_machine_info_empty(self):
+        set_cwd(tempfile.mkdtemp())
+        rp = RunProcessing({
+            "id": 1,
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {}
+
+    def test_machine_info_cuckoo1(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo1",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine["name"] == "cuckoo1"
+        assert rp.machine["label"] == "cuckoo1"
+        assert rp.machine["ip"] == "192.168.56.101"
+
+    def test_machine_info_cuckoo2(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo2",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {
+            "name": "cuckoo2",
+        }
 
 class TestBehavior(object):
     def test_process_tree_regular(self):
@@ -474,7 +614,7 @@ class TestBehavior(object):
     def test_process_tree_pid_reuse(self):
         pt = ProcessTree(None)
 
-        # Parent PID of the initial malicious process (pid=2624) is later on
+        # Parent PID of the initial malicious process (pid=2104) is later on
         # created again, confusing our earlier code and therefore not
         # displaying any of the malicious processes in our Web Interface.
         l = [

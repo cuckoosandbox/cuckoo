@@ -189,6 +189,55 @@
 
 	}
 
+	// fills all the space evenly
+	&.justify {
+
+		button, a {
+			flex-basis: 100%;
+			flex-shrink: 1;
+			flex-grow: 1;
+			align-items: center;
+			justify-content: center;
+		}
+
+	}
+
+	// organize multiple rows of buttons
+	&__rows {
+
+		// disable margin bottom on these elements, except for the last one
+		& > div:not(:last-child) {
+			margin-bottom: 0;
+
+			& > button,
+			& > a {
+				border-bottom: 0;
+			}
+
+		}
+
+		// reset border radius
+		& > .grouped-buttons > a,
+		& > .grouped-buttons > button,
+		& > .grouped-buttons__bordered > a,
+		& > .grouped-buttons__bordered > button {
+			border-radius: 0;
+		}
+
+		// apply top border radius (assuming child divs to be grouped button parents)
+		& > div:first-child {
+			& > *:first-child { border-top-left-radius: 8px; }
+			& > *:last-child { border-top-right-radius: 8px; }
+		}
+
+		// apply bottom border radius (to top row) (assuming child divs to be grouped button parents)
+		& > div:last-child {
+			& > *:first-child { border-bottom-left-radius: 8px; }
+			& > *:last-child { border-bottom-right-radius: 8px; }
+		}
+
+	}
+
 }
 
 // default button

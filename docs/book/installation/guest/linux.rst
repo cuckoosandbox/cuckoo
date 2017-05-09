@@ -3,7 +3,7 @@ Installing the Linux guest
 ==========================
 
 Install dependencies on host::
-    $ sudo apt-get install uml-utilities bridge-utils
+    $ sudo apt-get install uml-utilities bridge-utils qemu qemu-efi
 
 Sparc and PowerPC dependencies::
     $ sudo apt-get install openbios-spark openbios-ppc qemu-slof

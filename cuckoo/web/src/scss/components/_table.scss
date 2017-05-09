@@ -182,6 +182,8 @@
 	&__fullscreen {
 
 		@extend .cuckoo-table;
+		table-layout: fixed;
+		max-width: 100%;
 		font-size: 14px;
 
 		thead {
@@ -194,6 +196,7 @@
 
 			td {
 				padding: 15px;
+				word-wrap: break-word;
 			}
 
 		}

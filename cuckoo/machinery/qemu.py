@@ -90,7 +90,7 @@ QEMU_ARGS = {
             "-netdev", "tap,ifname=tap_{vmname},script=no,downscript=no,id={vmname}", "-net", "nic,macaddr={mac}",
         ],
         "params": {
-            "machine": "virt"
+            "machine": "virt",
             "memory": "512M",  # 512 didn't work for some reason
             "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
             "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
@@ -250,6 +250,9 @@ class QEMU(Machinery):
 
         # magic arg building
         final_cmdline = [i.format(**params) for i in cmdline]
+        #enable kvm to speedup
+        if vm_options.enable_kvm and vm_arch in ("x86", "x64"):
+            final_cmdline.append("-enable-kvm")
 
         log.debug("Executing QEMU %r", final_cmdline)
 

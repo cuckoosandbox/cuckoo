@@ -19,6 +19,7 @@ def default(obj):
 
 class Notification(Report):
     """Notifies external service about finished analysis via URL."""
+    order = 3
 
     def run(self, results):
         post = {

@@ -3,74 +3,71 @@
 {% load analysis_tags %}
 {% block content %}
 
-<div class="alert alert-info center">
-    <a class="btn btn-primary btn-small" href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}">Download Full Memory Dump</a>
-</div>
-<div class="tabbable tabs">
-    <ul class="nav nav-pills" style="margin-bottom: 0;">
-        <li class="active"><a href="#memory_pslist" data-toggle="tab">Process List</a></li>
-        <li><a href="#memory_svcscan" data-toggle="tab">Services</a></li>
-        <li><a href="#memory_modscan" data-toggle="tab">Kernel Modules</a></li>
-        <li><a href="#memory_devicetree" data-toggle="tab">Device Tree</a></li>
-        <li><a href="#memory_malfind" data-toggle="tab">Code Injection</a></li>
-        <li><a href="#memory_timers" data-toggle="tab">Timers</a></li>
-        <li><a href="#memory_messagehooks" data-toggle="tab">Messagehooks</a></li>
-        <li><a href="#memory_apihooks" data-toggle="tab">API Hooks</a></li>
-        <li><a href="#memory_callbacks" data-toggle="tab">Callbacks</a></li>
-        <li><a href="#memory_yarascan" data-toggle="tab">Yarascan</a></li>
-        <li><a href="#memory_ssdt" data-toggle="tab">SSDT</a></li>
-        <li><a href="#memory_idt" data-toggle="tab">IDT</a></li>
-        <li><a href="#memory_gdt" data-toggle="tab">GDT</a></li>
-        <li><a href="#memory_sockets" data-toggle="tab">Sockets</a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane fade in active" id="memory_pslist">
-            {% include "analysis/memory/_pslist.html" %}
+<div class="flex-nav">
+    {% include "analysis/pages/nav-sidebar.html" %}
+    <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+        <header class="cuckoo-analysis__header">
+            <h1>VM Memory Dump</h1>
+            <div class="header-right valign-bottom">
+                <a href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}" title="Download pcap file"><i class="fa fa-download"></i> Download Full Memory Dump</a>
+            </div>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row page-switcher">                
+
+                <div class="col-md-12 grouped-buttons__rows">
+
+                    <div class="grouped-buttons__bordered page-switcher__nav justify">
+                        <a href="memory-process-list" class="no-badge active">Process List</a>
+                        <a href="memory-services" class="no-badge">Services</a>
+                        <a href="memory-kernel" class="no-badge">Kernel Modules</a>
+                        <a href="memory-device-tree" class="no-badge">Device Tree</a>
+                        <a href="memory-code-injection" class="no-badge">Code Injection</a>
+                        <a href="memory-timers" class="no-badge">Timers</a>
+                    </div>
+
+                    <div class="grouped-buttons__bordered page-switcher__nav justify">
+                        <a href="memory-messagehooks" class="no-badge">Messagehooks</a>
+                        <a href="memory-apihooks" class="no-badge">API Hooks</a>
+                        <a href="memory-callbacks" class="no-badge">Callbacks</a>
+                        <a href="memory-yarascan" class="no-badge">Yarascan</a>
+                        <a href="memory-ssdt" class="no-badge">SSDT</a>
+                        <a href="memory-idt" class="no-badge">IDT</a>
+                        <a href="memory-gdt" class="no-badge">GDT</a>
+                        <a href="memory-sockets" class="no-badge">Sockets</a>
+                    </div>
+
+                </div>
+
+                <div class="col-md-12 page-switcher__pages">
+                    <div id="memory-process-list" class="active">{% include "analysis/pages/memory/_pslist.html" %}</div>
+                    <div id="memory-services">{% include "analysis/pages/memory/_svcscan.html" %}</div>
+                    <div id="memory-kernel">{% include "analysis/pages/memory/_modscan.html" %}</div>
+                    <div id="memory-device-tree">{% include "analysis/pages/memory/_devicetree.html" %}</div>
+                    <div id="memory-code-injection">{% include "analysis/pages/memory/_malfind.html" %}</div>
+                    <div id="memory-timers">{% include "analysis/pages/memory/_timers.html" %}</div>
+                    <div id="memory-messagehooks">{% include "analysis/pages/memory/_messagehooks.html" %}</div>
+                    <div id="memory-apihooks">{% include "analysis/pages/memory/_apihooks.html" %}</div>
+                    <div id="memory-callbacks">{% include "analysis/pages/memory/_callbacks.html" %}</div>
+                    <div id="memory-yarascan">{% include "analysis/pages/memory/_yarascan.html" %}</div>
+                    <div id="memory-ssdt">{% include "analysis/pages/memory/_ssdt.html" %}</div>
+                    <div id="memory-idt">{% include "analysis/pages/memory/_idt.html" %}</div>
+                    <div id="memory-gdt">{% include "analysis/pages/memory/_gdt.html" %}</div>
+                    <div id="memory-sockets">
+                        {% if report.analysis.memory.sockscan %}
+                            {% include "analysis/pages/memory/_sockscan.html" %}
+                        {% elif report.analysis.memory.netscan %}
+                            {% include "analysis/pages/memory/_netscan.html" %}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <div class="tab-pane fade in" id="memory_svcscan">
-            {% include "analysis/memory/_svcscan.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_modscan">
-            {% include "analysis/memory/_modscan.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_devicetree">
-            {% include "analysis/memory/_devicetree.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_malfind">
-            {% include "analysis/memory/_malfind.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_apihooks">
-            {% include "analysis/memory/_apihooks.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_ssdt">
-            {% include "analysis/memory/_ssdt.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_idt">
-            {% include "analysis/memory/_idt.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_gdt">
-            {% include "analysis/memory/_gdt.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_timers">
-            {% include "analysis/memory/_timers.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_messagehooks">
-            {% include "analysis/memory/_messagehooks.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_yarascan">
-            {% include "analysis/memory/_yarascan.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_callbacks">
-            {% include "analysis/memory/_callbacks.html" %}
-        </div>
-        <div class="tab-pane fade in" id="memory_sockets">
-            {% if report.analysis.memory.sockscan %}
-                {% include "analysis/memory/_sockscan.html" %}
-            {% elif report.analysis.memory.netscan %}
-                {% include "analysis/memory/_netscan.html" %}
-            {% endif %}
-        </div>
-    </div>
+
+    </section>
 </div>
 
 {% endblock %}

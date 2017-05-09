@@ -103,6 +103,134 @@ class CuckooWeb {
 
 }
 
+/*
+    class PageSwitcher
+    - a class that handles 'tabbed' navigation
+    - primarily [now] used at the network analysis page as proof of concept
+    - this class will be traversible and highly configurable using hooks (will improve overall page performance)
+    - this technique might open a few windows on asynchronous page loading, which I will highly recommend for this page
+    - also in mind to do this all using Handlebars, which works overall nice with these kind of pages, but that'll 
+      require some back-end logistics for getting its required data. but this needs to be discussed at some point.
+      Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
+      page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
+    - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
+ */
+class PageSwitcher {
+
+    constructor(options) {
+        this.nav = options.nav;
+        this.container = options.container;
+
+        this.pages = [];
+
+        this.events = $.extend({
+            transition: function(){},
+            beforeTransition: function(){},
+            afterTransition: function(){}
+        }, options.events ? options.events : {});
+
+        this.initialise();
+    }
+
+    /*
+        Called on instance construction
+     */
+    initialise() {
+
+        var _this = this;
+
+        this.indexPages();
+
+        this.nav.find('a').bind('click', function(e) {
+            e.preventDefault();
+            _this._beforeTransition($(this));
+        });
+
+    }
+
+    /*
+        Creates a short summary about the pages and their names
+     */
+    indexPages() {
+        var _this = this;
+        this.container.children('div').each(function() {
+            _this.pages.push({
+                name: $(this).attr('id'),
+                el: $(this),
+                initialised: false
+            });
+        });
+    }
+
+    /*
+        Prepares a transition
+        - a transition is traversing from page A to page B
+     */
+    _beforeTransition(el) {
+
+        var name = el.attr('href').replace('#','');
+        var targetPage;
+
+        if(this.exists(name)) {
+            this.nav.find('a').removeClass('active');
+            this.container.children('div').removeClass('active');
+
+            targetPage = this.getPage(name);
+
+            this.events.beforeTransition.apply(this, [name, targetPage]);
+            this._transition(targetPage, el);
+        } else {
+            this._afterTransition();
+        }
+
+    }
+
+    /*
+        Executes the transition
+     */
+    _transition(page, link) {
+        page.el.addClass('active');
+        link.addClass('active');
+        this.events.transition.apply(this, [page, link]);
+        this._afterTransition(page);
+    }
+
+    /*
+        Finishes the transition
+     */
+    _afterTransition(page) {
+        this.events.afterTransition.apply(this, [page]);
+    }
+
+    /*
+        returns a page by name
+     */
+    getPage(name) {
+        return this.pages.filter(function(element) {
+            return element.name == name;
+        })[0];
+    }
+
+    /*
+        quick-validates if a page exists
+     */
+    exists(name) {
+        return this.getPage(name) !== undefined;
+    }
+
+    /*
+        public method for transitioning programatically
+     */
+    transition(name) { 
+        if(this.exists(name)) {
+            this._beforeTransition(this.nav.children(`[href=${name}]`));
+        } else {
+            return false;
+        }
+    }
+
+}
+
 $(document).ready(function() {
     $("[data-toggle=popover]").popover();
 
@@ -502,6 +630,16 @@ $(function() {
 
 
     }
+
+    // default page switcher init
+    $(".page-switcher").each(function() {
+
+        var switcher = new PageSwitcher({
+            nav: $(this).find('.page-switcher__nav'),
+            container: $(this).find('.page-switcher__pages')
+        });
+
+    });
 
 });
 

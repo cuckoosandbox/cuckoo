@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-
+import subprocess
 from lib.common.abstracts import Package
 
 class Generic(Package):
@@ -16,6 +16,8 @@ class Generic(Package):
 
     def start(self, path):
         os.chmod(path, 0o755)
+        try: os.mkdir("strace")
+        except: pass # don't worry, it exists
         return self.execute(["sh", "-c", path])
 
     def get_pids(self):
