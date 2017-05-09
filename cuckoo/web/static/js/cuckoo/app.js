@@ -785,15 +785,30 @@ $(function () {
     });
 });
 
-// focus fix on analysis page
+// analysis page handlers
 $(function () {
 
+    // fixes up the scroll behavior to expected behavior
     if ($("body#analysis").length) {
         $(".cuckoo-analysis").focus();
         $("#analysis-nav, #primary-nav").bind('click', function () {
             $(".cuckoo-analysis").focus();
         });
     }
+
+    // pre-submits a list of urls to the presubmit form (uses urlhash submission)
+    $("#submit-extracted-urls").bind('click', function (e) {
+        e.preventDefault();
+        var listItems = $(this).parents('.select-panel').find('.list-group-item');
+        var urls = [];
+
+        listItems.each(function () {
+            urls.push($(this).text());
+        });
+
+        urls = urls.join('\n');
+        CuckooWeb.submit_url(urls);
+    });
 });
 
 function alertbox(msg, context, attr_id) {
