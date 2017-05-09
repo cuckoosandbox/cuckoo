@@ -232,8 +232,6 @@ class BsonParser(ProtocolHandler):
                 parsed["message"] = dec.get("msg", "")
                 log.info("Debug message from monitor: %s", parsed["message"])
             else:
-                log.info(self.infomap)
-                lo.info(index)
                 # Regular api call from monitor
                 if index not in self.infomap:
                     log.warning("Got API with unknown index - monitor needs "
@@ -242,8 +240,6 @@ class BsonParser(ProtocolHandler):
 
                 apiname, arginfo, argnames, converters, category = self.infomap[index]
                 args = dec.get("args", [])
-                log.info(args)
-                log.info(arguments)
                 if len(args) != len(argnames):
                     log.warning(
                         "Inconsistent arg count (compared to arg names) "

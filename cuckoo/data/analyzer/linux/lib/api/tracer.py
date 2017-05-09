@@ -243,12 +243,12 @@ class SyscallTracer(Thread):
             elif arch.startswith("mips"):
                 register = "v0"
             process.setreg(register, 0)
-    def run(self):
+
+    def start(self):
         ''' init and run debugger '''
         self.debugger = PtraceDebugger()
-        if True:#try:
+        try:
             self.run_debugger()
-        """
         except ProcessExit, event:
             log.debug("processExited")
             self.processExited(event)
@@ -259,9 +259,9 @@ class SyscallTracer(Thread):
             log.debug("Interrupted.")
         except PTRACE_ERRORS as e:
             log.debug("Debugger error: %s", e)
-        """
-        #self.debugger.quit()
-        #self.do_run = False
+
+        self.debugger.quit()
+        self.do_run = False
 
     def stop(self):
         """Stop syscall tracer."""

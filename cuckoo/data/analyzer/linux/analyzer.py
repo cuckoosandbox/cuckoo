@@ -33,8 +33,6 @@ PROCESS_LIST = set()
 SEEN_LIST = set()
 PPID = Process(pid=PID).get_parent_pid()
 
-PIPE = os.pipe()
-
 def add_pids(pids):
     """Add PID."""
     if not isinstance(pids, (tuple, list, set)):
@@ -50,32 +48,6 @@ def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
         log.info("PLS IMPLEMENT DUMP, want to dump %s", file_path)
-
-PIPE = os.pipe()
-
-class PipeServer(Thread):
-    """Cuckoo PIPE server.
-
-    This Pipe Server receives notifications from the injected processes for
-    new processes being spawned and for files being created or deleted.
-    """
-
-    def __init__(self):
-        Thread.__init__(self)
-        self.do_run = True
-
-    def stop(self):
-        """Stop PIPE server."""
-        self.do_run = False
-
-    def run(self):
-        """Create and run PIPE server."""
-        while self.do_run:
-            # Check for messages
-            out = os.read(PIPE[0], 1024)
-            log.debug("PIPE: %s", out)
-
-        return True
 
 class Analyzer:
     """Cuckoo Linux Analyzer.
@@ -171,7 +143,6 @@ class Analyzer:
 
         # Use ptrace here
         if arch in ("x64", "x32", "ppc", "arm"):
-            log.info("here")
             self.ptrace_enabled = True
             os.chmod(self.target, 0o755)
             if ".bash" in self.target:
@@ -184,12 +155,12 @@ class Analyzer:
                 arguments = [self.target, '']
             #fstrace = FilesystemTracer()
             #fstrace.start()
-            log.info("going to start it")
             # Start system call tracer thread
             proctrace = SyscallTracer(arguments)
             proctrace.start()
         else:
-            package = "generic"
+            package = "strace"
+            #ToDo if no injection generic
 
         # Generate the package path.
         package_name = "modules.packages.%s" % package
@@ -296,13 +267,13 @@ class Analyzer:
             if time_counter == int(self.config.timeout):
                 log.info("Analysis timeout hit, terminating analysis.")
                 break
-            """
+
             if self.ptrace_enabled:
                 if proctrace.is_running() == False:
                   log.info("No remaining processes. Waiting a few seconds before shutdown.")
                   time.sleep(10)
                   break
-            """
+
             try:
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
