@@ -1114,17 +1114,6 @@ class Memory(Processing):
             config("memory:basic:guest_profile")
         )
 
-        if not osprofile:
-            log.error(
-                "Can't continue to process the VM memory dump for machine "
-                "'%s' if no OS profile has been defined for it. One may "
-                "define its OS profile using the 'osprofile' field for the "
-                "VM in its machinery configuration or set a global default "
-                "using 'guest_profile' in memory.conf" %
-                (self.machine.get("name") or "unknown VM name")
-            )
-            return
-
         try:
             return VolatilityManager(self.memory_path, osprofile).run()
         except CuckooOperationalError as e:

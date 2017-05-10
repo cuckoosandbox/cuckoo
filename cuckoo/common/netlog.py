@@ -240,6 +240,7 @@ class BsonParser(ProtocolHandler):
 
                 apiname, arginfo, argnames, converters, category = self.infomap[index]
                 args = dec.get("args", [])
+
                 if len(args) != len(argnames):
                     log.warning(
                         "Inconsistent arg count (compared to arg names) "

@@ -125,14 +125,9 @@ class SyscallTracer(Thread):
         process = self.create_process()
         if not process:
             return
-        log.info("create resultlogger")
         self.remote_log[process.pid] = ResultLogger()
-        log.info(1)
         self.remote_log[process.pid].log_init(time.time())
-        log.info(2)
-        #log.info(str(process.pid, os.getpid(), self.program[0]))
         self.remote_log[process.pid].log_new_process(process.pid, os.getpid(), self.program[0])
-        log.info(3)
         log.debug("Logging for %d started.", process.pid)
 
         # Set syscall options (print options)
@@ -202,7 +197,6 @@ class SyscallTracer(Thread):
         event.process.parent.syscall()
 
     def create_process(self):
-        log.info("create_process")
         ''' create a process and add it to debugger '''
         pid = self.create_child(self.program)
         is_attached = True
@@ -274,7 +268,6 @@ class SyscallTracer(Thread):
         return self.do_run
 
     def get_syscall_str(self, process):
-        log.info("get_syscall_str")
         ''' Print catched syscalls '''
         state = process.syscall_state
         syscall = state.event(self.syscall_options)

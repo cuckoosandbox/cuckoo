@@ -22,7 +22,12 @@ from lib.core.startup import create_folders, init_logging
 from modules import auxiliary
 from lib.common.results import NetlogHandler, upload_to_host
 from threading import Thread
-from lib.api.tracer import SyscallTracer, FilesystemTracer
+
+try:
+    from lib.api.tracer import SyscallTracer, FilesystemTracer
+    HAS_PTRACE = True
+except: #ImportError
+    HAS_PTRACE = False
 
 log = logging.getLogger()
 
@@ -106,34 +111,22 @@ class Analyzer:
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
 
-        # If no analysis package was specified at submission, we try to select
-        # one automatically.
-        if self.config.category == "file":
-            package = "generic"
-        else:
-            package = "wget"
-            # If we weren't able to automatically determine the proper package,
-            # we need to abort the analysis.
-        if not package:
-                raise CuckooError("No valid package available for file "
-                                  "type: {0}".format(self.config.file_type))
-
         # ToDo
         mgtype = self.config.file_type.lower()
         if "mipsel" in mgtype:
             arch = "mipsel"
         elif "mips" in mgtype:
             arch = "mips"
-        elif "arm".lower() in mgtype:
+        elif "arm" in mgtype:
             arch = "arm"
-        #elif "armhl" in mgtype:
-        #    tags = {"tags":"armhl"}
+        elif "armhl" in mgtype:
+            tags = "armhl"
         elif "sparc" in mgtype:
             arch = "sparc"
-        #elif "motorola" in mgtype:
-        #    info["tags"] = "motorola"
-        #elif "renesas sh" in mgtype:
-        #    info["tags"] = "renesassh"
+        elif "motorola" in mgtype:
+            arch = "motorola"
+        elif "renesas sh" in mgtype:
+            arch = "renesassh"
         elif "powerpc" in mgtype:
             arch = "powerpc"
         elif "32-bit" in mgtype and not "ARM" in mgtype:
@@ -141,26 +134,42 @@ class Analyzer:
         elif "elf 64-bit" in mgtype and "x86-64" in mgtype:
             arch = "x64"
 
+        #if "enable-injection" not in self.options.options.split(","):
         # Use ptrace here
-        if arch in ("x64", "x32", "ppc", "arm"):
-            self.ptrace_enabled = True
-            os.chmod(self.target, 0o755)
-            if ".bash" in self.target:
-                arguments = ["/bin/bash", self.target]
-            elif ".sh" in self.target:
-                arguments = ["/bin/sh", self.target]
-            elif ".pl" in self.target:
-                arguments = ["/bin/perl", self.target]
-            else:
-                arguments = [self.target, '']
-            #fstrace = FilesystemTracer()
-            #fstrace.start()
-            # Start system call tracer thread
-            proctrace = SyscallTracer(arguments)
-            proctrace.start()
+        if HAS_PTRACE and arch in ("x64", "x32", "ppc", "arm"):
+                self.ptrace_enabled = True
+                os.chmod(self.target, 0o755)
+                if ".bash" in self.target:
+                    arguments = ["/bin/bash", self.target]
+                elif ".sh" in self.target:
+                    arguments = ["/bin/sh", self.target]
+                elif ".pl" in self.target:
+                    arguments = ["/bin/perl", self.target]
+                else:
+                    arguments = [self.target, '']
+                #fstrace = FilesystemTracer()
+                #fstrace.start()
+                # Start system call tracer thread
+                proctrace = SyscallTracer(arguments)
+                proctrace.start()
         else:
             package = "strace"
             #ToDo if no injection generic
+        """"
+        else:
+            # If no analysis package was specified at submission, we try to select
+            # one automatically.
+            if self.config.category == "file":
+                package = "generic"
+            else:
+                package = "wget"
+        """
+        log.info(package)
+        # If we weren't able to automatically determine the proper package,
+        # we need to abort the analysis.
+        if not package:
+                raise CuckooError("No valid package available for file "
+                                  "type: {0}".format(self.config.file_type))
 
         # Generate the package path.
         package_name = "modules.packages.%s" % package
@@ -227,7 +236,7 @@ class Analyzer:
         pids = False
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
-        if self.ptrace_enabled is False:
+        if self.ptrace_enabled is False or HAS_PTRACE == False:
             try:
                 pids = pack.start(self.target)
             except NotImplementedError:
@@ -268,7 +277,7 @@ class Analyzer:
                 log.info("Analysis timeout hit, terminating analysis.")
                 break
 
-            if self.ptrace_enabled:
+            if HAS_PTRACE and self.ptrace_enabled:
                 if proctrace.is_running() == False:
                   log.info("No remaining processes. Waiting a few seconds before shutdown.")
                   time.sleep(10)
