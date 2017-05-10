@@ -190,3 +190,67 @@ body[id="analysis/import"] {
     }
 
 }
+
+// fixes for hljs
+pre code.hljs {
+    white-space: pre;
+    width: 100%;
+    font-size: 13px;
+    padding: 15px;
+    line-height: 22px;
+
+    @include cuckoo-theme('cyborg') {
+
+        background-color: #1d1f21;
+        color: #999;
+
+        .hljs-type, 
+        .hljs-string, 
+        .hljs-number, 
+        .hljs-selector-id, 
+        .hljs-selector-class, 
+        .hljs-quote, 
+        .hljs-template-tag, 
+        .hljs-deletion {
+            color: #6f9ab3;
+        }
+
+        .hljs-keyword {
+            color: $cyborg_secundary_color;
+        }
+    }
+
+    @include cuckoo-theme('night') {
+
+        background-color: #1d1f21;
+        color: #999;
+
+        .hljs-type, 
+        .hljs-string, 
+        .hljs-number, 
+        .hljs-selector-id, 
+        .hljs-selector-class, 
+        .hljs-quote, 
+        .hljs-template-tag, 
+        .hljs-deletion {
+            color: #6f9ab3;
+        }
+
+        .hljs-keyword {
+            color: $cyborg_secundary_color;
+        }
+
+    }
+
+}
+
+// say no to bootstrap 'pre' styling
+// (for some cases, just use <pre class="reset"> to eliminate bootstrap)
+pre.reset {
+    border: 0 solid #ccc;
+    border-radius: 0;
+    margin: 0 0 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+}

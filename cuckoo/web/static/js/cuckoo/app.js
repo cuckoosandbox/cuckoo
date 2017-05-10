@@ -29,7 +29,7 @@ var CuckooWeb = function () {
             if (Math.abs(bytes) < thresh) {
                 return bytes + ' B';
             }
-            var units = si ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+            var units = si ? ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'] : ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             var u = -1;
             do {
                 bytes /= thresh;
@@ -137,6 +137,29 @@ var CuckooWeb = function () {
                 console.log("err: " + data);
             });
         }
+
+        // returns true if the client browser is in the 
+        // recommended browser list.
+
+    }, {
+        key: 'isRecommendedBrowser',
+        value: function isRecommendedBrowser() {
+
+            var recommended = ['firefox', 'chrome', 'webkit', 'chromium'];
+            var isRecommended = false;
+
+            for (var recommendation in recommended) {
+                if (bowser[recommended[recommendation]]) {
+                    isRecommended = true;
+                    break;
+                }
+            }
+
+            return {
+                recommended: isRecommended,
+                browser: bowser.name
+            };
+        }
     }]);
 
     return CuckooWeb;
@@ -153,6 +176,23 @@ var CuckooWeb = function () {
       Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
       page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
     - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
+
+    default pageswitcher html structure:
+
+    <div class="page-switcher">
+    
+        <nav class="page-switcher__nav">
+            <a href="page-switcher-page-1" class="active">page 1</a>
+            <a href="page-switcher-page-2">page 2</a>
+        </nav>
+
+        <div class="page-switcher__pages">
+            <div id="page-switcher-page-1" class="active">content for page 1</div>
+            <div id="page-switcher-page-2">content for page 2</div>
+        </div>
+
+    </div>
+
  */
 
 
@@ -299,8 +339,35 @@ var PageSwitcher = function () {
 }();
 
 $(document).ready(function () {
+
+    // warn the user about a browser recommendation if we are not using
+    // a recommended browser.
+    var browser_message = $(".app-message[data-message=browser-recommendation]");
+    var recommended = CuckooWeb.isRecommendedBrowser();
+    if (!recommended.recommended) {
+        browser_message.find('.browser').text(recommended.browser);
+        if (!window.localStorage.getItem('hide-browser-warning') === true) {
+            browser_message.removeClass('hidden');
+        }
+    }
+
+    // dismiss the error (once)
+    browser_message.find('.button[href="#dismiss"]').bind('click', function (e) {
+        e.preventDefault();
+        browser_message.addClass('hidden');
+    });
+
+    // hide the browser error if the user is OK with lacking support
+    browser_message.find('.button[href="#hide"]').bind('click', function (e) {
+        e.preventDefault();
+        window.localStorage.setItem('hide-browser-warning', true);
+        browser_message.addClass('hidden');
+    });
+
+    // enable popovers (bootstrap)
     $("[data-toggle=popover]").popover();
 
+    // close the page freeze
     $('.close-page-freeze').bind('click', function () {
         CuckooWeb.toggle_page_freeze(false);
         setTimeout(function () {
@@ -534,7 +601,7 @@ $(function () {
     // disable nasty iframes from Chart (?)
     Chart.defaults.global.responsive = false;
 
-    function createChart(cSelector, data) {
+    function createChart(cSelector, data, outputPercent) {
 
         var chart,
             chartCanvas = cSelector[0],
@@ -543,8 +610,17 @@ $(function () {
             ds_used = data.used,
             percent_free = 100 / ds_total * ds_free,
             percent_used = 100 / ds_total * ds_used,
-            human_free = CuckooWeb.human_size(ds_free),
-            human_total = CuckooWeb.human_size(ds_total);
+            nFree = CuckooWeb.human_size(ds_free),
+            nTotal = CuckooWeb.human_size(ds_total);
+
+        var freeColor = "#52B3D9";
+        var freeDangerColor = "#afb200";
+        var usedColor = "#999";
+        var totalColor = "#BE234A";
+
+        if (percent_used > 75) {
+            freeColor = freeDangerColor;
+        }
 
         if (chartCanvas) {
 
@@ -554,7 +630,7 @@ $(function () {
                     labels: ["Free", "Used"],
                     datasets: [{
                         data: [percent_free, percent_used], // <== this has to come somewhere from a script
-                        backgroundColor: ["#52B3D9", "#BE234A"]
+                        backgroundColor: [freeColor, usedColor]
                     }]
                 },
                 options: {
@@ -571,9 +647,15 @@ $(function () {
             });
         }
 
+        if (outputPercent) {
+            nFree = Math.round(percent_free);
+            nTotal = 100;
+        }
+
         return {
-            free: human_free,
-            total: human_total
+            free: nFree,
+            total: nTotal,
+            used: Math.round(percent_used)
         };
     }
 
@@ -613,44 +695,6 @@ $(function () {
         });
 
         submit_uploader.draw();
-
-        // import uploader
-        var import_uploader = new DnDUpload.Uploader({
-            target: 'div#dashboard-import',
-            endpoint: '',
-            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
-
-            // disables ajax functionality
-            ajax: false,
-
-            templateData: {
-                title: 'Submit an analysis to import',
-                html: '<i class="fa fa-upload"></i>\n' + $('#import_token').html() + '\n<input type="hidden" name="category" type="text" value="file">\n',
-                // sets form action for submitting the files to (form action=".. etc")
-                formAction: '/analysis/import/',
-                inputName: 'analyses'
-            },
-            dragstart: function dragstart(uploader, holder) {
-                $(holder).removeClass('dropped');
-                $(holder).addClass('dragging');
-            },
-            dragend: function dragend(uploader, holder) {
-                $(holder).removeClass('dragging');
-            },
-            drop: function drop(uploader, holder) {
-                $(holder).addClass('dropped');
-            },
-            success: function success(data, holder) {
-                setTimeout(function () {
-                    window.location.href = data.responseURL;
-                }, 1000);
-            },
-            change: function change(uploader, holder, files) {
-                $(holder).addClass('dropped');
-            }
-        });
-
-        import_uploader.draw();
     }
 
     // dashboard components
@@ -678,28 +722,66 @@ $(function () {
             var tasks_info = DashboardTable.simpleTable(data.data.tasks);
             $('[data-populate="statistics"]').html(tasks_info);
 
-            // populate free disk space unit
-            var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
-            $('[data-populate="free-disk-space"]').text(disk_space.free);
-            $('[data-populate="total-disk-space"]').text(disk_space.total);
-
-            var cores = data.data.cpucount;
-            var lsum = 0;
-            for (var load in data.data.cpuload) {
-                lsum += parseInt(data.data.cpuload[load]);
+            if (data.data.diskspace.analyses) {
+                // populate free disk space unit
+                var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
+                $('[data-populate="free-disk-space"]').text(disk_space.free);
+                $('[data-populate="total-disk-space"]').text(disk_space.total);
+            } else {
+                // show 'no data available' if this data is not available
+                $("#ds-stat").addClass('no-data');
             }
-            var avgload = parseInt(
-                lsum / data.data.cpuload.length * 100 / cores
-            );
-            $('[data-populate="memory-load"]').text(avgload + '%');
-            $('[data-populate="total-cores"]').text(cores + ' cores');
 
-            // populate cpu load unit
-            var cpu_load = createChart($("#cpu-stat > canvas"), {
-                total: cores * 100,
-                used: avgload,
-                free: 100 - avgload,
-            });
+            // cpu load chart
+            if (data.data.cpucount) {
+
+                // cpu load calculation mechanism
+                var cores = data.data.cpucount;
+                var lsum = 0;
+                for (var load in data.data.cpuload) {
+                    lsum += data.data.cpuload[load];
+                }
+                var avgload = parseInt(lsum / data.data.cpuload.length * 100 / cores);
+                $('[data-populate="cpu-load"]').text(avgload + '%');
+                $('[data-populate="total-cores"]').text(cores + ' cores');
+
+                // populate cpu load unit
+                var cpu_load = createChart($("#cpu-stat > canvas"), {
+                    total: cores * 100,
+                    used: avgload,
+                    free: 100 - avgload
+                });
+            } else {
+                // show 'no data available' if this data is not available
+                $("#cpu-stat").addClass('no-data');
+            }
+
+            // data.data.memtotal = 11989568;
+            // data.data.memavail = 2899792;
+
+            // memory chart 
+            if (data.data.memtotal) {
+
+                // memory data
+                var memoryTotal = data.data.memtotal;
+                var memoryAvail = data.data.memavail;
+
+                // create the memory chart
+                var memory_chart = createChart($("#memory-stat > canvas"), {
+                    total: memoryTotal,
+                    used: memoryTotal - memoryAvail,
+                    free: memoryAvail
+                }, true);
+
+                var memoryTotalSize = CuckooWeb.human_size(memoryTotal * 1000);
+                var memoryAvailSize = CuckooWeb.human_size(memoryAvail * 1000);
+                var memoryUsedSize = CuckooWeb.human_size((memoryTotal - memoryAvail) * 1000);
+
+                $('[data-populate="memory-used"]').text('' + memoryAvailSize);
+                $('[data-populate="memory-total"]').text('' + memoryTotalSize);
+            } else {
+                $("#memory-stat").addClass('no-data');
+            }
         });
 
         // submit the dashboard url submitter
@@ -720,15 +802,41 @@ $(function () {
     });
 });
 
-// focus fix on analysis page
+// analysis page handlers
 $(function () {
 
+    // fixes up the scroll behavior to expected behavior
     if ($("body#analysis").length) {
         $(".cuckoo-analysis").focus();
         $("#analysis-nav, #primary-nav").bind('click', function () {
             $(".cuckoo-analysis").focus();
         });
     }
+
+    // pre-submits a list of urls to the presubmit form (uses urlhash submission)
+    $("#submit-extracted-urls").bind('click', function (e) {
+        e.preventDefault();
+        var listItems = $(this).parents('.list-panel').find('.list-group-item');
+        var urls = [];
+
+        listItems.each(function () {
+            urls.push($(this).text());
+        });
+
+        urls = urls.join('\n');
+        CuckooWeb.submit_url(urls);
+    });
+
+    // initialise hljs
+    hljs.configure({
+        languages: ['js']
+    });
+
+    hljs.initHighlightingOnLoad();
+
+    $("pre code").each(function (i, element) {
+        hljs.highlightBlock(element);
+    });
 });
 
 function alertbox(msg, context, attr_id) {

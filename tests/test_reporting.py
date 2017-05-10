@@ -278,6 +278,31 @@ def test_mongodb_init_once_new(p):
     })
     p.db.fs.files.ensure_index.assert_called_once()
 
+@responses.activate
+def test_almost_empty_notification():
+    set_cwd(tempfile.mkdtemp())
+    conf = {
+        "notification": {
+            "enabled": True,
+            "url": "http://localhost/notification",
+        },
+    }
+    responses.add(responses.POST, "http://localhost/notification")
+    task(1, {}, conf, {})
+    assert len(responses.calls) == 1
+    assert responses.calls[0].request.body == "data=null&task_id=1"
+
+    responses.add(responses.POST, "http://localhost/notification")
+    task(1, {}, conf, {
+        "info": {
+            "id": 1,
+        },
+    })
+    assert len(responses.calls) == 2
+    assert sorted(responses.calls[1].request.body.split("&")) == [
+        "data=%7B%22id%22%3A+1%7D", "task_id=1"
+    ]
+
 def test_feedback_empty():
     r = Feedback()
     r.set_path("tests/files/sample_analysis_storage")

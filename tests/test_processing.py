@@ -28,7 +28,7 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile
+from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -138,6 +138,21 @@ class TestProcessing(object):
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
+    def test_phishing0_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "phishing0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/phishing0.pdf"
+        assert "googleattachmentsigned" in s.run()["pdf"][0]["urls"][0]
+
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
         set_cwd(tempfile.mkdtemp())
@@ -198,6 +213,27 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    def test_lnk1(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "lnk",
+            "target": "lnk_1.lnk",
+        })
+        s.file_path = "tests/files/lnk_1.lnk"
+        obj = s.run()["lnk"]
+        assert obj["basepath"] == "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+        assert obj["flags"] == {
+            "cmdline": True, "description": True, "icon": True,
+            "references": True, "relapath": True, "shellidlist": True,
+            "workingdir": False,
+        }
+        assert obj["description"] == "windows photo viewer"
+        assert "shell32.dll" in obj["icon"]
+        assert "powershell.exe" in obj["relapath"]
+        assert "-NoProfile" in obj["cmdline"]
+        assert "eABlACIA" in obj["cmdline"]
 
     def test_procmon(self):
         p = Procmon()
@@ -716,6 +752,8 @@ class TestBehavior(object):
 class TestPcap(object):
     @classmethod
     def setup_class(cls):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
         cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
 
     def test_dns_server_list(self):
@@ -933,6 +971,20 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+
+    def test_duplicate_dns_requests(self):
+        results = Pcap(
+            "tests/files/pcap/duplicate-dns-requests.pcap", {}
+        ).run()
+        assert len(results["dns"]) == 1
+        assert results["dns"][0] == {
+            "type": "A",
+            "request": "hanxi88.f3322.net",
+            "answers": [{
+                "data": "192.168.3.253",
+                "type": "A"
+            }],
+        }
 
 class TestPcap2(object):
     def test_smtp_ex(self):

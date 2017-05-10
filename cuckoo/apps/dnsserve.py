@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +7,7 @@ import socket
 import sys
 
 try:
+    logging.getLogger("scapy.loading").setLevel(logging.ERROR)
     from scapy.layers.dns import DNS, DNSQR, DNSRR
     HAVE_SCAPY = True
 except ImportError:

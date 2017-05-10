@@ -284,9 +284,17 @@
 		border-bottom-width: 2px;
 	}
 
+	&--sm {
+		@extend .button;
+		font-size: 13px;
+		padding: 3px 10px;
+	}
+
 	&.outline {
 		background-color: transparent;
 		border: 2px solid #fff;
+		padding-top: 4px;
+		padding-bottom: 4px;
 	}
 
 	&.inversed {

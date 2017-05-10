@@ -9,7 +9,10 @@ import mock
 import os
 import pytest
 import shutil
+import sys
 import tempfile
+
+import cuckoo
 
 from cuckoo.apps.apps import (
     process, process_task, cuckoo_clean, process_task_range, cuckoo_machine,
@@ -21,8 +24,9 @@ from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
 from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
-from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd, mkdir, is_linux
+from cuckoo.main import main, cuckoo_create, cuckoo_init
+from cuckoo.misc import set_cwd, decide_cwd, cwd, mkdir, is_linux
+from tests.utils import chdir
 
 db = Database()
 
@@ -665,3 +669,61 @@ class TestMigrateCWD(object):
             cwd("..", "data", "web/local_settings.py", private=True),
             cwd("web/local_settings.py")
         )
+
+class TestCommunitySuggestion(object):
+    @property
+    def ctx(self):
+        class context(object):
+            log = False
+        return context
+
+    @mock.patch("cuckoo.main.green")
+    def test_default_cwd(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        with chdir(cwd()):
+            decide_cwd(".")
+            cuckoo_init(logging.INFO, self.ctx)
+            p.assert_called_once_with("cuckoo community")
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with("cuckoo --cwd %s community" % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd_with_space(self, p):
+        set_cwd(tempfile.mkdtemp("foo bar"))
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd_with_quote(self, p):
+        set_cwd(tempfile.mkdtemp("foo ' bar"))
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_has_signatures(self, p):
+        set_cwd(tempfile.mkdtemp())
+        sys.modules.pop("signatures", None)
+        sys.modules.pop("signatures.android", None)
+        sys.modules.pop("signatures.cross", None)
+        sys.modules.pop("signatures.darwin", None)
+        sys.modules.pop("signatures.network", None)
+        sys.modules.pop("signatures.windows", None)
+        cuckoo_create()
+        shutil.copy(
+            "tests/files/enumplugins/sig1.py",
+            cwd("signatures", "windows", "foobar.py")
+        )
+        cuckoo.signatures = []
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_not_called()

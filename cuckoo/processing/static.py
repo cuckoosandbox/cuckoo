@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import bs4
+import ctypes
 import datetime
 import logging
 import oletools.olevba
@@ -34,7 +35,7 @@ from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
-from cuckoo.misc import cwd, dispatch
+from cuckoo.misc import cwd, dispatch, Structure
 
 log = logging.getLogger(__name__)
 
@@ -536,6 +537,49 @@ class PdfDocument(object):
     def _sanitize(self, d, key):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
+    def walk_object(self, obj, entry):
+        if isinstance(obj, peepdf.PDFCore.PDFStream):
+            stream = obj.decodedStream
+
+            # Is this actually Javascript code?
+            if not peepdf.JSAnalysis.isJavascript(stream):
+                return
+
+            javascript = stream.decode("latin-1")
+            entry["javascript"].append({
+                "orig_code": javascript,
+                "beautified": jsbeautify(javascript),
+                "urls": [],
+            })
+            return
+
+        if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+            for url in obj.urlsFound:
+                entry["urls"].append(self._parse_string(url))
+
+            for url in obj.uriList:
+                entry["urls"].append(self._parse_string(url))
+
+            # TODO We should probably add some more criteria here.
+            uri_obj = obj.elements.get("/URI")
+            if uri_obj:
+                if isinstance(uri_obj, peepdf.PDFCore.PDFString):
+                    entry["urls"].append(uri_obj.value)
+                else:
+                    log.warning(
+                        "Identified a potential URL, but its associated "
+                        "type is not a string?"
+                    )
+
+            for element in obj.elements.values():
+                self.walk_object(element, entry)
+            return
+
+        if isinstance(obj, peepdf.PDFCore.PDFArray):
+            for element in obj.elements:
+                self.walk_object(element, entry)
+            return
+
     def run(self):
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
@@ -564,30 +608,133 @@ class PdfDocument(object):
             }
 
             for obj in f.body[version].objects.values():
-                if obj.object.type == "stream":
-                    stream = obj.object.decodedStream
+                self.walk_object(obj.object, row)
 
-                    # Is this actually Javascript code?
-                    if not peepdf.JSAnalysis.isJavascript(stream):
-                        continue
-
-                    javascript = stream.decode("latin-1")
-                    row["javascript"].append({
-                        "orig_code": javascript,
-                        "beautified": jsbeautify(javascript),
-                        "urls": [],
-                    })
-                    continue
-
-                if obj.object.type == "dictionary":
-                    for url in obj.object.urlsFound:
-                        row["urls"].append(self._parse_string(url))
-
-                    for url in obj.object.uriList:
-                        row["urls"].append(self._parse_string(url))
-
+            row["urls"] = sorted(set(row["urls"]))
             ret.append(row)
 
+        return ret
+
+class LnkHeader(Structure):
+    _fields_ = [
+        ("signature", ctypes.c_ubyte * 4),
+        ("guid", ctypes.c_ubyte * 16),
+        ("flags", ctypes.c_uint),
+        ("attrs", ctypes.c_uint),
+        ("creation", ctypes.c_ulonglong),
+        ("access", ctypes.c_ulonglong),
+        ("modified", ctypes.c_ulonglong),
+        ("target_len", ctypes.c_uint),
+        ("icon_len", ctypes.c_uint),
+        ("show_window", ctypes.c_uint),
+        ("hotkey", ctypes.c_uint),
+    ]
+
+class LnkEntry(Structure):
+    _fields_ = [
+        ("length", ctypes.c_uint),
+        ("first_offset", ctypes.c_uint),
+        ("volume_flags", ctypes.c_uint),
+        ("local_volume", ctypes.c_uint),
+        ("base_path", ctypes.c_uint),
+        ("net_volume", ctypes.c_uint),
+        ("path_remainder", ctypes.c_uint),
+    ]
+
+class LnkShortcut(object):
+    signature = [0x4c, 0x00, 0x00, 0x00]
+    guid = [
+        0x01, 0x14, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46,
+    ]
+    flags = [
+        "shellidlist", "references", "description",
+        "relapath", "workingdir", "cmdline", "icon",
+    ]
+    attrs = [
+        "readonly", "hidden", "system", None, "directory", "archive",
+        "ntfs_efs", "normal", "temporary", "sparse", "reparse", "compressed",
+        "offline", "not_indexed", "encrypted",
+    ]
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+
+    def read_uint16(self, offset):
+        return struct.unpack("H", self.buf[offset:offset+2])[0]
+
+    def read_uint32(self, offset):
+        return struct.unpack("I", self.buf[offset:offset+4])[0]
+
+    def read_stringz(self, offset):
+        return self.buf[offset:self.buf.index("\x00", offset)]
+
+    def read_string16(self, offset):
+        length = self.read_uint16(offset) * 2
+        ret = self.buf[offset+2:offset+2+length].decode("utf16")
+        return offset + 2 + length, ret
+
+    def run(self):
+        self.buf = buf = open(self.filepath, "rb").read()
+        if len(buf) < ctypes.sizeof(LnkHeader):
+            log.warning("Provided .lnk file is corrupted or incomplete.")
+            return
+
+        header = LnkHeader.from_buffer_copy(buf[:ctypes.sizeof(LnkHeader)])
+        if header.signature[:] != self.signature:
+            log.warning(
+                "Provided .lnk file is not a Microsoft Shortcut "
+                "(invalid signature)!"
+            )
+            return
+
+        if header.guid[:] != self.guid:
+            log.warning(
+                "Provided .lnk file is not a Microsoft Shortcut "
+                "(invalid guid)!"
+            )
+            return
+
+        ret = {
+            "flags": {},
+            "attrs": []
+        }
+
+        for x in xrange(7):
+            ret["flags"][self.flags[x]] = bool(header.flags & (1 << x))
+
+        for x in xrange(14):
+            if header.attrs & (1 << x):
+                ret["attrs"].append(self.attrs[x])
+
+        offset = 78 + self.read_uint16(76)
+        off = LnkEntry.from_buffer_copy(buf[offset:offset+28])
+
+        # Local volume.
+        if off.volume_flags & 1:
+            ret["basepath"] = self.read_stringz(offset + off.base_path)
+        # Network volume.
+        else:
+            ret["net_share"] = self.read_stringz(offset + off.net_volume + 20)
+            network_drive = self.read_uint32(offset + off.net_volume + 12)
+            if network_drive:
+                ret["network_drive"] = self.read_stringz(
+                    offset + network_drive
+                )
+
+        ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
+
+        extra = offset + off.length
+        if ret["flags"]["description"]:
+            extra, ret["description"] = self.read_string16(extra)
+        if ret["flags"]["relapath"]:
+            extra, ret["relapath"] = self.read_string16(extra)
+        if ret["flags"]["workingdir"]:
+            extra, ret["workingdir"] = self.read_string16(extra)
+        if ret["flags"]["cmdline"]:
+            extra, ret["cmdline"] = self.read_string16(extra)
+        if ret["flags"]["icon"]:
+            extra, ret["icon"] = self.read_string16(extra)
         return ret
 
 def _pdf_worker(filepath):
@@ -647,5 +794,8 @@ class Static(Processing):
                 _pdf_worker, (f.file_path,),
                 timeout=self.options.pdf_timeout
             )
+
+        if package == "lnk" or ext == "lnk":
+            static["lnk"] = LnkShortcut(f.file_path).run()
 
         return static

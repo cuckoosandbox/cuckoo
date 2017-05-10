@@ -6,14 +6,15 @@
 			"datatables/media/js/jquery.dataTables.js",
 			"datatables/media/js/dataTables.bootstrap.js",
 			"dataTables/media/js/dataTables.responsive.js",
-			"highlight/src/highlight.js",
+			"highlight/build/highlight.pack.js",
 			"js-cookie/src/js.cookie.js",
 			"jquery-ui/jquery-ui.js",
 			"handlebars/handlebars.js",
 			"string/dist/string.js",
 			"moment/moment.js",
 			"chart.js/dist/Chart.js",
-			"lightbox2/dist/js/lightbox.js"
+			"lightbox2/dist/js/lightbox.js",
+			"bowser/src/bowser.js"
 		],
 		"css/vendor.css@concat": [
 			"font-roboto/dist/styles/roboto.css",

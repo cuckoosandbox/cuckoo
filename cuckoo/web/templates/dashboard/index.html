@@ -65,18 +65,18 @@
                         <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
                     </div>
 
-                    <div class="stack">
+                    <!-- <div class="stack">
                         <div class="uploader-area" id="dashboard-import"></div>
                         <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
-                    </div>
+                    </div> -->
 
                 </div>
 
                 <div class="dashboard-module__body--right">
                     <div id="submit-with-link">
                         <form>
-                            <h5>Submit via URL</h5>
-                            <textarea rows="11" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
+                            <h5>Submit URLs/hashes</h5>
+                            <textarea rows="6" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
                             <div class="text-center">
                                 <button type="submit" class="button--lg">Submit</button>
                             </div>
@@ -87,18 +87,25 @@
             </div>  
 
             <div class="dashboard-module__footer">
-                <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into one of the above fields or click the icon to select a file.</p>
+                <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into the left field or click the icon to select a file.</p>
             </div>
 
         </div>
 
         <div class="dashboard-module" data-dashboard-module="system">
             <header class="dashboard-module__header">
-                <h4>System info</h4>
+                <h4 class="align-left clearfix">
+                    System info
+                    <div class="pull-right">
+                        <span class="label label-free">free</span>
+                        <span class="label label-used">used</span>
+                        <span class="label label-total">total</span>
+                    </div>
+                </h4>
             </header>
             <section class="dashboard-module__body free-disk-space">
 
-                <div class="dashboard-module__body--left">
+                <div class="dashboard-module__body--flex">
                     <h5>Free disk space</h5>
                     <div class="free-disk-space__chart" id="ds-stat">
                         <canvas></canvas>
@@ -109,16 +116,28 @@
                     </div>
                 </div>
 
-                <div class="dashboard-module__body--right">
+                <div class="dashboard-module__body--flex">
                     <h5>CPU Load</h5>
                     <div class="free-disk-space__chart" id="cpu-stat">
                         <canvas></canvas>
                         <div class="free-disk-space__legend">
-                            <p><strong data-populate="memory-load"></strong></p>
+                            <p><strong data-populate="cpu-load"></strong></p>
                             <p data-populate="total-cores"></p>
                         </div>
                     </div>
                 </div>
+
+                <div class="dashboard-module__body--flex">
+                    <h5>Memory usage</h5>
+                    <div class="free-disk-space__chart" id="memory-stat">
+                        <canvas></canvas>
+                        <div class="free-disk-space__legend">
+                            <p><strong data-populate="memory-used"></strong></p>
+                            <p data-populate="memory-total"></p>
+                        </div>
+                    </div>
+                </div>
+
             </section>
             <!--
             <footer class="dashboard-module__footer">

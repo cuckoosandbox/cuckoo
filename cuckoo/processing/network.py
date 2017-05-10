@@ -430,6 +430,7 @@ class Pcap(object):
                     }
                     if entry not in self.dns_requests[reqtuple]["answers"]:
                         self.dns_requests[reqtuple]["answers"].append(entry)
+
         return True
 
     def _add_domain(self, domain):

@@ -1,35 +1,5 @@
-<style>
-    section#static_analysis pre{
-        background-color: transparent;
-        border: 0 solid #ccc;
-        border-radius: 0;
-        margin: 0 0 0;
-        padding: 0;
-        display: flex;
-        width: 100%;
-    }
-
-    section#static_analysis .panel-body{
-        padding:0;
-    }
-
-    section#static_analysis pre code{
-        padding: 6px 14px 14px;
-        width: 100%;
-        background-color: white;
-        font-size:12px;
-        margin: 20px 10px 10px;
-    }
-
-    section#static_analysis .panel-body h4{
-        margin-left:12px;
-        margin-bottom:0px;
-        margin-top:20px;
-    }
-</style>
-
 <section id="static_analysis">
-    {% if report.analysis.static.pdf|length == 1 and not p.modification %}
+    {% if report.analysis.static.pdf|length == 1 and not report.analysis.static.pdf.0.modification and not report.analysis.static.pdf.0.urls and not report.analysis.static.pdf.0.javascript %}
         No PDF metadata could be extracted!
     {% endif %}
 
@@ -37,104 +7,107 @@
 	    {% if p.modification %}
             <div class="row">
                 <div class="col-md-6">
-                    <div class="panel" id="accordion1">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <label class="accordion-toggle">Metadata</label>
-                            </div>
-
-                            <div id="pdf_metadata" class="panel-collapse collapse in" style="text-align: left;">
-                                <div class="panel-body">
-                                    <table>
-                                        <tr>
-                                            <td>Version</td>
-                                            <td>{{ p.version }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Creator</td>
-                                            <td>{{ p.creator }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>creation</td>
-                                            <td>{{ p.creation }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>title</td>
-                                            <td>{{ p.title }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>subject</td>
-                                            <td>{{ p.subject }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>producer</td>
-                                            <td>{{ p.producer }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>author</td>
-                                            <td>{{ p.author }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>modification</td>
-                                            <td>{{ p.modification }}</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
+                    <div class="panel panel-default list-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Metadata</h3>
                         </div>
+                        <div class="panel-body"></div>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="item-label">Version:</span> {{ p.version }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Creator:</span> {{ p.creator }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Creation:</span> {{ p.creation }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Title:</span> {{ p.title }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Subject:</span> {{ p.subject }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Producer:</span> {{ p.producer }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Author:</span> {{ p.author }}
+                            </li>
+                            <li class="list-group-item">
+                                <span class="item-label">Modification:</span> <span data-transform="date">{{ p.modification }}</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         {% endif %}
         {% if p.urls %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel" id="accordion2">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <label class="accordion-toggle">URLs</label>
-                                </div>
-
-                                <div id="pdf_urls" class="panel-collapse collapse in" style="text-align: left;">
-                                    <div class="panel-body">
-                                        <div class="col-md-12">
-                                            <ul>
-                                                {% for url in p.urls %}
-                                                    {% if url %}
-                                                         <li>{{ url }}</li>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-default list-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title clearfix">
+                            	URLs 
+                            	<span class="pull-right">
+                            		<a href="#" class="button" id="submit-extracted-urls">submit urls</a>
+                            	</span>
+                            </h3>
                         </div>
+                        <div class="panel-body"></div>
+                        <ul class="list-group">
+                            {% for url in p.urls %}
+                                {% if url %}
+                                    <li class="list-group-item">{{ url }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
+            </div>
         {% endif %}
         {% if p.javascript %}
             {% for code in p.javascript %}
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="panel panel-primary">
+                        <div class="panel panel-default list-panel page-switcher">
+
                             <div class="panel-heading">
-                                Javascript <small>(original / beautified)</small>
+                                <h3 class="panel-title">
+                                    Javascript
+                                    <span class="pull-right page-switcher__nav">
+                                        <a href="original-code" class="button active" id="submit-extracted-urls">original</a>
+                                        <a href="beautified-code" class="button" id="submit-extracted-urls">beautified</a>
+                                    </span>
+                                </h3>
                             </div>
 
                             <div id="pdf_js" class="panel-collapse collapse in" style="text-align: left;">
                                 <div class="panel-body">
-                                    <div class="col-md-5" style="padding-right:0;">
+
+                                    <div class="page-switcher__pages">
+                                        <div id="original-code" class="active">
+                                            <pre class="reset">
+                                                <code class="javascript">{{ code.orig_code }}</code>
+                                            </pre>
+                                        </div>
+                                        <div id="beautified-code">
+                                            <pre class="reset">
+                                                <code class="javascript">{{ code.beautified }}</code>
+                                            </pre>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="col-md-5 split-left" style="padding-right:0;">
                                         <pre>
-                                            <code class="js">{{ code.orig_code }}</code>
+                                            <code class="javascript">{{ code.orig_code }}</code>
                                         </pre>
                                     </div>
-                                    <div class="col-md-7" style="padding-left:0;border-left: 1px solid #d4d4d4;">
+                                    <div class="col-md-7 split-right" style="padding-left:0;border-left: 1px solid #d4d4d4;">
                                         <pre>
-                                            <code class="js">{{ code.beautified }}</code>
+                                            <code class="javascript">{{ code.beautified }}</code>
                                         </pre>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </div>

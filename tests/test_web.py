@@ -25,6 +25,7 @@ from cuckoo.misc import cwd, set_cwd
 from cuckoo.processing.static import Static
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
 from cuckoo.web.controllers.submission.api import defaults
+from cuckoo.web.utils import render_template
 
 db = Database()
 
@@ -884,3 +885,55 @@ class TestMoloch(object):
         r = client.get("/analysis/moloch//////12345/")
         assert r.status_code == 302
         assert "http://molochhost" in r["Location"]
+
+class TestTemplates(object):
+    def test_pdf_no_metadata(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "creation": "",
+                        "modification": "",
+                        "urls": [],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" in r.content
+
+    def test_pdf_only_1_url(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "creation": "",
+                        "modification": "",
+                        "urls": [
+                            "http://thisisaurl.com/hello",
+                        ],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" not in r.content
+        assert ">http://thisisaurl.com/hello</li>" in r.content
+
+    def test_pdf_has_javascript(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "creation": "",
+                        "modification": "",
+                        "urls": [],
+                        "javascript": [{
+                            "orig_code": "alert(1)",
+                            "beautified": "alert(2)",
+                        }],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" not in r.content
+        assert '<code class="javascript">alert(1)</code>' in r.content
+        assert '<code class="javascript">alert(2)</code>' in r.content

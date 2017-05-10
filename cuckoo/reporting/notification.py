@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -23,6 +23,7 @@ class Notification(Report):
 
     def run(self, results):
         post = {
+            "task_id": self.task["id"],
             "identifier": self.options.get("identifier"),
             "data": json.dumps(
                 results.get("info"), default=default, sort_keys=False

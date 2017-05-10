@@ -25,6 +25,8 @@
     "js-cookie": "^2.1.4",
     "datatables": "^1.10.13",
     "highlight": "^9.10.0",
-    "jquery-ui": "^1.12.1"
+    "jquery-ui": "^1.12.1",
+    "bowser": "browser#^1.6.1",
+    "Split.js": "^1.2.0"
   }
 }

@@ -127,6 +127,34 @@ def cuckoo_init(level, ctx, cfg=None):
     init_rooter()
     init_routing()
 
+    signatures = 0
+    for sig in cuckoo.signatures:
+        if not sig.enabled:
+            continue
+        signatures += 1
+
+    if not signatures:
+        log.warning(
+            "It appears that you haven't loaded any Cuckoo Signatures. "
+            "Signatures are highly recommended and improve & enrich the "
+            "information extracted during an analysis. They also make up "
+            "for the analysis score that you see in the Web Interface - so, "
+            "pretty important!"
+        )
+        log.warning(
+            "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
+            "rules, and more goodies by running the following command:"
+        )
+        raw = cwd(raw=True)
+        if raw == "." or raw == "~/.cuckoo":
+            command = "cuckoo community"
+        elif " " in raw or "'" in raw:
+            command = 'cuckoo --cwd "%s" community' % raw
+        else:
+            command = "cuckoo --cwd %s community" % raw
+
+        log.info("$ %s", green(command))
+
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses

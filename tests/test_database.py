@@ -9,6 +9,7 @@ import tempfile
 
 from sqlalchemy.orm.exc import DetachedInstanceError
 
+from cuckoo.common.files import Files
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
 from cuckoo.core.startup import index_yara
 from cuckoo.distributed.app import create_app
@@ -193,6 +194,11 @@ class DatabaseEngine(object):
         assert m2.options == []
         assert m3.options == ["opt1", "opt2"]
         assert m4.options == ["opt3", "opt4"]
+
+    @mock.patch("cuckoo.common.objects.magic")
+    def test_add_sample(self, p):
+        p.from_file.return_value = ""
+        assert self.d.add_path(Files.temp_put(os.urandom(16))) is not None
 
 class TestConnectOnce(object):
     def setup(self):

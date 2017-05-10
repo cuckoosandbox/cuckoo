@@ -39,6 +39,28 @@
 				color: #337AB8;
 				padding: 20px 0 10px 0;
 				margin: 0; 
+
+				&.align-left {
+					padding: 20px 20px 10px 20px;
+					text-align: left;
+
+					.pull-right {
+						margin-top: -9px;
+					}
+				}
+
+				.label-used { background-color: #999; }
+				.label-free { 
+					background: linear-gradient(to right, #7db9e8 50%,#afb200 50%);
+				}
+				.label-total { background-color: #BE234A; }
+
+				.label {
+					display: inline-block;
+					font-size: 14px;
+					padding: 5px 10px;
+				}
+
 			}
 		}
 
@@ -56,6 +78,23 @@
 
 				.stack:not(:last-child) {
 					border-bottom: 1px solid #DFDFDF;
+				}
+			}
+
+			&--flex {
+				flex-basis: 100%;
+				border-right: 2px solid #DFDFDF;
+
+				&:last-child {
+					border: 0;
+				}
+
+				@include cuckoo-theme('cyborg') {
+					border-color: $cyborg_border_color;
+				}
+
+				@include cuckoo-theme('night') {
+					border-color: $night_border_color;
 				}
 			}
 
@@ -258,6 +297,19 @@
 					height: 135px;
 				}
 
+				&.no-data:after {
+					content: "no data available";
+					display: block;
+					position: absolute;
+					width: 100%;
+					top: 50%;
+					margin-top: -10px;
+					text-align: center;
+					text-transform: uppercase;
+					font-weight: 900;
+					color: #ccc;
+				}
+
 			}
 
 			&__cpu {
@@ -307,21 +359,26 @@
 				color: #979797;
 				font-weight: 700;
 				font-size: 16px;
-				margin: 0 0 11px 0;
+				margin: 0 0 45px 0;
 			}
 
 			.dashboard-module__body--left {
 				border-right-width: 2px;
 
-				#uploader {
-					padding: 50px 20px 20px 20px;
+				.dndupload__simple {
+
+					#uploader {
+						padding: 75px 20px 20px 20px;
+					}
+
 				}
+
 			}
 
 			.uploader-area {
 				display: block;
 				text-align: center;
-				height: 193px;
+				height: 286px;
 
 				.fa {
 					font-size: 50px;
@@ -333,6 +390,7 @@
 				padding: 30px;
 
 				h5 {
+					margin-top: 0;
 					margin-bottom: 20px;
 				}
 
