@@ -128,34 +128,34 @@ class Analyzer:
         elif "renesas sh" in mgtype:
             arch = "renesassh"
         elif "powerpc" in mgtype:
-            arch = "powerpc"
+            arch = "ppc"
         elif "32-bit" in mgtype and not "ARM" in mgtype:
             arch = "x32"
         elif "elf 64-bit" in mgtype and "x86-64" in mgtype:
             arch = "x64"
+        log.info(arch)
+        if "free=yes" not in self.config.options:
+            # Strace has better result then ptrace on arm and ppc
+            #ppc contains bug https://github.com/haypo/python-ptrace/issues/40
+            if HAS_PTRACE and arch in ("x64", "x32"): #"arm", "ppc",
+                    self.ptrace_enabled = True
+                    os.chmod(self.target, 0o755)
+                    if ".bash" in self.target:
+                        arguments = ["/bin/bash", self.target]
+                    elif ".sh" in self.target:
+                        arguments = ["/bin/sh", self.target]
+                    elif ".pl" in self.target:
+                        arguments = ["/bin/perl", self.target]
+                    else:
+                        arguments = [self.target, '']
+                    #fstrace = FilesystemTracer()
+                    #fstrace.start()
+                    # Start system call tracer thread
+                    proctrace = SyscallTracer(arguments)
+                    proctrace.start()
+            else:
+                package = "strace"
 
-        #if "enable-injection" not in self.options.options.split(","):
-        # Use ptrace here
-        if HAS_PTRACE and arch in ("x64", "x32", "ppc", "arm"):
-                self.ptrace_enabled = True
-                os.chmod(self.target, 0o755)
-                if ".bash" in self.target:
-                    arguments = ["/bin/bash", self.target]
-                elif ".sh" in self.target:
-                    arguments = ["/bin/sh", self.target]
-                elif ".pl" in self.target:
-                    arguments = ["/bin/perl", self.target]
-                else:
-                    arguments = [self.target, '']
-                #fstrace = FilesystemTracer()
-                #fstrace.start()
-                # Start system call tracer thread
-                proctrace = SyscallTracer(arguments)
-                proctrace.start()
-        else:
-            package = "strace"
-            #ToDo if no injection generic
-        """"
         else:
             # If no analysis package was specified at submission, we try to select
             # one automatically.
@@ -163,8 +163,6 @@ class Analyzer:
                 package = "generic"
             else:
                 package = "wget"
-        """
-        log.info(package)
         # If we weren't able to automatically determine the proper package,
         # we need to abort the analysis.
         if not package:
