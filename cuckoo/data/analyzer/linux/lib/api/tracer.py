@@ -107,6 +107,7 @@ class SyscallTracer(Thread):
         self.no_stdout = False
         self.do_run = True
         self.remote_log = dict()
+        self.touched_files = set()
 
         #self.prepare()
     """
@@ -287,6 +288,8 @@ class SyscallTracer(Thread):
             print(text)
             self.hide_me(syscall, process)
 
+            # Handle file IO APIs
+            self.handle_files(syscall)
             index = self.remote_log[process.pid].log_resolve_index(syscall.name)
             fmt = self.remote_log[process.pid].log_convert_types(arg_list)
 
@@ -296,6 +299,40 @@ class SyscallTracer(Thread):
             self.remote_log[process.pid].loq(index, syscall.name,
                                              success, syscall.result_text,
                                              fmt, arg_list)
+
+    def handle_files(self, call):
+        #ToDo extend this
+        """ Remember what files our target has been working with during the analysis"""
+        if hasattr(call, "filename"):
+            if call.filename in ["open"]:
+                self.open_file(call.filename)
+            """
+            if call.value in ["rename"]:
+                self.move_file(call.filename), makeabs(call.args[1])
+            if call.value in ["copyfile"]:
+                self.copy_file(call.args[0]), makeabs(call.args[1])
+            """
+            if call.filename in ["remove", "unlink"]:
+                self.remove_file(call.filename)
+
+
+    def open_file(self, filepath):
+        self.touched_files.add(filepath)
+
+    def move_file(self, frompath, topath):
+        # Remove old reference if needed
+        if frompath in self.touched_files:
+            self.touched_files.remove(frompath)
+        self.touched_files.add(topath)
+
+    def copy_file(self, frompath, topath):
+        # Add both files to the watch list
+        self.touched_files.update([frompath, topath])
+
+    def remove_file(self, filepath):
+        # TODO(rodionovd): we're actually unable to dump this file
+        # because well, it was removed
+        self.touched_files.add(filepath)
 """
 if __name__ == "__main__":
     try:
