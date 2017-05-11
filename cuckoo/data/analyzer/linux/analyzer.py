@@ -136,7 +136,6 @@ class Analyzer:
 
         if "free=yes" not in self.config.options:
             # Strace has better result then ptrace on arm and ppc
-            #ppc contains bug https://github.com/haypo/python-ptrace/issues/40
             if HAS_PTRACE and arch in ("x64", "x32"): #"arm", "ppc",
                     self.ptrace_enabled = True
                     os.chmod(self.target, 0o755)

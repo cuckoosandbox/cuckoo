@@ -2,7 +2,7 @@
 {% load staticfiles %}
 {% load analysis_tags %}
 {% block content %}
-    
+
     <div class="flex-nav">
         {% include "analysis/pages/nav-sidebar.html" %}
         <section class="flex-nav__body cuckoo-analysis" tabindex="0">
@@ -27,6 +27,8 @@
                                 <div class="tab-pane fade in active" id="static_analysis_tab">
                                     {% if "PE32" in report.analysis.target.file.type %}
                                         {% include "analysis/pages/static/_pe32.html" %}
+                                    {% elif "ELF" in report.analysis.target.file.type %}
+                                        {% include "analysis/pages/static/_elf.html" %}
                                     {% elif "office" in report.analysis.static %}
                                         {% include "analysis/pages/static/_office.html" %}
                                     {% elif "pdf" in report.analysis.static %}
@@ -60,7 +62,7 @@
                     <a href="#">Back to Top</a>
                 </div>
             </footer>
-            
+
         </section>
     </div>
 
