@@ -32,7 +32,7 @@ class FilteredProcessLog(list):
         return True
 
 class LinuxSystemTap(BehaviorHandler):
-    """Parses systemtap/strace generated plaintext logs (see stuff/strace.stp)."""
+    """Parses systemtap generated plaintext logs (see stuff/strace.stp)."""
 
     key = "processes"
 
@@ -95,7 +95,7 @@ class LinuxSystemTap(BehaviorHandler):
         return self.processes
 
 class LinuxStrace(BehaviorHandler):
-    """Parses systemtap/strace generated plaintext logs (see stuff/strace.stp)."""
+    """Parses strace generated plaintext logs"""
 
     key = "processes"
 
@@ -162,7 +162,6 @@ class LinuxStrace(BehaviorHandler):
 
 class StraceParser(object):
     """Handle strace logs from the Linux analyzer."""
-    # https://github.com/doomedraven/cuckoo/blob/6d925463067a71b16c80ef2eaf36a467fac92f61/cuckoo/common/abstracts.py
     def __init__(self, path):
         self.fd = open(path)
         self.path = path
