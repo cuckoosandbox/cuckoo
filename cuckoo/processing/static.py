@@ -16,7 +16,7 @@ import peutils
 import re
 import struct
 import zipfile
-import subprocess
+
 try:
     import M2Crypto
     HAVE_MCRYPTO = True
@@ -30,7 +30,7 @@ try:
     PyV8  # Fake usage.
 except:
     HAVE_PYV8 = False
-""""
+
 try:
     from elftools.common.exceptions import ELFError
     from elftools.common.py3compat import (
@@ -67,7 +67,7 @@ try:
     HAS_ELFTOOLS = True
 except ImportError:
      HAS_ELFTOOLS = False
-"""
+
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
@@ -360,35 +360,33 @@ class ReadElf(object):
     def display_file_header(self):
         """ Display the ELF file header
         """
-        block_str = list()
-        block_str += ['ELF Header:\n', '  Magic:   \n']
-        block_str += [str(' '.join('%2.2x' % byte2int(b) for b in self.elffile.e_ident_raw)+"\n")]
+        block_str = dict()
         header = self.elffile.header
         e_ident = header['e_ident']
-        block_str += ['  Class:                             {}\n'.format(describe_ei_class(e_ident['EI_CLASS']))]
-
-        block_str += '  Data:                              {}\n'.format(describe_ei_data(e_ident['EI_DATA']))
-        block_str += '  Version:                           {}\n'.format(describe_ei_version(e_ident['EI_VERSION']))
-        block_str += '  OS/ABI:                            {}\n'.format(describe_ei_osabi(e_ident['EI_OSABI']))
-        block_str += '  ABI Version:                       {}\n'.format(e_ident['EI_ABIVERSION'])
-        block_str += '  Type:                              {}\n'.format(describe_e_type(header['e_type']))
-        block_str += '  Machine:                           {}\n'.format(describe_e_machine(header['e_machine']))
-        block_str += '  Version:                           {}\n'.format(describe_e_version_numeric(header['e_version']))
-        block_str += '  Entry point address:               {}\n'.format(self._format_hex(header['e_entry']))
-        block_str += str('  Start of program headers:          {}\n'.format(header['e_phoff']))
-        block_str += ' (bytes into file)\n'
-        block_str += str('  Start of section headers:          {}\n'.format(header['e_shoff']))
-        block_str += ' (bytes into file)'
-        block_str += '  Flags:                             {}{}\n'.format(
+        block_str.setdefault("magic", str(' '.join('%2.2x' % byte2int(b) for b in self.elffile.e_ident_raw)))
+        block_str.setdefault("class", describe_ei_class(e_ident['EI_CLASS']))
+        block_str.setdefault("data", describe_ei_data(e_ident['EI_DATA']))
+        block_str.setdefault("ei_version", describe_ei_version(e_ident['EI_VERSION']))
+        block_str.setdefault("os_abi", describe_ei_osabi(e_ident['EI_OSABI']))
+        block_str.setdefault("abi_version", e_ident['EI_ABIVERSION'])
+        block_str.setdefault("type", describe_e_type(header['e_type']))
+        block_str.setdefault("machine", describe_e_machine(header['e_machine']))
+        block_str.setdefault("version", describe_e_version_numeric(header['e_version']))
+        block_str.setdefault("entry_point_address" ,self._format_hex(header['e_entry']))
+        block_str.setdefault("start_of_program_headers", header['e_phoff'])
+        #block_str.setdefault(' (bytes into file)\n')
+        block_str.setdefault("start_of_section_headers", header['e_shoff'])
+        #block_str.setdefault(' (bytes into file)')
+        block_str.setdefault("flags", "{}{}".format(
             self._format_hex(header['e_flags']),
             self.decode_flags(header['e_flags'])
-        )
-        block_str += '  Size of this header:               {} (bytes)\n'.format(header['e_ehsize'])
-        block_str += '  Size of program headers:           {} (bytes)\n'.format(header['e_phentsize'])
-        block_str += '  Number of program headers:         {}\n'.format(header['e_phnum'])
-        block_str += '  Size of section headers:           {} (bytes)\n'.format(header['e_shentsize'])
-        block_str += '  Number of section headers:         {}\n'.format(header['e_shnum'])
-        block_str += '  Section header string table index: {}\n'.format(header['e_shstrndx'])
+        ))
+        block_str.setdefault("size_of_this_header", header['e_ehsize'])
+        block_str.setdefault("size_of_program_headers", header['e_phentsize'])
+        block_str.setdefault("number_of_program_headers", header['e_phnum'])
+        block_str.setdefault("size_of_section_headers", header['e_shentsize'])
+        block_str.setdefault("number_of_section_headers", header['e_shnum'])
+        block_str.setdefault("section_header_string_table_index",header['e_shstrndx'])
 
         return block_str
 
@@ -418,25 +416,19 @@ class ReadElf(object):
             If show_heading is True, displays the heading for this information
             (Elf file type is...)
         """
-        program_headers = str()
-        program_headers += "\n"
+        program_headers = list()
         if self.elffile.num_segments() == 0:
-            program_headers += 'There are no program headers in this file.'
-            return
+            #program_headers += 'There are no program headers in this file.'
+            return program_headers
 
         elfheader = self.elffile.header
         if show_heading:
-            program_headers += 'Elf file type is %s\n' %  \
-                describe_e_type(elfheader['e_type'])
-            program_headers += 'Entry point is %s\n' %  \
-                self._format_hex(elfheader['e_entry'])
+            program_headers.setdefault("elf_file_type_is", describe_e_type(elfheader['e_type']))
+            program_headers.setdefault("entry_point_is", self._format_hex(elfheader['e_entry']))
             # readelf weirness - why isn't e_phoff printed as hex? (for section
             # headers, it is...)
-            program_headers += 'There are %s program headers, starting at offset %s\n' % (
-                elfheader['e_phnum'], elfheader['e_phoff'])
-            program_headers += "\n"
+            #'There are %s program headers, starting at offset', elfheader['e_phnum'], elfheader['e_phoff']
 
-        program_headers += 'Program Headers:\n'
 
         # Now comes the table of program headers with their attributes. Note
         # that due to different formatting constraints of 32-bit and 64-bit
@@ -444,18 +436,27 @@ class ReadElf(object):
         #
         # First comes the table heading
         #
+        """
         if self.elffile.elfclass == 32:
             program_headers += '  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align\n'
         else:
             program_headers += '  Type           Offset             VirtAddr           PhysAddr\n'
             program_headers += '                 FileSiz            MemSiz              Flags  Align\n'
+        """
 
         # Now the entries
         #
         for segment in self.elffile.iter_segments():
-            program_headers += str('  %-14s \s' % describe_p_type(segment['p_type']))
+           # program_headers += str('  %-14s \s' % describe_p_type(segment['p_type']))
+            tmp_dict = dict()
+
+            tmp_dict.setdefault("type", "%-14s \s" % describe_p_type(segment['p_type']))
 
             if self.elffile.elfclass == 32:
+                tmp_dict.setdefault("p_vaddr", self._format_hex(segment['p_paddr'], fullhex=True))
+                tmp_dict.setdefault("p_paddr", self._format_hex(segment['p_paddr'], fullhex=True))
+                tmp_dict.setdefault("offset", self._format_hex(segment['p_offset'], fieldsize=6))
+                """
                 program_headers += '%s %s %s %s %s %-3s %s\n' % (
                     self._format_hex(segment['p_offset'], fieldsize=6),
                     self._format_hex(segment['p_vaddr'], fullhex=True),
@@ -464,7 +465,12 @@ class ReadElf(object):
                     self._format_hex(segment['p_memsz'], fieldsize=5),
                     describe_p_flags(segment['p_flags']),
                     self._format_hex(segment['p_align']))
+                """
             else: # 64
+                tmp_dict.setdefault("p_vaddr", self._format_hex(segment['p_offset'], fullhex=True))
+                tmp_dict.setdefault("p_paddr", self._format_hex(segment['p_paddr'], fullhex=True))
+                tmp_dict.setdefault("offset", self._format_hex(segment['p_offset'], fullhex=True))
+                """
                 program_headers += '%s %s %s' % (
                     self._format_hex(segment['p_offset'], fullhex=True),
                     self._format_hex(segment['p_vaddr'], fullhex=True),
@@ -476,16 +482,15 @@ class ReadElf(object):
                     # lead0x set to False for p_align, to mimic readelf.
                     # No idea why the difference from 32-bit mode :-|
                     self._format_hex(segment['p_align'], lead0x=False))
+                """
 
-            if isinstance(segment, InterpSegment):
-                program_headers += '      [Requesting program interpreter: %s]\n' % \
-                    segment.get_interp_name()
-
+            program_headers.append(tmp_dict)
         # Sections to segments mapping
         #
+        """
         if self.elffile.num_sections() == 0:
             # No sections? We're done
-            return
+            return program_headers
 
         program_headers += '\n Section to Segment mapping:\n'
         program_headers += '  Segment Sections...\n'
@@ -499,91 +504,106 @@ class ReadElf(object):
                     program_headers += str('%s \n' % section.name)
 
             program_headers += "\n"
-
+        """
         return program_headers
 
     def display_section_headers(self, show_heading=True):
         """ Display the ELF section headers
         """
-        section_header = str()
+        section_header = list()
         elfheader = self.elffile.header
+        """
         if show_heading:
-            section_header += 'There are %s section headers, starting at offset %s\n' % (
+            section_header.append( 'There are %s section headers, starting at offset %s\n' % (
                 elfheader['e_shnum'], self._format_hex(elfheader['e_shoff']))
-
-        section_header += '\nSection Header%s:\n' % (
-            's' if elfheader['e_shnum'] > 1 else '')
+        """
+        #section_header.append('\nSection Header%s:\n' % (
+        #    's' if elfheader['e_shnum'] > 1 else ''))
 
         # Different formatting constraints of 32-bit and 64-bit addresses
-        #
+        """
         if self.elffile.elfclass == 32:
-            section_header += '  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n'
+            section_header.append('  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n')
         else:
-            section_header += '  [Nr] Name              Type             Address           Offset\n'
-            section_header += '       Size              EntSize          Flags  Link  Info  Align'
-
+            section_header.append('  [Nr] Name              Type             Address           Offset\n')
+            section_header.append('       Size              EntSize          Flags  Link  Info  Align')
+        """
         # Now the entries
-        #
+        section_header = list()
+
         for nsec, section in enumerate(self.elffile.iter_sections()):
-            section_header += str('  [%2u] %-17.17s %-15.15s \n' % (
-                nsec, section.name, describe_sh_type(section['sh_type'])))
+            tmp_dict = dict()
+
+            tmp_dict.setdefault("name", "%-17.17s" % section.name)
+            tmp_dict.setdefault("type", "%-15.15s" % describe_sh_type(section['sh_type']))
 
             if self.elffile.elfclass == 32:
-                section_header += ('%s %s %s %s %3s %2s %3s %2s\n' % (
+                tmp_dict.setdefault("addr", self._format_hex(section['sh_addr'], fieldsize=8, lead0x=False))
+                tmp_dict.setdefault("offset", self._format_hex(section['sh_offset'], fieldsize=6, lead0x=False))
+                """
+                #section_header.append(('%s %s %s %s %3s %2s %3s %2s\n' % (
                     self._format_hex(section['sh_addr'], fieldsize=8, lead0x=False),
                     self._format_hex(section['sh_offset'], fieldsize=6, lead0x=False),
                     self._format_hex(section['sh_size'], fieldsize=6, lead0x=False),
                     self._format_hex(section['sh_entsize'], fieldsize=2, lead0x=False),
                     describe_sh_flags(section['sh_flags']),
                     section['sh_link'], section['sh_info'],
-                    section['sh_addralign']))
+                    section['sh_addralign'])))
+                """
             else: # 64
-                section_header += ' %s  %s\n' % (
+                """
+                section_header.append( ' %s  %s\n' % (
                     self._format_hex(section['sh_addr'], fullhex=True, lead0x=False),
                     self._format_hex(section['sh_offset'],
                         fieldsize=16 if section['sh_offset'] > 0xffffffff else 8,
-                        lead0x=False))
-                section_header += '       %s  %s %3s      %2s   %3s     %s\n' % (
+                        lead0x=False)))
+                section_header.append( '       %s  %s %3s      %2s   %3s     %s\n' % (
                     self._format_hex(section['sh_size'], fullhex=True, lead0x=False),
                     self._format_hex(section['sh_entsize'], fullhex=True, lead0x=False),
-                    describe_sh_flags(section['sh_flags']),
-                    section['sh_link'], section['sh_info'],
-                    section['sh_addralign'])
-
-        section_header += 'Key to Flags:\n'
-        section_header += '  W (write), A (alloc), X (execute), M (merge), S (strings)\n'
+                    #describe_sh_flags(section['sh_flags']),
+                    #section['sh_link'], section['sh_info'],
+                    #section['sh_addralign'])
+                )
+                """
+                tmp_dict.setdefault("addr", self._format_hex(section['sh_addr'], fieldsize=8, lead0x=False))
+                tmp_dict.setdefault("offset", self._format_hex(section['sh_offset'], fieldsize=6, lead0x=False))
+            section_header.append(tmp_dict)
+        """
+        section_header.append( 'Key to Flags:\n')
+        section_header.append( '  W (write), A (alloc), X (execute), M (merge), S (strings)\n')
         if self.elffile['e_machine'] in ('EM_X86_64', 'EM_L10M'):
-            section_header += ', l (large)\n'
+            section_header.append( ', l (large)\n')
         else:
-            section_header += "\n"
-        section_header += '  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)\n'
-        section_header += '  O (extra OS processing required) o (OS specific), p (processor specific)\n'
-
+            section_header.append( "\n")
+        section_header.append( '  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)\n')
+        section_header.append( '  O (extra OS processing required) o (OS specific), p (processor specific)\n')
+        """
         return section_header
 
     def display_symbol_tables(self):
         """ Display the symbol tables contained in the file
         """
-        symbol_tables = str()
+        symbol_tables = list()
         self._init_versioninfo()
 
         for section in self.elffile.iter_sections():
             if not isinstance(section, SymbolTableSection):
                 continue
-
+            tmp_dict = dict()
             if section['sh_entsize'] == 0:
-                symbol_tables +="\nSymbol table '%s' has a sh_entsize of zero!\n" % (
-                    section.name)
+                #symbol_tables +="\nSymbol table '%s' has a sh_entsize of zero!\n" % (
+                #     section.name)
                 continue
 
-            symbol_tables +="\nSymbol table '%s' contains %s entries:\n" % (
-                section.name, section.num_symbols())
-
+            #symbol_tables +="\nSymbol table '%s' contains %s entries:\n" % (
+            #    section.name, section.num_symbols())
+            tmp_dict["name"] = section.name
+            """
             if self.elffile.elfclass == 32:
                 symbol_tables +='   Num:    Value  Size Type    Bind   Vis      Ndx Name'
             else: # 64
                 symbol_tables +='   Num:    Value          Size Type    Bind   Vis      Ndx Name'
-
+            """
             for nsym, symbol in enumerate(section.iter_symbols()):
                 version_info = ''
                 # readelf doesn't display version info for Solaris versioning
@@ -603,6 +623,17 @@ class ReadElf(object):
                             else:
                                 version_info = '@@%(name)s' % version
 
+                tmp_dict["num"] = nsym
+                tmp_dict["value"] = self._format_hex(symbol['st_value'], fullhex=True, lead0x=False)
+                tmp_dict["size"] = symbol['st_size']
+                tmp_dict["type"] = describe_symbol_type(symbol['st_info']['type'])
+                tmp_dict["bind"] = describe_symbol_bind(symbol['st_info']['bind'])
+                tmp_dict["vis"] = describe_symbol_visibility(symbol['st_other']['visibility'])
+                tmp_dict["ndx_name"] = symbol.name
+                tmp_dict["version"] = version_info
+                if tmp_dict not in symbol_tables:
+                    symbol_tables.append(tmp_dict)
+                """
                 # symbol names are truncated to 25 chars, similarly to readelf
                 symbol_tables +='%6d: %s %5d %-7s %-6s %-7s %4s %.25s%s\n' % (
                     nsym,
@@ -615,25 +646,21 @@ class ReadElf(object):
                     describe_symbol_shndx(symbol['st_shndx']),
                     symbol.name,
                     version_info)
-
+            """
             return symbol_tables
 
     def display_dynamic_tags(self):
         """ Display the dynamic tags contained in the file
         """
-        dynamic_tags = str()
-        has_dynamic_sections = False
+        dynamic_tags = list()
         for section in self.elffile.iter_sections():
+            tmp_dict = dict()
             if not isinstance(section, DynamicSection):
                 continue
-
-            has_dynamic_sections = True
-            dynamic_tags += "\nDynamic section at offset %s contains %s entries:\n" % (
-                self._format_hex(section['sh_offset']),
-                section.num_tags())
-            dynamic_tags += "  Tag        Type                         Name/Value\n"
-
-            padding = 20 + (8 if self.elffile.elfclass == 32 else 0)
+            #dynamic_tags += "\nDynamic section at offset %s contains %s entries:\n" % (
+            #    self._format_hex(section['sh_offset']),
+            #    section.num_tags())
+            #dynamic_tags += "  Tag        Type                         Name/Value\n"
             for tag in section.iter_tags():
                 if tag.entry.d_tag == 'DT_NEEDED':
                     parsed = 'Shared library: [%s]' % tag.needed
@@ -654,72 +681,73 @@ class ReadElf(object):
                     parsed = '%s' % s
                 else:
                     parsed = '%#x' % tag['d_val']
-
-                dynamic_tags += " %s %-*s %s\n" % (
-                    self._format_hex(ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag),
-                        fullhex=True, lead0x=True),
-                    padding,
-                    '(%s)' % (tag.entry.d_tag[3:],),
-                    parsed)
-        if not has_dynamic_sections:
-            # readelf only prints this if there is at least one segment
-            if self.elffile.num_segments():
-                dynamic_tags += "\nThere is no dynamic section in this file.\n"
+                tmp_dict.setdefault("tag", self._format_hex(ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag), fullhex=True, lead0x=True))
+                tmp_dict.setdefault("type", tag.entry.d_tag[3:])
+                tmp_dict.setdefault("value", parsed)
+                if tmp_dict not in dynamic_tags:
+                    dynamic_tags.append(tmp_dict)
 
         return dynamic_tags
 
     def display_notes(self):
         """ Display the notes contained in the file
         """
-        notes = str()
+        notes = list()
         for segment in self.elffile.iter_segments():
             if isinstance(segment, NoteSegment):
                 for note in segment.iter_notes():
-                    notes +="\nDisplaying notes found at file offset %s with length %s:" % (
-                              self._format_hex(note['n_offset'], fieldsize=8),
-                              self._format_hex(note['n_size'], fieldsize=8)
-                    )
-                    notes +='  Owner                 Data size Description\n'
-                    notes += '  %s%s %s\t%s\n' % (
+                    tmp_dict = dict()
+                    #notes.append("\nDisplaying notes found at file offset %s with length %s:" % (
+                    #          self._format_hex(note['n_offset'], fieldsize=8),
+                    #          self._format_hex(note['n_size'], fieldsize=8)
+                    #))
+                    #notes.append('  Owner                 Data size Description\n')
+                    tmp_dict["owner"] = note['n_name']
+                    tmp_dict["size"] = self._format_hex(note['n_descsz'], fieldsize=8)
+                    tmp_dict["note"] = describe_note(note)
+                    tmp_dict["name"] = note['n_name']
+                    notes.append(tmp_dict)
+                    """
+                    notes.append('  %s%s %s\t%s\n' % (
                           note['n_name'], ' ' * (20 - len(note['n_name'])),
                           self._format_hex(note['n_descsz'], fieldsize=8),
-                          describe_note(note))
+                          describe_note(note)))
+                    """
         return notes
 
     def display_relocations(self):
         """ Display the relocations contained in the file
         """
-        reloc = str()
+        reloc = list()
         has_relocation_sections = False
         for section in self.elffile.iter_sections():
             if not isinstance(section, RelocationSection):
                 continue
-
             has_relocation_sections = True
-            reloc += "\nRelocation section '%s' at offset %s contains %s entries:\n" % (
-                section.name,
-                self._format_hex(section['sh_offset']),
-                section.num_relocations())
+            #reloc += "\nRelocation section '%s' at offset %s contains %s entries:\n" % (
+            #    section.name,
+            #    self._format_hex(section['sh_offset']),
+            #    section.num_relocations())
+            """
             if section.is_RELA():
                 reloc += "  Offset          Info           Type           Sym. Value    Sym. Name + Addend\n"
             else:
                 reloc += " Offset     Info    Type            Sym.Value  Sym. Name\n"
-
+            """
             # The symbol table section pointed to in sh_link
             symtable = self.elffile.get_section(section['sh_link'])
-
+            section_dict = list()
             for rel in section.iter_relocations():
+                tmp_dict = dict()
+
                 hexwidth = 8 if self.elffile.elfclass == 32 else 12
-                reloc += '%s  %s %-17.17s' % (
-                    self._format_hex(rel['r_offset'],
-                        fieldsize=hexwidth, lead0x=False),
-                    self._format_hex(rel['r_info'],
-                        fieldsize=hexwidth, lead0x=False),
-                    describe_reloc_type(
-                        rel['r_info_type'], self.elffile))
+                tmp_dict["offset"] = self._format_hex(rel['r_offset'], fieldsize=hexwidth, lead0x=False)
+                tmp_dict["info"] = self._format_hex(rel['r_info'], fieldsize=hexwidth, lead0x=False)
+                tmp_dict["type"] = describe_reloc_type(rel['r_info_type'], self.elffile)
 
                 if rel['r_info_sym'] == 0:
-                    reloc += "\n"
+                    tmp_dict["value"] = ""
+                    tmp_dict["name"] = ""
                     continue
 
                 symbol = symtable.get_symbol(rel['r_info_sym'])
@@ -730,20 +758,19 @@ class ReadElf(object):
                     symbol_name = symsec.name
                 else:
                     symbol_name = symbol.name
-                reloc += str(' %s %s%22.22s\n' % (
-                    self._format_hex(
-                        symbol['st_value'],
-                        fullhex=True, lead0x=False),
-                    '  ' if self.elffile.elfclass == 32 else '',
-                    symbol_name))
+
+                tmp_dict["value"] = self._format_hex(symbol['st_value'], fullhex=True, lead0x=False)
+                tmp_dict["name"] = symbol_name
+                """
                 if section.is_RELA():
                     reloc += str(' %s %x\n' % (
                         '+' if rel['r_addend'] >= 0 else '-',
                         abs(rel['r_addend'])))
-                reloc += "\n"
+                """
+                if tmp_dict not in section_dict:
+                    section_dict.append(tmp_dict)
 
-        if not has_relocation_sections:
-            reloc += '\nThere are no relocations in this file.'
+            reloc.append({"name":section.name, "entries": section_dict})
 
         return reloc
 
@@ -1472,39 +1499,6 @@ class ELF(object):
 
         return libs
 
-    def _get_sections(self):
-        """Gets sections.
-        @return: sections dict or None.
-        """
-
-        sections = []
-        entry = []
-
-        process = subprocess.Popen(["/usr/bin/readelf", self.file_path, "-S", "-W"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        elf = process.communicate()[0]
-
-        # Format to lines by splitting at '\n'
-        tmp = re.split("\n[ ]{0,}", elf)
-        for i in range(0,len(tmp)):
-            # Filter lines containing [xx]
-            if re.search("^\[[ 0-9][1-9]\]", tmp[i]):
-                # Regex: Split all whitespaces '\s' if they are not proceeded '(?<!\[)' by a '['
-                # remove all splitted whitespaces from the list filter()'
-                entry.append(filter(None, re.split("(?<!\[)\s", tmp[i])))
-
-        for e in entry:
-            try:
-                section = {}
-                section["name"] = e[1]
-                section["type"] = e[2]
-                section["virtual_address"] = "0x{0}".format(e[3])
-                section["virtual_size"] = "0x{0}".format(e[4])
-                sections.append(section)
-            except:
-                continue
-
-        return sections
-
     def run(self):
         """Run analysis.
         @return: analysis results dict or None.
@@ -1513,9 +1507,7 @@ class ELF(object):
         if not os.path.exists(self.file_path):
             return {}
 
-        results["elf_sections"] = self._get_sections()
-        results["elf_symbols"] = self._get_symbols()
-        """
+
         if HAS_ELFTOOLS is False:
             return {}
 
@@ -1525,7 +1517,6 @@ class ELF(object):
             log.error(e)
             return {}
         do_file_header = True
-        results = {}
 
         results["file_header"] = self.readelf.display_file_header()
         results["section_headers"] = self.readelf.display_section_headers(show_heading=not do_file_header)
@@ -1533,9 +1524,9 @@ class ELF(object):
         results["dynamic_tags"] = self.readelf.display_dynamic_tags()
         results["symbol_tables"] = self.readelf.display_symbol_tables()
         results["notes"] = self.readelf.display_notes()
+        #ToDo add library name per import https://github.com/cuckoosandbox/cuckoo/pull/807/files#diff-033aeda7c00b458591305630264df6d3R604
         results["relocations"] = self.readelf.display_relocations()
-        results["version_info "] = self.readelf.display_version_info()
-        """
+        #results["version_info "] = self.readelf.display_version_info()
         return results
 
 class WindowsScriptFile(object):
@@ -2014,7 +2005,6 @@ class Static(Processing):
 
         if ext == "elf" or "ELF" in f.get_type():
             static.update(ELF(f.file_path).run())
-            log.info(static)
             #static["keys"] = f.get_keys()
 
         if package == "exe" or ext == "exe" or "PE32" in f.get_type():
