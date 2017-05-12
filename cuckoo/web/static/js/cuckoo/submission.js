@@ -437,8 +437,6 @@ var Uploader = function () {
             var _self = this;
             var xhr = new XMLHttpRequest();
 
-            // this.display_text("Uploading");
-
             formdata["type"] = "files";
 
             xhr.open('POST', this.endpoint);
@@ -486,19 +484,6 @@ var Uploader = function () {
             }
 
             xhr.send(formdata);
-        }
-
-        /**
-         * Changes the text displayed to the user
-         * @return
-         */
-
-    }, {
-        key: "display_text",
-        value: function display_text(text) {
-            return;
-            var info = $(this._selectors["form"].querySelector("label#info"));
-            info.html(text);
         }
 
         /**
