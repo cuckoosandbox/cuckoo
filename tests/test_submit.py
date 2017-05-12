@@ -366,6 +366,14 @@ def test_option_translations_from():
         "route": "foobar",
     }
 
+    assert sm.translate_options_from({}, {
+        "enable-injection": False,
+        "key": "value",
+    }) == {
+        "free": "yes",
+        "key": "value",
+    }
+
 def test_option_translations_to():
     sm = SubmitManager()
 

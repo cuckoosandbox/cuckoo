@@ -30,7 +30,6 @@
                 "available_vpns": [],
                 "machine": "cuckoo1",
                 "options": {
-                    "enable-services": false,
                     "enforce-timeout": false,
                     "full-memory-dump": false,
                     "enable-injection": true,
@@ -55,7 +54,6 @@
         "machine": "",
         "network-routing": "internet",
         "options": {
-            "enable-services": false,
             "enforce-timeout": false,
             "full-memory-dump": false,
             "enable-injection": true,
