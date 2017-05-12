@@ -188,7 +188,7 @@ class SyscallTracer(Thread):
         '''
 
         process = event.process
-        log.info("\n\n*** New process %s ***" % event.process.pid)
+        #log.info("\n\n*** New process %s ***" % event.process.pid)
 
         self.remote_log[process.pid] = ResultLogger()
         self.remote_log[process.pid].log_init(time.time())

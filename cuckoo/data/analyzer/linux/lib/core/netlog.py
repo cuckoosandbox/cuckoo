@@ -65,11 +65,9 @@ class ResultLogger():
 
     def announce_netlog(self):
         buf = "BSON\n"
-        log.info("announce_netlog")
         self.log_raw_direct(buf)
 
     def log_raw_direct(self, buf):
-        log.info("log_raw_direct")
         total = 0
         while total < len(buf):
             sent = self.socket.send(buf[total:])
@@ -78,7 +76,6 @@ class ResultLogger():
             total = total + sent
 
     def loq(self, index, name, is_success, return_value, fmt, args):
-        log.info("loq")
         with self.send_lock:
             # Prepare structure explanation to be send in dictionary.
             try:
@@ -95,7 +92,7 @@ class ResultLogger():
                     for i in range(0,len(fmt)):
                         val = unicode(args[get_key(i)])
                         buf["args"].append(val)
-                    log.debug("Sending: %s", str(buf))
+                    #log.debug("Sending: %s", str(buf))
 
                     # Send BSON data to resultserver
                     self.log_raw_direct(bson_encode(buf))
@@ -117,13 +114,12 @@ class ResultLogger():
                 elif fmt[i] == "u":
                     val = unicode(args[get_value(i)])
                 buf["args"].append(val)
-            log.debug("Sending: %s", str(buf))
+            #log.debug("Sending: %s", str(buf))
 
             # Send BSON data to resultserver
             self.log_raw_direct(bson_encode(buf))
 
     def log_new_process(self,pid,ppid,path=None):
-        log.info("log_new_process")
         self.pid = pid
 
         arguments = ["TimeStamp", long(round(time.time() * 1000)),
@@ -134,7 +130,6 @@ class ResultLogger():
         self.loq(511,"__process__",1,0, self.log_convert_types(arguments),arguments)
 
     def log_init(self, start):
-        log.info("log_init")
         '''Establish a connection to resultserver.
         @return: connection result (true or false)'''
 

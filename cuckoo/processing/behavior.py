@@ -13,7 +13,7 @@ from cuckoo.common.config import config
 from cuckoo.core.database import Database
 
 from .platform.windows import WindowsMonitor
-from .platform.linux import LinuxSystemTap
+from .platform.linux import LinuxSystemTap, LinuxStrace
 
 log = logging.getLogger(__name__)
 

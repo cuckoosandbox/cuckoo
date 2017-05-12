@@ -299,8 +299,6 @@ class BsonParser(ProtocolHandler):
                         )
 
                     # FILETIME is 100-nanoseconds from 1601 :/
-                    vmtimeunix = (timelow + (timehigh << 32))
-                    vmtimeunix = vmtimeunix / 10000000.0 - 11644473600
                     vmtime = datetime.datetime.fromtimestamp(vmtimeunix)
                     parsed["first_seen"] = vmtime
 
