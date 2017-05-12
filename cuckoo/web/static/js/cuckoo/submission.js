@@ -2631,6 +2631,7 @@ $(function () {
 											options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
 										}).on('change', function (value) {
 											item.per_file_options['priority'] = value;
+											console.log(setFieldValue);
 											setFieldValue.call(this, parseInt(value));
 										});
 
@@ -2735,9 +2736,6 @@ $(function () {
 						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
-					}).on('change', function (value) {
-						if (value == 'default') value = null;
-						setFieldValue.call(this, value);
 					});
 
 					var priority = new this.TopSelect({
