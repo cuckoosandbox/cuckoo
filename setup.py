@@ -186,6 +186,7 @@ do_setup(
         "sflock>=0.2.9, <0.3",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
+        "pyelftools==0.24",
     ] + install_requires,
     extras_require={
         ":sys_platform == 'win32'": [
