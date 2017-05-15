@@ -6851,6 +6851,7 @@ body.night .flex-grid__header {
   display: flex;
   -ms-flex-preferred-size: 100%;
       flex-basis: 100%;
+  overflow: auto;
 }
 .flex-grid__body.background-grey, .background-grey.flex-grid__body--center {
   background-color: #f5f5f5;
@@ -6916,6 +6917,7 @@ body.cyborg .flex-grid__body, body.cyborg .flex-grid__body--center {
   background-color: #F5F5F5;
   border-right: 1px solid #CFCFCF;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 body.cyborg .flex-grid__nav {
   background-color: #020e10;
