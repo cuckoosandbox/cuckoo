@@ -199,12 +199,20 @@ $(function() {
 
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this))); 
+						var pkg;
 
 						if(this.type === 'container') {
 							_$d.addClass('archive-container');
 						}
 
 						_$d.append(size);
+
+						if(!this.preview) {
+							// _$d.find('strong').addClass('skip-auto-expand');
+							_$d.parent().addClass('skip-auto-expand');
+							pkg = FileTree.Label('archive', 'Archive')
+							_$d.append(pkg);
+						}
 
 						return el;
 					}

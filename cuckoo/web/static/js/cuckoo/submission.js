@@ -462,7 +462,7 @@ var Uploader = function () {
                             _self._success_callback(xhr, document.querySelector("div#" + _self._selectors["uid"]));
                         }, 600);
                     } else if (xhr.status == 0) {} else {
-                        _self.display_text("Error: http.status = " + xhr.status + " OR response.status not OK");
+                        // _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
                         _self._error_callback(_self, document.querySelector("div#" + _self._selectors["uid"]));
                     }
                 }
@@ -955,7 +955,7 @@ var FileTree = function () {
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function expandAllFolders() {
-				$(this.el).find('[data-type="folder"]').parent().addClass('expanded');
+				$(this.el).find('[data-type="folder"]').parent().not('.skip-auto-expand').addClass('expanded');
 				this.update();
 			},
 			collapseAllFolders: function collapseAllFolders() {
@@ -2547,12 +2547,20 @@ $(function () {
 
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
+						var pkg;
 
 						if (this.type === 'container') {
 							_$d.addClass('archive-container');
 						}
 
 						_$d.append(size);
+
+						if (!this.preview) {
+							// _$d.find('strong').addClass('skip-auto-expand');
+							_$d.parent().addClass('skip-auto-expand');
+							pkg = FileTree.Label('archive', 'Archive');
+							_$d.append(pkg);
+						}
 
 						return el;
 					}

@@ -7155,6 +7155,10 @@ body.night .cuckoo-files > #filetree > ul > li:last-child {
 body.cyborg .cuckoo-files ul div .label-duplicate {
   opacity: .2;
 }
+.cuckoo-files ul div .label-archive {
+  color: #668294;
+  text-transform: uppercase;
+}
 .cuckoo-files ul div a.label:hover {
   color: #337AB7;
 }

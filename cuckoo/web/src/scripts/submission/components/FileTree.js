@@ -454,7 +454,7 @@ class FileTree {
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function() {
-				$(this.el).find('[data-type="folder"]').parent().addClass('expanded');
+				$(this.el).find('[data-type="folder"]').parent().not('.skip-auto-expand').addClass('expanded');
 				this.update();
 			},
 			collapseAllFolders: function() {

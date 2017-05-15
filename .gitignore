@@ -55,3 +55,6 @@ bower_components/
 .sass-cache/
 
 cuckoo/web/manage.py
+
+# ignore custom clone from sflock in /cuckoo-internal
+/sflock
