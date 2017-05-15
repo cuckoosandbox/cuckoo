@@ -44,6 +44,16 @@ class XLS(Package):
                 "ExtensionHardening": 0,
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\Common\\Security",
+            {
+                # Enable all ActiveX controls without restrictions and without
+                # prompting
+                "DisableAllActiveX": 0,
+                "UFIControls": 1,
+            },
+        ],
     ]
 
     def start(self, path):
