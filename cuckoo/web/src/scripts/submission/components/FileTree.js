@@ -181,8 +181,14 @@ function build(items, parent) {
 		item.filetree = {
 			index: itemIndex,
 			is_directory: isDirectory(item),
+			is_package: false,
 			el: null
 		};
+
+		if(!item.preview) {
+			item.filetree.is_directory = false;
+			item.filetree.is_package = true;
+		}
 
 		if(isDirectory.call(this, item)) {
 			folder = createFolder(item, this);
@@ -454,7 +460,7 @@ class FileTree {
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function() {
-				$(this.el).find('[data-type="folder"]').parent().addClass('expanded');
+				$(this.el).find('[data-type="folder"]').parent().not('.skip-auto-expand').addClass('expanded');
 				this.update();
 			},
 			collapseAllFolders: function() {
@@ -659,7 +665,7 @@ class FileTree {
 
 		var self = this;
 
-		if(item.filetree.is_directory) return;
+		if(item.type === 'directory') return;
 
 		var html = detailTemplate({
 			item: item

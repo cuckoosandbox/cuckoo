@@ -316,40 +316,46 @@ this["HANDLEBARS_TEMPLATES"]["packet-display"] = Handlebars.template({"compiler"
 this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     return "checked";
 },"3":function(depth0,helpers,partials,data) {
+    return "				<i class=\"fa fa-file-archive-o\"></i>\n";
+},"5":function(depth0,helpers,partials,data) {
+    return "				<i class=\"fa fa-file-o\"></i> \n";
+},"7":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
     + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1), depth0))
     + "\n";
-},"5":function(depth0,helpers,partials,data) {
+},"9":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
     + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filename : stack1), depth0))
     + "\n";
-},"7":function(depth0,helpers,partials,data) {
+},"11":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
     + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.rpath_short : stack1), depth0))
     + "\n";
-},"9":function(depth0,helpers,partials,data) {
+},"13":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
     + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.relapath : stack1), depth0))
     + "\n";
-},"11":function(depth0,helpers,partials,data) {
+},"15":function(depth0,helpers,partials,data) {
     return "		<li class=\"warning\">\n			<strong>duplicate</strong>\n			This is a duplicate of another submitted file.\n		</li>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, alias1=this.lambda, alias2=this.escapeExpression;
 
   return "<header class=\"flex-form__header\">\n	<h4>\n		<label class=\"custom-checkbox\" for=\"file-selected\">\n			<input type=\"checkbox\" id=\"file-selected\" "
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.selected : stack1),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + " />\n			<span></span>\n		</label>\n\n		<i class=\"fa fa-file-o\"></i> \n"
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
+    + " />\n			<span></span>\n		</label>\n\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filetree : stack1)) != null ? stack1.is_package : stack1),{"name":"if","hash":{},"fn":this.program(3, data, 0),"inverse":this.program(5, data, 0),"data":data})) != null ? stack1 : "")
+    + "\n"
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
     + "	</h4>\n</header>\n\n<ul class=\"flex-static__summary\">\n	<li>\n		<strong>path</strong>\n"
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.rpath_short : stack1),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.rpath_short : stack1),{"name":"if","hash":{},"fn":this.program(11, data, 0),"inverse":this.program(13, data, 0),"data":data})) != null ? stack1 : "")
     + "	</li>\n	<li>\n		<strong>type</strong>\n		"
     + alias2(alias1(((stack1 = ((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.finger : stack1)) != null ? stack1.magic_human : stack1), depth0))
     + "\n	</li>\n	<li>\n		<strong>mime</strong>\n		"
@@ -357,7 +363,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
     + "\n	</li>\n	<li>\n		<strong>size</strong>\n		"
     + ((stack1 = (helpers.file_size || (depth0 && depth0.file_size) || helpers.helperMissing).call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.size : stack1),{"name":"file_size","hash":{},"data":data})) != null ? stack1 : "")
     + "\n	</li>\n"
-    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.duplicate : stack1),{"name":"if","hash":{},"fn":this.program(11, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.duplicate : stack1),{"name":"if","hash":{},"fn":this.program(15, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Analysis Specific options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
@@ -385,41 +391,47 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"if","hash":{},"fn":this.program(5, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ">\n					<strong>\n"
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"if","hash":{},"fn":this.program(7, data, 0),"inverse":this.program(9, data, 0),"data":data})) != null ? stack1 : "")
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.fname_short : depth0),{"name":"if","hash":{},"fn":this.program(11, data, 0),"inverse":this.program(13, data, 0),"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.fname_short : depth0),{"name":"if","hash":{},"fn":this.program(14, data, 0),"inverse":this.program(16, data, 0),"data":data})) != null ? stack1 : "")
     + "					</strong>\n"
-    + ((stack1 = helpers.unless.call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"unless","hash":{},"fn":this.program(15, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.unless.call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_directory : stack1),{"name":"unless","hash":{},"fn":this.program(18, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "				</a>\n			</li>\n";
 },"5":function(depth0,helpers,partials,data) {
     return " class=\"disabled\" disabled";
 },"7":function(depth0,helpers,partials,data) {
     return "							<i class=\"fa fa-folder-o\"></i>\n";
 },"9":function(depth0,helpers,partials,data) {
-    return "							<i class=\"fa fa-file-o\"></i>\n";
-},"11":function(depth0,helpers,partials,data) {
+    var stack1;
+
+  return ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.filetree : depth0)) != null ? stack1.is_package : stack1),{"name":"if","hash":{},"fn":this.program(10, data, 0),"inverse":this.program(12, data, 0),"data":data})) != null ? stack1 : "");
+},"10":function(depth0,helpers,partials,data) {
+    return "								<i class=\"fa fa-file-archive-o\"></i>\n";
+},"12":function(depth0,helpers,partials,data) {
+    return "								<i class=\"fa fa-file-o\"></i>\n";
+},"14":function(depth0,helpers,partials,data) {
     return "							"
     + this.escapeExpression(this.lambda((depth0 != null ? depth0.fname_short : depth0), depth0))
     + "\n";
-},"13":function(depth0,helpers,partials,data) {
+},"16":function(depth0,helpers,partials,data) {
     return "							"
     + this.escapeExpression(this.lambda((depth0 != null ? depth0.filename : depth0), depth0))
     + "\n";
-},"15":function(depth0,helpers,partials,data) {
+},"18":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "						<small>\n"
-    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rpath_short : depth0),{"name":"if","hash":{},"fn":this.program(16, data, 0),"inverse":this.program(18, data, 0),"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.rpath_short : depth0),{"name":"if","hash":{},"fn":this.program(19, data, 0),"inverse":this.program(21, data, 0),"data":data})) != null ? stack1 : "")
     + "						</small>\n";
-},"16":function(depth0,helpers,partials,data) {
+},"19":function(depth0,helpers,partials,data) {
     return "								"
     + this.escapeExpression(this.lambda((depth0 != null ? depth0.rpath_short : depth0), depth0))
     + "\n";
-},"18":function(depth0,helpers,partials,data) {
+},"21":function(depth0,helpers,partials,data) {
     return "								"
     + this.escapeExpression(this.lambda((depth0 != null ? depth0.relapath : depth0), depth0))
     + "\n";
-},"20":function(depth0,helpers,partials,data) {
+},"23":function(depth0,helpers,partials,data) {
     return "		<p class=\"description\">These files you selected will be included in your analysis. When ready, click 'analyze' next to the page title.</p>\n";
-},"22":function(depth0,helpers,partials,data) {
+},"25":function(depth0,helpers,partials,data) {
     return "		<p class=\"description\">You have to select some files before you can analyze. To select, mark the checkboxes before the file/directory names.</p>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
@@ -429,7 +441,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + "\n			</div>\n		</li>\n\n"
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.selection : depth0),{"name":"each","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\n		<li class=\"no-results hidden\">\n			<p class=\"description\">Your search returned 0 results</p>\n		</li>\n\n	</ul>\n\n"
-    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(20, data, 0),"inverse":this.program(22, data, 0),"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(23, data, 0),"inverse":this.program(25, data, 0),"data":data})) != null ? stack1 : "")
     + "\n</div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {

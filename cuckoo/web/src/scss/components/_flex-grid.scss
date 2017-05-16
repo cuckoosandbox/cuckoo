@@ -94,6 +94,7 @@
 	&__body {
 		display: flex;
 		flex-basis: 100%;
+		overflow: auto;
 
 		&.background-grey {
 			background-color: #f5f5f5;
@@ -158,6 +159,7 @@
 		background-color: #F5F5F5;
 		border-right: 1px solid #CFCFCF;
 		overflow-y: auto;
+		overflow-x: hidden;
 
 		@include cuckoo-theme('cyborg') {
 			background-color: $cyborg_background_color;

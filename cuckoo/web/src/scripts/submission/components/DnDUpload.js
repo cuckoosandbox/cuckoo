@@ -305,8 +305,6 @@ class Uploader {
         let _self = this;
         let xhr = new XMLHttpRequest();
 
-        // this.display_text("Uploading");
-
         formdata["type"] = "files";
 
         xhr.open('POST', this.endpoint);
@@ -335,7 +333,7 @@ class Uploader {
                 } else if(xhr.status == 0) {
 
                 } else {
-                    _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
+                    // _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
                     _self._error_callback(_self, document.querySelector(`div#${_self._selectors["uid"]}`));
                 }
             }
@@ -357,16 +355,6 @@ class Uploader {
         }
 
         xhr.send(formdata);
-    }
-
-    /**
-     * Changes the text displayed to the user
-     * @return
-     */
-    display_text(text){
-        return;
-        let info = $(this._selectors["form"].querySelector("label#info"));
-        info.html(text);
     }
 
     /**

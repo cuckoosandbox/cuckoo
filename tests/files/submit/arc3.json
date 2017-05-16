@@ -32,7 +32,6 @@
                 "machine": null,
                 "options": {
                     "enable-injection": true,
-                    "enable-services": false,
                     "enforce-timeout": false,
                     "full-memory-dump": false,
                     "process-memory-dump": true,

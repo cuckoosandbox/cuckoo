@@ -197,14 +197,35 @@ $(function() {
 
 					folder: function(el, controller) {
 
+						var self = this;
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this))); 
+						var archive, info;
 
 						if(this.type === 'container') {
 							_$d.addClass('archive-container');
 						}
 
 						_$d.append(size);
+
+						if(!this.preview) {
+							// _$d.find('strong').addClass('skip-auto-expand');
+							_$d.parent().addClass('skip-auto-expand');
+							archive = FileTree.Label('archive', 'Archive');
+
+							if(this.type !== 'directory') {
+								info = FileTree.Label('info', '<i class="fa fa-info-circle"></i>', 'a');
+								_$d.prepend(info);
+
+								// makes info circle clickable
+								$(info).on('click', function(e) {
+									e.stopImmediatePropagation();
+									controller.detailView(self);
+								});
+							}
+							_$d.append(archive);
+							
+						}
 
 						return el;
 					}
@@ -288,6 +309,7 @@ $(function() {
 										]
 									}).on('change', function(value) {
 										item.per_file_options['priority'] = value;
+										console.log(setFieldValue);
 										setFieldValue.call(this, parseInt(value));
 									});
 
@@ -406,9 +428,6 @@ $(function() {
 						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
-					}).on('change', function(value) {
-						if(value == 'default') value = null;
-						setFieldValue.call(this, value);
 					});
 
 					var priority = new this.TopSelect({

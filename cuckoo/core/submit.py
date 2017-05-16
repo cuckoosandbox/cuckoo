@@ -20,6 +20,11 @@ log = logging.getLogger(__name__)
 db = Database()
 
 class SubmitManager(object):
+    known_web_options = [
+        "enable-injection", "enforce-timeout", "full-memory-dump",
+        "process-memory-dump", "simulated-human-interaction",
+    ]
+
     def _handle_string(self, submit, tmppath, line):
         if not line:
             return
@@ -71,6 +76,11 @@ class SubmitManager(object):
             ret["route"] = entry["vpn"]
         elif entry.get("network-routing"):
             ret["route"] = entry["network-routing"]
+
+        # Propagate any additional manually set key/value pairs.
+        for key, value in options.items():
+            if key not in self.known_web_options:
+                ret[key] = value
 
         return ret
 

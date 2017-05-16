@@ -5,7 +5,12 @@
 			<span></span>
 		</label>
 
-		<i class="fa fa-file-o"></i> 
+		{{#if item.filetree.is_package}}
+				<i class="fa fa-file-archive-o"></i>
+			{{else}}
+				<i class="fa fa-file-o"></i> 
+		{{/if}}
+
 		{{#if item.fname_short}}
 			{{item.fname_short}}
 		{{else}}
