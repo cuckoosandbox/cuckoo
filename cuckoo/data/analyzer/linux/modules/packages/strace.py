@@ -16,9 +16,16 @@ class Strace(Package):
         self.seen_pids = set()
 
     def start(self, path):
+        """ https://blog.packagecloud.io/eng/2015/11/15/strace-cheat-sheet/
+        """
         os.chmod(path, 0o755)
         try: os.mkdir("strace")
         except: pass # don't worry, it exists
+        stderrfd = open("strace/strace.stderr", "wb")
+        try:
+             subprocess.Popen(["sh", "-c", "echo 0 > /proc/sys/kernel/yama/ptrace_scope"], stderr=stderrfd)
+        except Exception as e:
+            print e
         try:
             stderrfd = open("strace/strace.stderr", "wb")
             subprocess.Popen(["strace", "-ff", "-o", "strace/straced", path], stderr=stderrfd)
