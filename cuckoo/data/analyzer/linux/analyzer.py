@@ -180,6 +180,12 @@ class Analyzer:
                     proctrace = SyscallTracer(arguments)
                     proctrace.start()
                     self.files_to_upload = proctrace.touched_files
+
+                    # required to not run for full timeout
+                    while not proctrace.pid:
+                        continue
+
+                    pids = proctrace.pid
             else:
                 package = "strace"
 

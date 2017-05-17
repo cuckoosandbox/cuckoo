@@ -28,8 +28,8 @@ class Strace(Package):
             print e
         try:
             stderrfd = open("strace/strace.stderr", "wb")
-            subprocess.Popen(["strace", "-ff", "-o", "strace/straced", path], stderr=stderrfd)
-            return
+            process = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", path], stderr=stderrfd)
+            return process.pid
         except:
             return self.execute(["sh", "-c", path])
 

@@ -659,6 +659,7 @@ class Config(object):
                     "machine": String(required=False),
                     "osprofile": String(required=False),
                     "enable_kvm": Boolean(False),
+                    "snapshot": String(required=True),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -681,6 +682,7 @@ class Config(object):
                     "machine": String(required=False),
                     "osprofile": String(""),
                     "enable_kvm": Boolean(False),
+                    "snapshot": String(required=True),
                 }, {
                     "__section__": "vm3",
                     "label": String("vm3"),
@@ -704,6 +706,7 @@ class Config(object):
                     "machine": String(required=False),
                     "osprofile": String(""),
                     "enable_kvm": Boolean(False),
+                    "snapshot": String(required=True),
                 },
             ],
             "__star__": ("qemu", "machines"),

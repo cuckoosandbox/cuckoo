@@ -106,6 +106,7 @@ class SyscallTracer(Thread):
         self.program = program
         self.no_stdout = False
         self.do_run = True
+        self.pid = False
         self.remote_log = dict()
         self.touched_files = set()
 
@@ -201,6 +202,7 @@ class SyscallTracer(Thread):
         ''' create a process and add it to debugger '''
         pid = self.create_child(self.program)
         is_attached = True
+        self.pid = pid
 
         try:
             return self.debugger.addProcess(pid, is_attached)
