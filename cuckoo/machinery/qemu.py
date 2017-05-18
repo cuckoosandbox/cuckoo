@@ -220,9 +220,28 @@ class QEMU(Machinery):
         params = dict(QEMU_ARGS["default"]["params"])
         params.update(QEMU_ARGS[vm_arch]["params"])
 
+        # qemy-system-(sparc64|sparc) doesn't work correctly with savevm/loadvm
+        # should be fixed in qemu > 2.8, pend to test
+        if vm_arch in ("sparc", "sparc64",  "powerpc", "powerpc64"):
+            snapshot_path = os.path.join(os.path.dirname(vm_options.image), vm_info.name) + ".qcow2"
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
+
+            # make sure we use a new harddisk layer by creating a new qcow2 with backing file
+            try:
+                proc = subprocess.Popen([self.qemu_img, "create", "-f", "qcow2", "-b", vm_options.image, snapshot_path],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output, err = proc.communicate()
+                if err:
+                    raise OSError(err)
+            except OSError as e:
+                raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
+        else:
+            snapshot_path = vm_options.image
+
         params.update({
             "imagepath": os.path.dirname(vm_options.image),
-            "snapshot_path": vm_options.image,
+            "snapshot_path": snapshot_path,
             "vmname": vm_info.name,
         })
 
@@ -242,8 +261,8 @@ class QEMU(Machinery):
 
         # ToDo improve this
         # This restore the snapshot so no more need copy of file and OS boot
-        final_cmdline.append("-loadvm")
-        final_cmdline.append(str(vm_options.snapshot))
+        if vm_arch not in ("sparc", "sparc64",  "powerpc", "powerpc64"):
+            final_cmdline += ["-loadvm", str(vm_options.snapshot)]
 
         log.debug("Executing QEMU %r", final_cmdline)
 
