@@ -149,10 +149,10 @@ class Files(Storage):
         filepath = os.path.join(root, filename)
         with open(filepath, "wb") as f:
             if hasattr(content, "read"):
-                chunk = content.read(1024)
+                chunk = content.read(1024 * 1024)
                 while chunk:
                     f.write(chunk)
-                    chunk = content.read(1024)
+                    chunk = content.read(1024 * 1024)
             else:
                 f.write(content)
         return filepath
