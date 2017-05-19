@@ -67,7 +67,7 @@ them you should use a script or just install ``iptables-persistent``.
 
 Newer Linux distributions have adopted udev's interface-naming scheme.
 It's important to note that this means eth0 will no longer be your primary interface.
-It's likely that this has now been renamed to ens33. This is particularly important
+It's likely that this has now been renamed to ensXX. This is particularly important
 to note for the NAT statement above.
 
 Per-Analysis Network Routing Options
