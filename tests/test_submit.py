@@ -57,7 +57,8 @@ class TestSubmitManager(object):
         assert self.submit_manager.pre(submit_type="strings", data=[
             "http://theguardian.com/",
             "https://news.ycombinator.com/",
-            "google.com",
+            # Any trailing whitespaces should be stripped.
+            "google.com \t",
         ]) == 1
 
         submit = db.view_submit(1)
