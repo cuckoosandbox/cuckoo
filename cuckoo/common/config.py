@@ -482,6 +482,30 @@ class Config(object):
                 "pid_generic": List(String, None),
             },
         },
+        "nova": {
+            "nova": {
+                "keystone_url": String("http://localhost:5000/v2.0/"),
+                "nova_url": String("http://localhost:8774/v2/"),
+                "username": String("username_goes_here"),
+                "password": String("password_goes_here", sanitize=True),
+                "rackspace_auth": Boolean(False),
+                "machines": List(String, "analysis1"),
+                "interface": String(),
+                "default_image_uuid": String()
+            },
+            "*": {
+                "__section__": "analysis1",
+                "uuid": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.122.101"),
+                "snapshot": String("clean_snapshot"),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
+            },
+            "__star__": ("nova", "machines"),
+        },
         "physical": {
             "physical": {
                 "machines": List(String, "physical1"),

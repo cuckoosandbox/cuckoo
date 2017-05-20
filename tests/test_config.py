@@ -1073,7 +1073,7 @@ platform = windows
 """)
     # Except for virtualbox.
     machineries = (
-        "avd", "esx", "kvm", "physical", "qemu",
+        "avd", "esx", "kvm", "nova", "physical", "qemu",
         "vmware", "vsphere", "xenserver",
     )
     for machinery in machineries:
@@ -1110,7 +1110,7 @@ class FullMigration(object):
                     assert actual_value == value.parse(actual_value)
 
         machineries = (
-            "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
+            "avd", "esx", "kvm", "nova", "physical", "qemu", "virtualbox",
             "vmware", "vsphere", "xenserver",
         )
 
