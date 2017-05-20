@@ -352,8 +352,13 @@ def cuckoo_clean():
         host = config("reporting:mongodb:host")
         port = config("reporting:mongodb:port")
         mdb = config("reporting:mongodb:db")
+        username = config("reporting:mongodb:username")
+        password = config("reporting:mongodb:password")
         try:
             conn = pymongo.MongoClient(host, port)
+            if username and password:
+                data_base = conn.get_database(mdb)
+                data_base.authenticate(username, password)
             conn.drop_database(mdb)
             conn.close()
         except:
