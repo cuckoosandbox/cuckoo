@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+<div class="flex-nav">
+    {% include "analysis/pages/nav-sidebar.html" %}
+    <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+        <header class="page-header cuckoo-analysis__header">
+            <h1>Extracted Artifacts</h1>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="tabbable tabs">
+                        <ul class="nav nav-pills" style="margin-bottom: 0;">
+                            {% for extr in report.analysis.extracted %}
+                                <li{% if forloop.first %} class="active"{% endif %}>
+                                    <a href="#extracted_{{ forloop.counter }}" data-toggle="tab">
+                                      #{{ forloop.counter }} {{ extr.category }} / {{ extr.program }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="tab-content">
+                            {% for extr in report.analysis.extracted %}
+                            <div class="tab-pane fade{% if forloop.first %} in active{% endif %}" id="extracted_{{ forloop.counter }}">
+                              ...
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer replacement to avoid double scrollbars -->
+        <footer class="flex-grid__footer center-left">
+            <p class="footnote">
+                &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+            </p>
+            <div class="logo">
+                <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                <a href="#">Back to Top</a>
+            </div>
+        </footer>
+
+    </section>
+</div>
+
+{% endblock %}
