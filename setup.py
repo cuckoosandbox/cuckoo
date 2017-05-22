@@ -186,7 +186,7 @@ do_setup(
         "sflock>=0.2.12, <0.3",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
-        "tldextract=2.0.2",
+        "tldextract==2.0.2",
     ] + install_requires,
     extras_require={
         ":sys_platform == 'win32'": [
