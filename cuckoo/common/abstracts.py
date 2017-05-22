@@ -6,7 +6,9 @@
 import logging
 import os
 import re
+import csv
 import time
+import tldextract
 
 import xml.etree.ElementTree as ET
 
@@ -716,6 +718,18 @@ class Signature(object):
     def init_once(cls):
         pass
 
+    def _alexa(self):
+        self.alexa = dict()
+        alexa_path = cwd('signatures', 'alexa.csv')
+        if os.path.exists(alexa_path):
+            with open(alexa_path, 'rb') as alexa_csv:
+                spamreader = csv.reader(alexa_csv, delimiter=',', quotechar='"')
+                for row in spamreader:
+                    alexa_tld = tldextract.extract(row[1])
+                    self.alexa.setdefault(alexa_tld.domain + "." + alexa_tld.suffix, list())
+                    if row[1] not in self.alexa[alexa_tld.domain + "." + alexa_tld.suffix]:
+                        self.alexa[alexa_tld.domain + "." + alexa_tld.suffix].append(row[1])
+    
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
         @param pattern: string or expression to check for.
