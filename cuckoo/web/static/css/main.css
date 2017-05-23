@@ -3766,10 +3766,12 @@ body.night .grouped-buttons button.active, body.night .grouped-buttons__bordered
   border-right-width: 0;
 }
 .grouped-buttons__bordered button:first-child, .grouped-buttons__bordered a:first-child {
-  border-radius: 8px 0 0 8px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
 }
 .grouped-buttons__bordered button:last-child, .grouped-buttons__bordered a:last-child {
-  border-radius: 0 8px 8px 0;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
   border-right-width: 1px;
 }
 .grouped-buttons__bordered button:not(.active):not(.disabled):not([data-total="0"]):hover, .grouped-buttons__bordered a:not(.active):not(.disabled):not([data-total="0"]):hover {

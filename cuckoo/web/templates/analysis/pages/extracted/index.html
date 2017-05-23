@@ -13,21 +13,18 @@
 
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12">
-                    <div class="tabbable tabs">
-                        <ul class="nav nav-pills" style="margin-bottom: 0;">
-                            {% for extr in report.analysis.extracted %}
-                                <li{% if forloop.first %} class="active"{% endif %}>
-                                    <a href="#extracted_{{ forloop.counter }}" data-toggle="tab">
-                                      #{{ forloop.counter }} {{ extr.category }} / {{ extr.program }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        <div class="tab-content">
-                            {% for extr in report.analysis.extracted %}
-                            <div class="tab-pane fade{% if forloop.first %} in active{% endif %}" id="extracted_{{ forloop.counter }}">
-                              <div class="panel panel-default list-panel">
+                <div class="col-md-12 page-switcher">
+                    <nav class="page-switcher__nav grouped-buttons__bordered">
+                    {% for extr in report.analysis.extracted %}
+                        <a href="#extracted_{{ forloop.counter }}" {% if forloop.first %} class="active"{% endif %} data-toggle="tab">
+                          #{{ forloop.counter }} {{ extr.category }} / {{ extr.program }}
+                        </a>
+                    {% endfor %}
+                    </nav>
+                    <div class="page-switcher__pages">
+                    {% for extr in report.analysis.extracted %}    
+                        <div id="extracted_{{ forloop.counter }}" {% if forloop.first %} class="active" {% endif %}>
+                          <div class="panel panel-default list-panel">
                                 <div class="panel-heading">
                                     <h3 class="panel-title">Extracted</h3>
                                 </div>
@@ -48,11 +45,10 @@
                                         <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
                                     </li>
                                 </ul>
-                              </div>
-                            </div>
-                            {% endfor %}
+                              </div>  
                         </div>
-                    </div>
+                    {% endfor %}
+                    </div>     
                 </div>
             </div>
         </div>
