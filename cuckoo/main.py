@@ -508,6 +508,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
     # Switch to cuckoo/web and add the current path to sys.path as the Web
     # Interface is using local imports here and there.
     # TODO Rename local imports to either cuckoo.web.* or relative imports.
+    sys.argv[0] = os.path.abspath(sys.argv[0])
     os.chdir(os.path.join(cuckoo.__path__[0], "web"))
     sys.path.insert(0, ".")
 
