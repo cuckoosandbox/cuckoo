@@ -27,7 +27,28 @@
                         <div class="tab-content">
                             {% for extr in report.analysis.extracted %}
                             <div class="tab-pane fade{% if forloop.first %} in active{% endif %}" id="extracted_{{ forloop.counter }}">
-                              ...
+                              <div class="panel panel-default list-panel">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Extracted</h3>
+                                </div>
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <span class="item-label">Category:</span> {{ extr.category }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="item-label">Yara:</span> {{ extr.yara }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="item-label">Script:</span> {{ extr.script }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="item-label">Program:</span> {{ extr.program }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
+                                    </li>
+                                </ul>
+                              </div>
                             </div>
                             {% endfor %}
                         </div>
