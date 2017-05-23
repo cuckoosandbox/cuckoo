@@ -215,6 +215,9 @@ def latest_report(request):
 
 @require_safe
 def file(request, category, object_id, fetch="fetch"):
+    if not object_id:
+        return view_error(request, "File not found")
+
     file_item = fs.get(ObjectId(object_id))
 
     if file_item:
@@ -230,8 +233,9 @@ def file(request, category, object_id, fetch="fetch"):
         response = HttpResponse(file_item.read(), content_type=content_type)
 
         if fetch != "nofetch":
-            response["Content-Disposition"] = "attachment; filename=%s" % file_name
-
+            response["Content-Disposition"] = (
+                "attachment; filename=%s" % file_name
+            )
         return response
     else:
         return view_error(request, "File not found")

@@ -85,14 +85,6 @@ def update_hashes():
 # Provide hashes for our CWD migration process.
 update_hashes()
 
-install_requires = []
-
-# M2Crypto relies on swig being installed. We also don't support the latest
-# version of SWIG. We should be replacing M2Crypto by something else when
-# the time allows us to do so.
-if os.path.exists("/usr/bin/swig"):
-    install_requires.append("m2crypto==0.24.0")
-
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
@@ -125,7 +117,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.2",
+    version="2.0.3",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -187,7 +179,7 @@ do_setup(
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
         "pyelftools==0.24",
-    ] + install_requires,
+    ],
     extras_require={
         ":sys_platform == 'win32'": [
             "requests==2.13.0",

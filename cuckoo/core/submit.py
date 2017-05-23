@@ -123,7 +123,7 @@ class SubmitManager(object):
 
         if submit_type == "strings":
             for line in data:
-                self._handle_string(submit_data, path_tmp, line)
+                self._handle_string(submit_data, path_tmp, line.strip())
 
         if submit_type == "files":
             for entry in data:

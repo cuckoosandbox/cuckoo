@@ -277,6 +277,12 @@ def init_legacy_analyses():
     mkdir(dirpath, "storage", "analyses", "2")
     Files.create((dirpath, "storage", "analyses", "2"), "cuckoo.log", "log")
 
+    if not is_windows():
+        os.symlink(
+            "thisisnotanexistingfile",
+            os.path.join(dirpath, "storage", "analyses", "2", "binary")
+        )
+
     Files.create((dirpath, "storage", "analyses"), "latest", "last!!1")
     return dirpath
 

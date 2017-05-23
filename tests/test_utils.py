@@ -144,6 +144,18 @@ class TestCreateFile:
         assert open(filepath, "rb").read() == "test"
         assert os.path.basename(filepath) == "hello.txt"
 
+    def test_named_temp_rel(self):
+        filepath = Files.temp_named_put("test", "../foobar/hello.txt", "/tmp")
+        assert open(filepath, "rb").read() == "test"
+        assert "foobar" not in filepath
+
+    def test_named_temp_abs(self):
+        filepath = Files.temp_named_put(
+            "test", "/tmp/foobar/hello.txt", "/tmp"
+        )
+        assert open(filepath, "rb").read() == "test"
+        assert "foobar" not in filepath
+
     def test_temp_conf(self):
         dirpath = tempfile.mkdtemp()
         set_cwd(dirpath)

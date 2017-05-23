@@ -188,11 +188,21 @@ def import_cuckoo(username, mode, dirpath):
     print "The community command will fetch the latest monitoring updates"
     print "and Cuckoo Signatures."
 
+def import_analysis_copy(src, dst):
+    def ignore(src, names):
+        if "binary" not in names:
+            return []
+        if not os.path.exists(os.path.join(src, "binary")):
+            return ["binary"]
+        return []
+
+    shutil.copytree(src, dst, ignore=ignore)
+
 def import_legacy_analyses(mode, dirpath):
     """Imports the raw results of a legacy analysis. Using either the 'copy',
     'move', or 'symlink' mode."""
     if mode == "copy":
-        import_analysis = shutil.copytree
+        import_analysis = import_analysis_copy
     elif mode == "move":
         import_analysis = shutil.move
     elif mode == "symlink":
