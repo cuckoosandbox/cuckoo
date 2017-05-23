@@ -35,8 +35,8 @@
                                     <li class="list-group-item">
                                         <span class="item-label">Yara:</span> {{ extr.yara }}
                                     </li>
-                                    <li class="list-group-item">
-                                        <span class="item-label">Script:</span> {{ extr.script }}
+                                    <li class="list-group-item clearfix">
+                                        <span class="item-label">Script:</span> {{ extr.script }} <span class="pull-right"><a href="{% url "analysis.views.file" "extracted" extr.object_id %}" class="load-powershell">Show</a></span>
                                     </li>
                                     <li class="list-group-item">
                                         <span class="item-label">Program:</span> {{ extr.program }}
