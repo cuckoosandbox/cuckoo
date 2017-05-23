@@ -160,6 +160,21 @@ var CuckooWeb = function () {
                 browser: bowser.name
             };
         }
+
+        // utility code for quickly rendering <code> fields (ie when some code sample is retrieved via ajax)
+
+    }, {
+        key: 'renderCode',
+        value: function renderCode(code, options) {
+
+            if (!code) return false;
+            if (!options) var options = {};
+
+            return HANDLEBARS_TEMPLATES['code']({
+                code: code,
+                type: options.type || undefined
+            });
+        }
     }]);
 
     return CuckooWeb;
@@ -836,6 +851,39 @@ $(function () {
 
     $("pre code").each(function (i, element) {
         hljs.highlightBlock(element);
+    });
+
+    // loads powershell code from a url and displays it to the frontend
+    $(".load-powershell").bind('click', function (e) {
+        e.preventDefault();
+        var link = $(this);
+        var container = $(this).parents('li');
+        var href = $(this).attr('href');
+
+        link.html('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+
+        if (href) {
+            $.get(href).done(function (response) {
+                // do make newlines from ; for good overview
+                var code = S(response).replaceAll(';', ';\n');
+                // render code block and inject
+                var html = $(CuckooWeb.renderCode(code), {
+                    type: 'powershell'
+                });
+
+                html.wrap('<li />', {
+                    class: "list-group-item"
+                });
+
+                container.after(html);
+                // initialize hljs on that codeblock
+                html.find('code').each(function (i, block) {
+                    hljs.highlightBlock(block);
+                });
+
+                link.remove();
+            });
+        }
     });
 });
 
