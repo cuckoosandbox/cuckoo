@@ -8,11 +8,11 @@ this["HANDLEBARS_TEMPLATES"]["code"] = Handlebars.template({"1":function(depth0,
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1, helper;
 
-  return "<pre class=\"reset\">\n    <code "
+  return "<div class=\"panel panel-default list-panel\">\n    <div class=\"panel-heading\">\n        <h3 class=\"panel-title\">Script</h3>\n    </div>\n    <pre class=\"reset\">\n	    <code "
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.type : depth0),{"name":"if","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + ">"
     + this.escapeExpression(((helper = (helper = helpers.code || (depth0 != null ? depth0.code : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"code","hash":{},"data":data}) : helper)))
-    + "</code>\n</pre>";
+    + "</code>\n	</pre>\n</div>";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["control-simple-select"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var helper;

@@ -13,39 +13,42 @@
 
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12 page-switcher">
+                <div class="col-md-12 page-switcher extracted-switcher">
                     <nav class="page-switcher__nav grouped-buttons__bordered">
                     {% for extr in report.analysis.extracted %}
-                        <a href="#extracted_{{ forloop.counter }}" {% if forloop.first %} class="active"{% endif %} data-toggle="tab">
+                        <a href="extracted_{{ forloop.counter }}" {% if forloop.first %} class="active"{% endif %} data-toggle="tab">
                           #{{ forloop.counter }} {{ extr.category }} / {{ extr.program }}
                         </a>
                     {% endfor %}
                     </nav>
                     <div class="page-switcher__pages">
                     {% for extr in report.analysis.extracted %}    
-                        <div id="extracted_{{ forloop.counter }}" {% if forloop.first %} class="active" {% endif %}>
+                        <div id="extracted_{{ forloop.counter }}" class="extracted-page {% if forloop.first %}active{% endif %}">
                           <div class="panel panel-default list-panel">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Extracted</h3>
-                                </div>
-                                <ul class="list-group">
-                                    <li class="list-group-item">
-                                        <span class="item-label">Category:</span> {{ extr.category }}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <span class="item-label">Yara:</span> {{ extr.yara }}
-                                    </li>
-                                    <li class="list-group-item clearfix">
-                                        <span class="item-label">Script:</span> {{ extr.script }} <span class="pull-right"><a href="{% url "analysis.views.file" "extracted" extr.object_id %}" class="load-powershell">Show</a></span>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <span class="item-label">Program:</span> {{ extr.program }}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
-                                    </li>
-                                </ul>
-                              </div>  
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Extracted</h3>
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <span class="item-label">Category:</span> {{ extr.category }}
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="item-label">Yara:</span> {{ extr.yara }}
+                                </li>
+                                <li class="list-group-item clearfix" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
+                                    <span class="item-label">Script:</span> {{ extr.script }}
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="item-label">Program:</span> {{ extr.program }}
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
+                                </li>
+                            </ul>
+                          </div>
+                          <div class="powershell-preview">
+                              <i class="fa fa-spinner fa-spin fa-fw"></i> Loading script...
+                          </div>
                         </div>
                     {% endfor %}
                     </div>     
