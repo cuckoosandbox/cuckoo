@@ -23,11 +23,10 @@ class Strace(Package):
         except: pass # don't worry, it exists
         stderrfd = open("strace/strace.stderr", "wb")
         try:
-             subprocess.Popen(["sh", "-c", "echo 0 > /proc/sys/kernel/yama/ptrace_scope"], stderr=stderrfd)
+             subprocess.Popen(["sh", "-c", "echo 0 > /proc/sys/kernel/yama/ptrace_scope"])
         except Exception as e:
             print e
         try:
-            stderrfd = open("strace/strace.stderr", "wb")
             process = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", path], stderr=stderrfd)
             return process.pid
         except:

@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import ast
 import time
 import logging
 import subprocess
@@ -31,12 +32,15 @@ QEMU_ARGS = {
     },
     "mipsel": {
         "cmdline": [
-            "qemu-system-mipsel", "-display", "none", "-M", "malta", "-m", "{memory}",
+            "qemu-system-mipsel",
+            "-display", "none", "-M",
+            "malta", "-m", "{memory}",
             "-kernel", "{kernel}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1 console=tty0",
             "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
             "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+            #"-snapshot"
         ],
         "params": {
             "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mipsel",
@@ -44,12 +48,15 @@ QEMU_ARGS = {
     },
     "mips": {
         "cmdline": [
-            "qemu-system-mips", "-display", "none", "-M", "malta", "-m", "{memory}",
+            "qemu-system-mips",
+            "-display", "none",
+            "-M", "malta", "-m", "{memory}",
             "-kernel", "{kernel}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1 console=tty0",
             "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
             "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+            #"-snapshot"
         ],
         "params": {
             "kernel": "{imagepath}/vmlinux-3.2.0-4-4kc-malta-mips",
@@ -57,11 +64,14 @@ QEMU_ARGS = {
     },
     "armwrt": {
         "cmdline": [
-            "qemu-system-arm", "-display", "none", "-M", "realview-eb-mpcore", "-m", "{memory}",
+            "qemu-system-arm",
+            "-display", "none",
+            "-M", "realview-eb-mpcore", "-m", "{memory}",
             "-kernel", "{kernel}",
             "-drive", "if=sd,cache=unsafe,file={snapshot_path}",
             "-append", "console=ttyAMA0 root=/dev/mmcblk0 rootwait",
             "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+            #"-snapshot"
         ],
         "params": {
             "kernel": "{imagepath}/openwrt-realview-vmlinux.elf",
@@ -69,11 +79,14 @@ QEMU_ARGS = {
     },
     "arm": {
         "cmdline": [
-            "qemu-system-arm", "-display", "none", "-M", "versatilepb", "-m", "{memory}",
+            "qemu-system-arm",
+            "-display", "none",
+            "-M", "versatilepb", "-m", "{memory}",
             "-kernel", "{kernel}", "-initrd", "{initrd}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1",
             "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+            #"-snapshot"
         ],
         "params": {
             "memory": "256M",  # 512 didn't work for some reason
@@ -83,11 +96,14 @@ QEMU_ARGS = {
     },
     "arm64": {
         "cmdline": [
-            "qemu-system-aarch64", "-display", "none", "-M", "{machine}", "-m", "{memory}",
+            "qemu-system-aarch64",
+            #"-display", "none",
+            "-M", "{machine}", "-m", "{memory}",
             "-kernel", "{kernel}", "-initrd", "{initrd}",
             "-hda", "{snapshot_path}",
             "-append", "root=/dev/sda1",
             "-netdev", "tap,ifname=tap_{vmname},script=no,downscript=no,id={vmname}", "-net", "nic,macaddr={mac}",
+            #"-snapshot"
         ],
         "params": {
             "machine": "virt",
@@ -98,9 +114,12 @@ QEMU_ARGS = {
     },
     "x64": {
         "cmdline": [
-            "qemu-system-x86_64", "-display", "none", "-m", "{memory}",
+            "qemu-system-x86_64",
+            "-display", "none",
+            "-m", "{memory}",
             "-hda", "{snapshot_path}",
             "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+            #"-snapshot"
         ],
         "params": {
             "memory": "1024M",
@@ -108,9 +127,12 @@ QEMU_ARGS = {
     },
     "x86": {
         "cmdline": [
-            "qemu-system-i386", "-display", "none", "-m", "{memory}",
+            "qemu-system-i386",
+            "-display", "none",
+            "-m", "{memory}",
             "-hda", "{snapshot_path}",
             "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+            #"-snapshot"
         ],
         "params": {
             "memory": "1024M",
@@ -118,9 +140,12 @@ QEMU_ARGS = {
     },
     "powerpc": {
          "cmdline": [
-             "qemu-system-ppc", "-display", "none", "-m", "{memory}",
+             "qemu-system-ppc",
+             "-display", "none",
+             "-m", "{memory}",
              "-hda", "{snapshot_path}",
              "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+             #"-snapshot"
          ],
          "params": {
              "memory": "256M",
@@ -128,9 +153,12 @@ QEMU_ARGS = {
      },
      "powerpc64": {
          "cmdline": [
-             "qemu-system-ppc64", "-display", "none", "-m", "{memory}",
+             "qemu-system-ppc64",
+             "-display", "none",
+            "-m", "{memory}",
              "-hda", "{snapshot_path}",
              "-net", "tap,ifname=tap_{vmname},script=no,downscript=no", "-net", "nic,macaddr={mac}",
+             #"-snapshot"
          ],
          "params": {
              "memory": "512M",
@@ -138,12 +166,15 @@ QEMU_ARGS = {
      },
      "sh4": {
          "cmdline": [
-             "qemu-system-sh4", "-display", "none", "-M", "r2d", "-m", "{memory}",
+             "qemu-system-sh4",
+             "-display", "none",
+             "-M", "r2d", "-m", "{memory}",
              "-kernel", "{kernel}", "-initrd", "{initrd}",
              "-hda", "{snapshot_path}",
              "-append", "root=/dev/sda1 noiotrap",
              "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
              "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+             #"-snapshot"
          ],
          "params": {
              "memory": "64M",
@@ -153,10 +184,13 @@ QEMU_ARGS = {
      },
      "sparc": {
          "cmdline": [
-             "qemu-system-sparc", "-display", "none", "-m", "{memory}",
+             "qemu-system-sparc",
+             "-display", "none",
+             "-m", "{memory}",
              "-hda", "{snapshot_path}",
              "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
              "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+             #"-snapshot"
          ],
          "params": {
              "memory": "256M",
@@ -164,10 +198,13 @@ QEMU_ARGS = {
      },
      "sparc64": {
          "cmdline": [
-             "qemu-system-sparc64", "-display", "none", "-m", "{memory}",
+             "qemu-system-sparc64",
+             "-display", "none",
+             "-m", "{memory}",
              "-hda", "{snapshot_path}",
              "-netdev", "tap,id=net_{vmname},ifname=tap_{vmname},script=no,downscript=no",
              "-device", "e1000,netdev=net_{vmname},mac={mac}",  # virtio-net-pci doesn't work here
+             #"-snapshot"
          ],
          "params": {
              "memory": "256M",
@@ -186,6 +223,7 @@ class QEMU(Machinery):
     def __init__(self):
         super(QEMU, self).__init__()
         self.state = {}
+        self.ports = dict()
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -213,7 +251,6 @@ class QEMU(Machinery):
 
         vm_info = self.db.view_machine_by_label(label)
         vm_options = getattr(self.options, vm_info.name)
-
         vm_arch = getattr(vm_options, "arch", "default")
         arch_config = dict(QEMU_ARGS[vm_arch])
         cmdline = arch_config["cmdline"]
@@ -222,7 +259,7 @@ class QEMU(Machinery):
 
         # qemy-system-(sparc64|sparc) doesn't work correctly with savevm/loadvm
         # should be fixed in qemu > 2.8, pend to test
-        if vm_arch in ("sparc", "sparc64",  "powerpc", "powerpc64"):
+        if vm_arch not in ("arm", "arm64", "mips"):#("sparc", "sparc64",  "powerpc", "powerpc64"):
             snapshot_path = os.path.join(os.path.dirname(vm_options.image), vm_info.name) + ".qcow2"
             if os.path.exists(snapshot_path):
                 os.remove(snapshot_path)
@@ -243,11 +280,13 @@ class QEMU(Machinery):
             "imagepath": os.path.dirname(vm_options.image),
             "snapshot_path": snapshot_path,
             "vmname": vm_info.name,
+            "mac": ast.literal_eval(vm_options.mac),
+            "memory": vm_options.memory,
         })
 
         # allow some overrides from the vm specific options
         # also do another round of parameter formatting
-        for var in ["mac", "kernel", "initrd", "memory", "machine"]:
+        for var in ["kernel", "initrd", "machine"]:
             val = getattr(vm_options, var, params.get(var, None))
             if not val:
                 continue
@@ -261,7 +300,7 @@ class QEMU(Machinery):
 
         # ToDo improve this
         # This restore the snapshot so no more need copy of file and OS boot
-        if vm_arch not in ("sparc", "sparc64",  "powerpc", "powerpc64"):
+        if vm_arch in ("arm", "arm64", "mips"):#("sparc", "sparc64",  "powerpc", "powerpc64"):
             final_cmdline += ["-loadvm", str(vm_options.snapshot)]
 
         log.debug("Executing QEMU %r", final_cmdline)
