@@ -170,7 +170,8 @@ installed. On Ubuntu/Debian-like systems this may be done as follows::
 
     $ sudo apt-get install swig
 
-If ``SWIG`` is present on the system, Cuckoo will automatically install the
-``M2Crypto`` dependency upon installation.
+If ``SWIG`` is present on the system one may install ``M2Crypto`` as follows::
+
+    $ sudo pip install m2crypto==0.24.0
 
 .. _SWIG: http://www.swig.org/

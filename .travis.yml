@@ -37,7 +37,7 @@ before_install:
 install:
   - pip install -U pip setuptools
   - python setup.py develop
-  - pip install psycopg2 mysql-python yara-python==3.5.0
+  - pip install psycopg2 mysql-python yara-python==3.5.0 m2crypto==0.24.0
   - pip install pytest pytest-cov codecov coveralls weasyprint
 
   # Install Volatility.
