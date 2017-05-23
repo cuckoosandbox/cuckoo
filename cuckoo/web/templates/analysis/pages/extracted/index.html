@@ -24,7 +24,7 @@
                     <div class="page-switcher__pages">
                     {% for extr in report.analysis.extracted %}    
                         <div id="extracted_{{ forloop.counter }}" class="extracted-page {% if forloop.first %}active{% endif %}">
-                          <div class="panel panel-default list-panel">
+                          <div class="panel panel-default list-panel" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
                             <div class="panel-heading">
                                 <h3 class="panel-title">Extracted</h3>
                             </div>
@@ -33,10 +33,15 @@
                                     <span class="item-label">Category:</span> {{ extr.category }}
                                 </li>
                                 <li class="list-group-item">
-                                    <span class="item-label">Yara:</span> {{ extr.yara }}
-                                </li>
-                                <li class="list-group-item clearfix" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
-                                    <span class="item-label">Script:</span> {{ extr.script }}
+                                    <span class="item-label">Yara:</span>  {% if extr.yara %}
+                                                                                <ul style="margin-bottom: 0;">
+                                                                                    {% for sign in extr.yara %}
+                                                                                        <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                                                                                    {% endfor %}
+                                                                                </ul>
+                                                                            {% else %}
+                                                                                None matched
+                                                                            {% endif %}
                                 </li>
                                 <li class="list-group-item">
                                     <span class="item-label">Program:</span> {{ extr.program }}
