@@ -461,12 +461,16 @@ class GuestManager(object):
         # Allow Auxiliary modules to prepare the Guest.
         self.aux.callback("prepare_guest")
 
+        # os.sep can't be used as on windows it will return incorrect sep for nix
+        if self.platform == "linux" or self.platform == "darwin":
+            tempdir = "/tmp"
+            sep = "//"
+        else:
+            tempdir = self.environ["TEMP"]
+            sep = "\\"
+
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
-            if self.platform == "linux" or self.platform == "darwin":
-                tempdir = "/tmp"
-            else:
-                tempdir = self.environ["TEMP"]
 
             data = {
                 "filepath": os.path.join(
@@ -480,7 +484,7 @@ class GuestManager(object):
 
         if "execpy" in features:
             data = {
-                "filepath": "%s\\analyzer.py" % self.analyzer_path,
+                "filepath": "%s%sanalyzer.py" % (self.analyzer_path, sep),
                 "async": "yes",
                 "cwd": self.analyzer_path,
             }
