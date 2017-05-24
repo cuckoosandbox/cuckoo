@@ -176,3 +176,5 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/urls/.gitignore
 e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
 b598b93ab13ee2e7595ae54a3a5f1e4090e68f4d elasticsearch/template.json
 d0841c3bc6c97668213d0116dfe5dc1eaf82a3c2 web/local_settings.py
+
+b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
