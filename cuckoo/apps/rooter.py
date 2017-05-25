@@ -181,11 +181,11 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
-        "-j", "DNAT", "--to-destination", inetsim_ip
+        "-j", "DNAT", "--to-destination", "%s:%s" % (inetsim_ip, "1")
     )
 
     run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
-        "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
+        "-p", "udp", "-j", "DNAT", "--to-destination", "%s:%s" % (inetsim_ip, "1")
     )
 
     run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
@@ -204,10 +204,10 @@ def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
-        "--to-destination", inetsim_ip
+        "--to-destination", "%s:%s" % (inetsim_ip, "1")
     )
     run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
-        "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
+        "-p", "udp", "-j", "DNAT", "--to-destination", "%s:%s" % (inetsim_ip, "1")
     )
 
     run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
