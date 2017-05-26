@@ -492,7 +492,7 @@ def migrate_cwd():
 
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
-        if not line.strip():
+        if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]

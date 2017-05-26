@@ -62,7 +62,7 @@ open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
 def update_hashes():
     hashes = {}
     for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
-        if not line.strip():
+        if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
