@@ -1038,3 +1038,29 @@ class TestTemplates(object):
         assert "Malware Configuration" in r.content
         assert "CnC" in r.content
         assert "URLs" in r.content
+
+    def test_summary_has_2_cfgextr(self, request):
+        r = render_template(request, "analysis/pages/summary/index.html", report={
+            "analysis": {
+                "info": {
+                    "category": "file",
+                    "score": 10,
+                },
+                "metadata": {
+                    "cfgextr": [{
+                        "family": "familyA",
+                        "cnc": [
+                            "http://familyAcnc",
+                        ],
+                    }, {
+                        "family": "familyB",
+                        "cnc": [
+                            "http://familyBcnc",
+                        ],
+                    }],
+                },
+            },
+        })
+        assert "Malware Configuration" in r.content
+        assert "familyA" in r.content
+        assert "familyB" in r.content

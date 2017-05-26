@@ -194,6 +194,6 @@ e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
 # TBD release
 b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
 5966e9db6bcd3adcd70998f4c51072c7f81b4564 signatures/__init__.py
-70c56915693b3be5eee4907e91aaaa30b6192c86 signatures/extractor/__init__.py
+f128dbf6ac5c90dbed99f9626d58b63b133b7f8d signatures/extractor/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore

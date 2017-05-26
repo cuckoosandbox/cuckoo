@@ -78,7 +78,7 @@
                         {% if report.analysis.metadata and report.analysis.metadata.cfgextr %}
                         <h4><i class="fa fa-bug"></i> Malware Configuration</h4>
 
-                        {% with cfgextr=report.analysis.metadata.cfgextr.0 %}
+                        {% for cfgextr in report.analysis.metadata.cfgextr %}
 
                         <div class="panel panel-default list-panel__widget">
                             <div class="panel-heading">
@@ -121,7 +121,7 @@
                             </ul>
                         </div>
 
-                        {% endwith %}
+                        {% endfor %}
 
                         <hr>
                         {% endif %}
