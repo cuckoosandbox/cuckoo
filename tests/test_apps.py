@@ -729,6 +729,7 @@ class TestCommunitySuggestion(object):
         sys.modules.pop("signatures.android", None)
         sys.modules.pop("signatures.cross", None)
         sys.modules.pop("signatures.darwin", None)
+        sys.modules.pop("signatures.extractor", None)
         sys.modules.pop("signatures.network", None)
         sys.modules.pop("signatures.windows", None)
         cuckoo_create()

@@ -118,6 +118,7 @@ def test_signature_order():
         minimum = "2.0.0"
         maximum = None
         platform = "windows"
+        marks = []
 
         def __init__(self, caller):
             pass
@@ -201,6 +202,7 @@ def test_signature_severity(p):
         name = "foobar"
         matched = True
         severity = 42
+        marks = []
 
         def init(self):
             pass
@@ -218,6 +220,27 @@ def test_signature_severity(p):
     assert p.debug.call_args_list[1][1]["extra"] == {
         "action": "signature.match", "status": "success",
         "signature": "foobar", "severity": 42,
+    }
+
+def test_mark_config():
+    class sig(Signature):
+        name = "foobar"
+
+        def on_complete(self):
+            self.mark_config({
+                "foo": "bar",
+            })
+            return True
+
+    rs = RunSignatures({
+        "metadata": {},
+    })
+    rs.signatures = sig(rs),
+    rs.run()
+    assert rs.results["metadata"] == {
+        "cfgextr": [{
+            "foo": "bar",
+        }],
     }
 
 @pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")

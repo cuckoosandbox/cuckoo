@@ -75,44 +75,56 @@
 
                         <hr>
 
+                        {% if report.analysis.metadata and report.analysis.metadata.cfgextr %}
                         <h4><i class="fa fa-bug"></i> Malware Configuration</h4>
+
+                        {% with cfgextr=report.analysis.metadata.cfgextr.0 %}
 
                         <div class="panel panel-default list-panel__widget">
                             <div class="panel-heading">
                                 <span>family</span>
-                                <h3 class="panel-title">Andromeda</h3>
+                                <h3 class="panel-title">{{ cfgextr.family }}</h3>
                             </div>
                             <ul class="list-group">
+                                {% if cfgextr.cnc %}
                                 <li class="list-group-item">
                                     <span class="item-label">CnC</span>
                                     <ul>
-                                        <li>http://www.google.nl/</li>
-                                        <li>http://www.apple.com/</li>
-                                        <li>http://www.facebook.com/</li>
-                                        <li>http://www.twitter.com/</li>
-                                        <li>http://www.hyves.nl/</li>
+                                        {% for url in cfgextr.cnc %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
                                     </ul>
                                 </li>
+                                {% endif %}
+                                {% if cfgextr.url %}
                                 <li class="list-group-item">
                                     <span class="item-label">URLs</span>
                                     <ul>
-                                        <li>http://www.google.nl/</li>
-                                        <li>http://www.apple.com/</li>
-                                        <li>http://www.facebook.com/</li>
+                                        {% for url in cfgextr.url %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
                                     </ul>
                                 </li>
+                                {% endif %}
+                                {% if cfgextr.key %}
                                 <li class="list-group-item">
                                     <span class="item-label">Encryption key</span>
-                                    <p>74347713614021927913318776832</p>
+                                    <p>{{ cfgextr.key }}</p>
                                 </li>
+                                {% endif %}
+                                {% if 0 %}
                                 <li class="list-group-item">
                                     <span class="item-label">Type</span>
                                     <p>Metasploit payload</p>
                                 </li>
+                                {% endif %}
                             </ul>
                         </div>
 
+                        {% endwith %}
+
                         <hr>
+                        {% endif %}
 
                         <h4><span class="glyphicon glyphicon-send" aria-hidden="true"></span> Feedback</h4>
 

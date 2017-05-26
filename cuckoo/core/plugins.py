@@ -488,7 +488,7 @@ class RunSignatures(object):
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
-        score = 0
+        score, configuration = 0, []
         for signature in self.signatures:
             if signature.matched:
                 log.debug(
@@ -501,12 +501,25 @@ class RunSignatures(object):
                 self.matched.append(signature.results())
                 score += signature.severity
 
+                for mark in signature.marks:
+                    if mark["type"] == "config":
+                        configuration.append(mark["config"])
+
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
         if "info" in self.results:
             self.results["info"]["score"] = score / 5.0
+
+        # If malware configuration has been extracted, simplify its
+        # accessibility in the analysis report.
+        if configuration:
+            # TODO Should this be included elsewhere?
+            if "metadata" in self.results:
+                self.results["metadata"]["cfgextr"] = configuration
+            if "info" in self.results:
+                self.results["info"]["score"] = 10
 
 class RunReporting(object):
     """Reporting Engine.
