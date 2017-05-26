@@ -228,7 +228,11 @@ def test_mark_config():
 
         def on_complete(self):
             self.mark_config({
-                "foo": "bar",
+                "family": "foobar",
+                "cnc": "thisiscnc.com",
+                "url": [
+                    "url1", "url2",
+                ],
             })
             return True
 
@@ -239,7 +243,14 @@ def test_mark_config():
     rs.run()
     assert rs.results["metadata"] == {
         "cfgextr": [{
-            "foo": "bar",
+            "family": "foobar",
+            "cnc": [
+                "thisiscnc.com",
+            ],
+            "url": [
+                "url1", "url2",
+            ],
+            "key": None,
         }],
     }
 
@@ -320,6 +331,8 @@ def test_on_yara():
     sig1.on_yara.assert_any_call(
         "procmem", cwd("memory", "1-0.dmp", analysis=1), mock.ANY
     )
-    assert sig1.on_yara.call_args_list[0][0][2]["offsets"] == {
+    ym = sig1.on_yara.call_args_list[0][0][2]
+    assert ym.offsets == {
         "virtualpc": [(0, 0)],
     }
+    assert ym.string("virtualpc", 0) == "\x0f\x3f\x07\x0b"

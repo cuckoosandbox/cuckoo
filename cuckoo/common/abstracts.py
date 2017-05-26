@@ -1098,11 +1098,26 @@ class Signature(object):
 
     def mark_config(self, config):
         """Mark configuration from this malware family."""
-        mark = {
+        url = config.get("url", [])
+        if isinstance(url, basestring):
+            url = [url]
+
+        cnc = config.get("cnc", [])
+        if isinstance(cnc, basestring):
+            cnc = [cnc]
+
+        if "family" not in config:
+            raise CuckooCriticalError("Invalid call to mark_config().")
+
+        self.marks.append({
             "type": "config",
-            "config": config,
-        }
-        self.marks.append(mark)
+            "config": {
+                "family": config["family"],
+                "url": url,
+                "cnc": cnc,
+                "key": config.get("key"),
+            },
+        })
 
     def mark(self, **kwargs):
         """Mark arbitrary data."""

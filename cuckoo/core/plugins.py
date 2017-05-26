@@ -15,6 +15,7 @@ from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
     CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
+from cuckoo.common.objects import YaraMatch
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -439,6 +440,7 @@ class RunSignatures(object):
         """Yields any Yara matches to each signature."""
         def loop_yara(category, filepath, matches):
             for match in matches:
+                match = YaraMatch(match, category)
                 for sig in self.signatures:
                     self.call_signature(
                         sig, sig.on_yara, category, filepath, match
@@ -462,6 +464,9 @@ class RunSignatures(object):
 
         for dropped in self.results.get("dropped", []):
             loop_yara("dropped", dropped["path"], dropped["yara"])
+
+        for extr in self.results.get("extracted", []):
+            loop_yara("extracted", extr[extr["category"]], extr["yara"])
 
     def run(self):
         """Run signatures."""
