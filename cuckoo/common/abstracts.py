@@ -1116,6 +1116,7 @@ class Signature(object):
                 "url": url,
                 "cnc": cnc,
                 "key": config.get("key"),
+                "type": config.get("type"),
             },
         })
 

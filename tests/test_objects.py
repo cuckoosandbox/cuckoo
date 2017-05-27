@@ -233,3 +233,4 @@ class TestYaraMatch(object):
             ],
         })
         assert ym.string("a", 0) == "bar"
+        assert ym.string("a") == "bar"

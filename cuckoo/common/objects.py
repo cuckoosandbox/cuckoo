@@ -415,6 +415,6 @@ class YaraMatch(object):
         for s in match["strings"]:
             self.strings.append(s.decode("base64"))
 
-    def string(self, identifier, index):
+    def string(self, identifier, index=0):
         off, idx = self.offsets[identifier][index]
         return self.strings[idx]

@@ -1031,6 +1031,7 @@ class TestTemplates(object):
                             "http://downloadurl1",
                             "http://downloadurl2",
                         ],
+                        "type": "thisistype",
                     }],
                 },
             },
@@ -1038,6 +1039,7 @@ class TestTemplates(object):
         assert "Malware Configuration" in r.content
         assert "CnC" in r.content
         assert "URLs" in r.content
+        assert "thisistype" in r.content
 
     def test_summary_has_2_cfgextr(self, request):
         r = render_template(request, "analysis/pages/summary/index.html", report={

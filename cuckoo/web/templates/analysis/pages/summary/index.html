@@ -112,10 +112,10 @@
                                     <p>{{ cfgextr.key }}</p>
                                 </li>
                                 {% endif %}
-                                {% if 0 %}
+                                {% if cfgextr.type %}
                                 <li class="list-group-item">
-                                    <span class="item-label">Type</span>
-                                    <p>Metasploit payload</p>
+                                    <span class="item-label">Package / Type</span>
+                                    <p>{{ cfgextr.type }}</p>
                                 </li>
                                 {% endif %}
                             </ul>

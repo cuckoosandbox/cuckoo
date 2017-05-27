@@ -251,6 +251,7 @@ def test_mark_config():
                 "url1", "url2",
             ],
             "key": None,
+            "type": None,
         }],
     }
 
