@@ -22,7 +22,7 @@ class Scripting(object):
         if isinstance(cmdline, (tuple, list)):
             return cmdline
         try:
-            return shlex.split(cmdline)
+            return shlex.split(cmdline, posix=False)
         except ValueError:
             log.warning("Error parsing command-line: %s", cmdline)
             return []
@@ -101,6 +101,7 @@ class PowerShell(Scripting):
     ext = "ps1"
 
     CMDLINE_REGEX = {
+        "command": "\\-[\\^]?%s$" % ps1_cmdarg("command"),
         "encodedcommand": "\\-[\\^]?%s$" % ps1_cmdarg("encodedcommand"),
         "windowstyle": "\\-[\\^]?%s$" % ps1_cmdarg("windowstyle"),
         "noninteractive": "\\-[\\^]?%s$" % ps1_cmdarg("noninteractive", 4),
@@ -112,6 +113,9 @@ class PowerShell(Scripting):
         "noexit": "\\-[\\^]?noexit$",
         "nologo": "\\-[\\^]?%s$" % ps1_cmdarg("nologo", 3),
     }
+
+    def _cmdparse_command(self, cmdline, idx):
+        return len(cmdline)-idx, " ".join(cmdline[idx+1:])
 
     def _cmdparse_encodedcommand(self, cmdline, idx):
         try:
@@ -165,4 +169,4 @@ class PowerShell(Scripting):
         return ret
 
     def get_script(self):
-        return self.args.get("encodedcommand")
+        return self.args.get("command") or self.args.get("encodedcommand")
