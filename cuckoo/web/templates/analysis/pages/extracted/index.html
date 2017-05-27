@@ -33,15 +33,16 @@
                                     <span class="item-label">Category:</span> {{ extr.category }}
                                 </li>
                                 <li class="list-group-item">
-                                    <span class="item-label">Yara:</span>  {% if extr.yara %}
-                                                                                <ul style="margin-bottom: 0;">
-                                                                                    {% for sign in extr.yara %}
-                                                                                        <li>{{ sign.name }} - {{ sign.meta.description }}</li>
-                                                                                    {% endfor %}
-                                                                                </ul>
-                                                                            {% else %}
-                                                                                None matched
-                                                                            {% endif %}
+                                    <span class="item-label">Yara:</span>
+                                    {% if extr.yara %}
+                                        <ul style="margin-bottom: 0;">
+                                        {% for sign in extr.yara %}
+                                            <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    None matched
+                                    {% endif %}
                                 </li>
                                 <li class="list-group-item">
                                     <span class="item-label">Program:</span> {{ extr.program }}

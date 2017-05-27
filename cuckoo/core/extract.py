@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import egghatch
 import os
 
 from cuckoo.common.abstracts import Extractor
@@ -71,10 +72,14 @@ class ExtractManager(object):
         if not filepath:
             return
 
+        # This file contains a plaintext representation of the shellcode.
+        open("%s.txt" % filepath, "wb").write(egghatch.as_text(sc))
+
         yara_matches = File(filepath).get_yara("shellcode")
         self.items.append({
             "category": "shellcode",
-            "shellcode": filepath,
+            "raw": filepath,
+            "shellcode": "%s.txt" % filepath,
             "yara": yara_matches,
         })
         for match in yara_matches:
