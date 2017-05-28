@@ -388,7 +388,7 @@ def tasks_report(task_id, report_format="json"):
 
 @app.route("/tasks/summary/<int:task_id>")
 @app.route("/v1/tasks/summary/<int:task_id>")
-def tasks_report(task_id):
+def tasks_summary(task_id):
     report_path = cwd(
         "storage", "analyses", "%d" % task_id, "reports",
         "report.json"
