@@ -160,6 +160,8 @@ class Analyzer:
             arch = "x32"
         elif "elf 64-bit" in mgtype and "x86-64" in mgtype:
             arch = "x64"
+        else:
+            arch = "x32"
 
         if "free=yes" not in self.config.options:
             # Strace has better result then ptrace on arm and ppc
