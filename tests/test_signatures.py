@@ -10,7 +10,9 @@ import tempfile
 
 from cuckoo.common.abstracts import Signature
 from cuckoo.common.objects import Dictionary
+from cuckoo.common.scripting import Scripting
 from cuckoo.core.database import Database
+from cuckoo.core.extract import ExtractManager
 from cuckoo.core.plugins import RunSignatures, RunProcessing
 from cuckoo.core.startup import init_yara, init_modules, HAVE_YARA
 from cuckoo.main import cuckoo_create
@@ -315,6 +317,9 @@ def test_on_yara():
         def on_complete(self):
             pass
 
+        def on_extract(self):
+            pass
+
         on_yara = mock.MagicMock()
 
     rs = RunSignatures(results)
@@ -337,3 +342,68 @@ def test_on_yara():
         "virtualpc": [(0, 0)],
     }
     assert ym.string("virtualpc", 0) == "\x0f\x3f\x07\x0b"
+
+def test_on_extract():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    init_modules()
+
+    Database().connect()
+    mkdir(cwd(analysis=2))
+
+    cmd = Scripting().parse_command("cmd.exe /c ping 1.2.3.4")
+
+    ex = ExtractManager.for_task(2)
+    ex.push_script({
+        "pid": 1,
+        "first_seen": 2,
+    }, cmd)
+
+    results = RunProcessing(task=Dictionary({
+        "id": 2,
+        "category": "file",
+        "target": __file__,
+    })).run()
+
+    assert results["extracted"] == [{
+        "category": "script",
+        "pid": 1,
+        "first_seen": 2,
+        "program": "cmd",
+        "script": cwd("extracted", "0.bat", analysis=2),
+        "yara": [],
+    }]
+
+    class sig1(object):
+        name = "sig1"
+
+        @property
+        def matched(self):
+            return False
+
+        @matched.setter
+        def matched(self, value):
+            pass
+
+        def init(self):
+            pass
+
+        def on_signature(self):
+            pass
+
+        def on_complete(self):
+            pass
+
+        def on_yara(self):
+            pass
+
+        on_extract = mock.MagicMock()
+
+    rs = RunSignatures(results)
+
+    rs.signatures = sig1(),
+    rs.run()
+
+    sig1.on_extract.assert_called_once()
+    em = sig1.on_extract.call_args_list[0][0][0]
+    assert em.category == "script"

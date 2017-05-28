@@ -15,8 +15,9 @@ from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
     CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
-from cuckoo.common.objects import YaraMatch
+from cuckoo.common.objects import YaraMatch, ExtractedMatch
 from cuckoo.common.utils import supported_version
+from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
@@ -468,6 +469,15 @@ class RunSignatures(object):
         for extr in self.results.get("extracted", []):
             loop_yara("extracted", extr[extr["category"]], extr["yara"])
 
+    def process_extracted(self):
+        task_id = self.results.get("info", {}).get("id")
+        if not task_id:
+            return
+
+        for item in ExtractManager.for_task(task_id).results():
+            for sig in self.signatures:
+                self.call_signature(sig, sig.on_extract, ExtractedMatch(item))
+
     def run(self):
         """Run signatures."""
         # Allow signatures to initialize themselves.
@@ -488,6 +498,9 @@ class RunSignatures(object):
 
         # Iterate through all Yara matches.
         self.process_yara_matches()
+
+        # Iterate through all Extracted matches.
+        self.process_extracted()
 
         # Yield completion events to each signature.
         for sig in self.signatures:

@@ -418,3 +418,18 @@ class YaraMatch(object):
     def string(self, identifier, index=0):
         off, idx = self.offsets[identifier][index]
         return self.strings[idx]
+
+class ExtractedMatch(object):
+    def __init__(self, match):
+        self.category = match["category"]
+        self.program = match.get("program")
+        self.first_seen = match.get("first_seen")
+        self.pid = match.get("pid")
+
+        self.yara = []
+        for ym in match["yara"]:
+            self.yara.append(YaraMatch(ym))
+
+        # Raw payload.
+        self.raw = match.get("raw")
+        self.payload = match[self.category]

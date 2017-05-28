@@ -44,12 +44,16 @@
                                     None matched
                                     {% endif %}
                                 </li>
+                                {% if extr.program %}
                                 <li class="list-group-item">
                                     <span class="item-label">Program:</span> {{ extr.program }}
                                 </li>
+                                {% endif %}
+                                {% if extr.first_seen %}
                                 <li class="list-group-item">
                                     <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
                                 </li>
+                                {% endif %}
                             </ul>
                           </div>
                           <div class="powershell-preview">

@@ -1177,6 +1177,11 @@ class Signature(object):
           dropped: a dropped file
         """
 
+    def on_extract(self, match):
+        """Called on an Extracted match.
+        @param match: extracted match information
+        """
+
     def on_complete(self):
         """Signature is notified when all API calls have been processed."""
 
