@@ -1000,3 +1000,69 @@ class TestTemplates(object):
         assert "Download pcap file" in r.content
         assert "network-analysis-hosts" in r.content
         assert "network-analysis-dns" in r.content
+
+    def test_summary_has_no_cfgextr(self, request):
+        r = render_template(request, "analysis/pages/summary/index.html", report={
+            "analysis": {
+                "info": {
+                    "category": "file",
+                    "score": 1,
+                },
+                "metadata": {},
+            },
+        })
+        assert "Malware Configuration" not in r.content
+
+    def test_summary_has_cfgextr(self, request):
+        r = render_template(request, "analysis/pages/summary/index.html", report={
+            "analysis": {
+                "info": {
+                    "category": "file",
+                    "score": 10,
+                },
+                "metadata": {
+                    "cfgextr": [{
+                        "family": "Family",
+                        "cnc": [
+                            "http://cncurl1",
+                            "http://cncurl2",
+                        ],
+                        "url": [
+                            "http://downloadurl1",
+                            "http://downloadurl2",
+                        ],
+                        "type": "thisistype",
+                    }],
+                },
+            },
+        })
+        assert "Malware Configuration" in r.content
+        assert "CnC" in r.content
+        assert "URLs" in r.content
+        assert "thisistype" in r.content
+
+    def test_summary_has_2_cfgextr(self, request):
+        r = render_template(request, "analysis/pages/summary/index.html", report={
+            "analysis": {
+                "info": {
+                    "category": "file",
+                    "score": 10,
+                },
+                "metadata": {
+                    "cfgextr": [{
+                        "family": "familyA",
+                        "cnc": [
+                            "http://familyAcnc",
+                        ],
+                    }, {
+                        "family": "familyB",
+                        "cnc": [
+                            "http://familyBcnc",
+                        ],
+                    }],
+                },
+            },
+        })
+        assert "Malware Configuration" in r.content
+        assert "familyA" in r.content
+        assert "familyB" in r.content

@@ -141,6 +141,19 @@ class CuckooWeb {
 
     }
 
+    // utility code for quickly rendering <code> fields (ie when some code sample is retrieved via ajax)
+    static renderCode(code, options) {
+
+        if(!code) return false;
+        if(!options) var options = {};
+
+        return HANDLEBARS_TEMPLATES['code']({
+            code: code,
+            type: options.type || undefined
+        });
+
+    }
+
 }
 
 /*
@@ -175,6 +188,7 @@ class CuckooWeb {
 class PageSwitcher {
 
     constructor(options) {
+
         this.nav = options.nav;
         this.container = options.container;
 
@@ -210,8 +224,9 @@ class PageSwitcher {
      */
     indexPages() {
         var _this = this;
-        this.container.children('div').each(function() {
+        this.container.children('div').each(function(i) {
             _this.pages.push({
+                index: i,
                 name: $(this).attr('id'),
                 el: $(this),
                 initialised: false
@@ -263,9 +278,15 @@ class PageSwitcher {
         returns a page by name
      */
     getPage(name) {
-        return this.pages.filter(function(element) {
-            return element.name == name;
-        })[0];
+
+        if(typeof name === 'string') {
+            return this.pages.filter(function(element) {
+                return element.name == name;
+            })[0];
+        } else if (typeof name === 'number') {
+            return this.pages[name]; // will return a page at index x
+        }
+
     }
 
     /*
@@ -279,6 +300,11 @@ class PageSwitcher {
         public method for transitioning programatically
      */
     transition(name) { 
+
+        if(typeof name === 'number') {
+            var name = this.getPage(name).name;
+        }
+
         if(this.exists(name)) {
             this._beforeTransition(this.nav.children(`[href=${name}]`));
         } else {
@@ -768,6 +794,8 @@ $(function() {
             container: $(this).find('.page-switcher__pages')
         });
 
+        $(this).data('pageSwitcher', switcher);
+
     });
 
 });
@@ -807,6 +835,50 @@ $(function() {
     $("pre code").each(function(i, element) {
         hljs.highlightBlock(element);
     });
+
+    // retrieving powershell code and displaying it - if it hasn't been loaded yet.
+    if($(".extracted-switcher").length) {
+
+        function fetchPowerShell(el) {
+
+            var url = el.find('[data-powershell-source]').attr('data-powershell-source');
+
+            $.get(url).success(function(response) {
+                // do make newlines from ; for good overview
+                var code = S(response).replaceAll(';',';\n');
+                // render code block and inject
+                var html = $(CuckooWeb.renderCode(code), {
+                    type: 'powershell'
+                });
+
+                // initialize hljs on that codeblock
+                html.find('code').each(function(i, block) {
+                    hljs.highlightBlock(block);
+                });
+
+                // inject somewhere after 'el'
+                el.find('.powershell-preview').html(html);
+                el.addClass('powershell-loaded');
+
+            }).error(function() {
+
+                el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>')
+
+            });
+
+        }
+
+        var switcher = $(".extracted-switcher").data('pageSwitcher');
+
+        switcher.events.afterTransition = function(page) {
+            if(!page.el.hasClass('powershell-loaded')) {
+                fetchPowerShell(page.el);
+            }
+        }
+
+        switcher.transition(0);
+
+    }
 
 
 });

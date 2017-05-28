@@ -160,6 +160,21 @@ var CuckooWeb = function () {
                 browser: bowser.name
             };
         }
+
+        // utility code for quickly rendering <code> fields (ie when some code sample is retrieved via ajax)
+
+    }, {
+        key: 'renderCode',
+        value: function renderCode(code, options) {
+
+            if (!code) return false;
+            if (!options) var options = {};
+
+            return HANDLEBARS_TEMPLATES['code']({
+                code: code,
+                type: options.type || undefined
+            });
+        }
     }]);
 
     return CuckooWeb;
@@ -241,8 +256,9 @@ var PageSwitcher = function () {
         key: 'indexPages',
         value: function indexPages() {
             var _this = this;
-            this.container.children('div').each(function () {
+            this.container.children('div').each(function (i) {
                 _this.pages.push({
+                    index: i,
                     name: $(this).attr('id'),
                     el: $(this),
                     initialised: false
@@ -305,9 +321,14 @@ var PageSwitcher = function () {
     }, {
         key: 'getPage',
         value: function getPage(name) {
-            return this.pages.filter(function (element) {
-                return element.name == name;
-            })[0];
+
+            if (typeof name === 'string') {
+                return this.pages.filter(function (element) {
+                    return element.name == name;
+                })[0];
+            } else if (typeof name === 'number') {
+                return this.pages[name]; // will return a page at index x
+            }
         }
 
         /*
@@ -327,6 +348,11 @@ var PageSwitcher = function () {
     }, {
         key: 'transition',
         value: function transition(name) {
+
+            if (typeof name === 'number') {
+                var name = this.getPage(name).name;
+            }
+
             if (this.exists(name)) {
                 this._beforeTransition(this.nav.children('[href=' + name + ']'));
             } else {
@@ -799,6 +825,8 @@ $(function () {
             nav: $(this).find('.page-switcher__nav'),
             container: $(this).find('.page-switcher__pages')
         });
+
+        $(this).data('pageSwitcher', switcher);
     });
 });
 
@@ -837,6 +865,50 @@ $(function () {
     $("pre code").each(function (i, element) {
         hljs.highlightBlock(element);
     });
+
+    // retrieving powershell code and displaying it - if it hasn't been loaded yet.
+    if ($(".extracted-switcher").length) {
+        var switcher;
+
+        (function () {
+            var fetchPowerShell = function fetchPowerShell(el) {
+
+                var url = el.find('[data-powershell-source]').attr('data-powershell-source');
+
+                $.get(url).success(function (response) {
+                    // do make newlines from ; for good overview
+                    var code = S(response).replaceAll(';', ';\n');
+                    // render code block and inject
+                    var html = $(CuckooWeb.renderCode(code), {
+                        type: 'powershell'
+                    });
+
+                    // initialize hljs on that codeblock
+                    html.find('code').each(function (i, block) {
+                        hljs.highlightBlock(block);
+                    });
+
+                    // inject somewhere after 'el'
+                    el.find('.powershell-preview').html(html);
+                    el.addClass('powershell-loaded');
+                }).error(function () {
+
+                    el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>');
+                });
+            };
+
+            switcher = $(".extracted-switcher").data('pageSwitcher');
+
+
+            switcher.events.afterTransition = function (page) {
+                if (!page.el.hasClass('powershell-loaded')) {
+                    fetchPowerShell(page.el);
+                }
+            };
+
+            switcher.transition(0);
+        })();
+    }
 });
 
 function alertbox(msg, context, attr_id) {

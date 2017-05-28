@@ -62,7 +62,7 @@ open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
 def update_hashes():
     hashes = {}
     for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
-        if not line.strip():
+        if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
@@ -161,6 +161,7 @@ do_setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
+        "egghatch==0.1",
         "elasticsearch==5.3.0",
         "flask==0.10.1",
         "flask-sqlalchemy==2.1",
@@ -177,6 +178,7 @@ do_setup(
         "python-magic==0.4.12",
         "sflock>=0.2.12, <0.3",
         "sqlalchemy==1.0.8",
+        "unicorn==1.0.0",
         "wakeonlan==0.2.2",
     ],
     extras_require={

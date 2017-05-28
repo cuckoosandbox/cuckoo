@@ -303,7 +303,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.rawlogfd.write(self.startbuf)
 
     def create_folders(self):
-        folders = "shots", "files", "logs", "buffer"
+        folders = "shots", "files", "logs", "buffer", "extracted"
 
         try:
             Folders.create(self.storagepath, folders)

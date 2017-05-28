@@ -57,6 +57,7 @@ def fetch_community(branch="master", force=False, filepath=None):
     folders = {
         "modules/signatures": "signatures",
         "data/monitor": "monitor",
+        "data/yara": "yara",
         "agent": "agent",
         "analyzer": "analyzer",
     }
@@ -90,6 +91,9 @@ def fetch_community(branch="master", force=False, filepath=None):
             if member.issym():
                 t.makelink(member, filepath)
                 continue
+
+            if not os.path.exists(os.path.dirname(filepath)):
+                os.makedirs(os.path.dirname(filepath))
 
             log.debug("Extracted %s..", member.name[len(name_start)+1:])
             open(filepath, "wb").write(t.extractfile(member).read())
@@ -479,9 +483,16 @@ def migrate_cwd():
         "of our own."
     )
 
+    # Migration from 2.0.2 to 2.0.3. TODO Abstract this away.
+    if not os.path.exists(cwd("yara", "index_scripts.yar")):
+        open(cwd("yara", "index_scripts.yar"), "wb").close()
+
+    if not os.path.exists(cwd("yara", "index_shellcode.yar")):
+        open(cwd("yara", "index_shellcode.yar"), "wb").close()
+
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
-        if not line.strip():
+        if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
@@ -526,6 +537,8 @@ def migrate_cwd():
 
     for filename in outdated:
         log.debug("Upgraded %s", filename)
+        if not os.path.exists(os.path.dirname(cwd(filename))):
+            os.makedirs(os.path.dirname(cwd(filename)))
         shutil.copy(cwd("..", "data", filename, private=True), cwd(filename))
 
     log.info(
