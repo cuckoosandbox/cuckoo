@@ -360,7 +360,8 @@ class AnalysisManager(threading.Thread):
                    config("routing:inetsim:server"),
                    config("%s:%s:interface" % (self.cfg.cuckoo.machinery, self.cfg.cuckoo.machinery)),
                    str(config("cuckoo:resultserver:port"))
-
+            )
+            
         if self.route == "tor":
             rooter(
                 "tor_disable", self.machine.ip,
