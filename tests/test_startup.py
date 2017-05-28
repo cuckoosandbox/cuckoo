@@ -550,7 +550,7 @@ def test_init_routing_tor_inetsim_noint(p):
 @pytest.mark.skipif(HAVE_YARA, reason="Tests not having Yara available")
 @mock.patch("cuckoo.core.startup.log")
 def test_no_init_yara(p):
-    init_yara(None)
+    assert init_yara(None) is False
     p.warning.assert_called_once()
 
 @pytest.mark.skipif(not HAVE_YARA, reason="Unittest requires Yara")
@@ -572,7 +572,7 @@ class TestYaraIntegration(object):
         assert not self.count(cwd("yara", "urls"))
         assert not self.count(cwd("yara", "memory"))
 
-        init_yara(True)
+        assert init_yara(True) is True
 
         assert os.path.exists(cwd("yara", "index_binaries.yar"))
         assert os.path.exists(cwd("yara", "index_urls.yar"))

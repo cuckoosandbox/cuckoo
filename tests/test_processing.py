@@ -20,9 +20,12 @@ from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunProcessing
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
-from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
+from cuckoo.processing.behavior import (
+    ProcessTree, ExtractScripts, BehaviorAnalysis
+)
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
+from cuckoo.processing.extracted import Extracted
 from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
@@ -732,6 +735,9 @@ class TestBehavior(object):
 
         ba = BehaviorAnalysis()
         ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
 
         mkdir(cwd(analysis=1))
         mkdir(cwd("logs", analysis=1))
@@ -748,6 +754,57 @@ class TestBehavior(object):
         assert sorted(list(ba._enum_logs())) == [
             cwd("logs", "2.txt", analysis=1),
         ]
+
+    def test_extract_scripts(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        mkdir(cwd(analysis=1))
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        es = ExtractScripts(ba)
+        es.handle_event({
+            "command_line": "cmd.exe /c ping 1.2.3.4",
+            "first_seen": 1,
+            "pid": 1234,
+        })
+        es.handle_event({
+            "command_line": (
+                "powershell.exe -e "
+                "ZQBjAGgAbwAgACIAUgBlAGMAdQByAHMAaQB2AGUAIgA="
+            ),
+            "first_seen": 2,
+            "pid": 1235,
+        })
+        assert es.run() is None
+
+        e = Extracted()
+        e.set_task(Dictionary({
+            "id": 1,
+        }))
+        out = e.run()
+        assert out == [{
+            "category": "script",
+            "first_seen": 1,
+            "pid": 1234,
+            "program": "cmd",
+            "script": cwd("extracted", "0.bat", analysis=1),
+            "yara": [],
+        }, {
+            "category": "script",
+            "first_seen": 2,
+            "pid": 1235,
+            "program": "powershell",
+            "script": cwd("extracted", "1.ps1", analysis=1),
+            "yara": [],
+        }]
+        assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
+        assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
 
 class TestPcap(object):
     @classmethod

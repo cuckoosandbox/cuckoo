@@ -75,6 +75,57 @@
 
                         <hr>
 
+                        {% if report.analysis.metadata and report.analysis.metadata.cfgextr %}
+                        <h4><i class="fa fa-bug"></i> Malware Configuration</h4>
+
+                        {% for cfgextr in report.analysis.metadata.cfgextr %}
+
+                        <div class="panel panel-default list-panel__widget">
+                            <div class="panel-heading">
+                                <span>family</span>
+                                <h3 class="panel-title">{{ cfgextr.family }}</h3>
+                            </div>
+                            <ul class="list-group">
+                                {% if cfgextr.cnc %}
+                                <li class="list-group-item">
+                                    <span class="item-label">CnC</span>
+                                    <ul>
+                                        {% for url in cfgextr.cnc %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.url %}
+                                <li class="list-group-item">
+                                    <span class="item-label">URLs</span>
+                                    <ul>
+                                        {% for url in cfgextr.url %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.key %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Encryption key</span>
+                                    <p>{{ cfgextr.key }}</p>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.type %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Package / Type</span>
+                                    <p>{{ cfgextr.type }}</p>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        {% endfor %}
+
+                        <hr>
+                        {% endif %}
+
                         <h4><span class="glyphicon glyphicon-send" aria-hidden="true"></span> Feedback</h4>
 
                         <p style="font-size: 11px;">

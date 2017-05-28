@@ -646,6 +646,7 @@ class Processing(object):
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.dropped_meta_path = os.path.join(self.analysis_path, "files.json")
+        self.extracted_path = os.path.join(self.analysis_path, "extracted")
         self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
@@ -1097,11 +1098,27 @@ class Signature(object):
 
     def mark_config(self, config):
         """Mark configuration from this malware family."""
-        mark = {
+        url = config.get("url", [])
+        if isinstance(url, basestring):
+            url = [url]
+
+        cnc = config.get("cnc", [])
+        if isinstance(cnc, basestring):
+            cnc = [cnc]
+
+        if "family" not in config:
+            raise CuckooCriticalError("Invalid call to mark_config().")
+
+        self.marks.append({
             "type": "config",
-            "config": config,
-        }
-        self.marks.append(mark)
+            "config": {
+                "family": config["family"],
+                "url": url,
+                "cnc": cnc,
+                "key": config.get("key"),
+                "type": config.get("type"),
+            },
+        })
 
     def mark(self, **kwargs):
         """Mark arbitrary data."""
@@ -1158,6 +1175,11 @@ class Signature(object):
           extracted: an extracted PE image from a process memory dump
           procmem: a process memory dump
           dropped: a dropped file
+        """
+
+    def on_extract(self, match):
+        """Called on an Extracted match.
+        @param match: extracted match information
         """
 
     def on_complete(self):
@@ -1263,3 +1285,20 @@ class ProtocolHandler(object):
 
     def close(self):
         pass
+
+class Extractor(object):
+    """One piece in a series of recursive extractors & unpackers."""
+    yara_rules = []
+
+    @classmethod
+    def init_once(cls):
+        pass
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def handle_yara(self, filepath, match):
+        raise NotImplementedError
+
+    def push_shellcode(self, sc):
+        self.parent.push_shellcode(sc)

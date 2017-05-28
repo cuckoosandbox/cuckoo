@@ -670,6 +670,31 @@ class TestMigrateCWD(object):
             cwd("web/local_settings.py")
         )
 
+    def test_new_directory(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        shutil.rmtree(cwd("yara", "scripts"))
+        shutil.rmtree(cwd("yara", "shellcode"))
+        migrate_cwd()
+        # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
+        assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
+        assert os.path.exists(cwd("yara", "index_scripts.yar"))
+        assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
+        assert os.path.exists(cwd("yara", "index_shellcode.yar"))
+
+    def test_using_community(self):
+        def h(filepath):
+            return hashlib.sha1(open(filepath, "rb").read()).hexdigest()
+
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        filepath = cwd("signatures", "__init__.py")
+        # Old Community version.
+        shutil.copy("tests/files/sig-init-old.py", filepath)
+        assert h(filepath) == "033e19e4fea1989680f4af19b904448347dd9589"
+        migrate_cwd()
+        assert h(filepath) == "5966e9db6bcd3adcd70998f4c51072c7f81b4564"
+
 class TestCommunitySuggestion(object):
     @property
     def ctx(self):
@@ -717,6 +742,7 @@ class TestCommunitySuggestion(object):
         sys.modules.pop("signatures.android", None)
         sys.modules.pop("signatures.cross", None)
         sys.modules.pop("signatures.darwin", None)
+        sys.modules.pop("signatures.extractor", None)
         sys.modules.pop("signatures.network", None)
         sys.modules.pop("signatures.windows", None)
         cuckoo_create()

@@ -1,3 +1,14 @@
+# community (these are alternative versions backwards compatible with
+# legacy Cuckoo setups that we may override in our 2.x setup)
+033e19e4fea1989680f4af19b904448347dd9589 signatures/__init__.py
+1b764cb090dc2f687621602bceeab27c3b2a1f31 signatures/android/__init__.py
+809fde3cc879a33bd669aaec8dc0b5e2e8ca385e signatures/cross/__init__.py
+9d1015218b76c396f5c2454bd9627fd9adef414b signatures/darwin/__init__.py
+1de5e62f213fa0e67af9c1a8ac886a43a08787a2 signatures/network/__init__.py
+069e496f3820f73fbd36f7f195dad989e4e0d863 signatures/windows/__init__.py
+68f1176dee909f2743bab5ee569cc82ab1e3ef5a signatures/windows/creates_exe.py
+
+# 2.0.0 release
 ae4f2d8ddc2e6ff4b9c255cbb93cc0adecabf9e0 __init__.py
 57a49d34e6eda0839dd293ab5ec3767d787d1876 agent/agent.py
 48e36a15b91b219a8fee0d3867428c51a4fb86f5 agent/agent.sh
@@ -171,8 +182,18 @@ f838fc8c6a902274824777671fb95ab2e7730054 yara/binaries/vmdetect.yar
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/memory/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/urls/.gitignore
 
-868ddcfb245c62768d62a2932ba8c6107d2246b7 web/local_settings.py
-
-e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
+# 2.0.1a1 release
 b598b93ab13ee2e7595ae54a3a5f1e4090e68f4d elasticsearch/template.json
+
+# 2.0.2a3 release
 d0841c3bc6c97668213d0116dfe5dc1eaf82a3c2 web/local_settings.py
+
+# 2.0.3a2 release
+e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
+
+# TBD release
+b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
+5966e9db6bcd3adcd70998f4c51072c7f81b4564 signatures/__init__.py
+f128dbf6ac5c90dbed99f9626d58b63b133b7f8d signatures/extractor/__init__.py
+da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
+da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore

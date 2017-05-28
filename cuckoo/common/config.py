@@ -532,6 +532,9 @@ class Config(object):
             "dumptls": {
                 "enabled": Boolean(True),
             },
+            "extracted": {
+                "enabled": Boolean(True),
+            },
             "googleplay": {
                 "enabled": Boolean(False),
                 "android_id": String(),

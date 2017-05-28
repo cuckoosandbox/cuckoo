@@ -682,6 +682,12 @@ def _201_202(c):
             c[machinery][machine]["osprofile"] = None
     return c
 
+def _203_204(c):
+    c["processing"]["extracted"] = {
+        "enabled": True,
+    }
+    return c
+
 migrations = {
     "0.4.0": ("0.4.1", None),
     "0.4.1": ("0.4.2", _041_042),
@@ -696,6 +702,8 @@ migrations = {
     "2.0-rc2": ("2.0.0", _20c2_200),
     "2.0.0": ("2.0.1", _200_201),
     "2.0.1": ("2.0.2", _201_202),
+    "2.0.2": ("2.0.3", None),
+    "2.0.3": ("2.0.4", _203_204),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.

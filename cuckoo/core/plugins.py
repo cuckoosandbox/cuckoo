@@ -15,7 +15,9 @@ from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
     CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
+from cuckoo.common.objects import YaraMatch, ExtractedMatch
 from cuckoo.common.utils import supported_version
+from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
@@ -439,6 +441,7 @@ class RunSignatures(object):
         """Yields any Yara matches to each signature."""
         def loop_yara(category, filepath, matches):
             for match in matches:
+                match = YaraMatch(match, category)
                 for sig in self.signatures:
                     self.call_signature(
                         sig, sig.on_yara, category, filepath, match
@@ -463,6 +466,18 @@ class RunSignatures(object):
         for dropped in self.results.get("dropped", []):
             loop_yara("dropped", dropped["path"], dropped["yara"])
 
+        for extr in self.results.get("extracted", []):
+            loop_yara("extracted", extr[extr["category"]], extr["yara"])
+
+    def process_extracted(self):
+        task_id = self.results.get("info", {}).get("id")
+        if not task_id:
+            return
+
+        for item in ExtractManager.for_task(task_id).results():
+            for sig in self.signatures:
+                self.call_signature(sig, sig.on_extract, ExtractedMatch(item))
+
     def run(self):
         """Run signatures."""
         # Allow signatures to initialize themselves.
@@ -484,11 +499,14 @@ class RunSignatures(object):
         # Iterate through all Yara matches.
         self.process_yara_matches()
 
+        # Iterate through all Extracted matches.
+        self.process_extracted()
+
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
-        score = 0
+        score, configuration = 0, []
         for signature in self.signatures:
             if signature.matched:
                 log.debug(
@@ -501,12 +519,25 @@ class RunSignatures(object):
                 self.matched.append(signature.results())
                 score += signature.severity
 
+                for mark in signature.marks:
+                    if mark["type"] == "config":
+                        configuration.append(mark["config"])
+
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
         if "info" in self.results:
             self.results["info"]["score"] = score / 5.0
+
+        # If malware configuration has been extracted, simplify its
+        # accessibility in the analysis report.
+        if configuration:
+            # TODO Should this be included elsewhere?
+            if "metadata" in self.results:
+                self.results["metadata"]["cfgextr"] = configuration
+            if "info" in self.results:
+                self.results["info"]["score"] = 10
 
 class RunReporting(object):
     """Reporting Engine.
