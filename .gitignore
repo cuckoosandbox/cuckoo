@@ -33,6 +33,9 @@ local/
 
 # Cuckoo package stuff
 cuckoo/data-private/.cwd
+cuckoo/data-private/cwd/hashes.txt
+cuckoo/data/monitor/
+MANIFEST.in
 
 # Frontend compilation services
 node_modules/

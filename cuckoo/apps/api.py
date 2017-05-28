@@ -10,6 +10,7 @@ import os
 import socket
 import tarfile
 import zipfile
+import json
 
 from flask import Flask, request, jsonify, make_response
 
@@ -384,6 +385,30 @@ def tasks_report(task_id, report_format="json"):
         return response
     else:
         return open(report_path, "rb").read()
+
+@app.route("/tasks/summary/<int:task_id>")
+@app.route("/v1/tasks/summary/<int:task_id>")
+def tasks_report(task_id):
+    report_path = cwd(
+        "storage", "analyses", "%d" % task_id, "reports",
+        "report.json"
+    )
+    if not os.path.exists(report_path):
+        return json_error(404, "Report not found")
+    with open(report_path, "rb") as report_file:
+        report = json.load(report_file)
+    try:
+        del report["procmemory"]
+        del report["behavior"]["generic"]
+        del report["behavior"]["apistats"]
+        del report["behavior"]["processes"]
+        del report["debug"]
+        del report["screenshots"]
+        del report["metadata"]
+    except KeyError:
+        pass
+
+    return jsonify(report)
 
 @app.route("/tasks/screenshots/<int:task_id>")
 @app.route("/v1/tasks/screenshots/<int:task_id>")
