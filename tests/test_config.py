@@ -1086,7 +1086,7 @@ platform = windows
     assert cfg["virtualbox"]["cuckoo1"]["osprofile"] is None
     assert cfg["virtualbox"]["cuckoo2"]["osprofile"] is None
 
-def test_migration_202_203():
+def test_migration_203_204():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
     Files.create(cwd("conf"), "processing.conf", """
@@ -1094,7 +1094,7 @@ def test_migration_202_203():
 enabled = on
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
-    cfg = migrate(cfg, "2.0.2", "2.0.3")
+    cfg = migrate(cfg, "2.0.3", "2.0.4")
     assert cfg["processing"]["extracted"]["enabled"] is True
 
 class FullMigration(object):
