@@ -87,7 +87,7 @@ def forward_drop():
 def state_enable():
     """Enable stateful connection tracking."""
     run(
-        s.iptables, "-A", "INPUT", "-m", "state",
+        s.iptables, "-I", "INPUT", "-m", "state",
         "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"
     )
 
@@ -103,7 +103,7 @@ def state_disable():
 
 def enable_nat(interface):
     """Enable NAT on this interface."""
-    run(s.iptables, "-t", "nat", "-A", "POSTROUTING",
+    run(s.iptables, "-t", "nat", "-I", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
 def disable_nat(interface):
@@ -162,10 +162,10 @@ def remote_dns_forward(action, vm_ip, dns_ip, dns_port):
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
-    run(s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+    run(s.iptables, "-I", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT")
 
-    run(s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+    run(s.iptables, "-I", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
 def forward_disable(src, dst, ipaddr):
@@ -189,17 +189,17 @@ def srcroute_disable(rt_table, ipaddr):
 
 def inetsim_enable(ipaddr, inetsim_ip, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    run(s.iptables, "-t", "nat", "-I", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
         "-j", "DNAT", "--to-destination", inetsim_ip)
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
+    run(s.iptables, "-I", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP")
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
+    run(s.iptables, "-I", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP")
 
-    remote_dns_forward(ipaddr, inetsim_ip, "-A")
+    remote_dns_forward(ipaddr, inetsim_ip, "-I")
 
 def inetsim_disable(ipaddr, inetsim_ip, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
@@ -228,7 +228,7 @@ def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
 
 def tor_enable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""
-    tor_toggle("-A", vm_ip, resultserver_ip, dns_port, proxy_port)
+    tor_toggle("-I", vm_ip, resultserver_ip, dns_port, proxy_port)
 
 def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""
@@ -255,7 +255,7 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""
     return drop_toggle(
-        "-A", vm_ip, resultserver_ip, resultserver_port, agent_port
+        "-I", vm_ip, resultserver_ip, resultserver_port, agent_port
     )
 
 def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
