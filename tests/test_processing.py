@@ -18,6 +18,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunProcessing
+from cuckoo.core.startup import init_console_logging
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import (
@@ -31,7 +32,7 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
+from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -55,6 +56,8 @@ class TestProcessing(object):
 
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_console_logging()
 
         db.connect(dsn="sqlite:///:memory:")
         db.add_url("http://google.com/")
@@ -82,6 +85,12 @@ class TestProcessing(object):
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
         assert results["action"] == ["vmrouting", "thisisanaction"]
+        assert len(results["errors"]) == 4
+
+        db.add_error("", 1, "onlyaction")
+        results = d.run()
+        assert len(results["action"]) == 3
+        assert len(results["errors"]) == 4
 
     def test_droidmon_url(self):
         d = Droidmon()
