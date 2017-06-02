@@ -138,30 +138,30 @@ class Analyzer:
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
         package = "strace"
-        # ToDo
-        mgtype = self.config.file_type.lower()
-        if "mipsel" in mgtype:
-            arch = "mipsel"
-        elif "mips" in mgtype:
-            arch = "mips"
-        elif "arm" in mgtype:
-            arch = "arm"
-        elif "armhl" in mgtype:
-            tags = "armhl"
-        elif "sparc" in mgtype:
-            arch = "sparc"
-        elif "motorola" in mgtype:
-            arch = "motorola"
-        elif "renesas sh" in mgtype:
-            arch = "renesassh"
-        elif "powerpc" in mgtype:
-            arch = "ppc"
-        elif "32-bit" in mgtype and not "ARM" in mgtype:
-            arch = "x32"
-        elif "elf 64-bit" in mgtype and "x86-64" in mgtype:
-            arch = "x64"
-        else:
-            arch = "x32"
+        if hasinstance(self.config, "file_type"):
+            mgtype = self.config.file_type.lower()
+            if "mipsel" in mgtype:
+                arch = "mipsel"
+            elif "mips" in mgtype:
+                arch = "mips"
+            elif "arm" in mgtype:
+                arch = "arm"
+            elif "armhl" in mgtype:
+                tags = "armhl"
+            elif "sparc" in mgtype:
+                arch = "sparc"
+            elif "motorola" in mgtype:
+                arch = "motorola"
+            elif "renesas sh" in mgtype:
+                arch = "renesassh"
+            elif "powerpc" in mgtype:
+                arch = "ppc"
+            elif "32-bit" in mgtype and not "ARM" in mgtype:
+                arch = "x32"
+            elif "elf 64-bit" in mgtype and "x86-64" in mgtype:
+                arch = "x64"
+            else:
+                arch = "x32"
 
         if "free=yes" not in self.config.options:
             # Strace has better result then ptrace on arm and ppc
