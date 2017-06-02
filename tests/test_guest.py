@@ -28,6 +28,23 @@ class TestOldGuestManager(object):
             gm.start_analysis({"timeout": 671}, None)
         assert gm.timeout == 1337
 
+    @mock.patch("cuckoo.core.guest.log")
+    @mock.patch("cuckoo.core.guest.time")
+    @mock.patch("cuckoo.core.guest.db")
+    def test_no_critical_error_at_finish(self, p, q, r):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        gm = OldGuestManager("cuckoo1", "1.2.3.4", "windows", 1)
+        gm.server = mock.MagicMock()
+        gm.timeout = 6
+        p.guest_get_status.return_value = "running"
+        q.time.side_effect = [
+            1, 2, 3, 4, 5, 6, 7, 8, 9
+        ]
+        gm.wait_for_completion()
+        assert q.time.call_count == 8
+        assert "end of analysis" in r.info.call_args_list[-1][0][0]
+
 class TestGuestManager(object):
     @responses.activate
     def test_get_exception(self):
@@ -72,3 +89,20 @@ class TestGuestManager(object):
         with pytest.raises(Exception):
             gm.start_analysis({"timeout": 42}, None)
         assert gm.timeout == 165
+
+    @mock.patch("cuckoo.core.guest.requests")
+    @mock.patch("cuckoo.core.guest.log")
+    @mock.patch("cuckoo.core.guest.time")
+    @mock.patch("cuckoo.core.guest.db")
+    def test_no_critical_error_at_finish(self, p, q, r, s):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        gm = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm.timeout = 6
+        p.guest_get_status.return_value = "running"
+        q.time.side_effect = [
+            1, 2, 3, 4, 5, 6, 7, 8, 9
+        ]
+        gm.wait_for_completion()
+        assert q.time.call_count == 8
+        assert "end of analysis" in r.info.call_args_list[-1][0][0]

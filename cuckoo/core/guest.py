@@ -236,9 +236,8 @@ class OldGuestManager(object):
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
             if time.time() > end:
-                raise CuckooGuestError(
-                    "The analysis hit the critical timeout, terminating."
-                )
+                log.info("%s: end of analysis reached!", self.id)
+                return
 
             try:
                 status = self.server.get_status()
@@ -501,7 +500,8 @@ class GuestManager(object):
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
             if time.time() > end:
-                raise CuckooGuestError("The analysis hit the critical timeout, terminating.")
+                log.info("%s: end of analysis reached!", self.vmid)
+                return
 
             try:
                 status = self.get("/status", timeout=5).json()
