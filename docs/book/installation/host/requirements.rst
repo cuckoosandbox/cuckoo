@@ -56,7 +56,7 @@ This is mostly the same as the installation on Ubuntu/Debian, except that
 we'll be using the ``brew`` package manager. Install all the required
 dependencies as follows (this list is WIP)::
 
-    $ brew install libmagic
+    $ brew install libmagic cairo pango
 
 Installing Python libraries (on Windows 7)
 ==========================================

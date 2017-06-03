@@ -29,6 +29,8 @@ def test_pipe_path_winxp(p):
 
 @mock.patch("socket.create_connection")
 def test_add_file_unicode(p):
+    with open("analysis.conf", "wb") as f:
+        f.write("[foo]\nip = 127.0.0.1\nport = 54321")
     handlers = logging.getLogger().handlers[:]
     init_logging()
     Files().add_file("\xe2\x80\xae".decode("utf8"))
