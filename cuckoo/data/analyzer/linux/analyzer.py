@@ -138,7 +138,7 @@ class Analyzer:
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
         package = "strace"
-        if hasinstance(self.config, "file_type"):
+        if hasattr(self.config, "file_type"):
             mgtype = self.config.file_type.lower()
             if "mipsel" in mgtype:
                 arch = "mipsel"
