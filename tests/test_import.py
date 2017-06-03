@@ -17,7 +17,7 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Files, temppath
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create, main
-from cuckoo.misc import cwd, set_cwd, mkdir, is_windows, is_linux
+from cuckoo.misc import cwd, set_cwd, mkdir, is_windows, is_linux, is_macosx
 
 log = logging.getLogger(__name__)
 
@@ -352,21 +352,23 @@ def test_dumpcmd():
     assert dumpcmd("sqlite:////tmp/cuckoo.db", "/tmp") == (
         ["sqlite3", "/tmp/cuckoo.db", ".dump"], {}
     )
-    assert dumpcmd("mysql://foo:bar@localh0st/baz", "/tmp") == (
-        ["mysqldump", "-u", "foo", "-pbar", "-h", "localh0st", "baz"], {}
-    )
-    assert dumpcmd("mysql://cuckoo:random!@localhost/cuckoo", "/tmp") == (
-        ["mysqldump", "-u", "cuckoo", "-prandom!", "cuckoo"], {}
-    )
-    assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
-        ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
-    )
-    assert dumpcmd("postgresql://user name!:bar@localhost/baz", "/tmp") == (
-        ["pg_dump", "-U", "user name!", "baz"], {"PGPASSWORD": "bar"}
-    )
-    assert dumpcmd("postgresql://:b@c/d", "/tmp") == (
-        ["pg_dump", "-h", "c", "d"], {"PGPASSWORD": "b"}
-    )
+    if not is_macosx():
+        assert dumpcmd("mysql://foo:bar@localh0st/baz", "/tmp") == (
+            ["mysqldump", "-u", "foo", "-pbar", "-h", "localh0st", "baz"], {}
+        )
+        assert dumpcmd("mysql://cuckoo:random!@localhost/cuckoo", "/tmp") == (
+            ["mysqldump", "-u", "cuckoo", "-prandom!", "cuckoo"], {}
+        )
+    if not is_macosx():
+        assert dumpcmd("postgresql://user:bar@localhost/baz", "/tmp") == (
+            ["pg_dump", "-U", "user", "baz"], {"PGPASSWORD": "bar"}
+        )
+        assert dumpcmd("postgresql://u n!:bar@localhost/baz", "/tmp") == (
+            ["pg_dump", "-U", "u n!", "baz"], {"PGPASSWORD": "bar"}
+        )
+        assert dumpcmd("postgresql://:b@c/d", "/tmp") == (
+            ["pg_dump", "-h", "c", "d"], {"PGPASSWORD": "b"}
+        )
 
     with pytest.raises(CuckooOperationalError) as e:
         dumpcmd("notadatabaseuri", "/tmp")
@@ -381,9 +383,11 @@ class TestMoveSQL(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
 
+    @pytest.mark.skipif("sys.platform == 'darwin'")
     def test_mysql(self):
         movesql("mysql://foo:bar@localh0st/baz", None, None)
 
+    @pytest.mark.skipif("sys.platform == 'darwin'")
     def test_postgresql(self):
         movesql("postgresql://user:bar@localhost/baz", None, None)
 
@@ -512,10 +516,12 @@ class TestImportCuckooSQLite3(ImportCuckoo):
     shutil.copy("tests/files/cuckoo.db", _filepath)
     URI = "sqlite:///%s" % _filepath
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestImportCuckooMySQL(ImportCuckoo):
     ENGINE = "mysql"
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootestimport"
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestImportCuckooPostgreSQL(ImportCuckoo):
     ENGINE = "postgresql"
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootestimport"
