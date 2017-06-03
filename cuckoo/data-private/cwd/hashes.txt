@@ -7,6 +7,7 @@
 1de5e62f213fa0e67af9c1a8ac886a43a08787a2 signatures/network/__init__.py
 069e496f3820f73fbd36f7f195dad989e4e0d863 signatures/windows/__init__.py
 68f1176dee909f2743bab5ee569cc82ab1e3ef5a signatures/windows/creates_exe.py
+f128dbf6ac5c90dbed99f9626d58b63b133b7f8d signatures/extractor/__init__.py
 
 # 2.0.0 release
 ae4f2d8ddc2e6ff4b9c255cbb93cc0adecabf9e0 __init__.py
@@ -192,8 +193,10 @@ d0841c3bc6c97668213d0116dfe5dc1eaf82a3c2 web/local_settings.py
 e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
 
 # TBD release
+b3c04498911f545792a4b24221dc391db5e8c932 analyzer/windows/analyzer.py
+248eb9505939aff73cf90919d292b483c21a746a analyzer/windows/lib/core/startup.py
 b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
 5966e9db6bcd3adcd70998f4c51072c7f81b4564 signatures/__init__.py
-f128dbf6ac5c90dbed99f9626d58b63b133b7f8d signatures/extractor/__init__.py
+70c56915693b3be5eee4907e91aaaa30b6192c86 signatures/extractor/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore

@@ -62,7 +62,7 @@ class Files(object):
         if filepath.lower() not in self.files:
             log.info(
                 "Added new file to list with pid %s and path %s",
-                pid, filepath
+                pid, filepath.encode("utf8")
             )
             self.files[filepath.lower()] = []
             self.files_orig[filepath.lower()] = filepath
