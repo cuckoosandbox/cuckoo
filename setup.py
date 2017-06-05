@@ -160,7 +160,7 @@ do_setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "egghatch==0.1",
+        "egghatch==0.2",
         "elasticsearch==5.3.0",
         "flask==0.10.1",
         "flask-sqlalchemy==2.1",
