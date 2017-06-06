@@ -179,6 +179,7 @@ do_setup(
         "sqlalchemy==1.0.8",
         "unicorn==1.0.0",
         "wakeonlan==0.2.2",
+        "yara-python==3.6.1",
     ],
     extras_require={
         ":sys_platform == 'win32'": [

@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
-import pytest
+import os.path
 import shutil
 import struct
 import tempfile
@@ -14,7 +14,7 @@ from cuckoo.common.scripting import Scripting
 from cuckoo.core.database import Database
 from cuckoo.core.extract import ExtractManager
 from cuckoo.core.plugins import RunSignatures, RunProcessing
-from cuckoo.core.startup import init_yara, init_modules, HAVE_YARA
+from cuckoo.core.startup import init_yara, init_modules
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
 
@@ -257,9 +257,8 @@ def test_mark_config():
         }],
     }
 
-@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
 def test_on_yara():
-    set_cwd(tempfile.mkdtemp())
+    set_cwd(os.path.realpath(tempfile.mkdtemp()))
     cuckoo_create()
     init_modules()
 

@@ -15,7 +15,7 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    HAVE_YARA, init_tasks, init_binaries
+    init_tasks, init_binaries
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd
@@ -547,13 +547,6 @@ def test_init_routing_tor_inetsim_noint(p):
     init_routing()
     p.assert_not_called()
 
-@pytest.mark.skipif(HAVE_YARA, reason="Tests not having Yara available")
-@mock.patch("cuckoo.core.startup.log")
-def test_no_init_yara(p):
-    assert init_yara(None) is False
-    p.warning.assert_called_once()
-
-@pytest.mark.skipif(not HAVE_YARA, reason="Unittest requires Yara")
 class TestYaraIntegration(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())

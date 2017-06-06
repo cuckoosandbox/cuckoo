@@ -12,7 +12,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.objects import (
     Dictionary, File, Archive, YaraMatch, URL_REGEX
 )
-from cuckoo.core.startup import init_yara, HAVE_YARA
+from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
@@ -114,7 +114,6 @@ def test_m2crypto():
     assert sig0["organization"] == "Microsoft Corporation"
     assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
 
-@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
 def test_yara_offsets():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()

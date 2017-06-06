@@ -8,14 +8,9 @@ import logging.handlers
 import os
 import requests
 import socket
+import yara
 
 from distutils.version import StrictVersion
-
-try:
-    import yara
-    HAVE_YARA = True
-except ImportError:
-    HAVE_YARA = False
 
 import cuckoo
 
@@ -226,13 +221,6 @@ def index_yara():
 
 def init_yara(index):
     """Initialize & load/compile Yara rules."""
-    if not HAVE_YARA:
-        log.warning(
-            "Unable to import yara (install with "
-            "`pip install yara-python==3.5.0`)"
-        )
-        return False
-
     if index:
         index_yara()
 
