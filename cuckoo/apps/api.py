@@ -482,7 +482,9 @@ def files_view(md5=None, sha256=None, sample_id=None):
     if not sample:
         return json_error(404, "File not found")
 
+    tasks = sorted(list(map(lambda t: t.id, db.list_tasks(sample_id=sample.id))))
     response["sample"] = sample.to_dict()
+    response["sample"]["tasks"] = tasks
     return jsonify(response)
 
 @app.route("/files/get/<sha256>")
