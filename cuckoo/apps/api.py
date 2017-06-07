@@ -408,8 +408,7 @@ def tasks_summary(task_id):
     except KeyError:
         pass
 
-    response = dict(task=report)
-    return jsonify(response)
+    return jsonify(report)
 
 @app.route("/tasks/screenshots/<int:task_id>")
 @app.route("/v1/tasks/screenshots/<int:task_id>")
