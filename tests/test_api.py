@@ -191,45 +191,10 @@ class TestAPI(object):
         r = self.app.get("/tasks/reschedule/666")
         assert r.status_code == 404
 
-    def test_tasks_view(self):
+    def test_files_view(self):
         task_id = self.create_task()
 
         t = json.loads(self.app.get("/tasks/view/%s" % task_id).data)
-
-        # Fetch by sample id.
-        r = self.app.get(
-            "/files/view/id/%s" % t["task"]["sample_id"]
-        )
-        assert r.status_code == 200
-        sample = json.loads(r.data)
-        assert sample["sample"]["id"] == t["task"]["sample_id"]
-
-        # Fetch by md5.
-        r = self.app.get("/files/view/md5/f2d886558b2866065c3da842bfe13ce6")
-        sample = json.loads(r.data)
-        assert sample["sample"]["id"] == 1
-
-        # Fetch by sha256.
-        r = self.app.get("/files/view/sha256/c6039bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
-        sample = json.loads(r.data)
-        assert sample["sample"]["id"] == 1
-
-        # Fetch not found id.
-        r = self.app.get("/files/view/id/69")
-        assert r.status_code == 404
-
-        # Fetch not found md5.
-        r = self.app.get("/files/view/md5/zzz886558b2866065c3da842bfe13ce6")
-        assert r.status_code == 404
-
-        # Fetch not found sha256.
-        r = self.app.get("/files/view/sha256/zzz39bfcdfdfbf714caa94a3bb837a6a4907f3f84ed580ce2916bae7676b68f9")
-        assert r.status_code == 404
-
-    def test_tasks_summary(self):
-        task_id = self.create_task()
-
-        t = json.loads(self.app.get("/tasks/summary/%s" % task_id).data)
 
         # Fetch by sample id.
         r = self.app.get(
