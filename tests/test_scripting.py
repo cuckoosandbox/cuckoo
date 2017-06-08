@@ -199,15 +199,27 @@ class TestPowerShell(object):
         assert self.ps1.parse_command_line(
             "powershell.exe PowerShell.exe powershell -nologo"
         ) == {
+            "command": "PowerShell.exe powershell -nologo",
+        }
+
+        assert self.ps1.parse_command_line(
+            "PowerShell.exe powershell -nologo"
+        ) == {
+            "command": "powershell -nologo",
+        }
+
+        assert self.ps1.parse_command_line(
+            "powershell -nologo"
+        ) == {
             "nologo": True,
         }
 
-    @mock.patch("cuckoo.common.scripting.log")
-    def test_unhandled(self, p):
+    def test_parse_remainder(self):
         assert self.ps1.parse_command_line(
-            "powershell.exe -notaflag yesflag",
-        ) == {}
-        assert p.warning.call_count == 2
+            "powershell start-process ping.exe 8.8.8.8"
+        ) == {
+            "command": "start-process ping.exe 8.8.8.8",
+        }
 
 class TestScripting(object):
     def setup(self):

@@ -145,11 +145,6 @@ class PowerShell(Scripting):
         idx, ret = 1, {}
 
         while idx < len(cmdline):
-            if not re.match(self.EXE_REGEX, cmdline[idx], re.I):
-                break
-            idx += 1
-
-        while idx < len(cmdline):
             for key, regex in self.CMDLINE_REGEX.items():
                 if not re.match(regex, cmdline[idx]):
                     continue
@@ -161,11 +156,12 @@ class PowerShell(Scripting):
                 idx += used + 1
                 break
             else:
-                log.warning(
-                    "Unhandled PowerShell command-line argument(s): %s",
-                    cmdline[idx:]
-                )
-                idx += 1
+                break
+
+        # Handle trailing fields which are interpreted as commands.
+        if idx < len(cmdline) and not self.get_script():
+            ret["command"] = " ".join(cmdline[idx:])
+
         return ret
 
     def get_script(self):
