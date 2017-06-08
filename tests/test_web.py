@@ -182,7 +182,6 @@ class TestWebInterface(object):
                 ],
             },
             "options": {
-                "enable-services": False,
                 "enforce-timeout": False,
                 "full-memory-dump": False,
                 "enable-injection": True,
