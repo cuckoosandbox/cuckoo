@@ -1,0 +1,69 @@
+{
+    "file_selection": [
+        {
+            "arcname": "rar_plain_rar.rar",
+            "changed_properties": [],
+            "duplicate": false,
+            "extrpath": [
+                "rar_plain.rar",
+                "bar.txt"
+            ],
+            "filename": "bar.txt",
+            "finger": {
+                "magic": "ASCII text",
+                "magic_human": "ASCII text",
+                "mime": "text/plain",
+                "mime_human": "plain"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo7",
+                        "value": "cuckoo7"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": null,
+                "options": {
+                    "enable-injection": true,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "process-memory-dump": true,
+                    "simulated-human-interaction": true
+                },
+                "package": null,
+                "priority": 2,
+                "routing": "none",
+                "timeout": 120
+            },
+            "package": null,
+            "password": null,
+            "preview": true,
+            "relaname": "bar.txt",
+            "relapath": "bar.txt",
+            "selected": true,
+            "size": 12,
+            "type": "file"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "none",
+        "options": {
+            "enable-injection": true,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": 120,
+        "vpn": ""
+    },
+    "submit_id": 43
+}

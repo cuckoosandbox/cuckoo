@@ -17,7 +17,7 @@ before_install:
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
         sudo apt-get update -qq
         sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
-        sudo apt-get install libjpeg-dev swig libpq-dev libmysqlclient-dev
+        sudo apt-get install libjpeg-dev swig libpq-dev libmysqlclient-dev rar
 
         sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"
         sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"

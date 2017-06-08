@@ -261,7 +261,8 @@ class SubmitManager(object):
                     continue
 
                 arc = sflock.zipify(sflock.unpack(
-                    info["arcname"], contents=open(arcpath, "rb").read()
+                    contents=open(arcpath, "rb").read(),
+                    filename=info["arcname"]
                 ))
 
                 # Create a .zip archive out of this container.
@@ -284,7 +285,9 @@ class SubmitManager(object):
                     continue
 
                 content = sflock.unpack(arcpath).read(info["extrpath"][:-1])
-                subarc = sflock.unpack(info["extrpath"][-2], contents=content)
+                subarc = sflock.unpack(
+                    contents=content, filename=info["extrpath"][-2]
+                )
 
                 # Write intermediate .zip archive file.
                 arcpath = Files.temp_named_put(
