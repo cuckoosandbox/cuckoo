@@ -695,6 +695,12 @@ class TestMigrateCWD(object):
         migrate_cwd()
         assert h(filepath) == "5966e9db6bcd3adcd70998f4c51072c7f81b4564"
 
+    def test_current_community(self):
+        set_cwd(tempfile.mktemp())
+        shutil.copytree(os.path.expanduser("~/.cuckoo"), cwd())
+        open(cwd(".cwd"), "wb").write("somethingelse")
+        migrate_cwd()
+
 class TestCommunitySuggestion(object):
     @property
     def ctx(self):
