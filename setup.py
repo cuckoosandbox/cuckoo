@@ -168,7 +168,7 @@ do_setup(
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
         "oletools==0.42",
-        "peepdf==0.3.5",
+        "peepdf==0.3.6",
         "pefile2==1.2.11",
         "pillow==3.2",
         "pymisp==2.4.54",
