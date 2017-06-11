@@ -32,8 +32,8 @@
                             <a href="network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
                             <a href="network-analysis-tcp" data-total="{{ report.analysis.network.tcp|length }}">TCP <span class="button-badge">{{ report.analysis.network.tcp|length }}</span></a>
                             <a href="network-analysis-udp" data-total="{{ report.analysis.network.udp|length }}">UDP <span class="button-badge">{{ report.analysis.network.udp|length }}</span></a>
-                            <a href="network-analysis-http" class="active" data-total="{% if report.analysis.network.http_ex %}{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}{% else %}{{ report.analysis.network.http|length }}{% endif %}">
-                                {% if report.analysis.network.http_ex %}
+                            <a href="network-analysis-http" class="active" data-total="{% if report.analysis.network.http_ex or report.analysis.network.https_ex %}{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}{% else %}{{ report.analysis.network.http|length }}{% endif %}">
+                                {% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
                                     HTTP(S) <span class="button-badge">{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}</span>
                                 {% else %}
                                     HTTP <span class="button-badge">{{ report.analysis.network.http|length }}</span>
