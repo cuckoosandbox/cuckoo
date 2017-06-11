@@ -72,7 +72,7 @@ class Files(object):
     def dump_file(self, filepath):
         """Dump a file to the host."""
         if not os.path.isfile(filepath):
-            log.warning("File at path \"%r\" does not exist, skip.", filepath)
+            log.warning("File at path %r does not exist, skip.", filepath)
             return False
 
         # Check whether we've already dumped this file - in that case skip it.
@@ -311,9 +311,11 @@ class CommandPipeHandler(object):
         self.analyzer.files.add_file(data.decode("utf8"), self.pid)
 
     def _handle_file_del(self, data):
-        """Notification of a file being removed - we have to dump it before
-        it's being removed."""
-        self.analyzer.files.delete_file(data.decode("utf8"), self.pid)
+        """Notification of a file being removed (if it exists) - we have to
+        dump it before it's being removed."""
+        filepath = data.decode("utf8")
+        if os.path.exists(filepath):
+            self.analyzer.files.delete_file(filepath, self.pid)
 
     def _handle_file_move(self, data):
         """A file is being moved - track these changes."""

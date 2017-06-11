@@ -219,7 +219,7 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py
 
 # 2.0.4 release
-0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
+49c7e98dbe03121c8cadee4cd1214b1e1f80ceb2 analyzer/windows/analyzer.py
 5bce9b46793e68be557940769ec44f044e6f568b analyzer/windows/lib/api/process.py
 bbae2a651067491925b2f52144575d3b821525fa analyzer/windows/lib/common/defines.py
 0000000000000000000000000000000000000000 analyzer/windows/lib/common/errors.py
