@@ -241,7 +241,7 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
         elif self.route == "inetsim":
-            self.interface = cfg.inetsim.interface
+            pass
         elif self.route == "tor":
             pass
         elif self.route == "internet":
@@ -307,6 +307,7 @@ class AnalysisManager(threading.Thread):
             rooter(
                 "inetsim_enable", self.machine.ip,
                 config("routing:inetsim:server"),
+                config("%s:%s:interface" % (self.cfg.cuckoo.machinery, self.cfg.cuckoo.machinery)),
                 str(config("cuckoo:resultserver:port"))
             )
 
@@ -356,9 +357,11 @@ class AnalysisManager(threading.Thread):
 
         if self.route == "inetsim":
             rooter("inetsim_disable", self.machine.ip,
-                   cfg.inetsim.server,
-                   str(cfg.resultserver.port))
-
+                   config("routing:inetsim:server"),
+                   config("%s:%s:interface" % (self.cfg.cuckoo.machinery, self.cfg.cuckoo.machinery)),
+                   str(config("cuckoo:resultserver:port"))
+            )
+            
         if self.route == "tor":
             rooter(
                 "tor_disable", self.machine.ip,
