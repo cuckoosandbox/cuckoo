@@ -539,21 +539,6 @@ class PdfDocument(object):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
     def walk_object(self, obj, entry):
-        if isinstance(obj, peepdf.PDFCore.PDFStream):
-            stream = obj.decodedStream
-
-            # Is this actually Javascript code?
-            if not peepdf.JSAnalysis.isJavascript(stream):
-                return
-
-            javascript = stream.decode("latin-1")
-            entry["javascript"].append({
-                "orig_code": javascript,
-                "beautified": jsbeautify(javascript),
-                "urls": [],
-            })
-            return
-
         if isinstance(obj, peepdf.PDFCore.PDFDictionary):
             for url in obj.urlsFound:
                 entry["urls"].append(self._parse_string(url))
@@ -580,6 +565,27 @@ class PdfDocument(object):
             for element in obj.elements:
                 self.walk_object(element, entry)
             return
+
+    def get_javascript(self, f):
+        js = []
+
+        for version in xrange(f.updates + 1):
+            for obj in f.body[version].objects.values():
+                if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+                    continue
+
+                if "/JS" not in obj.object.elements:
+                    continue
+
+                ref = obj.object.elements["/JS"]
+
+                if ref.id not in f.body[version].objects:
+                    continue
+                    
+                obj = f.body[version].objects[ref.id]
+                js.append(obj.object.decodedStream)
+
+        return js
 
     def run(self):
         p = peepdf.PDFCore.PDFParser()
@@ -608,6 +614,7 @@ class PdfDocument(object):
                 "urls": [],
             }
 
+            row["javascript"] = self.get_javascript(f)
             for obj in f.body[version].objects.values():
                 self.walk_object(obj.object, row)
 
