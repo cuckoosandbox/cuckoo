@@ -192,7 +192,7 @@ d0841c3bc6c97668213d0116dfe5dc1eaf82a3c2 web/local_settings.py
 # 2.0.3a2 release
 e22097b8cbe8a2a7d930756731f07663461b315b analyzer/windows/analyzer.py
 
-# TBD release
+# 2.0.4a2 release
 b3c04498911f545792a4b24221dc391db5e8c932 analyzer/windows/analyzer.py
 248eb9505939aff73cf90919d292b483c21a746a analyzer/windows/lib/core/startup.py
 b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/human.py
@@ -200,3 +200,6 @@ b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/huma
 70c56915693b3be5eee4907e91aaaa30b6192c86 signatures/extractor/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore
+
+# TBD release
+b70c7d3e30781a4858f20d0276b6bbccd5993c37 analyzer/windows/modules/packages/pdf.py
