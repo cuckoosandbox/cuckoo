@@ -580,10 +580,15 @@ class PdfDocument(object):
                 ref = obj.object.elements["/JS"]
 
                 if ref.id not in f.body[version].objects:
+                    log.warning("PDFObject: Reference is broken, can't follow")
                     continue
                     
                 obj = f.body[version].objects[ref.id]
-                js.append(obj.object.decodedStream)
+                js.append({
+                    "orig_code": obj.object.decodedStream,
+                    "beautified": jsbeautify(obj.object.decodedStream),
+                    "urls": []
+                })
 
         return js
 
