@@ -32,6 +32,13 @@ class PDF(Package):
             },
         ],
         [
+            HKEY_LOCAL_MACHINE,
+            "SOFTWARE\\Policies\\Adobe\\Acrobat Reader\\9.0\\FeatureLockDown\\cDefaultLaunchAttachmentPerms",
+            {
+                "tBuiltInPermList": "version:1|.doc:2|.docm:2|.docx:2|.exe:2|.xls:2|.xlsx:2|.bat:2|.ddl:2|.msi:2|.vb:2|.vbs:2|.wsf:2|.wsc:2|.js:2|.wsh:2|.jar:2|.rar:2|.zip:2|.bat:2",
+            },
+        ],
+        [
             HKEY_CURRENT_USER,
             "SOFTWARE\\Adobe\\Acrobat Reader\\9.0\\AdobeViewer",
             {
