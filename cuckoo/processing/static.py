@@ -592,6 +592,57 @@ class PdfDocument(object):
 
         return js
 
+    def get_attachments(self, f):
+        attachments = []
+
+        for version in xrange(f.updates + 1):
+            for obj in f.body[version].objects.values():
+                if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+                    continue
+
+                if "/F" not in obj.object.elements:
+                    continue
+                if "/EF" not in obj.object.elements:
+                    continue
+
+                filename = obj.object.elements["/F"]
+                if not isinstance(filename, peepdf.PDFCore.PDFString):
+                    continue
+
+                ref = obj.object.elements["/EF"]
+                if not isinstance(ref, peepdf.PDFCore.PDFDictionary):
+                    continue
+
+                if "/F" not in ref.elements:
+                    continue
+
+                ref = ref.elements["/F"]
+                if not isinstance(ref, peepdf.PDFCore.PDFReference):
+                    continue
+
+                if ref.id not in f.body[version].objects:
+                    continue
+
+                obj = f.body[version].objects[ref.id]
+                attachments.append({
+#            "contents": obj.object.decodedStream,
+                    "filename": filename.value,
+                })
+        return attachments
+
+    def get_openaction(self, obj):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/OpenAction" not in obj.object.elements:
+            return
+
+        action = obj.object.elements["/OpenAction"]
+        if not isinstance(action, peepdf.PDFCore.PDFDictionary):
+            return
+
+        return action.value
+
     def run(self):
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
@@ -617,10 +668,17 @@ class PdfDocument(object):
                 "modification": self._sanitize(md, "modification"),
                 "javascript": [],
                 "urls": [],
+                "attachments": [],
+                "openaction": None,
             }
 
             row["javascript"] = self.get_javascript(f)
+            row["attachments"] = self.get_attachments(f)
             for obj in f.body[version].objects.values():
+                action = self.get_openaction(obj)
+                if action:
+                    row["openaction"] = action
+
                 self.walk_object(obj.object, row)
 
             row["urls"] = sorted(set(row["urls"]))
