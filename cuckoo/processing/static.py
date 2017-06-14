@@ -566,71 +566,60 @@ class PdfDocument(object):
                 self.walk_object(element, entry)
             return
 
-    def get_javascript(self, f):
-        js = []
+    def get_javascript(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
 
-        for version in xrange(f.updates + 1):
-            for obj in f.body[version].objects.values():
-                if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
-                    continue
+        if "/JS" not in obj.object.elements:
+            return
 
-                if "/JS" not in obj.object.elements:
-                    continue
+        ref = obj.object.elements["/JS"]
 
-                ref = obj.object.elements["/JS"]
+        if ref.id not in f.body[version].objects:
+            log.warning("PDFObject: Reference is broken, can't follow")
+            return
+            
+        obj = f.body[version].objects[ref.id]
+        return {
+            "orig_code": obj.object.decodedStream,
+            "beautified": jsbeautify(obj.object.decodedStream),
+            "urls": []
+        }
 
-                if ref.id not in f.body[version].objects:
-                    log.warning("PDFObject: Reference is broken, can't follow")
-                    continue
-                    
-                obj = f.body[version].objects[ref.id]
-                js.append({
-                    "orig_code": obj.object.decodedStream,
-                    "beautified": jsbeautify(obj.object.decodedStream),
-                    "urls": []
-                })
+    def get_attachments(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
 
-        return js
+        if "/F" not in obj.object.elements:
+            return
+        if "/EF" not in obj.object.elements:
+            return
 
-    def get_attachments(self, f):
-        attachments = []
+        filename = obj.object.elements["/F"]
+        if not isinstance(filename, peepdf.PDFCore.PDFString):
+            return
 
-        for version in xrange(f.updates + 1):
-            for obj in f.body[version].objects.values():
-                if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
-                    continue
+        ref = obj.object.elements["/EF"]
+        if not isinstance(ref, peepdf.PDFCore.PDFDictionary):
+            return
 
-                if "/F" not in obj.object.elements:
-                    continue
-                if "/EF" not in obj.object.elements:
-                    continue
+        if "/F" not in ref.elements:
+            return
 
-                filename = obj.object.elements["/F"]
-                if not isinstance(filename, peepdf.PDFCore.PDFString):
-                    continue
+        ref = ref.elements["/F"]
+        if not isinstance(ref, peepdf.PDFCore.PDFReference):
+            return
 
-                ref = obj.object.elements["/EF"]
-                if not isinstance(ref, peepdf.PDFCore.PDFDictionary):
-                    continue
+        if ref.id not in f.body[version].objects:
+            return
 
-                if "/F" not in ref.elements:
-                    continue
+        obj = f.body[version].objects[ref.id]
+        return {
+#           "contents": obj.object.decodedStream,
+            "filename": filename.value,
+        }
 
-                ref = ref.elements["/F"]
-                if not isinstance(ref, peepdf.PDFCore.PDFReference):
-                    continue
-
-                if ref.id not in f.body[version].objects:
-                    continue
-
-                obj = f.body[version].objects[ref.id]
-                attachments.append({
-#            "contents": obj.object.decodedStream,
-                    "filename": filename.value,
-                })
-        return attachments
-
-    def get_openaction(self, obj):
+    def get_openaction(self, obj, f, version):
         if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
             return
 
@@ -638,10 +627,18 @@ class PdfDocument(object):
             return
 
         action = obj.object.elements["/OpenAction"]
-        if not isinstance(action, peepdf.PDFCore.PDFDictionary):
-            return
 
-        return action.value
+        if isinstance(action, peepdf.PDFCore.PDFDictionary):
+            return action.value
+
+        if isinstance(action, peepdf.PDFCore.PDFReference):
+            referenced = f.body[version].objects[action.id]
+            if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
+                obj = referenced.object
+                if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+                    return obj.value
+
+        return None
 
     def run(self):
         p = peepdf.PDFCore.PDFParser()
@@ -672,12 +669,18 @@ class PdfDocument(object):
                 "openaction": None,
             }
 
-            row["javascript"] = self.get_javascript(f)
-            row["attachments"] = self.get_attachments(f)
             for obj in f.body[version].objects.values():
-                action = self.get_openaction(obj)
+                action = self.get_openaction(obj, f, version)
                 if action:
                     row["openaction"] = action
+
+                js = self.get_javascript(obj, f, version)
+                if js:
+                    row["javascript"].append(js)
+
+                att = self.get_attachments(obj, f, version)
+                if att:
+                    row["attachments"].append(att)
 
                 self.walk_object(obj.object, row)
 
