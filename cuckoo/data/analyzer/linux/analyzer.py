@@ -137,7 +137,7 @@ class Analyzer:
 
         log.debug("Starting analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
-        package = "strace"
+
         if hasattr(self.config, "file_type"):
             mgtype = self.config.file_type.lower()
             if "mipsel" in mgtype:
@@ -198,36 +198,38 @@ class Analyzer:
                 package = "generic"
             else:
                 package = "wget"
-        # If we weren't able to automatically determine the proper package,
-        # we need to abort the analysis.
-        if not package:
-                raise CuckooError("No valid package available for file "
-                                  "type: {0}".format(self.config.file_type))
 
-        # Generate the package path.
-        package_name = "modules.packages.%s" % package
+        if self.ptrace_enabled is False:
+            # If we weren't able to automatically determine the proper package,
+            # we need to abort the analysis.
+            if not package:
+                    raise CuckooError("No valid package available for file "
+                                      "type: {0}".format(self.config.file_type))
+
+            # Generate the package path.
+            package_name = "modules.packages.%s" % package
 
 
-        # Try to import the analysis package.
-        try:
-            __import__(package_name, globals(), locals(), ["dummy"], -1)
-        # If it fails, we need to abort the analysis.
-        except ImportError:
-            raise CuckooError("Unable to import package \"{0}\", does "
-                              "not exist.".format(package_name))
+            # Try to import the analysis package.
+            try:
+                __import__(package_name, globals(), locals(), ["dummy"], -1)
+            # If it fails, we need to abort the analysis.
+            except ImportError:
+                raise CuckooError("Unable to import package \"{0}\", does "
+                                  "not exist.".format(package_name))
 
-        # Initialize the package parent abstract.
-        Package()
+            # Initialize the package parent abstract.
+            Package()
 
-        # Enumerate the abstract subclasses.
-        try:
-            package_class = Package.__subclasses__()[0]
-        except IndexError as e:
-            raise CuckooError("Unable to select package class "
-                              "(package={0}): {1}".format(package_name, e))
+            # Enumerate the abstract subclasses.
+            try:
+                package_class = Package.__subclasses__()[0]
+            except IndexError as e:
+                raise CuckooError("Unable to select package class "
+                                  "(package={0}): {1}".format(package_name, e))
 
-        # Initialize the analysis package.
-        pack = package_class(self.config.get_options())
+            # Initialize the analysis package.
+            pack = package_class(self.config.get_options())
 
         # Initialize Auxiliary modules
         Auxiliary()
