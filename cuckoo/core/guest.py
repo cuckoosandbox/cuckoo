@@ -336,7 +336,10 @@ class GuestManager(object):
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
-        systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+        if self.platform=="windows":
+            systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+        else:
+            systemdrive = "/tmp/"
 
         options = parse_options(self.options["options"])
         if options.get("analpath"):
@@ -459,22 +462,42 @@ class GuestManager(object):
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
-            data = {
-                "filepath": os.path.join(
-                    self.environ["TEMP"], options["file_name"]
-                ),
-            }
-            files = {
-                "file": ("sample.bin", open(options["target"], "rb")),
-            }
+            if self.platform=="windows":
+                data = {
+                    "filepath": os.path.join(
+                        self.environ["TEMP"], options["file_name"]
+                    ),
+                }
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
+            else:
+                data = {
+                    "filepath": os.path.join(
+                        "/tmp", options["file_name"]
+                    ),
+                }
+              
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
             self.post("/store", files=files, data=data)
 
+
+
         if "execpy" in features:
-            data = {
-                "filepath": "%s\\analyzer.py" % self.analyzer_path,
-                "async": "yes",
-                "cwd": self.analyzer_path,
-            }
+            if self.platform != "windows":
+                data = {
+                    "filepath": "%s/analyzer.py" % self.analyzer_path,
+                    "async": "yes",
+                    "cwd": self.analyzer_path,
+                }
+            else:
+                data = {
+                    "filepath": "%s\\analyzer.py" % self.analyzer_path,
+                    "async": "yes",
+                    "cwd": self.analyzer_path,
+                }
             self.post("/execpy", data=data)
         else:
             # Execute the analyzer that we just uploaded.

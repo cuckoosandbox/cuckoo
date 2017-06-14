@@ -9,6 +9,8 @@ import logging
 import tempfile
 import xmlrpclib
 import traceback
+import urllib
+import urllib2
 import time
 import datetime
 
@@ -344,7 +346,6 @@ if __name__ == "__main__":
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
-
     # If the analysis process encountered a critical error, it will raise a
     # CuckooError exception, which will force the termination of the analysis.
     # Notify the agent of the failure. Also catch unexpected exceptions.
@@ -362,6 +363,16 @@ if __name__ == "__main__":
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
+        # if we arrive here, analisys should went rigth
+        data = {
+            "status": "complete",
+            "description": success,
+        }
         # Establish connection with the agent XMLRPC server.
-        server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete(success, error, PATHS["root"])
+        try:
+            server = xmlrpclib.Server("http://127.0.0.1:8000")
+            server.complete(success, error, "unused_path")
+        except xmlrpclib.ProtocolError:
+            urllib2.urlopen("http://127.0.0.1:8000/status",
+                            urllib.urlencode(data)).read()
+
