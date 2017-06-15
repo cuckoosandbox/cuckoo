@@ -464,30 +464,47 @@ class GuestManager(object):
         # os.sep can't be used as on windows it will return incorrect sep for nix
         if self.platform == "linux" or self.platform == "darwin":
             tempdir = "/tmp"
-            sep = "//"
         else:
             tempdir = self.environ["TEMP"]
-            sep = "\\"
 
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
 
-            data = {
-                "filepath": os.path.join(
-                    tempdir, options["file_name"]
-                ),
-            }
-            files = {
-                "file": ("sample.bin", open(options["target"], "rb")),
-            }
+            if self.platform=="windows":
+                data = {
+                    "filepath": os.path.join(
+                        self.environ["TEMP"], options["file_name"]
+                    ),
+                }
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
+            else:
+                data = {
+                    "filepath": os.path.join(
+                        "/tmp", options["file_name"]
+                    ),
+                }
+
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
+
             self.post("/store", files=files, data=data)
 
         if "execpy" in features:
-            data = {
-                "filepath": "%s%sanalyzer.py" % (self.analyzer_path, sep),
-                "async": "yes",
-                "cwd": self.analyzer_path,
-            }
+            if self.platform != "windows":
+                 data = {
+                     "filepath": "%s/analyzer.py" % self.analyzer_path,
+                     "async": "yes",
+                     "cwd": self.analyzer_path,
+                 }
+             else:
+                 data = {
+                     "filepath": "%s\\analyzer.py" % self.analyzer_path,
+                     "async": "yes",
+                     "cwd": self.analyzer_path,
+                 }
             self.post("/execpy", data=data)
         else:
             # Execute the analyzer that we just uploaded.
