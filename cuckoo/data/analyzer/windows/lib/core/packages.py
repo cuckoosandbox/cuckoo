@@ -69,7 +69,7 @@ def choose_package(file_type, file_name, exports):
         return "ps1"
     elif file_name.endswith((".wsf", ".wsc")):
         return "wsf"
-    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta")):
+    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta", ".mht", ".mhtml")):
         return "ie"
     else:
         return "generic"
