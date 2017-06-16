@@ -232,10 +232,6 @@ def tasks_list(limit=None, offset=None):
     for row in tasks:
         task = row.to_dict(dt=True)
 
-        # Sanitize the target in case it contains non-ASCII characters as we
-        # can't pass along an encoding to flask's jsonify().
-        task["target"] = task["target"].decode("latin-1")
-
         task["guest"] = {}
         if row.guest:
             task["guest"] = row.guest.to_dict()
