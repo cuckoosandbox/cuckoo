@@ -113,13 +113,24 @@ class StapParser(object):
             dt = dateutil.parser.parse(datetimepart.split(".", 1)[0]) + dtms
 
             parts = list()
-            for delim in ("@", "[", "]", "(", ")", "= ", " ", "\n"):
+            for delim in ("@", "[", "]", "(", ")", "= ", " (", ")"):
                 part, _, r = r.strip().partition(delim)
                 parts.append(part)
 
-            pname, ip, pid, fn, arguments, _, retval, ecode = parts
-            argsplit = arguments.split(", ")
-            arguments = dict(("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit)))
+            pname, ip, pid, fn, args, _, retval, ecode = parts
+            arguments = dict()
+
+            n_args = 0
+            while args:
+                if self.is_array(args):
+                    arg, _, args = args.partition("], ")
+                    arg = [self.parse_arg(a) for a in arg[1:].split(", ")]
+                else:
+                    arg, _, args = args.partition(", ")
+                    arg = self.parse_arg(arg)
+
+                arguments["p%u" % n_args] = arg
+                n_args += 1
 
             pid = int(pid) if pid.isdigit() else -1
 
@@ -129,3 +140,15 @@ class StapParser(object):
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
             }
+
+    def parse_arg(self, arg):
+        if self.is_string(arg):
+            arg = arg[1:-1].decode('string_escape')
+        return arg
+
+    def is_array(self, arg):
+        # TODO: expand collapsed varlist in strace.stp
+        return arg.startswith("[") and not arg.startswith("[/*")
+
+    def is_string(self, arg):
+        return arg.startswith("\"") and arg.endswith("\"")

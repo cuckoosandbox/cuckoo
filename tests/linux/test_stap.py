@@ -12,18 +12,16 @@ def test_staplog():
             {
                 'api': 'execve',
                 'arguments': {
-                    'p0': '"/usr/bin/sh"',
-                    'p1': '["sh"',
-                    'p2': '"-c"',
-                    'p3': '"/tmp/helloworld.sh"]',
-                    'p4': '[/* 7 vars */]'
+                    'p0': '/usr/bin/sh',
+                    'p1': ['sh', '-c', '/tmp/helloworld.sh'],
+                    'p2': '[/* 7 vars */]'
                 },
                 'instruction_pointer': 'b774dcf9',
                 'pid': 680,
                 'process_name': 'python',
                 'raw': 'Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/helloworld.sh"], [/* 7 vars */]) = -2 (ENOENT)\n',
                 'return_value': '-2',
-                'status': '(ENOENT)',
+                'status': 'ENOENT',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
                 'type': 'apicall'
             },
@@ -44,7 +42,7 @@ def test_staplog():
             {
                 'api': 'access',
                 'arguments': {
-                    'p0': '"/etc/ld.so.nohwcap"',
+                    'p0': '/etc/ld.so.nohwcap',
                     'p1': 'F_OK'
                 },
                 'instruction_pointer': 'b77838c1',
@@ -52,7 +50,7 @@ def test_staplog():
                 'process_name': 'sh',
                 'raw': 'Mon Jun 19 16:58:31 2017.521264 sh@b77838c1[680] access("/etc/ld.so.nohwcap", F_OK) = -2 (ENOENT)\n',
                 'return_value': '-2',
-                'status': '(ENOENT)',
+                'status': 'ENOENT',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 31, 521264),
                 'type': 'apicall'},
             {
@@ -78,7 +76,7 @@ def test_staplog():
                 'api': 'write',
                 'arguments': {
                     'p0': '1',
-                    'p1': '"h3ll0 w0rld!\\n"',
+                    'p1': 'h3ll0 w0rld!\n',
                     'p2': '13'
                 },
                 'instruction_pointer': 'b7768cf9',
@@ -139,9 +137,7 @@ def test_staplog():
             },
             {
                 'api': 'sigreturn',
-                 'arguments': {
-                     'p0': ''
-                 },
+                 'arguments': { },
                  'instruction_pointer': 'b7769cf9',
                  'pid': 680,
                  'process_name': 'sh',
