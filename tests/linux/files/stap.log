@@ -1,0 +1,10 @@
+Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/helloworld.sh"], [/* 7 vars */]) = -2 (ENOENT)
+Mon Jun 19 16:58:31 2017.517266 sh@b77825f7[680] brk(0x0) = -2118402048
+Mon Jun 19 16:58:31 2017.521264 sh@b77838c1[680] access("/etc/ld.so.nohwcap", F_OK) = -2 (ENOENT)
+Mon Jun 19 16:58:31 2017.550890 sh@b7783970[680] mmap2(0x0, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7764000
+Mon Jun 19 16:58:32 2017.036988 helloworld.sh@b7768cf9[681] write(1, "h3ll0 w0rld!\n", 13) = 13
+Mon Jun 19 16:58:32 2017.037596 helloworld.sh@b7768cf9[681] read(10, 0x800665c0, 8192) = 0
+Mon Jun 19 16:58:32 2017.037898 helloworld.sh@b7768cf9[681] exit_group(0) =
+Mon Jun 19 16:58:31 2017.850098 sh@b7769cf9[680] wait4(-1, 0xbfd4a134, 0x0, 0x0) = 681
+Mon Jun 19 16:58:32 2017.051317 sh@b7769cf9[680] sigreturn() = 681
+Mon Jun 19 16:58:32 2017.051973 sh@b7769cf9[680] exit_group(0) =
