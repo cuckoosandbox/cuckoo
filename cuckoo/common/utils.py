@@ -19,7 +19,9 @@ import sys
 import threading
 import warnings
 import xmlrpclib
+import operator
 
+from collections import defaultdict
 from distutils.version import StrictVersion
 from django.core.validators import URLValidator
 
@@ -342,3 +344,148 @@ def list_of_ints(l):
 
 def list_of_strings(l):
     return list_of(l, basestring)
+
+def get_vt_consensus(namelist):
+    blacklist = [
+        "other",
+        "troj",
+        "trojan",
+        "win32",
+        "trojandownloader",
+        "trojandropper",
+        "dropper",
+        "generik",
+        "generic",
+        "tsgeneric",
+        "malware",
+        "dldr",
+        "downloader",
+        "injector",
+        "agent",
+        "nsis",
+        "generickd",
+        "genericgb",
+        "behaveslike",
+        "heur",
+        "inject2",
+        "trojanspy",
+        "trojanpws",
+        "reputation",
+        "script",
+        "w97m",
+        "pp97m",
+        "lookslike",
+        "macro",
+        "dloadr",
+        "kryptik",
+        "graftor",
+        "artemis",
+        "zbot",
+        "w2km",
+        "docdl",
+        "variant",
+        "packed",
+        "trojware",
+        "worm",
+        "genetic",
+        "backdoor",
+        "email",
+        "obfuscated",
+        "cryptor",
+        "obfus",
+        "virus",
+        "xpack",
+        "crypt",
+        "rootkit",
+        "malwares",
+        "suspicious",
+        "riskware",
+        "risk",
+        "win64",
+        "troj64",
+        "drop",
+        "hacktool",
+        "exploit",
+        "msil",
+        "inject",
+        "dropped",
+        "program",
+        "unwanted",
+        "heuristic",
+        "patcher",
+        "tool",
+        "potentially",
+        "rogue",
+        "keygen",
+        "unsafe",
+        "application",
+        "risktool",
+        "multi",
+        "ransom",
+        "autoit",
+        "yakes",
+        "java",
+        "ckrf",
+        "html",
+        "bngv",
+        "bnaq",
+        "o97m",
+        "blqi",
+        "bmbg",
+        "mikey",
+        "kazy",
+        "x97m",
+        "msword",
+        "cozm",
+        "eldorado",
+        "fakems",
+        "cloud",
+        "stealer",
+        "dangerousobject",
+        "symmi",
+        "zusy",
+        "dynamer",
+        "obfsstrm",
+        "krypt",
+    ]
+
+    finaltoks = defaultdict(int)
+    for name in namelist:
+        if not name:
+            continue
+
+        try:
+            toks = re.findall(r"[A-Za-z0-9]+", name)
+            for tok in toks:
+                finaltoks[tok.title()] += 1
+        except TypeError as e:
+            continue
+            
+    for tok in finaltoks.keys():
+        lowertok = tok.lower()
+        accepted = True
+        numlist = [x for x in tok if x.isdigit()]
+        if len(numlist) > 2 or len(tok) < 4:
+            accepted = False
+        if accepted:
+            for black in blacklist:
+                if black == lowertok:
+                    accepted = False
+                    break
+        if not accepted:
+            del finaltoks[tok]
+
+    sorted_finaltoks = sorted(finaltoks.items(), key=operator.itemgetter(1), reverse=True)
+    if len(sorted_finaltoks) == 1 and sorted_finaltoks[0][1] >= 2:
+        return sorted_finaltoks[0][0]
+
+    elif (len(sorted_finaltoks) > 1 and
+            (sorted_finaltoks[0][1] >= sorted_finaltoks[1][1] * 2 or
+            sorted_finaltoks[0][1] > 8)):
+        return sorted_finaltoks[0][0]
+
+    elif (len(sorted_finaltoks) > 1 and
+            sorted_finaltoks[0][1] == sorted_finaltoks[1][1] and
+            sorted_finaltoks[0][1] > 2):
+        return sorted_finaltoks[0][0]
+    return ""
