@@ -107,6 +107,20 @@ def test_staplog():
                 'type': 'apicall'
             },
             {
+                'api': 'exit_group',
+                'arguments': {
+                    'p0': '0'
+                },
+                'instruction_pointer': 'b7768cf9',
+                'pid': 681,
+                'process_name': 'helloworld.sh',
+                'raw': 'Mon Jun 19 16:58:32 2017.037898 helloworld.sh@b7768cf9[681] exit_group(0) =\n',
+                'return_value': '',
+                'status': '',
+                'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 37898),
+                'type': 'apicall'
+            },
+            {
                 'api': 'wait4',
                 'arguments': {
                     'p0': '-1',
@@ -136,5 +150,19 @@ def test_staplog():
                  'status': None,
                  'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 51317),
                  'type': 'apicall'
+            },
+            {
+                'api': 'exit_group',
+                'arguments': {
+                    'p0': '0'
+                },
+                'instruction_pointer': 'b7769cf9',
+                'pid': 680,
+                'process_name': 'sh',
+                'raw': 'Mon Jun 19 16:58:32 2017.051973 sh@b7769cf9[680] exit_group(0) =\n',
+                'return_value': '',
+                'status': '',
+                'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 51973),
+                'type': 'apicall'
             }
         ]
