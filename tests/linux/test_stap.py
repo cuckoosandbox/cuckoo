@@ -37,7 +37,7 @@ def test_staplog():
                 'process_name': 'sh',
                 'raw': 'Mon Jun 19 16:58:31 2017.517266 sh@b77825f7[680] brk(0x0) = -2118402048\n',
                 'return_value': '-2118402048',
-                'status': None,
+                'status': '',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 31, 517266),
                 'type': 'apicall'
             },
@@ -70,7 +70,7 @@ def test_staplog():
                 'process_name': 'sh',
                 'raw': 'Mon Jun 19 16:58:31 2017.550890 sh@b7783970[680] mmap2(0x0, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7764000\n',
                 'return_value': '0xb7764000',
-                'status': None,
+                'status': '',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 31, 550890),
                 'type': 'apicall'
             },
@@ -86,7 +86,7 @@ def test_staplog():
                 'process_name': 'helloworld.sh',
                 'raw': 'Mon Jun 19 16:58:32 2017.036988 helloworld.sh@b7768cf9[681] write(1, "h3ll0 w0rld!\\n", 13) = 13\n',
                 'return_value': '13',
-                'status': None,
+                'status': '',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 36988),
                 'type': 'apicall'
             },
@@ -102,7 +102,7 @@ def test_staplog():
                 'process_name': 'helloworld.sh',
                 'raw': 'Mon Jun 19 16:58:32 2017.037596 helloworld.sh@b7768cf9[681] read(10, 0x800665c0, 8192) = 0\n',
                 'return_value': '0',
-                'status': None,
+                'status': '',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 37596),
                 'type': 'apicall'
             },
@@ -133,7 +133,7 @@ def test_staplog():
                 'process_name': 'sh',
                 'raw': 'Mon Jun 19 16:58:31 2017.850098 sh@b7769cf9[680] wait4(-1, 0xbfd4a134, 0x0, 0x0) = 681\n',
                 'return_value': '681',
-                'status': None,
+                'status': '',
                 'time': datetime.datetime(2017, 6, 19, 16, 58, 31, 850098),
                 'type': 'apicall'
             },
@@ -147,7 +147,7 @@ def test_staplog():
                  'process_name': 'sh',
                  'raw': 'Mon Jun 19 16:58:32 2017.051317 sh@b7769cf9[680] sigreturn() = 681\n',
                  'return_value': '681',
-                 'status': None,
+                 'status': '',
                  'time': datetime.datetime(2017, 6, 19, 16, 58, 32, 51317),
                  'type': 'apicall'
             },

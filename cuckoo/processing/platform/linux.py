@@ -123,14 +123,6 @@ class StapParser(object):
 
             pid = int(pid) if pid.isdigit() else -1
 
-            # replicate regex bug to make sure parsing is functionally equivalent and passes test
-            # TODO: fix parsing bug
-            if retval:
-                if len(ecode) == 0:
-                    ecode = None
-            else:
-                ecode = ''
-
             yield {
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
