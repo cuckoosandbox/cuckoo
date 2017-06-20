@@ -539,6 +539,9 @@ class RunSignatures(object):
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 
+        if self.results.get("virustotal", {}).get("positives", 0) >= 15:
+            self.results["info"]["score"] = 10
+
 class RunReporting(object):
     """Reporting Engine.
 
