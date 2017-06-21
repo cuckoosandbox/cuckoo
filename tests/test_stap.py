@@ -160,5 +160,17 @@ def test_staplog():
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 51973),
                 "type": "apicall"
+            },
+            {
+                "api": "write",
+                "arguments": {"p0": "2", "p1": "\"BusyBox v1.16.0 (2010-02-06 04:51:36 CST"},
+                "instruction_pointer": "80dbdde",
+                "pid": 704,
+                "process_name": "busybox-i686",
+                "raw": "Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, \"BusyBox v1.16.0 (2010-02-06 04:51:36 CST)\", 41) = 41\n",
+                "return_value": "41",
+                "status": "",
+                "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
+                "type": "apicall"
             }
         ]
