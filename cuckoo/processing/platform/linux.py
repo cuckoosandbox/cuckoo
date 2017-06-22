@@ -124,10 +124,11 @@ class StapParser(object):
             while args:
                 args = args.strip(", ")
                 if self.is_array(args):
-                    arg, _, args = args.partition("]")
-                    arg = [self.parse_arg(a) for a in arg[1:].split(", ")]
+                    arg, _, args = args[1:].partition("]")
+                    arg = [self.parse_arg(a) for a in self.split_array(arg)]
                 else:
-                    arg, _, args = args.partition(", ")
+                    delim = "\", " if self.is_string(args) else ", "
+                    arg, _, args = args.partition(delim)
                     arg = self.parse_arg(arg)
 
                 arguments["p%u" % n_args] = arg
@@ -144,12 +145,18 @@ class StapParser(object):
 
     def parse_arg(self, arg):
         if self.is_string(arg):
-            arg = arg[1:-1].decode('string_escape')
+            arg = arg[1:].decode('string_escape')
         return arg
+
+    def split_array(self, arg):
+        if self.is_string(arg):
+            return arg.strip("\"").split("\", \"")
+        else:
+            return arg.split(", ")
 
     def is_array(self, arg):
         # TODO: expand collapsed varlist in strace.stp
         return arg.startswith("[") and not arg.startswith("[/*")
 
     def is_string(self, arg):
-        return arg.startswith("\"") and arg.endswith("\"")
+        return arg.startswith("\"")

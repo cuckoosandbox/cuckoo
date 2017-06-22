@@ -189,17 +189,32 @@ def test_staplog():
                 "api": "write",
                 "arguments": {
                     "p0": "2",
-                    "p1": "\"Copyright \\x28C\\x29 1998-2009 Erik Andersen",
-                    "p2": "Rob La\"...",
-                    "p3": "480"
+                    "p1": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
+                    "p2": "480"
                 },
                 "instruction_pointer": "80dbdde",
                 "pid": 668,
                 "process_name": "busybox-i686",
-                "raw": "Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, \"Copyright \\x28C\\x29 1998-2009 Erik Andersen, Rob La\"..., 480) = 480\n",
+                "raw": "Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, \"Copyright \\x28C\\x29 1998-2009 Erik Andersen, Rob La\", 480) = 480\n",
                 "return_value": "480",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 22, 10, 22, 6, 766807),
+                "type": "apicall"
+            },
+            {
+                "api": "execve",
+                "arguments": {
+                    "p0": "/usr/bin/sh",
+                    "p1": ["sh", "-c", "/tmp/comma,sh"],
+                    "p2": ["COMMA_IN_ARRAY=it,works", "HOME=/root"]
+                },
+                "instruction_pointer": "b774dcf9",
+                "pid": 680,
+                "process_name": "python",
+                "raw": "Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve(\"/usr/bin/sh\", [\"sh\", \"-c\", \"/tmp/comma,sh\"], [\"COMMA_IN_ARRAY=it,works\", \"HOME=/root\"]) = -2 (ENOENT)\n",
+                "return_value": "-2",
+                "status": "ENOENT",
+                "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
                 "type": "apicall"
             }
         ]
