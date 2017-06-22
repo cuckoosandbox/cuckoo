@@ -155,7 +155,6 @@ class StapParser(object):
             return arg.split(", ")
 
     def is_array(self, arg):
-        # TODO: expand collapsed varlist in strace.stp
         return arg.startswith("[") and not arg.startswith("[/*")
 
     def is_string(self, arg):
