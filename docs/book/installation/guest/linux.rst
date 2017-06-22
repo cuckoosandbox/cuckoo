@@ -39,7 +39,9 @@ Install dependencies inside of the virtual machine::
 
 Compile Kernel extension::
 
-    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/strace.stp
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/systemtap/strace.stp
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/systemtap/expand_execve_envp.patch
+    $ sudo patch /usr/share/systemtap/tapset/linux/sysc_execve.stp < expand_execve_envp.patch
     $ sudo stap -p4 -r $(uname -r) strace.stp -m stap_ -v
 
 Once the compilation finishes you should see the file ``stap_.ko`` in the same

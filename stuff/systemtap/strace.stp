@@ -77,3 +77,4 @@ function report(syscall_name, syscall_argstr, syscall_retstr)
     
     delete thread_argstr[t]
   }
+

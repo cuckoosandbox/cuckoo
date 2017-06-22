@@ -14,12 +14,20 @@ def test_staplog():
                 "arguments": {
                     "p0": "/usr/bin/sh",
                     "p1": ["sh", "-c", "/tmp/helloworld.sh"],
-                    "p2": "[/* 7 vars */]"
+                    "p2": [
+                        "LANGUAGE=en_US:en",
+                        "HOME=/root",
+                        "LOGNAME=root",
+                        "PATH=/usr/bin:/bin",
+                        "LANG=en_US.UTF-8",
+                        "SHELL=/bin/sh",
+                        "\"PWD=/root\"]"
+                    ]
                 },
                 "instruction_pointer": "b774dcf9",
                 "pid": 680,
                 "process_name": "python",
-                "raw": "Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve(\"/usr/bin/sh\", [\"sh\", \"-c\", \"/tmp/helloworld.sh\"], [/* 7 vars */]) = -2 (ENOENT)\n",
+                "raw": "Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve(\"/usr/bin/sh\", [\"sh\", \"-c\", \"/tmp/helloworld.sh\"], [\"LANGUAGE=en_US:en\", \"HOME=/root\", \"LOGNAME=root\", \"PATH=/usr/bin:/bin\", \"LANG=en_US.UTF-8\", \"SHELL=/bin/sh\", \"PWD=/root\"]) = -2 (ENOENT)\n",
                 "return_value": "-2",
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
