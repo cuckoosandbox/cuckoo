@@ -171,7 +171,11 @@ def test_staplog():
             },
             {
                 "api": "write",
-                "arguments": {"p0": "2", "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)", "p2": "41"},
+                "arguments": {
+                    "p0": "2",
+                    "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
+                    "p2": "41"
+                },
                 "instruction_pointer": "80dbdde",
                 "pid": 704,
                 "process_name": "busybox-i686",
