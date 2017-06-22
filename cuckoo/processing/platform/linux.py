@@ -118,21 +118,7 @@ class StapParser(object):
                 parts.append(part)
 
             pname, ip, pid, fn, args, _, retval, ecode = parts
-            arguments = dict()
-
-            n_args = 0
-            while args:
-                args = args.strip(", ")
-                if self.is_array(args):
-                    arg, _, args = args[1:].partition("]")
-                    arg = [self.parse_arg(a) for a in self.split_array(arg)]
-                else:
-                    delim = "\", " if self.is_string(args) else ", "
-                    arg, _, args = args.partition(delim)
-                    arg = self.parse_arg(arg)
-
-                arguments["p%u" % n_args] = arg
-                n_args += 1
+            arguments = self.parse_args(args)
 
             pid = int(pid) if pid.isdigit() else -1
 
@@ -143,16 +129,37 @@ class StapParser(object):
                 "type": "apicall", "raw": line,
             }
 
-    def parse_arg(self, arg):
-        if self.is_string(arg):
-            arg = arg[1:].decode('string_escape')
-        return arg
+    def parse_args(self, args):
+        p_args, n_args = {}, 0
 
-    def split_array(self, arg):
-        if self.is_string(arg):
-            return arg.strip("\"").split("\", \"")
+        while args:
+            args = args.strip(", ")
+            delim = self.get_delim(args)
+            arg, _, args = args.partition(delim)
+            p_args["p%u" % n_args] = self.parse_arg(arg)
+            n_args += 1
+
+        return p_args
+
+    def get_delim(self, argstr):
+        return "]" if self.is_array(argstr) else ("\", " if self.is_string(argstr) else ", ")
+
+    def parse_arg(self, argstr):
+        if self.is_array(argstr):
+            return self.parse_array(argstr[1:])
+        elif self.is_string(argstr):
+            return self.parse_string(argstr[1:])
         else:
-            return arg.split(", ")
+            return argstr
+
+    def parse_array(self, argstr):
+        if self.is_string(argstr):  # if the first element is a string so is the rest
+            return [self.parse_string(a) for a in argstr.strip("\"").split("\", \"")]
+        else:
+            return argstr.strip.split(", ")
+
+    def parse_string(self, argstr):
+        return argstr.decode('string_escape')
 
     def is_array(self, arg):
         return arg.startswith("[") and not arg.startswith("[/*")
