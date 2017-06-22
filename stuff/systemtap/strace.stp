@@ -13,68 +13,62 @@ global thread_argstr%
 global thread_time%
 
 global syscalls_nonreturn
-probe begin 
-  {
+probe begin  {
     /* list those syscalls that never .return */
-    syscalls_nonreturn["exit"]=1
-    syscalls_nonreturn["exit_group"]=1
-  }
+    syscalls_nonreturn["exit"] = 1
+    syscalls_nonreturn["exit_group"] = 1
+}
 
-probe nd_syscall.* 
-  {
-    if (pid() == target()) next # skip our own helper process
-    if (!target_set_pid(pid())) next # skip unrelated processes
+probe nd_syscall.* {
+    if (pid() == target()) next         # skip our own helper process
+    if (!target_set_pid(pid())) next    # skip unrelated processes
 
-    t=tid()
-    thread_argstr[t]=argstr
+    t = tid()
+    thread_argstr[t] = argstr
     if (timestamp || elapsed_time)
-      thread_time[t]=gettimeofday_us()
+        thread_time[t] = gettimeofday_us()
 
     if (name in syscalls_nonreturn)
-      report(name,argstr,"")
-  }
+        report(name, argstr, "")
+}
 
-probe nd_syscall.*.return
-  {
-    if (pid() == target()) next # skip our own helper process
-    if (!target_set_pid(pid())) next # skip unrelated processes
+probe nd_syscall.*.return {
+    if (pid() == target()) next         # skip our own helper process
+    if (!target_set_pid(pid())) next    # skip unrelated processes
 
-    report(name,thread_argstr[tid()],retstr)
-  }
+    report(name, thread_argstr[tid()], retstr)
+}
 
-function report(syscall_name, syscall_argstr, syscall_retstr)
-  {
-    t=tid()
+function report(syscall_name, syscall_argstr, syscall_retstr) {
+    t = tid()
 
-    if (timestamp || elapsed_time)
-      {
+    if (timestamp || elapsed_time) {
         now = gettimeofday_us()
         then = thread_time[t]
 
         if (timestamp)
-          prefix=sprintf("%s.%06d ", ctime(then/1000000), then%1000000)
+            prefix = sprintf("%s.%06d ", ctime(then / 1000000), then % 1000000)
 
-        if (elapsed_time && (now>then)) {
-          diff = now-then
-          suffix=sprintf(" <%d.%06d>", diff/1000000, diff%1000000)
+        if (elapsed_time && (now > then)) {
+            diff = now - then
+            suffix = sprintf(" <%d.%06d>", diff / 1000000, diff % 1000000)
         }
 
         delete thread_time[t]
-      }
+    }
 
     /* add a thread-id string in lots of cases, except if
        stap strace.stp -c SINGLE_THREADED_CMD */
     if (tid() != target()) {
-      prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
+        prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
     }
 
     printf("%s%s(%s) = %s%s\n",
-           prefix, 
-           syscall_name, syscall_argstr, syscall_retstr,
-           suffix)
+        prefix,
+        syscall_name, syscall_argstr, syscall_retstr,
+        suffix)
 
     //print_ubacktrace_brief()
-    
-    delete thread_argstr[t]
-  }
 
+    delete thread_argstr[t]
+}
