@@ -63,12 +63,13 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
         prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
     }
 
+    syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
+    syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
+
     printf("%s%s(%s) = %s%s\n",
         prefix,
         syscall_name, syscall_argstr, syscall_retstr,
         suffix)
-
-    //print_ubacktrace_brief()
 
     delete thread_argstr[t]
 }

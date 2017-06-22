@@ -8,4 +8,4 @@ Mon Jun 19 16:58:32 2017.037898 helloworld.sh@b7768cf9[681] exit_group(0) =
 Mon Jun 19 16:58:31 2017.850098 sh@b7769cf9[680] wait4(-1, 0xbfd4a134, 0x0, 0x0) = 681
 Mon Jun 19 16:58:32 2017.051317 sh@b7769cf9[680] sigreturn() = 681
 Mon Jun 19 16:58:32 2017.051973 sh@b7769cf9[680] exit_group(0) =
-Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)", 41) = 41
+Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, "BusyBox v1.16.0 \x282010-02-06 04:51:36 CST\x29", 41) = 41

@@ -171,11 +171,11 @@ def test_staplog():
             },
             {
                 "api": "write",
-                "arguments": {"p0": "2", "p1": "\"BusyBox v1.16.0 (2010-02-06 04:51:36 CST"},
+                "arguments": {"p0": "2", "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)", "p2": "41"},
                 "instruction_pointer": "80dbdde",
                 "pid": 704,
                 "process_name": "busybox-i686",
-                "raw": "Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, \"BusyBox v1.16.0 (2010-02-06 04:51:36 CST)\", 41) = 41\n",
+                "raw": "Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, \"BusyBox v1.16.0 \\x282010-02-06 04:51:36 CST\\x29\", 41) = 41\n",
                 "return_value": "41",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
