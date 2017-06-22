@@ -21,7 +21,7 @@ def test_staplog():
                         "PATH=/usr/bin:/bin",
                         "LANG=en_US.UTF-8",
                         "SHELL=/bin/sh",
-                        "\"PWD=/root\"]"
+                        "PWD=/root"
                     ]
                 },
                 "instruction_pointer": "b774dcf9",

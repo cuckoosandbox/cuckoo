@@ -122,8 +122,9 @@ class StapParser(object):
 
             n_args = 0
             while args:
+                args = args.strip(", ")
                 if self.is_array(args):
-                    arg, _, args = args.partition("], ")
+                    arg, _, args = args.partition("]")
                     arg = [self.parse_arg(a) for a in arg[1:].split(", ")]
                 else:
                     arg, _, args = args.partition(", ")
