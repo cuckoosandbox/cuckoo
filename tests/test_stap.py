@@ -184,5 +184,22 @@ def test_staplog():
                 "status": "",
                 "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
                 "type": "apicall"
+            },
+            {
+                "api": "write",
+                "arguments": {
+                    "p0": "2",
+                    "p1": "\"Copyright \\x28C\\x29 1998-2009 Erik Andersen",
+                    "p2": "Rob La\"...",
+                    "p3": "480"
+                },
+                "instruction_pointer": "80dbdde",
+                "pid": 668,
+                "process_name": "busybox-i686",
+                "raw": "Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, \"Copyright \\x28C\\x29 1998-2009 Erik Andersen, Rob La\"..., 480) = 480\n",
+                "return_value": "480",
+                "status": "",
+                "time": datetime.datetime(2017, 6, 22, 10, 22, 6, 766807),
+                "type": "apicall"
             }
         ]
