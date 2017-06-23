@@ -524,7 +524,7 @@ def test_clean_dropdb(p):
     p.return_value.drop.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
-@mock.patch("cuckoo.apps.apps.pymongo")
+@mock.patch("cuckoo.apps.apps.mongo")
 def test_clean_dropmongo(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -538,8 +538,10 @@ def test_clean_dropmongo(p, q):
     })
 
     cuckoo_clean()
-    p.MongoClient.assert_called_once_with("host", 13337)
-    p.MongoClient.return_value.drop_database.assert_called_once_with("cuckoo")
+    p.init.assert_called_once_with()
+    p.connect.assert_called_once_with()
+    p.drop.assert_called_once_with()
+    p.close.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
 def test_clean_keepdirs(p):
