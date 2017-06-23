@@ -67,15 +67,17 @@ class Irma(Processing):
 
         result = None
 
-        while result is None or result.get("status") != self.IRMA_FINISHED_STATUS or time.time() < self.time_start + self.timeout:
+        start = time.time()
+        while result is None or result.get("status") != self.IRMA_FINISHED_STATUS:
+            if start + self.timeout < time.time():
+                break
+
             log.debug("Polling for results for ID %s", init.get("id"))
             url = urlparse.urljoin(
                 self.url, "/api/v1.1/scans/%s" % init.get("id")
             )
             result = self._request_json(url)
             time.sleep(1)
-
-        return
 
     def _get_results(self, sha256):
         # Fetch list of scan IDs.
@@ -108,8 +110,6 @@ class Irma(Processing):
         self.scan = int(self.options.get("scan", 0))
         self.force = int(self.options.get("force", 0))
 
-        self.time_start = time.time()
-        
         sha256 = Files.sha256_file(self.file_path)
 
         results = self._get_results(sha256)
