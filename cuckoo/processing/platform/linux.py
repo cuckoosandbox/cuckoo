@@ -156,7 +156,7 @@ class StapParser(object):
         if self.is_string(argstr):  # if the first element is a string so is the rest
             return [self.parse_string(a) for a in argstr.strip("\"").split("\", \"")]
         else:
-            return argstr.strip.split(", ")
+            return argstr.split(", ")
 
     def parse_string(self, argstr):
         return argstr.decode('string_escape')
