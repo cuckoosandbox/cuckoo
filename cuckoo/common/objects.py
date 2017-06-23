@@ -323,8 +323,8 @@ class File(object):
             # TODO Once Yara obtains proper Unicode filepath support we can
             # remove this check. See also the following Github issue:
             # https://github.com/VirusTotal/yara-python/issues/48
-            str(self.file_path)
-        except UnicodeEncodeError:
+            assert len(str(self.file_path)) == len(self.file_path)
+        except (UnicodeEncodeError, AssertionError):
             log.warning(
                 "Can't run Yara rules on %r as Unicode paths are currently "
                 "not supported in combination with Yara!", self.file_path
