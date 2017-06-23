@@ -117,8 +117,7 @@ def test_m2crypto():
 def test_yara_offsets():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
-
-    init_yara(True)
+    init_yara()
 
     buf = (
         # The SSEXY payload as per vmdetect.yar

@@ -12,13 +12,14 @@ from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
 from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
     init_tasks, init_binaries
 )
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, load_signatures, cwd
+from cuckoo.misc import set_cwd, load_signatures, cwd, is_linux
 
 def test_init_tasks():
     def init(reschedule):
@@ -565,28 +566,19 @@ class TestYaraIntegration(object):
         assert not self.count(cwd("yara", "urls"))
         assert not self.count(cwd("yara", "memory"))
 
-        assert init_yara(True) is True
+        init_yara()
 
-        assert os.path.exists(cwd("yara", "index_binaries.yar"))
-        assert os.path.exists(cwd("yara", "index_urls.yar"))
-        assert os.path.exists(cwd("yara", "index_memory.yar"))
-
-        buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
-        assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
-
-    def test_noinit(self):
-        # This happens in case "cuckoo process" is invoked without having run
-        # the Cuckoo daemon (i.e., without having generated the index rules).
-        with pytest.raises(CuckooStartupError) as e:
-            init_yara(False)
-        e.match("before being able to run")
+        # This counts the amount of rules loaded, not files.
+        assert len(list(File.yara_rules["binaries"])) == 5
+        assert not list(File.yara_rules["urls"])
+        assert not list(File.yara_rules["memory"])
 
     def test_invalid_rule(self):
         # TODO Cuckoo could help figuring out which Yara rule is the culprit,
         # but on the other hand, where's the fun in that?
         with pytest.raises(CuckooStartupError) as e:
             open(cwd("yara", "binaries", "invld.yar"), "wb").write("rule")
-            init_yara(True)
+            init_yara()
         e.match("(unexpected _RULE_|unexpected \\$end)")
 
     def test_unreferenced_variable(self):
@@ -604,5 +596,20 @@ class TestYaraIntegration(object):
                       $s1
                 }
             """)
-            init_yara(True)
+            init_yara()
         e.match("unreferenced string")
+
+    def test_unicode(self):
+        set_cwd(tempfile.mkdtemp(u"\u202e"))
+        cuckoo_create()
+        init_yara()
+        assert len(list(File.yara_rules["binaries"])) == 5
+
+    def test_symlink(self):
+        if not is_linux():
+            return
+
+        # Include all Yara rules from binaries/ into memory/ as well.
+        os.symlink(cwd("yara", "binaries"), cwd("yara", "memory", "bins"))
+        init_yara()
+        assert len(list(File.yara_rules["memory"])) == 5

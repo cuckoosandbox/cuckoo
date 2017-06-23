@@ -122,7 +122,7 @@ def cuckoo_init(level, ctx, cfg=None):
 
     init_modules()
     init_tasks()
-    init_yara(True)
+    init_yara()
     init_binaries()
     init_rooter()
     init_routing()
@@ -336,7 +336,7 @@ def process(ctx, instance, report, maxcount):
     try:
         # Initialize all modules & Yara rules.
         init_modules()
-        init_yara(False)
+        init_yara()
     except CuckooCriticalError as e:
         message = red("{0}: {1}".format(e.__class__.__name__, e))
         if len(log.handlers):
