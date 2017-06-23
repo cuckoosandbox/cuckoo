@@ -216,5 +216,22 @@ def test_staplog():
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
                 "type": "apicall"
+            },
+            {
+                "api": "execve",
+                "arguments": {
+                    "p0": "/usr/bin/sh",
+                    "p1": ["sh", "-c", "/tmp/bracket"],
+                    "p2": "sh\"]",
+                    "p3": ["LANGUAGE=en_US:en", "HOME=/root"]
+                },
+                "instruction_pointer": "b774dcf9",
+                "pid": 680,
+                "process_name": "python",
+                "raw": "Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve(\"/usr/bin/sh\", [\"sh\", \"-c\", \"/tmp/bracket]sh\"], [\"LANGUAGE=en_US:en\", \"HOME=/root\"]) = -2 (ENOENT)\n",
+                "return_value": "-2",
+                "status": "ENOENT",
+                "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
+                "type": "apicall"
             }
         ]
