@@ -209,13 +209,26 @@ def init_yara():
                 if not filename.endswith((".yar", ".yara")):
                     continue
 
-                rules["rule_%s_%d" % (category, len(rules))] = (
-                    open(os.path.join(dirpath, filename), "rb").read()
-                )
+                filepath = os.path.join(dirpath, filename)
+
+                try:
+                    # TODO Once Yara obtains proper Unicode filepath support we
+                    # can remove this check. See also this Github issue:
+                    # https://github.com/VirusTotal/yara-python/issues/48
+                    str(filepath)
+                except UnicodeEncodeError:
+                    log.warning(
+                        "Can't load Yara rules at %r as Unicode filepaths are "
+                        "currently not supported in combination with Yara!",
+                        filepath
+                    )
+                    continue
+
+                rules["rule_%s_%d" % (category, len(rules))] = filepath
                 indexed.append(filename)
 
         try:
-            File.yara_rules[category] = yara.compile(sources=rules)
+            File.yara_rules[category] = yara.compile(filepaths=rules)
         except yara.Error as e:
             raise CuckooStartupError(
                 "There was a syntax error in one or more Yara rules: %s" % e

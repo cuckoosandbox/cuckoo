@@ -239,8 +239,10 @@ class RunProcessing(object):
             # appended to the general results container.
             data = current.run()
 
-            log.debug("Executed processing module \"%s\" on analysis at "
-                      "\"%s\"", current.__class__.__name__, self.analysis_path)
+            log.debug(
+                "Executed processing module \"%s\" for task #%d",
+                current.__class__.__name__, self.task["id"]
+            )
 
             # If succeeded, return they module's key name and the data.
             return current.key, data

@@ -681,8 +681,8 @@ class AnalysisManager(threading.Thread):
                     log.error("Unable to delete symlink to the binary copy at path \"%s\": %s", self.storage_binary, e)
 
         log.info(
-            "Task #%d: reports generation completed (path=%s)",
-            self.task.id, self.storage, extra={
+            "Task #%d: reports generation completed",
+            self.task.id, extra={
                 "action": "task.report",
                 "status": "success",
             }
@@ -895,7 +895,7 @@ class Scheduler(object):
 
                 # TODO: Windows support
                 if hasattr(os, "statvfs"):
-                    dir_stats = os.statvfs(dir_path)
+                    dir_stats = os.statvfs(dir_path.encode("utf8"))
 
                     # Calculate the free disk space in megabytes.
                     space_available = dir_stats.f_bavail * dir_stats.f_frsize

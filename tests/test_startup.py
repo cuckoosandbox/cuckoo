@@ -599,6 +599,7 @@ class TestYaraIntegration(object):
             init_yara()
         e.match("unreferenced string")
 
+    @pytest.mark.xfail
     def test_unicode(self):
         set_cwd(tempfile.mkdtemp(u"\u202e"))
         cuckoo_create()
