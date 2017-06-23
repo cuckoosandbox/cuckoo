@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% load staticfiles %} {% load analysis_tags %} {% block content %}
+
+<div class="flex-nav">
+  {% include "analysis/pages/nav-sidebar.html" %}
+  <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+    <header class="page-header cuckoo-analysis__header">
+      <h1>Behavioral Analysis</h1>
+    </header>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          {% include "analysis/pages/behavior/_tree.html" %}
+          <br /> {% include "analysis/pages/behavior/_processes.html" %}
+        </div>
+      </div>
+    </div>
+
+    <!-- footer replacement to avoid double scrollbars -->
+    <footer class="flex-grid__footer spread-alignment">
+      <p class="footnote">
+        &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+      </p>
+      <div class="logo">
+        <img src="{% static " graphic/cuckoo_inverse.png " %}" alt="Cuckoo Malware Analysis Sandbox" />
+        <a href="#">Back to Top</a>
+      </div>
+    </footer>
+
+  </section>
+</div>
+
+{% endblock %}

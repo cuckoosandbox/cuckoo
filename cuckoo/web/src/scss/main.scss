@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -14,7 +14,7 @@
 
 // general css on the body and the html
 html { background: #1c1c1c; }
-body { 
+body {
 	padding-top: 50px;
 }
 
@@ -34,7 +34,7 @@ body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],
 body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) {
-	footer:not(.flex-grid__footer), 
+	footer:not(.flex-grid__footer),
 	#footer-extra {
 		display: none;
 	}
@@ -74,6 +74,7 @@ body#analysis {
 @import "components/flex-grid";
 @import "components/cuckoo-filetree";
 @import "components/flex-form";
+@import "components/process-tree";
 @import "components/breadcrumbs";
 @import "components/page-freeze";
 @import "components/dashboard";

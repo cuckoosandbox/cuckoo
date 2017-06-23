@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -27,9 +27,9 @@ var autoprefixer = require('gulp-autoprefixer');
  */
 module.exports = function() {
 
-	return sass('./scss/main.scss', { 
-			sourcemap: true, 
-			style: 'expanded',
+	return sass('./scss/main.scss', {
+			sourcemap: true,
+			style: 'compressed',
 			loadPath: [
 				'./bower_components/font-awesome/scss',
 				'./bower_components/font-roboto/src/styles'

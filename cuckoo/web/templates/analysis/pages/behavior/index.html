@@ -1,38 +1,123 @@
-{% extends "base.html" %}
-{% load staticfiles %}
-{% load analysis_tags %}
-{% block content %}
-    
-    <div class="flex-nav">
-        {% include "analysis/pages/nav-sidebar.html" %}
-        <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+{% extends "base.html" %} {% load staticfiles %} {% load analysis_tags %} {% block content %}
 
-            <header class="page-header cuckoo-analysis__header">
-                <h1>Behavioral Analysis</h1>
+<div class="flex-nav">
+  {% include "analysis/pages/nav-sidebar.html" %}
+  <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+    <header class="cuckoo-analysis__header">
+      <h1>Behavioral Analysis</h1>
+    </header>
+
+    <div class="container-fluid">
+      <div class="row">
+
+        <section class="process-tree">
+          <div class="process-tree__search">
+            <input type="text" placeholder="Search" />
+            <i class="fa fa-search"></i>
+          </div>
+          <div class="process-tree__tree">
+            <header class="process-tree__header">
+              <h4><i class="fa fa-sitemap"></i> Process tree</h4>
             </header>
 
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                        {% include "analysis/pages/behavior/_tree.html" %}
-                        <br />
-                        {% include "analysis/pages/behavior/_processes.html" %}
-                    </div>
-                </div>    
-            </div>
+            <ul class="processes">
 
-             <!-- footer replacement to avoid double scrollbars -->
-            <footer class="flex-grid__footer spread-alignment">
-                <p class="footnote">
-                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
-                </p>
-                <div class="logo">
-                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
-                    <a href="#">Back to Top</a>
+              <li>
+                <div>
+                  <p>
+                    inject-shellcode-x86.exe
+                    <em>C:\Users\Administrator\AppData\Local\Temp\inject-shellcode-x86.exe</em>
+                  </p>
+                  <a class="fa fa-chevron-right"></a>
                 </div>
-            </footer>
-            
+              </li>
+
+              <li>
+                <div>
+                  <p>
+                    explorer.exe
+                    <em>C:\Windows\Explorer.EXE</em>
+                  </p>
+                  <a class="fa fa-chevron-right"></a>
+                </div>
+
+                <ul>
+                  <li>
+                    <div>
+                      <p>
+                        explorer-with-sub-processes.exe
+                        <em>C:\Windows\Explorer.EXE</em>
+                      </p>
+                      <a class="fa fa-chevron-right"></a>
+                    </div>
+
+                    <ul>
+                      <li>
+                        <div>
+                          <p>
+                            some-sub-process.exe
+                            <em>C:\Windows\SSA.EXE</em>
+                          </p>
+                          <a class="fa fa-chevron-right"></a>
+                        </div>
+
+                        <ul>
+                          <li>
+                            <div>
+                              <p>
+                                some-sub-sub-process.exe
+                                <em>C:\Windows\Explorer.EXE</em>
+                              </p>
+                              <a class="fa fa-chevron-right"></a>
+                            </div>
+                          </li>
+
+                          <li>
+                            <div class="selected">
+                              <p>
+                                inject-shellcode-x86.exe
+                                <em>C:\Windows\tmp\.hidden\Explorer.EXE</em>
+                              </p>
+                              <a class="fa fa-chevron-right"></a>
+                            </div>
+                          </li>
+
+                        </ul>
+
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+              </li>
+
+            </ul>
+
+          </div>
+          <div class="process-tree__detail">
+            <header class="process-tree__header">
+              <h4><i class="fa fa-ellipsis-h"></i> Process detail</h4>
+            </header>
+            Here comes the detail of the process tree items
+          </div>
         </section>
+
+      </div>
     </div>
+
+    <!-- footer replacement to avoid double scrollbars -->
+    <footer class="flex-grid__footer spread-alignment">
+      <p class="footnote">
+        &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+      </p>
+      <div class="logo">
+        <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+        <a href="#">Back to Top</a>
+      </div>
+    </footer>
+
+  </section>
+</div>
 
 {% endblock %}

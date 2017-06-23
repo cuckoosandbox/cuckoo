@@ -1,0 +1,144 @@
+.process-tree {
+
+  position: relative;
+  background-color: #fff;
+  border: 1px solid #979797;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 0 15px;
+
+  /*
+    Search bar
+   */
+  &__search {
+
+    position: relative;
+    border-bottom: 1px solid #979797;
+
+    input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 10px 20px 10px 35px;
+
+      &:focus {
+        outline: 0;
+      }
+
+      &::placeholder {
+        color: #B5B5B5;
+      }
+
+    }
+
+    .fa-search {
+      position: absolute;
+      top: 13px;
+      left: 15px;
+      color: #B5B5B5;
+    }
+
+  }
+
+  /*
+    The actual process tree
+   */
+  &__tree {
+    border-bottom: 1px solid #979797;
+
+    // formal list reset within this parent
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        padding: 0;
+      }
+
+    }
+
+    // custom styling on top of the reset for
+    // the process tree
+    .processes {
+
+      li {
+
+        width: 100%;
+
+        // line
+        &:before {
+          content: "";
+          position: absolute;
+          height: 1px;
+          width: 100%;
+          left: 0;
+          background-color: #ccc;
+        }
+
+        & > div {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-right: 15px;
+        }
+
+      }
+
+      p {
+        font-size: 14px;
+        color: #6297F8;
+        margin: 10px 0;
+        font-weight: 700;
+
+        em {
+          display: block;
+          color: #818181;
+          font-size: 12px;
+          margin-top: 5px;
+          font-weight: 400;
+        }
+      }
+
+      // strip down the first list item stroke
+      & > li:first-child::before {
+        display: none;
+      }
+
+    }
+
+    // indentation bumps for ul>ul>ul>ul>etc childs
+    ul {
+      padding-left: 10px;
+    }
+
+  }
+
+  /*
+   The details with the items for that process tree
+  */
+  &__detail {
+
+  }
+
+  /*
+    A common style for headings
+  */
+  &__header {
+    border-bottom: 1px solid #979797;
+    background-color: #fafafa;
+    padding: 15px 20px 10px 20px;
+
+    h4 {
+      margin: 0;
+
+      .fa {
+        width: 25px;
+        color: $cuckoo_secundary_color;
+      }
+    }
+  }
+
+}
