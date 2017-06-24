@@ -83,6 +83,7 @@ WAIT_TIMEOUT              = 0x00000102
 
 FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 
+WM_CLOSE                  = 0x00000010
 WM_GETTEXT                = 0x0000000D
 WM_GETTEXTLENGTH          = 0x0000000E
 BM_CLICK                  = 0x000000F5
