@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import errno
 import json
 import logging
 import os.path
@@ -362,7 +363,12 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     s.ip = ip
 
     while True:
-        command, addr = server.recvfrom(4096)
+        try:
+            command, addr = server.recvfrom(4096)
+        except socket.error as e:
+            if e.errno == errno.EINTR:
+                continue
+            raise e
 
         try:
             obj = json.loads(command)
