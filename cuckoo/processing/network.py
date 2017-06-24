@@ -973,9 +973,12 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
         for chunk in chunks:
             try:
                 chunk.close()
+            except Exception as e:
+                log.exception("Error closing chunk: %s", e)
+            try:
                 os.remove(chunk.name)
-            except Exception:
-                pass
+            except Exception as e:
+                log.exception("Error removing %s: %s", chunk.name, e)
 
 class SortCap(object):
     """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
@@ -1002,7 +1005,8 @@ class SortCap(object):
 
     def close(self):
         if self.fd:
-            self.fd.close()
+            if type(self.fd) is dpkt.pcap.Writer:
+                self.fd.close()
             self.fd = None
 
     def next(self):
