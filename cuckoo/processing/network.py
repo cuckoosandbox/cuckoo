@@ -971,14 +971,8 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
         output_file.close()
     finally:
         for chunk in chunks:
-            try:
-                chunk.close()
-            except Exception as e:
-                log.exception("Error closing chunk: %s", e)
-            try:
-                os.remove(chunk.name)
-            except Exception as e:
-                log.exception("Error removing %s: %s", chunk.name, e)
+            chunk.close()
+            os.remove(chunk.name)
 
 class SortCap(object):
     """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
@@ -993,7 +987,9 @@ class SortCap(object):
 
     def write(self, p):
         if not self.fd:
-            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=self.linktype)
+            self.fd = dpkt.pcap.Writer(
+                open(self.name, "wb"), linktype=self.linktype
+            )
         self.fd.writepkt(p.raw, p.ts)
 
     def __iter__(self):
@@ -1005,7 +1001,7 @@ class SortCap(object):
 
     def close(self):
         if self.fd:
-            if type(self.fd) is dpkt.pcap.Writer:
+            if hasattr(self.fd, "close"):
                 self.fd.close()
             self.fd = None
 
@@ -1033,7 +1029,10 @@ class SortCap(object):
 def sort_pcap(inpath, outpath):
     """Use SortCap class together with batch_sort to sort a pcap"""
     inc = SortCap(inpath)
-    batch_sort(inc, outpath, output_class=lambda path: SortCap(path, linktype=inc.linktype))
+    batch_sort(
+        inc, outpath,
+        output_class=lambda path: SortCap(path, linktype=inc.linktype)
+    )
     return 0
 
 def flowtuple_from_raw(raw, linktype=1):
