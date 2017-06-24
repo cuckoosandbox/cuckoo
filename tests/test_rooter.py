@@ -80,7 +80,7 @@ def test_enable_nat():
     with mock.patch("cuckoo.apps.rooter.run") as p:
         r.enable_nat("foo")
     p.assert_called_once_with(
-        None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
+        None, "-t", "nat", "-I", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
     )
 
 @mock.patch("cuckoo.apps.rooter.run")
