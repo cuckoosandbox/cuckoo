@@ -133,7 +133,9 @@ def test_route_inetsim(p):
     assert am.route == "inetsim"
     assert am.interface is None
     assert am.rt_table is None
-    p.assert_called_once_with("inetsim_enable", "1.2.3.4", "2.3.4.5", "2042")
+    p.assert_called_once_with(
+        "inetsim_enable", "1.2.3.4", "2.3.4.5", "vboxnet0", "2042"
+    )
     am.db.set_route.assert_called_once_with(1234, "inetsim")
 
 @mock.patch("cuckoo.core.scheduler.rooter")

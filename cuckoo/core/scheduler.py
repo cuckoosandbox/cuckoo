@@ -52,7 +52,6 @@ class AnalysisManager(threading.Thread):
 
         self.errors = error_queue
         self.cfg = Config()
-        self.routing_cfg = Config("routing")
         self.storage = ""
         self.binary = ""
         self.storage_binary = ""
