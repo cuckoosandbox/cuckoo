@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -48,8 +47,7 @@ class PPT(Package):
             HKEY_CURRENT_USER,
             "Software\\Microsoft\\Office\\Common\\Security",
             {
-                # Enable all ActiveX controls without restrictions and without
-                # prompting
+                # Enable all ActiveX controls without restrictions & prompting.
                 "DisableAllActiveX": 0,
                 "UFIControls": 1,
             },

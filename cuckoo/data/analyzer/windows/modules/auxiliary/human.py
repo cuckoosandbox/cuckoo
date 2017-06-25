@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import random
+import re
 import logging
 import threading
 
@@ -14,7 +15,6 @@ from lib.common.defines import (
 )
 
 log = logging.getLogger(__name__)
-
 
 RESOLUTION = {
     "x": USER32.GetSystemMetrics(0),
@@ -93,13 +93,11 @@ def get_office_window(hwnd, lparam):
     if USER32.IsWindowVisible(hwnd):
         text = create_unicode_buffer(1024)
         USER32.GetWindowTextW(hwnd, text, 1024)
-        if ("- Microsoft" in text.value or "- Word" in text.value
-                or "- Excel" in text.value or "- PowerPoint" in text.value):
-            # send ALT+F4 equivalent
-            log.info("Closing Office window.")
+        # TODO Would " - Microsoft (Word|Excel|PowerPoint)$" be better?
+        if re.search("- (Microsoft|Word|Excel|PowerPoint)", text.value):
             USER32.SendNotifyMessageW(hwnd, WM_CLOSE, None, None)
+            log.info("Closed Office window.")
     return True
-
 
 # Callback procedure invoked for every enumerated window.
 def foreach_window(hwnd, lparam):
@@ -165,8 +163,7 @@ class Human(threading.Thread, Auxiliary):
             self.do_click_buttons = int(self.options["human.click_buttons"])
 
         while self.do_run:
-            if (seconds % 60) == 0:
-                log.debug("Trying to close office")
+            if seconds and not seconds % 60:
                 USER32.EnumWindows(EnumWindowsProc(get_office_window), 0)
 
             if self.do_click_mouse:
