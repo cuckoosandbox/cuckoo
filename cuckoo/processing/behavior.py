@@ -223,9 +223,15 @@ class ExtractScripts(BehaviorHandler):
         self.ex = ExtractManager.for_task(self.analysis.task["id"])
 
     def handle_event(self, process):
-        command = self.scr.parse_command(process["command_line"])
+        try:
+            command = self.scr.parse_command(process["command_line"])
+        except:
+            #couldn't make this work on linux
+            command = ""
+
         if command and command.get_script():
             self.ex.push_script(process, command)
+  
 
     def run(self):
         pass
