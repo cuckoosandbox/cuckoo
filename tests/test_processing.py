@@ -1053,6 +1053,28 @@ class TestPcapAdditional(object):
             }],
         }
 
+    @mock.patch("cuckoo.processing.network.log")
+    def test_empty_pcap(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "processing": {
+                    "sort_pcap": True,
+                },
+            },
+        })
+
+        mkdir(cwd(analysis=1))
+        shutil.copy(
+            "tests/files/pcap/empty.pcap", cwd("dump.pcap", analysis=1)
+        )
+
+        na = NetworkAnalysis()
+        na.set_path(cwd(analysis=1))
+        na.set_options({})
+        na.run()
+        p.warning.assert_not_called()
+
 class TestPcap2(object):
     def test_smtp_ex(self):
         obj = Pcap2(
