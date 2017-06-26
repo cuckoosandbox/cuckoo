@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -7,7 +7,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   a list-in-list HTML definition with at least the following
   syntax:
 
-  <ul>
+  <ul data-tree="init">
     <li>
       <div>item <a data-tree="toggle">open</a></div>
       <ul>
@@ -35,8 +35,45 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   data-tree="init"
     - will initialize a Tree onto the target <ul> element
 
+  data-tree-initialized="true"
+    - flag property to tell whether the tree already did
+      initialzie. This way, we can always run Tree.init()
+      to initialise un-initialized trees (if needed) without
+      re-initializing existing ones.
+
   */
-var Tree = function Tree() {
+var Tree =
+
+/*
+  Constructor
+  @param el - Object [ jQuery selector ]
+  @param id - a numbder index
+  */
+function Tree(el, id) {
   _classCallCheck(this, Tree);
+
+  // class properties
+  this.el = el;
+  this.index = id;
+
+  // add initialized class
+  el.attr('data-tree-initialized', true);
 };
+
+// create 'trees' - debug only, later on this will merge into
+// a controller class for the behavioral analysis page.
+
+
+$(function () {
+
+  $('[data-tree="init"]').each(function (i) {
+
+    var tree = void 0;
+
+    if (!$(undefined).attr('data-tree-initialized')) {
+      tree = new Tree($(undefined), i);
+      $(undefined).data('tree', tree);
+    }
+  });
+});
 //# sourceMappingURL=process_tree.js.map
