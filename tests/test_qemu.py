@@ -44,5 +44,5 @@ class TestQemu(object):
             self.m.start("label", None)
 
         e.match("no attribute 'qemu_img'")
-        os_path_exists.assert_called_with("/home/cuckoo/images/ubuntu32.qcow2")
-        os_remove.assert_called_with("/home/cuckoo/images/ubuntu32.qcow2")
+        os_path_exists.assert_called_with("/home/cuckoo/images/snapshot_ubuntu32.qcow2")
+        os_remove.assert_called_with("/home/cuckoo/images/snapshot_ubuntu32.qcow2")

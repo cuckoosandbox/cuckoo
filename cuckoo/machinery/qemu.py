@@ -142,7 +142,8 @@ class QEMU(Machinery):
         vm_info = self.db.view_machine_by_label(label)
         vm_options = getattr(self.options, vm_info.name)
 
-        snapshot_path = os.path.join(os.path.dirname(vm_options.image), vm_info.name) + ".qcow2"
+        snapshot_name = "snapshot_" + vm_info.name
+        snapshot_path = os.path.join(os.path.dirname(vm_options.image), snapshot_name) + ".qcow2"
         if os.path.exists(snapshot_path):
             os.remove(snapshot_path)
 
