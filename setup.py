@@ -84,6 +84,22 @@ def update_hashes():
 # Provide hashes for our CWD migration process.
 update_hashes()
 
+def do_help(e, message):
+    if isinstance(e, ValueError) and "jpeg is required" in e.message:
+        print "  This particular error may be resolved as follows:"
+        print "      sudo apt-get install libjpeg-dev"
+
+    if isinstance(e, ValueError) and "zlib is required" in e.message:
+        print "  This particular error may be resolved as follows:"
+        print "      sudo apt-get install zlib1g-dev"
+
+    if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
+        print "  This particular error *may* be resolved as follows:"
+        print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+
+    print "  But don't forget to check out our documentation for full"
+    print "  installation steps. You might also want to check our FAQ."
+
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
@@ -102,17 +118,8 @@ def do_setup(**kwargs):
         print "out to us on IRC / email / Github!"
         print "\x1b[0m"
 
-        if isinstance(e, ValueError) and "jpeg is required" in e.message:
-            print "  This particular error may be resolved as follows:"
-            print "      sudo apt-get install libjpeg-dev"
-
-        if isinstance(e, ValueError) and "zlib is required" in e.message:
-            print "  This particular error may be resolved as follows:"
-            print "      sudo apt-get install zlib1g-dev"
-
-        if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
-            print "  This particular error *may* be resolved as follows:"
-            print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+        if hasattr(e, "message") and isinstance(e.message, basestring):
+            do_help(e, e.message)
 
 do_setup(
     name="Cuckoo",
