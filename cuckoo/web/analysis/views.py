@@ -8,6 +8,9 @@ import os
 import pymongo
 import re
 import urllib
+import pyminizip
+import tempfile
+import shutil
 
 from bson.objectid import ObjectId
 
@@ -227,7 +230,18 @@ def file(request, category, object_id, fetch="fetch"):
         except AttributeError:
             content_type = "application/octet-stream"
 
-        response = HttpResponse(file_item.read(), content_type=content_type)
+        # Compress and encrypt file
+        if category == "sample" or category == "dropped" or category == "buffer":
+            temp_dir = tempfile.mkdtemp()
+            open(os.path.join(temp_dir, file_name), 'wb').write(file_item.read())
+            src_file = os.path.join(temp_dir, file_name)
+            dst_file = os.path.join(temp_dir, "%s.%s" % (file_name, "zip"))
+            pyminizip.compress(src_file, dst_file, 'infected', 0)
+            response = HttpResponse(open(dst_file).read(), content_type="application/zip")
+            shutil.rmtree(temp_dir)
+            file_name = "%s.%s" % (file_name, "zip")
+        else:
+            response = HttpResponse(file_item.read(), content_type=content_type)
 
         if fetch != "nofetch":
             response["Content-Disposition"] = "attachment; filename=%s" % file_name
