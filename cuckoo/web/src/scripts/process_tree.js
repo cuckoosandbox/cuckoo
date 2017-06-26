@@ -53,6 +53,36 @@ class Tree {
 
     // add initialized class
     el.attr('data-tree-initialized', true);
+
+    // create the tree
+    this.setup();
+  }
+
+  // creates the tree
+  setup() {
+
+    let self = this;
+
+    // bind the toggles
+    this.el.find('[data-tree="toggle"]').bind('click', e => {
+      e.preventDefault();
+      self.toggleBranch($(e.currentTarget));
+    });
+
+    this.el.addClass('open');
+
+  }
+
+  // branch toggle handler, will decide whether to open or close an element.
+  toggleBranch($toggle) {
+
+    // select the list
+    let targetList = $toggle.closest('li').children('ul');
+
+    // toggle the 'open' class
+    targetList.toggleClass('open');
+    $toggle.toggleClass('is-open', targetList.hasClass('open'));
+
   }
 
 }
@@ -60,15 +90,10 @@ class Tree {
 // create 'trees' - debug only, later on this will merge into
 // a controller class for the behavioral analysis page.
 $(() => {
-
-  $('[data-tree="init"]').each(i => {
-
-    let tree;
-
+  $('.tree').each(function(i) {
     if(!$(this).attr('data-tree-initialized')) {
-      tree = new Tree($(this), i);
+      var tree = new Tree($(this), i);
       $(this).data('tree', tree);
     }
   });
-
 });

@@ -48,18 +48,6 @@
   &__tree {
     border-bottom: 1px solid #979797;
 
-    // formal list reset within this parent
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      li {
-        padding: 0;
-      }
-
-    }
-
     // custom styling on top of the reset for
     // the process tree
     .processes {

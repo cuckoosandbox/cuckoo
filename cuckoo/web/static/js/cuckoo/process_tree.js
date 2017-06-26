@@ -1,5 +1,7 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
@@ -42,37 +44,72 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       re-initializing existing ones.
 
   */
-var Tree =
+var Tree = function () {
 
-/*
-  Constructor
-  @param el - Object [ jQuery selector ]
-  @param id - a numbder index
-  */
-function Tree(el, id) {
-  _classCallCheck(this, Tree);
+  /*
+    Constructor
+    @param el - Object [ jQuery selector ]
+    @param id - a numbder index
+    */
+  function Tree(el, id) {
+    _classCallCheck(this, Tree);
 
-  // class properties
-  this.el = el;
-  this.index = id;
+    // class properties
+    this.el = el;
+    this.index = id;
 
-  // add initialized class
-  el.attr('data-tree-initialized', true);
-};
+    // add initialized class
+    el.attr('data-tree-initialized', true);
+
+    // create the tree
+    this.setup();
+  }
+
+  // creates the tree
+
+
+  _createClass(Tree, [{
+    key: 'setup',
+    value: function setup() {
+
+      var self = this;
+
+      // bind the toggles
+      this.el.find('[data-tree="toggle"]').bind('click', function (e) {
+        e.preventDefault();
+        self.toggleBranch($(e.currentTarget));
+      });
+
+      this.el.addClass('open');
+    }
+
+    // branch toggle handler, will decide whether to open or close an element.
+
+  }, {
+    key: 'toggleBranch',
+    value: function toggleBranch($toggle) {
+
+      // select the list
+      var targetList = $toggle.closest('li').children('ul');
+
+      // toggle the 'open' class
+      targetList.toggleClass('open');
+      $toggle.toggleClass('is-open', targetList.hasClass('open'));
+    }
+  }]);
+
+  return Tree;
+}();
 
 // create 'trees' - debug only, later on this will merge into
 // a controller class for the behavioral analysis page.
 
 
 $(function () {
-
-  $('[data-tree="init"]').each(function (i) {
-
-    var tree = void 0;
-
-    if (!$(undefined).attr('data-tree-initialized')) {
-      tree = new Tree($(undefined), i);
-      $(undefined).data('tree', tree);
+  $('.tree').each(function (i) {
+    if (!$(this).attr('data-tree-initialized')) {
+      var tree = new Tree($(this), i);
+      $(this).data('tree', tree);
     }
   });
 });
