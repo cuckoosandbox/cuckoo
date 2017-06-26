@@ -133,7 +133,7 @@ class StapParser(object):
         p_args, n_args = {}, 0
 
         while args:
-            args = args.strip(", ")
+            args = args.lstrip(", ")
             delim = self.get_delim(args)
             arg, _, args = args.partition(delim)
             p_args["p%u" % n_args] = self.parse_arg(arg)
@@ -142,27 +142,24 @@ class StapParser(object):
         return p_args
 
     def get_delim(self, argstr):
-        return "]" if self.is_array(argstr) else ("\", " if self.is_string(argstr) else ", ")
+        return "]" if self.is_array(argstr) else ", "
 
     def parse_arg(self, argstr):
         if self.is_array(argstr):
-            return self.parse_array(argstr[1:])
+            return self.parse_array(argstr)
         elif self.is_string(argstr):
-            return self.parse_string(argstr[1:])
+            return self.parse_string(argstr)
         else:
             return argstr
 
     def parse_array(self, argstr):
-        if self.is_string(argstr):  # if the first element is a string so is the rest
-            return [self.parse_string(a) for a in argstr.strip("\"").split("\", \"")]
-        else:
-            return argstr.split(", ")
+        return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
     def parse_string(self, argstr):
-        return argstr.decode('string_escape')
+        return argstr.strip("\"").decode("string_escape")
 
     def is_array(self, arg):
         return arg.startswith("[") and not arg.startswith("[/*")
 
     def is_string(self, arg):
-        return arg.startswith("\"")
+        return arg.startswith("\"") and arg.endswith("\"")
