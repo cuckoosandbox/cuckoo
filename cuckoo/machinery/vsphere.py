@@ -154,6 +154,7 @@ class vSphere(Machinery):
             vm = self._get_virtual_machine_by_label(conn, label)
             if vm:
                 self._revert_snapshot(vm, name)
+                self.set_status(label, vm.runtime.powerState)
             else:
                 raise CuckooMachineError(
                     "Machine %s not found on host" % label
@@ -168,6 +169,7 @@ class vSphere(Machinery):
             vm = self._get_virtual_machine_by_label(conn, label)
             if vm:
                 self._stop_virtual_machine(vm)
+                self.set_status(label, vm.runtime.powerState)
             else:
                 raise CuckooMachineError(
                     "Machine %s not found on host" % label
