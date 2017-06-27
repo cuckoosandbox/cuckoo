@@ -1,0 +1,29 @@
+/*
+  Tree styles
+  - this is a bare style definition for the Tree class
+ */
+.tree {
+
+  // reset list styles
+  &, ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      padding: 0;
+    }
+  }
+
+  li {
+    display: none;
+  }
+
+  &.open,
+  ul.open {
+    & > li {
+      display: list-item;
+    }
+  }
+
+}
