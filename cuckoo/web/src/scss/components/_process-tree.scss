@@ -71,6 +71,30 @@
           align-items: center;
           justify-content: space-between;
           padding-right: 15px;
+
+          a {
+
+            &.fa {
+
+              font-size: 1.5em;
+
+              &:before {
+                content: "\f105";
+              }
+
+              &.is-open:before {
+                content: "\f107";
+              }
+
+            }
+
+            &:hover {
+              cursor: pointer;
+              text-decoration: none;
+            }
+
+          }
+
         }
 
       }
