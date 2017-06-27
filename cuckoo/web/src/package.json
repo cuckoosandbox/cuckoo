@@ -29,7 +29,7 @@
     "gulp-insert": "^0.5.0",
     "gulp-notify": "^3.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-ruby-sass": "^2.1.0",
+    "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.2.0",
     "gulp-task-loader": "^1.4.4",
     "gulp-uglify": "^2.0.1",
