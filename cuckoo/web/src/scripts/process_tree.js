@@ -94,7 +94,22 @@ class ProcessBehaviorView {
 
   constructor(el) {
     this._$ = el;
-    this._tree = new Tree(this.$.find('.tree'), 0);
+    this._tree = new Tree(this._$.find('.tree'), 0);
+
+    this.initialise();
+  }
+
+  initialise() {
+
+    // handle pane collapses
+    this._$.find('.process-tree__header--right').bind('click', e => {
+
+      e.preventDefault();
+      let target = $(e.currentTarget);
+      target.parents('.process-tree__tree, .process-tree__detail').toggleClass('open');
+
+    });
+
   }
 
 }

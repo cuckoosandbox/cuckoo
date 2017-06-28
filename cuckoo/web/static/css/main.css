@@ -12702,6 +12702,9 @@ body.night .flex-static__summary li
     /*
     A common style for headings
   */
+    /*
+    Shared styles for the detail pane and the tree pane
+    */
 }
 
 .process-tree__search
@@ -12956,6 +12959,18 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .s
 .open .process-tree__header--right:before
 {
     content: '\f078';
+}
+
+.process-tree__tree .process-tree__body,
+.process-tree__detail .process-tree__body
+{
+    display: none;
+}
+
+.process-tree__tree.open .process-tree__body,
+.process-tree__detail.open .process-tree__body
+{
+    display: block;
 }
 
 .breadcrumbs

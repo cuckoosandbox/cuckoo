@@ -106,12 +106,32 @@ var Tree = function () {
  */
 
 
-var ProcessBehaviorView = function ProcessBehaviorView(el) {
-  _classCallCheck(this, ProcessBehaviorView);
+var ProcessBehaviorView = function () {
+  function ProcessBehaviorView(el) {
+    _classCallCheck(this, ProcessBehaviorView);
 
-  this._$ = el;
-  this._tree = new Tree(this.$.find('.tree'), 0);
-};
+    this._$ = el;
+    this._tree = new Tree(this._$.find('.tree'), 0);
+
+    this.initialise();
+  }
+
+  _createClass(ProcessBehaviorView, [{
+    key: 'initialise',
+    value: function initialise() {
+
+      // handle pane collapses
+      this._$.find('.process-tree__header--right').bind('click', function (e) {
+
+        e.preventDefault();
+        var target = $(e.currentTarget);
+        target.parents('.process-tree__tree, .process-tree__detail').toggleClass('open');
+      });
+    }
+  }]);
+
+  return ProcessBehaviorView;
+}();
 
 // create 'trees' - debug only, later on this will merge into
 // a controller class for the behavioral analysis page.

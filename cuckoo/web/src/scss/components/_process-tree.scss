@@ -177,4 +177,20 @@
     }
   }
 
+  /*
+    Shared styles for the detail pane and the tree pane
+    */
+  &__tree,
+  &__detail {
+
+    .process-tree__body {
+      display: none;
+    }
+
+    &.open .process-tree__body {
+      display: block;
+    }
+
+  }
+
 }
