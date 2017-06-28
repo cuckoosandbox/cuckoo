@@ -114,6 +114,17 @@
         }
       }
 
+      .pid {
+        margin-left: auto;
+        margin-right: 15px;
+        background-color: #454545;
+        border: 1px solid #979797;
+        color: #fff;
+        padding: 4px 15px;
+        border-radius: 3px;
+        font-weight: 600;
+      }
+
       // strip down the first list item stroke
       & > li:first-child::before {
         display: none;

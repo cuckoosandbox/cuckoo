@@ -12869,6 +12869,20 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .proces
     color: #818181;
 }
 
+.process-tree__tree .processes .pid
+{
+    font-weight: 600;
+
+    margin-right: 15px;
+    margin-left: auto;
+    padding: 4px 15px;
+
+    color: #fff;
+    border: 1px solid #979797;
+    border-radius: 3px;
+    background-color: #454545;
+}
+
 .process-tree__tree .processes > li:first-child::before
 {
     display: none;
