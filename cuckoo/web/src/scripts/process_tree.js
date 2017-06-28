@@ -87,13 +87,25 @@ class Tree {
 
 }
 
+/*
+  Constructor class for the entire behavior tree, with all its views inside it.
+ */
+class ProcessBehaviorView {
+
+  constructor(el) {
+    this._$ = el;
+    this._tree = new Tree(this.$.find('.tree'), 0);
+  }
+
+}
+
 // create 'trees' - debug only, later on this will merge into
 // a controller class for the behavioral analysis page.
 $(() => {
-  $('.tree').each(function(i) {
-    if(!$(this).attr('data-tree-initialized')) {
-      var tree = new Tree($(this), i);
-      $(this).data('tree', tree);
-    }
-  });
+
+  if($("#behavior-process-tree").length) {
+    let bpt = new ProcessBehaviorView($("#behavior-process-tree"));
+    console.log(bpt);
+  }
+
 });

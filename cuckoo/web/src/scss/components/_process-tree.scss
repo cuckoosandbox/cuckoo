@@ -157,9 +157,22 @@
     h4 {
       margin: 0;
 
-      .fa {
+      .fa:first-child {
         width: 25px;
         color: $cuckoo_secundary_color;
+      }
+    }
+
+    &--right {
+      float: right;
+      width: auto;
+
+      &:before {
+        content: "\f054";
+      }
+
+      .open &:before {
+        content: "\f078";
       }
     }
   }

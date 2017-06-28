@@ -12906,39 +12906,56 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .proces
     margin: 0;
 }
 
-.process-tree__header h4 .fa,
-.process-tree__header h4 .custom-select:after,
-.process-tree__header h4 .dns-badge__content:before,
-.process-tree__header h4 .cuckoo-analysis__panel--toggle:before,
-.process-tree__header h4 .cuckoo-analysis__panel--toggle:after,
-.process-tree__header h4 table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .process-tree__header h4 .status.status-reported:before,
-.process-tree__header h4 table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .status.status-reported:before,
-.process-tree__header h4 .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .process-tree__header h4 .status.status-reported:before,
-.process-tree__header h4 .cuckoo-files ul div:before,
-.cuckoo-files ul .process-tree__header h4 div:before,
-.process-tree__header h4 .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview .process-tree__header h4 .extension-select:after,
-.process-tree__header h4 .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .process-tree__header h4 .extension-select:before,
-.process-tree__header h4 .flex-form__header .custom-checkbox > input + span,
-.flex-form__header .process-tree__header h4 .custom-checkbox > input + span,
-.process-tree__header h4 .breadcrumbs > li:not(:last-child):after,
-.process-tree__header h4 .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .process-tree__header h4 input[type='radio'] + span:before,
-.process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .process-tree__header h4 input[type='radio'] + span:before,
+.process-tree__header h4 .fa:first-child,
+.process-tree__header h4 .custom-select:first-child:after,
+.process-tree__header h4 .dns-badge__content:first-child:before,
+.process-tree__header h4 .cuckoo-analysis__panel--toggle:first-child:before,
+.process-tree__header h4 .cuckoo-analysis__panel--toggle:first-child:after,
+.process-tree__header h4 table.cuckoo-table#submission-task-table .status.status-reported:first-child:before,
+table.cuckoo-table#submission-task-table .process-tree__header h4 .status.status-reported:first-child:before,
+.process-tree__header h4 table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:first-child:before,
+table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .status.status-reported:first-child:before,
+.process-tree__header h4 .network-display__table > table#submission-task-table .status.status-reported:first-child:before,
+.network-display__table > table#submission-task-table .process-tree__header h4 .status.status-reported:first-child:before,
+.process-tree__header h4 .cuckoo-files ul div:first-child:before,
+.cuckoo-files ul .process-tree__header h4 div:first-child:before,
+.process-tree__header h4 .cuckoo-files #selection-overview .extension-select:first-child:after,
+.cuckoo-files #selection-overview .process-tree__header h4 .extension-select:first-child:after,
+.process-tree__header h4 .cuckoo-files #selection-overview .extension-select:first-child:before,
+.cuckoo-files #selection-overview .process-tree__header h4 .extension-select:first-child:before,
+.process-tree__header h4 .flex-form__header .custom-checkbox > input + span:first-child,
+.flex-form__header .process-tree__header h4 .custom-checkbox > input + span:first-child,
+.process-tree__header h4 .breadcrumbs > li:first-child:not(:last-child):after,
+.process-tree__header h4 .list-panel .list-group-option input[type='radio'] + span:first-child:before,
+.list-panel .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
+.process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:first-child:before,
+.list-panel__widget .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
 .process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .process-tree__header h4 input[type='checkbox'] + span:before,
-.process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .process-tree__header h4 input[type='checkbox'] + span:before
+.list-panel .list-group-option input[type='checkbox'] + span:first-child:before,
+.list-panel .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before,
+.process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:first-child:before,
+.list-panel__widget .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before
 {
     width: 25px;
 
     color: #6297f8;
+}
+
+.process-tree__header--right
+{
+    float: right;
+
+    width: auto;
+}
+
+.process-tree__header--right:before
+{
+    content: '\f054';
+}
+
+.open .process-tree__header--right:before
+{
+    content: '\f078';
 }
 
 .breadcrumbs
