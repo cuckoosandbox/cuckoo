@@ -4,36 +4,6 @@
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-/* 
-   Copyright (C) 2016 Cuckoo Foundation.
-   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-   see the file 'docs/LICENSE' for copying permission.
- */
-body.cyborg .app-error__balloon,
-body.cyborg .cuckoo-errors .troubleshoot,
-body.cyborg table.cuckoo-table thead,
-body.cyborg table.cuckoo-table__fullscreen thead,
-body.cyborg .network-display__table > table thead,
-body.cyborg .network-display__request-summary,
-body.cyborg .source-destination .title,
-body.cyborg .cuckoo-files__controls,
-body.cyborg .dashboard .dashboard-module__header
-{
-    color: #fff;
-    border: 0;
-    border-color: #2b5a6a;
-    border-top: 1px solid #2b5a6a;
-    border-right: 1px solid #003f54;
-    border-left: 1px solid #003f54;
-    background: -webkit-linear-gradient(#284f5c, #112c35);
-    background:         linear-gradient(#284f5c, #112c35);
-}
-
-/* 
-   Copyright (C) 2016 Cuckoo Foundation.
-   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
-   see the file 'docs/LICENSE' for copying permission.
- */
 /*!
  *  Font Awesome 4.7.0 by @davegandy - http://fontawesome.io - @fontawesome
  *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
@@ -55,8 +25,8 @@ body.cyborg .dashboard .dashboard-module__header
 .dns-badge__content:before,
 .cuckoo-analysis__panel--toggle:before,
 .cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+.cuckoo-table#submission-task-table .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 .network-display__table > table#submission-task-table .status.status-reported:before,
 .cuckoo-files ul div:before,
 .cuckoo-files #selection-overview .extension-select:after,
@@ -166,8 +136,8 @@ table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:bef
 .fa-pull-left.dns-badge__content:before,
 .fa-pull-left.cuckoo-analysis__panel--toggle:before,
 .fa-pull-left.cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table .fa-pull-left.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .fa-pull-left.status.status-reported:before,
+.cuckoo-table#submission-task-table .fa-pull-left.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .fa-pull-left.status.status-reported:before,
 .network-display__table > table#submission-task-table .fa-pull-left.status.status-reported:before,
 .cuckoo-files ul div.fa-pull-left:before,
 .cuckoo-files #selection-overview .fa-pull-left.extension-select:after,
@@ -187,8 +157,8 @@ table#submission-task-table.cuckoo-table__fullscreen .fa-pull-left.status.status
 .fa-pull-right.dns-badge__content:before,
 .fa-pull-right.cuckoo-analysis__panel--toggle:before,
 .fa-pull-right.cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table .fa-pull-right.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .fa-pull-right.status.status-reported:before,
+.cuckoo-table#submission-task-table .fa-pull-right.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .fa-pull-right.status.status-reported:before,
 .network-display__table > table#submission-task-table .fa-pull-right.status.status-reported:before,
 .cuckoo-files ul div.fa-pull-right:before,
 .cuckoo-files #selection-overview .fa-pull-right.extension-select:after,
@@ -219,8 +189,8 @@ table#submission-task-table.cuckoo-table__fullscreen .fa-pull-right.status.statu
 .pull-left.dns-badge__content:before,
 .pull-left.cuckoo-analysis__panel--toggle:before,
 .pull-left.cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table .pull-left.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .pull-left.status.status-reported:before,
+.cuckoo-table#submission-task-table .pull-left.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .pull-left.status.status-reported:before,
 .network-display__table > table#submission-task-table .pull-left.status.status-reported:before,
 .cuckoo-files ul div.pull-left:before,
 .cuckoo-files #selection-overview .pull-left.extension-select:after,
@@ -240,8 +210,8 @@ table#submission-task-table.cuckoo-table__fullscreen .pull-left.status.status-re
 .pull-right.dns-badge__content:before,
 .pull-right.cuckoo-analysis__panel--toggle:before,
 .pull-right.cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table .pull-right.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .pull-right.status.status-reported:before,
+.cuckoo-table#submission-task-table .pull-right.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .pull-right.status.status-reported:before,
 .network-display__table > table#submission-task-table .pull-right.status.status-reported:before,
 .cuckoo-files ul div.pull-right:before,
 .cuckoo-files #selection-overview .pull-right.extension-select:after,
@@ -3947,6 +3917,36 @@ table#submission-task-table.cuckoo-table__fullscreen .pull-right.status.status-r
     src: local('Roboto Italic'), local('Roboto-Italic'), url('../fonts/Roboto_italic_400_default.woff') format('woff');
 }
 
+/*
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
+body.cyborg .app-error__balloon,
+body.cyborg .cuckoo-errors .troubleshoot,
+body.cyborg .cuckoo-table thead,
+body.cyborg .cuckoo-table__fullscreen thead,
+body.cyborg .network-display__table > table thead,
+body.cyborg .network-display__request-summary,
+body.cyborg .source-destination .title,
+body.cyborg .cuckoo-files__controls,
+body.cyborg .dashboard .dashboard-module__header
+{
+    color: #fff;
+    border: 0;
+    border-color: #2b5a6a;
+    border-top: 1px solid #2b5a6a;
+    border-right: 1px solid #003f54;
+    border-left: 1px solid #003f54;
+    background: -webkit-linear-gradient(#284f5c, #112c35);
+    background:         linear-gradient(#284f5c, #112c35);
+}
+
+/* 
+   Copyright (C) 2016 Cuckoo Foundation.
+   This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+   see the file 'docs/LICENSE' for copying permission.
+ */
 html
 {
     background: #1c1c1c;
@@ -4314,69 +4314,141 @@ pre.reset
     border-radius: 0;
 }
 
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
 .badge.file
 {
-    background-color: #ffe3c5;
+    color: #768699;
+    background-color: #c5e0ff;
+}
+
+.badge.file:hover
+{
+    background-color: #bbd5f2;
 }
 
 .badge.registry
 {
+    color: #997676;
     background-color: #ffc5c5;
+}
+
+.badge.registry:hover
+{
+    background-color: #f2bbbb;
 }
 
 .badge.process
 {
+    color: #768699;
     background-color: #c5e0ff;
+}
+
+.badge.process:hover
+{
+    background-color: #bbd5f2;
 }
 
 .badge.services
 {
+    color: #7a7699;
     background-color: #ccc5ff;
+}
+
+.badge.services:hover
+{
+    background-color: #c2bbf2;
 }
 
 .badge.device
 {
+    color: #7a7699;
     background-color: #ccc5ff;
+}
+
+.badge.device:hover
+{
+    background-color: #c2bbf2;
 }
 
 .badge.network
 {
+    color: #7f9976;
     background-color: #d3ffc5;
+}
+
+.badge.network:hover
+{
+    background-color: #c8f2bb;
 }
 
 .badge.synchronisation
 {
-    background-color: #f9c5ff;
+    color: #7a7699;
+    background-color: #ccc5ff;
+}
+
+.badge.synchronisation:hover
+{
+    background-color: #c2bbf2;
 }
 
 .badge.system
 {
+    color: #999776;
     background-color: #fffcc5;
+}
+
+.badge.system:hover
+{
+    background-color: #f2efbb;
 }
 
 .badge.windows
 {
+    color: #99768f;
     background-color: #ffc5ee;
+}
+
+.badge.windows:hover
+{
+    background-color: #f2bbe2;
 }
 
 .badge.iexplore
 {
+    color: #7a8570;
     background-color: #cdb;
+}
+
+.badge.iexplore:hover
+{
+    background-color: #c2d2b2;
 }
 
 .badge.office
 {
+    color: #7a8570;
     background-color: #cdb;
+}
+
+.badge.office:hover
+{
+    background-color: #c2d2b2;
 }
 
 .badge.pdf
 {
+    color: #7a8570;
     background-color: #cdb;
+}
+
+.badge.pdf:hover
+{
+    background-color: #c2d2b2;
 }
 
 .dns-badge
@@ -4564,10 +4636,10 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--primary > li > a .dns-badge__content:before,
 .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:before,
 .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:after,
-.app-nav__nav--primary > li > a table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
-.app-nav__nav--primary > li > a table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before,
+.app-nav__nav--primary > li > a .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
+.app-nav__nav--primary > li > a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before,
 .app-nav__nav--primary > li > a .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
 .app-nav__nav--primary > li > a .cuckoo-files ul div:before,
@@ -4623,10 +4695,10 @@ table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li
 .app-nav__nav--right > li .dns-badge__content:before,
 .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:before,
 .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:after,
-.app-nav__nav--right > li table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
-.app-nav__nav--right > li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before,
+.app-nav__nav--right > li .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
+.app-nav__nav--right > li #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before,
 .app-nav__nav--right > li .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
 .app-nav__nav--right > li .cuckoo-files ul div:before,
@@ -5459,18 +5531,18 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .button--sm .cuckoo-analysis__panel--toggle:after,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:after,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:after,
-.button table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .button .status.status-reported:before,
-.button--lg table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .button--lg .status.status-reported:before,
-.button--sm table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .button--sm .status.status-reported:before,
-.button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before,
-.button--lg table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before,
-.button--sm table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .button--sm .status.status-reported:before,
+.button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .button .status.status-reported:before,
+.button--lg .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .button--lg .status.status-reported:before,
+.button--sm .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .button--sm .status.status-reported:before,
+.button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before,
+.button--lg #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before,
+.button--sm #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .button--sm .status.status-reported:before,
 .button .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button .status.status-reported:before,
 .button--lg .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -6168,7 +6240,7 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle)
 }
 
 .cuckoo-analysis__panel--body .cuckoo-table,
-.cuckoo-analysis__panel--body table.cuckoo-table__fullscreen,
+.cuckoo-analysis__panel--body .cuckoo-table__fullscreen,
 .cuckoo-analysis__panel--body .network-display__table > table
 {
     font-size: 14px;
@@ -6642,10 +6714,10 @@ body.night .cuckoo-analysis__panel.danger > a
 .dndupload__simple.dragging .fa:before,
 .dndupload__simple.dragging .dns-badge__content:before,
 .dndupload__simple.dragging .cuckoo-analysis__panel--toggle:before,
-.dndupload__simple.dragging table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .dndupload__simple.dragging .status.status-reported:before,
-.dndupload__simple.dragging table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .dndupload__simple.dragging .status.status-reported:before,
+.dndupload__simple.dragging .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .dndupload__simple.dragging .status.status-reported:before,
+.dndupload__simple.dragging #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .dndupload__simple.dragging .status.status-reported:before,
 .dndupload__simple.dragging .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .dndupload__simple.dragging .status.status-reported:before,
 .dndupload__simple.dragging .cuckoo-files ul div:before,
@@ -6670,10 +6742,10 @@ table#submission-task-table.cuckoo-table__fullscreen .dndupload__simple.dragging
 .dndupload__simple.dropped .fa:before,
 .dndupload__simple.dropped .dns-badge__content:before,
 .dndupload__simple.dropped .cuckoo-analysis__panel--toggle:before,
-.dndupload__simple.dropped table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .dndupload__simple.dropped .status.status-reported:before,
-.dndupload__simple.dropped table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .dndupload__simple.dropped .status.status-reported:before,
+.dndupload__simple.dropped .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .dndupload__simple.dropped .status.status-reported:before,
+.dndupload__simple.dropped #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .dndupload__simple.dropped .status.status-reported:before,
 .dndupload__simple.dropped .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .dndupload__simple.dropped .status.status-reported:before,
 .dndupload__simple.dropped .cuckoo-files ul div:before,
@@ -6992,10 +7064,10 @@ body.night .dndupload__v2
 .upload-module .allowed-file-types ul li .dns-badge__content:before,
 .upload-module .allowed-file-types ul li .cuckoo-analysis__panel--toggle:before,
 .upload-module .allowed-file-types ul li .cuckoo-analysis__panel--toggle:after,
-.upload-module .allowed-file-types ul li table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before,
-.upload-module .allowed-file-types ul li table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .upload-module .allowed-file-types ul li .status.status-reported:before,
+.upload-module .allowed-file-types ul li .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before,
+.upload-module .allowed-file-types ul li #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .upload-module .allowed-file-types ul li .status.status-reported:before,
 .upload-module .allowed-file-types ul li .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .upload-module .allowed-file-types ul li .status.status-reported:before,
 .upload-module .allowed-file-types .cuckoo-files ul li div:before,
@@ -7253,10 +7325,10 @@ table#submission-task-table.cuckoo-table__fullscreen .upload-module .allowed-fil
 .cuckoo-nav .lock-sidebar .fa:before,
 .cuckoo-nav .lock-sidebar .dns-badge__content:before,
 .cuckoo-nav .lock-sidebar .cuckoo-analysis__panel--toggle:before,
-.cuckoo-nav .lock-sidebar table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .cuckoo-nav .lock-sidebar .status.status-reported:before,
-.cuckoo-nav .lock-sidebar table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .cuckoo-nav .lock-sidebar .status.status-reported:before,
+.cuckoo-nav .lock-sidebar .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .cuckoo-nav .lock-sidebar .status.status-reported:before,
+.cuckoo-nav .lock-sidebar #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .cuckoo-nav .lock-sidebar .status.status-reported:before,
 .cuckoo-nav .lock-sidebar .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .cuckoo-nav .lock-sidebar .status.status-reported:before,
 .cuckoo-nav .lock-sidebar .cuckoo-files ul div:before,
@@ -7281,10 +7353,10 @@ table#submission-task-table.cuckoo-table__fullscreen .cuckoo-nav .lock-sidebar .
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .fa:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .dns-badge__content:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .cuckoo-analysis__panel--toggle:before,
-.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .status.status-reported:before,
-.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .status.status-reported:before,
+.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .status.status-reported:before,
+.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .status.status-reported:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .status.status-reported:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .cuckoo-files ul div:before,
@@ -8125,10 +8197,10 @@ body.night .cuckoo-errors .troubleshoot
 .errors li.expanded .fa:before,
 .errors li.expanded .dns-badge__content:before,
 .errors li.expanded .cuckoo-analysis__panel--toggle:before,
-.errors li.expanded table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .errors li.expanded .status.status-reported:before,
-.errors li.expanded table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .errors li.expanded .status.status-reported:before,
+.errors li.expanded .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .errors li.expanded .status.status-reported:before,
+.errors li.expanded #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .errors li.expanded .status.status-reported:before,
 .errors li.expanded .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .errors li.expanded .status.status-reported:before,
 .errors li.expanded .cuckoo-files ul div:before,
@@ -8178,10 +8250,10 @@ table#submission-task-table.cuckoo-table__fullscreen .errors li.expanded .status
 .errors .expand-error .dns-badge__content:before,
 .errors .expand-error .cuckoo-analysis__panel--toggle:before,
 .errors .expand-error .cuckoo-analysis__panel--toggle:after,
-.errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:before,
-.errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:before,
+.errors .expand-error .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:before,
+.errors .expand-error #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:before,
 .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:before,
 .errors .expand-error .cuckoo-files ul div:before,
@@ -8213,10 +8285,10 @@ table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .stat
 .errors .expand-error .dns-badge__content:hover:before + span,
 .errors .expand-error .cuckoo-analysis__panel--toggle:hover:before + span,
 .errors .expand-error .cuckoo-analysis__panel--toggle:hover:after + span,
-.errors .expand-error table.cuckoo-table#submission-task-table .status.status-reported:hover:before + span,
-table.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span,
-.errors .expand-error table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:hover:before + span,
-table#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:hover:before + span,
+.errors .expand-error .cuckoo-table#submission-task-table .status.status-reported:hover:before + span,
+.cuckoo-table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span,
+.errors .expand-error #submission-task-table.cuckoo-table__fullscreen .status.status-reported:hover:before + span,
+#submission-task-table.cuckoo-table__fullscreen .errors .expand-error .status.status-reported:hover:before + span,
 .errors .expand-error .network-display__table > table#submission-task-table .status.status-reported:hover:before + span,
 .network-display__table > table#submission-task-table .errors .expand-error .status.status-reported:hover:before + span,
 .errors .expand-error .cuckoo-files ul div:hover:before + span,
@@ -8305,13 +8377,13 @@ footer:not(.dashboard-module__footer) a:hover
     color: #ccc;
 }
 
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
-table.cuckoo-table,
-table.cuckoo-table__fullscreen,
+.cuckoo-table,
+.cuckoo-table__fullscreen,
 .network-display__table > table
 {
     font-size: 12px;
@@ -8326,331 +8398,331 @@ table.cuckoo-table__fullscreen,
     background-color: #fff;
 }
 
-table.cuckoo-table thead,
-table.cuckoo-table__fullscreen thead,
+.cuckoo-table thead,
+.cuckoo-table__fullscreen thead,
 .network-display__table > table thead
 {
     border-bottom: 2px solid #ccc;
 }
 
-table.cuckoo-table thead th,
-table.cuckoo-table__fullscreen thead th,
+.cuckoo-table thead th,
+.cuckoo-table__fullscreen thead th,
 .network-display__table > table thead th
 {
     white-space: nowrap;
 }
 
-table.cuckoo-table thead tr:not(.table-display-config) th .fa,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa,
+.cuckoo-table thead tr:not(.table-display-config) th .fa,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa,
 .network-display__table > table thead tr:not(.table-display-config) th .fa,
-table.cuckoo-table thead tr:not(.table-display-config) th .custom-select:after,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-select:after,
+.cuckoo-table thead tr:not(.table-display-config) th .custom-select:after,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-select:after,
 .network-display__table > table thead tr:not(.table-display-config) th .custom-select:after,
-table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
+.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
 .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:after,
-table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-.network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.network-display__table > table thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.network-display__table > table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .cuckoo-table thead tr:not(.table-display-config) th div:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
 .cuckoo-files ul .network-display__table > table thead tr:not(.table-display-config) th div:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:after,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:after,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .cuckoo-table thead tr:not(.table-display-config) th .extension-select:after,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:after,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:after,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span,
-.flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span,
-.flex-form__header table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span,
+.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span,
 .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span,
-table.cuckoo-table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after,
+.cuckoo-table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after,
 .network-display__table > table thead tr:not(.table-display-config) th .breadcrumbs > li:not(:last-child):after,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th
+.cuckoo-table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
+.list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before
 {
     margin-right: 10px;
 }
 
-table.cuckoo-table thead tr:not(.table-display-config) th .fa:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
+.cuckoo-table thead tr:not(.table-display-config) th .fa:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
 .network-display__table > table thead tr:not(.table-display-config) th .fa:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
+.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
 .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-.network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.network-display__table > table thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.network-display__table > table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul table.cuckoo-table thead tr:not(.table-display-config) th div:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .cuckoo-table thead tr:not(.table-display-config) th div:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
 .cuckoo-files ul .network-display__table > table thead tr:not(.table-display-config) th div:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
+.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
 .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
 .flex-form__header .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th
+.cuckoo-table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
+.list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before
 {
     content: '\f0dc';
 }
 
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .fa:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .fa:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .fa:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-.sorting-asc table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc #submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
 .sorting-asc .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th div:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th div:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
 .cuckoo-files ul .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th div:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
 .flex-form__header .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
+.list-panel .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.list-panel .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .sorting-asc table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .sorting-asc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before
 {
     content: '\f0de';
 }
 
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .fa:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .fa:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .fa:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .fa:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .dns-badge__content:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .dns-badge__content:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .dns-badge__content:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-analysis__panel--toggle:before,
-.sorting-desc table.cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table#submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .cuckoo-table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc #submission-task-table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .status.status-reported:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .status.status-reported:before,
 .sorting-desc .network-display__table > table#submission-task-table thead tr:not(.table-display-config) th .status.status-reported:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th div:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
-.cuckoo-files ul .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th div:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
+.cuckoo-files ul .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th div:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files ul div:before,
 .cuckoo-files ul .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th div:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .extension-select:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .extension-select:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .extension-select:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
-.flex-form__header .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .flex-form__header .custom-checkbox > input + span:before,
 .flex-form__header .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .custom-checkbox > input + span:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
+.list-panel .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.list-panel .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .sorting-desc table.cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .sorting-desc table.cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before
 {
     content: '\f0dd';
 }
 
-table.cuckoo-table tbody tr:not(:last-child),
-table.cuckoo-table__fullscreen tbody tr:not(:last-child),
+.cuckoo-table tbody tr:not(:last-child),
+.cuckoo-table__fullscreen tbody tr:not(:last-child),
 .network-display__table > table tbody tr:not(:last-child)
 {
     border-bottom: 1px solid #ccc;
 }
 
-table.cuckoo-table tbody tr:nth-child(even),
-table.cuckoo-table__fullscreen tbody tr:nth-child(even),
+.cuckoo-table tbody tr:nth-child(even),
+.cuckoo-table__fullscreen tbody tr:nth-child(even),
 .network-display__table > table tbody tr:nth-child(even)
 {
     background-color: #f5f5f5;
 }
 
-table.cuckoo-table tbody td:empty:before,
-table.cuckoo-table__fullscreen tbody td:empty:before,
+.cuckoo-table tbody td:empty:before,
+.cuckoo-table__fullscreen tbody td:empty:before,
 .network-display__table > table tbody td:empty:before
 {
     content: '-';
@@ -8658,8 +8730,8 @@ table.cuckoo-table__fullscreen tbody td:empty:before,
     color: #999;
 }
 
-table.cuckoo-table tbody tr.clickable:hover,
-table.cuckoo-table__fullscreen tbody tr.clickable:hover,
+.cuckoo-table tbody tr.clickable:hover,
+.cuckoo-table__fullscreen tbody tr.clickable:hover,
 .network-display__table > table tbody tr.clickable:hover
 {
     cursor: pointer;
@@ -8667,104 +8739,104 @@ table.cuckoo-table__fullscreen tbody tr.clickable:hover,
     background-color: #ddd;
 }
 
-table.cuckoo-table thead th,
-table.cuckoo-table__fullscreen thead th,
+.cuckoo-table thead th,
+.cuckoo-table__fullscreen thead th,
 .network-display__table > table thead th,
-table.cuckoo-table thead td,
-table.cuckoo-table__fullscreen thead td,
+.cuckoo-table thead td,
+.cuckoo-table__fullscreen thead td,
 .network-display__table > table thead td,
-table.cuckoo-table tbody th,
-table.cuckoo-table__fullscreen tbody th,
+.cuckoo-table tbody th,
+.cuckoo-table__fullscreen tbody th,
 .network-display__table > table tbody th,
-table.cuckoo-table tbody td,
-table.cuckoo-table__fullscreen tbody td,
+.cuckoo-table tbody td,
+.cuckoo-table__fullscreen tbody td,
 .network-display__table > table tbody td
 {
     padding: 10px;
 }
 
-table.cuckoo-table thead th.cell-xs,
-table.cuckoo-table__fullscreen thead th.cell-xs,
+.cuckoo-table thead th.cell-xs,
+.cuckoo-table__fullscreen thead th.cell-xs,
 .network-display__table > table thead th.cell-xs,
-table.cuckoo-table thead td.cell-xs,
-table.cuckoo-table__fullscreen thead td.cell-xs,
+.cuckoo-table thead td.cell-xs,
+.cuckoo-table__fullscreen thead td.cell-xs,
 .network-display__table > table thead td.cell-xs,
-table.cuckoo-table tbody th.cell-xs,
-table.cuckoo-table__fullscreen tbody th.cell-xs,
+.cuckoo-table tbody th.cell-xs,
+.cuckoo-table__fullscreen tbody th.cell-xs,
 .network-display__table > table tbody th.cell-xs,
-table.cuckoo-table tbody td.cell-xs,
-table.cuckoo-table__fullscreen tbody td.cell-xs,
+.cuckoo-table tbody td.cell-xs,
+.cuckoo-table__fullscreen tbody td.cell-xs,
 .network-display__table > table tbody td.cell-xs
 {
     width: 10%;
 }
 
-table.cuckoo-table thead th.cell-sm,
-table.cuckoo-table__fullscreen thead th.cell-sm,
+.cuckoo-table thead th.cell-sm,
+.cuckoo-table__fullscreen thead th.cell-sm,
 .network-display__table > table thead th.cell-sm,
-table.cuckoo-table thead td.cell-sm,
-table.cuckoo-table__fullscreen thead td.cell-sm,
+.cuckoo-table thead td.cell-sm,
+.cuckoo-table__fullscreen thead td.cell-sm,
 .network-display__table > table thead td.cell-sm,
-table.cuckoo-table tbody th.cell-sm,
-table.cuckoo-table__fullscreen tbody th.cell-sm,
+.cuckoo-table tbody th.cell-sm,
+.cuckoo-table__fullscreen tbody th.cell-sm,
 .network-display__table > table tbody th.cell-sm,
-table.cuckoo-table tbody td.cell-sm,
-table.cuckoo-table__fullscreen tbody td.cell-sm,
+.cuckoo-table tbody td.cell-sm,
+.cuckoo-table__fullscreen tbody td.cell-sm,
 .network-display__table > table tbody td.cell-sm
 {
     width: 20%;
 }
 
-table.cuckoo-table thead th.cell-md,
-table.cuckoo-table__fullscreen thead th.cell-md,
+.cuckoo-table thead th.cell-md,
+.cuckoo-table__fullscreen thead th.cell-md,
 .network-display__table > table thead th.cell-md,
-table.cuckoo-table thead td.cell-md,
-table.cuckoo-table__fullscreen thead td.cell-md,
+.cuckoo-table thead td.cell-md,
+.cuckoo-table__fullscreen thead td.cell-md,
 .network-display__table > table thead td.cell-md,
-table.cuckoo-table tbody th.cell-md,
-table.cuckoo-table__fullscreen tbody th.cell-md,
+.cuckoo-table tbody th.cell-md,
+.cuckoo-table__fullscreen tbody th.cell-md,
 .network-display__table > table tbody th.cell-md,
-table.cuckoo-table tbody td.cell-md,
-table.cuckoo-table__fullscreen tbody td.cell-md,
+.cuckoo-table tbody td.cell-md,
+.cuckoo-table__fullscreen tbody td.cell-md,
 .network-display__table > table tbody td.cell-md
 {
     width: 30%;
 }
 
-table.cuckoo-table thead th.cell-lg,
-table.cuckoo-table__fullscreen thead th.cell-lg,
+.cuckoo-table thead th.cell-lg,
+.cuckoo-table__fullscreen thead th.cell-lg,
 .network-display__table > table thead th.cell-lg,
-table.cuckoo-table thead td.cell-lg,
-table.cuckoo-table__fullscreen thead td.cell-lg,
+.cuckoo-table thead td.cell-lg,
+.cuckoo-table__fullscreen thead td.cell-lg,
 .network-display__table > table thead td.cell-lg,
-table.cuckoo-table tbody th.cell-lg,
-table.cuckoo-table__fullscreen tbody th.cell-lg,
+.cuckoo-table tbody th.cell-lg,
+.cuckoo-table__fullscreen tbody th.cell-lg,
 .network-display__table > table tbody th.cell-lg,
-table.cuckoo-table tbody td.cell-lg,
-table.cuckoo-table__fullscreen tbody td.cell-lg,
+.cuckoo-table tbody td.cell-lg,
+.cuckoo-table__fullscreen tbody td.cell-lg,
 .network-display__table > table tbody td.cell-lg
 {
     width: 50%;
 }
 
-table.cuckoo-table thead th.cell-fill,
-table.cuckoo-table__fullscreen thead th.cell-fill,
+.cuckoo-table thead th.cell-fill,
+.cuckoo-table__fullscreen thead th.cell-fill,
 .network-display__table > table thead th.cell-fill,
-table.cuckoo-table thead td.cell-fill,
-table.cuckoo-table__fullscreen thead td.cell-fill,
+.cuckoo-table thead td.cell-fill,
+.cuckoo-table__fullscreen thead td.cell-fill,
 .network-display__table > table thead td.cell-fill,
-table.cuckoo-table tbody th.cell-fill,
-table.cuckoo-table__fullscreen tbody th.cell-fill,
+.cuckoo-table tbody th.cell-fill,
+.cuckoo-table__fullscreen tbody th.cell-fill,
 .network-display__table > table tbody th.cell-fill,
-table.cuckoo-table tbody td.cell-fill,
-table.cuckoo-table__fullscreen tbody td.cell-fill,
+.cuckoo-table tbody td.cell-fill,
+.cuckoo-table__fullscreen tbody td.cell-fill,
 .network-display__table > table tbody td.cell-fill
 {
     width: 100%;
 }
 
-table.cuckoo-table tfoot,
-table.cuckoo-table__fullscreen tfoot,
+.cuckoo-table tfoot,
+.cuckoo-table__fullscreen tfoot,
 .network-display__table > table tfoot
 {
     text-align: left;
@@ -8772,25 +8844,25 @@ table.cuckoo-table__fullscreen tfoot,
     border-top: 2px solid #ccc;
 }
 
-table.cuckoo-table tfoot td,
-table.cuckoo-table__fullscreen tfoot td,
+.cuckoo-table tfoot td,
+.cuckoo-table__fullscreen tfoot td,
 .network-display__table > table tfoot td
 {
     padding: 5px;
 }
 
-table.cuckoo-table tfoot td p,
-table.cuckoo-table__fullscreen tfoot td p,
+.cuckoo-table tfoot td p,
+.cuckoo-table__fullscreen tfoot td p,
 .network-display__table > table tfoot td p
 {
     margin: 0;
 }
 
-table.cuckoo-table .table-display-config > th,
-table.cuckoo-table__fullscreen .table-display-config > th,
+.cuckoo-table .table-display-config > th,
+.cuckoo-table__fullscreen .table-display-config > th,
 .network-display__table > table .table-display-config > th,
-table.cuckoo-table .table-display-config > td,
-table.cuckoo-table__fullscreen .table-display-config > td,
+.cuckoo-table .table-display-config > td,
+.cuckoo-table__fullscreen .table-display-config > td,
 .network-display__table > table .table-display-config > td
 {
     font-weight: 400;
@@ -8801,15 +8873,15 @@ table.cuckoo-table__fullscreen .table-display-config > td,
     border-bottom: 1px solid #ccc;
 }
 
-table.cuckoo-table .small-integer,
-table.cuckoo-table__fullscreen .small-integer,
+.cuckoo-table .small-integer,
+.cuckoo-table__fullscreen .small-integer,
 .network-display__table > table .small-integer
 {
     width: 50px;
 }
 
-table.cuckoo-table .results-per-page,
-table.cuckoo-table__fullscreen .results-per-page,
+.cuckoo-table .results-per-page,
+.cuckoo-table__fullscreen .results-per-page,
 .network-display__table > table .results-per-page
 {
     line-height: 21px;
@@ -8824,15 +8896,15 @@ table.cuckoo-table__fullscreen .results-per-page,
     align-items: center;
 }
 
-table.cuckoo-table .results-per-page > *,
-table.cuckoo-table__fullscreen .results-per-page > *,
+.cuckoo-table .results-per-page > *,
+.cuckoo-table__fullscreen .results-per-page > *,
 .network-display__table > table .results-per-page > *
 {
     margin: 0 5px;
 }
 
-table.cuckoo-table .results-per-page input,
-table.cuckoo-table__fullscreen .results-per-page input,
+.cuckoo-table .results-per-page input,
+.cuckoo-table__fullscreen .results-per-page input,
 .network-display__table > table .results-per-page input
 {
     width: 50px;
@@ -8843,8 +8915,8 @@ table.cuckoo-table__fullscreen .results-per-page input,
     border-radius: 2px;
 }
 
-table.cuckoo-table .pagination,
-table.cuckoo-table__fullscreen .pagination,
+.cuckoo-table .pagination,
+.cuckoo-table__fullscreen .pagination,
 .network-display__table > table .pagination
 {
     display: -webkit-inline-box;
@@ -8861,8 +8933,8 @@ table.cuckoo-table__fullscreen .pagination,
     align-items: center;
 }
 
-table.cuckoo-table .pagination > li,
-table.cuckoo-table__fullscreen .pagination > li,
+.cuckoo-table .pagination > li,
+.cuckoo-table__fullscreen .pagination > li,
 .network-display__table > table .pagination > li
 {
     overflow: hidden;
@@ -8871,8 +8943,8 @@ table.cuckoo-table__fullscreen .pagination > li,
     border-left: 0;
 }
 
-table.cuckoo-table .pagination > li:first-child,
-table.cuckoo-table__fullscreen .pagination > li:first-child,
+.cuckoo-table .pagination > li:first-child,
+.cuckoo-table__fullscreen .pagination > li:first-child,
 .network-display__table > table .pagination > li:first-child
 {
     border-left: 1px solid #ddd;
@@ -8880,16 +8952,16 @@ table.cuckoo-table__fullscreen .pagination > li:first-child,
     border-bottom-left-radius: 4px;
 }
 
-table.cuckoo-table .pagination > li:last-child,
-table.cuckoo-table__fullscreen .pagination > li:last-child,
+.cuckoo-table .pagination > li:last-child,
+.cuckoo-table__fullscreen .pagination > li:last-child,
 .network-display__table > table .pagination > li:last-child
 {
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
 }
 
-table.cuckoo-table .pagination > li > a,
-table.cuckoo-table__fullscreen .pagination > li > a,
+.cuckoo-table .pagination > li > a,
+.cuckoo-table__fullscreen .pagination > li > a,
 .network-display__table > table .pagination > li > a
 {
     line-height: 12px;
@@ -8904,8 +8976,8 @@ table.cuckoo-table__fullscreen .pagination > li > a,
     background-color: #fefefe;
 }
 
-.active table.cuckoo-table .pagination > li > a,
-.active table.cuckoo-table__fullscreen .pagination > li > a,
+.active .cuckoo-table .pagination > li > a,
+.active .cuckoo-table__fullscreen .pagination > li > a,
 .active .network-display__table > table .pagination > li > a
 {
     font-weight: 400;
@@ -8914,26 +8986,26 @@ table.cuckoo-table__fullscreen .pagination > li > a,
     background-color: #2980b9;
 }
 
-.disabled table.cuckoo-table .pagination > li > a,
-.disabled table.cuckoo-table__fullscreen .pagination > li > a,
+.disabled .cuckoo-table .pagination > li > a,
+.disabled .cuckoo-table__fullscreen .pagination > li > a,
 .disabled .network-display__table > table .pagination > li > a
 {
     opacity: .5;
     border-color: rgba(0, 0, 0, .1);
 }
 
-table.cuckoo-table .pagination > li.disabled:hover,
-table.cuckoo-table__fullscreen .pagination > li.disabled:hover,
+.cuckoo-table .pagination > li.disabled:hover,
+.cuckoo-table__fullscreen .pagination > li.disabled:hover,
 .network-display__table > table .pagination > li.disabled:hover,
-table.cuckoo-table .pagination > li.disabled:hover a,
-table.cuckoo-table__fullscreen .pagination > li.disabled:hover a,
+.cuckoo-table .pagination > li.disabled:hover a,
+.cuckoo-table__fullscreen .pagination > li.disabled:hover a,
 .network-display__table > table .pagination > li.disabled:hover a
 {
     cursor: default;
 }
 
-table.cuckoo-table.table-key-value td,
-table.table-key-value.cuckoo-table__fullscreen td,
+.cuckoo-table.table-key-value td,
+.table-key-value.cuckoo-table__fullscreen td,
 .network-display__table > table.table-key-value td
 {
     width: 50%;
@@ -8941,49 +9013,49 @@ table.table-key-value.cuckoo-table__fullscreen td,
     border-right: 1px solid #ccc;
 }
 
-table.cuckoo-table.table-key-value td:last-child,
-table.table-key-value.cuckoo-table__fullscreen td:last-child,
+.cuckoo-table.table-key-value td:last-child,
+.table-key-value.cuckoo-table__fullscreen td:last-child,
 .network-display__table > table.table-key-value td:last-child
 {
     border: 0;
 }
 
-.col-3 table.cuckoo-table.table-key-value td,
-.col-3 table.table-key-value.cuckoo-table__fullscreen td,
+.col-3 .cuckoo-table.table-key-value td,
+.col-3 .table-key-value.cuckoo-table__fullscreen td,
 .col-3 .network-display__table > table.table-key-value td
 {
     width: 33%;
 }
 
-table.cuckoo-table .loading,
-table.cuckoo-table__fullscreen .loading,
+.cuckoo-table .loading,
+.cuckoo-table__fullscreen .loading,
 .network-display__table > table .loading
 {
     margin: 0;
 }
 
-table.cuckoo-table .less-entries > td,
-table.cuckoo-table__fullscreen .less-entries > td,
+.cuckoo-table .less-entries > td,
+.cuckoo-table__fullscreen .less-entries > td,
 .network-display__table > table .less-entries > td
 {
     text-align: center;
 }
 
-table.cuckoo-table .less-entries > td .badge,
-table.cuckoo-table__fullscreen .less-entries > td .badge,
+.cuckoo-table .less-entries > td .badge,
+.cuckoo-table__fullscreen .less-entries > td .badge,
 .network-display__table > table .less-entries > td .badge
 {
     background-color: #ccc;
 }
 
-table.cuckoo-table .less-entries > td:nth-child(odd),
-table.cuckoo-table__fullscreen .less-entries > td:nth-child(odd),
+.cuckoo-table .less-entries > td:nth-child(odd),
+.cuckoo-table__fullscreen .less-entries > td:nth-child(odd),
 .network-display__table > table .less-entries > td:nth-child(odd)
 {
     background-color: #f5f5f5;
 }
 
-table.cuckoo-table__fullscreen
+.cuckoo-table__fullscreen
 {
     font-size: 14px;
 
@@ -8992,182 +9064,182 @@ table.cuckoo-table__fullscreen
     table-layout: fixed;
 }
 
-table.cuckoo-table__fullscreen thead > tr:first-child th
+.cuckoo-table__fullscreen thead > tr:first-child th
 {
     border-top: 0;
 }
 
-table.cuckoo-table__fullscreen tbody td
+.cuckoo-table__fullscreen tbody td
 {
     padding: 15px;
 
     word-wrap: break-word;
 }
 
-table.cuckoo-table__fullscreen .pagination a
+.cuckoo-table__fullscreen .pagination a
 {
     padding: 8px 10px;
 }
 
-table.cuckoo-table__fullscreen .pagination .first a,
-table.cuckoo-table__fullscreen .pagination .prev a,
-table.cuckoo-table__fullscreen .pagination .next a,
-table.cuckoo-table__fullscreen .pagination .last a
+.cuckoo-table__fullscreen .pagination .first a,
+.cuckoo-table__fullscreen .pagination .prev a,
+.cuckoo-table__fullscreen .pagination .next a,
+.cuckoo-table__fullscreen .pagination .last a
 {
     padding: 4px 10px 4px 10px;
 }
 
-body.cyborg table.cuckoo-table,
-body.cyborg table.cuckoo-table__fullscreen,
+body.cyborg .cuckoo-table,
+body.cyborg .cuckoo-table__fullscreen,
 body.cyborg .network-display__table > table
 {
     border-color: #133b4a;
     background-color: #152d3b;
 }
 
-body.cyborg table.cuckoo-table thead,
-body.cyborg table.cuckoo-table__fullscreen thead,
+body.cyborg .cuckoo-table thead,
+body.cyborg .cuckoo-table__fullscreen thead,
 body.cyborg .network-display__table > table thead
 {
     border-bottom: 1px solid #133b4a;
 }
 
-body.cyborg table.cuckoo-table tbody tr,
-body.cyborg table.cuckoo-table__fullscreen tbody tr,
+body.cyborg .cuckoo-table tbody tr,
+body.cyborg .cuckoo-table__fullscreen tbody tr,
 body.cyborg .network-display__table > table tbody tr,
-body.cyborg table.cuckoo-table tfoot,
-body.cyborg table.cuckoo-table__fullscreen tfoot,
+body.cyborg .cuckoo-table tfoot,
+body.cyborg .cuckoo-table__fullscreen tfoot,
 body.cyborg .network-display__table > table tfoot
 {
     border-color: #133b4a;
 }
 
-body.cyborg table.cuckoo-table tbody tr.clickable:hover,
-body.cyborg table.cuckoo-table__fullscreen tbody tr.clickable:hover,
+body.cyborg .cuckoo-table tbody tr.clickable:hover,
+body.cyborg .cuckoo-table__fullscreen tbody tr.clickable:hover,
 body.cyborg .network-display__table > table tbody tr.clickable:hover
 {
     color: #fff;
     background-color: rgba(0, 0, 0, .2);
 }
 
-body.cyborg table.cuckoo-table .table-display-config > th,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > th,
+body.cyborg .cuckoo-table .table-display-config > th,
+body.cyborg .cuckoo-table__fullscreen .table-display-config > th,
 body.cyborg .network-display__table > table .table-display-config > th,
-body.cyborg table.cuckoo-table .table-display-config > td,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > td,
+body.cyborg .cuckoo-table .table-display-config > td,
+body.cyborg .cuckoo-table__fullscreen .table-display-config > td,
 body.cyborg .network-display__table > table .table-display-config > td
 {
     border-color: #1d5b73;
 }
 
-body.cyborg table.cuckoo-table .table-display-config > th input,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > th input,
+body.cyborg .cuckoo-table .table-display-config > th input,
+body.cyborg .cuckoo-table__fullscreen .table-display-config > th input,
 body.cyborg .network-display__table > table .table-display-config > th input,
-body.cyborg table.cuckoo-table .table-display-config > td input,
-body.cyborg table.cuckoo-table__fullscreen .table-display-config > td input,
+body.cyborg .cuckoo-table .table-display-config > td input,
+body.cyborg .cuckoo-table__fullscreen .table-display-config > td input,
 body.cyborg .network-display__table > table .table-display-config > td input
 {
     border: 1px solid #091b21;
 }
 
-body.cyborg table.cuckoo-table .pagination > li,
-body.cyborg table.cuckoo-table__fullscreen .pagination > li,
+body.cyborg .cuckoo-table .pagination > li,
+body.cyborg .cuckoo-table__fullscreen .pagination > li,
 body.cyborg .network-display__table > table .pagination > li
 {
     border-color: #1d5b73;
 }
 
-body.cyborg table.cuckoo-table .less-entries td,
-body.cyborg table.cuckoo-table__fullscreen .less-entries td,
+body.cyborg .cuckoo-table .less-entries td,
+body.cyborg .cuckoo-table__fullscreen .less-entries td,
 body.cyborg .network-display__table > table .less-entries td
 {
     background-color: #0e1f28;
 }
 
-body.cyborg table.cuckoo-table .less-entries td .badge,
-body.cyborg table.cuckoo-table__fullscreen .less-entries td .badge,
+body.cyborg .cuckoo-table .less-entries td .badge,
+body.cyborg .cuckoo-table__fullscreen .less-entries td .badge,
 body.cyborg .network-display__table > table .less-entries td .badge
 {
     background-color: #152d3b;
 }
 
-body.night table.cuckoo-table,
-body.night table.cuckoo-table__fullscreen,
+body.night .cuckoo-table,
+body.night .cuckoo-table__fullscreen,
 body.night .network-display__table > table
 {
     border-color: #375a7f;
     background-color: #152d3b;
 }
 
-body.night table.cuckoo-table tr:nth-child(even),
-body.night table.cuckoo-table__fullscreen tr:nth-child(even),
+body.night .cuckoo-table tr:nth-child(even),
+body.night .cuckoo-table__fullscreen tr:nth-child(even),
 body.night .network-display__table > table tr:nth-child(even)
 {
     background-color: #1c3b4e;
 }
 
-body.night table.cuckoo-table thead,
-body.night table.cuckoo-table__fullscreen thead,
+body.night .cuckoo-table thead,
+body.night .cuckoo-table__fullscreen thead,
 body.night .network-display__table > table thead
 {
     border-bottom: 1px solid #375a7f;
     background-color: #375a7f;
 }
 
-body.night table.cuckoo-table tbody tr,
-body.night table.cuckoo-table__fullscreen tbody tr,
+body.night .cuckoo-table tbody tr,
+body.night .cuckoo-table__fullscreen tbody tr,
 body.night .network-display__table > table tbody tr,
-body.night table.cuckoo-table tfoot,
-body.night table.cuckoo-table__fullscreen tfoot,
+body.night .cuckoo-table tfoot,
+body.night .cuckoo-table__fullscreen tfoot,
 body.night .network-display__table > table tfoot
 {
     border-color: #375a7f;
 }
 
-body.night table.cuckoo-table tbody tr.clickable:hover,
-body.night table.cuckoo-table__fullscreen tbody tr.clickable:hover,
+body.night .cuckoo-table tbody tr.clickable:hover,
+body.night .cuckoo-table__fullscreen tbody tr.clickable:hover,
 body.night .network-display__table > table tbody tr.clickable:hover
 {
     background-color: rgba(0, 0, 0, .2);
 }
 
-body.night table.cuckoo-table .table-display-config,
-body.night table.cuckoo-table__fullscreen .table-display-config,
+body.night .cuckoo-table .table-display-config,
+body.night .cuckoo-table__fullscreen .table-display-config,
 body.night .network-display__table > table .table-display-config
 {
     background-color: #152d3b;
 }
 
-body.night table.cuckoo-table .table-display-config > th,
-body.night table.cuckoo-table__fullscreen .table-display-config > th,
+body.night .cuckoo-table .table-display-config > th,
+body.night .cuckoo-table__fullscreen .table-display-config > th,
 body.night .network-display__table > table .table-display-config > th,
-body.night table.cuckoo-table .table-display-config > td,
-body.night table.cuckoo-table__fullscreen .table-display-config > td,
+body.night .cuckoo-table .table-display-config > td,
+body.night .cuckoo-table__fullscreen .table-display-config > td,
 body.night .network-display__table > table .table-display-config > td
 {
     border-color: #4673a3;
 }
 
-body.night table.cuckoo-table .table-display-config > th input,
-body.night table.cuckoo-table__fullscreen .table-display-config > th input,
+body.night .cuckoo-table .table-display-config > th input,
+body.night .cuckoo-table__fullscreen .table-display-config > th input,
 body.night .network-display__table > table .table-display-config > th input,
-body.night table.cuckoo-table .table-display-config > td input,
-body.night table.cuckoo-table__fullscreen .table-display-config > td input,
+body.night .cuckoo-table .table-display-config > td input,
+body.night .cuckoo-table__fullscreen .table-display-config > td input,
 body.night .network-display__table > table .table-display-config > td input
 {
     border: 1px solid #28415b;
     background-color: #1c3b4e;
 }
 
-body.night table.cuckoo-table .pagination > li,
-body.night table.cuckoo-table__fullscreen .pagination > li,
+body.night .cuckoo-table .pagination > li,
+body.night .cuckoo-table__fullscreen .pagination > li,
 body.night .network-display__table > table .pagination > li
 {
     border-color: #375a7f;
 }
 
-body.night table.cuckoo-table .pagination > li > a,
-body.night table.cuckoo-table__fullscreen .pagination > li > a,
+body.night .cuckoo-table .pagination > li > a,
+body.night .cuckoo-table__fullscreen .pagination > li > a,
 body.night .network-display__table > table .pagination > li > a
 {
     color: #d7d7d7;
@@ -9175,22 +9247,22 @@ body.night .network-display__table > table .pagination > li > a
     background-color: #152d3b;
 }
 
-body.night table.cuckoo-table .less-entries td,
-body.night table.cuckoo-table__fullscreen .less-entries td,
+body.night .cuckoo-table .less-entries td,
+body.night .cuckoo-table__fullscreen .less-entries td,
 body.night .network-display__table > table .less-entries td
 {
     background-color: #202225;
 }
 
-body.night table.cuckoo-table .less-entries td .badge,
-body.night table.cuckoo-table__fullscreen .less-entries td .badge,
+body.night .cuckoo-table .less-entries td .badge,
+body.night .cuckoo-table__fullscreen .less-entries td .badge,
 body.night .network-display__table > table .less-entries td .badge
 {
     background-color: #3a3e44;
 }
 
-table.cuckoo-table#submission-task-table .status,
-table#submission-task-table.cuckoo-table__fullscreen .status,
+.cuckoo-table#submission-task-table .status,
+#submission-task-table.cuckoo-table__fullscreen .status,
 .network-display__table > table#submission-task-table .status
 {
     display: inline-block;
@@ -9204,29 +9276,29 @@ table#submission-task-table.cuckoo-table__fullscreen .status,
     background-color: #bbb;
 }
 
-table.cuckoo-table#submission-task-table .status.status-pending,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-pending,
+.cuckoo-table#submission-task-table .status.status-pending,
+#submission-task-table.cuckoo-table__fullscreen .status.status-pending,
 .network-display__table > table#submission-task-table .status.status-pending
 {
     background-color: #bbb;
 }
 
-table.cuckoo-table#submission-task-table .status.status-running,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-running,
+.cuckoo-table#submission-task-table .status.status-running,
+#submission-task-table.cuckoo-table__fullscreen .status.status-running,
 .network-display__table > table#submission-task-table .status.status-running
 {
     background-color: #d2e24c;
 }
 
-table.cuckoo-table#submission-task-table .status.status-completed,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-completed,
+.cuckoo-table#submission-task-table .status.status-completed,
+#submission-task-table.cuckoo-table__fullscreen .status.status-completed,
 .network-display__table > table#submission-task-table .status.status-completed
 {
     background-color: #66ca4d;
 }
 
-table.cuckoo-table#submission-task-table .status.status-reported,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-reported,
+.cuckoo-table#submission-task-table .status.status-reported,
+#submission-task-table.cuckoo-table__fullscreen .status.status-reported,
 .network-display__table > table#submission-task-table .status.status-reported
 {
     width: auto;
@@ -9236,15 +9308,15 @@ table#submission-task-table.cuckoo-table__fullscreen .status.status-reported,
     background-color: transparent;
 }
 
-table.cuckoo-table#submission-task-table .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+.cuckoo-table#submission-task-table .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 .network-display__table > table#submission-task-table .status.status-reported:before
 {
     content: '\f00c';
 }
 
-table.cuckoo-table .badge,
-table.cuckoo-table__fullscreen .badge,
+.cuckoo-table .badge,
+.cuckoo-table__fullscreen .badge,
 .network-display__table > table .badge
 {
     font-weight: 700;
@@ -9255,22 +9327,22 @@ table.cuckoo-table__fullscreen .badge,
     border-radius: 4px;
 }
 
-table.cuckoo-table .badge.danger,
-table.cuckoo-table__fullscreen .badge.danger,
+.cuckoo-table .badge.danger,
+.cuckoo-table__fullscreen .badge.danger,
 .network-display__table > table .badge.danger
 {
     background-color: #f4014f;
 }
 
-table.cuckoo-table .badge.warning,
-table.cuckoo-table__fullscreen .badge.warning,
+.cuckoo-table .badge.warning,
+.cuckoo-table__fullscreen .badge.warning,
 .network-display__table > table .badge.warning
 {
     background-color: #ff9f00;
 }
 
-table.cuckoo-table .badge.success,
-table.cuckoo-table__fullscreen .badge.success,
+.cuckoo-table .badge.success,
+.cuckoo-table__fullscreen .badge.success,
 .network-display__table > table .badge.success
 {
     background-color: #94be69;
@@ -9455,10 +9527,10 @@ body.night .network-display__outer
 .network-display__request-summary:hover .dns-badge__content:before,
 .network-display__request-summary:hover .cuckoo-analysis__panel--toggle:before,
 .network-display__request-summary:hover .cuckoo-analysis__panel--toggle:after,
-.network-display__request-summary:hover table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .network-display__request-summary:hover .status.status-reported:before,
-.network-display__request-summary:hover table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .network-display__request-summary:hover .status.status-reported:before,
+.network-display__request-summary:hover .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .network-display__request-summary:hover .status.status-reported:before,
+.network-display__request-summary:hover #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .network-display__request-summary:hover .status.status-reported:before,
 .network-display__request-summary:hover .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .network-display__request-summary:hover .status.status-reported:before,
 .network-display__request-summary:hover .cuckoo-files ul div:before,
@@ -9572,10 +9644,10 @@ body.cyborg .network-display__request-summary .custom-select:after,
 body.cyborg .network-display__request-summary .dns-badge__content:before,
 body.cyborg .network-display__request-summary .cuckoo-analysis__panel--toggle:before,
 body.cyborg .network-display__request-summary .cuckoo-analysis__panel--toggle:after,
-body.cyborg .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before,
-body.cyborg .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen body.cyborg .network-display__request-summary .status.status-reported:before,
+body.cyborg .network-display__request-summary .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before,
+body.cyborg .network-display__request-summary #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.cyborg .network-display__request-summary .status.status-reported:before,
 body.cyborg .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table body.cyborg .network-display__request-summary .status.status-reported:before,
 body.cyborg .network-display__request-summary .cuckoo-files ul div:before,
@@ -9635,10 +9707,10 @@ body.night .network-display__request-summary .custom-select:after,
 body.night .network-display__request-summary .dns-badge__content:before,
 body.night .network-display__request-summary .cuckoo-analysis__panel--toggle:before,
 body.night .network-display__request-summary .cuckoo-analysis__panel--toggle:after,
-body.night .network-display__request-summary table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table body.night .network-display__request-summary .status.status-reported:before,
-body.night .network-display__request-summary table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen body.night .network-display__request-summary .status.status-reported:before,
+body.night .network-display__request-summary .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.night .network-display__request-summary .status.status-reported:before,
+body.night .network-display__request-summary #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.night .network-display__request-summary .status.status-reported:before,
 body.night .network-display__request-summary .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table body.night .network-display__request-summary .status.status-reported:before,
 body.night .network-display__request-summary .cuckoo-files ul div:before,
@@ -9743,14 +9815,14 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right
 .network-display__request-details--single .detail-field__header .cuckoo-analysis__panel--toggle:before,
 .network-display__request-details .detail-field__header .cuckoo-analysis__panel--toggle:after,
 .network-display__request-details--single .detail-field__header .cuckoo-analysis__panel--toggle:after,
-.network-display__request-details .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before,
-.network-display__request-details--single .detail-field__header table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before,
-.network-display__request-details .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details .detail-field__header .status.status-reported:before,
-.network-display__request-details--single .detail-field__header table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .network-display__request-details--single .detail-field__header .status.status-reported:before,
+.network-display__request-details .detail-field__header .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before,
+.network-display__request-details--single .detail-field__header .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .network-display__request-details--single .detail-field__header .status.status-reported:before,
+.network-display__request-details .detail-field__header #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .network-display__request-details .detail-field__header .status.status-reported:before,
+.network-display__request-details--single .detail-field__header #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .network-display__request-details--single .detail-field__header .status.status-reported:before,
 .network-display__request-details .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .network-display__request-details .detail-field__header .status.status-reported:before,
 .network-display__request-details--single .detail-field__header .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -10635,10 +10707,10 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button .dns-badge__content:before,
 .flex-grid__header h3 button .cuckoo-analysis__panel--toggle:before,
 .flex-grid__header h3 button .cuckoo-analysis__panel--toggle:after,
-.flex-grid__header h3 button table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .flex-grid__header h3 button .status.status-reported:before,
-.flex-grid__header h3 button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button .status.status-reported:before,
+.flex-grid__header h3 button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .flex-grid__header h3 button .status.status-reported:before,
+.flex-grid__header h3 button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button .status.status-reported:before,
 .flex-grid__header h3 button .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .flex-grid__header h3 button .status.status-reported:before,
 .flex-grid__header h3 button .cuckoo-files ul div:before,
@@ -10674,20 +10746,20 @@ table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 butto
 .flex-grid__header h3 .flex-grid__button .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 button--description .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-analysis__panel--toggle:after,
-.flex-grid__header h3 .flex-grid__button table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table
+.flex-grid__header h3 .flex-grid__button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table
 .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
-.flex-grid__header h3 button--description table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
-.flex-grid__header h3 .flex-grid__button--description table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
-.flex-grid__header h3 .flex-grid__button table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen
+.flex-grid__header h3 button--description .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
+.flex-grid__header h3 .flex-grid__button--description .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
+.flex-grid__header h3 .flex-grid__button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen
 .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
-.flex-grid__header h3 button--description table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button--description .status.status-reported:before,
-.flex-grid__header h3 .flex-grid__button--description table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
+.flex-grid__header h3 button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button--description .status.status-reported:before,
+.flex-grid__header h3 .flex-grid__button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table
 .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
@@ -12800,10 +12872,10 @@ body.night .flex-static__summary li
 .process-tree__tree .processes li > div a.dns-badge__content:before,
 .process-tree__tree .processes li > div a.cuckoo-analysis__panel--toggle:before,
 .process-tree__tree .processes li > div a.cuckoo-analysis__panel--toggle:after,
-.process-tree__tree .processes li > div table.cuckoo-table#submission-task-table a.status.status-reported:before,
-table.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
-.process-tree__tree .processes li > div table#submission-task-table.cuckoo-table__fullscreen a.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div .cuckoo-table#submission-task-table a.status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div #submission-task-table.cuckoo-table__fullscreen a.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.status.status-reported:before,
 .process-tree__tree .processes li > div .network-display__table > table#submission-task-table a.status.status-reported:before,
 .network-display__table > table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
 .process-tree__tree .processes li > div .cuckoo-files #selection-overview a.extension-select:after,
@@ -12817,10 +12889,10 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .proces
 .process-tree__tree .processes li > div a.fa:before,
 .process-tree__tree .processes li > div a.dns-badge__content:before,
 .process-tree__tree .processes li > div a.cuckoo-analysis__panel--toggle:before,
-.process-tree__tree .processes li > div table.cuckoo-table#submission-task-table a.status.status-reported:before,
-table.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
-.process-tree__tree .processes li > div table#submission-task-table.cuckoo-table__fullscreen a.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div .cuckoo-table#submission-task-table a.status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div #submission-task-table.cuckoo-table__fullscreen a.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.status.status-reported:before,
 .process-tree__tree .processes li > div .network-display__table > table#submission-task-table a.status.status-reported:before,
 .network-display__table > table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
 .process-tree__tree .processes li > div .cuckoo-files #selection-overview a.extension-select:before,
@@ -12832,10 +12904,10 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .proces
 .process-tree__tree .processes li > div a.fa.is-open:before,
 .process-tree__tree .processes li > div a.is-open.dns-badge__content:before,
 .process-tree__tree .processes li > div a.is-open.cuckoo-analysis__panel--toggle:before,
-.process-tree__tree .processes li > div table.cuckoo-table#submission-task-table a.is-open.status.status-reported:before,
-table.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.is-open.status.status-reported:before,
-.process-tree__tree .processes li > div table#submission-task-table.cuckoo-table__fullscreen a.is-open.status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.is-open.status.status-reported:before,
+.process-tree__tree .processes li > div .cuckoo-table#submission-task-table a.is-open.status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.is-open.status.status-reported:before,
+.process-tree__tree .processes li > div #submission-task-table.cuckoo-table__fullscreen a.is-open.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.is-open.status.status-reported:before,
 .process-tree__tree .processes li > div .network-display__table > table#submission-task-table a.is-open.status.status-reported:before,
 .network-display__table > table#submission-task-table .process-tree__tree .processes li > div a.is-open.status.status-reported:before,
 .process-tree__tree .processes li > div .cuckoo-files #selection-overview a.is-open.extension-select:before,
@@ -12914,10 +12986,10 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .proces
 .process-tree__header h4 .dns-badge__content:first-child:before,
 .process-tree__header h4 .cuckoo-analysis__panel--toggle:first-child:before,
 .process-tree__header h4 .cuckoo-analysis__panel--toggle:first-child:after,
-.process-tree__header h4 table.cuckoo-table#submission-task-table .status.status-reported:first-child:before,
-table.cuckoo-table#submission-task-table .process-tree__header h4 .status.status-reported:first-child:before,
-.process-tree__header h4 table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:first-child:before,
-table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .status.status-reported:first-child:before,
+.process-tree__header h4 .cuckoo-table#submission-task-table .status.status-reported:first-child:before,
+.cuckoo-table#submission-task-table .process-tree__header h4 .status.status-reported:first-child:before,
+.process-tree__header h4 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:first-child:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .status.status-reported:first-child:before,
 .process-tree__header h4 .network-display__table > table#submission-task-table .status.status-reported:first-child:before,
 .network-display__table > table#submission-task-table .process-tree__header h4 .status.status-reported:first-child:before,
 .process-tree__header h4 .cuckoo-files ul div:first-child:before,
@@ -12961,6 +13033,12 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .s
     content: '\f078';
 }
 
+.process-tree__header--right:hover,
+.process-tree__header--right:focus
+{
+    text-decoration: none;
+}
+
 .process-tree__tree .process-tree__body,
 .process-tree__detail .process-tree__body
 {
@@ -12971,6 +13049,88 @@ table#submission-task-table.cuckoo-table__fullscreen .process-tree__header h4 .s
 .process-tree__detail.open .process-tree__body
 {
     display: block;
+}
+
+/*
+  Process spec
+  - element that will define the layout of the process specs such
+    as names, metadata etc.
+ */
+.process-spec--name
+{
+    padding-bottom: 10px;
+
+    text-align: center;
+
+    color: #6297f8;
+    background-color: #f5f5f5;
+}
+
+.process-spec--name h2
+{
+    font-size: 22px;
+
+    margin: 0;
+    padding: 25px 0 15px 0;
+}
+
+.process-spec--name .cuckoo-table,
+.process-spec--name .cuckoo-table__fullscreen,
+.process-spec--name .network-display__table > table
+{
+    border: 0;
+    background: transparent;
+}
+
+.process-spec--name .cuckoo-table tbody tr,
+.process-spec--name .cuckoo-table__fullscreen tbody tr,
+.process-spec--name .network-display__table > table tbody tr
+{
+    border-bottom: 0;
+    background-color: transparent;
+}
+
+.process-spec--name .cuckoo-table tbody tr td,
+.process-spec--name .cuckoo-table__fullscreen tbody tr td,
+.process-spec--name .network-display__table > table tbody tr td
+{
+    border: 0;
+    background: transparent;
+}
+
+.process-spec--name .cuckoo-table tbody tr td:first-child,
+.process-spec--name .cuckoo-table__fullscreen tbody tr td:first-child,
+.process-spec--name .network-display__table > table tbody tr td:first-child
+{
+    text-align: right;
+}
+
+.process-spec--tags
+{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 15px;
+
+    background-color: #252525;
+}
+
+.process-spec--tags > .badge
+{
+    margin: 0 10px;
+    padding: 10px 0;
+
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .1);
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.process-spec--tags > .badge:hover
+{
+    cursor: pointer;
 }
 
 .breadcrumbs
@@ -13404,7 +13564,7 @@ body.night .dashboard-module__body--flex
 }
 
 .dashboard-module__body .cuckoo-table,
-.dashboard-module__body table.cuckoo-table__fullscreen,
+.dashboard-module__body .cuckoo-table__fullscreen,
 .dashboard-module__body .network-display__table > table
 {
     border: 0;
@@ -13776,14 +13936,14 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:before,
 .dashboard-module .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after,
 .dashboard-module__lg .omni-uploader .uploader-area .cuckoo-analysis__panel--toggle:after,
-.dashboard-module .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before,
-.dashboard-module__lg .omni-uploader .uploader-area table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before,
-.dashboard-module .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before,
-.dashboard-module__lg .omni-uploader .uploader-area table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before,
+.dashboard-module .omni-uploader .uploader-area .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before,
+.dashboard-module__lg .omni-uploader .uploader-area .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before,
+.dashboard-module .omni-uploader .uploader-area #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .dashboard-module .omni-uploader .uploader-area .status.status-reported:before,
+.dashboard-module__lg .omni-uploader .uploader-area #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .dashboard-module__lg .omni-uploader .uploader-area .status.status-reported:before,
 .dashboard-module .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .dashboard-module .omni-uploader .uploader-area .status.status-reported:before,
 .dashboard-module__lg .omni-uploader .uploader-area .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -14028,10 +14188,10 @@ body.night .dashboard table.simple tr:nth-child(even)
 .app-message > h5 .dns-badge__content:before,
 .app-message > h5 .cuckoo-analysis__panel--toggle:before,
 .app-message > h5 .cuckoo-analysis__panel--toggle:after,
-.app-message > h5 table.cuckoo-table#submission-task-table .status.status-reported:before,
-table.cuckoo-table#submission-task-table .app-message > h5 .status.status-reported:before,
-.app-message > h5 table#submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-table#submission-task-table.cuckoo-table__fullscreen .app-message > h5 .status.status-reported:before,
+.app-message > h5 .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .app-message > h5 .status.status-reported:before,
+.app-message > h5 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .app-message > h5 .status.status-reported:before,
 .app-message > h5 .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .app-message > h5 .status.status-reported:before,
 .app-message > h5 .cuckoo-files ul div:before,

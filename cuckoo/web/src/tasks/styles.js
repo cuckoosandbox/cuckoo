@@ -6,6 +6,11 @@ var autoprefixer  = require('gulp-autoprefixer');
 var notify        = require('gulp-notify');
 var comb          = require('gulp-csscomb');
 
+// alias for prefixing bower urls
+function bower(path) {
+  return './bower_components/' + path;
+}
+
 module.exports = function() {
 
   return gulp.src('./scss/main.scss')
@@ -14,8 +19,9 @@ module.exports = function() {
       sourcemap: true,
 			outputStyle: 'expanded',
 			includePaths: [
-				'./bower_components/font-awesome/scss',
-				'./bower_components/font-roboto/src/styles'
+				bower('font-awesome/scss'),
+				bower('font-roboto/src/styles'),
+        bower('bourbon/app/assets/stylesheets')
 			]
     }).on('error', sass.logError))
     .pipe(autoprefixer())

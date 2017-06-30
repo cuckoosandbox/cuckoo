@@ -4,13 +4,14 @@
    see the file 'docs/LICENSE' for copying permission.
  */
 
+ // external 3rd party imports
+ @import "bourbon"; // <== sass utility framework
+ @import "font-awesome"; // <== icon kit
+ @import "roboto"; // <== application-wide font
+
 // import variables and mixins files [exposed globally]
 @import "variables";
 @import "mixins";
-
-// external lib - fontawesome (icon font)
-@import "font-awesome";
-@import "roboto";
 
 // general css on the body and the html
 html { background: #1c1c1c; }

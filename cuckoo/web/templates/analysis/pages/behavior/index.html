@@ -16,7 +16,7 @@
             <input type="text" placeholder="Search" />
             <i class="fa fa-search"></i>
           </div>
-          <div class="process-tree__tree open">
+          <div class="process-tree__tree">
             <header class="process-tree__header">
               <h4><i class="fa fa-sitemap"></i> Process tree <a href="#" class="process-tree__header--right fa"></a></h4>
             </header>
@@ -107,8 +107,37 @@
             <header class="process-tree__header">
               <h4><i class="fa fa-ellipsis-h"></i> Process detail <a href="#" class="process-tree__header--right fa"></a></h4>
             </header>
-            <div class="process-tree__body">
-              Here comes the detail of the process tree items
+            <div class="process-tree__body process-spec">
+
+              <!-- name and meta about the process  -->
+              <header class="process-spec--name">
+                <h2>inject-shellcode-x86.exe</h2>
+                <table class="cuckoo-table table-key-value">
+                  <tr>
+                    <td>PID</td>
+                    <td><strong>lalala</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Parent PID</td>
+                    <td><strong>lalala</strong></td>
+                  </tr>
+                </table>
+              </header>
+
+              <!-- analysis tags -->
+              <div class="process-spec--tags">
+                <span class="badge default">default</span>
+                <span class="badge registry">registry</span>
+                <span class="badge file">file</span>
+                <span class="badge network">network</span>
+                <span class="badge process">process</span>
+                <span class="badge services">services</span>
+                <span class="badge synchronisation">synchronisation</span>
+                <span class="badge iexplore">iexplore</span>
+                <span class="badge office">office</span>
+                <span class="badge pdf">pdf</span>
+              </div>
+
             </div>
           </div>
         </section>
