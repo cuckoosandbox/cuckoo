@@ -77,7 +77,11 @@
                     {% if report.analysis.target.file.yara %}
                         <ul style="margin-bottom: 0;">
                             {% for sign in report.analysis.target.file.yara %}
-                                <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                                <li>{{ sign.name }} 
+                                    {% if sign.meta.description %}-
+                                        {{ sign.meta.description }}
+                                </li>
+                                    {% endif %}
                             {% endfor %}
                         </ul>
                     {% else %}
