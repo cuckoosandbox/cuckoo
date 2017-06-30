@@ -499,7 +499,7 @@ class GuestManager(object):
                          "async": "yes",
                          "cwd": self.analyzer_path,
                      }
-                 else:
+                else:
                      data = {
                          "filepath": "%s\\analyzer.py" % self.analyzer_path,
                          "async": "yes",
