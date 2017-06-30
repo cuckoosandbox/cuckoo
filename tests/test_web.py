@@ -182,7 +182,6 @@ class TestWebInterface(object):
                 ],
             },
             "options": {
-                "enable-services": False,
                 "enforce-timeout": False,
                 "full-memory-dump": False,
                 "enable-injection": True,
@@ -927,6 +926,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [],
                     }],
                 },
@@ -941,6 +941,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [
                             "http://thisisaurl.com/hello",
                         ],
@@ -951,6 +952,34 @@ class TestTemplates(object):
         assert "No PDF metadata" not in r.content
         assert ">http://thisisaurl.com/hello</li>" in r.content
 
+    def test_pdf_2_version_with_url(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "version": 1,
+                        "urls": [
+                            "http://thisisaurl.com/url1",
+                        ],
+                    }, {
+                        "version": 2,
+                        "urls": [
+                            "http://thisisaurl.com/url2",
+                        ],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" not in r.content
+        assert ">http://thisisaurl.com/url1</li>" in r.content
+        assert ">http://thisisaurl.com/url2</li>" in r.content
+        ul1 = r.content.index('<ul class="list-group">')
+        url1 = r.content.index("url1")
+        url2 = r.content.index("url2")
+        ul2 = r.content.index("</ul>", ul1)
+        assert url1 >= ul1 and url1 < ul2
+        assert url2 >= ul1 and url2 < ul2
+
     def test_pdf_has_javascript(self, request):
         r = render_template(request, "analysis/pages/static/index.html", report={
             "analysis": {
@@ -958,6 +987,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [],
                         "javascript": [{
                             "orig_code": "alert(1)",

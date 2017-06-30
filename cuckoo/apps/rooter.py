@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import errno
 import json
 import logging
 import os.path
@@ -216,6 +217,13 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
 
 def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     """Enable hijacking of all traffic and send it to InetSIM."""
+    run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
+        "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
+        "--to-destination", inetsim_ip
+    )
+    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+        "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
+    )
 
     run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "-m", "multiport", "--dports", "7", "9", "13", "17", "19", "21", "22",
@@ -242,13 +250,11 @@ def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
         "-j", "DNAT", "--to-destination", "%s:%s" % (inetsim_ip, "1")
     )
 
-    run(s.iptables, "-D", "OUTPUT", "--source", ipaddr,
-        "-m", "conntrack", "--ctstate", "INVALID", "-j", "DROP")
+    dns_forward("-D", ipaddr, inetsim_ip)
+    forward_disable(machinery_iface, machinery_iface, ipaddr)
 
-    run(s.iptables, "-D", "OUTPUT", "--source", ipaddr,
-        "-m", "state", "--state", "INVALID", "-j", "DROP")
+    run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
-    run(s.iptables, "-D", "OUTPUT", "--source", ipaddr, "-j", "DROP")
 
 def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
     """Toggle Tor iptables routing rules."""
@@ -391,51 +397,54 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     s.ip = ip
 
     while True:
+    while True:
         try:
             command, addr = server.recvfrom(4096)
-
-            try:
-                obj = json.loads(command)
-            except:
-                log.info("Received invalid request: %r", command)
+        except socket.error as e:
+            if e.errno == errno.EINTR:
                 continue
+            raise e
 
-            command = obj.get("command")
-            args = obj.get("args", [])
-            kwargs = obj.get("kwargs", {})
-
-            if not isinstance(command, basestring) or command not in handlers:
-                log.info("Received incorrect command: %r", command)
-                continue
-
-            if not isinstance(args, (tuple, list)):
-                log.info("Invalid arguments type: %r", args)
-                continue
-
-            if not isinstance(kwargs, dict):
-                log.info("Invalid keyword arguments: %r", kwargs)
-                continue
-
-            for arg in args + kwargs.keys() + kwargs.values():
-                if not isinstance(arg, basestring):
-                    log.info("Invalid argument detected: %r", arg)
-                    break
-            else:
-                log.debug(
-                    "Processing command: %s %s %s", command,
-                    " ".join(args),
-                    " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
-                )
-
-                output = e = None
-                try:
-                    output = handlers[command](*args, **kwargs)
-                except Exception as e:
-                    log.exception("Error executing command: %s", e)
-
-                server.sendto(json.dumps({
-                    "output": output,
-                    "exception": str(e) if e else None,
-                }), addr)
+        try:
+            obj = json.loads(command)
         except:
-            pass
+            log.info("Received invalid request: %r", command)
+            continue
+
+        command = obj.get("command")
+        args = obj.get("args", [])
+        kwargs = obj.get("kwargs", {})
+
+        if not isinstance(command, basestring) or command not in handlers:
+            log.info("Received incorrect command: %r", command)
+            continue
+
+        if not isinstance(args, (tuple, list)):
+            log.info("Invalid arguments type: %r", args)
+            continue
+
+        if not isinstance(kwargs, dict):
+            log.info("Invalid keyword arguments: %r", kwargs)
+            continue
+
+        for arg in args + kwargs.keys() + kwargs.values():
+            if not isinstance(arg, basestring):
+                log.info("Invalid argument detected: %r", arg)
+                break
+        else:
+            log.debug(
+                "Processing command: %s %s %s", command,
+                " ".join(args),
+                " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+            )
+
+            output = e = None
+            try:
+                output = handlers[command](*args, **kwargs)
+            except Exception as e:
+                log.exception("Error executing command: %s", e)
+
+            server.sendto(json.dumps({
+                "output": output,
+                "exception": str(e) if e else None,
+            }), addr)

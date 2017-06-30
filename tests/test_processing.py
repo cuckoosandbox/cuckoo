@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import dpkt
+import hashlib
 import mock
 import json
 import os.path
@@ -18,6 +19,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunProcessing
+from cuckoo.core.startup import init_console_logging
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import (
@@ -27,11 +29,11 @@ from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
 from cuckoo.processing.extracted import Extracted
 from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
-from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
+from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
+from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -55,6 +57,8 @@ class TestProcessing(object):
 
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_console_logging()
 
         db.connect(dsn="sqlite:///:memory:")
         db.add_url("http://google.com/")
@@ -82,6 +86,12 @@ class TestProcessing(object):
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
         assert results["action"] == ["vmrouting", "thisisanaction"]
+        assert len(results["errors"]) == 4
+
+        db.add_error("", 1, "onlyaction")
+        results = d.run()
+        assert len(results["action"]) == 3
+        assert len(results["errors"]) == 4
 
     def test_droidmon_url(self):
         d = Droidmon()
@@ -1076,6 +1086,41 @@ class TestPcap2(object):
             "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
         ).run()
         assert len(obj["http_ex"]) == 1
+
+@mock.patch("os.remove")
+def test_sort_pcap_rm_temp(p):
+    filepath = tempfile.mktemp()
+    sort_pcap("tests/files/pcap/smtp.pcap", filepath)
+    p.assert_called_once()
+    assert p.call_args[0][0].startswith(tempfile.gettempdir())
+
+def test_sort_pcap():
+    f = lambda x: os.path.join("tests", "files", "pcap", x)
+    h = lambda x: hashlib.sha1(open(x, "rb").read()).hexdigest()
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("smtp.pcap"), filepath)
+    assert h(filepath) == "c99b74eaca15d792049e8f75a4bfe6c1c416c26b"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("duplicate-dns-requests.pcap"), filepath)
+    assert h(filepath) == "4859334accbee12858621cca39564fdbce9ae605"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("mixed-traffic.pcap"), filepath)
+    assert h(filepath) == "8d92880f9f356d5bdfd04e24541f614f275b02e0"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("not-http.pcap"), filepath)
+    assert h(filepath) == "340e6c442619de912253d956b499e428164e8cdd"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("status-code.pcap"), filepath)
+    assert h(filepath) == "106dc235ef82ff844b7025339c2713aad752037e"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("used_dns_server.pcap"), filepath)
+    assert h(filepath) == "782b766b99998fd8cbbe400b7c419abfe645b50d"
 
 def test_parse_cmdline():
     rb = RebootReconstructor()

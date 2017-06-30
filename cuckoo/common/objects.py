@@ -319,6 +319,18 @@ class File(object):
         if not os.path.getsize(self.file_path):
             return []
 
+        try:
+            # TODO Once Yara obtains proper Unicode filepath support we can
+            # remove this check. See also the following Github issue:
+            # https://github.com/VirusTotal/yara-python/issues/48
+            assert len(str(self.file_path)) == len(self.file_path)
+        except (UnicodeEncodeError, AssertionError):
+            log.warning(
+                "Can't run Yara rules on %r as Unicode paths are currently "
+                "not supported in combination with Yara!", self.file_path
+            )
+            return []
+
         results = []
         for match in File.yara_rules[category].match(self.file_path):
             strings, offsets = set(), {}

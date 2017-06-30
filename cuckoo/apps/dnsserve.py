@@ -13,7 +13,7 @@ try:
 except ImportError:
     HAVE_SCAPY = False
 
-log = logging.getLogger("dnsserve")
+log = logging.getLogger(__name__)
 
 def cuckoo_dnsserve(host, port, nxdomain, hardcode):
     if not HAVE_SCAPY:

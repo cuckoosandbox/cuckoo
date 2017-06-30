@@ -65,6 +65,12 @@ want to run both commands::
 Iptables rules are not persistent between reboots, so if want to keep
 them you should use a script or just install ``iptables-persistent``.
 
+Newer Linux distributions have adopted udev's interface-naming scheme. It's
+important to note that this means ``eth0`` may no longer be your primary
+interface. Possible interface names include ``ensXX``, ``enp0sXX``, and
+``emXX``, where the ``XX`` part identifies a number. This is particularly
+important to note for the NAT statement above.
+
 Per-Analysis Network Routing Options
 ====================================
 

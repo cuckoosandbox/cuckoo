@@ -8,7 +8,6 @@ var default_analysis_options = {
 	'machine': 'default',
 	'network-routing': 'internet',
 	'options': {
-		'enable-services': true,
 		'enforce-timeout': false,
 		'full-memory-dump': false,
 		'enable-injection': true,
@@ -48,11 +47,6 @@ var submission_options = [
 		label: 'Enable Simulated Human Interaction',
 		selected: true
 	}
-	// {
-	// 	name: 'enable-services',
-	// 	label: 'Enable Services',
-	// 	description: 'Enable simulated environment specified in the auxiliary configuration.'
-	// }
 ];
 
 // package field contents - hardcoded options vs auto-detected properties

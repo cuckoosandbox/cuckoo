@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -26,7 +26,7 @@ def upload_to_host(file_path, dump_path, pids=[]):
             nc.send(buf, retry=False)
             buf = infd.read(BUFSIZE)
     except Exception as e:
-        log.error("Exception uploading file %s to host: %s", file_path, e)
+        log.error("Exception uploading file %r to host: %s", file_path, e)
     finally:
         if infd:
             infd.close()
@@ -83,11 +83,12 @@ class NetlogConnection(object):
 class NetlogFile(NetlogConnection):
     def init(self, dump_path, filepath=None, pids=[]):
         if filepath:
-            self.proto = "FILE 2\n{0}\n{1}\n{2}\n".format(
-                dump_path, filepath, " ".join(pids)
+            self.proto = "FILE 2\n%s\n%s\n%s\n" % (
+                dump_path.encode("utf8"), filepath.encode("utf8"),
+                " ".join(pids)
             )
         else:
-            self.proto = "FILE\n{0}\n".format(dump_path)
+            self.proto = "FILE\n%s\n" % dump_path.encode("utf8")
 
         self.connect()
 

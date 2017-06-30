@@ -533,7 +533,7 @@ class Config(object):
                 "enabled": Boolean(True),
             },
             "extracted": {
-                "enabled": Boolean(True),
+                "enabled": Boolean(True, required=False),
             },
             "googleplay": {
                 "enabled": Boolean(False),

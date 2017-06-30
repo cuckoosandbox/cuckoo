@@ -90,7 +90,7 @@ class Debug(Processing):
 
         debug["errors"] = []
         for error in Database().view_errors(self.task["id"]):
-            if error.message not in debug["errors"]:
+            if error.message and error.message not in debug["errors"]:
                 debug["errors"].append(error.message)
 
             if error.action and error.action not in debug["action"]:
