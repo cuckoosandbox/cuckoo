@@ -645,7 +645,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String(),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.2"),
                     "interface": String("qemubr"),
@@ -662,7 +664,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("mipsel"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.3"),
                     "interface": String("qemubr"),
@@ -680,7 +684,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("arm"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.4"),
                     "interface": String("qemubr"),
