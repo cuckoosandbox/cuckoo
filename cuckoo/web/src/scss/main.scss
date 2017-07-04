@@ -56,6 +56,7 @@ body#analysis {
 @import "components/tree";
 @import "components/analysis-sidebar";
 @import "components/flex-navigation";
+@import "components/table";
 @import "components/cuckoo-analysis";
 @import "components/network-http-request";
 @import "components/dndupload";
@@ -70,7 +71,6 @@ body#analysis {
 @import "components/cuckoo-box";
 @import "components/errors";
 @import "components/footer";
-@import "components/table";
 @import "components/network-display";
 @import "components/flex-tabs";
 @import "components/flex-grid";

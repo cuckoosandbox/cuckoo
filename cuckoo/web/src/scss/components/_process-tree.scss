@@ -285,7 +285,8 @@
           padding: 5px 0;
 
           &:hover {
-            background-color: #ddd;
+            background-color: #f5f5f5;
+            text-decoration: none;
           }
 
           &.active {
@@ -301,13 +302,48 @@
 
   &--table {
 
-    .date-api {
+    .cuckoo-table {
+      border: 0;
+      font-size: 14px;
 
-      & > p {}
-      & > time {}
+      pre,
+      code {
+        background-color: transparent;
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
 
+      .date-api {
+
+        position: relative;
+        min-width: 155px;
+        padding: 0;
+
+        & > p,
+        & > time {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          padding: 0 15px;
+        }
+
+        & > p {
+          font-weight: 700;
+          top: 15px;
+          color: #434343;
+        }
+
+        & > time {
+          bottom: 12px;
+          color: #9f9f9f;
+        }
+
+        & > .badge {
+          margin-left: 15px;
+        }
+
+      }
     }
-
   }
-
 }
