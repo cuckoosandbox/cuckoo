@@ -256,4 +256,46 @@
     }
   }
 
+  &--pagination {
+
+    padding: 15px 25px;
+
+    & > ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid $cuckoo_secundary_color;
+      border-radius: 4px;
+      overflow: hidden;
+
+      & > li {
+        flex-basis: 100%;
+
+        &:not(:last-child) {
+          border-right: 1px solid $cuckoo_secundary_color;
+        }
+
+        & > a {
+          display: block;
+          text-align: center;
+          font-weight: 700;
+          color: $cuckoo_secundary_color;
+          background-color: #fff;
+          padding: 5px 0;
+
+          &:hover {
+            background-color: #ddd;
+          }
+
+          &.active {
+            color: #fff;
+            background-color: $cuckoo_secundary_color;
+          }
+
+        }
+      }
+
+    }
+  }
 }

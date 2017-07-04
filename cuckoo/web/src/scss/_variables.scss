@@ -69,10 +69,12 @@ $badge-colors: (
 @mixin badge($color-name, $useTint: false) {
   $color: map-get($badge-colors, $color-name);
   background-color: $color;
+
   @if $useTint {
-    color: tint($color, 40%);
+    color: tint($color, 50%);
   } @else {
-    color: shade($color, 40%);
+    color: shade($color, 50%);
   }
+
   &:hover { background-color: shade($color, 5%); }
 }

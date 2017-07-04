@@ -4321,7 +4321,7 @@ pre.reset
  */
 .badge.file
 {
-    color: #768699;
+    color: #637080;
     background-color: #c5e0ff;
 }
 
@@ -4332,7 +4332,7 @@ pre.reset
 
 .badge.registry
 {
-    color: #997676;
+    color: #806363;
     background-color: #ffc5c5;
 }
 
@@ -4343,7 +4343,7 @@ pre.reset
 
 .badge.process
 {
-    color: #768699;
+    color: #637080;
     background-color: #c5e0ff;
 }
 
@@ -4354,7 +4354,7 @@ pre.reset
 
 .badge.services
 {
-    color: #7a7699;
+    color: #666380;
     background-color: #ccc5ff;
 }
 
@@ -4365,7 +4365,7 @@ pre.reset
 
 .badge.device
 {
-    color: #7a7699;
+    color: #666380;
     background-color: #ccc5ff;
 }
 
@@ -4376,7 +4376,7 @@ pre.reset
 
 .badge.network
 {
-    color: #7f9976;
+    color: #6a8063;
     background-color: #d3ffc5;
 }
 
@@ -4387,7 +4387,7 @@ pre.reset
 
 .badge.synchronisation
 {
-    color: #7a7699;
+    color: #666380;
     background-color: #ccc5ff;
 }
 
@@ -4398,7 +4398,7 @@ pre.reset
 
 .badge.system
 {
-    color: #999776;
+    color: #807e63;
     background-color: #fffcc5;
 }
 
@@ -4409,7 +4409,7 @@ pre.reset
 
 .badge.windows
 {
-    color: #99768f;
+    color: #806377;
     background-color: #ffc5ee;
 }
 
@@ -4420,7 +4420,7 @@ pre.reset
 
 .badge.iexplore
 {
-    color: #7a8570;
+    color: #666f5e;
     background-color: #cdb;
 }
 
@@ -4431,7 +4431,7 @@ pre.reset
 
 .badge.office
 {
-    color: #7a8570;
+    color: #666f5e;
     background-color: #cdb;
 }
 
@@ -4442,7 +4442,7 @@ pre.reset
 
 .badge.pdf
 {
-    color: #7a8570;
+    color: #666f5e;
     background-color: #cdb;
 }
 
@@ -13131,6 +13131,63 @@ body.night .flex-static__summary li
 .process-spec--tags > .badge:hover
 {
     cursor: pointer;
+}
+
+.process-spec--pagination
+{
+    padding: 15px 25px;
+}
+
+.process-spec--pagination > ul
+{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: hidden;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+
+    border: 1px solid #6297f8;
+    border-radius: 4px;
+}
+
+.process-spec--pagination > ul > li
+{
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.process-spec--pagination > ul > li:not(:last-child)
+{
+    border-right: 1px solid #6297f8;
+}
+
+.process-spec--pagination > ul > li > a
+{
+    font-weight: 700;
+
+    display: block;
+
+    padding: 5px 0;
+
+    text-align: center;
+
+    color: #6297f8;
+    background-color: #fff;
+}
+
+.process-spec--pagination > ul > li > a:hover
+{
+    background-color: #ddd;
+}
+
+.process-spec--pagination > ul > li > a.active
+{
+    color: #fff;
+    background-color: #6297f8;
 }
 
 .breadcrumbs
