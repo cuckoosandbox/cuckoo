@@ -14,10 +14,10 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import Singleton, classlock
-from cuckoo.common.utils import SuperLock, json_encode
+from cuckoo.common.utils import SuperLock, json_encode , time_duration
 from cuckoo.misc import cwd
 
-from sqlalchemy import create_engine, Column, not_, func
+from sqlalchemy import create_engine, Column, not_, func, or_
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
 from sqlalchemy import ForeignKey, Text, Index, Table, TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base
@@ -38,11 +38,13 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 TASK_FAILED_REPORTING = "failed_reporting"
+TASK_SINGLE = "single"
+TASK_RECURRENT = "recurrent"
 
 status_type = Enum(
     TASK_PENDING, TASK_RUNNING, TASK_COMPLETED, TASK_REPORTED, TASK_RECOVERED,
-    TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING,
-    name="status_type"
+    TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING, TASK_UNSCHEDULED,
+    name = "status_type"
 )
 
 # Secondary table used in association Machine - Tag.
@@ -83,22 +85,23 @@ class Machine(Base):
     """Configured virtual machines to be used as guests."""
     __tablename__ = "machines"
 
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(255), nullable=False)
-    label = Column(String(255), nullable=False)
-    ip = Column(String(255), nullable=False)
-    platform = Column(String(255), nullable=False)
-    tags = relationship("Tag", secondary=machines_tags, single_parent=True,
-                        backref="machine")
-    options = Column(JsonTypeList255(), nullable=True)
-    interface = Column(String(255), nullable=True)
-    snapshot = Column(String(255), nullable=True)
-    locked = Column(Boolean(), nullable=False, default=False)
-    locked_changed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(String(255), nullable=True)
-    status_changed_on = Column(DateTime(timezone=False), nullable=True)
-    resultserver_ip = Column(String(255), nullable=False)
-    resultserver_port = Column(Integer(), nullable=False)
+    id = Column(Integer(), primary_key = True)
+    name = Column(String(255), nullable = False)
+    label = Column(String(255), nullable = False)
+    ip = Column(String(255), nullable = False)
+    platform = Column(String(255), nullable = False)
+    tags = relationship("Tag", secondary = machines_tags, single_parent = True,
+                        backref = "machine")
+    options = Column(JsonTypeList255(), nullable = True)
+    interface = Column(String(255), nullable = True)
+    snapshot = Column(String(255), nullable = True)
+    locked = Column(Boolean(), nullable = False, default = False)
+    locked_changed_on = Column(DateTime(timezone = False), nullable = True)
+    status = Column(String(255), nullable = True)
+    status_changed_on = Column(DateTime(timezone = False), nullable = True)
+    resultserver_ip = Column(String(255), nullable = False)
+    resultserver_port = Column(Integer(), nullable = False)
+    rdp_port = Column(String(16), nullable = True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
@@ -130,12 +133,12 @@ class Machine(Base):
         analysis machines, however, this is not the case for service VMs.
         Please refer to the services auxiliary module."""
         for tag in self.tags:
-            if tag.name == "service":
+            if tag.name  ==  "service":
                 return
         return True
 
     def __init__(self, name, label, ip, platform, options, interface,
-                 snapshot, resultserver_ip, resultserver_port):
+                 snapshot, resultserver_ip, resultserver_port, rdp_port):
         self.name = name
         self.label = label
         self.ip = ip
@@ -145,38 +148,56 @@ class Machine(Base):
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
+        self.rdp_port = rdp_port
 
 class Tag(Base):
     """Tag describing anything you want."""
     __tablename__ = "tags"
 
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(255), nullable=False, unique=True)
+    id = Column(Integer(), primary_key = True)
+    name = Column(String(255), nullable = False, unique = True)
 
     def __repr__(self):
-        return "<Tag('{0}','{1}')>".format(self.id, self.name)
+        return "<Tag('{0}','{1}')>".format(self.id, self.name, self.task_id)
 
     def __init__(self, name):
         self.name = name
+
+class Experiment(Base):
+    """Experiment regroups a list of tasks together"""
+    __tablename__ = "experiments"
+
+    id = Column(Integer(), primary_key = True)
+    name = Column(Text(), nullable = True, unique = True)
+    added_on = Column(DateTime(timezone = False),
+                      default = datetime.now,
+                      nullable = False)
+    delta = Column(String(), nullable = True)
+    # Amount of runs left for this Experiment.
+    runs = Column(Integer(), nullable = True)
+    # Amount of times this Experiment has ran already.
+    times = Column(Integer(), nullable = True)
+    machine_name = Column(Text(), nullable = True)
+
 
 class Guest(Base):
     """Tracks guest run."""
     __tablename__ = "guests"
 
-    id = Column(Integer(), primary_key=True)
+    id = Column(Integer(), primary_key = True)
     # TODO Replace the guest.status with a more generic Task.status solution.
-    status = Column(String(16), nullable=False)
-    name = Column(String(255), nullable=False)
-    label = Column(String(255), nullable=False)
-    manager = Column(String(255), nullable=False)
-    started_on = Column(DateTime(timezone=False),
-                        default=datetime.datetime.now,
-                        nullable=False)
-    shutdown_on = Column(DateTime(timezone=False), nullable=True)
+    status = Column(String(16), nullable = False)
+    name = Column(String(255), nullable = False)
+    label = Column(String(255), nullable = False)
+    manager = Column(String(255), nullable = False)
+    started_on = Column(DateTime(timezone = False),
+                        default = datetime.datetime.now,
+                        nullable = False)
+    shutdown_on = Column(DateTime(timezone = False), nullable = True)
     task_id = Column(Integer,
                      ForeignKey("tasks.id"),
-                     nullable=False,
-                     unique=True)
+                     nullable = False,
+                     unique = True)
 
     def __repr__(self):
         return "<Guest('{0}','{1}')>".format(self.id, self.name)
@@ -209,11 +230,11 @@ class Submit(Base):
     """Submitted files details."""
     __tablename__ = "submit"
 
-    id = Column(Integer(), primary_key=True)
-    tmp_path = Column(Text(), nullable=True)
-    added = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
-    submit_type = Column(String(16), nullable=True)
-    data = Column(JsonType, nullable=True)
+    id = Column(Integer(), primary_key = True)
+    tmp_path = Column(Text(), nullable = True)
+    added = Column(DateTime, nullable = False, default = datetime.datetime.utcnow)
+    submit_type = Column(String(16), nullable = True)
+    data = Column(JsonType, nullable = True)
 
     def __init__(self, tmp_path, submit_type, data):
         self.tmp_path = tmp_path
@@ -224,17 +245,17 @@ class Sample(Base):
     """Submitted files details."""
     __tablename__ = "samples"
 
-    id = Column(Integer(), primary_key=True)
-    file_size = Column(Integer(), nullable=False)
-    file_type = Column(Text(), nullable=False)
-    md5 = Column(String(32), nullable=False)
-    crc32 = Column(String(8), nullable=False)
-    sha1 = Column(String(40), nullable=False)
-    sha256 = Column(String(64), nullable=False)
-    sha512 = Column(String(128), nullable=False)
-    ssdeep = Column(String(255), nullable=True)
+    id = Column(Integer(), primary_key = True)
+    file_size = Column(Integer(), nullable = False)
+    file_type = Column(Text(), nullable = False)
+    md5 = Column(String(32), nullable = False)
+    crc32 = Column(String(8), nullable = False)
+    sha1 = Column(String(40), nullable = False)
+    sha256 = Column(String(64), nullable = False)
+    sha512 = Column(String(128), nullable = False)
+    ssdeep = Column(String(255), nullable = True)
     __table_args__ = Index("hash_index", "md5", "crc32", "sha1",
-                           "sha256", "sha512", unique=True),
+                           "sha256", "sha512", unique = True),
 
     def __repr__(self):
         return "<Sample('{0}','{1}')>".format(self.id, self.sha256)
@@ -269,10 +290,10 @@ class Error(Base):
     """Analysis errors."""
     __tablename__ = "errors"
 
-    id = Column(Integer(), primary_key=True)
-    action = Column(String(64), nullable=True)
-    message = Column(Text(), nullable=False)
-    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
+    id = Column(Integer(), primary_key = True)
+    action = Column(String(64), nullable = True)
+    message = Column(Text(), nullable = False)
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable = False)
 
     def to_dict(self):
         """Converts object to dict.
@@ -289,7 +310,7 @@ class Error(Base):
         """
         return json.dumps(self.to_dict())
 
-    def __init__(self, message, task_id, action=None):
+    def __init__(self, message, task_id, action = None):
         self.action = action
         self.message = message
         self.task_id = task_id
@@ -301,40 +322,44 @@ class Task(Base):
     """Analysis task queue."""
     __tablename__ = "tasks"
 
-    id = Column(Integer(), primary_key=True)
-    target = Column(Text(), nullable=False)
-    category = Column(String(255), nullable=False)
-    timeout = Column(Integer(), server_default="0", nullable=False)
-    priority = Column(Integer(), server_default="1", nullable=False)
-    custom = Column(Text(), nullable=True)
-    owner = Column(String(64), nullable=True)
-    machine = Column(String(255), nullable=True)
-    package = Column(String(255), nullable=True)
-    tags = relationship("Tag", secondary=tasks_tags, single_parent=True,
-                        backref="task", lazy="subquery")
-    _options = Column("options", Text(), nullable=True)
-    platform = Column(String(255), nullable=True)
-    memory = Column(Boolean, nullable=False, default=False)
-    enforce_timeout = Column(Boolean, nullable=False, default=False)
-    clock = Column(DateTime(timezone=False),
-                   default=datetime.datetime.now,
-                   nullable=False)
-    added_on = Column(DateTime(timezone=False),
-                      default=datetime.datetime.now,
-                      nullable=False)
-    started_on = Column(DateTime(timezone=False), nullable=True)
-    completed_on = Column(DateTime(timezone=False), nullable=True)
-    status = Column(status_type, server_default=TASK_PENDING, nullable=False)
-    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
+    id = Column(Integer(), primary_key = True)
+    repeate = Column(Enum(TASK_SINGLE, TASK_RECURRENT, name = "repeate_type"), server_default = TASK_SINGLE,
+                     nullable = False)
+    target = Column(Text(), nullable = False)
+    category = Column(String(255), nullable = False)
+    timeout = Column(Integer(), server_default = "0", nullable = False)
+    priority = Column(Integer(), server_default = "1", nullable = False)
+    custom = Column(Text(), nullable = True)
+    owner = Column(String(64), nullable = True)
+    machine = Column(String(255), nullable = True)
+    package = Column(String(255), nullable = True)
+    tags = relationship("Tag", secondary = tasks_tags, single_parent = True,
+                        backref = "task", lazy = "subquery")
+    _options = Column("options", Text(), nullable = True)
+    platform = Column(String(255), nullable = True)
+    memory = Column(Boolean, nullable = False, default = False)
+    enforce_timeout = Column(Boolean, nullable = False, default = False)
+    clock = Column(DateTime(timezone = False),
+                   default = datetime.datetime.now,
+                   nullable = False)
+    added_on = Column(DateTime(timezone = False),
+                      default = datetime.datetime.now,
+                      nullable = False)
+    started_on = Column(DateTime(timezone = False), nullable = True)
+    completed_on = Column(DateTime(timezone = False), nullable = True)
+    status = Column(status_type, server_default = TASK_PENDING, nullable = False)
+    sample_id = Column(Integer, ForeignKey("samples.id"), nullable = True)
+    experiment_id = Column(Integer, ForeignKey("experiment.id"), nullable = False)
     submit_id = Column(
-        Integer, ForeignKey("submit.id"), nullable=True, index=True
+        Integer, ForeignKey("submit.id"), nullable = True, index = True
     )
-    processing = Column(String(16), nullable=True)
-    route = Column(String(16), nullable=True)
-    sample = relationship("Sample", backref="tasks")
-    submit = relationship("Submit", backref="tasks")
-    guest = relationship("Guest", uselist=False, backref="tasks", cascade="save-update, delete")
-    errors = relationship("Error", backref="tasks", cascade="save-update, delete")
+    processing = Column(String(16), nullable = True)
+    route = Column(String(16), nullable = True)
+    sample = relationship("Sample", backref = "tasks")
+    submit = relationship("Submit", backref = "tasks")
+    experiment = relationship("Experiment", backref = backref("tasks", lazy = "dynamic"), lazy = "joined")
+    guest = relationship("Guest", uselist = False, backref = "tasks", cascade = "save-update, delete")
+    errors = relationship("Error", backref = "tasks", cascade = "save-update, delete")
 
     def duration(self):
         if self.started_on and self.completed_on:
@@ -354,7 +379,7 @@ class Task(Base):
         else:
             self._options = value
 
-    def to_dict(self, dt=False):
+    def to_dict(self, dt = False):
         """Converts object to dict.
         @param dt: encode datetime objects
         @return: dict
@@ -387,7 +412,7 @@ class Task(Base):
         """
         return json_encode(self.to_dict())
 
-    def __init__(self, target=None, id=None, category=None):
+    def __init__(self, target = None, id = None, category = None):
         self.target = target
         self.id = id
         self.category = category
@@ -399,7 +424,7 @@ class AlembicVersion(Base):
     """Table used to pinpoint actual database schema release."""
     __tablename__ = "alembic_version"
 
-    version_num = Column(String(32), nullable=False, primary_key=True)
+    version_num = Column(String(32), nullable = False, primary_key = True)
 
 class Database(object):
     """Analysis queue database.
@@ -409,7 +434,7 @@ class Database(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, schema_check=True, echo=False):
+    def __init__(self, schema_check = True, echo = False):
         """
         @param dsn: database connection string.
         @param schema_check: disable or enable the db schema version check.
@@ -419,7 +444,7 @@ class Database(object):
         self.schema_check = schema_check
         self.echo = echo
 
-    def connect(self, schema_check=None, dsn=None, create=True):
+    def connect(self, schema_check = None, dsn = None, create = True):
         """Connect to the database backend."""
         if schema_check is not None:
             self.schema_check = schema_check
@@ -438,7 +463,7 @@ class Database(object):
         self.engine.pool_timeout = config("cuckoo:database:timeout")
 
         # Get db session.
-        self.Session = sessionmaker(bind=self.engine)
+        self.Session = sessionmaker(bind = self.engine)
 
         if create:
             self._create_tables()
@@ -457,7 +482,7 @@ class Database(object):
         tmp_session = self.Session()
         if not tmp_session.query(AlembicVersion).count():
             # Set database schema version.
-            tmp_session.add(AlembicVersion(version_num=SCHEMA_VERSION))
+            tmp_session.add(AlembicVersion(version_num = SCHEMA_VERSION))
             try:
                 tmp_session.commit()
             except SQLAlchemyError as e:
@@ -471,13 +496,13 @@ class Database(object):
             # Check if db version is the expected one.
             last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
-            if last.version_num != SCHEMA_VERSION and self.schema_check:
+            if last.version_num !=  SCHEMA_VERSION and self.schema_check:
                 raise CuckooDatabaseError(
                     "DB schema version mismatch: found %s, expected %s. "
                     "Optionally make a backup and then apply the latest "
                     "database migration(s) by running "
                     "`cuckoo --cwd %s migrate`." % (
-                        last.version_num, SCHEMA_VERSION, cwd(raw=True),
+                        last.version_num, SCHEMA_VERSION, cwd(raw = True),
                     )
                 )
 
@@ -493,26 +518,26 @@ class Database(object):
             # TODO: this is quite ugly, should improve.
             if connection_string.startswith("sqlite"):
                 # Using "check_same_thread" to disable sqlite safety check on multiple threads.
-                self.engine = create_engine(connection_string, connect_args={"check_same_thread": False})
+                self.engine = create_engine(connection_string, connect_args = {"check_same_thread": False})
             elif connection_string.startswith("postgres"):
                 # Disabling SSL mode to avoid some errors using sqlalchemy and multiprocesing.
                 # See: http://www.postgresql.org/docs/9.0/static/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
                 # TODO Check if this is still relevant. Especially provided the
                 # fact that we're no longer using multiprocessing.
-                self.engine = create_engine(connection_string, connect_args={"sslmode": "disable"})
+                self.engine = create_engine(connection_string, connect_args = {"sslmode": "disable"})
             else:
                 self.engine = create_engine(connection_string)
         except ImportError as e:
             lib = e.message.split()[-1]
 
-            if lib == "MySQLdb":
+            if lib  ==  "MySQLdb":
                 raise CuckooDependencyError(
                     "Missing MySQL database driver (install with "
                     "`pip install mysql-python` on Linux or `pip install "
                     "mysqlclient` on Windows)"
                 )
 
-            if lib == "psycopg2":
+            if lib  ==  "psycopg2":
                 raise CuckooDependencyError(
                     "Missing PostgreSQL database driver (install with "
                     "`pip install psycopg2`)"
@@ -560,7 +585,7 @@ class Database(object):
 
     @classlock
     def add_machine(self, name, label, ip, platform, options, tags, interface,
-                    snapshot, resultserver_ip, resultserver_port):
+                    snapshot, resultserver_ip, resultserver_port, rdp_port):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -578,21 +603,23 @@ class Database(object):
             options = options.split()
 
         session = self.Session()
-        machine = Machine(name=name,
-                          label=label,
-                          ip=ip,
-                          platform=platform,
-                          options=options,
-                          interface=interface,
-                          snapshot=snapshot,
-                          resultserver_ip=resultserver_ip,
-                          resultserver_port=resultserver_port)
+        machine = Machine(name = name,
+                          label = label,
+                          ip = ip,
+                          platform = platform,
+                          options = options,
+                          interface = interface,
+                          snapshot = snapshot,
+                          resultserver_ip = resultserver_ip,
+                          resultserver_port = resultserver_port,
+                          rdp_port = rdp_port,)
+
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.split(","):
                 if tag.strip():
-                    tag = self._get_or_create(session, Tag, name=tag.strip())
+                    tag = self._get_or_create(session, Tag, name = tag.strip())
                     machine.tags.append(tag)
         session.add(machine)
 
@@ -619,9 +646,9 @@ class Database(object):
 
             row.status = status
 
-            if status == TASK_RUNNING:
+            if status  ==  TASK_RUNNING:
                 row.started_on = datetime.datetime.now()
-            elif status == TASK_COMPLETED:
+            elif status  ==  TASK_COMPLETED:
                 row.completed_on = datetime.datetime.now()
 
             session.commit()
@@ -653,23 +680,23 @@ class Database(object):
             session.close()
 
     @classlock
-    def fetch(self, machine=None, service=True):
+    def fetch(self, machine = None, service = True):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
         session = self.Session()
         try:
-            q = session.query(Task).filter_by(status=TASK_PENDING)
+            q = session.query(Task).filter_by(status = TASK_PENDING)
 
             if machine:
-                q = q.filter_by(machine=machine)
+                q = q.filter_by(machine = machine)
 
             if not service:
-                q = q.filter(not_(Task.tags.any(name="service")))
+                q = q.filter(not_(Task.tags.any(name = "service")))
 
             row = q.order_by(Task.priority.desc(), Task.added_on).first()
             if row:
-                self.set_status(task_id=row.id, status=TASK_RUNNING)
+                self.set_status(task_id = row.id, status = TASK_RUNNING)
                 session.refresh(row)
 
             return row
@@ -711,7 +738,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            guest = session.query(Guest).filter_by(task_id = task_id).first()
             return guest.status if guest else None
         except SQLAlchemyError as e:
             log.debug("Database error logging guest start: {0}".format(e))
@@ -728,7 +755,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            guest = session.query(Guest).filter_by(task_id=task_id).first()
+            guest = session.query(Guest).filter_by(task_id = task_id).first()
             guest.status = status
             session.commit()
             session.refresh(guest)
@@ -775,14 +802,14 @@ class Database(object):
             session.close()
 
     @classlock
-    def list_machines(self, locked=False):
+    def list_machines(self, locked = False):
         """Lists virtual machines.
         @return: list of virtual machines
         """
         session = self.Session()
         try:
             if locked:
-                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=True).all()
+                machines = session.query(Machine).options(joinedload("tags")).filter_by(locked = True).all()
             else:
                 machines = session.query(Machine).options(joinedload("tags")).all()
             return machines
@@ -793,7 +820,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def lock_machine(self, label=None, platform=None, tags=None):
+    def lock_machine(self, label = None, platform = None, tags = None):
         """Places a lock on a free virtual machine.
         @param label: optional virtual machine label
         @param platform: optional virtual machine platform
@@ -815,12 +842,12 @@ class Database(object):
         try:
             machines = session.query(Machine)
             if label:
-                machines = machines.filter_by(label=label)
+                machines = machines.filter_by(label = label)
             if platform:
-                machines = machines.filter_by(platform=platform)
+                machines = machines.filter_by(platform = platform)
             if tags:
                 for tag in tags:
-                    machines = machines.filter(Machine.tags.any(name=tag))
+                    machines = machines.filter(Machine.tags.any(name = tag))
 
             # Check if there are any machines that satisfy the
             # selection requirements.
@@ -828,7 +855,7 @@ class Database(object):
                 raise CuckooOperationalError("No machines match selection criteria.")
 
             # Get the first free machine.
-            machine = machines.filter_by(locked=False).first()
+            machine = machines.filter_by(locked = False).first()
         except SQLAlchemyError as e:
             log.debug("Database error locking machine: {0}".format(e))
             session.close()
@@ -859,7 +886,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter_by(label=label).first()
+            machine = session.query(Machine).filter_by(label = label).first()
         except SQLAlchemyError as e:
             log.debug("Database error unlocking machine: {0}".format(e))
             session.close()
@@ -887,7 +914,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines_count = session.query(Machine).filter_by(locked=False).count()
+            machines_count = session.query(Machine).filter_by(locked = False).count()
             return machines_count
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
@@ -902,7 +929,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=False).all()
+            machines = session.query(Machine).options(joinedload("tags")).filter_by(locked = False).all()
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error getting available machines: {0}".format(e))
@@ -918,7 +945,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter_by(label=label).first()
+            machine = session.query(Machine).filter_by(label = label).first()
         except SQLAlchemyError as e:
             log.debug("Database error setting machine status: {0}".format(e))
             session.close()
@@ -939,13 +966,13 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_error(self, message, task_id, action=None):
+    def add_error(self, message, task_id, action = None):
         """Add an error related to a task.
         @param message: error message
         @param task_id: ID of the related task
         """
         session = self.Session()
-        error = Error(message=message, task_id=task_id, action=action)
+        error = Error(message = message, task_id = task_id, action = action)
         session.add(error)
         try:
             session.commit()
@@ -958,10 +985,11 @@ class Database(object):
     # The following functions are mostly used by external utils.
 
     @classlock
-    def add(self, obj, timeout=0, package="", options="", priority=1,
-            custom="", owner="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None, category=None,
-            submit_id=None):
+    def add(self, obj, timeout = 0, package = "", options = "", priority = 1,
+            custom = "", owner = "", machine = "", platform = "", tags = None,
+            memory = False, enforce_timeout = False, clock = None, category = None,
+            name = None, added_on = None, status = TASK_PENDING, delta = None,
+            repeat = None, runs = None, submit_id = None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -975,6 +1003,7 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param repeat: single or recurring analysis
         @return: cursor or None.
         """
         # TODO: parameter `package` is not mentioned in the function docstring
@@ -987,14 +1016,14 @@ class Database(object):
             priority = 1
 
         if isinstance(obj, File):
-            sample = Sample(md5=obj.get_md5(),
-                            crc32=obj.get_crc32(),
-                            sha1=obj.get_sha1(),
-                            sha256=obj.get_sha256(),
-                            sha512=obj.get_sha512(),
-                            file_size=obj.get_size(),
-                            file_type=obj.get_type(),
-                            ssdeep=obj.get_ssdeep())
+            sample = Sample(md5 = obj.get_md5(),
+                            crc32 = obj.get_crc32(),
+                            sha1 = obj.get_sha1(),
+                            sha256 = obj.get_sha256(),
+                            sha512 = obj.get_sha512(),
+                            file_size = obj.get_size(),
+                            file_type = obj.get_type(),
+                            ssdeep = obj.get_ssdeep())
             session.add(sample)
 
             try:
@@ -1002,7 +1031,7 @@ class Database(object):
             except IntegrityError:
                 session.rollback()
                 try:
-                    sample = session.query(Sample).filter_by(md5=obj.get_md5()).first()
+                    sample = session.query(Sample).filter_by(md5 = obj.get_md5()).first()
                 except SQLAlchemyError as e:
                     log.debug("Error querying sample for hash: {0}".format(e))
                     session.close()
@@ -1019,6 +1048,17 @@ class Database(object):
         else:
             task = Task("none")
 
+            # Create an experiment
+            experiment = Experiment(name = name, delta = delta, runs = runs, times = 0)
+            session.add(experiment)
+            try:
+                session.commit()
+                session.refresh(experiment)
+            except SQLAlchemyError as e:
+                log.debug("Database error adding experiment: {0}".format(e))
+                session.close()
+                return None
+
         task.category = category
         task.timeout = timeout
         task.package = package
@@ -1031,20 +1071,24 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
         task.submit_id = submit_id
+        task.experiment_id = experiment.id
+        task.repeat = repeat
+        task.added_on = added_on
+        task.status = status
 
         if tags:
             if isinstance(tags, basestring):
                 for tag in tags.split(","):
                     if tag.strip():
                         task.tags.append(self._get_or_create(
-                            session, Tag, name=tag.strip()
+                            session, Tag, name = tag.strip()
                         ))
 
             if isinstance(tags, (tuple, list)):
                 for tag in tags:
                     if isinstance(tag, basestring) and tag.strip():
                         task.tags.append(self._get_or_create(
-                            session, Tag, name=tag.strip()
+                            session, Tag, name = tag.strip()
                         ))
 
         if clock:
@@ -1060,7 +1104,9 @@ class Database(object):
         session.add(task)
 
         try:
+            session.add(task)
             session.commit()
+            session.refresh(task)
             task_id = task.id
         except SQLAlchemyError as e:
             log.debug("Database error adding task: {0}".format(e))
@@ -1071,10 +1117,11 @@ class Database(object):
 
         return task_id
 
-    def add_path(self, file_path, timeout=0, package="", options="",
-                 priority=1, custom="", owner="", machine="", platform="",
-                 tags=None, memory=False, enforce_timeout=False, clock=None,
-                 submit_id=None):
+    def add_path(self, file_path, timeout = 0, package = "", options = "",
+                 priority = 1, custom = "", owner = "", machine = "", platform = "",
+                 tags = None, memory = False, enforce_timeout = False, clock = None,
+                 experiment = None, repeat = None, added_on = None, status = TASK_PENDING,
+                 name = None, delta = None, runs = None, submit_id = None):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -1102,12 +1149,13 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "file", submit_id)
+                        enforce_timeout, clock, "file", submit_id, name, repeat,
+                        added_on, status, delta, runs)
 
-    def add_archive(self, file_path, filename, package, timeout=0,
-                    options=None, priority=1, custom="", owner="", machine="",
-                    platform="", tags=None, memory=False,
-                    enforce_timeout=False, clock=None, submit_id=None):
+    def add_archive(self, file_path, filename, package, timeout = 0,
+                    options = None, priority = 1, custom = "", owner = "", machine = "",
+                    platform = "", tags = None, memory = False,
+                    enforce_timeout = False, clock = None, submit_id = None):
         """Add a task to the database that's packaged in an archive file."""
         if not file_path or not os.path.exists(file_path):
             log.warning("File does not exist: %s.", file_path)
@@ -1127,10 +1175,11 @@ class Database(object):
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock, "archive", submit_id)
 
-    def add_url(self, url, timeout=0, package="", options="", priority=1,
-                custom="", owner="", machine="", platform="", tags=None,
-                memory=False, enforce_timeout=False, clock=None,
-                submit_id=None):
+    def add_url(self, url, timeout = 0, package = "", options = "", priority = 1,
+                custom = "", owner = "", machine = "", platform = "", tags = None,
+                memory = False, enforce_timeout = False, clock = None, name = None,
+                repeat = None, added_on = None, status = TASK_PENDING, delta = None,
+                runs = None, submit_id = None):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -1155,9 +1204,9 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "url", submit_id)
+                        enforce_timeout, clock, "url", submit_id, name, repeat, added_on, status, delta, runs)
 
-    def add_baseline(self, timeout=0, owner="", machine="", memory=False):
+    def add_baseline(self, timeout = 0, owner = "", machine = "", memory = False):
         """Add a baseline task to database.
         @param timeout: selected timeout.
         @param owner: task owner.
@@ -1165,8 +1214,8 @@ class Database(object):
         @param memory: toggle full memory dump.
         @return: cursor or None.
         """
-        return self.add(None, timeout=timeout or 0, priority=999, owner=owner,
-                        machine=machine, memory=memory, category="baseline")
+        return self.add(None, timeout = timeout or 0, priority = 999, owner = owner,
+                        machine = machine, memory = memory, category = "baseline")
 
     def add_service(self, timeout, owner, tags):
         """Add a service task to database.
@@ -1175,12 +1224,12 @@ class Database(object):
         @param tags: task tags.
         @return: cursor or None.
         """
-        return self.add(None, timeout=timeout, priority=999, owner=owner,
-                        tags=tags, category="service")
+        return self.add(None, timeout = timeout, priority = 999, owner = owner,
+                        tags = tags, category = "service")
 
-    def add_reboot(self, task_id, timeout=0, options="", priority=1,
-                   owner="", machine="", platform="", tags=None, memory=False,
-                   enforce_timeout=False, clock=None, submit_id=None):
+    def add_reboot(self, task_id, timeout = 0, options = "", priority = 1,
+                   owner = "", machine = "", platform = "", tags = None, memory = False,
+                   enforce_timeout = False, clock = None, submit_id = None):
         """Add a reboot task to database from an existing analysis.
         @param task_id: task id of existing analysis.
         @param timeout: selected timeout.
@@ -1223,7 +1272,7 @@ class Database(object):
         session = self.Session()
 
         submit = Submit(
-            tmp_path=tmp_path, submit_type=submit_type, data=data or {}
+            tmp_path = tmp_path, submit_type = submit_type, data = data or {}
         )
         session.add(submit)
         try:
@@ -1238,7 +1287,7 @@ class Database(object):
         return submit_id
 
     @classlock
-    def view_submit(self, submit_id, tasks=False):
+    def view_submit(self, submit_id, tasks = False):
         session = self.Session()
         try:
             q = session.query(Submit)
@@ -1253,7 +1302,7 @@ class Database(object):
         return submit
 
     @classlock
-    def reschedule(self, task_id, priority=None):
+    def reschedule(self, task_id, priority = None):
         """Reschedule a task.
         @param task_id: ID of the task to reschedule.
         @return: ID of the newly created task.
@@ -1262,9 +1311,9 @@ class Database(object):
         if not task:
             return
 
-        if task.category == "file":
+        if task.category  ==  "file":
             add = self.add_path
-        elif task.category == "url":
+        elif task.category  ==  "url":
             add = self.add_url
         else:
             return
@@ -1297,9 +1346,73 @@ class Database(object):
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)
 
-    def list_tasks(self, limit=None, details=True, category=None, owner=None,
-                   offset=None, status=None, sample_id=None, not_status=None,
-                   completed_after=None, order_by=None):
+    def schedule(self, task_id, delta = None, timeout = None):
+        session = self.Session()
+
+        task = self.view_task(task_id)
+        if not task:
+            return None
+
+        # Decrease the runcount and increase the times it was run.
+        experiment = self.update_experiment(
+            None, id = task.experiment_id,
+            runs = task.experiment.runs - 1,
+            times = task.experiment.times + 1,
+        )
+
+        try:
+            make_transient(task)
+            task.id = None
+            task.status = TASK_SCHEDULED
+            task.started_on = None
+            task.completed_on = None
+
+            # If specified use the delta that has been provided, otherwise
+            # fall back on the delta set for this experiment.
+            if delta is None:
+                delta = time_duration(task.experiment.delta)
+
+            # Schedule the next task.
+            task.added_on = task.added_on(datetime.timedelta(seconds = delta))
+
+            if timeout is not None:
+                task.timeout = timeout
+
+            # Only schedule a new task if there are still runs left at this
+            # point (which is after decrementing the runs value).
+            if experiment.runs:
+                session.add(task)
+                session.commit()
+                session.refresh(task)
+            else:
+                session.commit()
+                task = None
+        except SQLAlchemyError as e:
+            log.debug("Database error rescheduling task: {0}".format(e))
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+        return task
+
+    def list_experiments(self, limit = None, details = False, category = None,
+                         offset = None, status = None, not_status = None):
+        session = self.Session()
+        try:
+            experiments = session.query(Experiment).options(joinedload("tasks")).order_by(Experiment.id).all()
+            for experiment in experiments:
+                experiment.last_task = experiment.tasks.order_by(Task.id.desc()).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error listing experiments: {0}".format(e))
+            return []
+        finally:
+            session.close()
+        return experiments
+
+    def list_tasks(self, limit = None, details = True, category = None, owner = None,
+                   offset = None, status = None, sample_id = None, not_status = None,
+                   experiment = None, completed_after = None, order_by = None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -1307,6 +1420,7 @@ class Database(object):
         @param owner: task owner
         @param offset: list offset
         @param status: filter by task status
+        @param experiment: experiment id
         @param sample_id: filter tasks for a sample
         @param not_status: exclude this task status from filter
         @param completed_after: only list tasks completed after this timestamp
@@ -1318,17 +1432,22 @@ class Database(object):
             search = session.query(Task)
 
             if status:
-                search = search.filter_by(status=status)
-            if not_status:
-                search = search.filter(Task.status != not_status)
+                if isinstance(status, (tuple, list)):
+                    search = search.filter(Task.status.in_(status))
+                else:
+                    search = search.filter_by(status = status)
+                if not_status:
+                        search = search.filter(~Task.status.in_(not_status))
             if category:
-                search = search.filter_by(category=category)
+                search = search.filter_by(category = category)
             if owner:
-                search = search.filter_by(owner=owner)
+                search = search.filter_by(owner = owner)
             if details:
                 search = search.options(joinedload("guest"), joinedload("errors"), joinedload("tags"))
+            if experiment:
+                search = search.filter_by(experiment_id = experiment)
             if sample_id is not None:
-                search = search.filter_by(sample_id=sample_id)
+                search = search.filter_by(sample_id = sample_id)
             if completed_after:
                 search = search.filter(Task.completed_on > completed_after)
 
@@ -1365,7 +1484,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def count_tasks(self, status=None):
+    def count_tasks(self, status = None):
         """Count tasks in the database
         @param status: apply a filter according to the task status
         @return: number of tasks found
@@ -1373,7 +1492,7 @@ class Database(object):
         session = self.Session()
         try:
             if status:
-                tasks_count = session.query(Task).filter_by(status=status).count()
+                tasks_count = session.query(Task).filter_by(status = status).count()
             else:
                 tasks_count = session.query(Task).count()
             return tasks_count
@@ -1384,7 +1503,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def view_task(self, task_id, details=True):
+    def view_task(self, task_id, details = True):
         """Retrieve information on a task.
         @param task_id: ID of the task to query.
         @return: details on the task.
@@ -1451,6 +1570,87 @@ class Database(object):
             session.close()
         return True
 
+    def update_experiment(self, name, id = None, delta = None, timeout = None,
+                          machine_name = False, runs = None, times = None):
+        """Update fields of an experiment.
+
+        The updated values will be reflected when the next analysis takes
+        place, e.g., the timeout is only changed for the upcoming analysis
+        task.
+
+        @param name: Experiment name.
+        @param id: Experiment ID.
+        @param delta: Relative time to start the next analysis.
+        @param timeout: Duration of the analysis.
+        @param machine_name: Machine name this experiment is bound to.
+        """
+        session = self.Session()
+        try:
+            if id is not None:
+                experiment = session.query(Experiment).get(id)
+            else:
+                experiment = session.query(Experiment).filter_by(name = name).first()
+
+            if delta is not None:
+                experiment.delta = delta
+
+            if timeout is not None:
+                task = experiment.tasks.order_by(Task.id.desc()).first()
+                task.timeout = timeout
+
+            if runs is not None and times is not None:
+                experiment.runs = runs
+                experiment.times = times
+
+            if machine_name is not False:
+                experiment.machine_name = machine_name
+
+            session.commit()
+            session.refresh(experiment)
+        except SQLAlchemyError as e:
+            log.debug("Database error updating experiment: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+            return experiment
+
+    def delete_experiment(self, experiment_id):
+        """Delete experiment by identifier."""
+        session = self.Session()
+        try:
+            experiment = session.query(Experiment).get(experiment_id)
+            session.delete(experiment)
+            session.commit()
+        except SQLAlchemyError as e:
+            log.debug("Database error deleting experiment: {0}".format(e))
+            session.rollback()
+            return False
+        finally:
+            session.close()
+        return True
+
+    def view_experiment(self, id = None, name = None, machine_name = None):
+        """View experiment by id or name."""
+        session = self.Session()
+        try:
+            experiment = session.query(Experiment)
+            if id is not None:
+                experiment = experiment.get(id)
+            elif name is not None:
+                experiment = experiment.filter_by(name = name).first()
+            elif machine_name is not None:
+                experiment = experiment.filter_by(machine_name = machine_name)
+                experiment = experiment.first()
+            else:
+                log.critical("No experiment ID, name, or machine name has been provided")
+                return None
+        except SQLAlchemyError as e:
+            log.debug("Database error viewing experiment: {0}".format(e))
+            return None
+        finally:
+            session.close()
+        return experiment
+
     @classlock
     def view_sample(self, sample_id):
         """Retrieve information on a sample given a sample id.
@@ -1473,8 +1673,31 @@ class Database(object):
 
         return sample
 
+    def count_experiments(self, status):
+        """Counts the amount of experiments in the database."""
+        session = self.Session()
+        try:
+            null = None
+
+            q = session.query(Experiment)
+            if status  ==  "unassigned":
+                q = q.filter(Experiment.machine_name  ==  null)
+                q = q.filter(Experiment.runs !=  0)
+            if status  ==  "processing":
+                q = q.filter(Experiment.machine_name !=  null)
+                q = q.filter(Experiment.runs !=  0)
+            if status  ==  "finished":
+                q = q.filter_by(runs = 0)
+            experiment_count = q.count()
+        except SQLAlchemyError as e:
+            log.debug("Database error counting experiments: {0}".format(e))
+            return 0
+        finally:
+            session.close()
+        return experiment_count
+
     @classlock
-    def find_sample(self, md5=None, sha256=None):
+    def find_sample(self, md5 = None, sha256 = None):
         """Search samples by MD5.
         @param md5: md5 string
         @return: matches list
@@ -1482,9 +1705,9 @@ class Database(object):
         session = self.Session()
         try:
             if md5:
-                sample = session.query(Sample).filter_by(md5=md5).first()
+                sample = session.query(Sample).filter_by(md5 = md5).first()
             elif sha256:
-                sample = session.query(Sample).filter_by(sha256=sha256).first()
+                sample = session.query(Sample).filter_by(sha256 = sha256).first()
         except SQLAlchemyError as e:
             log.debug("Database error searching sample: {0}".format(e))
             return None
@@ -1516,7 +1739,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter_by(name=name).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(name = name).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine: {0}".format(e))
             return None
@@ -1535,7 +1758,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).options(joinedload("tags")).filter_by(label=label).first()
+            machine = session.query(Machine).options(joinedload("tags")).filter_by(label = label).first()
         except SQLAlchemyError as e:
             log.debug("Database error viewing machine by label: {0}".format(e))
             return None
@@ -1554,7 +1777,7 @@ class Database(object):
         """
         session = self.Session()
         try:
-            q = session.query(Error).filter_by(task_id=task_id)
+            q = session.query(Error).filter_by(task_id = task_id)
             errors = q.order_by(Error.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing errors: {0}".format(e))
@@ -1574,8 +1797,8 @@ class Database(object):
         try:
             # Fetch a task that has yet to be processed and make sure no other
             # threads are allowed to access it through "for update".
-            q = session.query(Task).filter_by(status=TASK_COMPLETED)
-            q = q.filter_by(processing=None)
+            q = session.query(Task).filter_by(status = TASK_COMPLETED)
+            q = q.filter_by(processing = None)
             q = q.order_by(Task.priority.desc(), Task.id)
             task = q.with_for_update().first()
 
@@ -1584,7 +1807,7 @@ class Database(object):
                 return
 
             # Update the task so that it is processed by this instance.
-            session.query(Task).filter_by(id=task.id).update({
+            session.query(Task).filter_by(id = task.id).update({
                 "processing": instance,
             })
 
@@ -1593,7 +1816,7 @@ class Database(object):
 
             # Only return the task if it was really assigned to this node. It
             # could be, e.g., in sqlite3, that the locking is misbehaving.
-            if task.processing == instance:
+            if task.processing  ==  instance:
                 return task.id
         except SQLAlchemyError as e:
             log.debug("Database error getting new processing tasks: %s", e)
