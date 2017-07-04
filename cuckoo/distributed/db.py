@@ -81,6 +81,7 @@ class Task(db.Model, Serializer):
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.Text)
     filename = db.Column(db.Text)
+    url = db.Column(db.Text)
     package = db.Column(db.Text)
     timeout = db.Column(db.Integer)
     priority = db.Column(db.Integer)
@@ -111,13 +112,14 @@ class Task(db.Model, Serializer):
 
     __table_args__ = db.Index("ix_node_task", node_id, task_id),
 
-    def __init__(self, path=None, filename=None, package=None, timeout=None,
+    def __init__(self, path=None, filename=None, url=None, package=None, timeout=None,
                  priority=None, options=None, machine=None, platform=None,
                  tags=None, custom=None, owner=None, memory=None, clock=None,
                  enforce_timeout=None, node_id=None, task_id=None,
                  status=PENDING):
         self.path = path
         self.filename = filename
+        self.url = url
         self.package = package
         self.timeout = timeout
         self.priority = priority

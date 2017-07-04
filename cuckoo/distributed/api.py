@@ -35,11 +35,22 @@ def submit_task(url, task):
         memory=task["memory"],
         clock=task["clock"],
         enforce_timeout=task["enforce_timeout"],
+        url=task["url"],
     )
+
+    if task["url"]:
+        try:
+            r = requests.post(
+                urlparse.urljoin(url, "/tasks/create/url"),
+                data=data
+            )
+            return r.json()["task_id"]
+        except Exception:
+            pass
 
     # If the file does not exist anymore, ignore it and move on
     # to the next file.
-    if not os.path.isfile(task["path"]):
+    elif not os.path.isfile(task["path"]):
         return task["id"], None
 
     files = {"file": (task["filename"], open(task["path"], "rb"))}
