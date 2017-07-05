@@ -148,6 +148,8 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_report`         | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                     | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_iocs`           | Get iocs from task.                                                                                              |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`          | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_rereport`       | Re-run reporting for task associated with a given analysis task ID.                                              |
@@ -582,6 +584,7 @@ Removes the given task from the database and deletes the results.
 * ``404`` - task not found
 * ``500`` - unable to delete the task
 
+
 .. _tasks_report:
 
 /tasks/report
@@ -607,6 +610,32 @@ Returns the report associated with the specified task ID.
 * ``200`` - no error
 * ``400`` - invalid report format
 * ``404`` - report not found
+
+
+.. _tasks_iocs:
+
+/tasks/iocs
+-------------
+
+**GET /tasks/iocs/** *(int: id)* **/** *(str: format)*
+
+Returns the iocs associated with the specified task ID.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/iocs/1
+
+**Parameters**:
+
+* ``id`` *(required)* *(int)* - ID of the task to get the report for
+
+**Status codes**:
+
+* ``200`` - no error
+* ``404`` - report not found
+
 
 .. _tasks_shots:
 
@@ -1035,10 +1064,11 @@ Shuts down the server if in debug mode and using the werkzeug server.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/exit
+    curl http://localhost:8090/tasks/get/iocs/
 
 **Status codes**:
 
 * ``200`` - success
 * ``403`` - this call can only be used in debug mode
 * ``500`` - error
+
