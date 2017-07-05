@@ -76,7 +76,6 @@ def tasks_iocs(task_id, detail=False):
         buf = results_db.analysis.find_one({"info.id": task_id})
         del buf["_id"]
 
-    import code; code.interact(local=locals())
     if not buf:
         jfile = cwd("storage", "analyses", str(task_id), "reports", "report.json")
         if os.path.exists(jfile):
