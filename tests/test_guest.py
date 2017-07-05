@@ -72,3 +72,16 @@ class TestGuestManager(object):
         with pytest.raises(Exception):
             gm.start_analysis({"timeout": 42}, None)
         assert gm.timeout == 165
+
+    @responses.activate
+    def test_analyzer_path(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        gm = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+
+        gm.environ["SYSTEMDRIVE"] = "C:"
+        gm.options["options"] = "analpath=tempdir"
+        responses.add(responses.POST, "http://1.2.3.4:8000/mkdir", status=200)
+        gm.determine_analyzer_path()
+
+        assert gm.analyzer_path == "C:\\\\tempdir"
