@@ -7,9 +7,11 @@ import datetime
 import hashlib
 import io
 import os
+import json
 import socket
 import tarfile
 import zipfile
+import pymongo
 
 from flask import Flask, request, jsonify, make_response
 
@@ -24,6 +26,16 @@ from cuckoo.misc import cwd, version, decide_cwd
 
 db = Database()
 sm = SubmitManager()
+
+decide_cwd()
+FULL_DB = False
+if config("reporting:mongodb:enabled"):
+    results_db = pymongo.MongoClient(
+                    config("reporting:mongodb:host"),
+                    config("reporting:mongodb:port")
+                )[config("reporting:mongodb:db")]
+    FULL_DB = True
+
 
 # Initialize Flask app.
 app = Flask(__name__)
@@ -54,6 +66,202 @@ def custom_headers(response):
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+@app.route("/tasks/iocs/<int:task_id>", methods=["GET"])
+@app.route("/v1/tasks/iocs/<int:task_id>", methods=["GET"])
+def tasks_iocs(task_id, detail=False):
+
+    buf = {}
+    if FULL_DB:
+        buf = results_db.analysis.find_one({"info.id": task_id})
+        del buf["_id"]
+
+    import code; code.interact(local=locals())
+    if not buf:
+        jfile = cwd("storage", "analyses", str(task_id), "reports", "report.json")
+        if os.path.exists(jfile):
+            with open(jfile, "r") as jdata:
+                buf = json.load(jdata)
+
+    if buf is None:
+        resp = {"error": True, "error_value": "Sample not found in database"}
+        return jsonify(resp, response=True)
+
+    data = {}
+    #data["malfamily"] = buf.get("malfamily", "")
+    #data["malscore"] = buf.get("malscore", "")
+    data["info"] = buf.get("info", {})
+    if data["info"].get("custom", ""):
+        del data["info"]["custom"]
+    # The machines key won't exist in cases where an x64 binary is submitted
+    # when there are no x64 machines.
+    if "machine" in data.get("info", {}):
+        del data["info"]["machine"]["manager"]
+        del data["info"]["machine"]["label"]
+    data["signatures"] = []
+    # Grab sigs
+    for sig in buf.get("signatures", []):
+        data["signatures"].append(sig)
+    # Grab target file info
+    if "target" in buf.keys():
+        data["target"] = buf["target"]
+        if data["target"].get("category", "") == "file":
+            del data["target"]["file"]["path"]
+            del data["target"]["file_id"]
+    data["network"] = {}
+    if "network" in buf.keys():
+        data["network"]["traffic"] = {}
+        for netitem in ["tcp", "udp", "irc", "http", "dns", "smtp", "hosts", "domains"]:
+            if netitem in buf["network"]:
+                data["network"]["traffic"][netitem + "_count"] = len(buf["network"][netitem])
+            else:
+                data["network"]["traffic"][netitem + "_count"] = 0
+        data["network"]["traffic"]["http"] = buf["network"]["http"]
+        data["network"]["hosts"] = buf["network"]["hosts"]
+        data["network"]["domains"] = buf["network"]["domains"]
+    data["network"]["ids"] = {}
+    if "suricata" in buf.keys():
+        data["network"]["ids"]["totalalerts"] = len(buf["suricata"]["alerts"])
+        data["network"]["ids"]["alerts"] = buf["suricata"]["alerts"]
+        data["network"]["ids"]["http"] = buf["suricata"]["http"]
+        data["network"]["ids"]["totalfiles"] = len(buf["suricata"]["files"])
+        data["network"]["ids"]["files"] = list()
+        for surifile in buf["suricata"]["files"]:
+            if "file_info" in surifile.keys():
+                tmpfile = surifile
+                tmpfile["sha1"] = surifile["file_info"]["sha1"]
+                tmpfile["md5"] = surifile["file_info"]["md5"]
+                tmpfile["sha256"] = surifile["file_info"]["sha256"]
+                tmpfile["sha512"] = surifile["file_info"]["sha512"]
+                del tmpfile["file_info"]
+                data["network"]["ids"]["files"].append(tmpfile)
+    data["static"] = {}
+    if "static" in buf.keys():
+        pe = {}
+        pdf = {}
+        office = {}
+        if "peid_signatures" in buf["static"] and buf["static"]["peid_signatures"]:
+            pe["peid_signatures"] = buf["static"]["peid_signatures"]
+        if "pe_timestamp" in buf["static"] and buf["static"]["pe_timestamp"]:
+            pe["pe_timestamp"] = buf["static"]["pe_timestamp"]
+        if "pe_imphash" in buf["static"] and buf["static"]["pe_imphash"]:
+            pe["pe_imphash"] = buf["static"]["pe_imphash"]
+        if "pe_icon_hash" in buf["static"] and buf["static"]["pe_icon_hash"]:
+            pe["pe_icon_hash"] = buf["static"]["pe_icon_hash"]
+        if "pe_icon_fuzzy" in buf["static"] and buf["static"]["pe_icon_fuzzy"]:
+            pe["pe_icon_fuzzy"] = buf["static"]["pe_icon_fuzzy"]
+        if "Objects" in buf["static"] and buf["static"]["Objects"]:
+            pdf["objects"] = len(buf["static"]["Objects"])
+        if "Info" in buf["static"] and buf["static"]["Info"]:
+            if "PDF Header" in buf["static"]["Info"].keys():
+                pdf["header"] = buf["static"]["Info"]["PDF Header"]
+        if "Streams" in buf["static"]:
+            if "/Page" in buf["static"]["Streams"].keys():
+                pdf["pages"] = buf["static"]["Streams"]["/Page"]
+        if "Macro" in buf["static"] and buf["static"]["Macro"]:
+            if "Analysis" in buf["static"]["Macro"]:
+                office["signatures"] = {}
+                for item in buf["static"]["Macro"]["Analysis"]:
+                    office["signatures"][item] = []
+                    for indicator, desc in buf["static"]["Macro"]["Analysis"][item]:
+                        office["signatures"][item].append((indicator, desc))
+            if "Code" in buf["static"]["Macro"]:
+                office["macros"] = len(buf["static"]["Macro"]["Code"])
+        data["static"]["pe"] = pe
+        data["static"]["pdf"] = pdf
+        data["static"]["office"] = office
+
+    data["files"] = {}
+    data["files"]["modified"] = []
+    data["files"]["deleted"] = []
+    data["registry"] = {}
+    data["registry"]["modified"] = []
+    data["registry"]["deleted"] = []
+    data["mutexes"] = []
+    data["executed_commands"] = []
+    data["dropped"] = []
+
+    """
+    if "behavior" in buf and "summary" in buf["behavior"]:
+        if "write_files" in buf["behavior"]["summary"]:
+            data["files"]["modified"] = buf["behavior"]["summary"]["write_files"]
+        if "delete_files" in buf["behavior"]["summary"]:
+            data["files"]["deleted"] = buf["behavior"]["summary"]["delete_files"]
+        if "write_keys" in buf["behavior"]["summary"]:
+            data["registry"]["modified"] = buf["behavior"]["summary"]["write_keys"]
+        if "delete_keys" in buf["behavior"]["summary"]:
+            data["registry"]["deleted"] = buf["behavior"]["summary"]["delete_keys"]
+        if "mutexes" in buf["behavior"]["summary"]:
+            data["mutexes"] = buf["behavior"]["summary"]["mutexes"]
+        if "executed_commands" in buf["behavior"]["summary"]:
+            data["executed_commands"] = buf["behavior"]["summary"]["executed_commands"]
+
+    data["process_tree"] = {}
+    if "behavior" in buf and "processtree" in buf["behavior"] and len(buf["behavior"]["processtree"]) > 0:
+        data["process_tree"] = {"pid" : buf["behavior"]["processtree"][0]["pid"],
+                                # linux behavior is none
+                                "name" : buf["behavior"]["processtree"][0].get("name", None),
+                                #"spawned_processes": [createProcessTreeNode(child_process) for child_process in buf["behavior"]["processtree"][0]["children"]]
+                                }
+    """
+    if "dropped" in buf:
+        for entry in buf["dropped"]:
+            tmpdict = {}
+            if entry["clamav"]:
+                tmpdict['clamav'] = entry["clamav"]
+            if entry["sha256"]:
+                tmpdict['sha256'] = entry["sha256"]
+            if entry["md5"]:
+                tmpdict['md5'] = entry["md5"]
+            if entry["yara"]:
+                tmpdict['yara'] = entry["yara"]
+            if entry["type"]:
+                tmpdict["type"] = entry["type"]
+            if entry["guest_paths"]:
+                tmpdict["guest_paths"] = entry["guest_paths"]
+            data["dropped"].append(tmpdict)
+
+    if not detail:
+        resp = {"error": False, "data": data}
+        return jsonify(resp)
+
+    if "static" in buf:
+        if "pe_versioninfo" in buf["static"] and buf["static"]["pe_versioninfo"]:
+            data["static"]["pe"]["pe_versioninfo"] = buf["static"]["pe_versioninfo"]
+
+    if "behavior" in buf and "summary" in buf["behavior"]:
+        if "read_files" in buf["behavior"]["summary"]:
+            data["files"]["read"] = buf["behavior"]["summary"]["read_files"]
+        if "read_keys" in buf["behavior"]["summary"]:
+            data["registry"]["read"] = buf["behavior"]["summary"]["read_keys"]
+
+    if buf.get("network", {}) and "http" in buf["network"]:
+        data["network"]["http"] = {}
+        for req in buf["network"]["http"]:
+            if "host" in req:
+                data["network"]["http"]["host"] = req["host"]
+            else:
+                data["network"]["http"]["host"] = ""
+            if "data" in req and "\r\n" in req["data"]:
+                data["network"]["http"]["data"] = req["data"].split("\r\n")[0]
+            else:
+                data["network"]["http"]["data"] = ""
+            if "method" in req:
+                data["network"]["http"]["method"] = req["method"]
+            else:
+                data["network"]["http"]["method"] = ""
+                if "user-agent" in req:
+                    data["network"]["http"]["ua"] = req["user-agent"]
+                else:
+                    data["network"]["http"]["ua"] = ""
+
+    if "strings" in buf.keys():
+        data["strings"] = buf["strings"]
+    else:
+        data["strings"] = ["No Strings"]
+
+    resp = {"error": False, "data": data}
+    return jsonify(resp)
 
 @app.route("/tasks/create/file", methods=["POST"])
 @app.route("/v1/tasks/create/file", methods=["POST"])
