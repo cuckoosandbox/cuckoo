@@ -77,11 +77,17 @@ class TestGuestManager(object):
     def test_analyzer_path(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
-        gm = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
 
-        gm.environ["SYSTEMDRIVE"] = "C:"
-        gm.options["options"] = "analpath=tempdir"
         responses.add(responses.POST, "http://1.2.3.4:8000/mkdir", status=200)
-        gm.determine_analyzer_path()
 
-        assert gm.analyzer_path == "C:/tempdir"
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["SYSTEMDRIVE"] = "C:"
+        gm_win.options["options"] = "analpath=tempdir"
+        gm_win.determine_analyzer_path()
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+        gm_lin.options["options"] = "analpath=tempdir"
+        gm_lin.determine_analyzer_path()
+
+        assert gm_lin.analyzer_path == "/tempdir"
+        assert gm_win.analyzer_path == "C:/tempdir"
