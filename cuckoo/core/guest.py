@@ -337,16 +337,22 @@ class GuestManager(object):
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
-        systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
+        systemdrive = self.determine_system_drive()
 
         options = parse_options(self.options["options"])
         if options.get("analpath"):
-            dirpath = "%s\\%s" % (systemdrive, options["analpath"])
+            dirpath = systemdrive + options["analpath"]
             r = self.post("/mkdir", data={"dirpath": dirpath})
             self.analyzer_path = dirpath
         else:
             r = self.post("/mkdtemp", data={"dirpath": systemdrive})
             self.analyzer_path = r.json()["dirpath"]
+
+    def determine_system_drive(self):
+        return "%s/" % self.environ["SYSTEMDRIVE"] if self.platform == "windows" else "/"
+
+    def determine_temp_path(self):
+        return self.environ["TEMP"] if self.platform == "windows" else "/tmp"
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
@@ -462,7 +468,7 @@ class GuestManager(object):
         if options["category"] == "file" or options["category"] == "archive":
             data = {
                 "filepath": os.path.join(
-                    self.environ["TEMP"], options["file_name"]
+                    self.determine_temp_path(), options["file_name"]
                 ),
             }
             files = {
@@ -472,7 +478,7 @@ class GuestManager(object):
 
         if "execpy" in features:
             data = {
-                "filepath": "%s\\analyzer.py" % self.analyzer_path,
+                "filepath": "%s/analyzer.py" % self.analyzer_path,
                 "async": "yes",
                 "cwd": self.analyzer_path,
             }

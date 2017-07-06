@@ -84,4 +84,4 @@ class TestGuestManager(object):
         responses.add(responses.POST, "http://1.2.3.4:8000/mkdir", status=200)
         gm.determine_analyzer_path()
 
-        assert gm.analyzer_path == "C:\\\\tempdir"
+        assert gm.analyzer_path == "C:/tempdir"
