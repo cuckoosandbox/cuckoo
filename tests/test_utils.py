@@ -420,3 +420,11 @@ def test_list_of():
     assert utils.list_of_ints([1, "1"]) is False
     assert utils.list_of_ints([1, 2]) is True
     assert utils.list_of_ints([lambda x: x]) is False
+
+def test_time_duration():
+    assert utils.time_duration("1s") == 1
+    assert utils.time_duration("1m") == 60
+    assert utils.time_duration("1h") == 3600
+    assert utils.time_duration("1d") == 86400
+    assert utils.time_duration("1w") == 604800
+    assert utils.time_duration("1s1m1h1d1w") == 694861

@@ -342,3 +342,41 @@ def list_of_ints(l):
 
 def list_of_strings(l):
     return list_of(l, basestring)
+
+def time_duration(s):
+    """Parse a string with a time duration into seconds.
+
+    Examples show the usage;
+        1h    = 3600  seconds
+        1d2h  = 93600 seconds
+        3h5m  = 11000 seconds
+    """
+    units = {
+        "s": 1,
+        "m": 60,
+        "h": 60 * 60,
+        "d": 24 * 60 * 60,
+        "w": 7 * 24 * 60 * 60,
+    }
+
+    duration = 0
+    while s:
+        # Parse the number.
+        multiplier = 0
+        while s and s[0] in "1234567890":
+            multiplier = multiplier * 10 + int(s[0])
+            s = s[1:]
+
+        # Check the unit.
+        if s and s[0] not in units:
+            raise Exception("Invalid unit specified: '%s'", s[0])
+
+        if s:
+            # Add the duration.
+            duration += multiplier * units[s[0]]
+            s = s[1:]
+        else:
+            # This is a regular timeout specification in seconds.
+            duration += multiplier
+
+    return duration
