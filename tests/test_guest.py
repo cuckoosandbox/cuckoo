@@ -91,3 +91,27 @@ class TestGuestManager(object):
 
         assert gm_lin.analyzer_path == "/tempdir"
         assert gm_win.analyzer_path == "C:/tempdir"
+
+    def test_temp_path(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["TEMP"] = "C:\Users\user\AppData\Local\Temp"
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+
+        assert gm_lin.determine_temp_path() == "/tmp"
+        assert gm_win.determine_temp_path() == "C:\Users\user\AppData\Local\Temp"
+
+    def test_system_drive(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["SYSTEMDRIVE"] = "C:"
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+
+        assert gm_win.determine_system_drive() == "C:/"
+        assert gm_lin.determine_system_drive() == "/"
