@@ -9,6 +9,8 @@ import logging
 import tempfile
 import xmlrpclib
 import traceback
+import urllib
+import urllib2
 import time
 import datetime
 
@@ -362,6 +364,11 @@ if __name__ == "__main__":
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
-        # Establish connection with the agent XMLRPC server.
-        server = xmlrpclib.Server("http://127.0.0.1:8000")
-        server.complete(success, error, PATHS["root"])
+        try:
+            # old agent
+            server = xmlrpclib.Server("http://127.0.0.1:8000")
+            server.complete(success, error, PATHS["root"])
+        except xmlrpclib.ProtocolError:
+            # new agent
+            data = { "status": "complete", "description": success }
+            urllib2.urlopen("http://127.0.0.1:8000/status", urllib.urlencode(data))
