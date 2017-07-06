@@ -32,7 +32,7 @@ class FilteredProcessLog(list):
         return True
 
 class LinuxSystemTap(BehaviorHandler):
-    """Parses systemtap generated plaintext logs (see data/strace.stp)."""
+    """Parses systemtap generated plaintext logs (see stuff/systemtap/strace.stp)."""
 
     key = "processes"
 
