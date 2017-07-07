@@ -12853,6 +12853,8 @@ body.night .flex-static__summary li
 
 .process-tree__tree .processes li > div
 {
+    position: relative;
+
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -12927,9 +12929,16 @@ body.night .flex-static__summary li
     font-size: 14px;
     font-weight: 700;
 
+    max-width: 75%;
     margin: 10px 0;
 
     color: #6297f8;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+    -webkit-box-flex: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
 }
 
 .process-tree__tree .processes p em
@@ -12938,8 +12947,13 @@ body.night .flex-static__summary li
     font-weight: 400;
 
     display: block;
+    overflow: hidden;
 
+    max-width: 100%;
     margin-top: 5px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     color: #818181;
 }

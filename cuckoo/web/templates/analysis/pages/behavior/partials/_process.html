@@ -2,7 +2,7 @@
   <div>
     <p>
       {{ process.process_name }}
-      <em>{{ process.command_line }}</em>
+      <em data-toggle="tooltip" title="{{ process.command_line }}">{{ process.command_line }}</em>
     </p>
     <span class="pid">{{ process.pid }}</span>
     {% if process.children %}

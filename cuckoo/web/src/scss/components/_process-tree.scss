@@ -67,6 +67,7 @@
         }
 
         & > div {
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -100,10 +101,15 @@
       }
 
       p {
+        max-width: 75%;
         font-size: 14px;
         color: #6297F8;
         margin: 10px 0;
         font-weight: 700;
+
+        // ensures flexible text wrapping
+        flex-basis: 100%;
+        flex-grow: 0;
 
         em {
           display: block;
@@ -111,6 +117,12 @@
           font-size: 12px;
           margin-top: 5px;
           font-weight: 400;
+
+          // configures maximum length - auto-ellipsing
+          max-width: 100%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
         }
       }
 

@@ -110,6 +110,11 @@ class ProcessBehaviorView {
 
     });
 
+    // enable bootstrap tooltips
+    this._$.find('[data-toggle="tooltip"]').tooltip({
+      placement: 'bottom left'
+    });
+
   }
 
 }
@@ -120,7 +125,6 @@ $(() => {
 
   if($("#behavior-process-tree").length) {
     let bpt = new ProcessBehaviorView($("#behavior-process-tree"));
-    console.log(bpt);
   }
 
 });

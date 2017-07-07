@@ -127,6 +127,11 @@ var ProcessBehaviorView = function () {
         var target = $(e.currentTarget);
         target.parents('.process-tree__tree, .process-tree__detail').toggleClass('open');
       });
+
+      // enable bootstrap tooltips
+      this._$.find('[data-toggle="tooltip"]').tooltip({
+        placement: 'bottom left'
+      });
     }
   }]);
 
@@ -141,7 +146,6 @@ $(function () {
 
   if ($("#behavior-process-tree").length) {
     var bpt = new ProcessBehaviorView($("#behavior-process-tree"));
-    console.log(bpt);
   }
 });
 //# sourceMappingURL=process_tree.js.map
