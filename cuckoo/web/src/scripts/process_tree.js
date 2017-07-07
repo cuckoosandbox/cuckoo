@@ -112,7 +112,16 @@ class ProcessBehaviorView {
 
     // enable bootstrap tooltips
     this._$.find('[data-toggle="tooltip"]').tooltip({
-      placement: 'bottom left'
+      tooltipClass: 'cuckoo-tooltip tree-tip',
+      position: { my: "left-4 top-22" },
+      show: {
+        effect: 'fade',
+        duration: 100
+      },
+      hide: {
+        effect: 'fade',
+        duration: 100
+      }
     });
 
   }
