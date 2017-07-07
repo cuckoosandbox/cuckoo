@@ -123,6 +123,11 @@
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
+
+          .fa {
+            margin-right: 10px;
+            color: $cuckoo_secundary_color;
+          }
         }
       }
 
