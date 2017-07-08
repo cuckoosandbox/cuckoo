@@ -10,7 +10,9 @@ import tempfile
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from cuckoo.common.files import Files
-from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
+from cuckoo.core.database import (
+    Database, Task, AlembicVersion, SCHEMA_VERSION, Experiment
+)
 from cuckoo.core.startup import index_yara
 from cuckoo.distributed.app import create_app
 from cuckoo.main import main, cuckoo_create
@@ -73,6 +75,32 @@ class DatabaseEngine(object):
         assert self.d.processing_get_task("foo") == t6
         assert self.d.processing_get_task("foo") == t7
         assert self.d.processing_get_task("foo") is None
+
+    def test_create_experiment(self):
+        # Create file
+        fd, sample_path = tempfile.mkstemp()
+        os.write(fd, "ltadogeltadogeltadogeltadogeltadoge")
+        os.close(fd)
+
+        name = "tosti"
+        runs = 2
+        delta = "14h10m"
+
+        # Add task with experiment enabled and retrieve it
+        ses = self.d.Session()
+        count = ses.query(Experiment).count()
+        task_id = self.d.add_path(sample_path, experiment=True, name=name,
+                                  runs=runs, delta=delta)
+
+        exp = ses.query(Experiment).all()
+        task = ses.query(Task).get(task_id)
+
+        assert self.d.Session().query(Experiment).count() == count + 1
+        assert exp[0].name == name
+        assert exp[0].runs == runs
+        assert exp[0].times == 0
+        assert exp[0].delta == delta
+        assert exp[0].id == task.experiment_id
 
     def test_error_exists(self):
         task_id = self.add_url("http://google.com/")
