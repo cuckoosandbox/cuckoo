@@ -14,7 +14,9 @@ from sqlalchemy import create_engine, Column, not_, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import sessionmaker, relationship, joinedload, backref
+from sqlalchemy.orm import (
+    sessionmaker, relationship, joinedload, backref, make_transient
+)
 
 from cuckoo.common.config import config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
@@ -109,7 +111,6 @@ class Machine(Base):
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
     resultserver_port = Column(Integer(), nullable=False)
-    rdp_port = Column(String(16), nullable=True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
@@ -146,7 +147,7 @@ class Machine(Base):
         return True
 
     def __init__(self, name, label, ip, platform, options, interface,
-                 snapshot, resultserver_ip, resultserver_port, rdp_port):
+                 snapshot, resultserver_ip, resultserver_port):
         self.name = name
         self.label = label
         self.ip = ip
@@ -156,7 +157,6 @@ class Machine(Base):
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
-        self.rdp_port = rdp_port
 
 
 class Tag(Base):
@@ -360,12 +360,13 @@ class Task(Base):
     completed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(status_type, server_default=TASK_PENDING, nullable=False)
     sample_id = Column(Integer, ForeignKey("samples.id"), nullable=True)
-    experiment_id = Column(Integer, ForeignKey("experiment.id"),
+    experiment_id = Column(Integer, ForeignKey("experiments.id"),
                            nullable=True)
     submit_id = Column(Integer, ForeignKey("submit.id"), nullable=True,
                        index=True)
     processing = Column(String(16), nullable=True)
     route = Column(String(16), nullable=True)
+
     sample = relationship("Sample", backref="tasks")
     submit = relationship("Submit", backref="tasks")
     experiment = relationship("Experiment",
@@ -604,7 +605,7 @@ class Database(object):
 
     @classlock
     def add_machine(self, name, label, ip, platform, options, tags, interface,
-                    snapshot, resultserver_ip, resultserver_port, rdp_port):
+                    snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -630,8 +631,7 @@ class Database(object):
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
-                          resultserver_port=resultserver_port,
-                          rdp_port=rdp_port, )
+                          resultserver_port=resultserver_port)
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
@@ -1014,8 +1014,8 @@ class Database(object):
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", owner="", machine="", platform="", tags=None,
             memory=False, enforce_timeout=False, clock=None, category=None,
-            name=None, added_on=None, status=TASK_PENDING, delta=None,
-            repeat=None, runs=None, submit_id=None):
+            submit_id=None, name=None, added_on=None, delta=None, runs=None,
+            experiment=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
         @param timeout: selected timeout.
@@ -1029,7 +1029,11 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
-        @param repeat: single or recurring analysis
+        @param name: name for an experiment
+        @param added_on
+        @param delta: time delta for experiment
+        @param runs: amount of times a task should be run for an experiment
+        @param experiment: create experiment or not
         @return: cursor or None.
         """
         # TODO: parameter `package` is not mentioned in the function docstring
@@ -1075,16 +1079,21 @@ class Database(object):
         else:
             task = Task("none")
 
-            # Create an experiment
+        # Used if this task will be part of an experiment
+        if experiment:
             experiment = Experiment(name=name, delta=delta, runs=runs, times=0)
             session.add(experiment)
+
             try:
                 session.commit()
                 session.refresh(experiment)
             except SQLAlchemyError as e:
                 log.debug("Database error adding experiment: {0}".format(e))
+                session.rollback()
                 session.close()
                 return None
+
+            task.experiment_id = experiment.id
 
         task.category = category
         task.timeout = timeout
@@ -1098,10 +1107,6 @@ class Database(object):
         task.memory = memory
         task.enforce_timeout = enforce_timeout
         task.submit_id = submit_id
-        task.experiment_id = experiment.id
-        task.repeat = repeat
-        task.added_on = added_on
-        task.status = status
 
         if tags:
             if isinstance(tags, basestring):
@@ -1133,9 +1138,7 @@ class Database(object):
         session.add(task)
 
         try:
-            session.add(task)
             session.commit()
-            session.refresh(task)
             task_id = task.id
         except SQLAlchemyError as e:
             log.debug("Database error adding task: {0}".format(e))
@@ -1149,9 +1152,8 @@ class Database(object):
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", owner="", machine="", platform="",
                  tags=None, memory=False, enforce_timeout=False, clock=None,
-                 experiment=None, repeat=None, added_on=None,
-                 status=TASK_PENDING,
-                 name=None, delta=None, runs=None, submit_id=None):
+                 submit_id=None, name=None, added_on=None, delta=None, runs=None,
+                 experiment=False):
         """Add a task to database from file path.
         @param file_path: sample path.
         @param timeout: selected timeout.
@@ -1165,6 +1167,11 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param name: name for an experiment
+        @param added_on
+        @param delta: time delta for experiment
+        @param runs: amount of times a task should be run for an experiment
+        @param experiment: create experiment or not
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -1180,8 +1187,7 @@ class Database(object):
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
                         enforce_timeout, clock, "file", submit_id, name,
-                        repeat,
-                        added_on, status, delta, runs)
+                        added_on, delta, runs, experiment)
 
     def add_archive(self, file_path, filename, package, timeout=0,
                     options=None, priority=1, custom="", owner="", machine="",
@@ -1208,9 +1214,9 @@ class Database(object):
 
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", owner="", machine="", platform="", tags=None,
-                memory=False, enforce_timeout=False, clock=None, name=None,
-                repeat=None, added_on=None, status=TASK_PENDING, delta=None,
-                runs=None, submit_id=None):
+                memory=False, enforce_timeout=False, clock=None,
+                submit_id=None, name=None, added_on=None, delta=None,
+                runs=None, experiment=False):
         """Add a task to database from url.
         @param url: url.
         @param timeout: selected timeout.
@@ -1224,6 +1230,11 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param name: name for an experiment
+        @param added_on
+        @param delta: time delta for experiment
+        @param runs: amount of times a task should be run for an experiment
+        @param experiment: create experiment or not
         @return: cursor or None.
         """
 
@@ -1235,8 +1246,8 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, owner, machine, platform, tags, memory,
-                        enforce_timeout, clock, "url", submit_id, name, repeat,
-                        added_on, status, delta, runs)
+                        enforce_timeout, clock, "url", submit_id, name,
+                        added_on, delta, runs, experiment)
 
     def add_baseline(self, timeout=0, owner="", machine="", memory=False):
         """Add a baseline task to database.
