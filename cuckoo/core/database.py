@@ -1439,15 +1439,16 @@ class Database(object):
 
         return task
 
-    def list_experiments(self, limit=None, details=False, category=None,
-                         offset=None, status=None, not_status=None):
+    def list_experiments(self):
         session = self.Session()
         try:
             experiments = session.query(Experiment).options(
                 joinedload("tasks")).order_by(Experiment.id).all()
+
             for experiment in experiments:
                 experiment.last_task = experiment.tasks.order_by(
                     Task.id.desc()).first()
+
         except SQLAlchemyError as e:
             log.debug("Database error listing experiments: {0}".format(e))
             return []
@@ -1457,7 +1458,7 @@ class Database(object):
 
     def list_tasks(self, limit=None, details=True, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
-                   experiment=None, completed_after=None, order_by=None):
+                   completed_after=None, order_by=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -1465,7 +1466,6 @@ class Database(object):
         @param owner: task owner
         @param offset: list offset
         @param status: filter by task status
-        @param experiment: experiment id
         @param sample_id: filter tasks for a sample
         @param not_status: exclude this task status from filter
         @param completed_after: only list tasks completed after this timestamp
@@ -1477,12 +1477,9 @@ class Database(object):
             search = session.query(Task)
 
             if status:
-                if isinstance(status, (tuple, list)):
-                    search = search.filter(Task.status.in_(status))
-                else:
-                    search = search.filter_by(status=status)
-                if not_status:
-                    search = search.filter(~Task.status.in_(not_status))
+                search = search.filter_by(status=status)
+            if not_status:
+                search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter_by(category=category)
             if owner:
@@ -1491,8 +1488,6 @@ class Database(object):
                 search = search.options(joinedload("guest"),
                                         joinedload("errors"),
                                         joinedload("tags"))
-            if experiment:
-                search = search.filter_by(experiment_id=experiment)
             if sample_id is not None:
                 search = search.filter_by(sample_id=sample_id)
             if completed_after:
