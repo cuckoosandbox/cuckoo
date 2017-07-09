@@ -76,7 +76,7 @@ class DatabaseEngine(object):
         assert self.d.processing_get_task("foo") == t7
         assert self.d.processing_get_task("foo") is None
 
-    def test_create_experiment(self):
+    def test_add_path_experiment(self):
         # Create file
         fd, sample_path = tempfile.mkstemp()
         os.write(fd, "ltadogeltadogeltadogeltadogeltadoge")
@@ -92,15 +92,37 @@ class DatabaseEngine(object):
         task_id = self.d.add_path(sample_path, experiment=True, name=name,
                                   runs=runs, delta=delta)
 
-        exp = ses.query(Experiment).all()
         task = ses.query(Task).get(task_id)
+        exp = ses.query(Experiment).get(task.experiment_id)
 
         assert self.d.Session().query(Experiment).count() == count + 1
-        assert exp[0].name == name
-        assert exp[0].runs == runs
-        assert exp[0].times == 0
-        assert exp[0].delta == delta
-        assert exp[0].id == task.experiment_id
+        assert exp.name == name
+        assert exp.runs == runs
+        assert exp.times == 0
+        assert exp.delta == delta
+        assert exp.id == task.experiment_id
+
+    def test_add_url_experiment(self):
+        name = "tosti_url"
+        runs = 7
+        delta = "24h"
+        url = "http://google.com/"
+
+        # Add task with experiment enabled and retrieve it
+        ses = self.d.Session()
+        count = ses.query(Experiment).count()
+        task_id = self.d.add_url(url, experiment=True, name=name,
+                                  runs=runs, delta=delta)
+
+        task = ses.query(Task).get(task_id)
+        exp = ses.query(Experiment).get(task.experiment_id)
+
+        assert self.d.Session().query(Experiment).count() == count + 1
+        assert exp.name == name
+        assert exp.runs == runs
+        assert exp.times == 0
+        assert exp.delta == delta
+        assert exp.id == task.experiment_id
 
     def test_error_exists(self):
         task_id = self.add_url("http://google.com/")
