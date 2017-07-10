@@ -27,6 +27,8 @@
                                 <div class="tab-pane fade in active" id="static_analysis_tab">
                                     {% if "PE32" in report.analysis.target.file.type %}
                                         {% include "analysis/pages/static/_pe32.html" %}
+                                    {% elif "ELF" in report.analysis.target.file.type %}
+                                        {% include "analysis/pages/static/_elf.html" %}
                                     {% elif "office" in report.analysis.static %}
                                         {% include "analysis/pages/static/_office.html" %}
                                     {% elif "pdf" in report.analysis.static %}

@@ -37,6 +37,14 @@ from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch, Structure
 
+from elftools.elf.elffile import ELFFile
+from elftools.elf.constants import E_FLAGS
+from elftools.elf.descriptions import (
+    describe_ei_class, describe_ei_data, describe_ei_version,
+    describe_ei_osabi, describe_e_type, describe_e_machine,
+    describe_e_version_numeric, describe_p_type, describe_p_flags, describe_sh_type
+)
+
 log = logging.getLogger(__name__)
 
 # Partially taken from
@@ -740,6 +748,98 @@ class LnkShortcut(object):
 def _pdf_worker(filepath):
     return PdfDocument(filepath).run()
 
+
+class ELF(object):
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.elf = None
+        self.result = {}
+
+    def run(self):
+        try:
+            self.elf = ELFFile(open(self.file_path, "rb"))
+            self.result["file_header"] = self._get_file_header()
+            self.result["section_headers"] = self._get_section_headers()
+            self.result["program_headers"] = self._get_program_headers()
+        except Exception as e:
+            log.exception(e)
+
+        return self.result
+
+    def _get_file_header(self):
+        return {
+            "magic": convert_to_printable(self.elf.e_ident_raw[:4]),
+            "class": describe_ei_class(self.elf.header.e_ident["EI_CLASS"]),
+            "data": describe_ei_data(self.elf.header.e_ident["EI_DATA"]),
+            "ei_version": describe_ei_version(self.elf.header.e_ident["EI_VERSION"]),
+            "os_abi": describe_ei_osabi(self.elf.header.e_ident["EI_OSABI"]),
+            "abi_version": self.elf.header.e_ident["EI_ABIVERSION"],
+            "type": describe_e_type(self.elf.header["e_type"]),
+            "machine": describe_e_machine(self.elf.header["e_machine"]),
+            "version": describe_e_version_numeric(self.elf.header["e_version"]),
+            "entry_point_address": self._print_addr(self.elf.header["e_entry"]),
+            "start_of_program_headers": self.elf.header["e_phoff"],
+            "start_of_section_headers": self.elf.header["e_shoff"],
+            "flags": "{}{}".format(
+                self._print_addr(self.elf.header["e_flags"]),
+                self._decode_flags(self.elf.header["e_flags"])
+            ),
+            "size_of_this_header": self.elf.header["e_ehsize"],
+            "size_of_program_headers": self.elf.header["e_phentsize"],
+            "number_of_program_headers": self.elf.header["e_phnum"],
+            "size_of_section_headers": self.elf.header["e_shentsize"],
+            "number_of_section_headers": self.elf.header["e_shnum"],
+            "section_header_string_table_index": self.elf.header["e_shstrndx"]
+        }
+
+    def _get_section_headers(self):
+        section_headers = []
+        for section in self.elf.iter_sections():
+            section_headers.append({
+                "name": section.name,
+                "type": describe_sh_type(section["sh_type"]),
+                "addr": self._print_addr(section["sh_addr"]),
+                "size": section["sh_size"]
+            })
+        return section_headers
+
+    def _get_program_headers(self):
+        program_headers = []
+        for segment in self.elf.iter_segments():
+            program_headers.append({
+                "type": describe_p_type(segment["p_type"]),
+                "addr": self._print_addr(segment["p_vaddr"]),
+                "flags": describe_p_flags(segment["p_flags"]).strip(),
+                "size": segment["p_memsz"]
+            })
+        return program_headers
+
+    def _decode_flags(self, flags):
+        description = ""
+        if self.elf["e_machine"] == "EM_ARM":
+            if flags & E_FLAGS.EF_ARM_HASENTRY:
+                description = ", has entry point"
+
+            version = flags & E_FLAGS.EF_ARM_EABIMASK
+            if version == E_FLAGS.EF_ARM_EABI_VER5:
+                description = ", Version5 EABI"
+        elif self.elf["e_machine"] == "EM_MIPS":
+            if flags & E_FLAGS.EF_MIPS_NOREORDER:
+                description = ", noreorder"
+            if flags & E_FLAGS.EF_MIPS_CPIC:
+                description = ", cpic"
+            if not (flags & E_FLAGS.EF_MIPS_ABI2) and not (flags & E_FLAGS.EF_MIPS_ABI_ON32):
+                description = ", o32"
+            if (flags & E_FLAGS.EF_MIPS_ARCH) == E_FLAGS.EF_MIPS_ARCH_1:
+                description = ", mips1"
+
+        return description
+
+    def _print_addr(self, addr):
+        fmt = "0x{0:08x}" if self.elf.elfclass == 32 else "0x{0:016x}"
+        return fmt.format(addr)
+
+
 class Static(Processing):
     """Static analysis."""
 
@@ -778,6 +878,10 @@ class Static(Processing):
             ext = None
 
         package = self.task.get("package")
+
+        if package == "generic" or ext == "elf" or "ELF" in f.get_type():
+            static.update(ELF(f.file_path).run())
+            static["keys"] = f.get_keys()
 
         if package == "exe" or ext == "exe" or "PE32" in f.get_type():
             static.update(PortableExecutable(f.file_path).run())
