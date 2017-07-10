@@ -219,6 +219,31 @@ class DatabaseEngine(object):
         assert tasks[0].to_dict() == self.d.view_task(t1).to_dict()
         assert tasks[1].to_dict() == self.d.view_task(t2).to_dict()
 
+    def test_list_machines(self):
+
+        for n in range(1, 5):
+            label = "tosti%s" % n
+            self.d.add_machine(
+                label, label, "1.2.3.4", "windows", None,
+                "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+            )
+
+        self.d.set_machine_status("tosti1", "running")
+        self.d.set_machine_status("tosti2", "poweroff")
+        self.d.set_machine_status("tosti3", "poweroff")
+        self.d.set_machine_status("tosti3", "poweroff")
+        self.d.lock_machine(label="tosti1")
+        self.d.lock_machine(label="tosti2")
+
+        all = self.d.list_machines()
+        locked = self.d.list_machines(locked=True)
+        running = self.d.list_machines(status="running")
+
+        assert len(all) == 4
+        assert len(locked) == 2
+        assert len(running) == 1
+        assert running[0].name == "tosti1"
+
     def test_add_machine(self):
         self.d.add_machine(
             "name1", "label", "1.2.3.4", "windows", None,

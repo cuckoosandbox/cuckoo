@@ -821,18 +821,22 @@ class Database(object):
             session.close()
 
     @classlock
-    def list_machines(self, locked=False):
+    def list_machines(self, locked=False, status=None):
         """Lists virtual machines.
         @return: list of virtual machines
         """
         session = self.Session()
         try:
-            if locked:
+            if status is not None:
+                machines = session.query(Machine).options(
+                    joinedload("tags")).filter_by(status=status).all()
+            elif locked:
                 machines = session.query(Machine).options(
                     joinedload("tags")).filter_by(locked=True).all()
             else:
                 machines = session.query(Machine).options(
                     joinedload("tags")).all()
+
             return machines
         except SQLAlchemyError as e:
             log.debug("Database error listing machines: {0}".format(e))
