@@ -120,6 +120,8 @@ var ProcessBehaviorView = function () {
     key: 'initialise',
     value: function initialise() {
 
+      var self = this;
+
       // handle pane collapses
       this._$.find('.process-tree__header--right').bind('click', function (e) {
 
@@ -129,7 +131,7 @@ var ProcessBehaviorView = function () {
       });
 
       // enable bootstrap tooltips
-      this._$.find('[data-toggle="tooltip"]').tooltip({
+      this._tree.el.find('[data-toggle="tooltip"]').tooltip({
         tooltipClass: 'cuckoo-tooltip tree-tip',
         position: { my: "left+20 top-20" },
         show: {
@@ -141,6 +143,44 @@ var ProcessBehaviorView = function () {
           duration: 100
         }
       });
+
+      // handlers for loading data
+      this._tree.el.find('[data-load]').bind('click', function (e) {
+        e.preventDefault();
+        self.loadChunk($(this).data('load'));
+      });
+    }
+
+    // gets called for loading api chunks
+
+  }, {
+    key: 'loadChunk',
+    value: function loadChunk(pid) {
+      var self = this;
+      var url = '/analysis/chunk/' + window.task_id + '/' + pid + '/1';
+      $.get(url, function (res) {
+        // renders the entire table
+        self.renderTable(res);
+      });
+    }
+
+    // renders a table from the html string in the response.
+
+  }, {
+    key: 'renderTable',
+    value: function renderTable(plainTextResponse) {
+      var table = $.parseHTML(plainTextResponse)[0];
+
+      // re-style the table by setting classes
+      $(table).removeClass('table table-bordered');
+      $(table).addClass('cuckoo-table');
+
+      // append to the detail body
+      this._$.find('#behavior-table').html(table);
+
+      // hide loading message, show table
+      this._$.find('.loaded').slideDown();
+      this._$.find('.unloaded').hide();
     }
   }]);
 

@@ -127,6 +127,7 @@
           .fa {
             margin-right: 10px;
             color: $cuckoo_secundary_color;
+            font-size: 1.3em;
           }
         }
       }
@@ -363,4 +364,13 @@
       }
     }
   }
+
+  .unloaded {
+    display: block;
+  }
+
+  .loaded {
+    display: none;
+  }
+
 }

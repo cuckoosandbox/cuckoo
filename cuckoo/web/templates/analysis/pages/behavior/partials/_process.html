@@ -1,7 +1,7 @@
 <li>
-  <div>
+  <div data-tree-pid="{{process.pid}}">
     <p>
-      {{ process.process_name }}
+      <a href="#" data-load="{{process.pid}}">{{ process.process_name }}</a>
       <em><i data-toggle="tooltip" title="{{ process.command_line }}" class="fa fa-eye"></i>{{ process.command_line }}</em>
     </p>
     <span class="pid">{{ process.pid }}</span>

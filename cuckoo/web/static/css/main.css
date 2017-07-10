@@ -9094,6 +9094,7 @@ body.night .flex-static__summary li {
 .list-panel .list-group-option .process-tree__tree .processes p em input[type="checkbox"] + span:before, .process-tree__tree .processes p em .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .process-tree__tree .processes p em input[type="checkbox"] + span:before {
   margin-right: 10px;
   color: #6297F8;
+  font-size: 1.3em;
 }
 
 .process-tree__tree .processes .pid {
@@ -9303,6 +9304,14 @@ body.night .flex-static__summary li {
 
 .process-spec--table .cuckoo-table .date-api > .badge, .process-spec--table .cuckoo-table__fullscreen .date-api > .badge, .process-spec--table .network-display__table > table .date-api > .badge {
   margin-left: 15px;
+}
+
+.process-spec .unloaded {
+  display: block;
+}
+
+.process-spec .loaded {
+  display: none;
 }
 
 .breadcrumbs {

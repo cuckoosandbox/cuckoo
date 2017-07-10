@@ -32,105 +32,110 @@
             </header>
             <div class="process-tree__body process-spec">
 
-              <!-- name and meta about the process  -->
-              <header class="process-spec--name">
-                <h2>inject-shellcode-x86.exe</h2>
-                <table class="cuckoo-table table-key-value">
-                  <tr>
-                    <td>PID</td>
-                    <td><strong>lalala</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Parent PID</td>
-                    <td><strong>lalala</strong></td>
-                  </tr>
-                </table>
-              </header>
+              <div class="unloaded">No process loaded</div>
 
-              <!-- analysis tags -->
-              <div class="process-spec--tags">
-                <span class="badge default">default</span>
-                <span class="badge registry">registry</span>
-                <span class="badge file">file</span>
-                <span class="badge network">network</span>
-                <span class="badge process">process</span>
-                <span class="badge services">services</span>
-                <span class="badge synchronisation">synchronisation</span>
-                <span class="badge iexplore">iexplore</span>
-                <span class="badge office">office</span>
-                <span class="badge pdf">pdf</span>
-              </div>
+                <div class="loaded">
+                  <!-- name and meta about the process  -->
+                  <header class="process-spec--name">
+                    <h2>inject-shellcode-x86.exe</h2>
+                    <table class="cuckoo-table table-key-value">
+                      <tr>
+                        <td>PID</td>
+                        <td><strong>lalala</strong></td>
+                      </tr>
+                      <tr>
+                        <td>Parent PID</td>
+                        <td><strong>lalala</strong></td>
+                      </tr>
+                    </table>
+                  </header>
 
-              <!-- pagination  -->
-              <div class="process-spec--pagination">
-                <ul>
-                  <li><a href="#">1</a></li>
-                  <li><a href="#">2</a></li>
-                  <li><a class="active" href="#">3</a></li>
-                  <li><a href="#">4</a></li>
-                  <li><a href="#">5</a></li>
-                  <li><a href="#">6</a></li>
-                  <li><a href="#">7</a></li>
-                  <li><a href="#">8</a></li>
-                  <li><a href="#">9</a></li>
-                  <li><a href="#">10</a></li>
-                  <li><a href="#">11</a></li>
-                  <li><a href="#">12</a></li>
-                  <li><a href="#">13</a></li>
-                  <li><a href="#">14</a></li>
-                  <li><a href="#">15</a></li>
-                  <li><a href="#">16</a></li>
-                  <li><a href="#">17</a></li>
-                  <li><a href="#">18</a></li>
-                  <li><a href="#">19</a></li>
-                  <li><a href="#">20</a></li>
-                  <li><a href="#">...</a></li>
-                  <li><a href="#">122</a></li>
-                </ul>
-              </div>
+                  <!-- pagination  -->
+                  <div class="process-spec--pagination">
+                    <ul>
+                      <li><a href="#">1</a></li>
+                      <li><a href="#">2</a></li>
+                      <li><a class="active" href="#">3</a></li>
+                      <li><a href="#">4</a></li>
+                      <li><a href="#">5</a></li>
+                      <li><a href="#">6</a></li>
+                      <li><a href="#">7</a></li>
+                      <li><a href="#">8</a></li>
+                      <li><a href="#">9</a></li>
+                      <li><a href="#">10</a></li>
+                      <li><a href="#">11</a></li>
+                      <li><a href="#">12</a></li>
+                      <li><a href="#">13</a></li>
+                      <li><a href="#">14</a></li>
+                      <li><a href="#">15</a></li>
+                      <li><a href="#">16</a></li>
+                      <li><a href="#">17</a></li>
+                      <li><a href="#">18</a></li>
+                      <li><a href="#">19</a></li>
+                      <li><a href="#">20</a></li>
+                      <li><a href="#">...</a></li>
+                      <li><a href="#">122</a></li>
+                    </ul>
+                  </div>
 
-              <!-- details table -->
-              <div class="process-spec--table">
-                <table class="cuckoo-table">
-                  <thead>
-                    <tr>
-                      <th>API &amp; Time</th>
-                      <th>Arguments</th>
-                      <th>Status</th>
-                      <th>Return</th>
-                      <th>Repeated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="date-api">
-                        <p>GetSystemTimeAsFileTime</p>
-                        <span class="badge registry">registry</span>
-                        <time>March 4, 2017, 1:49pm</time>
-                      </td>
-                      <td>
-                        <pre><code>process_identifier: 1136
-stack_dep_bypass: 0
-stack_pivoted: 0
-heap_dep_bypass: 0
-length: 8192
-protection: 64 (PAGE_EXECUTE_READWRITE)
-base_address: 0x00401000
-process_handle: 0xffffffff</code></pre>
-                      </td>
-                      <td>
-                        <pre>success</pre>
-                      </td>
-                      <td>
-                        <pre>0</pre>
-                      </td>
-                      <td>
-                        <pre>0</pre>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  <!-- analysis tags -->
+                  <div class="process-spec--tags">
+                    <span class="badge default">default</span>
+                    <span class="badge registry">registry</span>
+                    <span class="badge file">file</span>
+                    <span class="badge network">network</span>
+                    <span class="badge process">process</span>
+                    <span class="badge services">services</span>
+                    <span class="badge synchronisation">synchronisation</span>
+                    <span class="badge iexplore">iexplore</span>
+                    <span class="badge office">office</span>
+                    <span class="badge pdf">pdf</span>
+                  </div>
+
+                  <!-- details table -->
+                  <div class="process-spec--table" id="behavior-table">
+                    <table class="cuckoo-table">
+                      <thead>
+                        <tr>
+                          <th>API &amp; Time</th>
+                          <th>Arguments</th>
+                          <th>Status</th>
+                          <th>Return</th>
+                          <th>Repeated</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="date-api">
+                            <p>GetSystemTimeAsFileTime</p>
+                            <span class="badge registry">registry</span>
+                            <time>March 4, 2017, 1:49pm</time>
+                          </td>
+                          <td>
+                            <pre><code>process_identifier: 1136
+    stack_dep_bypass: 0
+    stack_pivoted: 0
+    heap_dep_bypass: 0
+    length: 8192
+    protection: 64 (PAGE_EXECUTE_READWRITE)
+    base_address: 0x00401000
+    process_handle: 0xffffffff</code></pre>
+                          </td>
+                          <td>
+                            <pre>success</pre>
+                          </td>
+                          <td>
+                            <pre>0</pre>
+                          </td>
+                          <td>
+                            <pre>0</pre>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
 
             </div>
           </div>

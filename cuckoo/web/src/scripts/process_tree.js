@@ -101,6 +101,8 @@ class ProcessBehaviorView {
 
   initialise() {
 
+    let self = this;
+
     // handle pane collapses
     this._$.find('.process-tree__header--right').bind('click', e => {
 
@@ -111,7 +113,7 @@ class ProcessBehaviorView {
     });
 
     // enable bootstrap tooltips
-    this._$.find('[data-toggle="tooltip"]').tooltip({
+    this._tree.el.find('[data-toggle="tooltip"]').tooltip({
       tooltipClass: 'cuckoo-tooltip tree-tip',
       position: { my: "left+20 top-20" },
       show: {
@@ -124,6 +126,38 @@ class ProcessBehaviorView {
       }
     });
 
+    // handlers for loading data
+    this._tree.el.find('[data-load]').bind('click', function(e) {
+      e.preventDefault();
+      self.loadChunk($(this).data('load'));
+    });
+
+  }
+
+  // gets called for loading api chunks
+  loadChunk(pid) {
+    let self = this;
+    let url = `/analysis/chunk/${window.task_id}/${pid}/1`;
+    $.get(url, res => {
+      // renders the entire table
+      self.renderTable(res);
+    });
+  }
+
+  // renders a table from the html string in the response.
+  renderTable(plainTextResponse) {
+    let table = $.parseHTML(plainTextResponse)[0];
+
+    // re-style the table by setting classes
+    $(table).removeClass('table table-bordered');
+    $(table).addClass('cuckoo-table');
+
+    // append to the detail body
+    this._$.find('#behavior-table').html(table);
+
+    // hide loading message, show table
+    this._$.find('.loaded').slideDown();
+    this._$.find('.unloaded').hide();
   }
 
 }
