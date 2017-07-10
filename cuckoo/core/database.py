@@ -106,6 +106,7 @@ class Machine(Base):
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
+    locked_by = Column(Integer(), nullable=True, default=None)
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
     status = Column(String(255), nullable=True)
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
@@ -823,6 +824,7 @@ class Database(object):
     @classlock
     def list_machines(self, locked=False, status=None):
         """Lists virtual machines.
+        @param status: retrieve machines with given status (running etc)
         @return: list of virtual machines
         """
         session = self.Session()
@@ -845,11 +847,13 @@ class Database(object):
             session.close()
 
     @classlock
-    def lock_machine(self, label=None, platform=None, tags=None):
+    def lock_machine(self, label=None, platform=None, tags=None,
+                     locked_by=None):
         """Places a lock on a free virtual machine.
         @param label: optional virtual machine label
         @param platform: optional virtual machine platform
         @param tags: optional tags required (list)
+        @param locked_by: optional experiment id used to lock a machine
         @return: locked machine
         """
         session = self.Session()
@@ -880,8 +884,16 @@ class Database(object):
                 raise CuckooOperationalError(
                     "No machines match selection criteria.")
 
+            machine = None
+
+            # Retrieve machine already locked by an experiment
+            if locked_by:
+                machine = machines.filter_by(locked_by=locked_by).first()
+
             # Get the first free machine.
-            machine = machines.filter_by(locked=False).first()
+            if not machine:
+                machine = machines.filter_by(locked=False).first()
+
         except SQLAlchemyError as e:
             log.debug("Database error locking machine: {0}".format(e))
             session.close()
@@ -889,6 +901,7 @@ class Database(object):
 
         if machine:
             machine.locked = True
+            machine.locked_by = locked_by
             machine.locked_changed_on = datetime.datetime.now()
             try:
                 session.commit()

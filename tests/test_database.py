@@ -270,6 +270,36 @@ class DatabaseEngine(object):
         assert m3.options == ["opt1", "opt2"]
         assert m4.options == ["opt3", "opt4"]
 
+    def test_lock_machine(self):
+        self.d.add_machine(
+            "doge1", "doge1", "1.2.3.4", "windows", "opt1 opt2",
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "doge2", "doge2", "1.2.3.4", "DogeOS", ["opt3", "opt4"],
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "doge3", "doge3", "1.2.3.4", "DogeOSv2", ["opt3", "opt4"],
+            "tag3", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "doge4", "doge4", "1.2.3.4", "CuckooOS", ["opt3", "opt4"],
+            "tag1", "int0", "snap0", "5.6.7.8", 2043
+        )
+
+        m1 = self.d.lock_machine(label="doge1")
+        m2 = self.d.lock_machine(platform="DogeOS")
+        m3 = self.d.lock_machine(tags=["tag3"])
+        m4 = self.d.lock_machine(label="doge4", locked_by=42)
+        m5 = self.d.lock_machine(locked_by=42)
+
+        assert m1.label == "doge1" and m1.locked_by is None and m1.locked
+        assert m2.platform == "DogeOS" and m2.locked_by is None and m2.locked
+        assert m3.label == "doge3" and m3.locked_by is None and m3.locked
+        assert m4.label == "doge4" and m4.locked_by == 42 and m4.locked
+        assert m5.label == "doge4" and m5.locked_by == 42 and m5.locked
+
     @mock.patch("cuckoo.common.objects.magic")
     def test_add_sample(self, p):
         p.from_file.return_value = ""
