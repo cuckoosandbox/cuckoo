@@ -215,7 +215,7 @@ class Machinery(object):
         """Returns running virtual machines.
         @return: running virtual machines list.
         """
-        return self.db.list_machines(locked=True)
+        return self.db.list_machines(status="running")
 
     def shutdown(self):
         """Shutdown the machine manager. Kills all alive machines.
