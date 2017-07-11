@@ -133,5 +133,106 @@
                 </div>
             </div>
         {% endif %}
+        {% if report.analysis.static.dynamic_tags %}
+            <div>
+                <h4>Dynamic tags</h4>
+                <div id="elf_sections">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Tag</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                        </tr>
+                        {% for section in report.analysis.static.dynamic_tags %}
+                            <tr>
+                                <td>{{ section.tag }}</td>
+                                <td>{{ section.type }}</td>
+                                <td>{{ section.value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if report.analysis.static.symbol_tables %}
+            <div>
+                <h4>Symbol table</h4>
+                <div id="symbol_table">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Value</th>
+                            <th>Type</th>
+                            <th>Bind</th>
+                            <th>NDX name</th>
+                        </tr>
+                        {% for section in report.analysis.static.symbol_tables %}
+                            <tr>
+                                <td>{{ section.value }}</td>
+                                <td>{{ section.type }}</td>
+                                <td>{{ section.bind }}</td>
+                                <td>{{ section.ndx_name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+
+        {% if report.analysis.static.relocations %}
+            <div>
+                <h4>Relocations</h4>
+                <div id="elf_relocations">
+                    {% for block in report.analysis.static.relocations %}
+                        <h5><strong>Section {{ block.name }}</strong>:</h5>
+                        <table class="table table-striped table-bordered">
+                            <tr>
+                                <th>Offset</th>
+                                <th>Info</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Name</th>
+                            </tr>
+                            {% for section in block.entries %}
+                                {% if section.name %}
+                                    <tr>
+                                        <td>{{ section.offset }}</td>
+                                        <td>{{ section.info }}</td>
+                                        <td>{{ section.type }}</td>
+                                        <td>{{ section.value }}</td>
+                                        <td>{{ section.name }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if report.analysis.static.notes %}
+            <div>
+                <h4>Notes</h4>
+                <div id="elf_notes">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Owner</th>
+                            <th>Size</th>
+                            <th>Note</th>
+                            <th>Name</th>
+                        </tr>
+                        {% for section in report.analysis.static.notes %}
+                            <tr>
+                                <td>{{ section.owner }}</td>
+                                <td>{{ section.size }}</td>
+                                <td>{{ section.note }}</td>
+                                <td>{{ section.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
 </section>

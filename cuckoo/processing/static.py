@@ -39,10 +39,17 @@ from cuckoo.misc import cwd, dispatch, Structure
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.constants import E_FLAGS
+from elftools.elf.enums import ENUM_D_TAG
+from elftools.elf.dynamic import DynamicSection
+from elftools.elf.relocation import RelocationSection
+from elftools.elf.sections import SymbolTableSection
+from elftools.elf.segments import NoteSegment
 from elftools.elf.descriptions import (
     describe_ei_class, describe_ei_data, describe_ei_version,
     describe_ei_osabi, describe_e_type, describe_e_machine,
-    describe_e_version_numeric, describe_p_type, describe_p_flags, describe_sh_type
+    describe_e_version_numeric, describe_p_type, describe_p_flags,
+    describe_sh_type, describe_dyn_tag, describe_symbol_type,
+    describe_symbol_bind, describe_note, describe_reloc_type
 )
 
 log = logging.getLogger(__name__)
@@ -761,6 +768,12 @@ class ELF(object):
             self.result["file_header"] = self._get_file_header()
             self.result["section_headers"] = self._get_section_headers()
             self.result["program_headers"] = self._get_program_headers()
+            self.result["dynamic_tags"] = self._get_dynamic_tags()
+            self.result["symbol_tables"] = self._get_symbol_tables()
+            self.result["relocations"] = self._get_relocations()
+            self.result["notes"] = self._get_notes()
+            # TODO: add library name per import
+            # https://github.com/cuckoosandbox/cuckoo/pull/807/files#diff-033aeda7c00b458591305630264df6d3R604
         except Exception as e:
             log.exception(e)
 
@@ -814,6 +827,79 @@ class ELF(object):
             })
         return program_headers
 
+    def _get_dynamic_tags(self):
+        dynamic_tags = []
+        for section in [section for section in self.elf.iter_sections() if isinstance(section, DynamicSection)]:
+            for tag in section.iter_tags():
+                dynamic_tags.append({
+                    "tag": self._print_addr(ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)),
+                    "type": tag.entry.d_tag[3:],
+                    "value": self._parse_tag(tag)
+                })
+        return dynamic_tags
+
+    def _get_symbol_tables(self):
+        symbol_tables = []
+        for section in [section for section in self.elf.iter_sections() if isinstance(section, SymbolTableSection)]:
+            for nsym, symbol in enumerate(section.iter_symbols()):
+                symbol_tables.append({
+                    "value": self._print_addr(symbol["st_value"]),
+                    "type": describe_symbol_type(symbol["st_info"]["type"]),
+                    "bind": describe_symbol_bind(symbol["st_info"]["bind"]),
+                    "ndx_name": symbol.name
+                })
+        return symbol_tables
+
+    def _get_relocations(self):
+        relocations = []
+        for section in [section for section in self.elf.iter_sections() if isinstance(section, RelocationSection)]:
+            section_relocations = []
+            for rel in section.iter_relocations():
+                relocation = {
+                    "offset": self._print_addr(rel["r_offset"]),
+                    "info": self._print_addr(rel["r_info"]),
+                    "type": describe_reloc_type(rel["r_info_type"], self.elf),
+                    "value": "",
+                    "name": ""
+                }
+
+                if rel["r_info_sym"] != 0:
+                    symtable = self.elf.get_section(section["sh_link"])
+                    symbol = symtable.get_symbol(rel["r_info_sym"])
+                    # Some symbols have zero "st_name", so instead use
+                    # the name of the section they point at
+                    if symbol["st_name"] == 0:
+                        symsec = self.elf.get_section(symbol["st_shndx"])
+                        symbol_name = symsec.name
+                    else:
+                        symbol_name = symbol.name
+
+                    relocation["value"] = self._print_addr(symbol["st_value"])
+                    relocation["name"] = symbol_name
+
+                if relocation not in section_relocations:
+                    section_relocations.append(relocation)
+
+            relocations.append({"name": section.name, "entries": section_relocations})
+
+        return relocations
+
+    def _get_notes(self):
+        notes = []
+        for segment in [segment for segment in self.elf.iter_segments() if isinstance(segment, NoteSegment)]:
+            for note in segment.iter_notes():
+                notes.append({
+                    "owner": note["n_name"],
+                    "size": self._print_addr(note["n_descsz"]),
+                    "note": describe_note(note),
+                    "name": note["n_name"]
+                })
+        return notes
+
+    def _print_addr(self, addr):
+        fmt = "0x{0:08x}" if self.elf.elfclass == 32 else "0x{0:016x}"
+        return fmt.format(addr)
+
     def _decode_flags(self, flags):
         description = ""
         if self.elf["e_machine"] == "EM_ARM":
@@ -835,9 +921,28 @@ class ELF(object):
 
         return description
 
-    def _print_addr(self, addr):
-        fmt = "0x{0:08x}" if self.elf.elfclass == 32 else "0x{0:016x}"
-        return fmt.format(addr)
+    def _parse_tag(self, tag):
+        if tag.entry.d_tag == "DT_NEEDED":
+            parsed = "Shared library: [%s]" % tag.needed
+        elif tag.entry.d_tag == "DT_RPATH":
+            parsed = "Library rpath: [%s]" % tag.rpath
+        elif tag.entry.d_tag == "DT_RUNPATH":
+            parsed = "Library runpath: [%s]" % tag.runpath
+        elif tag.entry.d_tag == "DT_SONAME":
+            parsed = "Library soname: [%s]" % tag.soname
+        elif tag.entry.d_tag.endswith(("SZ", "ENT")):
+            parsed = "%i (bytes)" % tag["d_val"]
+        elif tag.entry.d_tag.endswith(("NUM", "COUNT")):
+            parsed = "%i" % tag["d_val"]
+        elif tag.entry.d_tag == "DT_PLTREL":
+            s = describe_dyn_tag(tag.entry.d_val)
+            if s.startswith("DT_"):
+                s = s[3:]
+            parsed = "%s" % s
+        else:
+            parsed = self._print_addr(tag["d_val"])
+
+        return parsed
 
 
 class Static(Processing):
