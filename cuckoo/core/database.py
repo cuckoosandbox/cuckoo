@@ -112,6 +112,7 @@ class Machine(Base):
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
     resultserver_port = Column(Integer(), nullable=False)
+    rdp_port = Column(String(5), nullable=True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
@@ -148,7 +149,8 @@ class Machine(Base):
         return True
 
     def __init__(self, name, label, ip, platform, options, interface,
-                 snapshot, resultserver_ip, resultserver_port):
+                 snapshot, resultserver_ip, resultserver_port, rdp_port=None,
+                 locked_by=None):
         self.name = name
         self.label = label
         self.ip = ip
@@ -158,6 +160,8 @@ class Machine(Base):
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
+        self.rdp_port = rdp_port
+        self.locked_by = locked_by
 
 
 class Tag(Base):
@@ -606,7 +610,8 @@ class Database(object):
 
     @classlock
     def add_machine(self, name, label, ip, platform, options, tags, interface,
-                    snapshot, resultserver_ip, resultserver_port):
+                    snapshot, resultserver_ip, resultserver_port,
+                    rdp_port=None, locked_by=None):
         """Add a guest machine.
         @param name: machine id
         @param label: machine label
@@ -617,6 +622,8 @@ class Database(object):
         @param snapshot: snapshot name to use instead of the current one, if configured
         @param resultserver_ip: IP address of the Result Server
         @param resultserver_port: port of the Result Server
+        @param rdp_port: (String) rdp port this machine should be available on
+        @param locked_by: experiment id that has a lock on the machine
         """
         if options is None:
             options = []
@@ -632,7 +639,9 @@ class Database(object):
                           interface=interface,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
-                          resultserver_port=resultserver_port)
+                          resultserver_port=resultserver_port,
+                          rdp_port=rdp_port,
+                          locked_by=locked_by)
 
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:

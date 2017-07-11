@@ -159,7 +159,7 @@ class TestAppsWithCWD(object):
 
             p.assert_called_once_with(
                 "cuckoo2", "add", "1.2.3.4", "windows",
-                None, None, None, None, None
+                None, None, None, None, None, None
             )
 
     def test_machine_add(self):

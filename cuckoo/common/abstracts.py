@@ -129,6 +129,12 @@ class Machinery(object):
                 from cuckoo.core.resultserver import ResultServer
                 port = ResultServer().port
 
+            rdp_port = options.get("rdp_port", "")
+            experiment = self.db.view_experiment(machine_name=vmname)
+            locked_by = None
+            if experiment:
+                locked_by = experiment.id
+
             self.db.add_machine(
                 name=vmname,
                 label=options[self.LABEL],
@@ -139,7 +145,9 @@ class Machinery(object):
                 interface=interface,
                 snapshot=options.snapshot,
                 resultserver_ip=ip,
-                resultserver_port=port
+                resultserver_port=port,
+                rdp_port=rdp_port,
+                locked_by=locked_by
             )
 
     def _initialize_check(self):

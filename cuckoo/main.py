@@ -549,15 +549,16 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.option("--interface", help="Sniffer interface for this Virtual Machine")
 @click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
 @click.option("--resultserver", help="IP:Port of the Result Server")
+@click.option("--rdpport", help="RDP port that should be used for this Virtual Machine")
 @click.pass_context
 def machine(ctx, vmname, ip, action, platform, options, tags, interface,
-            snapshot, resultserver):
+            snapshot, resultserver, rdpport):
     """Dynamically add/remove machines."""
     init_console_logging(level=ctx.parent.level)
     Database().connect()
     cuckoo_machine(
         vmname, action, ip, platform, options, tags, interface,
-        snapshot, resultserver
+        snapshot, resultserver, rdpport
     )
 
 @main.command()

@@ -410,7 +410,7 @@ def cuckoo_clean():
                 log.warning("Error removing file %s: %s", path, e)
 
 def cuckoo_machine(vmname, action, ip, platform, options, tags,
-                   interface, snapshot, resultserver):
+                   interface, snapshot, resultserver, rdp_port):
     db = Database()
 
     cfg = Config.from_confdir(cwd("conf"))
@@ -445,11 +445,12 @@ def cuckoo_machine(vmname, action, ip, platform, options, tags,
             "resultserver_ip": resultserver_ip,
             "resultserver_port": resultserver_port,
             "tags": tags,
+            "rdp_port": rdp_port
         }
 
         db.add_machine(
             vmname, vmname, ip, platform, options, tags, interface, snapshot,
-            resultserver_ip, int(resultserver_port)
+            resultserver_ip, int(resultserver_port), rdp_port
         )
         db.unlock_machine(vmname)
 

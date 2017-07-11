@@ -261,14 +261,22 @@ class DatabaseEngine(object):
             "name4", "label", "1.2.3.4", "windows", ["opt3", "opt4"],
             "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
         )
+        self.d.add_machine(
+            "name5", "name5", "1.2.3.4", "windows", ["opt3", "opt4"],
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043, "3390", 1
+        )
+
         m1 = self.d.view_machine("name1")
         m2 = self.d.view_machine("name2")
         m3 = self.d.view_machine("name3")
         m4 = self.d.view_machine("name4")
+        m5 = self.d.view_machine("name5")
         assert m1.options == []
         assert m2.options == []
         assert m3.options == ["opt1", "opt2"]
         assert m4.options == ["opt3", "opt4"]
+        assert m5.rdp_port == "3390"
+        assert m5.locked_by == 1
 
     def test_lock_machine(self):
         self.d.add_machine(

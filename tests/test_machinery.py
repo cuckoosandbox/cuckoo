@@ -266,6 +266,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -303,6 +304,8 @@ class TestVirtualbox(object):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
             options = []
+            rdp_port = None
+
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -331,6 +334,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -355,6 +359,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -378,6 +383,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -408,6 +414,7 @@ class TestVirtualbox(object):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -609,6 +616,7 @@ class TestBrokenMachine(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()

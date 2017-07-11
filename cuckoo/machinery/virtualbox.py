@@ -150,6 +150,25 @@ class VirtualBox(Machinery):
         if "nictrace" in machine.options:
             self.dump_pcap(label, task)
 
+        # Use the configured RDP port to enable RDP for this specific machine
+        if machine.rdp_port:
+            try:
+                args = [
+                    self.options.virtualbox.path, "controlvm",
+                    label, "vrde", "on",
+                ]
+                subprocess.check_output(args)
+
+                args = [
+                    self.options.virtualbox.path, "controlvm",
+                    label, "vrdeport", "%s" % machine.rdp_port,
+                ]
+                subprocess.check_output(args)
+                log.debug("Started RDP on port %s for virtual machine %s",
+                          machine.rdp_port, machine.label)
+            except subprocess.CalledProcessError:
+                log.exception("Error enabling VRDE support")
+
     def dump_pcap(self, label, task):
         """Dump the pcap for this analysis through the VirtualBox integrated
         nictrace functionality. This is useful in scenarios where multiple
