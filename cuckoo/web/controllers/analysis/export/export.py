@@ -24,12 +24,12 @@ class ExportController:
         size_total = 0
 
         for directory in taken_dirs:
-            destination = "%s/%s" % (path, directory)
+            destination = "%s/%s" % (path, os.path.basename(directory))
             if os.path.isdir(destination):
                 size_total += get_directory_size(destination)
 
         for filename in taken_files:
-            destination = "%s/%s" % (path, filename)
+            destination = "%s/%s" % (path, os.path.basename(filename))
             if os.path.isfile(destination):
                 size_total += os.path.getsize(destination)
 
