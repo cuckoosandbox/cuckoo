@@ -1093,9 +1093,28 @@ def test_migration_203_204():
 [dumptls]
 enabled = on
 """)
+    Files.create(cwd("conf"), "qemu.conf", """
+[qemu]
+machines = ubuntu32, ubuntu64
+[ubuntu32]
+arch = x86
+[ubuntu64]
+arch = x64
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.3", "2.0.4")
     assert cfg["processing"]["extracted"]["enabled"] is True
+    # Except for qemu.
+    machineries = (
+        "avd", "esx", "kvm", "physical", "virtualbox",
+        "vmware", "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        Files.create(
+            cwd("conf"), "%s.conf" % machinery, "[%s]\nmachines =" % machinery
+        )
+    assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
+    assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
 
 class FullMigration(object):
     DIRPATH = None

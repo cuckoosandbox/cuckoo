@@ -686,6 +686,9 @@ def _203_204(c):
     c["processing"]["extracted"] = {
         "enabled": True,
     }
+    for machine in c["qemu"]["qemu"]["machines"]:
+        c["qemu"][machine]["snapshot"] = None
+        c["qemu"][machine]["enable_kvm"] = False
     return c
 
 migrations = {

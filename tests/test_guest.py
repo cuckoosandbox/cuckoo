@@ -106,3 +106,46 @@ class TestGuestManager(object):
         gm.wait_for_completion()
         assert q.time.call_count == 8
         assert "end of analysis" in r.info.call_args_list[-1][0][0]
+
+    @responses.activate
+    def test_analyzer_path(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        responses.add(responses.POST, "http://1.2.3.4:8000/mkdir", status=200)
+
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["SYSTEMDRIVE"] = "C:"
+        gm_win.options["options"] = "analpath=tempdir"
+        gm_win.determine_analyzer_path()
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+        gm_lin.options["options"] = "analpath=tempdir"
+        gm_lin.determine_analyzer_path()
+
+        assert gm_lin.analyzer_path == "/tempdir"
+        assert gm_win.analyzer_path == "C:/tempdir"
+
+    def test_temp_path(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["TEMP"] = "C:\Users\user\AppData\Local\Temp"
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+
+        assert gm_lin.determine_temp_path() == "/tmp"
+        assert gm_win.determine_temp_path() == "C:\Users\user\AppData\Local\Temp"
+
+    def test_system_drive(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        gm_win = GuestManager("cuckoo1", "1.2.3.4", "windows", 1, None)
+        gm_win.environ["SYSTEMDRIVE"] = "C:"
+
+        gm_lin = GuestManager("cuckoo1", "1.2.3.4", "linux", 1, None)
+
+        assert gm_win.determine_system_drive() == "C:/"
+        assert gm_lin.determine_system_drive() == "/"

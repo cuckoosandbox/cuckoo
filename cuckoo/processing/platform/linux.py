@@ -1,14 +1,12 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
+import dateutil.parser
 import os
 import logging
-import datetime
 import re
-
-import dateutil.parser
 
 from cuckoo.common.abstracts import BehaviorHandler
 
@@ -32,7 +30,8 @@ class FilteredProcessLog(list):
         return True
 
 class LinuxSystemTap(BehaviorHandler):
-    """Parses systemtap generated plaintext logs (see data/strace.stp)."""
+    """Parses systemtap generated plaintext logs (see
+    stuff/systemtap/strace.stp)."""
 
     key = "processes"
 
@@ -106,20 +105,19 @@ class StapParser(object):
         for line in self.fd:
             # 'Thu May  7 14:58:43 2015.390178 python@7f798cb95240[2114] close(6) = 0\n'
             # datetime is 31 characters
-            datetimepart, rest = line[:31], line[32:]
+            datetimepart, r = line[:31], line[32:]
 
             # incredibly sophisticated date time handling
             dtms = datetime.timedelta(0, 0, int(datetimepart.split(".", 1)[1]))
             dt = dateutil.parser.parse(datetimepart.split(".", 1)[0]) + dtms
 
-            parts = re.match("^(.+)@([a-f0-9]+)\[(\d+)\] (\w+)\((.*)\) = (\S+){0,1}\s{0,1}(\(\w+\)){0,1}$", rest)
-            if not parts:
-                log.warning("Could not parse syscall trace line: %s", line)
-                continue
+            parts = []
+            for delim in ("@", "[", "]", "(", ")", "= ", " (", ")"):
+                part, _, r = r.strip().partition(delim)
+                parts.append(part)
 
-            pname, ip, pid, fn, arguments, retval, ecode = parts.groups()
-            argsplit = arguments.split(", ")
-            arguments = dict(("p%u" % pos, argsplit[pos]) for pos in range(len(argsplit)))
+            pname, ip, pid, fn, args, _, retval, ecode = parts
+            arguments = self.parse_args(args)
 
             pid = int(pid) if pid.isdigit() else -1
 
@@ -129,3 +127,38 @@ class StapParser(object):
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
             }
+
+    def parse_args(self, args):
+        p_args, n_args = {}, 0
+
+        while args:
+            args = args.lstrip(", ")
+            delim = self.get_delim(args)
+            arg, _, args = args.partition(delim)
+            p_args["p%u" % n_args] = self.parse_arg(arg)
+            n_args += 1
+
+        return p_args
+
+    def get_delim(self, argstr):
+        return "]" if self.is_array(argstr) else ", "
+
+    def parse_arg(self, argstr):
+        if self.is_array(argstr):
+            return self.parse_array(argstr)
+        elif self.is_string(argstr):
+            return self.parse_string(argstr)
+        else:
+            return argstr
+
+    def parse_array(self, argstr):
+        return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
+
+    def parse_string(self, argstr):
+        return argstr.strip("\"").decode("string_escape")
+
+    def is_array(self, arg):
+        return arg.startswith("[") and not arg.startswith("[/*")
+
+    def is_string(self, arg):
+        return arg.startswith("\"") and arg.endswith("\"")
