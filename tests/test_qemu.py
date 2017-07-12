@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os
 import pytest
 import tempfile
 
@@ -43,8 +44,10 @@ class TestQemu(object):
             self.m.start("label", None)
 
         e.match("no attribute 'qemu_img'")
-        os_path_exists.assert_called_with("/home/cuckoo/images/snapshot_ubuntu32.qcow2")
-        os_remove.assert_called_with("/home/cuckoo/images/snapshot_ubuntu32.qcow2")
+
+        snapshot_path = os.path.join("/home/cuckoo/images", "snapshot_ubuntu32.qcow2")
+        os_path_exists.assert_called_with(snapshot_path)
+        os_remove.assert_called_with(snapshot_path)
 
     @mock.patch("cuckoo.machinery.qemu.subprocess.Popen")
     def test_snapshot_config(self, subprocess_popen):
