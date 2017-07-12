@@ -349,10 +349,14 @@ class GuestManager(object):
             self.analyzer_path = r.json()["dirpath"]
 
     def determine_system_drive(self):
-        return "%s/" % self.environ["SYSTEMDRIVE"] if self.platform == "windows" else "/"
+        if self.platform == "windows":
+            return "%s/" % self.environ["SYSTEMDRIVE"]
+        return "/"
 
     def determine_temp_path(self):
-        return self.environ["TEMP"] if self.platform == "windows" else "/tmp"
+        if self.platform == "windows":
+            return self.environ["TEMP"]
+        return "/tmp"
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""

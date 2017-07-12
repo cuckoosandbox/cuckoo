@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,7 +12,6 @@ from cuckoo.common.objects import Dictionary
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.machinery.qemu import QEMU
 from cuckoo.misc import set_cwd, cwd
-
 
 class TestQemu(object):
     def setup(self):

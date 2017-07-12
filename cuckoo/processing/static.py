@@ -37,13 +37,7 @@ from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch, Structure
 
-from elftools.elf.elffile import ELFFile
 from elftools.elf.constants import E_FLAGS
-from elftools.elf.enums import ENUM_D_TAG
-from elftools.elf.dynamic import DynamicSection
-from elftools.elf.relocation import RelocationSection
-from elftools.elf.sections import SymbolTableSection
-from elftools.elf.segments import NoteSegment
 from elftools.elf.descriptions import (
     describe_ei_class, describe_ei_data, describe_ei_version,
     describe_ei_osabi, describe_e_type, describe_e_machine,
@@ -51,6 +45,12 @@ from elftools.elf.descriptions import (
     describe_sh_type, describe_dyn_tag, describe_symbol_type,
     describe_symbol_bind, describe_note, describe_reloc_type
 )
+from elftools.elf.dynamic import DynamicSection
+from elftools.elf.elffile import ELFFile
+from elftools.elf.enums import ENUM_D_TAG
+from elftools.elf.relocation import RelocationSection
+from elftools.elf.sections import SymbolTableSection
+from elftools.elf.segments import NoteSegment
 
 log = logging.getLogger(__name__)
 
@@ -752,10 +752,6 @@ class LnkShortcut(object):
             extra, ret["icon"] = self.read_string16(extra)
         return ret
 
-def _pdf_worker(filepath):
-    return PdfDocument(filepath).run()
-
-
 class ELF(object):
     def __init__(self, file_path):
         self.file_path = file_path
@@ -772,8 +768,7 @@ class ELF(object):
             self.result["symbol_tables"] = self._get_symbol_tables()
             self.result["relocations"] = self._get_relocations()
             self.result["notes"] = self._get_notes()
-            # TODO: add library name per import
-            # https://github.com/cuckoosandbox/cuckoo/pull/807/files#diff-033aeda7c00b458591305630264df6d3R604
+            # TODO: add library name per import (see #807)
         except Exception as e:
             log.exception(e)
 
@@ -802,7 +797,7 @@ class ELF(object):
             "number_of_program_headers": self.elf.header["e_phnum"],
             "size_of_section_headers": self.elf.header["e_shentsize"],
             "number_of_section_headers": self.elf.header["e_shnum"],
-            "section_header_string_table_index": self.elf.header["e_shstrndx"]
+            "section_header_string_table_index": self.elf.header["e_shstrndx"],
         }
 
     def _get_section_headers(self):
@@ -812,7 +807,7 @@ class ELF(object):
                 "name": section.name,
                 "type": describe_sh_type(section["sh_type"]),
                 "addr": self._print_addr(section["sh_addr"]),
-                "size": section["sh_size"]
+                "size": section["sh_size"],
             })
         return section_headers
 
@@ -823,36 +818,44 @@ class ELF(object):
                 "type": describe_p_type(segment["p_type"]),
                 "addr": self._print_addr(segment["p_vaddr"]),
                 "flags": describe_p_flags(segment["p_flags"]).strip(),
-                "size": segment["p_memsz"]
+                "size": segment["p_memsz"],
             })
         return program_headers
 
     def _get_dynamic_tags(self):
         dynamic_tags = []
-        for section in [section for section in self.elf.iter_sections() if isinstance(section, DynamicSection)]:
+        for section in self.elf.iter_sections():
+            if not isinstance(section, DynamicSection):
+                continue
             for tag in section.iter_tags():
                 dynamic_tags.append({
-                    "tag": self._print_addr(ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)),
+                    "tag": self._print_addr(
+                        ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
+                    ),
                     "type": tag.entry.d_tag[3:],
-                    "value": self._parse_tag(tag)
+                    "value": self._parse_tag(tag),
                 })
         return dynamic_tags
 
     def _get_symbol_tables(self):
         symbol_tables = []
-        for section in [section for section in self.elf.iter_sections() if isinstance(section, SymbolTableSection)]:
+        for section in self.elf.iter_sections():
+            if not isinstance(section, SymbolTableSection):
+                continue
             for nsym, symbol in enumerate(section.iter_symbols()):
                 symbol_tables.append({
                     "value": self._print_addr(symbol["st_value"]),
                     "type": describe_symbol_type(symbol["st_info"]["type"]),
                     "bind": describe_symbol_bind(symbol["st_info"]["bind"]),
-                    "ndx_name": symbol.name
+                    "ndx_name": symbol.name,
                 })
         return symbol_tables
 
     def _get_relocations(self):
         relocations = []
-        for section in [section for section in self.elf.iter_sections() if isinstance(section, RelocationSection)]:
+        for section in self.elf.iter_sections():
+            if not isinstance(section, RelocationSection):
+                continue
             section_relocations = []
             for rel in section.iter_relocations():
                 relocation = {
@@ -880,19 +883,23 @@ class ELF(object):
                 if relocation not in section_relocations:
                     section_relocations.append(relocation)
 
-            relocations.append({"name": section.name, "entries": section_relocations})
-
+            relocations.append({
+                "name": section.name,
+                "entries": section_relocations,
+            })
         return relocations
 
     def _get_notes(self):
         notes = []
-        for segment in [segment for segment in self.elf.iter_segments() if isinstance(segment, NoteSegment)]:
+        for segment in self.elf.iter_segments():
+            if not isinstance(segment, NoteSegment):
+                continue
             for note in segment.iter_notes():
                 notes.append({
                     "owner": note["n_name"],
                     "size": self._print_addr(note["n_descsz"]),
                     "note": describe_note(note),
-                    "name": note["n_name"]
+                    "name": note["n_name"],
                 })
         return notes
 
@@ -944,6 +951,8 @@ class ELF(object):
 
         return parsed
 
+def _pdf_worker(filepath):
+    return PdfDocument(filepath).run()
 
 class Static(Processing):
     """Static analysis."""

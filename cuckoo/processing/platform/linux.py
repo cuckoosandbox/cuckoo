@@ -1,14 +1,12 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
+import dateutil.parser
 import os
 import logging
-import datetime
 import re
-
-import dateutil.parser
 
 from cuckoo.common.abstracts import BehaviorHandler
 
@@ -32,7 +30,8 @@ class FilteredProcessLog(list):
         return True
 
 class LinuxSystemTap(BehaviorHandler):
-    """Parses systemtap generated plaintext logs (see stuff/systemtap/strace.stp)."""
+    """Parses systemtap generated plaintext logs (see
+    stuff/systemtap/strace.stp)."""
 
     key = "processes"
 
@@ -112,7 +111,7 @@ class StapParser(object):
             dtms = datetime.timedelta(0, 0, int(datetimepart.split(".", 1)[1]))
             dt = dateutil.parser.parse(datetimepart.split(".", 1)[0]) + dtms
 
-            parts = list()
+            parts = []
             for delim in ("@", "[", "]", "(", ")", "= ", " (", ")"):
                 part, _, r = r.strip().partition(delim)
                 parts.append(part)

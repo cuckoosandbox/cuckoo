@@ -2,9 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-from cuckoo.processing.platform.linux import StapParser
 import datetime
 
+from cuckoo.processing.platform.linux import StapParser
 
 def test_staplog():
     with open("tests/files/stap.log") as fd:
@@ -22,7 +22,7 @@ def test_staplog():
                         "LANG=en_US.UTF-8",
                         "SHELL=/bin/sh",
                         "PWD=/root"
-                    ]
+                    ],
                 },
                 "instruction_pointer": "b774dcf9",
                 "pid": 680,
@@ -31,7 +31,7 @@ def test_staplog():
                 "return_value": "-2",
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "brk",
@@ -45,7 +45,7 @@ def test_staplog():
                 "return_value": "-2118402048",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 517266),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "access",
@@ -60,7 +60,8 @@ def test_staplog():
                 "return_value": "-2",
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 521264),
-                "type": "apicall"},
+                "type": "apicall",
+            },
             {
                 "api": "mmap2",
                 "arguments": {
@@ -69,7 +70,7 @@ def test_staplog():
                     "p2": "PROT_READ|PROT_WRITE",
                     "p3": "MAP_PRIVATE|MAP_ANONYMOUS",
                     "p4": "-1",
-                    "p5": "0"
+                    "p5": "0",
                 },
                 "instruction_pointer": "b7783970",
                 "pid": 680,
@@ -78,14 +79,14 @@ def test_staplog():
                 "return_value": "0xb7764000",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 550890),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "write",
                 "arguments": {
                     "p0": "1",
                     "p1": "h3ll0 w0rld!\n",
-                    "p2": "13"
+                    "p2": "13",
                 },
                 "instruction_pointer": "b7768cf9",
                 "pid": 681,
@@ -94,14 +95,14 @@ def test_staplog():
                 "return_value": "13",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 36988),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "read",
                 "arguments": {
                     "p0": "10",
                     "p1": "0x800665c0",
-                    "p2": "8192"
+                    "p2": "8192",
                 },
                 "instruction_pointer": "b7768cf9",
                 "pid": 681,
@@ -110,7 +111,7 @@ def test_staplog():
                 "return_value": "0",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 37596),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "exit_group",
@@ -124,7 +125,7 @@ def test_staplog():
                 "return_value": "",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 37898),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "wait4",
@@ -132,7 +133,7 @@ def test_staplog():
                     "p0": "-1",
                     "p1": "0xbfd4a134",
                     "p2": "0x0",
-                    "p3": "0x0"
+                    "p3": "0x0",
                 },
                 "instruction_pointer": "b7769cf9",
                 "pid": 680,
@@ -141,19 +142,19 @@ def test_staplog():
                 "return_value": "681",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 850098),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "sigreturn",
-                 "arguments": { },
-                 "instruction_pointer": "b7769cf9",
-                 "pid": 680,
-                 "process_name": "sh",
-                 "raw": "Mon Jun 19 16:58:32 2017.051317 sh@b7769cf9[680] sigreturn() = 681\n",
-                 "return_value": "681",
-                 "status": "",
-                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 51317),
-                 "type": "apicall"
+                "arguments": {},
+                "instruction_pointer": "b7769cf9",
+                "pid": 680,
+                "process_name": "sh",
+                "raw": "Mon Jun 19 16:58:32 2017.051317 sh@b7769cf9[680] sigreturn() = 681\n",
+                "return_value": "681",
+                "status": "",
+                "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 51317),
+                "type": "apicall",
             },
             {
                 "api": "exit_group",
@@ -167,14 +168,14 @@ def test_staplog():
                 "return_value": "",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 51973),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "write",
                 "arguments": {
                     "p0": "2",
                     "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
-                    "p2": "41"
+                    "p2": "41",
                 },
                 "instruction_pointer": "80dbdde",
                 "pid": 704,
@@ -183,14 +184,14 @@ def test_staplog():
                 "return_value": "41",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "write",
                 "arguments": {
                     "p0": "2",
                     "p1": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
-                    "p2": "480"
+                    "p2": "480",
                 },
                 "instruction_pointer": "80dbdde",
                 "pid": 668,
@@ -199,14 +200,14 @@ def test_staplog():
                 "return_value": "480",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 22, 10, 22, 6, 766807),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "execve",
                 "arguments": {
                     "p0": "/usr/bin/sh",
                     "p1": ["sh", "-c", "/tmp/comma,sh"],
-                    "p2": ["COMMA_IN_ARRAY=it,works", "HOME=/root"]
+                    "p2": ["COMMA_IN_ARRAY=it,works", "HOME=/root"],
                 },
                 "instruction_pointer": "b774dcf9",
                 "pid": 680,
@@ -215,14 +216,14 @@ def test_staplog():
                 "return_value": "-2",
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
-                "type": "apicall"
+                "type": "apicall",
             },
             {
                 "api": "execve",
                 "arguments": {
                     "p0": "/usr/bin/sh",
                     "p1": ["sh", "-c", "/tmp/bracket]sh"],
-                    "p2": ["LANGUAGE=en_US:en", "HOME=/root"]
+                    "p2": ["LANGUAGE=en_US:en", "HOME=/root"],
                 },
                 "instruction_pointer": "b774dcf9",
                 "pid": 680,
@@ -231,6 +232,6 @@ def test_staplog():
                 "return_value": "-2",
                 "status": "ENOENT",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
-                "type": "apicall"
-            }
+                "type": "apicall",
+            },
         ]

@@ -1104,13 +1104,12 @@ arch = x64
     )
     for machinery in machineries:
         Files.create(
-            cwd("conf"), "%s.conf" % machinery,
-                         "[%s]\nmachines =" % machinery
+            cwd("conf"), "%s.conf" % machinery, "[%s]\nmachines =" % machinery
         )
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.3", "2.0.4")
-    assert cfg['qemu']['ubuntu32']['enable_kvm'] is False
-    assert cfg['qemu']['ubuntu32']['snapshot'] is None
+    assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
+    assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
 
 class FullMigration(object):
     DIRPATH = None

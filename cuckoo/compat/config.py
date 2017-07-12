@@ -683,13 +683,9 @@ def _201_202(c):
     return c
 
 def _203_204(c):
-    machineries = (
-        "qemu",
-    )
-    for machinery in machineries:
-        for machine in c[machinery][machinery]["machines"]:
-            c[machinery][machine]["snapshot"] = None
-            c[machinery][machine]["enable_kvm"] = False
+    for machine in c["qemu"]["qemu"]["machines"]:
+        c["qemu"][machine]["snapshot"] = None
+        c["qemu"][machine]["enable_kvm"] = False
     return c
 
 migrations = {

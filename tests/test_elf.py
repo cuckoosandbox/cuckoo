@@ -4,7 +4,6 @@
 
 from cuckoo.processing.static import ELF
 
-
 def test_elf_static_info():
     assert ELF("tests/files/busybox-i686.elf").run() == {
         "file_header": {
@@ -26,12 +25,12 @@ def test_elf_static_info():
             "start_of_program_headers": 52,
             "start_of_section_headers": 898052,
             "type": "EXEC (Executable file)",
-            "version": "0x1"
+            "version": "0x1",
         },
         "program_headers": [
             {"addr": "0x08048000", "flags": "R E", "size": 896994, "type": "LOAD"},
             {"addr": "0x08123000", "flags": "RW", "size": 19012, "type": "LOAD"},
-            {"addr": "0x00000000", "flags": "RW", "size": 0, "type": "GNU_STACK"}
+            {"addr": "0x00000000", "flags": "RW", "size": 0, "type": "GNU_STACK"},
         ],
         "section_headers": [
             {"addr": "0x00000000", "name": "", "size": 0, "type": "NULL"},
@@ -46,14 +45,13 @@ def test_elf_static_info():
             {"addr": "0x08123018", "name": ".got.plt", "size": 12, "type": "PROGBITS"},
             {"addr": "0x08123024", "name": ".data", "size": 904, "type": "PROGBITS"},
             {"addr": "0x081233b0", "name": ".bss", "size": 18068, "type": "NOBITS"},
-            {"addr": "0x00000000", "name": ".shstrtab", "size": 86, "type": "STRTAB"}
+            {"addr": "0x00000000", "name": ".shstrtab", "size": 86, "type": "STRTAB"},
         ],
         "dynamic_tags": [],
         "notes": [],
         "relocations": [],
-        "symbol_tables": []
+        "symbol_tables": [],
     }
-
 
 def test_elf_static_info_tags():
     assert ELF("tests/files/ls-x86_64.elf").run()["dynamic_tags"] == [
@@ -81,9 +79,8 @@ def test_elf_static_info_tags():
         {"tag": "0x000000006ffffffe", "type": "VERNEED", "value": "0x0000000000401720"},
         {"tag": "0x000000006fffffff", "type": "VERNEEDNUM", "value": "1"},
         {"tag": "0x000000006ffffff0", "type": "VERSYM", "value": "0x000000000040160c"},
-        {"tag": "0x0000000000000000", "type": "NULL", "value": "0x0000000000000000"}
+        {"tag": "0x0000000000000000", "type": "NULL", "value": "0x0000000000000000"},
     ]
-
 
 def test_elf_static_info_symbols():
     assert ELF("tests/files/ls-x86_64.elf").run()["symbol_tables"] == [
@@ -223,9 +220,8 @@ def test_elf_static_info_symbols():
         {"bind": "GLOBAL", "ndx_name": "_obstack_begin_1", "type": "FUNC", "value": "0x00000000004127a0"},
         {"bind": "GLOBAL", "ndx_name": "_obstack_newchunk", "type": "FUNC", "value": "0x00000000004127c0"},
         {"bind": "GLOBAL", "ndx_name": "malloc", "type": "FUNC", "value": "0x0000000000402790"},
-        {"bind": "GLOBAL", "ndx_name": "stdout", "type": "OBJECT", "value": "0x000000000061e608"}
+        {"bind": "GLOBAL", "ndx_name": "stdout", "type": "OBJECT", "value": "0x000000000061e608"},
     ]
-
 
 def test_elf_static_info_notes():
     assert ELF("tests/files/ls-x86_64.elf").run()["notes"] == [
@@ -241,9 +237,9 @@ def test_elf_static_info_notes():
             "note": "NT_GNU_BUILD_ID (unique build ID bitstring)\n" +
                     "    Build ID: eca98eeadafddff44caf37ae3d4b227132861218",
             "owner": "GNU",
-            "size": "0x0000000000000014"}
+            "size": "0x0000000000000014",
+        },
     ]
-
 
 def test_elf_static_info_relocations():
     assert ELF("tests/files/ls-x86_64.elf").run()["relocations"] == [
@@ -1087,7 +1083,7 @@ def test_elf_static_info_relocations():
                     "offset": "0x000000000061e390",
                     "type": "R_X86_64_JUMP_SLOT",
                     "value": "0x0000000000000000"
-                }
+                },
             ],
-        }
+        },
     ]
