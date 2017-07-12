@@ -179,7 +179,7 @@ do_setup(
         "peepdf==0.3.4",
         "pefile2==1.2.11",
         "pillow==3.2",
-        "pyelftools==0.24"
+        "pyelftools==0.24",
         "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
