@@ -146,7 +146,7 @@ class QEMU(Machinery):
             snapshot_path = vm_options.image
         else:
             snapshot_name = "snapshot_" + vm_info.name
-            snapshot_path = os.path.join(os.path.dirname(vm_options.image), snapshot_name) + ".qcow2"
+            snapshot_path = "%s/%s" % (os.path.dirname(vm_options.image), os.path.basename(snapshot_name)) + ".qcow2"
             if os.path.exists(snapshot_path):
                 os.remove(snapshot_path)
 
