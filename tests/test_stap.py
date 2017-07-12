@@ -7,7 +7,7 @@ import datetime
 
 
 def test_staplog():
-    with open("files/stap.log") as fd:
+    with open("tests/files/stap.log") as fd:
         assert list(StapParser(fd)) == [
             {
                 "api": "execve",

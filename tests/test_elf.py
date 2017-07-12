@@ -6,7 +6,7 @@ from cuckoo.processing.static import ELF
 
 
 def test_elf_static_info():
-    assert ELF("files/busybox-i686.elf").run() == {
+    assert ELF("tests/files/busybox-i686.elf").run() == {
         "file_header": {
             "abi_version": 0,
             "class": "ELF32",
@@ -56,7 +56,7 @@ def test_elf_static_info():
 
 
 def test_elf_static_info_tags():
-    assert ELF("files/ls-x86_64.elf").run()["dynamic_tags"] == [
+    assert ELF("tests/files/ls-x86_64.elf").run()["dynamic_tags"] == [
         {"tag": "0x0000000000000001", "type": "NEEDED", "value": "Shared library: [libselinux.so.1]"},
         {"tag": "0x0000000000000001", "type": "NEEDED", "value": "Shared library: [libc.so.6]"},
         {"tag": "0x000000000000000c", "type": "INIT", "value": "0x00000000004022b8"},
@@ -86,7 +86,7 @@ def test_elf_static_info_tags():
 
 
 def test_elf_static_info_symbols():
-    assert ELF("files/ls-x86_64.elf").run()["symbol_tables"] == [
+    assert ELF("tests/files/ls-x86_64.elf").run()["symbol_tables"] == [
         {"bind": "LOCAL", "ndx_name": "", "type": "NOTYPE", "value": "0x0000000000000000"},
         {"bind": "GLOBAL", "ndx_name": "__ctype_toupper_loc", "type": "FUNC", "value": "0x0000000000000000"},
         {"bind": "GLOBAL", "ndx_name": "__uflow", "type": "FUNC", "value": "0x0000000000000000"},
@@ -228,7 +228,7 @@ def test_elf_static_info_symbols():
 
 
 def test_elf_static_info_notes():
-    assert ELF("files/ls-x86_64.elf").run()["notes"] == [
+    assert ELF("tests/files/ls-x86_64.elf").run()["notes"] == [
         {
             "name": "GNU",
             "note": "NT_GNU_ABI_TAG (ABI version tag)\n" +
@@ -246,7 +246,7 @@ def test_elf_static_info_notes():
 
 
 def test_elf_static_info_relocations():
-    assert ELF("files/ls-x86_64.elf").run()["relocations"] == [
+    assert ELF("tests/files/ls-x86_64.elf").run()["relocations"] == [
         {
             "name": ".rela.dyn",
             "entries": [
