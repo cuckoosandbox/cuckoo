@@ -1599,7 +1599,8 @@ class Database(object):
                 task = session.query(Task).options(
                     joinedload("guest"),
                     joinedload("errors"),
-                    joinedload("tags")
+                    joinedload("tags"),
+                    joinedload("experiment")
                 ).get(task_id)
             else:
                 task = session.query(Task).get(task_id)
@@ -1624,7 +1625,8 @@ class Database(object):
             tasks = session.query(Task).options(
                 joinedload("guest"),
                 joinedload("errors"),
-                joinedload("tags")
+                joinedload("tags"),
+                joinedload("experiment")
             ).filter(Task.id.in_(task_ids)).order_by(Task.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing tasks: {0}".format(e))
