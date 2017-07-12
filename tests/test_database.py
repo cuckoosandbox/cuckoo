@@ -308,6 +308,27 @@ class DatabaseEngine(object):
         assert m4.label == "doge4" and m4.locked_by == 42 and m4.locked
         assert m5.label == "doge4" and m5.locked_by == 42 and m5.locked
 
+    def test_unlock_machine(self):
+        self.d.add_machine(
+            "locknormal", "locknormal", "1.2.3.4", "CuckooOS", ["opt3", "opt4"],
+            "tag1", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "lockexp", "lockexp", "1.2.3.4", "CuckooOS", ["opt3", "opt4"],
+            "tag1", "int0", "snap0", "5.6.7.8", 2043
+        )
+        m_norm_l = self.d.lock_machine(label="locknormal")
+        m_exp_l = self.d.lock_machine(label="lockexp", locked_by=1337)
+
+        m_norm_u = self.d.unlock_machine("locknormal")
+        m_exp_u = self.d.unlock_machine(locked_by=1337)
+
+        assert m_norm_l.locked
+        assert m_exp_l.locked and m_exp_l.locked_by == 1337
+        assert not m_norm_u.locked and m_norm_u.label == m_norm_l.label
+        assert not m_exp_u.locked and m_exp_u.label == m_exp_l.label
+        assert m_exp_u.locked_by is None
+
     @mock.patch("cuckoo.common.objects.magic")
     def test_add_sample(self, p):
         p.from_file.return_value = ""

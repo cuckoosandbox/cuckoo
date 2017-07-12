@@ -927,14 +927,26 @@ class Database(object):
         return machine
 
     @classlock
-    def unlock_machine(self, label):
-        """Remove lock form a virtual machine.
+    def unlock_machine(self, label=None, locked_by=None):
+        """Remove lock form a virtual machine. Unlock by either a label
+        or an experiment id provided to locked_by
         @param label: virtual machine label
+        @param locked_by: experiment id of experiment that locked the machine
         @return: unlocked machine
         """
         session = self.Session()
         try:
-            machine = session.query(Machine).filter_by(label=label).first()
+            if label:
+                machine = session.query(Machine).filter_by(label=label).first()
+            elif locked_by:
+                machine = session.query(Machine).filter_by(
+                    locked_by=locked_by
+                ).first()
+            else:
+                raise CuckooOperationalError(
+                    "Neither a machine label or locked_by experiment id "
+                    "was provided to find a machine to unlock."
+                )
         except SQLAlchemyError as e:
             log.debug("Database error unlocking machine: {0}".format(e))
             session.close()
@@ -942,6 +954,7 @@ class Database(object):
 
         if machine:
             machine.locked = False
+            machine.locked_by = None
             machine.locked_changed_on = datetime.datetime.now()
             try:
                 session.commit()
