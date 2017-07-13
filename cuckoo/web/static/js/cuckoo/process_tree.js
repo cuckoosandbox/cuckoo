@@ -4,6 +4,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// private general functions
+function parseProcessData(scr) {
+  if (!scr) return {};
+  return JSON.parse(scr.text());
+}
+
 /*
   Interface controller for a 'tree'. This piece works with
   a list-in-list HTML definition with at least the following
@@ -44,6 +50,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       re-initializing existing ones.
 
   */
+
 var Tree = function () {
 
   /*
@@ -113,6 +120,8 @@ var ProcessBehaviorView = function () {
     this._$ = el;
     this._tree = new Tree(this._$.find('.tree'), 0);
 
+    this.currentPage = 1;
+
     this.initialise();
   }
 
@@ -147,7 +156,7 @@ var ProcessBehaviorView = function () {
       // handlers for loading data
       this._tree.el.find('[data-load]').bind('click', function (e) {
         e.preventDefault();
-        self.loadChunk($(this).data('load'));
+        self.loadChunk($(this)[0]);
       });
     }
 
@@ -155,12 +164,28 @@ var ProcessBehaviorView = function () {
 
   }, {
     key: 'loadChunk',
-    value: function loadChunk(pid) {
+    value: function loadChunk(el) {
+
+      // parse to jquery, jquery seems to have a little trouble with es6 closure within
+      // the context of a class.
+      el = $(el);
+
       var self = this;
-      var url = '/analysis/chunk/' + window.task_id + '/' + pid + '/1';
+      var url = '/analysis/chunk/' + window.task_id + '/' + el.data('load') + '/' + this.currentPage;
+
+      // get some other data relevant to the chunk, such as name etc for the detail population. This is
+      // right now configured as an in-app dump inside the target click handler, I would love to see
+      // this switch to ajax in a near future.
+      var data = parseProcessData(el.find('script'));
+
       $.get(url, function (res) {
         // renders the entire table
         self.renderTable(res);
+
+        // populate meta aspects
+        self._$.find('[data-placeholder="process-detail-pid"]').text(el.data('load'));
+        self._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
+        self._$.find('[data-placeholder="process-detail-name"]').text(data.name);
       });
     }
 

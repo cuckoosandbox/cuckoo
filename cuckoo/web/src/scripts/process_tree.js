@@ -1,3 +1,9 @@
+// private general functions
+function parseProcessData(scr) {
+  if(!scr) return {};
+  return JSON.parse(scr.text());
+}
+
 /*
   Interface controller for a 'tree'. This piece works with
   a list-in-list HTML definition with at least the following
@@ -96,6 +102,8 @@ class ProcessBehaviorView {
     this._$ = el;
     this._tree = new Tree(this._$.find('.tree'), 0);
 
+    this.currentPage = 1;
+
     this.initialise();
   }
 
@@ -129,19 +137,36 @@ class ProcessBehaviorView {
     // handlers for loading data
     this._tree.el.find('[data-load]').bind('click', function(e) {
       e.preventDefault();
-      self.loadChunk($(this).data('load'));
+      self.loadChunk($(this)[0]);
     });
 
   }
 
   // gets called for loading api chunks
-  loadChunk(pid) {
+  loadChunk(el) {
+
+    // parse to jquery, jquery seems to have a little trouble with es6 closure within
+    // the context of a class.
+    el = $(el);
+
     let self = this;
-    let url = `/analysis/chunk/${window.task_id}/${pid}/1`;
+    let url = `/analysis/chunk/${window.task_id}/${el.data('load')}/${this.currentPage}`;
+
+    // get some other data relevant to the chunk, such as name etc for the detail population. This is
+    // right now configured as an in-app dump inside the target click handler, I would love to see
+    // this switch to ajax in a near future.
+    let data = parseProcessData(el.find('script'));
+
     $.get(url, res => {
       // renders the entire table
       self.renderTable(res);
+
+      // populate meta aspects
+      self._$.find('[data-placeholder="process-detail-pid"]').text(el.data('load'));
+      self._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
+      self._$.find('[data-placeholder="process-detail-name"]').text(data.name);
     });
+
   }
 
   // renders a table from the html string in the response.
