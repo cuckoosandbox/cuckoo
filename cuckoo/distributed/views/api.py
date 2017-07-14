@@ -183,8 +183,8 @@ def task_list():
 
 @blueprint.route("/task", methods=["POST"])
 def task_post():
-    if "file" not in request.files:
-        return json_error(404, "No file has been provided")
+    if "file" not in request.files and "url" not in request.form:
+        return json_error(404, "No file or URL has been provided")
 
     args = dict(
         package=request.form.get("package"),
@@ -201,15 +201,21 @@ def task_post():
         enforce_timeout=request.form.get("enforce_timeout"),
     )
 
-    f = request.files["file"]
+    if "file" in request.files:
+        f = request.files["file"]
+        fd, path = tempfile.mkstemp(dir=settings.samples_directory)
+        f.save(path)
+        os.close(fd)
 
-    fd, path = tempfile.mkstemp(dir=settings.samples_directory)
-    f.save(path)
-    os.close(fd)
+        task = Task(path=path, filename=os.path.basename(f.filename), **args)
+        db.session.add(task)
 
-    task = Task(path=path, filename=os.path.basename(f.filename), **args)
-    db.session.add(task)
+    else:
+        task = Task(path=request.form.get("url"), **args)
+        db.session.add(task)
+
     db.session.commit()
+
     return jsonify(success=True, task_id=task.id)
 
 @blueprint.route("/task/<int:task_id>")

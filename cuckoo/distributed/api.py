@@ -37,20 +37,34 @@ def submit_task(url, task):
         enforce_timeout=task["enforce_timeout"],
     )
 
-    # If the file does not exist anymore, ignore it and move on
-    # to the next file.
-    if not os.path.isfile(task["path"]):
-        return task["id"], None
+    # The task is a URL analysis
+    if not task["filename"] and task["path"]:
+        data["url"] = task["path"]
+        try:
+            r = requests.post(
+                urlparse.urljoin(url, "/tasks/create/url"),
+                data=data
+            )
+            return r.json()["task_id"]
+        except Exception:
+            pass
 
-    files = {"file": (task["filename"], open(task["path"], "rb"))}
-    try:
-        r = requests.post(
-            urlparse.urljoin(url, "/tasks/create/file"),
-            data=data, files=files
-        )
-        return r.json()["task_id"]
-    except Exception:
-        pass
+    # The task is a sample analysis
+    elif os.path.isfile(task["path"]):
+        files = {"file": (task["filename"], open(task["path"], "rb"))}
+        try:
+            r = requests.post(
+                urlparse.urljoin(url, "/tasks/create/file"),
+                data=data, files=files
+            )
+            return r.json()["task_id"]
+        except Exception:
+            pass
+
+    else:
+        # If the file does not exist anymore and no URL was submitted,
+        # ignore it and move on to the next file or URL.
+        return task["id"], None
 
 def fetch_tasks(url, status, limit):
     r = _get(url, "/tasks/list/%s", limit, params=dict(status=status))
