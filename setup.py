@@ -183,11 +183,11 @@ do_setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock>=0.2.12, <0.3",
+        "sflock>=0.2.15, <0.3",
         "sqlalchemy==1.0.8",
-        "unicorn==1.0.0",
+        "unicorn==1.0.1",
         "wakeonlan==0.2.2",
-        "yara-python==3.6.1",
+        "yara-python==3.6.3",
     ],
     extras_require={
         ":sys_platform == 'win32'": [
