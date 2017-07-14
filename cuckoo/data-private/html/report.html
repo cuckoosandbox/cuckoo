@@ -129,6 +129,34 @@
 					<!-- <footer class="block-footer"></footer> -->
 				</div>
 
+
+			<!-- row -->
+			{%if results.tie %}
+			<div class="row">
+
+				<!-- block: tie -->
+				<div class="block block-summary">
+
+					<header class="block-header">
+						<h4><i class="fa fa-desktop"></i> McAfee - TIE</h4>
+					</header>
+					<section class="block-section">
+						<div class="block-section-col">
+							<h5>Reputation Details</h5>
+							<ul class="list-reset key-value-list">
+								{% for tieresultkey in results.tie %}
+								<li><strong>{{results.tie[tieresultkey]['title']}} </strong> {{ results.tie[tieresultkey]['value'] }}</li>
+								{% endfor %}
+							</ul>
+						</div>
+
+					</section>
+
+				</div>
+			</DIV>
+			{% endif %}
+			<!-- row -->
+
 				<!-- block: status and process messages / information -->
 				<div class="block">
 
