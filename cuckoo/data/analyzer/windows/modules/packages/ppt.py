@@ -17,6 +17,7 @@ class PPT(Package):
         ("ProgramFiles", "Microsoft Office", "Office15", "POWERPNT.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office16", "POWERPNT.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "POWERPNT.EXE"),
+        ("ProgramFiles", "Microsoft Office", "root", "Office16", "POWERPNT.EXE"),
     ]
 
     REGKEYS = [
