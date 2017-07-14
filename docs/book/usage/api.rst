@@ -1064,7 +1064,7 @@ Shuts down the server if in debug mode and using the werkzeug server.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/get/iocs/
+    curl http://localhost:8090/exit
 
 **Status codes**:
 
