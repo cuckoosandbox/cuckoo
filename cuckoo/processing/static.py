@@ -554,21 +554,6 @@ class PdfDocument(object):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
     def walk_object(self, obj, entry):
-        if isinstance(obj, peepdf.PDFCore.PDFStream):
-            stream = obj.decodedStream
-
-            # Is this actually Javascript code?
-            if not peepdf.JSAnalysis.isJavascript(stream):
-                return
-
-            javascript = stream.decode("latin-1")
-            entry["javascript"].append({
-                "orig_code": javascript,
-                "beautified": jsbeautify(javascript),
-                "urls": [],
-            })
-            return
-
         if isinstance(obj, peepdf.PDFCore.PDFDictionary):
             for url in obj.urlsFound:
                 entry["urls"].append(self._parse_string(url))
@@ -596,6 +581,80 @@ class PdfDocument(object):
                 self.walk_object(element, entry)
             return
 
+    def get_javascript(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/JS" not in obj.object.elements:
+            return
+
+        ref = obj.object.elements["/JS"]
+
+        if ref.id not in f.body[version].objects:
+            log.warning("PDFObject: Reference is broken, can't follow")
+            return
+            
+        obj = f.body[version].objects[ref.id]
+        return {
+            "orig_code": obj.object.decodedStream,
+            "beautified": jsbeautify(obj.object.decodedStream),
+            "urls": []
+        }
+
+    def get_attachments(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/F" not in obj.object.elements:
+            return
+        if "/EF" not in obj.object.elements:
+            return
+
+        filename = obj.object.elements["/F"]
+        if not isinstance(filename, peepdf.PDFCore.PDFString):
+            return
+
+        ref = obj.object.elements["/EF"]
+        if not isinstance(ref, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/F" not in ref.elements:
+            return
+
+        ref = ref.elements["/F"]
+        if not isinstance(ref, peepdf.PDFCore.PDFReference):
+            return
+
+        if ref.id not in f.body[version].objects:
+            return
+
+        obj = f.body[version].objects[ref.id]
+        return {
+#           "contents": obj.object.decodedStream,
+            "filename": filename.value,
+        }
+
+    def get_openaction(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/OpenAction" not in obj.object.elements:
+            return
+
+        action = obj.object.elements["/OpenAction"]
+
+        if isinstance(action, peepdf.PDFCore.PDFDictionary):
+            return action.value
+
+        if isinstance(action, peepdf.PDFCore.PDFReference):
+            referenced = f.body[version].objects[action.id]
+            if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
+                obj = referenced.object
+                if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+                    return obj.value
+
+        return None
+
     def run(self):
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
@@ -621,9 +680,23 @@ class PdfDocument(object):
                 "modification": self._sanitize(md, "modification"),
                 "javascript": [],
                 "urls": [],
+                "attachments": [],
+                "openaction": None,
             }
 
             for obj in f.body[version].objects.values():
+                action = self.get_openaction(obj, f, version)
+                if action:
+                    row["openaction"] = action
+
+                js = self.get_javascript(obj, f, version)
+                if js:
+                    row["javascript"].append(js)
+
+                att = self.get_attachments(obj, f, version)
+                if att:
+                    row["attachments"].append(att)
+
                 self.walk_object(obj.object, row)
 
             row["urls"] = sorted(set(row["urls"]))
