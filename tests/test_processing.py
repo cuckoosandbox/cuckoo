@@ -212,7 +212,29 @@ class TestProcessing(object):
             "title": "This is a test PDF file",
             "urls": [],
             "version": 1,
+            "openaction": None,
+            "attachments": [],
         }
+
+    def test_pdf_attach(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf_attach.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf_attach.pdf"
+        obj, = s.run()["pdf"]
+        assert len(obj["javascript"]) == 1
+        assert "exportDataObject" in obj["javascript"][0]["orig_code"]
+        assert len(obj["attachments"]) == 1
+        assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
+        assert "kkkllsslll" in obj["openaction"]
 
     def test_office(self):
         s = Static()

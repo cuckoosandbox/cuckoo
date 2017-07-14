@@ -593,7 +593,7 @@ class PdfDocument(object):
         if ref.id not in f.body[version].objects:
             log.warning("PDFObject: Reference is broken, can't follow")
             return
-            
+
         obj = f.body[version].objects[ref.id]
         return {
             "orig_code": obj.object.decodedStream,
@@ -630,7 +630,8 @@ class PdfDocument(object):
 
         obj = f.body[version].objects[ref.id]
         return {
-#           "contents": obj.object.decodedStream,
+            # TODO Extract "obj.object.decodedStream" as Extracted Artifact?
+            # "contents": obj.object.decodedStream,
             "filename": filename.value,
         }
 
