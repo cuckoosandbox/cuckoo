@@ -488,6 +488,10 @@ def migrate_cwd():
     if not os.path.exists(cwd("stuff")):
         mkdir(cwd("stuff"))
 
+    # Create the new $CWD/yara/dumpmem/ directory.
+    if not os.path.exists(cwd("yara", "dumpmem")):
+        mkdir(cwd("yara", "dumpmem"))
+
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
         if not line.strip() or line.startswith("#"):

@@ -2,15 +2,45 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import io
 import mock
 import pytest
 import requests
 import responses
 import tempfile
+import zipfile
 
-from cuckoo.core.guest import GuestManager, OldGuestManager
+from cuckoo.core.guest import GuestManager, OldGuestManager, analyzer_zipfile
+from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
+
+class TestAnalyzerZipfile(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+    def create(self, *args):
+        return zipfile.ZipFile(io.BytesIO(analyzer_zipfile(*args)))
+
+    def test_windows(self):
+        z = self.create("windows", "latest")
+        l = z.namelist()
+        assert "analyzer.py" in l
+        assert "bin/monitor-x64.dll" in l
+        assert "bin/rules.yarac" in l
+
+        latest = open(cwd("monitor", "latest"), "rb").read().strip()
+        monitor64 = open(
+            cwd("monitor", latest, "monitor-x64.dll"), "rb"
+        ).read()
+        assert z.read("bin/monitor-x64.dll") == monitor64
+
+    def test_linux(self):
+        z = self.create("linux", None)
+        l = z.namelist()
+        assert "analyzer.py" in l
 
 class TestOldGuestManager(object):
     def test_start_analysis_timeout(self):

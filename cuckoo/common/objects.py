@@ -312,10 +312,6 @@ class File(object):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
-        # This only happens if Yara is missing (which is reported at startup).
-        if category not in File.yara_rules:
-            return []
-
         if not os.path.getsize(self.file_path):
             return []
 

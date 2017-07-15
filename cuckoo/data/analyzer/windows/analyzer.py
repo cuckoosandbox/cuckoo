@@ -639,6 +639,9 @@ class Analyzer(object):
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
 
+        # Initialize zer0m0n with our compiled Yara rules.
+        zer0m0n.yarald("bin/rules.yarac")
+
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         pids = self.package.start(self.target)

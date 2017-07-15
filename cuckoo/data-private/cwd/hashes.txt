@@ -216,3 +216,9 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 2798f5f1f71e6ab2aa369727adb93d30c104d909 analyzer/windows/modules/packages/ie.py
 6d4811fec257ac752bfa96dd85fc1fa39bbd17ef analyzer/windows/modules/packages/ppt.py
 5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py
+
+# TBD release
+0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
+d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py
+da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
+da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/dumpmem/.gitignore

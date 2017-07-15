@@ -66,13 +66,14 @@ class Zer0m0nIoctl(Ioctl):
         "cmdpipe",
         "channel",
         "dumpmem",
+        "yarald",
     ]
 
-    def ioctl(self, action, buf):
+    def invoke(self, action, buf):
         if action not in self.actions:
             raise RuntimeError("Invalid ioctl action: %s" % action)
 
-        return Ioctl.ioctl(
+        return Ioctl.invoke(
             self, CTL_CODE_BASE + self.actions.index(action) * 4, buf,
         )
 
@@ -87,5 +88,8 @@ class Zer0m0nIoctl(Ioctl):
 
     def dumpmem(self, pid):
         return self.invoke("dumpmem", struct.pack("I", pid))
+
+    def yarald(self, rulepath):
+        return self.invoke("yarald", open(rulepath, "rb").read())
 
 zer0m0n = Zer0m0nIoctl(driver_name)

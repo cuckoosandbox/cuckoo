@@ -196,12 +196,14 @@ def init_modules():
 
 def init_yara():
     """Initialize & load/compile Yara rules."""
+    categories = (
+        "binaries", "urls", "memory", "scripts", "shellcode", "dumpmem",
+    )
     log.debug("Initializing Yara...")
-    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
+    for category in categories:
         dirpath = cwd("yara", category)
         if not os.path.exists(dirpath):
             log.warning("Missing Yara directory: %s?", dirpath)
-            continue
 
         rules, indexed = {}, []
         for dirpath, dirnames, filenames in os.walk(dirpath, followlinks=True):
@@ -247,6 +249,10 @@ def init_yara():
                 log.debug("\t `-- %s %s", category, entry)
             else:
                 log.debug("\t |-- %s %s", category, entry)
+
+    # Store the compiled Yara rules for the "dumpmem" category in
+    # $CWD/stuff/ so that we may pass it along to zer0m0n during analysis.
+    File.yara_rules["dumpmem"].save(cwd("stuff", "dumpmem.yarac"))
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

@@ -56,20 +56,23 @@ def analyzer_zipfile(platform, monitor):
             archive_name = os.path.join(archive_root, name)
             zip_file.write(path, archive_name)
 
-    # Include the chosen monitoring component.
+    # Include the chosen monitoring component and any additional files.
     if platform == "windows":
         dirpath = cwd("monitor", monitor)
 
-        # Sometimes we might get a file instead of a symbolic link, in that
-        # case we follow the semi-"symbolic link" manually.
+        # Generally speaking we should no longer be getting symbolic links for
+        # "latest" anymore, so in the case of a file; follow it.
         if os.path.isfile(dirpath):
             monitor = os.path.basename(open(dirpath, "rb").read().strip())
             dirpath = cwd("monitor", monitor)
 
         for name in os.listdir(dirpath):
-            path = os.path.join(dirpath, name)
-            archive_name = os.path.join("/bin", name)
-            zip_file.write(path, archive_name)
+            zip_file.write(
+                os.path.join(dirpath, name), os.path.join("bin", name)
+            )
+
+        # Dump compiled "dumpmem" Yara rules for zer0m0n usage.
+        zip_file.write(cwd("stuff", "dumpmem.yarac"), "bin/rules.yarac")
 
     zip_file.close()
     data = zip_data.getvalue()
