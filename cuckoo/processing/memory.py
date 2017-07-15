@@ -578,11 +578,11 @@ class VolatilityAPI(object):
         """
         results = []
 
-        ypath = cwd("yara", "index_memory.yar")
-        if not os.path.exists(ypath):
+        yarapath = cwd("stuff", "index_memory.yar")
+        if not os.path.exists(yarapath):
             return dict(config={}, data=[])
 
-        self.config.update("YARA_FILE", ypath)
+        self.config.update("YARA_FILE", yarapath)
 
         command = self.plugins["yarascan"](self.config)
         for o, addr, hit, content in command.calculate():

@@ -677,12 +677,15 @@ class TestMigrateCWD(object):
         cuckoo_create()
         shutil.rmtree(cwd("yara", "scripts"))
         shutil.rmtree(cwd("yara", "shellcode"))
+        shutil.rmtree(cwd("stuff"))
+        open(cwd("yara", "index_binaries.yar"), "wb").write("hello")
         migrate_cwd()
         # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
         assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
-        assert os.path.exists(cwd("yara", "index_scripts.yar"))
         assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
-        assert os.path.exists(cwd("yara", "index_shellcode.yar"))
+        # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
+        assert os.path.exists(cwd("stuff"))
+        assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
     def test_using_community(self):
         def h(filepath):

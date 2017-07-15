@@ -234,6 +234,13 @@ def init_yara():
                 "There was a syntax error in one or more Yara rules: %s" % e
             )
 
+        # The memory.py processing module requires a yara file with all of its
+        # rules embedded in it, so create this file to remain compatible.
+        if category == "memory":
+            f = open(cwd("stuff", "index_memory.yar"), "wb")
+            for filename in indexed:
+                f.write('include "%s"\n' % cwd("yara", "memory", filename))
+
         indexed = sorted(indexed)
         for entry in indexed:
             if (category, entry) == indexed[-1]:

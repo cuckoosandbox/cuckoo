@@ -614,3 +614,15 @@ class TestYaraIntegration(object):
         os.symlink(cwd("yara", "binaries"), cwd("yara", "memory", "bins"))
         init_yara()
         assert len(list(File.yara_rules["memory"])) == 5
+
+    def test_stuff_memory(self):
+        open(cwd("yara", "memory", "hello.yara"), "wb").write("""
+            rule A {
+                condition:
+                    1
+            }
+        """)
+        init_yara()
+        assert os.path.exists(cwd("stuff", "index_memory.yar"))
+        buf = open(cwd("stuff", "index_memory.yar"), "rb").read()
+        assert 'include "%s"' % cwd("yara", "memory", "hello.yara") in buf

@@ -8,7 +8,6 @@ import hashlib
 import io
 import logging
 import os.path
-import pymongo
 import random
 import requests
 import shutil
@@ -480,12 +479,14 @@ def migrate_cwd():
         "of our own."
     )
 
-    # Migration from 2.0.2 to 2.0.3. TODO Abstract this away.
-    if not os.path.exists(cwd("yara", "index_scripts.yar")):
-        open(cwd("yara", "index_scripts.yar"), "wb").close()
+    # Remove now-obsolete index_*.yar files.
+    for filename in os.listdir(cwd("yara")):
+        if filename.startswith("index_") and filename.endswith(".yar"):
+            os.remove(cwd("yara", filename))
 
-    if not os.path.exists(cwd("yara", "index_shellcode.yar")):
-        open(cwd("yara", "index_shellcode.yar"), "wb").close()
+    # Create the new $CWD/stuff/ directory.
+    if not os.path.exists(cwd("stuff")):
+        mkdir(cwd("stuff"))
 
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
