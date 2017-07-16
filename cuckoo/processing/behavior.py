@@ -156,6 +156,11 @@ class GenericBehavior(BehaviorHandler):
             for key, value in process["summary"].items():
                 process["summary"][key] = list(value)
 
+            # having parent process name in the report is incredibly useful in ElasticSearch
+            for item in self.processes.values():
+                if item["process_id"] == process["parent_id"]:
+                    process["parent_name"] = item["process_name"]
+
         return self.processes.values()
 
 class ApiStats(BehaviorHandler):
