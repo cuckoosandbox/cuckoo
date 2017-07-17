@@ -3,7 +3,7 @@
     <p>
       <a href="#" data-load="{{process.pid}}">
         {{ process.process_name }}
-        <script type="application/json">{ "name": "{{ process.process_name }}", "ppid": "{{ process.ppid }}" }</script>
+        <script type="application/json">{ "name": "{{ process.process_name }}", "pid": "{{ process.pid }}","ppid": "{{ process.ppid }}", "pages": "{{ process.calls|length }}" }</script>
       </a>
       <em><i data-toggle="tooltip" title="{{ process.command_line }}" class="fa fa-eye"></i>{{ process.command_line }}</em>
     </p>

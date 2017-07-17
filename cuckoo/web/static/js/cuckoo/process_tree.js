@@ -109,6 +109,154 @@ var Tree = function () {
 }();
 
 /*
+  PaginationBar
+*/
+
+
+var PaginationBar = function () {
+  function PaginationBar(options) {
+    _classCallCheck(this, PaginationBar);
+
+    // extend options with default config parameters
+    this.config = $.extend({
+      container: null,
+      currentPage: 1,
+      totalPages: 40,
+      display: 20,
+      onPaginate: function onPaginate() {
+        return this;
+      }
+    }, options);
+
+    // dom element assignment
+    this.$ = null;
+
+    // render the bar
+    this.render();
+  }
+
+  // renders the pagination bar in the container, if a container is not set,
+  // this will output the html instead.
+
+
+  _createClass(PaginationBar, [{
+    key: 'render',
+    value: function render() {
+
+      var config = this.config;
+      var html = $("<ul />");
+
+      // creates a page item
+      function _page(n) {
+        var $page = $("<li />");
+        var $link = $("<a />");
+
+        $link.text(n);
+
+        if (n == config.currentPage) {
+          $link.addClass('active');
+        }
+
+        if (!isNaN(n)) {
+          $link.attr('href', 'page:' + n);
+        }
+
+        return $page.append($link);
+      }
+
+      // bundles the page items
+      // for(var p = config.currentPage; p <= config.currentPage + config.display; p++) {
+      //
+      //   if(p < config.totalPages) {
+      //     var $page = _page(p);
+      //     html.append($page);
+      //   }
+      //
+      //   if(p == config.currentPage + config.display) {
+      //     if(p < config.totalPages) {
+      //       html.append(_page('...'));
+      //       html.append(_page(config.totalPages));
+      //     }
+      //   }
+      //
+      // }
+
+      // from left to right, there should always be n items, with the active one in the middle.
+      // n = config.totalPages
+      // active = this.currentPage
+
+      // appends the first page
+      html.append(_page(1));
+
+      // adds a '...' item if we are out of sight for the first item
+      if (config.currentPage - 10 > 2) html.append(_page('...'));
+
+      var pageMin = Math.max(2, config.currentPage - 10);
+      var pageMax = Math.min(config.totalPages, config.currentPage + 10);
+
+      for (var i = pageMin; i <= pageMax; i++) {
+
+        var $page = _page(i);
+        html.append($page);
+      }
+
+      // if we are not yet in the last results, we display a number with
+      // the last page.
+      if (config.currentPage + 10 < config.totalPages) {
+        html.append(_page('...'));
+        html.append(_page(config.totalPages));
+      }
+
+      if (config.container) {
+        config.container.html(html);
+        this.bind(config.container);
+      } else {
+        return html;
+      }
+    }
+
+    // binds click handlers to the pagination item links
+
+  }, {
+    key: 'bind',
+    value: function bind(pages) {
+
+      var self = this;
+
+      pages.find('a[href]').bind('click', function (e) {
+        e.preventDefault();
+        var page = $(this).attr('href').replace('page:', '');
+        self.goto(page);
+      });
+
+      this.$ = pages;
+    }
+
+    // goto function
+
+  }, {
+    key: 'goto',
+    value: function goto(n) {
+
+      this.config.currentPage = parseInt(n);
+      this.render();
+      // fire callback
+      this.config.onPaginate(n);
+    }
+
+    // destroys the element
+
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this.$.empty();
+    }
+  }]);
+
+  return PaginationBar;
+}();
+
+/*
   Constructor class for the entire behavior tree, with all its views inside it.
  */
 
@@ -119,6 +267,7 @@ var ProcessBehaviorView = function () {
 
     this._$ = el;
     this._tree = new Tree(this._$.find('.tree'), 0);
+    this._bar = null;
 
     this.currentPage = 1;
 
@@ -156,7 +305,8 @@ var ProcessBehaviorView = function () {
       // handlers for loading data
       this._tree.el.find('[data-load]').bind('click', function (e) {
         e.preventDefault();
-        self.loadChunk($(this)[0]);
+        self.loadChunk($(this).data('load'));
+        self.populate($(this).find('script'));
       });
     }
 
@@ -164,29 +314,31 @@ var ProcessBehaviorView = function () {
 
   }, {
     key: 'loadChunk',
-    value: function loadChunk(el) {
+    value: function loadChunk(pid) {
 
       // parse to jquery, jquery seems to have a little trouble with es6 closure within
       // the context of a class.
-      el = $(el);
 
       var self = this;
-      var url = '/analysis/chunk/' + window.task_id + '/' + el.data('load') + '/' + this.currentPage;
-
-      // get some other data relevant to the chunk, such as name etc for the detail population. This is
-      // right now configured as an in-app dump inside the target click handler, I would love to see
-      // this switch to ajax in a near future.
-      var data = parseProcessData(el.find('script'));
+      var url = '/analysis/chunk/' + window.task_id + '/' + pid + '/' + this.currentPage;
 
       $.get(url, function (res) {
         // renders the entire table
         self.renderTable(res);
-
-        // populate meta aspects
-        self._$.find('[data-placeholder="process-detail-pid"]').text(el.data('load'));
-        self._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
-        self._$.find('[data-placeholder="process-detail-name"]').text(data.name);
       });
+    }
+
+    // populates information about the current process
+
+  }, {
+    key: 'populate',
+    value: function populate(el) {
+      var data = parseProcessData(el);
+      this._$.find('[data-placeholder="process-detail-pid"]').text(data.pid);
+      this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
+      this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
+      // render pagination bar
+      this.renderBar(data.pid, data.pages, 1);
     }
 
     // renders a table from the html string in the response.
@@ -207,13 +359,35 @@ var ProcessBehaviorView = function () {
       this._$.find('.loaded').slideDown();
       this._$.find('.unloaded').hide();
     }
+
+    // renders the pagination bar
+
+  }, {
+    key: 'renderBar',
+    value: function renderBar(pid, total, current) {
+
+      var self = this;
+
+      // reset inner flags
+      this.currentPage = current;
+      if (this._bar) this._bar.destroy();
+
+      // create a new bar
+      this._bar = new PaginationBar({
+        totalPages: total,
+        container: self._$.find('.process-spec--pagination'),
+        onPaginate: function onPaginate(page) {
+          self.currentPage = page;
+          self.loadChunk(pid);
+        }
+      });
+    }
   }]);
 
   return ProcessBehaviorView;
 }();
 
-// create 'trees' - debug only, later on this will merge into
-// a controller class for the behavioral analysis page.
+// boot up the view class for the behavior controller
 
 
 $(function () {
