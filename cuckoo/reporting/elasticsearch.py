@@ -185,6 +185,9 @@ class ElasticSearch(Report):
         }[elastic.index_time_pattern])
         self.dated_index = "%s-%s" % (elastic.index, date_index)
 
+        # add this index to the cuckoo alias for searching
+        elastic.client.indices.put_alias(index=dated_index, name='cuckoo')
+
         # Index target information, the behavioral summary, and
         # VirusTotal results.
         doc = {
