@@ -23,7 +23,6 @@ from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
-from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
@@ -351,14 +350,18 @@ def cuckoo_clean():
                     "the connectivity, apply all migrations if needed or purge "
                     "it manually. Error description: %s", e)
 
-    # Check if MongoDB reporting is enabled and drop the database if it is.
-    if mongo.init():
+    # Check if MongoDB reporting is enabled and drop that if it is.
+    # TODO Move to the MongoDB abstract.
+    if config("reporting:mongodb:enabled"):
+        host = config("reporting:mongodb:host")
+        port = config("reporting:mongodb:port")
+        mdb = config("reporting:mongodb:db")
         try:
-            mongo.connect()
-            mongo.drop()
-            mongo.close()
-        except Exception as e:
-            log.warning("Unable to drop MongoDB database: %s", e)
+            conn = pymongo.MongoClient(host, port)
+            conn.drop_database(mdb)
+            conn.close()
+        except:
+            log.warning("Unable to drop MongoDB database: %s", mdb)
 
     # Check if ElasticSearch reporting is enabled and drop its data if it is.
     if elastic.init():
