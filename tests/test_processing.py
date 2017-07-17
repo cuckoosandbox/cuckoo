@@ -212,7 +212,29 @@ class TestProcessing(object):
             "title": "This is a test PDF file",
             "urls": [],
             "version": 1,
+            "openaction": None,
+            "attachments": [],
         }
+
+    def test_pdf_attach(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf_attach.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf_attach.pdf"
+        obj, = s.run()["pdf"]
+        assert len(obj["javascript"]) == 1
+        assert "exportDataObject" in obj["javascript"][0]["orig_code"]
+        assert len(obj["attachments"]) == 1
+        assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
+        assert "kkkllsslll" in obj["openaction"]
 
     def test_office(self):
         s = Static()
@@ -1052,6 +1074,28 @@ class TestPcapAdditional(object):
                 "type": "A"
             }],
         }
+
+    @mock.patch("cuckoo.processing.network.log")
+    def test_empty_pcap(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "processing": {
+                    "sort_pcap": True,
+                },
+            },
+        })
+
+        mkdir(cwd(analysis=1))
+        shutil.copy(
+            "tests/files/pcap/empty.pcap", cwd("dump.pcap", analysis=1)
+        )
+
+        na = NetworkAnalysis()
+        na.set_path(cwd(analysis=1))
+        na.set_options({})
+        na.run()
+        p.warning.assert_not_called()
 
 class TestPcap2(object):
     def test_smtp_ex(self):

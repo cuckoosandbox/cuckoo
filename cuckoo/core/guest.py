@@ -336,19 +336,27 @@ class GuestManager(object):
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
-        if self.platform == "windows":
-            systemdrive = "%s\\" % self.environ["SYSTEMDRIVE"]
-        elif self.platform == "linux" or self.platform == "darwin":
-            systemdrive = self.environ["HOME"]
+
+        systemdrive = self.determine_system_drive()
 
         options = parse_options(self.options["options"])
         if options.get("analpath"):
-            dirpath = "%s\\%s" % (systemdrive, options["analpath"])
+            dirpath = systemdrive + options["analpath"]
             r = self.post("/mkdir", data={"dirpath": dirpath})
             self.analyzer_path = dirpath
         else:
             r = self.post("/mkdtemp", data={"dirpath": systemdrive})
             self.analyzer_path = r.json()["dirpath"]
+
+    def determine_system_drive(self):
+        if self.platform == "windows":
+            return "%s/" % self.environ["SYSTEMDRIVE"]
+        return "/"
+
+    def determine_temp_path(self):
+        if self.platform == "windows":
+            return self.environ["TEMP"]
+        return "/tmp"
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
@@ -469,50 +477,31 @@ class GuestManager(object):
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
 
-            if self.platform=="windows":
-                data = {
-                    "filepath": os.path.join(
-                        self.environ["TEMP"], options["file_name"]
-                    ),
-                }
-                files = {
-                    "file": ("sample.bin", open(options["target"], "rb")),
-                }
-            else:
-                data = {
-                    "filepath": os.path.join(
-                        "/tmp", options["file_name"]
-                    ),
-                }
-
-                files = {
-                    "file": ("sample.bin", open(options["target"], "rb")),
-                }
-
+            data = {
+                "filepath": os.path.join(
+                    self.determine_temp_path(), options["file_name"]
+                ),
+            }
+            files = {
+                "file": ("sample.bin", open(options["target"], "rb")),
+            }
             self.post("/store", files=files, data=data)
 
-            if "execpy" in features:
-                if self.platform != "windows":
-                     data = {
-                         "filepath": "%s/analyzer.py" % self.analyzer_path,
-                         "async": "yes",
-                         "cwd": self.analyzer_path,
-                     }
-                else:
-                     data = {
-                         "filepath": "%s\\analyzer.py" % self.analyzer_path,
-                         "async": "yes",
-                         "cwd": self.analyzer_path,
-                     }
-                self.post("/execpy", data=data)
-            else:
-                # Execute the analyzer that we just uploaded.
-                data = {
-                    "command": "C:\\Python27\\pythonw.exe %s\\analyzer.py" % self.analyzer_path,
-                    "async": "yes",
-                    "cwd": self.analyzer_path,
-                }
-                self.post("/execute", data=data)
+        if "execpy" in features:
+            data = {
+                "filepath": "%s/analyzer.py" % self.analyzer_path,
+                "async": "yes",
+                "cwd": self.analyzer_path,
+            }
+            self.post("/execpy", data=data)
+        else:
+            # Execute the analyzer that we just uploaded.
+            data = {
+                "command": "C:\\Python27\\pythonw.exe %s\\analyzer.py" % self.analyzer_path,
+                "async": "yes",
+                "cwd": self.analyzer_path,
+            }
+            self.post("/execute", data=data)
 
     def wait_for_completion(self):
         if self.is_old:

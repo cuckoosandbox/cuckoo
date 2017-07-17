@@ -425,6 +425,32 @@ class TestWebInterface(object):
         r = client.get("/analysis/search/")
         assert r.status_code == 500
 
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_export_infoleak(self, p, client):
+        p._get_report.return_value = {
+            "info": {
+                "analysis_path": "/tmp",
+            },
+        }
+        r = client.post(
+            "/analysis/api/task/export_estimate_size/",
+            json.dumps({
+                "task_id": 1,
+                "dirs": [],
+                "files": [
+                    # TODO Should we support individual files in analysis
+                    # directories, e.g., "shots/0001.png"?
+                    "../../../../../../etc/passwd",
+                ],
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        # The file should not be found and as such have size zero.
+        assert not json.loads(r.content)["size"]
+
 class TestWebInterfaceFeedback(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())

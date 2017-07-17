@@ -201,7 +201,7 @@ b3f4f27259ec5a0b35fe601619a82edd7593df8a analyzer/windows/modules/auxiliary/huma
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore
 
-# TBD release
+# 2.0.4a3 release
 acf60a522392ef294f6664c32022cf5a52012f44 analyzer/windows/lib/common/defines.py
 9486762bbe1fa60c67b17887f13be0b37ebfcfcd analyzer/windows/lib/common/results.py
 4d6aedcee60ac3e07c2bb5c1d779297caa0e262d analyzer/windows/modules/auxiliary/human.py
@@ -209,3 +209,10 @@ b5708b99583b10f7d29024127d3da8a48c662361 analyzer/windows/modules/packages/doc.p
 b70c7d3e30781a4858f20d0276b6bbccd5993c37 analyzer/windows/modules/packages/pdf.py
 3b0cba3b540f894aebd911889f4a7cd617018647 analyzer/windows/modules/packages/ppt.py
 32a3365de602fe4c98e778613510450b17d8ada1 analyzer/windows/modules/packages/xls.py
+
+# 2.0.4a4 release
+4284924e7e6485d2354550858f245d49d8f808d9 analyzer/linux/analyzer.py
+e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
+2798f5f1f71e6ab2aa369727adb93d30c104d909 analyzer/windows/modules/packages/ie.py
+6d4811fec257ac752bfa96dd85fc1fa39bbd17ef analyzer/windows/modules/packages/ppt.py
+5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py

@@ -881,11 +881,13 @@ class NetworkAnalysis(Processing):
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
-            pcap_path = sorted_path
 
             # Sorted PCAP file hash.
             if os.path.exists(sorted_path):
                 results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+                pcap_path = sorted_path
+            else:
+                pcap_path = self.pcap_path
         else:
             pcap_path = self.pcap_path
 
@@ -994,7 +996,7 @@ class SortCap(object):
         return self
 
     def close(self):
-        self.f.close()
+        self.f and self.f.close()
         self.fd = None
 
     def next(self):

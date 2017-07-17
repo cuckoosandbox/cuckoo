@@ -344,9 +344,14 @@ class File(object):
                     (offset, strings.index(base64.b64encode(value)))
                 )
 
+            meta = {
+                "description": "(no description)",
+            }
+            meta.update(match.meta)
+
             results.append({
                 "name": match.rule,
-                "meta": match.meta,
+                "meta": meta,
                 "strings": strings,
                 "offsets": offsets,
             })

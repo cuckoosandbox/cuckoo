@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,6 +11,8 @@ import logging
 import tempfile
 import xmlrpclib
 import traceback
+import urllib
+import urllib2
 import time
 import datetime
 from hashlib import sha256
@@ -44,12 +46,13 @@ PPID = Process(pid=PID).get_parent_pid()
 def add_pids(pids):
     """Add PID."""
     if not isinstance(pids, (tuple, list, set)):
-        pids = [pids,]
+        pids = [pids]
 
     for pid in pids:
         log.info("Added new process to list with pid: %s", pid)
         pid = int(pid)
-        if not pid in SEEN_LIST: PROCESS_LIST.add(pid)
+        if pid not in SEEN_LIST:
+            PROCESS_LIST.add(pid)
         SEEN_LIST.add(pid)
 
 def dump_files():
@@ -381,9 +384,11 @@ class Analyzer:
         try:
             # Upload files the package created to package_files in the results folder
             package_files = pack.package_files()
-            if package_files != None:
+            if package_files is not None:
                 for package in package_files:
-                    upload_to_host(package[0], os.path.join("package_files", package[1]));
+                    upload_to_host(
+                        package[0], os.path.join("package_files", package[1])
+                    )
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
                         "exception: %s", package_name, e)
@@ -461,16 +466,16 @@ if __name__ == "__main__":
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
-        # if we arrive here, analisys should went rigth
-        data = {
-            "status": "complete",
-            "description": success,
-        }
-        # Establish connection with the agent XMLRPC server.
         try:
+            # old agent
             server = xmlrpclib.Server("http://127.0.0.1:8000")
-            server.complete(success, error, "unused_path")
+            server.complete(success, error, PATHS["root"])
         except xmlrpclib.ProtocolError:
-            urllib2.urlopen("http://127.0.0.1:8000/status",
-                             urllib.urlencode(data)).read()
-
+            # new agent
+            data = {
+                "status": "complete",
+                "description": success
+            }
+            urllib2.urlopen(
+                "http://127.0.0.1:8000/status", urllib.urlencode(data)
+            )

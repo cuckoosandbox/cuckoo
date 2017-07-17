@@ -18,6 +18,7 @@ class XLS(Package):
         ("ProgramFiles", "Microsoft Office", "Office15", "EXCEL.EXE"),
         ("ProgramFiles", "Microsoft Office", "Office16", "EXCEL.EXE"),
         ("ProgramFiles", "Microsoft Office 15", "root", "office15", "EXCEL.EXE"),
+        ("ProgramFiles", "Microsoft Office", "root", "Office16", "EXCEL.EXE"),
     ]
 
     REGKEYS = [
