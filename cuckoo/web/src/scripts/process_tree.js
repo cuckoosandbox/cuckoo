@@ -215,10 +215,13 @@ class ProcessBehaviorView {
 
   constructor(el) {
     this._$ = el;
+
     this._tree  = new Tree(this._$.find('.tree'), 0);
     this._bar   = null;
+    this._tags  = this._$.find('.process-spec--tags');
 
     this.currentPage = 1;
+    this.currentPid = null;
 
     this.initialise();
   }
@@ -255,23 +258,52 @@ class ProcessBehaviorView {
       e.preventDefault();
       self.loadChunk($(this).data('load'));
       self.populate($(this).find('script'));
+
+      // reset the categories active state because we're loading a default dataset
+      self._tags.children().removeClass('active');
+    });
+
+    this._tags.find('[href^="filter:"]').bind('click', function(e) {
+      e.preventDefault();
+
+      // no pagination for this page, according to the previous version.
+      if(self._bar) self._bar.destroy();
+      self.loadChunk(self.currentPid, $(this).attr('href').split(':')[1]);
+
+      // remove the current active classes
+      $(this).parent().find('a').removeClass('active');
+
+      // set an active class
+      $(this).addClass('active');
+
     });
 
   }
 
   // gets called for loading api chunks
-  loadChunk(pid) {
+  loadChunk(pid, filter) {
 
     // parse to jquery, jquery seems to have a little trouble with es6 closure within
     // the context of a class.
 
-    let self = this;
-    let url = `/analysis/chunk/${window.task_id}/${pid}/${this.currentPage}`;
+    var self = this,
+        url = '';
 
-    $.get(url, res => {
-      // renders the entire table
-      self.renderTable(res);
-    });
+    // set the current pid
+    self.currentPid = pid;
+
+    if(!filter) {
+      url = `/analysis/chunk/${window.task_id}/${pid}/${this.currentPage}`;
+    } else {
+      url = `/analysis/filtered/${window.task_id}/${pid}/${filter}`;
+    }
+
+    if(url.length) {
+      $.get(url, res => {
+        // renders the entire table
+        self.renderTable(res);
+      });
+    }
 
   }
 
@@ -313,6 +345,7 @@ class ProcessBehaviorView {
 
     // reset inner flags
     this.currentPage = current;
+
     if(this._bar) this._bar.destroy();
 
     // create a new bar

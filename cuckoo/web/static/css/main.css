@@ -4321,8 +4321,8 @@ pre.reset
  */
 .badge.file
 {
-    color: #637080 !important;
-    background-color: #c5e0ff !important;
+    color: #637080;
+    background-color: #c5e0ff;
 }
 
 .badge.file:hover
@@ -4330,10 +4330,16 @@ pre.reset
     background-color: #bbd5f2;
 }
 
+.badge.file.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.registry
 {
-    color: #806363 !important;
-    background-color: #ffc5c5 !important;
+    color: #806363;
+    background-color: #ffc5c5;
 }
 
 .badge.registry:hover
@@ -4341,10 +4347,16 @@ pre.reset
     background-color: #f2bbbb;
 }
 
+.badge.registry.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.process
 {
-    color: #637080 !important;
-    background-color: #c5e0ff !important;
+    color: #637080;
+    background-color: #c5e0ff;
 }
 
 .badge.process:hover
@@ -4352,10 +4364,16 @@ pre.reset
     background-color: #bbd5f2;
 }
 
+.badge.process.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.services
 {
-    color: #666380 !important;
-    background-color: #ccc5ff !important;
+    color: #666380;
+    background-color: #ccc5ff;
 }
 
 .badge.services:hover
@@ -4363,10 +4381,16 @@ pre.reset
     background-color: #c2bbf2;
 }
 
+.badge.services.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.device
 {
-    color: #666380 !important;
-    background-color: #ccc5ff !important;
+    color: #666380;
+    background-color: #ccc5ff;
 }
 
 .badge.device:hover
@@ -4374,10 +4398,16 @@ pre.reset
     background-color: #c2bbf2;
 }
 
+.badge.device.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.network
 {
-    color: #6a8063 !important;
-    background-color: #d3ffc5 !important;
+    color: #6a8063;
+    background-color: #d3ffc5;
 }
 
 .badge.network:hover
@@ -4385,10 +4415,16 @@ pre.reset
     background-color: #c8f2bb;
 }
 
+.badge.network.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.synchronisation
 {
-    color: #666380 !important;
-    background-color: #ccc5ff !important;
+    color: #666380;
+    background-color: #ccc5ff;
 }
 
 .badge.synchronisation:hover
@@ -4396,10 +4432,16 @@ pre.reset
     background-color: #c2bbf2;
 }
 
+.badge.synchronisation.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.system
 {
-    color: #807e63 !important;
-    background-color: #fffcc5 !important;
+    color: #807e63;
+    background-color: #fffcc5;
 }
 
 .badge.system:hover
@@ -4407,10 +4449,16 @@ pre.reset
     background-color: #f2efbb;
 }
 
+.badge.system.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.windows
 {
-    color: #806377 !important;
-    background-color: #ffc5ee !important;
+    color: #806377;
+    background-color: #ffc5ee;
 }
 
 .badge.windows:hover
@@ -4418,10 +4466,16 @@ pre.reset
     background-color: #f2bbe2;
 }
 
+.badge.windows.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.iexplore
 {
-    color: #666f5e !important;
-    background-color: #cdb !important;
+    color: #666f5e;
+    background-color: #cdb;
 }
 
 .badge.iexplore:hover
@@ -4429,10 +4483,16 @@ pre.reset
     background-color: #c2d2b2;
 }
 
+.badge.iexplore.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.office
 {
-    color: #666f5e !important;
-    background-color: #cdb !important;
+    color: #666f5e;
+    background-color: #cdb;
 }
 
 .badge.office:hover
@@ -4440,15 +4500,27 @@ pre.reset
     background-color: #c2d2b2;
 }
 
+.badge.office.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .badge.pdf
 {
-    color: #666f5e !important;
-    background-color: #cdb !important;
+    color: #666f5e;
+    background-color: #cdb;
 }
 
 .badge.pdf:hover
 {
     background-color: #c2d2b2;
+}
+
+.badge.pdf.active
+{
+    color: #fff;
+    background-color: #6297f8;
 }
 
 .dns-badge

@@ -68,13 +68,18 @@ $badge-colors: (
 // mixin for creating badge swagger based on color
 @mixin badge($color-name, $useTint: false) {
   $color: map-get($badge-colors, $color-name);
-  background-color: $color !important;
+  background-color: $color;
 
   @if $useTint {
-    color: tint($color, 50%) !important;
+    color: tint($color, 50%);
   } @else {
-    color: shade($color, 50%) !important;
+    color: shade($color, 50%);
   }
 
   &:hover { background-color: shade($color, 5%); }
+
+  &.active {
+    background-color: $cuckoo_secundary_color;
+    color: #fff;
+  }
 }
