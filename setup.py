@@ -84,6 +84,22 @@ def update_hashes():
 # Provide hashes for our CWD migration process.
 update_hashes()
 
+def do_help(e, message):
+    if isinstance(e, ValueError) and "jpeg is required" in e.message:
+        print "  This particular error may be resolved as follows:"
+        print "      sudo apt-get install libjpeg-dev"
+
+    if isinstance(e, ValueError) and "zlib is required" in e.message:
+        print "  This particular error may be resolved as follows:"
+        print "      sudo apt-get install zlib1g-dev"
+
+    if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
+        print "  This particular error *may* be resolved as follows:"
+        print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+
+    print "  But don't forget to check out our documentation for full"
+    print "  installation steps. You might also want to check our FAQ."
+
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
@@ -102,17 +118,8 @@ def do_setup(**kwargs):
         print "out to us on IRC / email / Github!"
         print "\x1b[0m"
 
-        if isinstance(e, ValueError) and "jpeg is required" in e.message:
-            print "  This particular error may be resolved as follows:"
-            print "      sudo apt-get install libjpeg-dev"
-
-        if isinstance(e, ValueError) and "zlib is required" in e.message:
-            print "  This particular error may be resolved as follows:"
-            print "      sudo apt-get install zlib1g-dev"
-
-        if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
-            print "  This particular error *may* be resolved as follows:"
-            print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+        if hasattr(e, "message") and isinstance(e.message, basestring):
+            do_help(e, e.message)
 
 do_setup(
     name="Cuckoo",
@@ -171,15 +178,16 @@ do_setup(
         "peepdf==0.3.6",
         "pefile2==1.2.11",
         "pillow==3.2",
+        "pyelftools==0.24",
         "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock>=0.2.12, <0.3",
+        "sflock>=0.2.15, <0.3",
         "sqlalchemy==1.0.8",
-        "unicorn==1.0.0",
+        "unicorn==1.0.1",
         "wakeonlan==0.2.2",
-        "yara-python==3.6.1",
+        "yara-python==3.6.3",
     ],
     extras_require={
         ":sys_platform == 'win32'": [

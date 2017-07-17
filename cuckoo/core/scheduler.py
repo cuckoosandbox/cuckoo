@@ -52,7 +52,6 @@ class AnalysisManager(threading.Thread):
 
         self.errors = error_queue
         self.cfg = Config()
-        self.routing_cfg = Config("routing")
         self.storage = ""
         self.binary = ""
         self.storage_binary = ""
@@ -230,8 +229,6 @@ class AnalysisManager(threading.Thread):
 
     def route_network(self):
         """Enable network routing if desired."""
-        cfg = self.routing_cfg
-
         # Determine the desired routing strategy (none, internet, VPN).
         self.route = self.task.options.get(
             "route", config("routing:routing:route")
@@ -241,7 +238,7 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
         elif self.route == "inetsim":
-            self.interface = cfg.inetsim.interface
+            pass
         elif self.route == "tor":
             pass
         elif self.route == "internet":
@@ -304,9 +301,11 @@ class AnalysisManager(threading.Thread):
             )
 
         if self.route == "inetsim":
+            machinery = config("cuckoo:cuckoo:machinery")
             rooter(
                 "inetsim_enable", self.machine.ip,
                 config("routing:inetsim:server"),
+                config("%s:%s:interface" % (machinery, machinery)),
                 str(config("cuckoo:resultserver:port"))
             )
 
@@ -334,8 +333,6 @@ class AnalysisManager(threading.Thread):
 
     def unroute_network(self):
         """Disable any enabled network routing."""
-        cfg = self.routing_cfg
-
         if self.interface:
             rooter(
                 "forward_disable", self.machine.interface,
@@ -355,9 +352,13 @@ class AnalysisManager(threading.Thread):
             )
 
         if self.route == "inetsim":
-            rooter("inetsim_disable", self.machine.ip,
-                   cfg.inetsim.server,
-                   str(cfg.resultserver.port))
+            machinery = config("cuckoo:cuckoo:machinery")
+            rooter(
+                "inetsim_disable", self.machine.ip,
+                config("routing:inetsim:server"),
+                config("%s:%s:interface" % (machinery, machinery)),
+                str(config("cuckoo:resultserver:port"))
+            )
 
         if self.route == "tor":
             rooter(
@@ -680,8 +681,8 @@ class AnalysisManager(threading.Thread):
                     log.error("Unable to delete symlink to the binary copy at path \"%s\": %s", self.storage_binary, e)
 
         log.info(
-            "Task #%d: reports generation completed (path=%s)",
-            self.task.id, self.storage, extra={
+            "Task #%d: reports generation completed",
+            self.task.id, extra={
                 "action": "task.report",
                 "status": "success",
             }
@@ -894,7 +895,7 @@ class Scheduler(object):
 
                 # TODO: Windows support
                 if hasattr(os, "statvfs"):
-                    dir_stats = os.statvfs(dir_path)
+                    dir_stats = os.statvfs(dir_path.encode("utf8"))
 
                     # Calculate the free disk space in megabytes.
                     space_available = dir_stats.f_bavail * dir_stats.f_frsize

@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -53,6 +53,15 @@ class DOC(Package):
                 # Enable VBA macros in Office 2016.
                 "VBAWarnings": 1,
                 "AccessVBOM": 1,
+            },
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Office\\Common\\Security",
+            {
+                # Enable all ActiveX controls without restrictions & prompting.
+                "DisableAllActiveX": 0,
+                "UFIControls": 1,
             },
         ],
     ]

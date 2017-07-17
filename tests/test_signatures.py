@@ -266,7 +266,7 @@ def test_on_yara():
         cwd("yara", "binaries", "vmdetect.yar"),
         cwd("yara", "memory", "vmdetect.yar")
     )
-    init_yara(True)
+    init_yara()
 
     mkdir(cwd(analysis=1))
     open(cwd("binary", analysis=1), "wb").write("\x0f\x3f\x07\x0b")

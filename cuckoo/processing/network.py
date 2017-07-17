@@ -1,14 +1,17 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import collections
 import dpkt
 import hashlib
+import heapq
 import httpreplay
 import httpreplay.cut
-import logging
+import itertools
 import json
+import logging
 import os
 import re
 import socket
@@ -28,15 +31,8 @@ from cuckoo.misc import cwd
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
 
-# Imports for the batch sort.
-# http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
-# http://code.activestate.com/recipes/576755/
-import heapq
-from itertools import islice
-from collections import namedtuple
-
-Keyed = namedtuple("Keyed", ["key", "obj"])
-Packet = namedtuple("Packet", ["raw", "ts"])
+Keyed = collections.namedtuple("Keyed", ["key", "obj"])
+Packet = collections.namedtuple("Packet", ["raw", "ts"])
 
 log = logging.getLogger(__name__)
 
@@ -885,11 +881,13 @@ class NetworkAnalysis(Processing):
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
-            pcap_path = sorted_path
 
             # Sorted PCAP file hash.
             if os.path.exists(sorted_path):
                 results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+                pcap_path = sorted_path
+            else:
+                pcap_path = self.pcap_path
         else:
             pcap_path = self.pcap_path
 
@@ -943,21 +941,17 @@ def conn_from_flowtuple(ft):
 # input_iterator should be a class that also supports writing so we can use
 # it for the temp files
 # this code is mostly taken from some SO post, can't remember the url though
-def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None):
+def batch_sort(input_iterator, output_path, output_class):
     """batch sort helper with temporary files, supports sorting large stuff"""
-    if not output_class:
-        output_class = input_iterator.__class__
-
     chunks = []
     try:
         while True:
-            current_chunk = list(islice(input_iterator, buffer_size))
+            current_chunk = list(itertools.islice(input_iterator, 32000))
             if not current_chunk:
                 break
 
             current_chunk.sort()
-            fd, filepath = tempfile.mkstemp()
-            os.close(fd)
+            filepath = tempfile.mktemp()
             output_chunk = output_class(filepath)
             chunks.append(output_chunk)
 
@@ -971,11 +965,9 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
         output_file.close()
     finally:
         for chunk in chunks:
-            try:
-                chunk.close()
-                os.remove(chunk.name)
-            except Exception:
-                pass
+            chunk.close()
+            os.remove(chunk.name)
+        input_iterator.close()
 
 class SortCap(object):
     """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
@@ -983,6 +975,7 @@ class SortCap(object):
 
     def __init__(self, path, linktype=1):
         self.name = path
+        self.f = None
         self.linktype = linktype
         self.fd = None
         self.ctr = 0  # counter to pass through packets without flow info (non-IP)
@@ -990,20 +983,21 @@ class SortCap(object):
 
     def write(self, p):
         if not self.fd:
-            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=self.linktype)
+            self.f = open(self.name, "wb")
+            self.fd = dpkt.pcap.Writer(self.f, linktype=self.linktype)
         self.fd.writepkt(p.raw, p.ts)
 
     def __iter__(self):
         if not self.fd:
-            self.fd = dpkt.pcap.Reader(open(self.name, "rb"))
+            self.f = open(self.name, "rb")
+            self.fd = dpkt.pcap.Reader(self.f)
             self.fditer = iter(self.fd)
             self.linktype = self.fd.datalink()
         return self
 
     def close(self):
-        if self.fd:
-            self.fd.close()
-            self.fd = None
+        self.f and self.f.close()
+        self.fd = None
 
     def next(self):
         rp = next(self.fditer)
@@ -1029,7 +1023,9 @@ class SortCap(object):
 def sort_pcap(inpath, outpath):
     """Use SortCap class together with batch_sort to sort a pcap"""
     inc = SortCap(inpath)
-    batch_sort(inc, outpath, output_class=lambda path: SortCap(path, linktype=inc.linktype))
+    batch_sort(
+        inc, outpath, lambda path: SortCap(path, linktype=inc.linktype)
+    )
     return 0
 
 def flowtuple_from_raw(raw, linktype=1):

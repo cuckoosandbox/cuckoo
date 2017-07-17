@@ -95,8 +95,8 @@ class Sniffer(Auxiliary):
             return False
 
         log.info(
-            "Started sniffer with PID %d (interface=%s, host=%s, pcap=%s)",
-            self.proc.pid, self.machine.interface, self.machine.ip, file_path,
+            "Started sniffer with PID %d (interface=%s, host=%s)",
+            self.proc.pid, self.machine.interface, self.machine.ip
         )
         return True
 

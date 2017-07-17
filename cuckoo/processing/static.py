@@ -37,6 +37,21 @@ from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch, Structure
 
+from elftools.elf.constants import E_FLAGS
+from elftools.elf.descriptions import (
+    describe_ei_class, describe_ei_data, describe_ei_version,
+    describe_ei_osabi, describe_e_type, describe_e_machine,
+    describe_e_version_numeric, describe_p_type, describe_p_flags,
+    describe_sh_type, describe_dyn_tag, describe_symbol_type,
+    describe_symbol_bind, describe_note, describe_reloc_type
+)
+from elftools.elf.dynamic import DynamicSection
+from elftools.elf.elffile import ELFFile
+from elftools.elf.enums import ENUM_D_TAG
+from elftools.elf.relocation import RelocationSection
+from elftools.elf.sections import SymbolTableSection
+from elftools.elf.segments import NoteSegment
+
 log = logging.getLogger(__name__)
 
 # Partially taken from
@@ -539,21 +554,6 @@ class PdfDocument(object):
         return self._parse_string(d.get(key, "").decode("latin-1"))
 
     def walk_object(self, obj, entry):
-        if isinstance(obj, peepdf.PDFCore.PDFStream):
-            stream = obj.decodedStream
-
-            # Is this actually Javascript code?
-            if not peepdf.JSAnalysis.isJavascript(stream):
-                return
-
-            javascript = stream.decode("latin-1")
-            entry["javascript"].append({
-                "orig_code": javascript,
-                "beautified": jsbeautify(javascript),
-                "urls": [],
-            })
-            return
-
         if isinstance(obj, peepdf.PDFCore.PDFDictionary):
             for url in obj.urlsFound:
                 entry["urls"].append(self._parse_string(url))
@@ -581,6 +581,81 @@ class PdfDocument(object):
                 self.walk_object(element, entry)
             return
 
+    def get_javascript(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/JS" not in obj.object.elements:
+            return
+
+        ref = obj.object.elements["/JS"]
+
+        if ref.id not in f.body[version].objects:
+            log.warning("PDFObject: Reference is broken, can't follow")
+            return
+
+        obj = f.body[version].objects[ref.id]
+        return {
+            "orig_code": obj.object.decodedStream,
+            "beautified": jsbeautify(obj.object.decodedStream),
+            "urls": []
+        }
+
+    def get_attachments(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/F" not in obj.object.elements:
+            return
+        if "/EF" not in obj.object.elements:
+            return
+
+        filename = obj.object.elements["/F"]
+        if not isinstance(filename, peepdf.PDFCore.PDFString):
+            return
+
+        ref = obj.object.elements["/EF"]
+        if not isinstance(ref, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/F" not in ref.elements:
+            return
+
+        ref = ref.elements["/F"]
+        if not isinstance(ref, peepdf.PDFCore.PDFReference):
+            return
+
+        if ref.id not in f.body[version].objects:
+            return
+
+        obj = f.body[version].objects[ref.id]
+        return {
+            # TODO Extract "obj.object.decodedStream" as Extracted Artifact?
+            # "contents": obj.object.decodedStream,
+            "filename": filename.value,
+        }
+
+    def get_openaction(self, obj, f, version):
+        if not isinstance(obj.object, peepdf.PDFCore.PDFDictionary):
+            return
+
+        if "/OpenAction" not in obj.object.elements:
+            return
+
+        action = obj.object.elements["/OpenAction"]
+
+        if isinstance(action, peepdf.PDFCore.PDFDictionary):
+            return action.value
+
+        if isinstance(action, peepdf.PDFCore.PDFReference):
+            referenced = f.body[version].objects[action.id]
+            if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
+                obj = referenced.object
+                if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+                    return obj.value
+
+        return None
+
     def run(self):
         p = peepdf.PDFCore.PDFParser()
         r, f = p.parse(
@@ -606,9 +681,23 @@ class PdfDocument(object):
                 "modification": self._sanitize(md, "modification"),
                 "javascript": [],
                 "urls": [],
+                "attachments": [],
+                "openaction": None,
             }
 
             for obj in f.body[version].objects.values():
+                action = self.get_openaction(obj, f, version)
+                if action:
+                    row["openaction"] = action
+
+                js = self.get_javascript(obj, f, version)
+                if js:
+                    row["javascript"].append(js)
+
+                att = self.get_attachments(obj, f, version)
+                if att:
+                    row["attachments"].append(att)
+
                 self.walk_object(obj.object, row)
 
             row["urls"] = sorted(set(row["urls"]))
@@ -738,6 +827,205 @@ class LnkShortcut(object):
             extra, ret["icon"] = self.read_string16(extra)
         return ret
 
+class ELF(object):
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.elf = None
+        self.result = {}
+
+    def run(self):
+        try:
+            self.elf = ELFFile(open(self.file_path, "rb"))
+            self.result["file_header"] = self._get_file_header()
+            self.result["section_headers"] = self._get_section_headers()
+            self.result["program_headers"] = self._get_program_headers()
+            self.result["dynamic_tags"] = self._get_dynamic_tags()
+            self.result["symbol_tables"] = self._get_symbol_tables()
+            self.result["relocations"] = self._get_relocations()
+            self.result["notes"] = self._get_notes()
+            # TODO: add library name per import (see #807)
+        except Exception as e:
+            log.exception(e)
+
+        return self.result
+
+    def _get_file_header(self):
+        return {
+            "magic": convert_to_printable(self.elf.e_ident_raw[:4]),
+            "class": describe_ei_class(self.elf.header.e_ident["EI_CLASS"]),
+            "data": describe_ei_data(self.elf.header.e_ident["EI_DATA"]),
+            "ei_version": describe_ei_version(self.elf.header.e_ident["EI_VERSION"]),
+            "os_abi": describe_ei_osabi(self.elf.header.e_ident["EI_OSABI"]),
+            "abi_version": self.elf.header.e_ident["EI_ABIVERSION"],
+            "type": describe_e_type(self.elf.header["e_type"]),
+            "machine": describe_e_machine(self.elf.header["e_machine"]),
+            "version": describe_e_version_numeric(self.elf.header["e_version"]),
+            "entry_point_address": self._print_addr(self.elf.header["e_entry"]),
+            "start_of_program_headers": self.elf.header["e_phoff"],
+            "start_of_section_headers": self.elf.header["e_shoff"],
+            "flags": "{}{}".format(
+                self._print_addr(self.elf.header["e_flags"]),
+                self._decode_flags(self.elf.header["e_flags"])
+            ),
+            "size_of_this_header": self.elf.header["e_ehsize"],
+            "size_of_program_headers": self.elf.header["e_phentsize"],
+            "number_of_program_headers": self.elf.header["e_phnum"],
+            "size_of_section_headers": self.elf.header["e_shentsize"],
+            "number_of_section_headers": self.elf.header["e_shnum"],
+            "section_header_string_table_index": self.elf.header["e_shstrndx"],
+        }
+
+    def _get_section_headers(self):
+        section_headers = []
+        for section in self.elf.iter_sections():
+            section_headers.append({
+                "name": section.name,
+                "type": describe_sh_type(section["sh_type"]),
+                "addr": self._print_addr(section["sh_addr"]),
+                "size": section["sh_size"],
+            })
+        return section_headers
+
+    def _get_program_headers(self):
+        program_headers = []
+        for segment in self.elf.iter_segments():
+            program_headers.append({
+                "type": describe_p_type(segment["p_type"]),
+                "addr": self._print_addr(segment["p_vaddr"]),
+                "flags": describe_p_flags(segment["p_flags"]).strip(),
+                "size": segment["p_memsz"],
+            })
+        return program_headers
+
+    def _get_dynamic_tags(self):
+        dynamic_tags = []
+        for section in self.elf.iter_sections():
+            if not isinstance(section, DynamicSection):
+                continue
+            for tag in section.iter_tags():
+                dynamic_tags.append({
+                    "tag": self._print_addr(
+                        ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
+                    ),
+                    "type": tag.entry.d_tag[3:],
+                    "value": self._parse_tag(tag),
+                })
+        return dynamic_tags
+
+    def _get_symbol_tables(self):
+        symbol_tables = []
+        for section in self.elf.iter_sections():
+            if not isinstance(section, SymbolTableSection):
+                continue
+            for nsym, symbol in enumerate(section.iter_symbols()):
+                symbol_tables.append({
+                    "value": self._print_addr(symbol["st_value"]),
+                    "type": describe_symbol_type(symbol["st_info"]["type"]),
+                    "bind": describe_symbol_bind(symbol["st_info"]["bind"]),
+                    "ndx_name": symbol.name,
+                })
+        return symbol_tables
+
+    def _get_relocations(self):
+        relocations = []
+        for section in self.elf.iter_sections():
+            if not isinstance(section, RelocationSection):
+                continue
+            section_relocations = []
+            for rel in section.iter_relocations():
+                relocation = {
+                    "offset": self._print_addr(rel["r_offset"]),
+                    "info": self._print_addr(rel["r_info"]),
+                    "type": describe_reloc_type(rel["r_info_type"], self.elf),
+                    "value": "",
+                    "name": ""
+                }
+
+                if rel["r_info_sym"] != 0:
+                    symtable = self.elf.get_section(section["sh_link"])
+                    symbol = symtable.get_symbol(rel["r_info_sym"])
+                    # Some symbols have zero "st_name", so instead use
+                    # the name of the section they point at
+                    if symbol["st_name"] == 0:
+                        symsec = self.elf.get_section(symbol["st_shndx"])
+                        symbol_name = symsec.name
+                    else:
+                        symbol_name = symbol.name
+
+                    relocation["value"] = self._print_addr(symbol["st_value"])
+                    relocation["name"] = symbol_name
+
+                if relocation not in section_relocations:
+                    section_relocations.append(relocation)
+
+            relocations.append({
+                "name": section.name,
+                "entries": section_relocations,
+            })
+        return relocations
+
+    def _get_notes(self):
+        notes = []
+        for segment in self.elf.iter_segments():
+            if not isinstance(segment, NoteSegment):
+                continue
+            for note in segment.iter_notes():
+                notes.append({
+                    "owner": note["n_name"],
+                    "size": self._print_addr(note["n_descsz"]),
+                    "note": describe_note(note),
+                    "name": note["n_name"],
+                })
+        return notes
+
+    def _print_addr(self, addr):
+        fmt = "0x{0:08x}" if self.elf.elfclass == 32 else "0x{0:016x}"
+        return fmt.format(addr)
+
+    def _decode_flags(self, flags):
+        description = ""
+        if self.elf["e_machine"] == "EM_ARM":
+            if flags & E_FLAGS.EF_ARM_HASENTRY:
+                description = ", has entry point"
+
+            version = flags & E_FLAGS.EF_ARM_EABIMASK
+            if version == E_FLAGS.EF_ARM_EABI_VER5:
+                description = ", Version5 EABI"
+        elif self.elf["e_machine"] == "EM_MIPS":
+            if flags & E_FLAGS.EF_MIPS_NOREORDER:
+                description = ", noreorder"
+            if flags & E_FLAGS.EF_MIPS_CPIC:
+                description = ", cpic"
+            if not (flags & E_FLAGS.EF_MIPS_ABI2) and not (flags & E_FLAGS.EF_MIPS_ABI_ON32):
+                description = ", o32"
+            if (flags & E_FLAGS.EF_MIPS_ARCH) == E_FLAGS.EF_MIPS_ARCH_1:
+                description = ", mips1"
+
+        return description
+
+    def _parse_tag(self, tag):
+        if tag.entry.d_tag == "DT_NEEDED":
+            parsed = "Shared library: [%s]" % tag.needed
+        elif tag.entry.d_tag == "DT_RPATH":
+            parsed = "Library rpath: [%s]" % tag.rpath
+        elif tag.entry.d_tag == "DT_RUNPATH":
+            parsed = "Library runpath: [%s]" % tag.runpath
+        elif tag.entry.d_tag == "DT_SONAME":
+            parsed = "Library soname: [%s]" % tag.soname
+        elif tag.entry.d_tag.endswith(("SZ", "ENT")):
+            parsed = "%i (bytes)" % tag["d_val"]
+        elif tag.entry.d_tag.endswith(("NUM", "COUNT")):
+            parsed = "%i" % tag["d_val"]
+        elif tag.entry.d_tag == "DT_PLTREL":
+            s = describe_dyn_tag(tag.entry.d_val)
+            if s.startswith("DT_"):
+                s = s[3:]
+            parsed = "%s" % s
+        else:
+            parsed = self._print_addr(tag["d_val"])
+
+        return parsed
+
 def _pdf_worker(filepath):
     return PdfDocument(filepath).run()
 
@@ -779,6 +1067,10 @@ class Static(Processing):
             ext = None
 
         package = self.task.get("package")
+
+        if package == "generic" or ext == "elf" or "ELF" in f.get_type():
+            static.update(ELF(f.file_path).run())
+            static["keys"] = f.get_keys()
 
         if package == "exe" or ext == "exe" or "PE32" in f.get_type():
             static.update(PortableExecutable(f.file_path).run())

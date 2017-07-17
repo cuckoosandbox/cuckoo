@@ -55,6 +55,10 @@ class TestInit(object):
 
         os.environ["VIRTUAL_ENV"] = venv
 
+    def test_venv_new_unicode(self):
+        set_cwd(tempfile.mkdtemp(u"a\u202eb"))
+        write_supervisor_conf(None)
+
     def test_cuckoo_init(self):
         """Tests that 'cuckoo init' works with a new CWD."""
         with pytest.raises(SystemExit):

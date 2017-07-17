@@ -10,7 +10,7 @@ documentation.
 
     requirements
     installation
-    routing
     cwd
     configuration
+    routing
     configuration_android

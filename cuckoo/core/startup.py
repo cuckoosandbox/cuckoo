@@ -194,53 +194,52 @@ def init_modules():
             else:
                 log.debug("\t |-- %s", entry.__name__)
 
-def index_yara():
-    """Generates index for yara signatures."""
+def init_yara():
+    """Initialize & load/compile Yara rules."""
     log.debug("Initializing Yara...")
-
-    indexed = []
     for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
-        # Check if there is a directory for the given category.
         dirpath = cwd("yara", category)
         if not os.path.exists(dirpath):
+            log.warning("Missing Yara directory: %s?", dirpath)
             continue
 
-        # Populate the index Yara file for this category.
-        with open(cwd("yara", "index_%s.yar" % category), "wb") as f:
-            for entry in os.listdir(dirpath):
-                if entry.endswith((".yar", ".yara")):
-                    f.write("include \"%s\"\n" % os.path.join(dirpath, entry))
-                    indexed.append((category, entry))
+        rules, indexed = {}, []
+        for dirpath, dirnames, filenames in os.walk(dirpath, followlinks=True):
+            for filename in filenames:
+                if not filename.endswith((".yar", ".yara")):
+                    continue
 
-    indexed = sorted(indexed)
-    for category, entry in indexed:
-        if (category, entry) == indexed[-1]:
-            log.debug("\t `-- %s %s", category, entry)
-        else:
-            log.debug("\t |-- %s %s", category, entry)
+                filepath = os.path.join(dirpath, filename)
 
-def init_yara(index):
-    """Initialize & load/compile Yara rules."""
-    if index:
-        index_yara()
+                try:
+                    # TODO Once Yara obtains proper Unicode filepath support we
+                    # can remove this check. See also this Github issue:
+                    # https://github.com/VirusTotal/yara-python/issues/48
+                    assert len(str(filepath)) == len(filepath)
+                except (UnicodeEncodeError, AssertionError):
+                    log.warning(
+                        "Can't load Yara rules at %r as Unicode filepaths are "
+                        "currently not supported in combination with Yara!",
+                        filepath
+                    )
+                    continue
 
-    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
-        rulepath = cwd("yara", "index_%s.yar" % category)
-        if not os.path.exists(rulepath) and not index:
-            raise CuckooStartupError(
-                "You must run the Cuckoo daemon before being able to run "
-                "this utility, as otherwise any potentially available Yara "
-                "rules will not be taken into account (yes, also if you "
-                "didn't configure any Yara rules)!"
-            )
+                rules["rule_%s_%d" % (category, len(rules))] = filepath
+                indexed.append(filename)
 
         try:
-            File.yara_rules[category] = yara.compile(rulepath)
+            File.yara_rules[category] = yara.compile(filepaths=rules)
         except yara.Error as e:
             raise CuckooStartupError(
                 "There was a syntax error in one or more Yara rules: %s" % e
             )
-    return True
+
+        indexed = sorted(indexed)
+        for entry in indexed:
+            if (category, entry) == indexed[-1]:
+                log.debug("\t `-- %s %s", category, entry)
+            else:
+                log.debug("\t |-- %s %s", category, entry)
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

@@ -202,4 +202,10 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/scripts/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/shellcode/.gitignore
 
 # TBD release
+acf60a522392ef294f6664c32022cf5a52012f44 analyzer/windows/lib/common/defines.py
+9486762bbe1fa60c67b17887f13be0b37ebfcfcd analyzer/windows/lib/common/results.py
+4d6aedcee60ac3e07c2bb5c1d779297caa0e262d analyzer/windows/modules/auxiliary/human.py
+b5708b99583b10f7d29024127d3da8a48c662361 analyzer/windows/modules/packages/doc.py
 b70c7d3e30781a4858f20d0276b6bbccd5993c37 analyzer/windows/modules/packages/pdf.py
+3b0cba3b540f894aebd911889f4a7cd617018647 analyzer/windows/modules/packages/ppt.py
+32a3365de602fe4c98e778613510450b17d8ada1 analyzer/windows/modules/packages/xls.py
