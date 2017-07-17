@@ -316,8 +316,12 @@ var ProcessBehaviorView = function () {
       this._$.find('[data-placeholder="process-detail-pid"]').text(data.pid);
       this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
       this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
+
       // render pagination bar
-      this.renderBar(data.pid, data.pages, 1);
+
+      // get the current total pages from the static rendered pagination info script tag
+      // and only render the bar if we have this info
+      this.renderBar(data.pid, 1);
     }
 
     // renders a table from the html string in the response.
@@ -343,7 +347,7 @@ var ProcessBehaviorView = function () {
 
   }, {
     key: 'renderBar',
-    value: function renderBar(pid, total, current) {
+    value: function renderBar(pid, current) {
 
       var self = this;
 
@@ -353,7 +357,7 @@ var ProcessBehaviorView = function () {
 
       // create a new bar
       this._bar = new PaginationBar({
-        totalPages: total,
+        totalPages: window.PROCESS_TREE_PAGINATION_INFO[pid],
         container: self._$.find('.process-spec--pagination'),
         onPaginate: function onPaginate(page) {
           self.currentPage = page;
