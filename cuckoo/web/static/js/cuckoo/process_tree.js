@@ -164,27 +164,6 @@ var PaginationBar = function () {
         return $page.append($link);
       }
 
-      // bundles the page items
-      // for(var p = config.currentPage; p <= config.currentPage + config.display; p++) {
-      //
-      //   if(p < config.totalPages) {
-      //     var $page = _page(p);
-      //     html.append($page);
-      //   }
-      //
-      //   if(p == config.currentPage + config.display) {
-      //     if(p < config.totalPages) {
-      //       html.append(_page('...'));
-      //       html.append(_page(config.totalPages));
-      //     }
-      //   }
-      //
-      // }
-
-      // from left to right, there should always be n items, with the active one in the middle.
-      // n = config.totalPages
-      // active = this.currentPage
-
       // appends the first page
       html.append(_page(1));
 
