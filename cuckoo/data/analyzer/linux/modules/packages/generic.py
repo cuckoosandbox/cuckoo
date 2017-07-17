@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-
 from lib.common.abstracts import Package
 
 class Generic(Package):

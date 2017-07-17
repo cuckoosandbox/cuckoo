@@ -71,6 +71,29 @@ class STAP(Auxiliary):
         stderrfd = open("strace/strace.stderr", "wb")
         self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
         self.fallback_strace = True
+        strace_start = time.time()
+
+        traced_fn = "strace/straced.%u" % os.getpid()
+        while True:
+            time.sleep(1)
+
+            if (time.time() - strace_start) > 10:
+                # timeout; something wrong
+                log.info("STAP aux module timed out to run strace.")
+                break
+
+            if not os.path.exists(traced_fn):
+                # file has not been generated yet
+                continue
+
+            try:
+                if os.path.getsize(traced_fn) > 0: break
+
+            except Exception as e:
+                # something wrong
+                log.warning(e)
+
+
         return True
 
     def get_pids(self):

@@ -15,7 +15,7 @@ from cuckoo.core.database import Database
 from cuckoo.core.extract import ExtractManager
 
 from .platform.windows import WindowsMonitor
-from .platform.linux import LinuxSystemTap
+from .platform.linux import LinuxSystemTap, LinuxStrace
 
 log = logging.getLogger(__name__)
 
@@ -223,7 +223,12 @@ class ExtractScripts(BehaviorHandler):
         self.ex = ExtractManager.for_task(self.analysis.task["id"])
 
     def handle_event(self, process):
-        command = self.scr.parse_command(process["command_line"])
+        try:
+            command = self.scr.parse_command(process["command_line"])
+        except:
+            #couldn't make this work on linux
+            command = ""
+
         if command and command.get_script():
             self.ex.push_script(process, command)
 
@@ -300,6 +305,7 @@ class BehaviorAnalysis(Processing):
             # platform specific stuff
             WindowsMonitor(self),
             LinuxSystemTap(self),
+            LinuxStrace(self),
 
             # Reboot information.
             RebootInformation(self),

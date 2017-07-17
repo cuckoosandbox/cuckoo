@@ -336,6 +336,7 @@ class GuestManager(object):
     def determine_analyzer_path(self):
         """Determine the path of the analyzer. Basically creating a temporary
         directory in the systemdrive, i.e., C:\\."""
+
         systemdrive = self.determine_system_drive()
 
         options = parse_options(self.options["options"])
@@ -467,8 +468,15 @@ class GuestManager(object):
         # Allow Auxiliary modules to prepare the Guest.
         self.aux.callback("prepare_guest")
 
+        # os.sep can't be used as on windows it will return incorrect sep for nix
+        if self.platform == "linux" or self.platform == "darwin":
+            tempdir = "/tmp"
+        else:
+            tempdir = self.environ["TEMP"]
+
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
+
             data = {
                 "filepath": os.path.join(
                     self.determine_temp_path(), options["file_name"]
