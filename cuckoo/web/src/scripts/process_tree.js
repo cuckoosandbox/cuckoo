@@ -263,6 +263,7 @@ class ProcessBehaviorView {
       self._tags.children().removeClass('active');
     });
 
+    // connect the filtered api
     this._tags.find('[href^="filter:"]').bind('click', function(e) {
       e.preventDefault();
 
