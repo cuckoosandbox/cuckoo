@@ -34,12 +34,6 @@ class Mongo(object):
         self.password = config("reporting:mongodb:password")
         return self.enabled
 
-    def drop(self):
-        self.client.drop_database(self.database)
-
-    def close(self):
-        self.client.close()
-
     def connect(self):
         if not self.enabled:
             return
