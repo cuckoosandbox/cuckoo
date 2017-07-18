@@ -221,6 +221,8 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 # TBD release
 0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
 d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py
+4666fdb85f4b30b21bbc83d42210b6fb2964ffe6 analyzer/windows/lib/core/packages.py
+a3972ab99da81061920481af1a4808f21a191adf analyzer/windows/modules/packages/hta.py
 eaffef3b08fd1069ba2d3c977015b598fa150941 signatures/__init__.py
 4db64d1270e1417f2384043c8f956bea8c6ec830 signatures/linux/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
