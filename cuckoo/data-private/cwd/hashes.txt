@@ -5,6 +5,7 @@
 809fde3cc879a33bd669aaec8dc0b5e2e8ca385e signatures/cross/__init__.py
 9d1015218b76c396f5c2454bd9627fd9adef414b signatures/darwin/__init__.py
 f128dbf6ac5c90dbed99f9626d58b63b133b7f8d signatures/extractor/__init__.py
+335390b78fa1c1ffdf530874819ffcb16dab2174 signatures/linux/__init__.py
 1de5e62f213fa0e67af9c1a8ac886a43a08787a2 signatures/network/__init__.py
 069e496f3820f73fbd36f7f195dad989e4e0d863 signatures/windows/__init__.py
 68f1176dee909f2743bab5ee569cc82ab1e3ef5a signatures/windows/creates_exe.py
@@ -220,5 +221,7 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 # TBD release
 0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
 d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py
+eaffef3b08fd1069ba2d3c977015b598fa150941 signatures/__init__.py
+4db64d1270e1417f2384043c8f956bea8c6ec830 signatures/linux/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/dumpmem/.gitignore
