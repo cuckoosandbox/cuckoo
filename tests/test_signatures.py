@@ -19,7 +19,7 @@ from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
 
 def test_signature_version():
-    rs = RunSignatures({})
+    rs = RunSignatures
 
     class sig_normal(object):
         name = "sig_normal"
@@ -58,20 +58,20 @@ def test_signature_version():
     rs.version = "2.1.0"
     assert not rs.check_signature_version(sig_obsolete)
 
-def test_should_enable_signature():
-    rs = RunSignatures({})
+def test_should_load_signature():
+    rs = RunSignatures
     rs.version = "2.0.0"
 
     class sig_not_enabled(object):
         enabled = False
 
-    assert not rs.should_enable_signature(sig_not_enabled)
+    assert not rs.should_load_signature(sig_not_enabled)
 
     class sig_empty_name(object):
         enabled = True
         name = None
 
-    assert not rs.should_enable_signature(sig_empty_name)
+    assert not rs.should_load_signature(sig_empty_name)
 
     class sig_enable_false(object):
         enabled = True
@@ -82,7 +82,7 @@ def test_should_enable_signature():
         def enable(self):
             return False
 
-    assert not rs.should_enable_signature(sig_enable_false())
+    assert not rs.should_load_signature(sig_enable_false())
 
     class sig_enable_true(object):
         enabled = True
@@ -94,25 +94,69 @@ def test_should_enable_signature():
         def enable(self):
             return True
 
-    assert rs.should_enable_signature(sig_enable_true())
+    assert rs.should_load_signature(sig_enable_true())
+
+def test_should_enable_signature_empty_platform():
+    rs = RunSignatures({})
 
     class sig_empty_platform(object):
-        enabled = True
-        name = "empty_platform"
-        minimum = "2.0.0"
-        maximum = None
         platform = None
 
     assert rs.should_enable_signature(sig_empty_platform())
 
     class sig_other_platform(object):
-        enabled = True
-        name = "other_platform"
-        minimum = "2.0.0"
-        maximum = None
         platform = "nope"
 
     assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert rs.should_enable_signature(sig_windows_platform())
+
+def test_should_enable_signature_linux_platform():
+    rs = RunSignatures({
+        "info": {
+            "platform": "linux",
+        },
+    })
+
+    class sig_empty_platform(object):
+        platform = None
+
+    assert rs.should_enable_signature(sig_empty_platform())
+
+    class sig_other_platform(object):
+        platform = "nope"
+
+    assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert not rs.should_enable_signature(sig_windows_platform())
+
+def test_should_enable_signature_windows_platform():
+    rs = RunSignatures({
+        "info": {
+            "platform": "windows",
+        },
+    })
+
+    class sig_empty_platform(object):
+        platform = None
+
+    assert rs.should_enable_signature(sig_empty_platform())
+
+    class sig_other_platform(object):
+        platform = "nope"
+
+    assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert rs.should_enable_signature(sig_windows_platform())
 
 def test_signature_order():
     class sig(object):
@@ -139,6 +183,7 @@ def test_signature_order():
 
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig1, sig2, sig3
+        RunSignatures.init_once()
         rs = RunSignatures({})
 
     assert isinstance(rs.signatures[0], sig2)
@@ -163,6 +208,7 @@ class test_call_signature():
 
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig,
+        RunSignatures.init_once()
         rs = RunSignatures({})
 
     s1 = rs.signatures[0]

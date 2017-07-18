@@ -61,10 +61,11 @@ def test_init_tasks():
     assert Database().view_task(4).status == "reported"
     assert Database().view_task(5) is None
 
+@mock.patch("cuckoo.core.startup.RunSignatures")
 @mock.patch("cuckoo.reporting.elasticsearch.elastic")
 @mock.patch("cuckoo.reporting.mongodb.mongo")
 @mock.patch("cuckoo.core.startup.log")
-def test_init_modules(p, q, r):
+def test_init_modules(p, q, r, s):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     load_signatures()
@@ -78,6 +79,7 @@ def test_init_modules(p, q, r):
     r.index_time_pattern = "yearly"
 
     init_modules()
+    s.init_once.assert_called_once()
 
     logs = "\n".join(logs)
     assert "KVM" in logs

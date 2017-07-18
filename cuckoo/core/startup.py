@@ -23,6 +23,7 @@ from cuckoo.core.database import (
 )
 from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
+from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd, version
 
@@ -193,6 +194,9 @@ def init_modules():
                 log.debug("\t `-- %s", entry.__name__)
             else:
                 log.debug("\t |-- %s", entry.__name__)
+
+    # Initialize the RunSignatures module with all available Signatures.
+    RunSignatures.init_once()
 
 def init_yara():
     """Initialize & load/compile Yara rules."""
