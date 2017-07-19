@@ -5,7 +5,7 @@
 import datetime
 import json
 
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 
 db = SQLAlchemy(session_options=dict(autoflush=True))
@@ -133,6 +133,10 @@ class Task(db.Model, Serializer):
         self.node_id = node_id
         self.task_id = task_id
         self.status = status
+
+    def assign_node(self, node_id):
+        self.status = Task.ASSIGNED
+        self.node_id = node_id
 
 class NodeStatus(db.Model, Serializer):
     """Node status monitoring database model."""

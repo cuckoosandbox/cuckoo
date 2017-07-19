@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -186,7 +186,7 @@ def task_post():
     if "file" not in request.files:
         return json_error(404, "No file has been provided")
 
-    args = dict(
+    kwargs = dict(
         package=request.form.get("package"),
         timeout=request.form.get("timeout"),
         priority=request.form.get("priority", 1),
@@ -207,7 +207,15 @@ def task_post():
     f.save(path)
     os.close(fd)
 
-    task = Task(path=path, filename=os.path.basename(f.filename), **args)
+    task = Task(path=path, filename=os.path.basename(f.filename), **kwargs)
+
+    node = request.form.get("node")
+    if node:
+        node = Node.query.filter_by(name=node, enabled=True).first()
+        if not node:
+            return json_error(404, "Node note found")
+        task.assign_node(node.id)
+
     db.session.add(task)
     db.session.commit()
     return jsonify(success=True, task_id=task.id)
