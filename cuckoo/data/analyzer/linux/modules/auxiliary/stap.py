@@ -46,10 +46,8 @@ class STAP(Auxiliary):
             path,
         ], stderr=subprocess.PIPE)
 
-        while True:
-            line = self.proc.stderr.readline()
-            if "systemtap_module_init() returned 0" in line:
-                break
+        while "systemtap_module_init() returned 0" not in self.proc.stderr.readline():
+            pass
 
         stap_stop = time.time()
         log.info("STAP aux module startup took %.2f seconds" % (stap_stop - stap_start))
