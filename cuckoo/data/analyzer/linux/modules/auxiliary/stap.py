@@ -78,6 +78,15 @@ class STAP(Auxiliary):
             return [self.proc.pid, ]
         return []
 
+    @staticmethod
+    def _upload_file(local, remote):
+        if os.path.exists(local):
+            nf = NetlogFile(remote)
+            with open(local, "rb") as f:
+                for chunk in f:
+                    nf.sock.sendall(chunk) # dirty direct send, no reconnecting
+            nf.close()
+
     def stop(self):
         try:
             r = self.proc.poll()
@@ -86,16 +95,7 @@ class STAP(Auxiliary):
         except Exception as e:
             log.warning("Exception killing stap: %s", e)
 
-        if os.path.exists("stap.log"):
-            # now upload the logfile
-            nf = NetlogFile("logs/all.stap")
-
-            fd = open("stap.log", "rb")
-            for chunk in fd:
-                nf.sock.sendall(chunk) # dirty direct send, no reconnecting
-
-            fd.close()
-            nf.close()
+        self._upload_file("stap.log", "logs/all.stap")
 
         # in case we fell back to strace
         if os.path.exists("strace"):
@@ -104,13 +104,4 @@ class STAP(Auxiliary):
                 if fn == "straced.%u" % os.getpid(): continue
 
                 fp = os.path.join("strace", fn)
-
-                # now upload the logfile
-                nf = NetlogFile("logs/%s" % fn)
-
-                fd = open(fp, "rb")
-                for chunk in fd:
-                    nf.sock.sendall(chunk) # dirty direct send, no reconnecting
-
-                fd.close()
-                nf.close()
+                self._upload_file(fp, "logs/%s" % fn)
