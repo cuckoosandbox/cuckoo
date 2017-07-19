@@ -43,18 +43,6 @@ class LinuxSystemTap(BehaviorHandler):
         self.forkmap = {}
         self.matched = False
 
-        self._check_for_probelkm()
-
-    def _check_for_probelkm(self):
-        path_lkm = os.path.join(self.analysis.logs_path, "all.lkm")
-        if os.path.exists(path_lkm):
-            lines = open(path_lkm).readlines()
-
-            forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
-            self.forkmap = dict((j, i) for i, j in reduce(lambda x, y: x+y, forks, []))
-
-            # self.results["source"].append("probelkm")
-
     def handles_path(self, path):
         if path.endswith(".stap"):
             self.matched = True
