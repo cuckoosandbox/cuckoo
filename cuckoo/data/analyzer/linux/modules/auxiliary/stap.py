@@ -20,7 +20,6 @@ class STAP(Auxiliary):
 
     def __init__(self):
         self.config = Config(cfg="analysis.conf")
-        self.fallback_strace = False
 
     def start(self):
         # helper function locating the stap module
@@ -42,9 +41,9 @@ class STAP(Auxiliary):
         elif has_stap("."):
             path = has_stap(".")
         else:
-            # we can't find the stap module, fallback to strace
-            log.warning("Could not find STAP LKM, falling back to strace.")
-            return self.start_strace()
+            # we can't find the stap module, abort
+            log.warning("Could not find STAP LKM, aborting systemtap analysis.")
+            return False
 
         stap_start = time.time()
         stderrfd = open("stap.stderr", "wb")
@@ -64,18 +63,7 @@ class STAP(Auxiliary):
         log.info("STAP aux module startup took %.2f seconds" % (stap_stop - stap_start))
         return True
 
-    def start_strace(self):
-        try: os.mkdir("strace")
-        except: pass # don't worry, it exists
-
-        stderrfd = open("strace/strace.stderr", "wb")
-        self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
-        self.fallback_strace = True
-        return True
-
     def get_pids(self):
-        if self.fallback_strace:
-            return [self.proc.pid, ]
         return []
 
     @staticmethod
@@ -96,12 +84,3 @@ class STAP(Auxiliary):
             log.warning("Exception killing stap: %s", e)
 
         self._upload_file("stap.log", "logs/all.stap")
-
-        # in case we fell back to strace
-        if os.path.exists("strace"):
-            for fn in os.listdir("strace"):
-                # we don't need the logs from the analyzer python process itself
-                if fn == "straced.%u" % os.getpid(): continue
-
-                fp = os.path.join("strace", fn)
-                self._upload_file(fp, "logs/%s" % fn)
