@@ -31,7 +31,7 @@ class STAP(Auxiliary):
 
         # highest priority: if the vm config specifies the path
         if self.config.get("analyzer_stap_path", None) and os.path.exists(self.config.get("analyzer_stap_path")):
-            path = self.config.get("analyzer_lkm_path")
+            path = self.config.get("analyzer_stap_path")
         # next: if a module was uploaded with the analyzer for our platform
         elif os.path.exists(platform.machine()) and has_stap(platform.machine()):
             path = has_stap(platform.machine())
