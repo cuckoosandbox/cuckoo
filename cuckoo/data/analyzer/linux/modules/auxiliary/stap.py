@@ -39,10 +39,18 @@ class STAP(Auxiliary):
             return False
 
         stap_start = time.time()
-        stderrfd = open("stap.stderr", "wb")
-        self.proc = subprocess.Popen(["staprun", "-v", "-x", str(os.getpid()), "-o", "stap.log", path], stderr=stderrfd)
+        self.proc = subprocess.Popen([
+            "staprun", "-vv",
+            "-x", str(os.getpid()),
+            "-o", "stap.log",
+            path,
+        ], stderr=subprocess.PIPE)
 
-        time.sleep(10)
+        while True:
+            line = self.proc.stderr.readline()
+            if "systemtap_module_init() returned 0" in line:
+                break
+
         stap_stop = time.time()
         log.info("STAP aux module startup took %.2f seconds" % (stap_stop - stap_start))
         return True
