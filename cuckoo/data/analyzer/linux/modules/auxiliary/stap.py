@@ -6,7 +6,6 @@ import os
 import subprocess
 import time
 import logging
-import platform
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
@@ -14,12 +13,14 @@ from lib.core.config import Config
 
 log = logging.getLogger(__name__)
 
+
 class STAP(Auxiliary):
     """system-wide syscall trace with stap."""
-    priority = -10 # low prio to wrap tightly around the analysis
+    priority = -10  # low prio to wrap tightly around the analysis
 
     def __init__(self):
         self.config = Config(cfg="analysis.conf")
+        self.proc = None
 
     def start(self):
         # helper function locating the stap module
@@ -28,20 +29,12 @@ class STAP(Auxiliary):
             if only_stap: return os.path.join(p, only_stap[0])
             return False
 
-        # highest priority: if the vm config specifies the path
-        if self.config.get("analyzer_stap_path", None) and os.path.exists(self.config.get("analyzer_stap_path")):
-            path = self.config.get("analyzer_stap_path")
-        # next: if a module was uploaded with the analyzer for our platform
-        elif os.path.exists(platform.machine()) and has_stap(platform.machine()):
-            path = has_stap(platform.machine())
-        # next: default path inside the machine
+        path_cfg = self.config.get("analyzer_stap_path", None)
+        if path_cfg and os.path.exists(path_cfg):
+            path = path_cfg
         elif os.path.exists("/root/.cuckoo") and has_stap("/root/.cuckoo"):
             path = has_stap("/root/.cuckoo")
-        # next: generic module uploaded with the analyzer (single arch setup maybe?)
-        elif has_stap("."):
-            path = has_stap(".")
         else:
-            # we can't find the stap module, abort
             log.warning("Could not find STAP LKM, aborting systemtap analysis.")
             return False
 
@@ -49,22 +42,10 @@ class STAP(Auxiliary):
         stderrfd = open("stap.stderr", "wb")
         self.proc = subprocess.Popen(["staprun", "-v", "-x", str(os.getpid()), "-o", "stap.log", path], stderr=stderrfd)
 
-        # read from stderr until the tap script is compiled
-        # while True:
-        #     if not self.proc.poll() is None:
-        #         break
-        #     line = self.proc.stderr.readline()
-        #     print "DBG LINE", line
-        #     if "Pass 5: starting run." in line:
-        #         break
-
         time.sleep(10)
         stap_stop = time.time()
         log.info("STAP aux module startup took %.2f seconds" % (stap_stop - stap_start))
         return True
-
-    def get_pids(self):
-        return []
 
     @staticmethod
     def _upload_file(local, remote):
@@ -72,7 +53,7 @@ class STAP(Auxiliary):
             nf = NetlogFile(remote)
             with open(local, "rb") as f:
                 for chunk in f:
-                    nf.sock.sendall(chunk) # dirty direct send, no reconnecting
+                    nf.sock.sendall(chunk)  # dirty direct send, no reconnecting
             nf.close()
 
     def stop(self):
