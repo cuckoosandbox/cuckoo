@@ -10,6 +10,7 @@ import requests
 import responses
 import tempfile
 
+from cuckoo.common.files import Files
 from cuckoo.distributed import api, app, db, instance
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
@@ -227,3 +228,18 @@ class TestDatabase(flask_testing.TestCase):
         assert m1.platform == "windows" and m1.tags == ["sometags"]
         assert m2.platform == "windows" and m2.tags == ["notags"]
         assert new0.platform == "linux" and new0.tags == ["thisistag"]
+
+    def test_task_delete(self):
+        filepath = Files.temp_put("foobar")
+        assert os.path.exists(filepath)
+
+        self.db.session.add(db.Task(filepath, status=db.Task.FINISHED))
+        assert self.client.delete("/api/task/1").json == {
+            "success": True,
+        }
+        assert not os.path.exists(filepath)
+        assert self.client.delete("/api/task/1").json == {
+            "success": False,
+            "message": "Task already deleted",
+        }
+        assert not os.path.exists(filepath)

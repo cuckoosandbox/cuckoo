@@ -291,6 +291,9 @@ def task_delete(task_id):
     if task is None:
         return json_error(404, "Task not found")
 
+    if task.status == Task.DELETED:
+        return jsonify(success=False, message="Task already deleted")
+
     # Remove all available reports.
     dirpath = os.path.join(settings.reports_directory, "%d" % task_id)
     for report_format in settings.report_formats:

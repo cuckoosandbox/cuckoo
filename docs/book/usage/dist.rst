@@ -86,7 +86,7 @@ Following are all RESTful resources. Also make sure to check out the
 +-----------------------------------+---------------------------------------------------------------+
 | ``PUT`` :ref:`node_put`           | Update basic information of a node.                           |
 +-----------------------------------+---------------------------------------------------------------+
-| ``POST`` :ref:`node_refresh`      | Refresh a Cuckoo nodes metadata.                                   |
+| ``POST`` :ref:`node_refresh`      | Refresh a Cuckoo nodes metadata.                              |
 +-----------------------------------+---------------------------------------------------------------+
 | ``DELETE`` :ref:`node_delete`     | Disable (not completely remove!) a node.                      |
 +-----------------------------------+---------------------------------------------------------------+
@@ -447,3 +447,26 @@ Distributed Cuckoo Worker is temporary disabled, i.e.,
     $ psql -c "UPDATE SET status = 'pending' WHERE status = 'processing' AND node_id = 123"
     $ salt cuckoo1 state.apply cuckoo.clean
     $ salt cuckoo1 state.apply cuckoo.start
+
+In order to upgrade the Distributed Cuckoo master, one may want to perform the
+following steps::
+
+    $ /etc/init.d/uwsgi stop
+    $ pip uninstall -y cuckoo
+    $ pip install cuckoo==2.0.0         # Specify your version here.
+    $ pip install Cuckoo-2.0.0.tar.gz   # Or use a locally archived build.
+    $ cuckoo distributed migrate
+    $ supervisorctl -c ~/.cuckoo/supervisord.conf restart distributed
+    $ /etc/init.d/uwsgi start
+    $ /etc/init.d/nginx restart
+
+In order to test your entire Cuckoo cluster, i.e., every machine on every
+Cuckoo node, one may take the ``stuff/distributed/cluster-test.py`` script as
+an example. As-is it allows one to check for an active internet connection in
+each and every configured machine in the cluster. This script may be used to
+identify machines that are incorrect or have been corrupted in one way or
+another. Example usage may look as follows::
+
+    # Assuming Distributed Cuckoo listens on localhost and that you want to
+    # run the 'internet' script (see also the source of cluster-test.py).
+    $ python stuff/distributed/cluster-test.py localhost -s internet
