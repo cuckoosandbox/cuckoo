@@ -12,6 +12,7 @@ from cuckoo.common.abstracts import BehaviorHandler
 
 log = logging.getLogger(__name__)
 
+
 class FilteredProcessLog(list):
     def __init__(self, eventstream, **kwfilters):
         self.eventstream = eventstream
@@ -28,6 +29,7 @@ class FilteredProcessLog(list):
 
     def __nonzero__(self):
         return True
+
 
 class LinuxSystemTap(BehaviorHandler):
     """Parses systemtap generated plaintext logs (see
@@ -85,6 +87,7 @@ class LinuxSystemTap(BehaviorHandler):
 
         self.processes.sort(key=lambda process: process["first_seen"])
         return self.processes
+
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
