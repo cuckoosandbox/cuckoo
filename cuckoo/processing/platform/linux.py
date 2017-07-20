@@ -39,7 +39,6 @@ class LinuxSystemTap(BehaviorHandler):
         super(LinuxSystemTap, self).__init__(*args, **kwargs)
 
         self.processes = []
-        self.pids_seen = set()
         self.forkmap = {}
         self.matched = False
 
@@ -51,31 +50,34 @@ class LinuxSystemTap(BehaviorHandler):
     def parse(self, path):
         parser = StapParser(open(path))
 
-        for event in parser:
-            pid = event["pid"]
-            if event["api"] == "clone":
-                self.forkmap[int(event["return_value"])] = pid
-            if pid not in self.pids_seen: ######
-                self.pids_seen.add(pid)
-                ppid = self.forkmap.get(pid, -1)
+        for syscall in parser:
+            # syscall specific hooks
+            self.hook(syscall)
 
-                process = {
+            pid = syscall["pid"]
+            if self.is_newpid(pid):
+                p_pid = self.forkmap.get(pid, -1)
+                calls = FilteredProcessLog(parser, pid=pid)
+                self.processes.append({
+                    "type": "process",
                     "pid": pid,
-                    "ppid": ppid,
-                    "process_name": event["process_name"],
-                    "first_seen": event["time"],
+                    "ppid": p_pid,
+                    "process_name": syscall["process_name"],
+                    "first_seen": syscall["time"],
                     "command_line": "",  # TODO: implement execve command_line setting handler
-                }
+                    "calls": calls,
+                })
 
-                # create a process event as we don't have those with linux+systemtap
-                pevent = dict(process)
-                pevent["type"] = "process"
-                yield pevent
+        return self.processes
 
-                process["calls"] = FilteredProcessLog(parser, pid=pid)
-                self.processes.append(process)
+    def hook(self, syscall):
+        if syscall["api"] == "clone":
+            self.forkmap[int(syscall["return_value"])] = syscall["pid"]
+        if syscall["api"] == "execve":
+            pass  # TODO: figure out return value based on execve command_line behavior
 
-            yield event
+    def is_newpid(self, pid):
+        return not any(p["pid"] == pid for p in self.processes)
 
     def run(self):
         if not self.matched:
