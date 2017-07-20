@@ -102,14 +102,52 @@ def node_put(name):
         node.name = request.form["name"]
 
     if "ip" in request.form or "url" in request.form:
-        node.url = \
-            node_url(ip=request.form.get("ip"), url=request.form.get("url"))
+        node.url = node_url(
+            ip=request.form.get("ip"), url=request.form.get("url")
+        )
 
     if "enabled" in request.form:
         node.enabled = bool(int(request.form["enabled"]))
 
     db.session.commit()
     return jsonify(success=True)
+
+@blueprint.route("/node/<string:name>/refresh", methods=["POST"])
+def node_refresh(name):
+    node = Node.query.filter_by(name=name).first()
+    if not node:
+        return json_error(404, "No such node")
+
+    try:
+        machines = list_machines(node.url)
+    except Exception as e:
+        return json_error(404, "Error connecting to Cuckoo node: %s", e)
+
+    machines_existing = {}
+    for machine in node.machines:
+        machine_values = machine.name, machine.platform
+        machines_existing[machine_values] = machine
+
+    # Add new machines.
+    for machine in machines:
+        machine_values = machine["name"], machine["platform"]
+        if machine_values in machines_existing:
+            # Update the associated tags for this machine.
+            machines_existing[machine_values].tags = machine["tags"]
+            del machines_existing[machine_values]
+            continue
+
+        m = Machine(name=machine["name"], platform=machine["platform"],
+                    tags=machine["tags"])
+        node.machines.append(m)
+        db.session.add(m)
+
+    # Unlink older machines.
+    for machine in machines_existing.values():
+        node.machines.remove(machine)
+
+    db.session.commit()
+    return jsonify(success=True, machines=machines)
 
 @blueprint.route("/node/<string:name>", methods=["DELETE"])
 def node_delete(name):

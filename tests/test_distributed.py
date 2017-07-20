@@ -174,3 +174,56 @@ class TestDatabase(flask_testing.TestCase):
         t = db.Task.query.get(2)
         assert t.status == db.Task.ASSIGNED
         assert t.node_id == 1
+
+    @mock.patch("cuckoo.distributed.views.api.list_machines")
+    def test_node_refresh(self, p):
+        node = db.Node("node0", "http://localhost:8090/", "normal")
+        self.db.session.add(node)
+        m0 = db.Machine("m0", "windows", ["notags"])
+        m1 = db.Machine("m1", "windows", ["notags"])
+        m2 = db.Machine("m2", "windows", ["notags"])
+        self.db.session.add(m0)
+        self.db.session.add(m1)
+        self.db.session.add(m2)
+        node.machines.append(m0)
+        node.machines.append(m1)
+        node.machines.append(m2)
+        self.db.session.commit()
+
+        m0, m1, m2 = db.Machine.query.all()
+        assert m0.name == "m0" and m0.tags == ["notags"]
+        assert m1.name == "m1" and m1.tags == ["notags"]
+        assert m2.name == "m2" and m2.tags == ["notags"]
+
+        p.return_value = [{
+            # Existing machine.
+            "name": "m0", "platform": "windows", "tags": ["notags"],
+        }, {
+            # Updated tags.
+            "name": "m1", "platform": "windows", "tags": ["sometags"],
+        }, {
+            # New machine.
+            "name": "new0", "platform": "linux", "tags": ["thisistag"],
+        }]
+        r = self.client.post("/api/node/node0/refresh")
+        assert r.status_code == 200
+        assert r.json == {
+            "success": True, "machines": [{
+                "name": "m0", "platform": "windows", "tags": ["notags"],
+            }, {
+                "name": "m1", "platform": "windows", "tags": ["sometags"],
+            }, {
+                "name": "new0", "platform": "linux", "tags": ["thisistag"],
+            }],
+        }
+
+        m0, m1, m2, new0 = db.Machine.query.all()
+        assert m0.name == "m0" and m0.node_id == 1
+        assert m1.name == "m1" and m1.node_id == 1
+        assert m2.name == "m2" and m2.node_id is None
+        assert new0.name == "new0" and new0.node_id == 1
+
+        assert m0.platform == "windows" and m0.tags == ["notags"]
+        assert m1.platform == "windows" and m1.tags == ["sometags"]
+        assert m2.platform == "windows" and m2.tags == ["notags"]
+        assert new0.platform == "linux" and new0.tags == ["thisistag"]
