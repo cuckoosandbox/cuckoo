@@ -64,6 +64,7 @@ class LinuxSystemTap(BehaviorHandler):
                     "ppid": ppid,
                     "process_name": event["process_name"],
                     "first_seen": event["time"],
+                    "command_line": "",  # TODO: implement execve command_line setting handler
                 }
 
                 # create a process event as we don't have those with linux+systemtap
