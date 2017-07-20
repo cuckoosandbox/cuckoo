@@ -53,7 +53,9 @@ class LinuxSystemTap(BehaviorHandler):
 
         for event in parser:
             pid = event["pid"]
-            if pid not in self.pids_seen:
+            if event["api"] == "clone":
+                self.forkmap[int(event["return_value"])] = pid
+            if pid not in self.pids_seen: ######
                 self.pids_seen.add(pid)
                 ppid = self.forkmap.get(pid, -1)
 
