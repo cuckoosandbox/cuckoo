@@ -1,22 +1,38 @@
 class Loader {
 
-    constructor(el) {
+    constructor(el, options = {}) {
         this.el = el ? el : $('.loading');
         this.message = '';
         this.loading = false;
+        this.options = $.extend({
+          animate: false,
+          duration: 200
+        }, options);
+
+        console.log(this.options);
     }
 
     start(msg) {
         if(msg) this.message = msg;
         this.setText();
         this.loading = true;
-        this.el.show();
+
+        if(this.options.animate) {
+          this.el.slideDown(this.options.duration);
+        } else {
+          this.el.show();
+        }
     }
 
     stop() {
         this.clearText();
         this.loading = false;
-        this.el.hide();
+
+        if(this.options.animate) {
+          this.el.slideUp(this.options.duration);
+        } else {
+          this.el.hide();
+        }
     }
 
     toggle(msg) {

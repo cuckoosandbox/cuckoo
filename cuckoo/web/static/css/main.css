@@ -8906,7 +8906,7 @@ body.night .app-error__message
     background-color: #ed5151;
 }
 
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -13428,11 +13428,50 @@ body.night .flex-static__summary li
 .process-spec .unloaded
 {
     display: block;
+
+    padding: 40px 0;
+
+    background-color: #f5f5f5;
+}
+
+.process-spec .unloaded > p
+{
+    font-size: 16px;
+    font-weight: 700;
+
+    margin: 0;
+
+    text-align: center;
+    text-transform: uppercase;
+
+    color: #ddd;
+}
+
+.process-spec .unloaded > p small
+{
+    font-weight: 400;
+
+    display: block;
+
+    margin-top: 15px;
+
+    text-transform: none;
+
+    color: #aaa;
 }
 
 .process-spec .loaded
 {
     display: none;
+}
+
+.process-spec .loading
+{
+    margin-bottom: 0;
+    padding: 40px 0;
+
+    border-bottom: 1px solid #ccc;
+    background-color: #f0f0f0;
 }
 
 .breadcrumbs

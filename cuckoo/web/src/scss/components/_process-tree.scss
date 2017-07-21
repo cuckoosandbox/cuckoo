@@ -368,10 +368,36 @@
 
   .unloaded {
     display: block;
+    padding: 40px 0;
+    background-color: #f5f5f5;
+
+    & > p {
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ddd;
+      margin: 0;
+
+      small {
+        display: block;
+        text-transform: none;
+        font-weight: 400;
+        color: #aaa;
+        margin-top: 15px;
+      }
+    }
   }
 
   .loaded {
     display: none;
+  }
+
+  .loading {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 0;
+    padding: 40px 0;
   }
 
 }

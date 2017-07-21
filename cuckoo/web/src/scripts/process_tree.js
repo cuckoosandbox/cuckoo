@@ -214,11 +214,21 @@ class PaginationBar {
 class ProcessBehaviorView {
 
   constructor(el) {
-    this._$ = el;
 
-    this._tree  = new Tree(this._$.find('.tree'), 0);
-    this._bar   = null;
-    this._tags  = this._$.find('.process-spec--tags');
+    this._$      = el;
+    this._tree   = new Tree(this._$.find('.tree'), 0);
+    this._bar    = null;
+    this._tags   = this._$.find('.process-spec--tags');
+    this._loader = null;
+
+    // create the loader if we have the loader
+    if(this._$.find('.loading').length) {
+      this._loader = new Loader(this._$.find('.loading'), {
+        animate: true,
+        duration: 300
+      });
+      this._loader.stop();
+    }
 
     this.currentPage = 1;
     this.currentPid = null;
@@ -300,8 +310,11 @@ class ProcessBehaviorView {
     }
 
     if(url.length) {
+      this._$.find('.unloaded').hide();
+      this._loader.start();
       $.get(url, res => {
         // renders the entire table
+        self._loader.stop();
         self.renderTable(res);
       });
     }
@@ -336,7 +349,6 @@ class ProcessBehaviorView {
 
     // hide loading message, show table
     this._$.find('.loaded').slideDown();
-    this._$.find('.unloaded').hide();
   }
 
   // renders the pagination bar
