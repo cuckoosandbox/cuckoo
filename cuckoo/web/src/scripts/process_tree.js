@@ -310,7 +310,6 @@ class ProcessBehaviorView {
     }
 
     if(url.length) {
-      this._$.find('.unloaded').hide();
       this._loader.start();
       $.get(url, res => {
         // renders the entire table
@@ -349,6 +348,9 @@ class ProcessBehaviorView {
 
     // hide loading message, show table
     this._$.find('.loaded').slideDown();
+
+    // hide the 'unloaded' message
+    this._$.find('.unloaded').hide();
   }
 
   // renders the pagination bar
