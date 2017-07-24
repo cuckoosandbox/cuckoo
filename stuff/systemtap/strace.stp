@@ -68,10 +68,17 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
     syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
     syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
 
-    printf("%s%s(%s) = %s%s\n",
-        prefix,
-        syscall_name, syscall_argstr, syscall_retstr,
-        suffix)
+    if (syscall_retstr == "") {
+        printf("%s%s(%s) %s\n",
+            prefix,
+            syscall_name, syscall_argstr,
+            suffix)
+    } else {
+        printf("%s%s(%s) = %s%s\n",
+            prefix,
+            syscall_name, syscall_argstr, syscall_retstr,
+            suffix)
+    }
 
     delete thread_argstr[t]
 }
