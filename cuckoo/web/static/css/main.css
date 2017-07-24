@@ -6442,6 +6442,20 @@ body.cyborg .list-panel__widget .panel-title .button,
     width: 100%;
 }
 
+.cuckoo-table thead td.no-result,
+.cuckoo-table__fullscreen thead td.no-result,
+.network-display__table > table thead td.no-result,
+.cuckoo-table tbody td.no-result,
+.cuckoo-table__fullscreen tbody td.no-result,
+.network-display__table > table tbody td.no-result
+{
+    padding: 20px 0;
+
+    text-align: center;
+
+    background-color: #f5f5f5;
+}
+
 .cuckoo-table tfoot,
 .cuckoo-table__fullscreen tfoot,
 .network-display__table > table tfoot

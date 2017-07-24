@@ -373,6 +373,12 @@ var ProcessBehaviorView = function () {
     key: 'renderTable',
     value: function renderTable(plainTextResponse) {
       var table = $.parseHTML(plainTextResponse)[0];
+      var tableColumns = $(table).find('thead th').length;
+      var tableChildren = $(table).find('tbody').children();
+
+      if (tableChildren.length == 0) {
+        $(table).append('<tr><td colspan="' + tableColumns + '" class="no-result">No results</td></tr>');
+      }
 
       // re-style the table by setting classes
       $(table).removeClass('table table-bordered');

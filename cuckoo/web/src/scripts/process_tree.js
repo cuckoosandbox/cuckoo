@@ -338,6 +338,12 @@ class ProcessBehaviorView {
   // renders a table from the html string in the response.
   renderTable(plainTextResponse) {
     let table = $.parseHTML(plainTextResponse)[0];
+    let tableColumns = $(table).find('thead th').length;
+    let tableChildren = $(table).find('tbody').children();
+
+    if(tableChildren.length == 0) {
+      $(table).append(`<tr><td colspan="${tableColumns}" class="no-result">No results</td></tr>`);
+    }
 
     // re-style the table by setting classes
     $(table).removeClass('table table-bordered');
