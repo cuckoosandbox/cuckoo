@@ -38,8 +38,7 @@ probe nd_syscall.*.return {
     if (pid() == target()) next         # skip our own helper process
     if (!target_set_pid(pid())) next    # skip unrelated processes
 
-    if (!(name in syscalls_nonreturn))
-        report(name, thread_argstr[tid()], retstr)
+    report(name, thread_argstr[tid()], retstr)
 }
 
 function report(syscall_name, syscall_argstr, syscall_retstr) {
