@@ -372,13 +372,11 @@ var ProcessBehaviorView = function () {
   }, {
     key: 'renderTable',
     value: function renderTable(plainTextResponse) {
+      var self = this;
       var table = $.parseHTML(plainTextResponse)[0];
       var tableColumns = $(table).find('thead th').length;
       var tableChildren = $(table).find('tbody').children();
-
-      if (tableChildren.length == 0) {
-        $(table).append('<tr><td colspan="' + tableColumns + '" class="no-result">No results</td></tr>');
-      }
+      var noResultCell = null;
 
       // re-style the table by setting classes
       $(table).removeClass('table table-bordered');
@@ -392,6 +390,20 @@ var ProcessBehaviorView = function () {
 
       // hide the 'unloaded' message
       this._$.find('.unloaded').hide();
+
+      // handle empty result sets
+      if (tableChildren.length == 0) {
+        noResultCell = $('<tr>\n                        <td colspan="' + tableColumns + '" class="no-result">\n                          <p>No results</p>\n                          <button class="button">Reset filter</button>\n                        </td>\n                      </tr>');
+
+        $(table).append(noResultCell);
+
+        noResultCell.find('button').bind('click', function () {
+          if (self.currentPid) {
+            self._tags.find('.active').removeClass('active'); // reset active class
+            self.loadChunk(self.currentPid); // load currentPid
+          }
+        });
+      }
     }
 
     // renders the pagination bar

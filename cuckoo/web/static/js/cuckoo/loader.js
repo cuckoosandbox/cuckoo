@@ -17,8 +17,6 @@ var Loader = function () {
             animate: false,
             duration: 200
         }, options);
-
-        console.log(this.options);
     }
 
     _createClass(Loader, [{

@@ -8,8 +8,6 @@ class Loader {
           animate: false,
           duration: 200
         }, options);
-
-        console.log(this.options);
     }
 
     start(msg) {

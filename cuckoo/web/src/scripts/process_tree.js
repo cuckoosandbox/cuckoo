@@ -337,13 +337,11 @@ class ProcessBehaviorView {
 
   // renders a table from the html string in the response.
   renderTable(plainTextResponse) {
+    let self = this;
     let table = $.parseHTML(plainTextResponse)[0];
     let tableColumns = $(table).find('thead th').length;
     let tableChildren = $(table).find('tbody').children();
-
-    if(tableChildren.length == 0) {
-      $(table).append(`<tr><td colspan="${tableColumns}" class="no-result">No results</td></tr>`);
-    }
+    let noResultCell = null;
 
     // re-style the table by setting classes
     $(table).removeClass('table table-bordered');
@@ -357,6 +355,26 @@ class ProcessBehaviorView {
 
     // hide the 'unloaded' message
     this._$.find('.unloaded').hide();
+
+    // handle empty result sets
+    if(tableChildren.length == 0) {
+      noResultCell = $(`<tr>
+                        <td colspan="${tableColumns}" class="no-result">
+                          <p>No results</p>
+                          <button class="button">Reset filter</button>
+                        </td>
+                      </tr>`);
+
+      $(table).append(noResultCell);
+
+      noResultCell.find('button').bind('click', function() {
+        if(self.currentPid) {
+          self._tags.find('.active').removeClass('active'); // reset active class
+          self.loadChunk(self.currentPid); // load currentPid
+        }
+      });
+    }
+
   }
 
   // renders the pagination bar
