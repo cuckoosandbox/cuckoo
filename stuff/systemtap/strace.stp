@@ -9,6 +9,7 @@
 global timestamp = 1     /* -Gtimestamp=0 means don't print a syscall timestamp */
 
 global thread_argstr%
+global thread_scname%
 global thread_time%
 
 global syscalls_nonreturn
@@ -26,9 +27,10 @@ probe nd_syscall.* {
 
     /* last syscall that could've returned didn't */
     if (thread_argstr[t] != "")
-        report(name, thread_argstr[t], "")
+        report(thread_scname[t], thread_argstr[t], "")
 
     thread_argstr[t] = argstr
+    thread_scname[t] = name
     if (timestamp)
         thread_time[t] = gettimeofday_us()
 
@@ -70,4 +72,5 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
         printf("%s%s(%s) = %s\n", prefix, syscall_name, syscall_argstr, syscall_retstr)
 
     delete thread_argstr[t]
+    delete thread_scname[t]
 }
