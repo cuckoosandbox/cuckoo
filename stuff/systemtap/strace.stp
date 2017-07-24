@@ -16,7 +16,6 @@ probe begin  {
     /* list those syscalls that never .return */
     syscalls_nonreturn["exit"] = 1
     syscalls_nonreturn["exit_group"] = 1
-    syscalls_nonreturn["execve"] = 1
 }
 
 probe nd_syscall.* {
@@ -24,11 +23,15 @@ probe nd_syscall.* {
     if (!target_set_pid(pid())) next    # skip unrelated processes
 
     t = tid()
+
+    /* last syscall that could've returned didn't */
+    if (thread_argstr[t] != "")
+        report(name, thread_argstr[t], "")
+
     thread_argstr[t] = argstr
     if (timestamp)
         thread_time[t] = gettimeofday_us()
 
-    /* TODO: log execve return value if it failed */
     if (name in syscalls_nonreturn)
         report(name, argstr, "")
 }
@@ -44,7 +47,6 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
     t = tid()
 
     if (timestamp) {
-        now = gettimeofday_us()
         then = thread_time[t]
 
         if (timestamp)
@@ -62,13 +64,10 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
     syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
     syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
 
-    if (syscall_retstr == "") {
-        printf("%s%s(%s)\n",
-            prefix, syscall_name, syscall_argstr)
-    } else {
-        printf("%s%s(%s) = %s\n",
-            prefix, syscall_name, syscall_argstr, syscall_retstr)
-    }
+    if (syscall_retstr == "")
+        printf("%s%s(%s)\n", prefix, syscall_name, syscall_argstr)
+    else
+        printf("%s%s(%s) = %s\n", prefix, syscall_name, syscall_argstr, syscall_retstr)
 
     delete thread_argstr[t]
 }
