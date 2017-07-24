@@ -29,7 +29,7 @@ probe nd_syscall.* {
     if (timestamp || elapsed_time)
         thread_time[t] = gettimeofday_us()
 
-    /* TODO: log execve return value if it failed
+    /* TODO: log execve return value if it failed */
     if (name in syscalls_nonreturn)
         report(name, argstr, "")
 }
