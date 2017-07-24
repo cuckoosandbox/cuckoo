@@ -57,6 +57,11 @@ class LinuxSystemTap(BehaviorHandler):
             self.hook(syscall)
 
             pid = syscall["pid"]
+
+            # skip first analyzer process
+            if pid not in self.forkmap:
+                continue
+
             if self.is_newpid(pid):
                 p_pid = self.forkmap.get(pid, -1)
                 calls = FilteredProcessLog(parser, pid=pid)
