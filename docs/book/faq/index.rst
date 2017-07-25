@@ -370,6 +370,14 @@ said dependency and reinstalling Cuckoo. In the case presented above, with
 Then reinstalling Cuckoo again is simply invoking ``pip install -U cuckoo`` or
 similar.
 
+ValueError: incomplete format key
+---------------------------------
+
+This issue may appear at runtime after tinkering with settings in ``$CWD/conf``, 
+as input is passed to the configuration parser at runtime unescaped. Double-check your
+configuration files with an eye out for potentially troublesome character
+combinations such as ``%(``.
+
 Troubleshooting VM network configuration
 ----------------------------------------
 
