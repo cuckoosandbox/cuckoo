@@ -71,7 +71,7 @@ class LinuxSystemTap(BehaviorHandler):
                     "ppid": p_pid,
                     "process_name": syscall["process_name"],
                     "first_seen": syscall["time"],
-                    "command_line": "",  # TODO: implement execve command_line setting handler
+                    "command_line": "",
                     "calls": calls,
                 })
 
