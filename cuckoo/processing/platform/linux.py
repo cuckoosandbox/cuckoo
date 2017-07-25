@@ -54,7 +54,7 @@ class LinuxSystemTap(BehaviorHandler):
 
         for syscall in parser:
             # syscall specific hooks
-            self.hook(syscall)
+            self.pre_hook(syscall)
 
             pid = syscall["pid"]
 
@@ -75,13 +75,25 @@ class LinuxSystemTap(BehaviorHandler):
                     "calls": calls,
                 })
 
+            self.post_hook(syscall)
+
         return self.processes
 
-    def hook(self, syscall):
+    def pre_hook(self, syscall):
         if syscall["api"] == "clone":
             self.forkmap[int(syscall["return_value"])] = syscall["pid"]
+
+    def post_hook(self, syscall):
         if syscall["api"] == "execve":
-            pass  # TODO: figure out return value based on execve command_line behavior
+            pid = self.get_proc(syscall["pid"])
+
+            # only update proc info after first succesful execve in this pid
+            if not syscall["return_value"] and not pid["command_line"]:
+                pid["process_name"] = os.path.basename(syscall["arguments"]["p0"])
+                pid["command_line"] = " ".join(syscall["arguments"]["p1"])
+
+    def get_proc(self, pid):
+        return filter(lambda proc: proc["pid"] == pid, self.processes)[0]
 
     def is_newpid(self, pid):
         return not any(p["pid"] == pid for p in self.processes)
