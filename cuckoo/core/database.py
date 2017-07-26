@@ -1686,8 +1686,10 @@ class Database(object):
                 task = experiment.tasks.order_by(Task.id.desc()).first()
                 task.timeout = timeout
 
-            if runs is not None and times is not None:
+            if runs is not None:
                 experiment.runs = runs
+
+            if times is not None:
                 experiment.times = times
 
             if machine_name is not False:

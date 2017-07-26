@@ -124,6 +124,27 @@ class DatabaseEngine(object):
         assert exp.delta == delta
         assert exp.id == task.experiment_id
 
+    def test_update_experiment(self):
+        # Create file
+        fd, sample_path = tempfile.mkstemp()
+        os.write(fd, "ltadogeltadogeltadogeltadogeltadoge")
+        os.close(fd)
+
+        task_id = self.d.add_path(sample_path, experiment=True, name="doges42",
+                                  runs=3, delta="19d1h45m3s")
+        task = self.d.view_task(task_id)
+        exp = self.d.view_experiment(id=task.experiment_id)
+
+        self.d.update_experiment(None, id=task.experiment_id,
+                                         runs=2, times=1, timeout=1337)
+        exp_u = self.d.view_experiment(id=task.experiment_id)
+        task_u = self.d.view_task(task_id)
+
+        assert exp_u.name == exp.name
+        assert exp_u.runs == 2
+        assert exp_u.times == 1
+        assert task_u.timeout == 1337
+
     def test_error_exists(self):
         task_id = self.add_url("http://google.com/")
         self.d.add_error("A"*1024, task_id)
