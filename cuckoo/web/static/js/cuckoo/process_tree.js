@@ -31,6 +31,7 @@ function stickyTableHeader(table) {
 
 // reset a sticky thead
 function unstickTableHeader(table) {
+  var container = $(table).closest('.flex-nav__body');
   // resets existing event handlers
   container.unbind('scroll.stickyThead');
 }
