@@ -4,6 +4,33 @@ function parseProcessData(scr) {
   return JSON.parse(scr.text());
 }
 
+// making a sticky header
+function stickyTableHeader(table) {
+
+  let tHead           = $(table).find('thead');
+  let tHeadOffset     = tHead.position();
+  let container       = $(table).closest('.flex-nav__body');
+  let containerOffset = container.offset();
+
+  // listen to scroll events and respond to that on the scrolling
+  // container.
+  container.bind('scroll.stickyThead', function(e) {
+    let top = container.scrollTop();
+
+    if(top-21 > tHeadOffset.top) {
+      tHead.css('transform', `translateY(${top-21 - tHeadOffset.top}px)`);
+    }
+
+  });
+
+}
+
+// reset a sticky thead
+function unstickTableHeader(table) {
+  // resets existing event handlers
+  container.unbind('scroll.stickyThead');
+}
+
 /*
   Interface controller for a 'tree'. This piece works with
   a list-in-list HTML definition with at least the following
@@ -217,6 +244,7 @@ class ProcessBehaviorView {
 
     this._$      = el;
     this._tree   = new Tree(this._$.find('.tree'), 0);
+    this._table  = null;
     this._bar    = null;
     this._tags   = this._$.find('.process-spec--tags');
     this._loader = null;
@@ -337,11 +365,16 @@ class ProcessBehaviorView {
 
   // renders a table from the html string in the response.
   renderTable(plainTextResponse) {
+
     let self = this;
     let table = $.parseHTML(plainTextResponse)[0];
     let tableColumns = $(table).find('thead th').length;
     let tableChildren = $(table).find('tbody').children();
     let noResultCell = null;
+
+    if(this._table) {
+      unstickTableHeader(this._table);
+    }
 
     // re-style the table by setting classes
     $(table).removeClass('table table-bordered');
@@ -373,7 +406,12 @@ class ProcessBehaviorView {
           self.loadChunk(self.currentPid); // load currentPid
         }
       });
+    } else {
+      // creates a sticky <thead>
+      stickyTableHeader(table);
     }
+
+    this._table = table;
 
   }
 

@@ -6321,9 +6321,9 @@ body.cyborg .list-panel__widget .panel-title .button,
     border-bottom: 1px solid #ccc;
 }
 
-.cuckoo-table tbody tr:nth-child(even),
-.cuckoo-table__fullscreen tbody tr:nth-child(even),
-.network-display__table > table tbody tr:nth-child(even)
+.cuckoo-table tbody tr:nth-child(odd),
+.cuckoo-table__fullscreen tbody tr:nth-child(odd),
+.network-display__table > table tbody tr:nth-child(odd)
 {
     background-color: #f5f5f5;
 }
@@ -13374,6 +13374,24 @@ body.night .flex-static__summary li
     border: 0;
 }
 
+.process-spec--table .cuckoo-table thead,
+.process-spec--table .cuckoo-table__fullscreen thead,
+.process-spec--table .network-display__table > table thead
+{
+    position: relative;
+    z-index: 10;
+
+    background-color: #fff;
+    box-shadow: 0 2px 0 #ccc;
+}
+
+.process-spec--table .cuckoo-table thead th,
+.process-spec--table .cuckoo-table__fullscreen thead th,
+.process-spec--table .network-display__table > table thead th
+{
+    border-bottom: 0;
+}
+
 .process-spec--table .cuckoo-table pre,
 .process-spec--table .cuckoo-table__fullscreen pre,
 .process-spec--table .network-display__table > table pre,
@@ -13388,14 +13406,20 @@ body.night .flex-static__summary li
     background-color: transparent;
 }
 
+.process-spec--table .cuckoo-table .grey,
+.process-spec--table .cuckoo-table__fullscreen .grey,
+.process-spec--table .network-display__table > table .grey
+{
+    color: #999;
+}
+
 .process-spec--table .cuckoo-table .date-api,
 .process-spec--table .cuckoo-table__fullscreen .date-api,
 .process-spec--table .network-display__table > table .date-api
 {
-    position: relative;
+    padding: 15px 0;
 
-    min-width: 155px;
-    padding: 0;
+    vertical-align: top;
 }
 
 .process-spec--table .cuckoo-table .date-api > p,
@@ -13405,9 +13429,6 @@ body.night .flex-static__summary li
 .process-spec--table .cuckoo-table__fullscreen .date-api > time,
 .process-spec--table .network-display__table > table .date-api > time
 {
-    position: absolute;
-    left: 0;
-
     width: 100%;
     padding: 0 15px;
 }
@@ -13418,8 +13439,6 @@ body.night .flex-static__summary li
 {
     font-weight: 700;
 
-    top: 15px;
-
     color: #434343;
 }
 
@@ -13427,8 +13446,6 @@ body.night .flex-static__summary li
 .process-spec--table .cuckoo-table__fullscreen .date-api > time,
 .process-spec--table .network-display__table > table .date-api > time
 {
-    bottom: 12px;
-
     color: #9f9f9f;
 }
 

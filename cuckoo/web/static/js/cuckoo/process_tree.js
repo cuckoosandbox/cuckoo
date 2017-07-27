@@ -10,6 +10,31 @@ function parseProcessData(scr) {
   return JSON.parse(scr.text());
 }
 
+// making a sticky header
+function stickyTableHeader(table) {
+
+  var tHead = $(table).find('thead');
+  var tHeadOffset = tHead.position();
+  var container = $(table).closest('.flex-nav__body');
+  var containerOffset = container.offset();
+
+  // listen to scroll events and respond to that on the scrolling
+  // container.
+  container.bind('scroll.stickyThead', function (e) {
+    var top = container.scrollTop();
+
+    if (top - 21 > tHeadOffset.top) {
+      tHead.css('transform', 'translateY(' + (top - 21 - tHeadOffset.top) + 'px)');
+    }
+  });
+}
+
+// reset a sticky thead
+function unstickTableHeader(table) {
+  // resets existing event handlers
+  container.unbind('scroll.stickyThead');
+}
+
 /*
   Interface controller for a 'tree'. This piece works with
   a list-in-list HTML definition with at least the following
@@ -246,6 +271,7 @@ var ProcessBehaviorView = function () {
 
     this._$ = el;
     this._tree = new Tree(this._$.find('.tree'), 0);
+    this._table = null;
     this._bar = null;
     this._tags = this._$.find('.process-spec--tags');
     this._loader = null;
@@ -372,11 +398,16 @@ var ProcessBehaviorView = function () {
   }, {
     key: 'renderTable',
     value: function renderTable(plainTextResponse) {
+
       var self = this;
       var table = $.parseHTML(plainTextResponse)[0];
       var tableColumns = $(table).find('thead th').length;
       var tableChildren = $(table).find('tbody').children();
       var noResultCell = null;
+
+      if (this._table) {
+        unstickTableHeader(this._table);
+      }
 
       // re-style the table by setting classes
       $(table).removeClass('table table-bordered');
@@ -403,7 +434,12 @@ var ProcessBehaviorView = function () {
             self.loadChunk(self.currentPid); // load currentPid
           }
         });
+      } else {
+        // creates a sticky <thead>
+        stickyTableHeader(table);
       }
+
+      this._table = table;
     }
 
     // renders the pagination bar

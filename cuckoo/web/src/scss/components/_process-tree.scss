@@ -242,6 +242,7 @@
     .cuckoo-table {
       border: 0;
       background: transparent;
+
       tbody {
         tr {
           background-color: transparent;
@@ -325,6 +326,17 @@
       border: 0;
       font-size: 14px;
 
+      thead {
+        position: relative;
+        background-color: #fff;
+        box-shadow: 0px 2px 0px #ccc;
+        z-index: 10;
+
+        th {
+          border-bottom: 0;
+        }
+      }
+
       pre,
       code {
         background-color: transparent;
@@ -333,28 +345,27 @@
         border: 0;
       }
 
+      .grey {
+        color: #999;
+      }
+
       .date-api {
 
-        position: relative;
-        min-width: 155px;
-        padding: 0;
+        vertical-align: top;
+        padding: 15px 0;
 
         & > p,
         & > time {
-          position: absolute;
-          left: 0;
           width: 100%;
           padding: 0 15px;
         }
 
         & > p {
           font-weight: 700;
-          top: 15px;
           color: #434343;
         }
 
         & > time {
-          bottom: 12px;
           color: #9f9f9f;
         }
 
