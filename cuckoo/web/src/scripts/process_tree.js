@@ -383,6 +383,7 @@ class ProcessBehaviorView {
 
       this.isLoadingSearch = true;
       this._search.find('button').addClass('loading');
+      this._tree.el.find('.selected').removeClass('selected'); // deselects selected pid
 
       let url = `/analysis/search/${window.task_id}/`;
 
@@ -392,6 +393,9 @@ class ProcessBehaviorView {
         self.isLoadingSearch = false;
         self._search.find('button').removeClass('loading');
         self.renderTable(response, true);
+
+        self._$.find('[data-placeholder="process-detail-name"]').html(`<span><i class="fa fa-search"></i> ${query}</span>`);
+        self._$.find('.process-spec--name table').hide();
       });
 
     } else {
@@ -405,6 +409,7 @@ class ProcessBehaviorView {
     this._$.find('[data-placeholder="process-detail-pid"]').text(data.pid);
     this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
     this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
+    this._$.find('.process-spec--name table').show();
 
     // get the current total pages from the static rendered pagination info script tag
     // and only render the bar if we have this info
@@ -418,6 +423,13 @@ class ProcessBehaviorView {
 
     let self = this;
     let table = $.parseHTML(plainTextResponse)[0];
+
+    // for search, dive deeper in the HTML to find the table
+    if(search) {
+      table = $(table).find('table');
+      table.addClass('behavior-search-results');
+    }
+
     let tableColumns = $(table).find('thead th').length;
     let tableChildren = $(table).find('tbody').children();
     let noResultCell = null;
@@ -425,12 +437,6 @@ class ProcessBehaviorView {
     // 'unsticks' the table header
     if(this._table) {
       unstickTableHeader(this._table);
-    }
-
-    // for search, dive deeper in the HTML to find the table
-    if(search) {
-      table = $(table).find('table');
-      table.addClass('behavior-search-results');
     }
 
     // re-style the table by setting classes
@@ -470,6 +476,9 @@ class ProcessBehaviorView {
 
     // a bundle of search-specific table interactions
     if(search) {
+
+      // destroy any pagination bars appended
+      if(this._bar) this._bar.destroy();
 
       table.find('[data-represent]').bind('click', e => {
         e.preventDefault();

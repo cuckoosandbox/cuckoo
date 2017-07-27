@@ -13507,6 +13507,49 @@ body.night .flex-static__summary li
     padding: 25px 0 15px 0;
 }
 
+.process-spec--name h2 span
+{
+    display: inline-block;
+
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+.process-spec--name h2 span .fa,
+.process-spec--name h2 span .custom-select:after,
+.process-spec--name h2 span .dns-badge__content:before,
+.process-spec--name h2 span .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-spec--name h2 span .status.status-reported:before,
+.process-spec--name h2 span #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-spec--name h2 span .status.status-reported:before,
+.process-spec--name h2 span .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-spec--name h2 span .status.status-reported:before,
+.process-spec--name h2 span .cuckoo-analysis__panel--toggle:before,
+.process-spec--name h2 span .cuckoo-analysis__panel--toggle:after,
+.process-spec--name h2 span .cuckoo-files ul div:before,
+.cuckoo-files ul .process-spec--name h2 span div:before,
+.process-spec--name h2 span .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .process-spec--name h2 span .extension-select:after,
+.process-spec--name h2 span .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-spec--name h2 span .extension-select:before,
+.process-spec--name h2 span .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .process-spec--name h2 span .custom-checkbox > input + span,
+.process-spec--name h2 span .breadcrumbs > li:not(:last-child):after,
+.process-spec--name h2 span .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
+.process-spec--name h2 span .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
+.process-spec--name h2 span
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before,
+.process-spec--name h2 span .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before
+{
+    margin-right: 15px;
+
+    opacity: .5;
+}
+
 .process-spec--name .cuckoo-table,
 .process-spec--name .cuckoo-table__fullscreen,
 .process-spec--name .network-display__table > table

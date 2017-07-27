@@ -295,6 +295,17 @@
       font-size: 22px;
       margin: 0;
       padding: 25px 0 15px 0;
+
+      span {
+        display: inline-block;
+        margin-bottom: 0px;
+        margin-top: 15px;
+
+        .fa {
+          margin-right: 15px;
+          opacity: .5;
+        }
+      }
     }
 
     // reset table styles for correct layout

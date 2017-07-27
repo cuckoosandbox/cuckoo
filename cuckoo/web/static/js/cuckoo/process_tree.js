@@ -416,6 +416,7 @@ var ProcessBehaviorView = function () {
 
         this.isLoadingSearch = true;
         this._search.find('button').addClass('loading');
+        this._tree.el.find('.selected').removeClass('selected'); // deselects selected pid
 
         var url = '/analysis/search/' + window.task_id + '/';
 
@@ -425,6 +426,9 @@ var ProcessBehaviorView = function () {
           self.isLoadingSearch = false;
           self._search.find('button').removeClass('loading');
           self.renderTable(response, true);
+
+          self._$.find('[data-placeholder="process-detail-name"]').html('<span><i class="fa fa-search"></i> ' + query + '</span>');
+          self._$.find('.process-spec--name table').hide();
         });
       } else {
         console.error('Task ID and query required for searching. Aborting search.');
@@ -440,6 +444,7 @@ var ProcessBehaviorView = function () {
       this._$.find('[data-placeholder="process-detail-pid"]').text(data.pid);
       this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
       this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
+      this._$.find('.process-spec--name table').show();
 
       // get the current total pages from the static rendered pagination info script tag
       // and only render the bar if we have this info
@@ -457,6 +462,13 @@ var ProcessBehaviorView = function () {
 
       var self = this;
       var table = $.parseHTML(plainTextResponse)[0];
+
+      // for search, dive deeper in the HTML to find the table
+      if (search) {
+        table = $(table).find('table');
+        table.addClass('behavior-search-results');
+      }
+
       var tableColumns = $(table).find('thead th').length;
       var tableChildren = $(table).find('tbody').children();
       var noResultCell = null;
@@ -464,12 +476,6 @@ var ProcessBehaviorView = function () {
       // 'unsticks' the table header
       if (this._table) {
         unstickTableHeader(this._table);
-      }
-
-      // for search, dive deeper in the HTML to find the table
-      if (search) {
-        table = $(table).find('table');
-        table.addClass('behavior-search-results');
       }
 
       // re-style the table by setting classes
@@ -504,6 +510,9 @@ var ProcessBehaviorView = function () {
 
       // a bundle of search-specific table interactions
       if (search) {
+
+        // destroy any pagination bars appended
+        if (this._bar) this._bar.destroy();
 
         table.find('[data-represent]').bind('click', function (e) {
           e.preventDefault();

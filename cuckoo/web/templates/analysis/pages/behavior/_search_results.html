@@ -1,29 +1,25 @@
 <section id="search-results-section">
-    {% if results %}
-        <table class="table table-bordered" style="table-layout: fixed;">
-            <thead>
-                <tr>
-                  <th class="cell-sm">Time &amp; API</th>
-                  <th class="cell-lg">Arguments</th>
-                  <th class="cell-xs">Status</th>
-                  <th class="cell-xs">Return</th>
-                  <th class="cell-xs">Repeated</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for match in results %}
-                <tr data-represent="{{match.process.pid}}">
-                    <td colspan="5" class="search-process"><i class="fa"></i> {{match.process.process_name}} ({{match.process.pid}})</td>
-                </tr>
-                {% for sign in match.signs %}
-                    <tr class="{{sign.category}}" data-belongs-to="{{match.process.pid}}">
-                      {% include "analysis/pages/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
-                    <tr>
-                {% endfor %}
-            {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No results</p>
-    {% endif %}
+  <table class="table table-bordered" style="table-layout: fixed;">
+    <thead>
+      <tr>
+        <th class="cell-sm">Time &amp; API</th>
+        <th class="cell-lg">Arguments</th>
+        <th class="cell-xs">Status</th>
+        <th class="cell-xs">Return</th>
+        <th class="cell-xs">Repeated</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for match in results %}
+      <tr data-represent="{{match.process.pid}}">
+        <td colspan="5" class="search-process"><i class="fa"></i> {{match.process.process_name}} ({{match.process.pid}})</td>
+      </tr>
+      {% for sign in match.signs %}
+        <tr class="{{sign.category}}" data-belongs-to="{{match.process.pid}}">
+          {% include "analysis/pages/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
+        <tr>
+      {% endfor %}
+    {% endfor %}
+    </tbody>
+  </table>
 </section>
