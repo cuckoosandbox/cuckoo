@@ -234,4 +234,25 @@ def test_staplog():
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
                 "type": "apicall",
             },
+            {
+                "api": "set_thread_area",
+                "arguments": {
+                    "p0": "{entry_number=4294967295",
+                    "p1": "base_addr=3078293568",
+                    "p2": "limit=1048575",
+                    "p3": "seg_32bit=1",
+                    "p4": "contents=0",
+                    "p5": "read_exec_only=0",
+                    "p6": "limit_in_pages=1",
+                    "p7": "seg_not_present=0",
+                    "p8": "useable=1}"
+                },
+                "instruction_pointer": "b77b5a21",
+                "pid": 818,
+                "process_name": "sh",
+                "raw": "Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0",
+                "return_value": "0",
+                "status": "",
+                "time": datetime.datetime(2017, 7, 27, 9, 51, 8, 595142),
+                "type": "apicall"}
         ]

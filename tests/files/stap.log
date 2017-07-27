@@ -12,3 +12,4 @@ Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, "BusyBox v1.1
 Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, "Copyright \x28C\x29 1998-2009 Erik Andersen\x2c Rob La", 480) = 480
 Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/comma\x2csh"], ["COMMA_IN_ARRAY=it\x2cworks", "HOME=/root"]) = -2 (ENOENT)
 Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/bracket\x5dsh"], ["LANGUAGE=en_US:en", "HOME=/root"]) = -2 (ENOENT)
+Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0
