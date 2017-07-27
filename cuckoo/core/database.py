@@ -912,6 +912,14 @@ class Database(object):
             machine.locked = True
             machine.locked_by = locked_by
             machine.locked_changed_on = datetime.datetime.now()
+
+            # Store the machine name for exp, so it is known which one was used
+            # after the machine is unlocked
+            if locked_by:
+                experiment = session.query(Experiment).get(locked_by)
+                if experiment is not None:
+                    experiment.machine_name = machine.name
+
             try:
                 session.commit()
                 session.refresh(machine)
