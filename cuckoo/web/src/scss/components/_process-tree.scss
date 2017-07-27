@@ -325,6 +325,7 @@
         }
       }
     }
+
   }
 
   &--tags {
@@ -405,6 +406,10 @@
         th {
           border-bottom: 0;
         }
+      }
+
+      &.behavior-search-results {
+        border-top: 1px solid #ccc;
       }
 
       pre,

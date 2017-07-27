@@ -22,14 +22,15 @@ class Loader {
         }
     }
 
-    stop() {
+    stop(cb = function() {}) {
         this.clearText();
         this.loading = false;
 
         if(this.options.animate) {
-          this.el.slideUp(this.options.duration);
+          this.el.slideUp(this.options.duration, cb);
         } else {
           this.el.hide();
+          cb();
         }
     }
 

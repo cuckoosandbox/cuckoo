@@ -13697,6 +13697,13 @@ body.night .flex-static__summary li
     border-bottom: 0;
 }
 
+.process-spec--table .cuckoo-table.behavior-search-results,
+.process-spec--table .behavior-search-results.cuckoo-table__fullscreen,
+.process-spec--table .network-display__table > table.behavior-search-results
+{
+    border-top: 1px solid #ccc;
+}
+
 .process-spec--table .cuckoo-table pre,
 .process-spec--table .cuckoo-table__fullscreen pre,
 .process-spec--table .network-display__table > table pre,

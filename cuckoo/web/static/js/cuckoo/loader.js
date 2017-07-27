@@ -35,13 +35,16 @@ var Loader = function () {
     }, {
         key: 'stop',
         value: function stop() {
+            var cb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
             this.clearText();
             this.loading = false;
 
             if (this.options.animate) {
-                this.el.slideUp(this.options.duration);
+                this.el.slideUp(this.options.duration, cb);
             } else {
                 this.el.hide();
+                cb();
             }
         }
     }, {

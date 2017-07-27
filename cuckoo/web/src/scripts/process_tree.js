@@ -7,20 +7,21 @@ function parseProcessData(scr) {
 // making a sticky header
 function stickyTableHeader(table) {
 
-  let tHead           = $(table).find('thead');
-  let tHeadOffset     = tHead.position();
-  let container       = $(table).closest('.flex-nav__body');
-  let containerOffset = container.offset();
+  let margin       = 20;
+  let navHeight    = $("#primary-nav").height();
+  let thead        = $(table).find('thead');
+  let topPos       = thead.offset().top - navHeight;
+  let container    = $(table).closest('.flex-nav__body');
 
   // listen to scroll events and respond to that on the scrolling
   // container.
   container.bind('scroll.stickyThead', function(e) {
-    let top = container.scrollTop();
 
-    if(top-21 > tHeadOffset.top) {
-      tHead.css('transform', `translateY(${top-21 - tHeadOffset.top}px)`);
+    if(container.scrollTop() > topPos-margin) {
+      thead.css('transform', `translateY(${-(topPos - container.scrollTop())+margin}px)`);
+    } else {
+      thead.css('transform', `translateY(0px)`);
     }
-
   });
 
 }
@@ -329,7 +330,6 @@ class ProcessBehaviorView {
 
     // connect the search UI - submission
     this._search.find('button').bind('click', e => {
-      console.log('searching');
       self.search(self._search.find('input').val());
     });
 
@@ -362,9 +362,11 @@ class ProcessBehaviorView {
     if(url.length) {
       this._loader.start();
       $.get(url, res => {
-        // renders the entire table
-        self._loader.stop();
-        self.renderTable(res);
+        // stops the loader and renders the entire table
+        self._loader.stop(() => {
+          self.renderTable(res);
+          self._tags.show();
+        });
       });
     }
 
@@ -378,6 +380,11 @@ class ProcessBehaviorView {
     // break out if we are already loading a search request
     if(this.isLoadingSearch) return;
 
+    // unstick previous table bindings
+    if(this._table) {
+      unstickTableHeader(this._table);
+    }
+
     // only proceed if the conditions are good for search
     if(window.task_id && query) {
 
@@ -390,12 +397,16 @@ class ProcessBehaviorView {
       $.post(url, {
         search: query
       }).done(response => {
+
         self.isLoadingSearch = false;
         self._search.find('button').removeClass('loading');
-        self.renderTable(response, true);
 
+        // do some search UI specific things
         self._$.find('[data-placeholder="process-detail-name"]').html(`<span><i class="fa fa-search"></i> ${query}</span>`);
         self._$.find('.process-spec--name table').hide();
+        self._tags.hide();
+
+        self.renderTable(response, true);
       });
 
     } else {
@@ -460,9 +471,6 @@ class ProcessBehaviorView {
           self.loadChunk(self.currentPid); // load currentPid
         }
       });
-    } else {
-      // creates a sticky <thead>
-      stickyTableHeader(table);
     }
 
     // append to the detail body
@@ -486,6 +494,11 @@ class ProcessBehaviorView {
         $(e.currentTarget).closest('table').find(`[data-belongs-to="${$(e.currentTarget).data('represent')}"]`).toggleClass('hidden');
       });
 
+    }
+
+    // make a sticky table header
+    if(tableChildren.length > 0) {
+      stickyTableHeader(table);
     }
 
     // reference current table to constructor
