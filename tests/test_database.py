@@ -33,6 +33,13 @@ class DatabaseEngine(object):
         self.d.set_status(task_id, status)
         return task_id
 
+    def create_file(self):
+        fd, sample_path = tempfile.mkstemp()
+        os.write(fd, os.urandom(24))
+        os.close(fd)
+
+        return sample_path
+
     def test_add_tasks(self):
         fd, sample_path = tempfile.mkstemp()
         os.write(fd, "hehe")
@@ -77,11 +84,6 @@ class DatabaseEngine(object):
         assert self.d.processing_get_task("foo") is None
 
     def test_add_path_experiment(self):
-        # Create file
-        fd, sample_path = tempfile.mkstemp()
-        os.write(fd, "ltadogeltadogeltadogeltadogeltadoge")
-        os.close(fd)
-
         name = "tosti"
         runs = 2
         delta = "14h10m"
@@ -89,7 +91,7 @@ class DatabaseEngine(object):
         # Add task with experiment enabled and retrieve it
         ses = self.d.Session()
         count = ses.query(Experiment).count()
-        task_id = self.d.add_path(sample_path, experiment=True, name=name,
+        task_id = self.d.add_path(self.create_file(), experiment=True, name=name,
                                   runs=runs, delta=delta)
 
         task = ses.query(Task).get(task_id)
@@ -124,14 +126,21 @@ class DatabaseEngine(object):
         assert exp.delta == delta
         assert exp.id == task.experiment_id
 
-    def test_update_experiment(self):
-        # Create file
-        fd, sample_path = tempfile.mkstemp()
-        os.write(fd, "ltadogeltadogeltadogeltadogeltadoge")
-        os.close(fd)
+    def test_view_experiment(self):
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                                  name="viewexp_test", runs=78,
+                                  delta="19d")
 
-        task_id = self.d.add_path(sample_path, experiment=True, name="doges42",
-                                  runs=3, delta="19d1h45m3s")
+        task = self.d.view_task(task_id)
+        exp = self.d.view_experiment(id=task.experiment_id)
+
+        assert exp.name == "viewexp_test"
+        assert exp.delta == "19d"
+        assert exp.runs == 78
+
+    def test_update_experiment(self):
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                                  name="doges42", runs=3, delta="19d1h45m3s")
         task = self.d.view_task(task_id)
         exp = self.d.view_experiment(id=task.experiment_id)
 
@@ -144,6 +153,19 @@ class DatabaseEngine(object):
         assert exp_u.runs == 2
         assert exp_u.times == 1
         assert task_u.timeout == 1337
+
+    def test_delete_experiment(self):
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                                  name="kaastosti", runs=10, delta="15m7s")
+
+        task = self.d.view_task(task_id)
+        self.d.delete_experiment(task.experiment_id)
+
+        exp_d = self.d.view_experiment(id=task.experiment_id)
+        task_d = self.d.view_task(task_id)
+
+        assert exp_d is None
+        assert task_d.experiment_id is None
 
     def test_error_exists(self):
         task_id = self.add_url("http://google.com/")
@@ -345,6 +367,22 @@ class DatabaseEngine(object):
         assert m3.label == "doge3" and m3.locked_by is None and m3.locked
         assert m4.label == "doge4" and m4.locked_by == 42 and m4.locked
         assert m5.label == "doge4" and m5.locked_by == 42 and m5.locked
+
+    def test_exp_lock_machine(self):
+        self.d.add_machine(
+            "exp_lock_machine1", "exp_lock_machine1", "1.2.3.4", "windows", "opt1 opt2",
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                                  name="exp_lock_machine", runs=78,
+                                  delta="19d")
+        task = self.d.view_task(task_id)
+        self.d.lock_machine(locked_by=task.experiment_id,
+                            label="exp_lock_machine1")
+        exp = self.d.view_experiment(id=task.experiment_id)
+
+        assert exp.machine_name == "exp_lock_machine1"
 
     def test_unlock_machine(self):
         self.d.add_machine(
