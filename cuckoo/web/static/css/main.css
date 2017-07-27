@@ -13134,6 +13134,78 @@ body.night .flex-static__summary li
     display: none;
 }
 
+.process-tree__tree .processes div.selected
+{
+    padding-left: 15px;
+}
+
+.process-tree__tree .processes div.selected > *
+{
+    position: relative;
+    z-index: 1;
+}
+
+.process-tree__tree .processes div.selected a,
+.process-tree__tree .processes div.selected em,
+.process-tree__tree .processes div.selected em > .fa,
+.process-tree__tree .processes div.selected em > .custom-select:after,
+.process-tree__tree .processes div.selected em > .dns-badge__content:before,
+.process-tree__tree .processes div.selected .cuckoo-table#submission-task-table em > .status.status-reported:before,
+.cuckoo-table#submission-task-table
+.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.process-tree__tree .processes div.selected #submission-task-table.cuckoo-table__fullscreen em > .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen
+.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.process-tree__tree .processes div.selected .network-display__table > table#submission-task-table em > .status.status-reported:before,
+.network-display__table > table#submission-task-table
+.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:before,
+.process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:after,
+.process-tree__tree .processes div.selected .cuckoo-files ul em > div:before,
+.cuckoo-files ul
+.process-tree__tree .processes div.selected em > div:before,
+.process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:after,
+.cuckoo-files #selection-overview
+.process-tree__tree .processes div.selected em > .extension-select:after,
+.process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:before,
+.cuckoo-files #selection-overview
+.process-tree__tree .processes div.selected em > .extension-select:before,
+.process-tree__tree .processes div.selected .flex-form__header em.custom-checkbox > input + span,
+.flex-form__header
+.process-tree__tree .processes div.selected em.custom-checkbox > input + span,
+.process-tree__tree .processes div.selected em.breadcrumbs > li:not(:last-child):after,
+.process-tree__tree .processes div.selected .list-panel .list-group-option em > input[type='radio'] + span:before,
+.list-panel .list-group-option
+.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='radio'] + span:before,
+.list-panel__widget .list-group-option
+.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.process-tree__tree .processes div.selected
+.list-panel .list-group-option em > input[type='checkbox'] + span:before,
+.list-panel .list-group-option
+.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before,
+.process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option
+.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before
+{
+    color: #fff;
+}
+
+.process-tree__tree .processes div.selected:before
+{
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    content: '';
+
+    background-color: #6297f8;
+}
+
 .process-tree__tree ul
 {
     padding-left: 10px;

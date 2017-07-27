@@ -300,6 +300,10 @@ class ProcessBehaviorView {
 
       // reset the categories active state because we're loading a default dataset
       self._tags.children().removeClass('active');
+
+      // toggle the selected class
+      $(e.currentTarget).closest('.processes').find('.selected').removeClass('selected');
+      $(e.currentTarget).closest('div').addClass('selected');
     });
 
     // connect the filtered api

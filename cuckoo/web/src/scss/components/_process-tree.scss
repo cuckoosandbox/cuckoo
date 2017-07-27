@@ -148,6 +148,35 @@
         display: none;
       }
 
+      div.selected {
+
+        // bump extra 15px to assure spacing that does not disturb.
+        padding-left: 15px;
+
+        & > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        a,
+        em,
+        em > .fa {
+          color: #fff;
+        }
+
+        // takes care of the selected background color
+        &:before {
+          content: "";
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          background-color: $cuckoo_secundary_color;
+          z-index: 0;
+        }
+      }
+
     }
 
     // indentation bumps for ul>ul>ul>ul>etc childs
