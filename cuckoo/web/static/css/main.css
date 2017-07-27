@@ -13718,6 +13718,77 @@ body.night .flex-static__summary li
     margin-left: 15px;
 }
 
+.process-spec--table .search-process
+{
+    font-weight: 700;
+
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.process-spec--table .search-process:hover
+{
+    cursor: pointer;
+
+    background-color: #5888df;
+}
+
+.process-spec--table .search-process .fa:before,
+.process-spec--table .search-process .dns-badge__content:before,
+.process-spec--table .search-process .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-spec--table .search-process .status.status-reported:before,
+.process-spec--table .search-process #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-spec--table .search-process .status.status-reported:before,
+.process-spec--table .search-process .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-spec--table .search-process .status.status-reported:before,
+.process-spec--table .search-process .cuckoo-analysis__panel--toggle:before,
+.process-spec--table .search-process .cuckoo-files ul div:before,
+.cuckoo-files ul .process-spec--table .search-process div:before,
+.process-spec--table .search-process .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-spec--table .search-process .extension-select:before,
+.process-spec--table .search-process .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .process-spec--table .search-process .custom-checkbox > input + span:before,
+.process-spec--table .search-process .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
+.process-spec--table .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
+.process-spec--table .search-process
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before,
+.process-spec--table .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before
+{
+    content: '\f078';
+}
+
+.process-spec--table tr.collapsed > .search-process .fa:before,
+.process-spec--table tr.collapsed > .search-process .dns-badge__content:before,
+.process-spec--table tr.collapsed > .search-process .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-spec--table tr.collapsed > .search-process .status.status-reported:before,
+.process-spec--table tr.collapsed > .search-process #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-spec--table tr.collapsed > .search-process .status.status-reported:before,
+.process-spec--table tr.collapsed > .search-process .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-spec--table tr.collapsed > .search-process .status.status-reported:before,
+.process-spec--table tr.collapsed > .search-process .cuckoo-analysis__panel--toggle:before,
+.process-spec--table tr.collapsed > .search-process .cuckoo-files ul div:before,
+.cuckoo-files ul .process-spec--table tr.collapsed > .search-process div:before,
+.process-spec--table tr.collapsed > .search-process .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-spec--table tr.collapsed > .search-process .extension-select:before,
+.process-spec--table tr.collapsed > .search-process .flex-form__header .custom-checkbox > input + span:before,
+.flex-form__header .process-spec--table tr.collapsed > .search-process .custom-checkbox > input + span:before,
+.process-spec--table tr.collapsed > .search-process .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
+.process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
+.process-spec--table tr.collapsed > .search-process
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before,
+.process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before
+{
+    content: '\f054';
+}
+
 .process-spec .unloaded
 {
     display: block;

@@ -434,6 +434,28 @@
 
       }
     }
+
+    .search-process {
+      background-color: $cuckoo_secundary_color;
+      color: #fff;
+      font-weight: 700;
+
+      &:hover {
+        cursor: pointer;
+        background-color: shade($cuckoo_secundary_color, 10%);
+      }
+
+      .fa:before {
+        content: "\f078";
+      }
+    }
+
+    tr.collapsed > .search-process {
+      .fa:before {
+        content: "\f054";
+      }
+    }
+
   }
 
   .unloaded {

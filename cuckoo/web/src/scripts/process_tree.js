@@ -468,6 +468,17 @@ class ProcessBehaviorView {
     // hide the 'unloaded' message
     this._$.find('.unloaded').hide();
 
+    // a bundle of search-specific table interactions
+    if(search) {
+
+      table.find('[data-represent]').bind('click', e => {
+        e.preventDefault();
+        $(e.currentTarget).toggleClass('collapsed');
+        $(e.currentTarget).closest('table').find(`[data-belongs-to="${$(e.currentTarget).data('represent')}"]`).toggleClass('hidden');
+      });
+
+    }
+
     // reference current table to constructor
     this._table = table;
 

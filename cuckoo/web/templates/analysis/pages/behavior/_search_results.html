@@ -12,14 +12,12 @@
             </thead>
             <tbody>
             {% for match in results %}
-                <tr>
-                    <td colspan="5" class="search-process">
-                        Process: {{match.process.process_name}} ({{match.process.pid}})
-                    </td>
+                <tr data-represent="{{match.process.pid}}">
+                    <td colspan="5" class="search-process"><i class="fa"></i> {{match.process.process_name}} ({{match.process.pid}})</td>
                 </tr>
                 {% for sign in match.signs %}
-                    <tr class="{{sign.category}}">
-                        {% include "analysis/pages/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
+                    <tr class="{{sign.category}}" data-belongs-to="{{match.process.pid}}">
+                      {% include "analysis/pages/behavior/_api_call.html" with call=sign pid=match.process.pid cid=sign.id %}
                     <tr>
                 {% endfor %}
             {% endfor %}
