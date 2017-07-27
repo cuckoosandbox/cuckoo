@@ -154,11 +154,18 @@ class StapParser(object):
         return p_args
 
     def get_delim(self, argstr):
-        return "]" if self.is_array(argstr) else ", "
+        if self.is_array(argstr):
+            return "]"
+        elif self.is_struct(argstr):
+            return "}"
+        else:
+            return ", "
 
     def parse_arg(self, argstr):
         if self.is_array(argstr):
             return self.parse_array(argstr)
+        elif self.is_struct(argstr):
+            return self.parse_struct(argstr)
         elif self.is_string(argstr):
             return self.parse_string(argstr)
         else:
@@ -167,11 +174,17 @@ class StapParser(object):
     def parse_array(self, argstr):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
+    def parse_struct(self, argstr):
+        return {key: val for key, val in (member.split("=") for member in argstr.lstrip("{").split(", "))}
+
     def parse_string(self, argstr):
         return argstr.strip("\"").decode("string_escape")
 
     def is_array(self, arg):
         return arg.startswith("[") and not arg.startswith("[/*")
+
+    def is_struct(self, arg):
+        return arg.startswith("{")
 
     def is_string(self, arg):
         return arg.startswith("\"") and arg.endswith("\"")

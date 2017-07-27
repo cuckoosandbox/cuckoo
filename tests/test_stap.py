@@ -237,15 +237,17 @@ def test_staplog():
             {
                 "api": "set_thread_area",
                 "arguments": {
-                    "p0": "{entry_number=4294967295",
-                    "p1": "base_addr=3078293568",
-                    "p2": "limit=1048575",
-                    "p3": "seg_32bit=1",
-                    "p4": "contents=0",
-                    "p5": "read_exec_only=0",
-                    "p6": "limit_in_pages=1",
-                    "p7": "seg_not_present=0",
-                    "p8": "useable=1}"
+                    "p0": {
+                        "entry_number": "4294967295",
+                        "base_addr": "3078293568",
+                        "limit": "1048575",
+                        "seg_32bit": "1",
+                        "contents": "0",
+                        "read_exec_only": "0",
+                        "limit_in_pages": "1",
+                        "seg_not_present": "0",
+                        "useable": "1",
+                    },
                 },
                 "instruction_pointer": "b77b5a21",
                 "pid": 818,
