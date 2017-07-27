@@ -4803,7 +4803,8 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--right > li .list-panel .panel-title .button,
 .list-panel .panel-title .app-nav__nav--right > li .button,
 .app-nav__nav--right > li .list-panel__widget .panel-title .button,
-.list-panel__widget .panel-title .app-nav__nav--right > li .button
+.list-panel__widget .panel-title .app-nav__nav--right > li .button,
+.app-nav__nav--right > li .process-tree__search-submit
 {
     color: #fff;
     border-color: #777;
@@ -4813,7 +4814,8 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--right > li .button--lg:hover,
 .app-nav__nav--right > li .button--sm:hover,
 .list-panel .panel-title .app-nav__nav--right > li .button:hover,
-.list-panel__widget .panel-title .app-nav__nav--right > li .button:hover
+.list-panel__widget .panel-title .app-nav__nav--right > li .button:hover,
+.app-nav__nav--right > li .process-tree__search-submit:hover
 {
     color: #fff;
     background-color: #777;
@@ -5452,7 +5454,8 @@ body.night .grouped-buttons__bordered a:focus
 .button--lg,
 .button--sm,
 .list-panel .panel-title .button,
-.list-panel__widget .panel-title .button
+.list-panel__widget .panel-title .button,
+.process-tree__search-submit
 {
     font-weight: 600;
     line-height: 16px;
@@ -5474,14 +5477,16 @@ body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
 body.cyborg .list-panel__widget .panel-title .button,
-.list-panel__widget .panel-title body.cyborg .button
+.list-panel__widget .panel-title body.cyborg .button,
+body.cyborg .process-tree__search-submit
 {
     color: #fff;
 }
 
 body.cyborg .button:hover,
 body.cyborg .button--lg:hover,
-body.cyborg .button--sm:hover
+body.cyborg .button--sm:hover,
+body.cyborg .process-tree__search-submit:hover
 {
     text-decoration: none;
 
@@ -5494,14 +5499,16 @@ body.night .button--sm,
 body.night .list-panel .panel-title .button,
 .list-panel .panel-title body.night .button,
 body.night .list-panel__widget .panel-title .button,
-.list-panel__widget .panel-title body.night .button
+.list-panel__widget .panel-title body.night .button,
+body.night .process-tree__search-submit
 {
     color: #fff;
 }
 
 body.night .button:hover,
 body.night .button--lg:hover,
-body.night .button--sm:hover
+body.night .button--sm:hover,
+body.night .process-tree__search-submit:hover
 {
     text-decoration: none;
 
@@ -5512,7 +5519,8 @@ body.night .button--sm:hover
 .button--lg:hover,
 .button--sm:hover,
 .list-panel .panel-title .button:hover,
-.list-panel__widget .panel-title .button:hover
+.list-panel__widget .panel-title .button:hover,
+.process-tree__search-submit:hover
 {
     text-decoration: none;
 
@@ -5526,11 +5534,13 @@ body.night .button--sm:hover
 .button--sm:focus,
 .list-panel .panel-title .button:focus,
 .list-panel__widget .panel-title .button:focus,
+.process-tree__search-submit:focus,
 .button:active,
 .button--lg:active,
 .button--sm:active,
 .list-panel .panel-title .button:active,
-.list-panel__widget .panel-title .button:active
+.list-panel__widget .panel-title .button:active,
+.process-tree__search-submit:active
 {
     text-decoration: none;
 
@@ -5552,7 +5562,9 @@ body.night .button--sm:hover
 .list-panel .panel-title .button--lg,
 .list-panel__widget .panel-title .button--lg,
 .list-panel .panel-title .button--sm,
-.list-panel__widget .panel-title .button--sm
+.list-panel__widget .panel-title .button--sm,
+.list-panel .panel-title .process-tree__search-submit,
+.list-panel__widget .panel-title .process-tree__search-submit
 {
     font-size: 13px;
 
@@ -5567,9 +5579,12 @@ body.night .button--sm:hover
 body.cyborg .app-error__balloon .button:not(.inversed),
 body.cyborg .app-error__balloon .button--lg:not(.inversed),
 body.cyborg .app-error__balloon .button--sm:not(.inversed),
+body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed),
 body.night .app-error__balloon .button:not(.inversed),
 body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .button--sm:not(.inversed)
+body.night .app-error__balloon .button--sm:not(.inversed),
+body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
+.outline.process-tree__search-submit
 {
     padding-top: 4px;
     padding-bottom: 4px;
@@ -5585,12 +5600,15 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .list-panel__widget .panel-title .inversed.button,
 .list-panel.page-switcher .panel-title .page-switcher__nav > .button:not(.active),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:not(.active),
+.inversed.process-tree__search-submit,
 .list-panel.page-switcher .page-switcher__nav > .button:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--lg:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--lg:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--sm:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:not(.active),
+.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:not(.active),
+.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:not(.active)
 {
     color: #6297f8;
     border: 0;
@@ -5602,12 +5620,15 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .inversed.button--sm:hover,
 .list-panel.page-switcher .panel-title .page-switcher__nav > .button:hover:not(.active),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:hover:not(.active),
+.inversed.process-tree__search-submit:hover,
 .list-panel.page-switcher .page-switcher__nav > .button:hover:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--lg:hover:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--lg:hover:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--sm:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:hover:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:hover:not(.active),
+.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:hover:not(.active),
+.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:hover:not(.active)
 {
     color: #4a87f7;
 }
@@ -5617,44 +5638,67 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .button--sm .fa,
 .list-panel .panel-title .button .fa,
 .list-panel__widget .panel-title .button .fa,
+.process-tree__search-submit .fa,
 .button .custom-select:after,
 .button--lg .custom-select:after,
 .button--sm .custom-select:after,
 .list-panel .panel-title .button .custom-select:after,
 .list-panel__widget .panel-title .button .custom-select:after,
+.process-tree__search-submit .custom-select:after,
 .button .dns-badge__content:before,
 .button--lg .dns-badge__content:before,
 .button--sm .dns-badge__content:before,
 .list-panel .panel-title .button .dns-badge__content:before,
 .list-panel__widget .panel-title .button .dns-badge__content:before,
+.process-tree__search-submit .dns-badge__content:before,
 .button .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button .status.status-reported:before,
 .button--lg .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--lg .status.status-reported:before,
 .button--sm .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--sm .status.status-reported:before,
+.list-panel .panel-title .button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .list-panel .panel-title .button .status.status-reported:before,
+.list-panel__widget .panel-title .button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .list-panel__widget .panel-title .button .status.status-reported:before,
+.process-tree__search-submit .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__search-submit .status.status-reported:before,
 .button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before,
 .button--lg #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before,
 .button--sm #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--sm .status.status-reported:before,
+.list-panel .panel-title .button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .list-panel .panel-title .button .status.status-reported:before,
+.list-panel__widget .panel-title .button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .list-panel__widget .panel-title .button .status.status-reported:before,
+.process-tree__search-submit #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__search-submit .status.status-reported:before,
 .button .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button .status.status-reported:before,
 .button--lg .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--lg .status.status-reported:before,
 .button--sm .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--sm .status.status-reported:before,
+.list-panel .panel-title .button .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .list-panel .panel-title .button .status.status-reported:before,
+.list-panel__widget .panel-title .button .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .list-panel__widget .panel-title .button .status.status-reported:before,
+.process-tree__search-submit .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__search-submit .status.status-reported:before,
 .button .cuckoo-analysis__panel--toggle:before,
 .button--lg .cuckoo-analysis__panel--toggle:before,
 .button--sm .cuckoo-analysis__panel--toggle:before,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:before,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:before,
+.process-tree__search-submit .cuckoo-analysis__panel--toggle:before,
 .button .cuckoo-analysis__panel--toggle:after,
 .button--lg .cuckoo-analysis__panel--toggle:after,
 .button--sm .cuckoo-analysis__panel--toggle:after,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:after,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:after,
+.process-tree__search-submit .cuckoo-analysis__panel--toggle:after,
 .button .cuckoo-files ul div:before,
 .cuckoo-files ul .button div:before,
 .button--lg .cuckoo-files ul div:before,
@@ -5665,27 +5709,50 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .cuckoo-files ul .list-panel .panel-title .button div:before,
 .list-panel__widget .panel-title .button .cuckoo-files ul div:before,
 .cuckoo-files ul .list-panel__widget .panel-title .button div:before,
+.process-tree__search-submit .cuckoo-files ul div:before,
+.cuckoo-files ul .process-tree__search-submit div:before,
 .button .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button .extension-select:after,
 .button--lg .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--lg .extension-select:after,
 .button--sm .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--sm .extension-select:after,
+.list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .list-panel .panel-title .button .extension-select:after,
+.list-panel__widget .panel-title .button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .list-panel__widget .panel-title .button .extension-select:after,
+.process-tree__search-submit .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .process-tree__search-submit .extension-select:after,
 .button .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button .extension-select:before,
 .button--lg .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--lg .extension-select:before,
 .button--sm .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--sm .extension-select:before,
+.list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .list-panel .panel-title .button .extension-select:before,
+.list-panel__widget .panel-title .button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .list-panel__widget .panel-title .button .extension-select:before,
+.process-tree__search-submit .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-tree__search-submit .extension-select:before,
 .button .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button .custom-checkbox > input + span,
 .button--lg .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--lg .custom-checkbox > input + span,
 .button--sm .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--sm .custom-checkbox > input + span,
+.list-panel .panel-title .button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .list-panel .panel-title .button .custom-checkbox > input + span,
+.list-panel__widget .panel-title .button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .list-panel__widget .panel-title .button .custom-checkbox > input + span,
+.process-tree__search-submit .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .process-tree__search-submit .custom-checkbox > input + span,
 .button .breadcrumbs > li:not(:last-child):after,
 .button--lg .breadcrumbs > li:not(:last-child):after,
 .button--sm .breadcrumbs > li:not(:last-child):after,
+.list-panel .panel-title .button .breadcrumbs > li:not(:last-child):after,
+.list-panel__widget .panel-title .button .breadcrumbs > li:not(:last-child):after,
+.process-tree__search-submit .breadcrumbs > li:not(:last-child):after,
 .button .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel .list-group-option input[type='radio'] + span:before,
@@ -5693,13 +5760,23 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .button--sm .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button--sm input[type='radio'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .panel-title .button input[type='radio'] + span:before,
+.list-panel__widget .panel-title .button .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .list-panel__widget .panel-title .button input[type='radio'] + span:before,
+.process-tree__search-submit .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
 .button .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='radio'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='radio'] + span:before,
+.list-panel .panel-title .button .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .list-panel .panel-title .button input[type='radio'] + span:before,
 .list-panel__widget .panel-title .button .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .panel-title .button input[type='radio'] + span:before,
+.process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
 .button
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button input[type='checkbox'] + span:before,
@@ -5710,13 +5787,25 @@ body.night .app-error__balloon .button--sm:not(.inversed)
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--sm input[type='checkbox'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .panel-title .button input[type='checkbox'] + span:before,
+.list-panel__widget .panel-title .button
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .list-panel__widget .panel-title .button input[type='checkbox'] + span:before,
+.process-tree__search-submit
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
 .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button input[type='checkbox'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='checkbox'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='checkbox'] + span:before,
-.list-panel__widget .panel-title .button .list-group-option input[type='checkbox'] + span:before
+.list-panel .panel-title .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .list-panel .panel-title .button input[type='checkbox'] + span:before,
+.list-panel__widget .panel-title .button .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .panel-title .button input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before
 {
     margin-right: 5px;
 }
@@ -5727,7 +5816,8 @@ body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
 body.cyborg .list-panel__widget .panel-title .button,
-.list-panel__widget .panel-title body.cyborg .button
+.list-panel__widget .panel-title body.cyborg .button,
+body.cyborg .process-tree__search-submit
 {
     color: #fff;
 }
@@ -8668,21 +8758,24 @@ body.cyborg .app-error__balloon:before
 
 body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .button--lg,
-body.cyborg .app-error__balloon .button--sm
+body.cyborg .app-error__balloon .button--sm,
+body.cyborg .app-error__balloon .process-tree__search-submit
 {
     color: #0ce3ac;
 }
 
 body.cyborg .app-error__balloon .button:not(.inversed),
 body.cyborg .app-error__balloon .button--lg:not(.inversed),
-body.cyborg .app-error__balloon .button--sm:not(.inversed)
+body.cyborg .app-error__balloon .button--sm:not(.inversed),
+body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
     border-color: #0ce3ac;
 }
 
 body.cyborg .app-error__balloon .button:not(.inversed):hover,
 body.cyborg .app-error__balloon .button--lg:not(.inversed):hover,
-body.cyborg .app-error__balloon .button--sm:not(.inversed):hover
+body.cyborg .app-error__balloon .button--sm:not(.inversed):hover,
+body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
     color: #2b5a6a;
     background-color: #0ce3ac;
@@ -8690,7 +8783,8 @@ body.cyborg .app-error__balloon .button--sm:not(.inversed):hover
 
 body.cyborg .app-error__balloon .button:hover,
 body.cyborg .app-error__balloon .button--lg:hover,
-body.cyborg .app-error__balloon .button--sm:hover
+body.cyborg .app-error__balloon .button--sm:hover,
+body.cyborg .app-error__balloon .process-tree__search-submit:hover
 {
     text-decoration: none;
 }
@@ -8726,21 +8820,24 @@ body.night .app-error__balloon:before
 
 body.night .app-error__balloon .button,
 body.night .app-error__balloon .button--lg,
-body.night .app-error__balloon .button--sm
+body.night .app-error__balloon .button--sm,
+body.night .app-error__balloon .process-tree__search-submit
 {
     color: #d7d7d7;
 }
 
 body.night .app-error__balloon .button:not(.inversed),
 body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .button--sm:not(.inversed)
+body.night .app-error__balloon .button--sm:not(.inversed),
+body.night .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
     border-color: #d7d7d7;
 }
 
 body.night .app-error__balloon .button:not(.inversed):hover,
 body.night .app-error__balloon .button--lg:not(.inversed):hover,
-body.night .app-error__balloon .button--sm:not(.inversed):hover
+body.night .app-error__balloon .button--sm:not(.inversed):hover,
+body.night .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
     color: #555;
     background-color: #d7d7d7;
@@ -8748,7 +8845,8 @@ body.night .app-error__balloon .button--sm:not(.inversed):hover
 
 body.night .app-error__balloon .button:hover,
 body.night .app-error__balloon .button--lg:hover,
-body.night .app-error__balloon .button--sm:hover
+body.night .app-error__balloon .button--sm:hover,
+body.night .app-error__balloon .process-tree__search-submit:hover
 {
     text-decoration: none;
 }
@@ -12948,6 +13046,21 @@ body.night .flex-static__summary li
     color: #b5b5b5;
 }
 
+.process-tree__search-submit
+{
+    font-size: 20px;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    padding: 15px 15px 9px 15px;
+
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .process-tree__tree
 {
     border-bottom: 1px solid #979797;
@@ -14704,7 +14817,9 @@ body.night .app-message
 .list-panel .panel-title .button--sm,
 .list-panel__widget .panel-title .button--sm,
 .list-panel .panel-title .button,
-.list-panel__widget .panel-title .button
+.list-panel__widget .panel-title .button,
+.list-panel .panel-title .process-tree__search-submit,
+.list-panel__widget .panel-title .process-tree__search-submit
 {
     display: inline-block;
 }

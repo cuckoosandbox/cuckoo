@@ -40,6 +40,18 @@
       color: #B5B5B5;
     }
 
+    &-submit {
+      @extend .button;
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding: 15px 15px 9px 15px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      font-size: 20px;
+    }
+
   }
 
   /*

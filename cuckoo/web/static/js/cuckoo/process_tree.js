@@ -276,6 +276,7 @@ var ProcessBehaviorView = function () {
     this._bar = null;
     this._tags = this._$.find('.process-spec--tags');
     this._loader = null;
+    this._search = this._$.find('.process-tree__search');
 
     // create the loader if we have the loader
     if (this._$.find('.loading').length) {
