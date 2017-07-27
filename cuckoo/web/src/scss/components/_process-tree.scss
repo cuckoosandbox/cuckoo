@@ -50,6 +50,24 @@
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
       font-size: 20px;
+
+      .fa {
+        display: none;
+      }
+
+      // styles for indicating an active search process
+      &.loading {
+
+        padding-top: 11px;
+        padding-right: 11px;
+
+        .fa {
+          display: block;
+        }
+        span {
+          display: none;
+        }
+      }
     }
 
   }

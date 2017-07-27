@@ -262,6 +262,7 @@ class ProcessBehaviorView {
 
     this.currentPage = 1;
     this.currentPid = null;
+    this.isLoadingSearch = false;
 
     this.initialise();
   }
@@ -305,6 +306,9 @@ class ProcessBehaviorView {
       // toggle the selected class
       $(e.currentTarget).closest('.processes').find('.selected').removeClass('selected');
       $(e.currentTarget).closest('div').addClass('selected');
+
+      // reset the current search state
+      self._search.find('input').val('');
     });
 
     // connect the filtered api
@@ -321,6 +325,18 @@ class ProcessBehaviorView {
       // set an active class
       $(this).addClass('active');
 
+    });
+
+    // connect the search UI - submission
+    this._search.find('button').bind('click', e => {
+      console.log('searching');
+      self.search(self._search.find('input').val());
+    });
+
+    this._search.find('input').bind('keypress', e => {
+      if(e.which == 13) {
+        self.search(self._search.find('input').val());
+      }
     });
 
   }
@@ -354,6 +370,35 @@ class ProcessBehaviorView {
 
   }
 
+  // does a search in the current PID
+  search(query = "") {
+
+    let self = this;
+
+    // break out if we are already loading a search request
+    if(this.isLoadingSearch) return;
+
+    // only proceed if the conditions are good for search
+    if(window.task_id && query) {
+
+      this.isLoadingSearch = true;
+      this._search.find('button').addClass('loading');
+
+      let url = `/analysis/search/${window.task_id}/`;
+
+      $.post(url, {
+        search: query
+      }).done(response => {
+        self.isLoadingSearch = false;
+        self._search.find('button').removeClass('loading');
+        self.renderTable(response, true);
+      });
+
+    } else {
+      console.error('Task ID and query required for searching. Aborting search.');
+    }
+  }
+
   // populates information about the current process
   populate(el) {
     let data = parseProcessData(el);
@@ -361,16 +406,15 @@ class ProcessBehaviorView {
     this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
     this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
 
-    // render pagination bar
-
     // get the current total pages from the static rendered pagination info script tag
     // and only render the bar if we have this info
     this.renderBar(data.pid, 1);
 
-  }
+}
 
   // renders a table from the html string in the response.
-  renderTable(plainTextResponse) {
+  // - handles regular chunks, filtered chunks and search chunks
+  renderTable(plainTextResponse, search = false) {
 
     let self = this;
     let table = $.parseHTML(plainTextResponse)[0];
@@ -378,22 +422,20 @@ class ProcessBehaviorView {
     let tableChildren = $(table).find('tbody').children();
     let noResultCell = null;
 
+    // 'unsticks' the table header
     if(this._table) {
       unstickTableHeader(this._table);
+    }
+
+    // for search, dive deeper in the HTML to find the table
+    if(search) {
+      table = $(table).find('table');
+      table.addClass('behavior-search-results');
     }
 
     // re-style the table by setting classes
     $(table).removeClass('table table-bordered');
     $(table).addClass('cuckoo-table');
-
-    // append to the detail body
-    this._$.find('#behavior-table').html(table);
-
-    // hide loading message, show table
-    this._$.find('.loaded').slideDown();
-
-    // hide the 'unloaded' message
-    this._$.find('.unloaded').hide();
 
     // handle empty result sets
     if(tableChildren.length == 0) {
@@ -417,6 +459,16 @@ class ProcessBehaviorView {
       stickyTableHeader(table);
     }
 
+    // append to the detail body
+    this._$.find('#behavior-table').html(table);
+
+    // hide loading message, show table
+    this._$.find('.loaded').slideDown();
+
+    // hide the 'unloaded' message
+    this._$.find('.unloaded').hide();
+
+    // reference current table to constructor
     this._table = table;
 
   }

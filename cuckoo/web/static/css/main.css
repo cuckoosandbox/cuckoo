@@ -13061,6 +13061,83 @@ body.night .flex-static__summary li
     border-bottom-left-radius: 0;
 }
 
+.process-tree__search-submit .fa,
+.process-tree__search-submit .custom-select:after,
+.process-tree__search-submit .dns-badge__content:before,
+.process-tree__search-submit .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__search-submit .status.status-reported:before,
+.process-tree__search-submit #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__search-submit .status.status-reported:before,
+.process-tree__search-submit .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__search-submit .status.status-reported:before,
+.process-tree__search-submit .cuckoo-analysis__panel--toggle:before,
+.process-tree__search-submit .cuckoo-analysis__panel--toggle:after,
+.process-tree__search-submit .cuckoo-files ul div:before,
+.cuckoo-files ul .process-tree__search-submit div:before,
+.process-tree__search-submit .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .process-tree__search-submit .extension-select:after,
+.process-tree__search-submit .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-tree__search-submit .extension-select:before,
+.process-tree__search-submit .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .process-tree__search-submit .custom-checkbox > input + span,
+.process-tree__search-submit .breadcrumbs > li:not(:last-child):after,
+.process-tree__search-submit .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
+.process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
+.process-tree__search-submit
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before
+{
+    display: none;
+}
+
+.process-tree__search-submit.loading
+{
+    padding-top: 11px;
+    padding-right: 11px;
+}
+
+.process-tree__search-submit.loading .fa,
+.process-tree__search-submit.loading .custom-select:after,
+.process-tree__search-submit.loading .dns-badge__content:before,
+.process-tree__search-submit.loading .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__search-submit.loading .status.status-reported:before,
+.process-tree__search-submit.loading #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__search-submit.loading .status.status-reported:before,
+.process-tree__search-submit.loading .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__search-submit.loading .status.status-reported:before,
+.process-tree__search-submit.loading .cuckoo-analysis__panel--toggle:before,
+.process-tree__search-submit.loading .cuckoo-analysis__panel--toggle:after,
+.process-tree__search-submit.loading .cuckoo-files ul div:before,
+.cuckoo-files ul .process-tree__search-submit.loading div:before,
+.process-tree__search-submit.loading .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .process-tree__search-submit.loading .extension-select:after,
+.process-tree__search-submit.loading .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .process-tree__search-submit.loading .extension-select:before,
+.process-tree__search-submit.loading .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .process-tree__search-submit.loading .custom-checkbox > input + span,
+.process-tree__search-submit.loading .breadcrumbs > li:not(:last-child):after,
+.process-tree__search-submit.loading .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
+.process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
+.process-tree__search-submit.loading
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before,
+.process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before
+{
+    display: block;
+}
+
+.process-tree__search-submit.loading span
+{
+    display: none;
+}
+
 .process-tree__tree
 {
     border-bottom: 1px solid #979797;

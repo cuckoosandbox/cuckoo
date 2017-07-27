@@ -289,6 +289,7 @@ var ProcessBehaviorView = function () {
 
     this.currentPage = 1;
     this.currentPid = null;
+    this.isLoadingSearch = false;
 
     this.initialise();
   }
@@ -333,6 +334,9 @@ var ProcessBehaviorView = function () {
         // toggle the selected class
         $(e.currentTarget).closest('.processes').find('.selected').removeClass('selected');
         $(e.currentTarget).closest('div').addClass('selected');
+
+        // reset the current search state
+        self._search.find('input').val('');
       });
 
       // connect the filtered api
@@ -348,6 +352,18 @@ var ProcessBehaviorView = function () {
 
         // set an active class
         $(this).addClass('active');
+      });
+
+      // connect the search UI - submission
+      this._search.find('button').bind('click', function (e) {
+        console.log('searching');
+        self.search(self._search.find('input').val());
+      });
+
+      this._search.find('input').bind('keypress', function (e) {
+        if (e.which == 13) {
+          self.search(self._search.find('input').val());
+        }
       });
     }
 
@@ -382,6 +398,39 @@ var ProcessBehaviorView = function () {
       }
     }
 
+    // does a search in the current PID
+
+  }, {
+    key: 'search',
+    value: function search() {
+      var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+
+
+      var self = this;
+
+      // break out if we are already loading a search request
+      if (this.isLoadingSearch) return;
+
+      // only proceed if the conditions are good for search
+      if (window.task_id && query) {
+
+        this.isLoadingSearch = true;
+        this._search.find('button').addClass('loading');
+
+        var url = '/analysis/search/' + window.task_id + '/';
+
+        $.post(url, {
+          search: query
+        }).done(function (response) {
+          self.isLoadingSearch = false;
+          self._search.find('button').removeClass('loading');
+          self.renderTable(response, true);
+        });
+      } else {
+        console.error('Task ID and query required for searching. Aborting search.');
+      }
+    }
+
     // populates information about the current process
 
   }, {
@@ -392,18 +441,19 @@ var ProcessBehaviorView = function () {
       this._$.find('[data-placeholder="process-detail-ppid"]').text(data.ppid);
       this._$.find('[data-placeholder="process-detail-name"]').text(data.name);
 
-      // render pagination bar
-
       // get the current total pages from the static rendered pagination info script tag
       // and only render the bar if we have this info
       this.renderBar(data.pid, 1);
     }
 
     // renders a table from the html string in the response.
+    // - handles regular chunks, filtered chunks and search chunks
 
   }, {
     key: 'renderTable',
     value: function renderTable(plainTextResponse) {
+      var search = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
 
       var self = this;
       var table = $.parseHTML(plainTextResponse)[0];
@@ -411,22 +461,20 @@ var ProcessBehaviorView = function () {
       var tableChildren = $(table).find('tbody').children();
       var noResultCell = null;
 
+      // 'unsticks' the table header
       if (this._table) {
         unstickTableHeader(this._table);
+      }
+
+      // for search, dive deeper in the HTML to find the table
+      if (search) {
+        table = $(table).find('table');
+        table.addClass('behavior-search-results');
       }
 
       // re-style the table by setting classes
       $(table).removeClass('table table-bordered');
       $(table).addClass('cuckoo-table');
-
-      // append to the detail body
-      this._$.find('#behavior-table').html(table);
-
-      // hide loading message, show table
-      this._$.find('.loaded').slideDown();
-
-      // hide the 'unloaded' message
-      this._$.find('.unloaded').hide();
 
       // handle empty result sets
       if (tableChildren.length == 0) {
@@ -445,6 +493,16 @@ var ProcessBehaviorView = function () {
         stickyTableHeader(table);
       }
 
+      // append to the detail body
+      this._$.find('#behavior-table').html(table);
+
+      // hide loading message, show table
+      this._$.find('.loaded').slideDown();
+
+      // hide the 'unloaded' message
+      this._$.find('.unloaded').hide();
+
+      // reference current table to constructor
       this._table = table;
     }
 
