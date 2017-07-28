@@ -50,7 +50,7 @@ TASK_RECURRENT = "recurrent"
 status_type = Enum(
     TASK_PENDING, TASK_RUNNING, TASK_COMPLETED, TASK_REPORTED, TASK_RECOVERED,
     TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING,
-    TASK_UNSCHEDULED,
+    TASK_SCHEDULED, TASK_UNSCHEDULED,
     name="status_type"
 )
 
@@ -1436,7 +1436,7 @@ class Database(object):
                    task.platform, tags, task.memory, task.enforce_timeout,
                    task.clock)
 
-    def schedule(self, task_id, delta=None, timeout=None):
+    def schedule_task_exp(self, task_id, delta=None, timeout=None):
         session = self.Session()
 
         task = self.view_task(task_id)
@@ -1450,37 +1450,51 @@ class Database(object):
             times=task.experiment.times + 1,
         )
 
-        try:
-            make_transient(task)
+        # Only schedule task if there are still runs left after
+        # decrementing them
+        if not experiment.runs:
+            task = None
+
+        else:
+            try:
+                make_transient(task)
+            except SQLAlchemyError as e:
+                log.debug("Database error rescheduling task: {0}".format(e))
+                session.rollback()
+                return None
+
+            # Reset attributes to create a new task with the
+            # existing values
             task.id = None
-            task.status = TASK_SCHEDULED
             task.started_on = None
             task.completed_on = None
+            task.status = TASK_SCHEDULED
 
             # If specified use the delta that has been provided, otherwise
             # fall back on the delta set for this experiment.
             if delta is None:
-                delta = time_duration(task.experiment.delta)
+                delta = task.experiment.delta
 
             # Schedule the next task.
-            task.added_on = task.added_on(datetime.timedelta(seconds=delta))
+            task.added_on = task.added_on + datetime.timedelta(
+                seconds=time_duration(delta)
+            )
 
             if timeout is not None:
                 task.timeout = timeout
 
-            # Only schedule a new task if there are still runs left at this
-            # point (which is after decrementing the runs value).
-            if experiment.runs:
+        try:
+            if task:
                 session.add(task)
                 session.commit()
                 session.refresh(task)
             else:
                 session.commit()
-                task = None
         except SQLAlchemyError as e:
             log.debug("Database error rescheduling task: {0}".format(e))
             session.rollback()
             return None
+
         finally:
             session.close()
 

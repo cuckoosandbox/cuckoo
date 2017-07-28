@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import mock
 import os
 import pytest
@@ -451,6 +452,23 @@ class DatabaseEngine(object):
         assert machine.locked_by == 100
         assert machine_unlocked.locked_by is None
         assert machine_none is None
+
+    def test_schedule_task_exp(self):
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                                  name="test_schedule", runs=2,
+                                  delta="19d", timeout=1200)
+
+        task_u = self.d.view_task(task_id)
+        task_s = self.d.schedule_task_exp(task_id, timeout=821, delta="24h")
+        task = self.d.view_task(task_s.id)
+
+        assert task.timeout == 821
+        assert task.status == "scheduled"
+        assert task.added_on == (task_u.added_on + datetime.timedelta(
+            seconds=86400)
+        )
+        assert task.experiment.runs == 1
+        assert task.experiment.times == 1
 
     @mock.patch("cuckoo.common.objects.magic")
     def test_add_sample(self, p):
