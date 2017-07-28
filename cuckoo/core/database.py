@@ -1772,7 +1772,7 @@ class Database(object):
 
         return sample
 
-    def count_experiments(self, status):
+    def count_experiments(self, status=None):
         """Counts the amount of experiments in the database."""
         session = self.Session()
         try:

@@ -384,6 +384,39 @@ class DatabaseEngine(object):
 
         assert exp.machine_name == "exp_lock_machine1"
 
+    def test_count_experiments(self):
+
+        ses = self.d.Session()
+
+        q = ses.query(Experiment)
+        count = q.count()
+        count_u = q.filter(Experiment.machine_name == None).filter(
+            Experiment.runs != 0
+        ).count()
+        count_pro = q.filter(Experiment.machine_name != None).filter(
+            Experiment.runs != 0
+        ).count()
+        count_fin = q.filter_by(runs=0).count()
+
+        self.d.add_path(self.create_file(), experiment=True,
+                                  name="test_count1", runs=3, delta="1s")
+        self.d.add_path(self.create_file(), experiment=True,
+                          name="test_count2", runs=0, delta="2s")
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                          name="test_count3", runs=3, delta="3s")
+
+        self.d.add_machine(
+            "test_count1", "test_count", "1.2.3.4", "windows", "opt1 opt2",
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        task = self.d.view_task(task_id)
+        self.d.lock_machine(label="test_count", locked_by=task.experiment_id)
+
+        assert (count + 3) == self.d.count_experiments()
+        assert (count_u + 1) ==  self.d.count_experiments(status="unassigned")
+        assert (count_pro + 1) == self.d.count_experiments(status="processing")
+        assert (count_fin + 1) == self.d.count_experiments(status="finished")
+
     def test_unlock_machine(self):
         self.d.add_machine(
             "locknormal", "locknormal", "1.2.3.4", "CuckooOS", ["opt3", "opt4"],
