@@ -304,7 +304,6 @@ var ProcessBehaviorView = function () {
 
       // handle pane collapses
       this._$.find('.process-tree__header--right').bind('click', function (e) {
-
         e.preventDefault();
         var target = $(e.currentTarget);
         target.parents('.process-tree__tree, .process-tree__detail').toggleClass('open');
@@ -374,6 +373,9 @@ var ProcessBehaviorView = function () {
     key: 'loadChunk',
     value: function loadChunk(pid, filter) {
 
+      // if we're loading a search query, disable chunk loading
+      if (this.isLoadingSearch) return;
+
       // parse to jquery, jquery seems to have a little trouble with es6 closure within
       // the context of a class.
 
@@ -423,6 +425,7 @@ var ProcessBehaviorView = function () {
       if (window.task_id && query) {
 
         this.isLoadingSearch = true;
+        this._$.addClass('searching');
         this._search.find('button').addClass('loading');
         this._tree.el.find('.selected').removeClass('selected'); // deselects selected pid
 
@@ -441,6 +444,11 @@ var ProcessBehaviorView = function () {
           self._tags.hide();
 
           self.renderTable(response, true);
+          self._$.removeClass('searching');
+
+          // auto-close process tree because the results are gathered amongst all
+          // processes and therefore the tree is not of use using the search.
+          self._$.find('.process-tree__tree').removeClass('open');
         });
       } else {
         console.error('Task ID and query required for searching. Aborting search.');

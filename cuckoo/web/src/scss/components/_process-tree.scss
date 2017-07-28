@@ -9,12 +9,24 @@
 
   // cyborg theming
   @include cuckoo-theme('cyborg') {
+    background-color: $cyborg_background_color;
     border: 1px solid shade($cyborg_border_color, 20%);
   }
 
   // night theming
   @include cuckoo-theme('night') {
+    background-color: $night_background_color;
     border: 1px solid $night_border_color;
+  }
+
+  // temporarily disables the UI when we're searching. indicates that the user
+  // has to wait untill we finished and processed the search request.
+  &.searching {
+    .process-tree__detail,
+    .process-tree__tree {
+      opacity: .5;
+      pointer-events: none;
+    }
   }
 
   /*

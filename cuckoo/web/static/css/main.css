@@ -13027,11 +13027,21 @@ body.night .flex-static__summary li
 body.cyborg .process-tree
 {
     border: 1px solid #0f2f3b;
+    background-color: #020e10;
 }
 
 body.night .process-tree
 {
     border: 1px solid #375a7f;
+    background-color: #232323;
+}
+
+.process-tree.searching .process-tree__detail,
+.process-tree.searching .process-tree__tree
+{
+    pointer-events: none;
+
+    opacity: .5;
 }
 
 .process-tree__search
