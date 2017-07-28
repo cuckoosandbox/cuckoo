@@ -6909,9 +6909,9 @@ body.night .network-display__table > table
     background-color: #152d3b;
 }
 
-body.night .cuckoo-table tr:nth-child(even),
-body.night .cuckoo-table__fullscreen tr:nth-child(even),
-body.night .network-display__table > table tr:nth-child(even)
+body.night .cuckoo-table tr:nth-child(odd),
+body.night .cuckoo-table__fullscreen tr:nth-child(odd),
+body.night .network-display__table > table tr:nth-child(odd)
 {
     background-color: #1c3b4e;
 }
@@ -13029,6 +13029,11 @@ body.cyborg .process-tree
     border: 1px solid #0f2f3b;
 }
 
+body.night .process-tree
+{
+    border: 1px solid #375a7f;
+}
+
 .process-tree__search
 {
     position: relative;
@@ -13173,6 +13178,11 @@ body.cyborg .process-tree
 body.cyborg .process-tree__search
 {
     border-color: #0b232c;
+}
+
+body.night .process-tree__search
+{
+    border-color: #375a7f;
 }
 
 .process-tree__tree
@@ -13443,6 +13453,16 @@ body.cyborg .process-tree__tree .processes div.selected:before
     background-color: #152d3b;
 }
 
+body.night .process-tree__tree .processes
+{
+    background-color: #232323;
+}
+
+body.night .process-tree__tree .processes div.selected:before
+{
+    background-color: #325172;
+}
+
 .process-tree__tree ul
 {
     padding-left: 10px;
@@ -13487,6 +13507,49 @@ body.cyborg .process-tree__tree em
 .list-panel .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before,
 body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before
+{
+    color: #0ce3ac;
+}
+
+body.night .process-tree__tree
+{
+    border-bottom: 1px solid #325172;
+}
+
+body.night .process-tree__tree .processes li:before
+{
+    background-color: #375a7f;
+}
+
+body.night .process-tree__tree em .fa,
+body.night .process-tree__tree em .custom-select:after,
+body.night .process-tree__tree em .dns-badge__content:before,
+body.night .process-tree__tree em .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.night .process-tree__tree em .status.status-reported:before,
+body.night .process-tree__tree em #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.night .process-tree__tree em .status.status-reported:before,
+body.night .process-tree__tree em .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table body.night .process-tree__tree em .status.status-reported:before,
+body.night .process-tree__tree em .cuckoo-analysis__panel--toggle:before,
+body.night .process-tree__tree em .cuckoo-analysis__panel--toggle:after,
+body.night .process-tree__tree em .cuckoo-files ul div:before,
+.cuckoo-files ul body.night .process-tree__tree em div:before,
+body.night .process-tree__tree em .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview body.night .process-tree__tree em .extension-select:after,
+body.night .process-tree__tree em .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview body.night .process-tree__tree em .extension-select:before,
+body.night .process-tree__tree em .flex-form__header .custom-checkbox > input + span,
+.flex-form__header body.night .process-tree__tree em .custom-checkbox > input + span,
+body.night .process-tree__tree em .breadcrumbs > li:not(:last-child):after,
+body.night .process-tree__tree em .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
+body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
+body.night .process-tree__tree em
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before,
+body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before
 {
     color: #0ce3ac;
 }
@@ -13596,6 +13659,51 @@ body.cyborg .process-tree__header h4
 .list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before,
 body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before
+{
+    color: #0ce3ac;
+}
+
+body.night .process-tree__header
+{
+    border-color: #375a7f;
+    border-bottom: 1px solid #325172;
+    background-color: #375a7f;
+}
+
+body.night .process-tree__header h4
+{
+    color: #d7d7d7;
+}
+
+body.night .process-tree__header h4 .fa,
+body.night .process-tree__header h4 .custom-select:after,
+body.night .process-tree__header h4 .dns-badge__content:before,
+body.night .process-tree__header h4 .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.night .process-tree__header h4 .status.status-reported:before,
+body.night .process-tree__header h4 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.night .process-tree__header h4 .status.status-reported:before,
+body.night .process-tree__header h4 .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table body.night .process-tree__header h4 .status.status-reported:before,
+body.night .process-tree__header h4 .cuckoo-analysis__panel--toggle:before,
+body.night .process-tree__header h4 .cuckoo-analysis__panel--toggle:after,
+body.night .process-tree__header h4 .cuckoo-files ul div:before,
+.cuckoo-files ul body.night .process-tree__header h4 div:before,
+body.night .process-tree__header h4 .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview body.night .process-tree__header h4 .extension-select:after,
+body.night .process-tree__header h4 .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview body.night .process-tree__header h4 .extension-select:before,
+body.night .process-tree__header h4 .flex-form__header .custom-checkbox > input + span,
+.flex-form__header body.night .process-tree__header h4 .custom-checkbox > input + span,
+body.night .process-tree__header h4 .breadcrumbs > li:not(:last-child):after,
+body.night .process-tree__header h4 .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
+body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
+body.night .process-tree__header h4
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before,
+body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before
 {
     color: #0ce3ac;
 }
@@ -13726,6 +13834,23 @@ body.cyborg .process-spec--name .network-display__table > table tbody tr
     background: transparent;
 }
 
+body.night .process-spec--name
+{
+    color: #0ce3ac;
+    background-color: #232323;
+}
+
+body.night .process-spec--name h2,
+body.night .process-spec--name .cuckoo-table,
+body.night .process-spec--name .cuckoo-table__fullscreen,
+body.night .process-spec--name .network-display__table > table,
+body.night .process-spec--name .cuckoo-table tbody tr,
+body.night .process-spec--name .cuckoo-table__fullscreen tbody tr,
+body.night .process-spec--name .network-display__table > table tbody tr
+{
+    background: transparent;
+}
+
 .process-spec--tags
 {
     display: -webkit-box;
@@ -13758,6 +13883,12 @@ body.cyborg .process-spec--tags
 {
     border-top: 1px solid #133b4a;
     background-color: #0d1b21;
+}
+
+body.night .process-spec--tags
+{
+    border-top: 1px solid #2e2e2e;
+    background-color: #232323;
 }
 
 .process-spec--pagination
@@ -13850,6 +13981,35 @@ body.cyborg .process-spec--pagination a.active
     background-color: #020e10;
 }
 
+body.night .process-spec--pagination
+{
+    border-top: 1px solid #393939;
+    background-color: #232323;
+}
+
+body.night .process-spec--pagination ul,
+body.night .process-spec--pagination ul > li
+{
+    border-color: #5f7b99;
+}
+
+body.night .process-spec--pagination a
+{
+    color: #d7d7d7;
+    background-color: #375a7f;
+}
+
+body.night .process-spec--pagination a:hover
+{
+    background-color: #2e2e2e;
+}
+
+body.night .process-spec--pagination a.active
+{
+    color: #d7d7d7;
+    background-color: #232323;
+}
+
 .process-spec--table .cuckoo-table,
 .process-spec--table .cuckoo-table__fullscreen,
 .process-spec--table .network-display__table > table
@@ -13882,6 +14042,13 @@ body.cyborg .process-spec--table .cuckoo-table__fullscreen thead,
 body.cyborg .process-spec--table .network-display__table > table thead
 {
     box-shadow: 0 2px 0 #11242f;
+}
+
+body.night .process-spec--table .cuckoo-table thead,
+body.night .process-spec--table .cuckoo-table__fullscreen thead,
+body.night .process-spec--table .network-display__table > table thead
+{
+    box-shadow: 0 2px 0 #2c4866;
 }
 
 .process-spec--table .cuckoo-table.behavior-search-results,
@@ -13962,6 +14129,13 @@ body.cyborg .process-spec--table .network-display__table > table .date-api p
     color: #0ce3ac;
 }
 
+body.night .process-spec--table .cuckoo-table .date-api p,
+body.night .process-spec--table .cuckoo-table__fullscreen .date-api p,
+body.night .process-spec--table .network-display__table > table .date-api p
+{
+    color: #0ce3ac;
+}
+
 .process-spec--table .search-process
 {
     font-weight: 700;
@@ -14008,6 +14182,13 @@ body.cyborg .process-spec--table .network-display__table > table .date-api p
 body.cyborg .process-spec--table .search-process:hover
 {
     background-color: #0c181e;
+}
+
+body.night .process-spec--table .search-process
+{
+    border-color: #375a7f;
+    border-bottom: 1px solid #325172;
+    background-color: #375a7f;
 }
 
 .process-spec--table tr.collapsed > .search-process .fa:before,
@@ -14084,6 +14265,17 @@ body.cyborg .process-spec .unloaded small
     color: #d7d7d7;
 }
 
+body.night .process-spec .unloaded
+{
+    background-color: #232323;
+}
+
+body.night .process-spec .unloaded p,
+body.night .process-spec .unloaded small
+{
+    color: #acacac;
+}
+
 .process-spec .loaded
 {
     display: none;
@@ -14100,7 +14292,14 @@ body.cyborg .process-spec .unloaded small
 
 body.cyborg .process-spec .loading
 {
+    border-bottom-color: #133b4a;
     background-color: #152d3b;
+}
+
+body.night .process-spec .loading
+{
+    border-bottom-color: #375a7f;
+    background-color: #202020;
 }
 
 .breadcrumbs

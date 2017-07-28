@@ -287,7 +287,7 @@
 		border-color: $night_border_color;
 		background-color: $night_primary_color;
 
-		tr:nth-child(even) {
+		tr:nth-child(odd) {
 			background-color: lighten($night_primary_color, 5);
 		}
 
