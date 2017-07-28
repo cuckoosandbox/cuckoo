@@ -1519,7 +1519,7 @@ class Database(object):
 
     def list_tasks(self, limit=None, details=True, category=None, owner=None,
                    offset=None, status=None, sample_id=None, not_status=None,
-                   completed_after=None, order_by=None):
+                   experiment=None, completed_after=None, order_by=None):
         """Retrieve list of task.
         @param limit: specify a limit of entries.
         @param details: if details about must be included
@@ -1528,7 +1528,8 @@ class Database(object):
         @param offset: list offset
         @param status: filter by task status
         @param sample_id: filter tasks for a sample
-        @param not_status: exclude this task status from filter
+        @param not_status: exclude single (str) or multiple (list) statuses
+        @param experiment: experiment id to filter by
         @param completed_after: only list tasks completed after this timestamp
         @param order_by: definition which field to sort by
         @return: list of tasks.
@@ -1540,7 +1541,10 @@ class Database(object):
             if status:
                 search = search.filter_by(status=status)
             if not_status:
-                search = search.filter(Task.status != not_status)
+                if isinstance(not_status, (list, tuple)):
+                    search = search.filter(~Task.status.in_(not_status))
+                else:
+                    search = search.filter(Task.status != not_status)
             if category:
                 search = search.filter_by(category=category)
             if owner:
@@ -1549,6 +1553,8 @@ class Database(object):
                 search = search.options(joinedload("guest"),
                                         joinedload("errors"),
                                         joinedload("tags"))
+            if experiment:
+                search = search.filter_by(experiment_id=experiment)
             if sample_id is not None:
                 search = search.filter_by(sample_id=sample_id)
             if completed_after:

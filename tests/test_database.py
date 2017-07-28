@@ -168,6 +168,44 @@ class DatabaseEngine(object):
         assert exp_d is None
         assert task_d.experiment_id is None
 
+    def test_list_tasks(self):
+
+        # Get list of all current tasks to compare later
+        task_list = self.d.list_tasks()
+        task_id = self.d.add_path(self.create_file(), experiment=True,
+                        name="list_tasks1", runs=3)
+        task_exp = self.d.view_task(task_id)
+        task_id_1 = self.d.add_path(self.create_file(), owner="Doge")
+        self.add_url("https://google.com/")
+        task_id_2 = self.d.add_path(self.create_file())
+        self.d.set_status(task_id_2, "running")
+        task_id_3 = self.d.add_path(self.create_file())
+        self.d.set_status(task_id_3, "reported")
+
+        assert len(task_list) + 5 == len(self.d.list_tasks())
+        assert len(self.d.list_tasks(limit=2)) == 2
+        assert task_id_1 == self.d.list_tasks(owner="Doge")[0].id
+        assert task_id == self.d.list_tasks(sample_id=task_exp.sample_id)[0].id
+        assert task_id == self.d.list_tasks(
+            experiment=task_exp.experiment_id
+        )[0].id
+
+        # Verify if only the category file is among results
+        assert len([
+               s for s in self.d.list_tasks(category="file")
+               if s.category != "file"
+        ]) == 0
+        # Verify if results only contain reported status
+        assert len([
+                s for s in self.d.list_tasks(status="reported")
+                if s.status != "reported"
+        ]) == 0
+        # Verify if status running is not amongst results
+        assert len([
+                s for s in self.d.list_tasks(not_status="running")
+                if s.status == "running"
+        ]) == 0
+
     def test_error_exists(self):
         task_id = self.add_url("http://google.com/")
         self.d.add_error("A"*1024, task_id)
