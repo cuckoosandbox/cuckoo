@@ -1665,6 +1665,34 @@ class Database(object):
             session.close()
         return True
 
+    def unlock_machine_by_experiment(self, experiment):
+        """Remove lock from a virtual machine.
+        @param experiment: experiment id
+        @return: unlocked machine
+        """
+        session = self.Session()
+        try:
+            machine = session.query(Machine)
+            machine = machine.filter(Machine.locked_by == experiment).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error unlocking machine: {0}".format(e))
+            session.close()
+            return None
+
+        if machine:
+            machine.locked_by = None
+            try:
+                session.commit()
+                session.refresh(machine)
+            except SQLAlchemyError as e:
+                log.debug("Database error locking machine: {0}".format(e))
+                session.rollback()
+                return None
+            finally:
+                session.close()
+
+        return machine
+
     def update_experiment(self, name, id=None, delta=None, timeout=None,
                           machine_name=False, runs=None, times=None):
         """Update fields of an experiment.

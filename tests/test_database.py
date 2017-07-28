@@ -438,6 +438,20 @@ class DatabaseEngine(object):
         assert not m_exp_u.locked and m_exp_u.label == m_exp_l.label
         assert m_exp_u.locked_by is None
 
+    def test_unlock_machine_by_experiment(self):
+        self.d.add_machine(
+            "unlock_by_exp1", "unlock_by_exp1", "1.2.3.4", "CuckooOS", ["opt3", "opt4"],
+            "tag1", "int0", "snap0", "5.6.7.8", 2043, locked_by=100
+        )
+
+        machine = self.d.view_machine("unlock_by_exp1")
+        machine_unlocked = self.d.unlock_machine_by_experiment(100)
+        machine_none = self.d.unlock_machine_by_experiment(8274782)
+
+        assert machine.locked_by == 100
+        assert machine_unlocked.locked_by is None
+        assert machine_none is None
+
     @mock.patch("cuckoo.common.objects.magic")
     def test_add_sample(self, p):
         p.from_file.return_value = ""
