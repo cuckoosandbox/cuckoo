@@ -120,6 +120,13 @@ class Tree {
 
   }
 
+  // opens all tree items
+  toggleAll(open = true) {
+    let toggles = this.el.find('[data-tree="toggle"]');
+    toggles.closest('li').children('ul').toggleClass('open', open);
+    toggles.toggleClass('is-open', open);
+  }
+
 }
 
 /*
@@ -251,6 +258,9 @@ class ProcessBehaviorView {
     this._tags   = this._$.find('.process-spec--tags');
     this._loader = null;
     this._search = this._$.find('.process-tree__search');
+
+    // opens all items in the tree on init
+    this._tree.toggleAll(true);
 
     // create the loader if we have the loader
     if(this._$.find('.loading').length) {

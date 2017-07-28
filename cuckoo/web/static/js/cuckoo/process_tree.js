@@ -131,6 +131,18 @@ var Tree = function () {
       targetList.toggleClass('open');
       $toggle.toggleClass('is-open', targetList.hasClass('open'));
     }
+
+    // opens all tree items
+
+  }, {
+    key: 'toggleAll',
+    value: function toggleAll() {
+      var open = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      var toggles = this.el.find('[data-tree="toggle"]');
+      toggles.closest('li').children('ul').toggleClass('open', open);
+      toggles.toggleClass('is-open', open);
+    }
   }]);
 
   return Tree;
@@ -279,6 +291,9 @@ var ProcessBehaviorView = function () {
     this._tags = this._$.find('.process-spec--tags');
     this._loader = null;
     this._search = this._$.find('.process-tree__search');
+
+    // opens all items in the tree on init
+    this._tree.toggleAll(true);
 
     // create the loader if we have the loader
     if (this._$.find('.loading').length) {
