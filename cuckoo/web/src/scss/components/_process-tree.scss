@@ -125,6 +125,7 @@
 
             &.fa {
 
+              text-align: center;
               font-size: 1.5em;
 
               &:before {
@@ -142,6 +143,11 @@
               text-decoration: none;
             }
 
+          }
+
+          a.fa,
+          .fill {
+            width: 20px;
           }
 
         }

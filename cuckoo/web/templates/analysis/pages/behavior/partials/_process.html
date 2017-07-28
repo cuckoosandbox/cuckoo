@@ -10,6 +10,8 @@
     <span class="pid">{{ process.pid }}</span>
     {% if process.children %}
       <a class="fa" data-tree="toggle"></a>
+    {% else %}
+      <span class="fill"></span>
     {% endif %}
   </div>
 

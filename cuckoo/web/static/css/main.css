@@ -13243,6 +13243,8 @@ body.night .process-tree__search
 .cuckoo-files #selection-overview .process-tree__tree .processes li > div a.extension-select:before
 {
     font-size: 1.5em;
+
+    text-align: center;
 }
 
 .process-tree__tree .processes li > div a.fa:before,
@@ -13279,6 +13281,26 @@ body.night .process-tree__search
 {
     cursor: pointer;
     text-decoration: none;
+}
+
+.process-tree__tree .processes li > div a.fa,
+.process-tree__tree .processes li > div a.custom-select:after,
+.process-tree__tree .processes li > div a.dns-badge__content:before,
+.process-tree__tree .processes li > div .cuckoo-table#submission-task-table a.status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div #submission-task-table.cuckoo-table__fullscreen a.status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div .network-display__table > table#submission-task-table a.status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__tree .processes li > div a.status.status-reported:before,
+.process-tree__tree .processes li > div a.cuckoo-analysis__panel--toggle:before,
+.process-tree__tree .processes li > div a.cuckoo-analysis__panel--toggle:after,
+.process-tree__tree .processes li > div .cuckoo-files #selection-overview a.extension-select:after,
+.cuckoo-files #selection-overview .process-tree__tree .processes li > div a.extension-select:after,
+.process-tree__tree .processes li > div .cuckoo-files #selection-overview a.extension-select:before,
+.cuckoo-files #selection-overview .process-tree__tree .processes li > div a.extension-select:before,
+.process-tree__tree .processes li > div .fill
+{
+    width: 20px;
 }
 
 .process-tree__tree .processes p
