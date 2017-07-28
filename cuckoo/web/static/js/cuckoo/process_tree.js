@@ -10,34 +10,6 @@ function parseProcessData(scr) {
   return JSON.parse(scr.text());
 }
 
-// making a sticky header
-function stickyTableHeader(table) {
-
-  var margin = 20;
-  var navHeight = $("#primary-nav").height();
-  var thead = $(table).find('thead');
-  var topPos = thead.offset().top - navHeight;
-  var container = $(table).closest('.flex-nav__body');
-
-  // listen to scroll events and respond to that on the scrolling
-  // container.
-  container.bind('scroll.stickyThead', function (e) {
-
-    if (container.scrollTop() > topPos - margin) {
-      thead.css('transform', 'translateY(' + (-(topPos - container.scrollTop()) + margin) + 'px)');
-    } else {
-      thead.css('transform', 'translateY(0px)');
-    }
-  });
-}
-
-// reset a sticky thead
-function unstickTableHeader(table) {
-  var container = $(table).closest('.flex-nav__body');
-  // resets existing event handlers
-  container.unbind('scroll.stickyThead');
-}
-
 /*
   Interface controller for a 'tree'. This piece works with
   a list-in-list HTML definition with at least the following
@@ -290,6 +262,7 @@ var ProcessBehaviorView = function () {
     this._bar = null;
     this._tags = this._$.find('.process-spec--tags');
     this._loader = null;
+    this._sticky = null;
     this._search = this._$.find('.process-tree__search');
 
     // opens all items in the tree on init
@@ -431,11 +404,6 @@ var ProcessBehaviorView = function () {
       // break out if we are already loading a search request
       if (this.isLoadingSearch) return;
 
-      // unstick previous table bindings
-      if (this._table) {
-        unstickTableHeader(this._table);
-      }
-
       // only proceed if the conditions are good for search
       if (window.task_id && query) {
 
@@ -458,12 +426,13 @@ var ProcessBehaviorView = function () {
           self._$.find('.process-spec--name table').hide();
           self._tags.hide();
 
-          self.renderTable(response, true);
-          self._$.removeClass('searching');
-
           // auto-close process tree because the results are gathered amongst all
           // processes and therefore the tree is not of use using the search.
           self._$.find('.process-tree__tree').removeClass('open');
+
+          // render the table
+          self._$.removeClass('searching');
+          self.renderTable(response, true);
         });
       } else {
         console.error('Task ID and query required for searching. Aborting search.');
@@ -497,6 +466,7 @@ var ProcessBehaviorView = function () {
 
       var self = this;
       var table = $.parseHTML(plainTextResponse)[0];
+      var sticky = null;
 
       // for search, dive deeper in the HTML to find the table
       if (search) {
@@ -507,11 +477,6 @@ var ProcessBehaviorView = function () {
       var tableColumns = $(table).find('thead th').length;
       var tableChildren = $(table).find('tbody').children();
       var noResultCell = null;
-
-      // 'unsticks' the table header
-      if (this._table) {
-        unstickTableHeader(this._table);
-      }
 
       // re-style the table by setting classes
       $(table).removeClass('table table-bordered');
@@ -553,9 +518,15 @@ var ProcessBehaviorView = function () {
         });
       }
 
-      // make a sticky table header
-      if (tableChildren.length > 0) {
-        stickyTableHeader(table);
+      if (Sticky) {
+
+        if (this._sticky) this._sticky.unstick();
+
+        this._sticky = new Sticky({
+          el: $(table).find('thead'),
+          parent: $(".flex-nav__body"),
+          offset: $('#primary-nav').height() + 20
+        });
       }
 
       // reference current table to constructor
