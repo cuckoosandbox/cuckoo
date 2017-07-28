@@ -15,7 +15,7 @@ function stickyTableHeader(table) {
 
   // listen to scroll events and respond to that on the scrolling
   // container.
-  container.bind('scroll.stickyThead', function(e) {
+  container.bind('scroll.stickyThead', e => {
 
     if(container.scrollTop() > topPos-margin) {
       thead.css('transform', `translateY(${-(topPos - container.scrollTop())+margin}px)`);

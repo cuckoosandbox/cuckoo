@@ -63,6 +63,10 @@
 				background-color: #f5f5f5;
 				text-align: center;
 				padding: 20px 0;
+
+				@include cuckoo-theme('cyborg') {
+					background-color: #030e10;
+				}
 			}
 		}
 
@@ -240,6 +244,10 @@
 		tbody tr,
 		tfoot {
 			border-color: $cyborg_border_color;
+		}
+
+		tr:nth-child(odd) {
+			background-color: $cyborg_primary_color;
 		}
 
 		tbody tr.clickable:hover {

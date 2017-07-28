@@ -3930,6 +3930,8 @@ body.cyborg .cuckoo-errors .troubleshoot,
 body.cyborg .network-display__request-summary,
 body.cyborg .source-destination .title,
 body.cyborg .cuckoo-files__controls,
+body.cyborg .process-tree__header,
+body.cyborg .process-spec--table .search-process,
 body.cyborg .dashboard .dashboard-module__header
 {
     color: #fff;
@@ -5057,6 +5059,13 @@ body .ui-tooltip
 
     word-wrap: break-word;
     pointer-events: none;
+}
+
+body.cyborg .cuckoo-tooltip
+{
+    color: #d7d7d7;
+    border-color: #133b4a;
+    background-color: #0d1b21;
 }
 
 .grouped-buttons button,
@@ -6546,6 +6555,17 @@ body.cyborg .process-tree__search-submit
     background-color: #f5f5f5;
 }
 
+body.cyborg .cuckoo-table thead td.no-result,
+body.cyborg .cuckoo-table__fullscreen thead td.no-result,
+body.cyborg .network-display__table > table thead td.no-result,
+body.cyborg
+.cuckoo-table tbody td.no-result,
+body.cyborg .cuckoo-table__fullscreen tbody td.no-result,
+body.cyborg .network-display__table > table tbody td.no-result
+{
+    background-color: #030e10;
+}
+
 .cuckoo-table tfoot,
 .cuckoo-table__fullscreen tfoot,
 .network-display__table > table tfoot
@@ -6823,6 +6843,13 @@ body.cyborg .cuckoo-table__fullscreen tfoot,
 body.cyborg .network-display__table > table tfoot
 {
     border-color: #133b4a;
+}
+
+body.cyborg .cuckoo-table tr:nth-child(odd),
+body.cyborg .cuckoo-table__fullscreen tr:nth-child(odd),
+body.cyborg .network-display__table > table tr:nth-child(odd)
+{
+    background-color: #152d3b;
 }
 
 body.cyborg .cuckoo-table tbody tr.clickable:hover,
@@ -12997,6 +13024,11 @@ body.night .flex-static__summary li
     */
 }
 
+body.cyborg .process-tree
+{
+    border: 1px solid #0f2f3b;
+}
+
 .process-tree__search
 {
     position: relative;
@@ -13136,6 +13168,11 @@ body.night .flex-static__summary li
 .process-tree__search-submit.loading span
 {
     display: none;
+}
+
+body.cyborg .process-tree__search
+{
+    border-color: #0b232c;
 }
 
 .process-tree__tree
@@ -13396,9 +13433,62 @@ body.night .flex-static__summary li
     background-color: #6297f8;
 }
 
+body.cyborg .process-tree__tree .processes
+{
+    background-color: #020e10;
+}
+
+body.cyborg .process-tree__tree .processes div.selected:before
+{
+    background-color: #152d3b;
+}
+
 .process-tree__tree ul
 {
     padding-left: 10px;
+}
+
+body.cyborg .process-tree__tree
+{
+    border-bottom: 1px solid #133b4a;
+}
+
+body.cyborg .process-tree__tree .processes li:before
+{
+    background-color: #133b4a;
+}
+
+body.cyborg .process-tree__tree em .fa,
+body.cyborg .process-tree__tree em .custom-select:after,
+body.cyborg .process-tree__tree em .dns-badge__content:before,
+body.cyborg .process-tree__tree em .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.cyborg .process-tree__tree em .status.status-reported:before,
+body.cyborg .process-tree__tree em #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.cyborg .process-tree__tree em .status.status-reported:before,
+body.cyborg .process-tree__tree em .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table body.cyborg .process-tree__tree em .status.status-reported:before,
+body.cyborg .process-tree__tree em .cuckoo-analysis__panel--toggle:before,
+body.cyborg .process-tree__tree em .cuckoo-analysis__panel--toggle:after,
+body.cyborg .process-tree__tree em .cuckoo-files ul div:before,
+.cuckoo-files ul body.cyborg .process-tree__tree em div:before,
+body.cyborg .process-tree__tree em .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview body.cyborg .process-tree__tree em .extension-select:after,
+body.cyborg .process-tree__tree em .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview body.cyborg .process-tree__tree em .extension-select:before,
+body.cyborg .process-tree__tree em .flex-form__header .custom-checkbox > input + span,
+.flex-form__header body.cyborg .process-tree__tree em .custom-checkbox > input + span,
+body.cyborg .process-tree__tree em .breadcrumbs > li:not(:last-child):after,
+body.cyborg .process-tree__tree em .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
+body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
+body.cyborg .process-tree__tree em
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before,
+body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before
+{
+    color: #0ce3ac;
 }
 
 .process-tree__header
@@ -13470,6 +13560,44 @@ body.night .flex-static__summary li
 .process-tree__header--right:focus
 {
     text-decoration: none;
+}
+
+body.cyborg .process-tree__header
+{
+    border-bottom: 1px solid #133b4a;
+}
+
+body.cyborg .process-tree__header h4 .fa,
+body.cyborg .process-tree__header h4 .custom-select:after,
+body.cyborg .process-tree__header h4 .dns-badge__content:before,
+body.cyborg .process-tree__header h4 .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table body.cyborg .process-tree__header h4 .status.status-reported:before,
+body.cyborg .process-tree__header h4 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen body.cyborg .process-tree__header h4 .status.status-reported:before,
+body.cyborg .process-tree__header h4 .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table body.cyborg .process-tree__header h4 .status.status-reported:before,
+body.cyborg .process-tree__header h4 .cuckoo-analysis__panel--toggle:before,
+body.cyborg .process-tree__header h4 .cuckoo-analysis__panel--toggle:after,
+body.cyborg .process-tree__header h4 .cuckoo-files ul div:before,
+.cuckoo-files ul body.cyborg .process-tree__header h4 div:before,
+body.cyborg .process-tree__header h4 .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview body.cyborg .process-tree__header h4 .extension-select:after,
+body.cyborg .process-tree__header h4 .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview body.cyborg .process-tree__header h4 .extension-select:before,
+body.cyborg .process-tree__header h4 .flex-form__header .custom-checkbox > input + span,
+.flex-form__header body.cyborg .process-tree__header h4 .custom-checkbox > input + span,
+body.cyborg .process-tree__header h4 .breadcrumbs > li:not(:last-child):after,
+body.cyborg .process-tree__header h4 .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
+body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
+body.cyborg .process-tree__header h4
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before,
+body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before
+{
+    color: #0ce3ac;
 }
 
 .process-tree__tree .process-tree__body,
@@ -13581,6 +13709,23 @@ body.night .flex-static__summary li
     text-align: right;
 }
 
+body.cyborg .process-spec--name
+{
+    color: #0ce3ac;
+    background-color: #030e10;
+}
+
+body.cyborg .process-spec--name h2,
+body.cyborg .process-spec--name .cuckoo-table,
+body.cyborg .process-spec--name .cuckoo-table__fullscreen,
+body.cyborg .process-spec--name .network-display__table > table,
+body.cyborg .process-spec--name .cuckoo-table tbody tr,
+body.cyborg .process-spec--name .cuckoo-table__fullscreen tbody tr,
+body.cyborg .process-spec--name .network-display__table > table tbody tr
+{
+    background: transparent;
+}
+
 .process-spec--tags
 {
     display: -webkit-box;
@@ -13607,6 +13752,12 @@ body.night .flex-static__summary li
 .process-spec--tags > .badge:hover
 {
     cursor: pointer;
+}
+
+body.cyborg .process-spec--tags
+{
+    border-top: 1px solid #133b4a;
+    background-color: #0d1b21;
 }
 
 .process-spec--pagination
@@ -13670,6 +13821,35 @@ body.night .flex-static__summary li
     background-color: #6297f8;
 }
 
+body.cyborg .process-spec--pagination
+{
+    border-top: 1px solid #133b4a;
+    background-color: #0d1b21;
+}
+
+body.cyborg .process-spec--pagination ul,
+body.cyborg .process-spec--pagination ul > li
+{
+    border-color: #133b4a;
+}
+
+body.cyborg .process-spec--pagination a
+{
+    color: #d7d7d7;
+    background-color: #0d1b21;
+}
+
+body.cyborg .process-spec--pagination a:hover
+{
+    background-color: #0f1a1c;
+}
+
+body.cyborg .process-spec--pagination a.active
+{
+    color: #0ce3ac;
+    background-color: #020e10;
+}
+
 .process-spec--table .cuckoo-table,
 .process-spec--table .cuckoo-table__fullscreen,
 .process-spec--table .network-display__table > table
@@ -13695,6 +13875,13 @@ body.night .flex-static__summary li
 .process-spec--table .network-display__table > table thead th
 {
     border-bottom: 0;
+}
+
+body.cyborg .process-spec--table .cuckoo-table thead,
+body.cyborg .process-spec--table .cuckoo-table__fullscreen thead,
+body.cyborg .process-spec--table .network-display__table > table thead
+{
+    box-shadow: 0 2px 0 #11242f;
 }
 
 .process-spec--table .cuckoo-table.behavior-search-results,
@@ -13768,6 +13955,13 @@ body.night .flex-static__summary li
     margin-left: 15px;
 }
 
+body.cyborg .process-spec--table .cuckoo-table .date-api p,
+body.cyborg .process-spec--table .cuckoo-table__fullscreen .date-api p,
+body.cyborg .process-spec--table .network-display__table > table .date-api p
+{
+    color: #0ce3ac;
+}
+
 .process-spec--table .search-process
 {
     font-weight: 700;
@@ -13809,6 +14003,11 @@ body.night .flex-static__summary li
 .list-panel__widget .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before
 {
     content: '\f078';
+}
+
+body.cyborg .process-spec--table .search-process:hover
+{
+    background-color: #0c181e;
 }
 
 .process-spec--table tr.collapsed > .search-process .fa:before,
@@ -13874,6 +14073,17 @@ body.night .flex-static__summary li
     color: #aaa;
 }
 
+body.cyborg .process-spec .unloaded
+{
+    background-color: #0d1b21;
+}
+
+body.cyborg .process-spec .unloaded p,
+body.cyborg .process-spec .unloaded small
+{
+    color: #d7d7d7;
+}
+
 .process-spec .loaded
 {
     display: none;
@@ -13886,6 +14096,11 @@ body.night .flex-static__summary li
 
     border-bottom: 1px solid #ccc;
     background-color: #f0f0f0;
+}
+
+body.cyborg .process-spec .loading
+{
+    background-color: #152d3b;
 }
 
 .breadcrumbs
@@ -16009,14 +16224,14 @@ body.cyborg .table > thead > tr > th
     border-bottom: 0 solid #8d8d8d;
 }
 
-bade[data-theme='cyborg'] .table-striped > tbody > tr:nth-of-type(even),
-body.cyborg .table-striped > tbody > tr:nth-of-type(even)
+bade[data-theme='cyborg'] .table-striped > tbody > tr:nth-of-type(odd),
+body.cyborg .table-striped > tbody > tr:nth-of-type(odd)
 {
     background-color: #0b1d21;
 }
 
-bade[data-theme='cyborg'] .table-striped > tbody > tr:nth-of-type(odd),
-body.cyborg .table-striped > tbody > tr:nth-of-type(odd)
+bade[data-theme='cyborg'] .table-striped > tbody > tr:nth-of-type(even),
+body.cyborg .table-striped > tbody > tr:nth-of-type(even)
 {
     background-color: #030e10;
 }

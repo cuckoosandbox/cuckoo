@@ -23,4 +23,10 @@ body .ui-tooltip {
     word-wrap: break-word;
     pointer-events: none;
   }
+
+	@include cuckoo-theme('cyborg') {
+		background-color: $cyborg_panel_color;
+		border-color: $cyborg_border_color;
+		color: $cyborg_text_color;
+	}
 }
