@@ -9,6 +9,7 @@ import pytest
 import tempfile
 
 from sqlalchemy.orm.exc import DetachedInstanceError
+from sqlalchemy.orm import lazyload
 
 from cuckoo.common.files import Files
 from cuckoo.core.database import (
@@ -507,6 +508,21 @@ class DatabaseEngine(object):
         )
         assert task.experiment.runs == 1
         assert task.experiment.times == 1
+
+    def test_list_experiments(self):
+
+        exp_list = self.d.list_experiments()
+        for x in range(1, 3):
+            self.d.add_path(self.create_file(), experiment=True,
+                            name="list_exp%s" % x, runs=3, delta="2h")
+
+        assert len(exp_list) + 2 == len(self.d.list_experiments())
+        assert len([
+                   s for s in self.d.list_experiments()
+                   if s.name in ["list_exp1", "list_exp2"]
+                   ]) == 2
+        assert exp_list.pop().last_task is not None
+
 
     @mock.patch("cuckoo.common.objects.magic")
     def test_add_sample(self, p):

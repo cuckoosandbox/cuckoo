@@ -15,7 +15,8 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
-    sessionmaker, relationship, joinedload, backref, make_transient
+    sessionmaker, relationship, joinedload, backref, make_transient,
+    lazyload
 )
 
 from cuckoo.common.config import config, parse_options, emit_options
@@ -1199,7 +1200,8 @@ class Database(object):
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", owner="", machine="", platform="",
                  tags=None, memory=False, enforce_timeout=False, clock=None,
-                 submit_id=None, name=None, added_on=None, delta=None, runs=None,
+                 submit_id=None, name=None, added_on=None, delta=None,
+                 runs=None,
                  experiment=False):
         """Add a task to database from file path.
         @param file_path: sample path.
@@ -1500,15 +1502,37 @@ class Database(object):
 
         return task
 
-    def list_experiments(self):
+    def list_experiments(self, limit=None, details=True, offset=None,
+                         set_last_task=True):
+        """"Retrieve list of experiments
+        @param limit: limit of entries
+        @param details: include all task information for each experiment
+        @param offset: list offset
+        @param set_last_task add attribute to each exp obj pointing to
+        last task for this exp
+        """
         session = self.Session()
         try:
             experiments = session.query(Experiment).options(
-                joinedload("tasks")).order_by(Experiment.id).all()
+                lazyload("tasks")).order_by(
+                Experiment.id).all()
+
+            experiments = session.query(Experiment)
+
+            if details:
+                experiments = experiments.options(lazyload("tasks"))
 
             for experiment in experiments:
                 experiment.last_task = experiment.tasks.order_by(
                     Task.id.desc()).first()
+
+            experiments = experiments.order_by(Experiment.id)
+            experiments = experiments.limit(limit).offset(offset).all()
+
+            if set_last_task:
+                for experiment in experiments:
+                    experiment.last_task = experiment.tasks.order_by(
+                        Task.id.desc()).first()
 
         except SQLAlchemyError as e:
             log.debug("Database error listing experiments: {0}".format(e))
