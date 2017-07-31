@@ -89,7 +89,7 @@ class LinuxSystemTap(BehaviorHandler):
 
             # only update proc info after first succesful execve in this pid
             if not syscall["return_value"] and not pid["command_line"]:
-                pid["process_name"] = os.path.basename(syscall["arguments"]["p0"])
+                pid["process_name"] = os.path.basename(str(syscall["arguments"]["p0"]))
                 pid["command_line"] = " ".join(syscall["arguments"]["p1"])
 
     def get_proc(self, pid):
@@ -175,7 +175,16 @@ class StapParser(object):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
     def parse_struct(self, argstr):
-        return {key: val for key, val in (member.split("=") for member in argstr.lstrip("{").split(", "))}
+        parsed = {}
+        for member in argstr.lstrip("{").split(", "):
+            try:
+                key, val = member.split("=")
+                parsed[key] = val
+            except ValueError as e:
+                val = member
+                parsed[val] = ""
+        return parsed
+
 
     def parse_string(self, argstr):
         return argstr.strip("\"").decode("string_escape")
