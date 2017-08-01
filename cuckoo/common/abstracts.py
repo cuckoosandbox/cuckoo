@@ -879,6 +879,18 @@ class Signature(object):
                                  regex=regex,
                                  all=all)
 
+    def check_command_line(self, pattern, regex=False, all=False):
+        """Checks for a file being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_summary("command_line"),
+                                 regex=regex,
+                                 all=all)
+
     def check_key(self, pattern, regex=False, actions=None, pid=None,
                   all=False):
         """Checks for a registry key being accessed.
