@@ -19,7 +19,7 @@ from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.plugins import RunProcessing
-from cuckoo.core.startup import init_console_logging
+from cuckoo.core.startup import init_console_logging, init_yara
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import (
@@ -406,6 +406,10 @@ class TestProcessing(object):
         assert s.run() == []
 
     def test_targetinfo(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
         ti = TargetInfo()
         ti.file_path = __file__
         ti.set_task({
@@ -790,6 +794,7 @@ class TestBehavior(object):
     def test_extract_scripts(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        init_yara()
 
         mkdir(cwd(analysis=1))
 
