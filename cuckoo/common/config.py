@@ -786,6 +786,9 @@ class Config(object):
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
+                "dummy_enabled": Boolean(False),
+                "dummy_port": Int(1),
+                "ports": String("7 9 13 17 19 21 22 25 37 69 79 80 110 113 123 443 465 514 990 995 6667")
             },
             "tor": {
                 "enabled": Boolean(False),

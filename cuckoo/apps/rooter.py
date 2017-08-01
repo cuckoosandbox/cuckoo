@@ -178,7 +178,7 @@ def srcroute_disable(rt_table, ipaddr):
     run(s.ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(s.ip, "route", "flush", "cache")
 
-def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
+def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port, ports=False):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
@@ -188,6 +188,15 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
+
+    if ports:
+        ports = ports.split(" ")
+        for protocol in ("tcp", "udp"):
+            for x in range(0, len(ports), 15):
+                run(*[s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+                    "-p", protocol, "-m", "multiport", "--dports"] +  ports[x:x+15] +
+                     ["-j", "DNAT", "--to-destination", inetsim_ip]
+                )
 
     run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP")
@@ -201,7 +210,7 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
 
-def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
+def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port, ports=False):
     """Enable hijacking of all traffic and send it to InetSIM."""
     run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
@@ -210,6 +219,15 @@ def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
+
+    if ports:
+        ports = ports.split(" ")
+        for protocol in ("tcp", "udp"):
+            for x in range(0, len(ports), 15):
+                run(*[s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+                    "-p", protocol, "-m", "multiport", "--dports"] +  ports[x:x+15] +
+                     ["-j", "DNAT", "--to-destination", inetsim_ip]
+                )
 
     run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP")

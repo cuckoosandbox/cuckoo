@@ -302,12 +302,34 @@ class AnalysisManager(threading.Thread):
 
         if self.route == "inetsim":
             machinery = config("cuckoo:cuckoo:machinery")
-            rooter(
-                "inetsim_enable", self.machine.ip,
-                config("routing:inetsim:server"),
-                config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port"))
-            )
+
+            if config("routing:inetsim:dummy_enabled"):
+                dest = "{}:{}".format(
+                    config("routing:inetsim:server"),
+                    config("routing:inetsim:dummy_port")
+                )
+                if all(port.isdigit() for port in config("routing:inetsim:ports").split(" ")):
+                    ports = config("routing:inetsim:ports")
+                else:
+                    logging.debug("Non digits found in routing:inetsim:ports value")
+                    ports = False
+            else:
+                dest = config("routing:inetsim:server")
+                ports = False
+
+            if ports:
+                rooter(
+                    "inetsim_enable", self.machine.ip, dest,
+                    config("%s:%s:interface" % (machinery, machinery)),
+                    str(config("cuckoo:resultserver:port")),
+                    ports,
+                )
+            else:
+                rooter(
+                    "inetsim_enable", self.machine.ip, dest,
+                    config("%s:%s:interface" % (machinery, machinery)),
+                    str(config("cuckoo:resultserver:port"))
+                )
 
         if self.route == "tor":
             rooter(
@@ -353,12 +375,34 @@ class AnalysisManager(threading.Thread):
 
         if self.route == "inetsim":
             machinery = config("cuckoo:cuckoo:machinery")
-            rooter(
-                "inetsim_disable", self.machine.ip,
-                config("routing:inetsim:server"),
-                config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port"))
-            )
+
+            if config("routing:inetsim:dummy_enabled"):
+                dest = "{}:{}".format(
+                    config("routing:inetsim:server"),
+                    config("routing:inetsim:dummy_port")
+                )
+                if all(port.isdigit() for port in config("routing:inetsim:ports").split(" ")):
+                    ports = config("routing:inetsim:ports")
+                else:
+                    logging.debug("Non digits found in routing:inetsim:ports value")
+                    ports = False
+            else:
+                dest = config("routing:inetsim:server")
+                ports = False
+
+            if ports:
+                rooter(
+                    "inetsim_disable", self.machine.ip, dest,
+                    config("%s:%s:interface" % (machinery, machinery)),
+                    str(config("cuckoo:resultserver:port")),
+                    ports,
+                )
+            else:
+                rooter(
+                    "inetsim_disable", self.machine.ip, dest,
+                    config("%s:%s:interface" % (machinery, machinery)),
+                    str(config("cuckoo:resultserver:port"))
+                )
 
         if self.route == "tor":
             rooter(
