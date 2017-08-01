@@ -1,20 +1,21 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
 
+ // external 3rd party imports
+ @import "bourbon"; // <== sass utility framework
+ @import "font-awesome"; // <== icon kit
+ @import "roboto"; // <== application-wide font
+
 // import variables and mixins files [exposed globally]
 @import "variables";
 @import "mixins";
 
-// external lib - fontawesome (icon font)
-@import "font-awesome";
-@import "roboto";
-
 // general css on the body and the html
 html { background: #1c1c1c; }
-body { 
+body {
 	padding-top: 50px;
 }
 
@@ -34,7 +35,7 @@ body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],
 body[id^="analysis"]:not([id="analysis.views.pending"]):not([id="analysis.views.search"]):not([id="analysis/recent"]):not([id="analysis/import"]) {
-	footer:not(.flex-grid__footer), 
+	footer:not(.flex-grid__footer),
 	#footer-extra {
 		display: none;
 	}
@@ -51,9 +52,12 @@ body#analysis {
 
 // components
 @import "components/app-nav";
+@import "components/tooltip";
 @import "components/buttons";
+@import "components/tree";
 @import "components/analysis-sidebar";
 @import "components/flex-navigation";
+@import "components/table";
 @import "components/cuckoo-analysis";
 @import "components/network-http-request";
 @import "components/dndupload";
@@ -68,12 +72,12 @@ body#analysis {
 @import "components/cuckoo-box";
 @import "components/errors";
 @import "components/footer";
-@import "components/table";
 @import "components/network-display";
 @import "components/flex-tabs";
 @import "components/flex-grid";
 @import "components/cuckoo-filetree";
 @import "components/flex-form";
+@import "components/process-tree";
 @import "components/breadcrumbs";
 @import "components/page-freeze";
 @import "components/dashboard";

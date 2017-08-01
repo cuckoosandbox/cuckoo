@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -11,7 +11,7 @@ $cuckoo_color_priority_high: #D7586F;
 
 // UTILITY COLORS
 $cuckoo_default_grey: #999999;
-$cuckoo_secundary_color: #6297F8; 
+$cuckoo_secundary_color: #6297F8;
 $cuckoo_border_color: #CECECE;
 
 // THEME COLORS
@@ -26,13 +26,13 @@ $cyborg_border_color: #133b4a;
 
 // cyborg heading style
 %cyborg-heading {
-    color: #ffffff;
-    background: linear-gradient(rgb(40, 79, 92), #112c35);
-    border-color: #2b5a6a;
-    border: 0px;
-    border-top: 1px solid #2b5a6a;
-    border-left: 1px solid #003f54;
-    border-right: 1px solid #003f54;
+  color: #ffffff;
+  background: linear-gradient(rgb(40, 79, 92), #112c35);
+  border-color: #2b5a6a;
+  border: 0px;
+  border-top: 1px solid #2b5a6a;
+  border-left: 1px solid #003f54;
+  border-right: 1px solid #003f54;
 }
 
 $night_primary_color: #152d3b;
@@ -47,3 +47,39 @@ $night_darker_color: #131313;
 
 $night_table_even_color: #2d2d2d;
 $nigh_table_odd_color: #313131;
+
+// headstart on the dynamic cuckoo color library: badges
+$badge-colors: (
+  'default': #777777,
+  'registry': #ffc5c5,
+  'file': #c5e0ff,
+  'network': #d3ffc5,
+  'process': #c5e0ff,
+  'services': #ccc5ff,
+  'synchronisation': #ccc5ff,
+  'iexplore': #ccddbb,
+  'office': #ccddbb,
+  'device': #ccc5ff,
+  'system': #fffcc5,
+  'windows': #ffc5ee,
+  'pdf': #ccddbb
+);
+
+// mixin for creating badge swagger based on color
+@mixin badge($color-name, $useTint: false) {
+  $color: map-get($badge-colors, $color-name);
+  background-color: $color;
+
+  @if $useTint {
+    color: tint($color, 50%);
+  } @else {
+    color: shade($color, 50%);
+  }
+
+  &:hover { background-color: shade($color, 5%); }
+
+  &.active {
+    background-color: $cuckoo_secundary_color;
+    color: #fff;
+  }
+}

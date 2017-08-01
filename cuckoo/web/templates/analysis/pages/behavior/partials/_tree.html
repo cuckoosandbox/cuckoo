@@ -1,0 +1,17 @@
+<!--
+  This is the most hacky way to get the pagination info in the current setup, this HAS to be moved to a better way, but for
+  now this should work.
+-->
+<script id="page-info">
+  window.PROCESS_TREE_PAGINATION_INFO = {
+    {% for process in report.analysis.behavior.processes %}
+      '{{ process.pid }}': {{ process.calls|length }},
+    {% endfor %}
+  };
+</script>
+
+<ul class="processes tree" data-tree="init">
+  {% for process in report.analysis.behavior.processtree|filter_key_if_has:"track" %}
+    {% include "analysis/pages/behavior/partials/_process.html" %}
+  {% endfor %}
+</ul>

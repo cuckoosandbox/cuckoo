@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -6,18 +6,18 @@
 
 .badge {
 
-    &.file { background-color: #ffe3c5; }
-    &.registry { background-color: #ffc5c5; }
-    &.process { background-color: #c5e0ff; }
-    &.services { background-color: #ccc5ff; }
-    &.device { background-color: #ccc5ff; }
-    &.network { background-color: #d3ffc5; }
-    &.synchronisation { background-color: #f9c5ff; }
-    &.system { background-color: #fffcc5; }
-    &.windows { background-color: #ffc5ee; }
-    &.iexplore { background-color: #ccddbb; }
-    &.office { background-color: #ccddbb; }
-    &.pdf { background-color: #ccddbb; }
+    &.file { @include badge('file'); }
+    &.registry { @include badge('registry'); }
+    &.process { @include badge('process'); }
+    &.services { @include badge('services'); }
+    &.device { @include badge('device'); }
+    &.network { @include badge('network'); }
+    &.synchronisation { @include badge('synchronisation'); }
+    &.system { @include badge('system'); }
+    &.windows { @include badge('windows'); }
+    &.iexplore { @include badge('iexplore') }
+    &.office { @include badge('office'); }
+    &.pdf { @include badge('pdf'); }
 
 }
 

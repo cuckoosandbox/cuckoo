@@ -9,7 +9,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="Cuckoo Sandbox" />
         <meta name="author" content="Cuckoo Sandbox" />
-        
+
         <link href="{% static "css/vendor.css"%}" rel="stylesheet" type="text/css" />
         <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
@@ -23,15 +23,17 @@
         <script src="{% static "js/handlebars-templates.js" %}"></script>
         <script src="{% static "js/hexdump.js" %}"></script>
         <script src="{% static "js/cuckoo/loader.js" %}"></script>
+        <script src="{% static "js/cuckoo/sticky.js" %}"></script>
         <script src="{% static "js/cuckoo/analysis_sidebar.js" %}"></script>
         <script src="{% static "js/cuckoo/submission.js" %}"></script>
+        <script src="{% static "js/cuckoo/process_tree.js" %}"></script>
         <script src="{% static "js/cuckoo/recent.js" %}"></script>
         <script src="{% static "js/cuckoo/analysis_network.js" %}"></script>
         <script src="{% static "js/cuckoo/app.js" %}"></script>
 
     </head>
 
-    <body 
+    <body
 
         {% if request.COOKIES.theme == "night" %}
             class="night"

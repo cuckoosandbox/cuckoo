@@ -1,0 +1,32 @@
+// basic jquery ui styles
+.ui-tooltip {
+	padding: 8px;
+	position: absolute;
+	z-index: 9999;
+  max-width: 300px;
+}
+body .ui-tooltip {
+	border-width: 2px;
+}
+
+// cuckoo tooltip style
+.cuckoo-tooltip {
+  background-color: #f5f5f5;
+  border: 1px solid rgba($cuckoo_secundary_color, .1);
+  padding: 15px;
+  border-radius: 4px;
+
+  &.tree-tip {
+    font-size: 12px;
+    padding: 3px;
+    max-width: 70%;
+    word-wrap: break-word;
+    pointer-events: none;
+  }
+
+	@include cuckoo-theme('cyborg') {
+		background-color: $cyborg_panel_color;
+		border-color: $cyborg_border_color;
+		color: $cyborg_text_color;
+	}
+}
