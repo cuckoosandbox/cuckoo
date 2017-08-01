@@ -50,7 +50,6 @@ var Sticky = function () {
         // experimental: use a MutationObserver to listen to DOM changes to update
         // the current top offset parameters
         this.observer = new MutationObserver(function (mutations) {
-          console.log('triggered');
           self.calculate();
         });
 

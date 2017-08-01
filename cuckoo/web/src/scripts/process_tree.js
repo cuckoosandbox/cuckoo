@@ -71,7 +71,7 @@ class Tree {
 
     // bind the toggles
     this.el.find('[data-tree="toggle"]').bind('click', e => {
-      e.preventDefault();
+      e.stopPropagation();
       self.toggleBranch($(e.currentTarget));
     });
 
@@ -318,6 +318,13 @@ class ProcessBehaviorView {
         self.search(self._search.find('input').val());
       }
     });
+
+    // loads the first item on init if there is a first item by emulating a click
+    // that'll trigger the handler.
+    var firstItem = this._tree.el.find('li:first > [data-load]');
+    if(firstItem) {
+      this._tree.el.find('li:first > [data-load]').trigger('click');
+    }
 
   }
 

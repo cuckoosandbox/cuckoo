@@ -1,7 +1,7 @@
 <li>
-  <div data-tree-pid="{{process.pid}}">
+  <div data-tree-pid="{{process.pid}}" data-load="{{process.pid}}">
     <p>
-      <a href="#" data-load="{{process.pid}}">
+      <a href="#">
         {{ process.process_name }}
         <script type="application/json">{ "name": "{{ process.process_name }}", "pid": "{{ process.pid }}","ppid": "{{ process.ppid }}", "pages": "{{ process.calls|length }}" }</script>
       </a>
