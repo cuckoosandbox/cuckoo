@@ -381,9 +381,9 @@ var ProcessBehaviorView = function () {
       self.currentPid = pid;
 
       if (!filter) {
-        url = '/analysis/chunk/' + window.task_id + '/' + pid + '/' + this.currentPage;
+        url = '/analysis/chunk/' + window.task_id + '/' + pid + '/' + this.currentPage + '/';
       } else {
-        url = '/analysis/filtered/' + window.task_id + '/' + pid + '/' + filter;
+        url = '/analysis/filtered/' + window.task_id + '/' + pid + '/' + filter + '/';
       }
 
       if (url.length) {
