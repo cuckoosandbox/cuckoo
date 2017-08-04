@@ -22,6 +22,7 @@ class Scripting(object):
         if isinstance(cmdline, (tuple, list)):
             return cmdline
         try:
+            cmdline = cmdline.replace('""', '"')
             return shlex.split(cmdline, posix=False)
         except ValueError:
             log.warning("Error parsing command-line: %s", cmdline)
