@@ -880,7 +880,7 @@ class Signature(object):
                                  all=all)
 
     def check_command_line(self, pattern, regex=False, all=False):
-        """Checks for a file being opened.
+        """Checks for a command line being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.

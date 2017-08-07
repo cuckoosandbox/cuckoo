@@ -373,7 +373,7 @@ similar.
 ValueError: incomplete format key
 ---------------------------------
 
-This issue may appear at runtime after tinkering with settings in ``$CWD/conf``, 
+This issue may appear at runtime after tinkering with settings in ``$CWD/conf``,
 as input is passed to the configuration parser at runtime unescaped. Double-check your
 configuration files with an eye out for potentially troublesome character
 combinations such as ``%(``.

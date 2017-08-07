@@ -9,7 +9,7 @@ import tempfile
 
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
-    config2, List, String
+    config2, List, String, _cache
 )
 from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
@@ -1403,3 +1403,21 @@ def test_no_superfluous_conf(p):
 def test_faq():
     assert faq("hehe").startswith("http")
     assert faq("hehe").endswith("#hehe")
+
+def test_incomplete_envvar():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "database": {
+                "connection": "%(",
+            },
+        },
+    })
+
+    # Clear cache.
+    for key in _cache.keys():
+        del _cache[key]
+
+    with pytest.raises(CuckooConfigurationError) as e:
+        config("cuckoo:database:connection")
+    e.match("One of the fields")

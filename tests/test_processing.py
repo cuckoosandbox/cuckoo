@@ -253,7 +253,7 @@ class TestProcessing(object):
         s = Static()
         s.set_task({
             "category": "file",
-            "package": "lnk",
+            "package": "generic",
             "target": "lnk_1.lnk",
         })
         s.file_path = "tests/files/lnk_1.lnk"
@@ -269,6 +269,16 @@ class TestProcessing(object):
         assert "powershell.exe" in obj["relapath"]
         assert "-NoProfile" in obj["cmdline"]
         assert "eABlACIA" in obj["cmdline"]
+
+    def test_lnk2(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "generic",
+            "target": "lnk_2.lnk",
+        })
+        s.file_path = "tests/files/lnk_2.lnk"
+        assert not s.run()["elf"]
 
     def test_procmon(self):
         p = Procmon()
