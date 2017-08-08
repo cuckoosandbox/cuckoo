@@ -181,8 +181,8 @@ class StapParser(object):
                 key, val = member.split("=")
                 parsed[key] = val
             except ValueError as e:
-                # return as regular list if an element isn't named
-                return [self.parse_arg(a) for a in argstr.lstrip("{").split(", ")]
+                # return as regular array if an element isn't named
+                return self.parse_array(argstr.lstrip("{"))
         return parsed
 
 
