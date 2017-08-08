@@ -252,9 +252,32 @@ def test_staplog():
                 "instruction_pointer": "b77b5a21",
                 "pid": 818,
                 "process_name": "sh",
-                "raw": "Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0",
+                "raw": "Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0\n",
                 "return_value": "0",
                 "status": "",
                 "time": datetime.datetime(2017, 7, 27, 9, 51, 8, 595142),
-                "type": "apicall"}
+                "type": "apicall"
+            },
+            {
+                "api": "rt_sigaction",
+                "arguments": {
+                    "p0": "SIGCHLD",
+                    "p1": [
+                        "0x55644b6bf5a0",
+                        "SA_RESTORER",
+                        "0x7f30ca2447f0",
+                        ["SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]"]
+                    ],
+                    "p2": "0x0",
+                    "p3": "8",
+                },
+                "instruction_pointer": "7f30ca2448ee",
+                "pid": 900,
+                "process_name": "sh",
+                "raw": "Tue Aug  8 13:05:42 2017.464622 sh@7f30ca2448ee[900] rt_sigaction(SIGCHLD, {0x55644b6bf5a0, SA_RESTORER, 0x7f30ca2447f0, [SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]}, 0x0, 8) = 0\n",
+                "return_value": "0",
+                "status": "",
+                "time": datetime.datetime(2017, 8, 8, 13, 5, 42, 464622),
+                "type": "apicall"
+             },
         ]
