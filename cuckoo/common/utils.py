@@ -369,7 +369,7 @@ def time_duration(s):
 
         # Check the unit.
         if s and s[0] not in units:
-            raise Exception("Invalid unit specified: '%s'", s[0])
+            raise ValueError("Invalid unit specified: '%s'", s[0])
 
         if s:
             # Add the duration.
