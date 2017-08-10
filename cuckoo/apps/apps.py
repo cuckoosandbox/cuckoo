@@ -24,7 +24,7 @@ from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
 from cuckoo.common.objects import Dictionary, File
-from cuckoo.common.utils import to_unicode
+from cuckoo.common.utils import to_unicode, time_duration
 from cuckoo.core.database import (
     Database, TASK_FAILED_PROCESSING, TASK_REPORTED
 )
@@ -117,7 +117,8 @@ def enumerate_files(path, pattern):
 def submit_tasks(target, options, package, custom, owner, timeout, priority,
                  machine, platform, memory, enforce_timeout, clock, tags,
                  remote, pattern, maxcount, is_unique, is_url, is_baseline,
-                 is_shuffle):
+                 is_shuffle, experiment, experiment_name, experiment_runs,
+                 experiment_timedelta):
     db = Database()
 
     data = dict(
@@ -134,6 +135,10 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
         enforce_timeout="1" if enforce_timeout else "0",
         clock=clock,
         unique="1" if is_unique else "0",
+        experiment=experiment,
+        name=experiment_name,
+        runs=experiment_runs,
+        delta=experiment_timedelta
     )
 
     if is_baseline:
@@ -148,6 +153,20 @@ def submit_tasks(target, options, package, custom, owner, timeout, priority,
     if is_url and is_unique:
         print "URL doesn't have --unique support yet."
         return
+
+    if experiment:
+        if not experiment_name:
+            print "Experiment name not provided"
+            return
+        if not experiment_runs:
+            print "Amount of runs for experiment not specified"
+            return
+        try:
+            time_duration(experiment_timedelta)
+        except ValueError:
+            print "Invalid timedelta \'%s\' provided" % experiment_timedelta
+            print "Example: 1d3h3m7s"
+            return
 
     if is_url:
         for url in target:
