@@ -79,7 +79,7 @@ class VMware(Machinery):
                                          "No output from "
                                          "`vmrun listSnapshots`" % vmx_path)
 
-    def start(self, vmx_path, task):
+    def start(self, vmx_path, task, revert=True):
         """Start a virtual machine.
         @param vmx_path: path to vmx file.
         @param task: task object.
@@ -92,9 +92,15 @@ class VMware(Machinery):
             raise CuckooMachineError("Machine %s is already running" %
                                      vmx_path)
 
-        self._revert(vmx_path, snapshot)
-
-        time.sleep(3)
+        if revert:
+            self._revert(vmx_path, snapshot)
+            time.sleep(3)
+        else:
+            log.debug("This task is part of an experiment,"
+                      "not reverting to snapshot")
+            # TODO implement a disk compacting call if the vm is not being
+            # reverted. It is quite possible that if a lot happens during the
+            # various long term runs that the hdd starts to scatter.
 
         log.debug("Starting vm %s" % vmx_path)
         try:
