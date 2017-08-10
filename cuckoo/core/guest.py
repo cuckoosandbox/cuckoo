@@ -458,6 +458,11 @@ class GuestManager(object):
         # Allow Auxiliary modules to prepare the Guest.
         self.aux.callback("prepare_guest")
 
+        # Only upload sample, run analyzer etc when it is a task
+        # or the first run of an experiment
+        if options.get("experiment", 0) != 0:
+            return
+
         # If the target is a file, upload it to the guest.
         if options["category"] == "file" or options["category"] == "archive":
             data = {
