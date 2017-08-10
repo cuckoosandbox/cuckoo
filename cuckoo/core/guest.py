@@ -460,20 +460,19 @@ class GuestManager(object):
 
         # Only upload sample, run analyzer etc when it is a task
         # or the first run of an experiment
-        if options.get("experiment", 0) != 0:
-            return
+        if options.get("experiment", 0) == 0:
 
-        # If the target is a file, upload it to the guest.
-        if options["category"] == "file" or options["category"] == "archive":
-            data = {
-                "filepath": os.path.join(
-                    self.environ["TEMP"], options["file_name"]
-                ),
-            }
-            files = {
-                "file": ("sample.bin", open(options["target"], "rb")),
-            }
-            self.post("/store", files=files, data=data)
+            # If the target is a file, upload it to the guest.
+            if options["category"] == "file" or options["category"] == "archive":
+                data = {
+                    "filepath": os.path.join(
+                        self.environ["TEMP"], options["file_name"]
+                    ),
+                }
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
+                self.post("/store", files=files, data=data)
 
         if "execpy" in features:
             data = {
