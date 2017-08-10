@@ -143,7 +143,7 @@ class vSphere(Machinery):
 
         super(vSphere, self)._initialize_check()
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a machine.
         @param label: machine name.
         @param task: task object.
@@ -153,7 +153,13 @@ class vSphere(Machinery):
         with SmartConnection(**self.connect_opts) as conn:
             vm = self._get_virtual_machine_by_label(conn, label)
             if vm:
-                self._revert_snapshot(vm, name)
+                if revert:
+                    self._revert_snapshot(vm, name)
+                else:
+                    self._start_virtual_machine(vm)
+                    log.debug("This task is part of an experiment,"
+                              "not reverting to snapshot")
+
             else:
                 raise CuckooMachineError(
                     "Machine %s not found on host" % label
@@ -391,6 +397,14 @@ class vSphere(Machinery):
             self._wait_task(task)
         except CuckooMachineError as e:
             log.error("PowerOffVM: %s", e)
+
+    def _start_virtual_machine(self, vm):
+        """"Start a virtual machine"""
+        task = vm.PowerOnVM_Task()
+        try:
+            self._wait_task(task)
+        except CuckooMachineError as e:
+            log.error("PowerOnVM: %s", e)
 
     def _wait_task(self, task):
         """Wait for a task to complete with timeout"""
