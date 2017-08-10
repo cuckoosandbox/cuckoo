@@ -101,7 +101,7 @@ class VirtualBox(Machinery):
                 "how to setup a snapshot for your VM): %s" % (label, e)
             )
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a virtual machine.
         @param label: virtual machine name.
         @param task: task object.
@@ -115,9 +115,12 @@ class VirtualBox(Machinery):
             )
 
         machine = self.db.view_machine_by_label(label)
-        self.restore(label, machine)
 
-        self._wait_status(label, self.SAVED)
+        if revert:
+            self.restore(label, machine)
+            self._wait_status(label, self.SAVED)
+        else:
+            self.compact_hd(label)
 
         try:
             args = [
@@ -398,3 +401,17 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
             )
+
+    def compact_hd(self, label):
+        """Tries to optimize HDD by compacting scattered data.
+        @param label: virtual machine label
+        """
+
+        hdd_uuid = self.vminfo(label, "IDE-ImageUUID-0-0")
+        if hdd_uuid:
+            try:
+                subprocess.check_call([self.options.virtualbox.path,
+                                       "modifyhd",hdd_uuid, "--compact"])
+            except subprocess.CalledProcessError as e:
+                log.warning("Error compacting HDD of VM %s: %s", label, e)
+

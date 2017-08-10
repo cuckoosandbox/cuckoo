@@ -193,13 +193,14 @@ class Machinery(object):
         """
         return self.db.list_machines()
 
-    def availables(self):
+    def availables(self, locked_by=None):
         """How many machines are free.
         @return: free machines count.
         """
-        return self.db.count_machines_available()
+        return self.db.count_machines_available(locked_by=locked_by)
 
-    def acquire(self, machine_id=None, platform=None, tags=None):
+    def acquire(self, machine_id=None, platform=None, tags=None,
+                locked_by=None):
         """Acquire a machine to start analysis.
         @param machine_id: machine ID.
         @param platform: machine platform.
@@ -207,11 +208,12 @@ class Machinery(object):
         @return: machine or None.
         """
         if machine_id:
-            return self.db.lock_machine(label=machine_id)
+            return self.db.lock_machine(label=machine_id, locked_by=locked_by)
         elif platform:
-            return self.db.lock_machine(platform=platform, tags=tags)
+            return self.db.lock_machine(platform=platform, tags=tags,
+                                        locked_by=locked_by)
         else:
-            return self.db.lock_machine(tags=tags)
+            return self.db.lock_machine(tags=tags, locked_by=locked_by)
 
     def release(self, label=None):
         """Release a machine.
@@ -246,7 +248,7 @@ class Machinery(object):
         """
         self.db.set_machine_status(label, status)
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a machine.
         @param label: machine name.
         @param task: task object.
@@ -345,10 +347,11 @@ class LibVirtMachinery(Machinery):
         # currently still active.
         super(LibVirtMachinery, self)._initialize_check()
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Starts a virtual machine.
         @param label: virtual machine name.
         @param task: task object.
+        @param revert: revert to snapshot
         @raise CuckooMachineError: if unable to start virtual machine.
         """
         log.debug("Starting machine %s", label)
@@ -364,8 +367,20 @@ class LibVirtMachinery(Machinery):
 
         snapshot_list = self.vms[label].snapshotListNames(flags=0)
 
+        if not revert:
+            log.debug("This task is part of an experiment,"
+                      "not reverting to snapshot")
+            try:
+                self.vms[label].create()
+            except libvirt.libvirtError as e:
+                msg = "Unable to start virtual machine: {0}" \
+                      " without reverting. Error: {1}".format(label, e)
+                raise CuckooMachineError(msg)
+            finally:
+                self._disconnect(conn)
+
         # If a snapshot is configured try to use it.
-        if vm_info.snapshot and vm_info.snapshot in snapshot_list:
+        elif vm_info.snapshot and vm_info.snapshot in snapshot_list:
             # Revert to desired snapshot, if it exists.
             log.debug("Using snapshot {0} for virtual machine "
                       "{1}".format(vm_info.snapshot, label))
