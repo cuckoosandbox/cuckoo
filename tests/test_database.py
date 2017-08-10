@@ -313,7 +313,6 @@ class DatabaseEngine(object):
                                   runs=2, delta="1h")
         tasks = self.d.view_tasks([t1, t2, t3])
 
-        print(tasks[1].experiment)
         assert tasks[0].to_dict() == self.d.view_task(t1).to_dict()
         assert tasks[1].to_dict() == self.d.view_task(t2).to_dict()
         assert tasks[1].experiment is None
@@ -407,6 +406,26 @@ class DatabaseEngine(object):
         assert m3.label == "doge3" and m3.locked_by is None and m3.locked
         assert m4.label == "doge4" and m4.locked_by == 42 and m4.locked
         assert m5.label == "doge4" and m5.locked_by == 42 and m5.locked
+
+    def test_count_machines_available(self):
+
+        count = self.d.count_machines_available()
+        self.d.add_machine(
+            "count_machines1", "count_machines1", "1.2.3.4", "windows",
+            "opt1 opt2", "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+        self.d.add_machine(
+            "count_machines2", "count_machines2", "1.2.3.4", "DogeOS",
+            ["opt3", "opt4"], "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+
+        self.d.lock_machine(locked_by=4242)
+
+        r1 = self.d.count_machines_available()
+        r2 = self.d.count_machines_available(locked_by=4242)
+
+        assert r1 == count + 1
+        assert r2 == count + 2
 
     def test_exp_lock_machine(self):
         self.d.add_machine(
@@ -502,7 +521,7 @@ class DatabaseEngine(object):
         task = self.d.view_task(task_s.id)
 
         assert task.timeout == 821
-        assert task.status == "scheduled"
+        assert task.status == "pending"
         assert task.added_on == (task_u.added_on + datetime.timedelta(
             seconds=86400)
         )
