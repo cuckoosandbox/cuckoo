@@ -70,6 +70,12 @@ def tasks_create_file():
     owner = request.form.get("owner", "")
     clock = request.form.get("clock", None)
 
+    # Fields used for experiments
+    exp = request.form.get("experiment", False)
+    exp_name = request.form.get("exp_name", "")
+    exp_runs = request.form.get("exp_runs", "")
+    exp_timedelta = request.form.get("exp_delta", "")
+
     memory = parse_bool(request.form.get("memory", 0))
     unique = parse_bool(request.form.get("unique", 0))
     enforce_timeout = parse_bool(request.form.get("enforce_timeout", 0))
@@ -93,7 +99,11 @@ def tasks_create_file():
         owner=owner,
         memory=memory,
         enforce_timeout=enforce_timeout,
-        clock=clock
+        clock=clock,
+        experiment=exp,
+        name=exp_name,
+        runs=exp_runs,
+        delta=exp_timedelta
     )
 
     return jsonify(task_id=task_id)
@@ -111,6 +121,12 @@ def tasks_create_url():
     tags = request.form.get("tags", None)
     custom = request.form.get("custom", "")
     owner = request.form.get("owner", "")
+
+    # Fields used for experiments
+    exp = request.form.get("experiment", False)
+    exp_name = request.form.get("exp_name", "")
+    exp_runs = request.form.get("exp_runs", "")
+    exp_timedelta = request.form.get("exp_delta", "")
 
     memory = request.form.get("memory", False)
     if memory:
@@ -135,7 +151,11 @@ def tasks_create_url():
         owner=owner,
         memory=memory,
         enforce_timeout=enforce_timeout,
-        clock=clock
+        clock=clock,
+        experiment=exp,
+        name=exp_name,
+        runs=exp_runs,
+        delta=exp_timedelta
     )
 
     return jsonify(task_id=task_id)
