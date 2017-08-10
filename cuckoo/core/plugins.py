@@ -80,7 +80,7 @@ class RunAuxiliary(object):
     """Auxiliary modules manager."""
 
     def __init__(self, task, machine, guest_manager):
-        self.task = task
+        self.task = task.to_dict()
         self.machine = machine
         self.guest_manager = guest_manager
         self.enabled = []
@@ -181,9 +181,9 @@ class RunProcessing(object):
 
     def __init__(self, task):
         """@param task: task dictionary of the analysis to process."""
-        self.task = task
+        self.task = task.to_dict()
         self.machine = {}
-        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
+        self.analysis_path = cwd("storage", "analyses", "%s" % self.task["id"])
         self.baseline_path = cwd("storage", "baseline")
 
     def process(self, module, results):
@@ -536,9 +536,9 @@ class RunReporting(object):
 
     def __init__(self, task, results):
         """@param analysis_path: analysis folder path."""
-        self.task = task
+        self.task = task.to_dict()
         self.results = results
-        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
+        self.analysis_path = cwd("storage", "analyses", "%s" % self.task["id"])
 
     def process(self, module):
         """Run a single reporting module.
