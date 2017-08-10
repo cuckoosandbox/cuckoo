@@ -141,10 +141,11 @@ class AnalysisManager(threading.Thread):
     def store_task_info(self):
         """grab latest task from db (if available) and update self.task"""
         dbtask = self.db.view_task(self.task.id)
-        self.task = dbtask.to_dict()
+        self.task = dbtask
 
         task_info_path = os.path.join(self.storage, "task.json")
-        open(task_info_path, "w").write(dbtask.to_json())
+        with open(task_info_path, "w") as fw:
+            fw.write(dbtask.to_json())
 
     def acquire_machine(self):
         """Acquire an analysis machine from the pool of available ones."""
@@ -157,7 +158,7 @@ class AnalysisManager(threading.Thread):
             # In some cases it's possible that we enter this loop without
             # having any available machines. We should make sure this is not
             # such case, or the analysis task will fail completely.
-            if not machinery.availables():
+            if not machinery.availables(locked_by=self.task.experiment_id):
                 machine_lock.release()
                 time.sleep(1)
                 continue
@@ -166,7 +167,8 @@ class AnalysisManager(threading.Thread):
             # used or machine tags acquire the machine accordingly.
             machine = machinery.acquire(machine_id=self.task.machine,
                                         platform=self.task.platform,
-                                        tags=self.task.tags)
+                                        tags=self.task.tags,
+                                        locked_by=self.task.experiment_id)
 
             # If no machine is available at this moment, wait for one second
             # and try again.
@@ -474,8 +476,19 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
+            # Decide if the machine must be reverted to an earlier snapshot
+            # this is unwanted when a task is part of an experiment, except
+            # for the first run
+            revert = True
+            if self.task.experiment_id is not None:
+                if not self.task.experiment.times:
+                    options["experiment"] = 0
+                else:
+                    revert = False
+                    options["experiment"] = self.task.experiment.times
+
             # Start the machine.
-            machinery.start(self.machine.label, self.task)
+            machinery.start(self.machine.label, self.task, revert=revert)
 
             logger(
                 "Started VM",
@@ -620,10 +633,20 @@ class AnalysisManager(threading.Thread):
             # Drop the network routing rules if any.
             self.unroute_network()
 
+            # If the task was part of an experiment, schedule the next run
+            # for this experiment. If no experiment or no new task
+            # scheduled, machinery can be released.
+            scheduled = False
+            if self.task.experiment_id is not None:
+                log.debug("Checking if another task needs to be scheduled"
+                          " for this experiment")
+                scheduled = self.db.schedule_task_exp(self.task.id)
+
             try:
                 # Release the analysis machine. But only if the machine has
                 # not turned dead yet.
-                machinery.release(self.machine.label)
+                if not scheduled:
+                    machinery.release(self.machine.label)
             except CuckooMachineError as e:
                 log.error(
                     "Unable to release machine %s, reason %s. You might need "
