@@ -120,6 +120,8 @@ class VirtualBox(Machinery):
             self.restore(label, machine)
             self._wait_status(label, self.SAVED)
         else:
+            log.debug("This task is part of an experiment,"
+                      " not reverting to snapshot")
             self.compact_hd(label)
 
         try:
@@ -409,6 +411,7 @@ class VirtualBox(Machinery):
 
         hdd_uuid = self.vminfo(label, "IDE-ImageUUID-0-0")
         if hdd_uuid:
+            log.debug("Compacting HDD %s for VM %s", hdd_uuid, label)
             try:
                 subprocess.check_call([self.options.virtualbox.path,
                                        "modifyhd",hdd_uuid, "--compact"])
