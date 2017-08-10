@@ -10,7 +10,7 @@ import os
 
 from sqlalchemy import ForeignKey, Text, Index, Table, TypeDecorator
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
-from sqlalchemy import create_engine, Column, not_, func
+from sqlalchemy import create_engine, Column, not_, func, or_
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -31,6 +31,8 @@ from cuckoo.misc import cwd
 Base = declarative_base()
 
 log = logging.getLogger(__name__)
+
+null = None
 
 SCHEMA_VERSION = "181be2111077"
 TASK_PENDING = "pending"
@@ -194,6 +196,25 @@ class Experiment(Base):
     # Amount of times this Experiment has ran already.
     times = Column(Integer(), nullable=True)
     machine_name = Column(Text(), nullable=True)
+
+    def to_dict(self, dt=False):
+        """Converts object to dict.
+        @param dt: encode datetime objects
+        @return: dict
+        """
+        d = Dictionary()
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            if dt and isinstance(value, datetime.datetime):
+                d[column.name] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                d[column.name] = value
+
+    def to_json(self):
+        """Converts object to JSON.
+        @return: JSON data
+        """
+        return json.dumps(self.to_dict())
 
 
 class Guest(Base):
@@ -425,6 +446,9 @@ class Task(Base):
             # Remove superfluous fields.
             del machine["task_id"]
             del machine["id"]
+
+        if self.experiment:
+            d["experiment"] = self.experiment.to_dict()
 
         return d
 
@@ -709,7 +733,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def fetch(self, machine=None, service=True):
+    def fetch(self, machine=None, service=True, use_added_on=True):
         """Fetches a task waiting to be processed and locks it for running.
         @return: None or task
         """
@@ -722,6 +746,9 @@ class Database(object):
 
             if not service:
                 q = q.filter(not_(Task.tags.any(name="service")))
+
+            if use_added_on:
+                q = q.filter(datetime.datetime.now() >= Task.added_on)
 
             row = q.order_by(Task.priority.desc(), Task.added_on).first()
             if row:
@@ -978,14 +1005,20 @@ class Database(object):
         return machine
 
     @classlock
-    def count_machines_available(self):
+    def count_machines_available(self, locked_by=None):
         """How many virtual machines are ready for analysis.
         @return: free virtual machines count
         """
         session = self.Session()
         try:
-            machines_count = session.query(Machine).filter_by(
-                locked=False).count()
+            if locked_by:
+                machines_count = session.query(Machine).filter(or_(
+                    Machine.locked_by == locked_by,
+                    Machine.locked == False
+                )).count()
+            else:
+                machines_count = session.query(Machine).filter_by(
+                    locked=False).count()
             return machines_count
         except SQLAlchemyError as e:
             log.debug("Database error counting machines: {0}".format(e))
@@ -1470,7 +1503,7 @@ class Database(object):
             task.id = None
             task.started_on = None
             task.completed_on = None
-            task.status = TASK_SCHEDULED
+            task.status = TASK_PENDING
 
             # If specified use the delta that has been provided, otherwise
             # fall back on the delta set for this experiment.
@@ -1484,6 +1517,9 @@ class Database(object):
 
             if timeout is not None:
                 task.timeout = timeout
+
+            log.debug("Scheduling new task for experiment %s at %s",
+                      task.experiment_id, task.added_on)
 
         try:
             if task:
@@ -1848,7 +1884,6 @@ class Database(object):
         """Counts the amount of experiments in the database."""
         session = self.Session()
         try:
-            null = None
 
             q = session.query(Experiment)
             if status == "unassigned":
