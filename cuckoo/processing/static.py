@@ -1068,7 +1068,7 @@ class Static(Processing):
 
         package = self.task.get("package")
 
-        if package == "generic" or ext == "elf" or "ELF" in f.get_type():
+        if package == "generic" and (ext == "elf" or "ELF" in f.get_type()):
             static.update(ELF(f.file_path).run())
             static["keys"] = f.get_keys()
 
