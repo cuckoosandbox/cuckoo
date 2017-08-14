@@ -4,7 +4,7 @@
 
 int main (int argc, char ** argv) {
 	int fd;
-	char buf[2048] = {0};
+	void *buf = malloc(1024*1024);
 
 	if (argc < 2) return 1;
 
@@ -17,6 +17,9 @@ int main (int argc, char ** argv) {
 	int (*func)();
 	func = (int (*)()) buf;
 	(int)(*func)();
+
+	getchar();
+	free(buf);
 
 	return 0;
 }
