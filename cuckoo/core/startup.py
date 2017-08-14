@@ -201,7 +201,7 @@ def init_modules():
 def init_yara():
     """Initialize & load/compile Yara rules."""
     categories = (
-        "binaries", "urls", "memory", "scripts", "shellcode", "dumpmem",
+        "binaries", "urls", "memory", "scripts", "shellcode",
     )
     log.debug("Initializing Yara...")
     for category in categories:
@@ -254,9 +254,9 @@ def init_yara():
             else:
                 log.debug("\t |-- %s %s", category, entry)
 
-    # Store the compiled Yara rules for the "dumpmem" category in
-    # $CWD/stuff/ so that we may pass it along to zer0m0n during analysis.
-    File.yara_rules["dumpmem"].save(cwd("stuff", "dumpmem.yarac"))
+    # Store the compiled Yara rules for the "memory" category in $CWD/stuff/
+    # so that we may easily pass it along to zer0m0n during an analysis.
+    File.yara_rules["memory"].save(cwd("stuff", "dumpmem.yarac"))
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

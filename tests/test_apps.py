@@ -685,7 +685,6 @@ class TestMigrateCWD(object):
         assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
         # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
         assert os.path.exists(cwd("stuff"))
-        assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
     def test_using_community(self):

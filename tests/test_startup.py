@@ -640,5 +640,5 @@ class TestYaraIntegration(object):
         File.yara_rules = {}
         shutil.rmtree(cwd("yara", "binaries"))
         init_yara()
-        assert len(File.yara_rules) == 6
+        assert len(File.yara_rules) == 5
         assert not list(File.yara_rules["binaries"])
