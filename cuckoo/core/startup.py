@@ -166,10 +166,16 @@ def init_tasks():
             )
         else:
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
+
             log.info(
                 "Updated running task ID %s status to failed_analysis",
                 task.id
             )
+
+            if task.experiment:
+                log.info("Failed task %s is part of an experiment, scheduling"
+                         " new task if there are remaining runs", task.id)
+                db.schedule_task_exp(task.id)
 
     log.debug("Checking for pending service tasks..")
     for task in db.list_tasks(status=TASK_PENDING, category="service"):
