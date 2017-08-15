@@ -486,6 +486,7 @@ class AnalysisManager(threading.Thread):
                 else:
                     revert = False
                     options["experiment"] = self.task.experiment.times
+                    options["package"] = "experiment"
 
             # Start the machine.
             machinery.start(self.machine.label, self.task, revert=revert)

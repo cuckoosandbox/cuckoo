@@ -313,6 +313,9 @@ class Config(object):
             "reboot": {
                 "enabled": Boolean(True),
             },
+            "experiment": {
+                "enabled": Boolean(True),
+            }
         },
         "avd": {
             "avd": {
