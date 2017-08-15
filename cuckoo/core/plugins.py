@@ -80,7 +80,7 @@ class RunAuxiliary(object):
     """Auxiliary modules manager."""
 
     def __init__(self, task, machine, guest_manager):
-        self.task = task.to_dict()
+        self.task = task
         self.machine = machine
         self.guest_manager = guest_manager
         self.enabled = []
@@ -92,7 +92,7 @@ class RunAuxiliary(object):
             except:
                 log.exception(
                     "Failed to load the auxiliary module: %s",
-                    module, extra={"task_id": self.task["id"]}
+                    module, extra={"task_id": self.task.id}
                 )
                 return
 
@@ -126,7 +126,7 @@ class RunAuxiliary(object):
             except:
                 log.exception(
                     "Unable to start auxiliary module %s",
-                    module_name, extra={"task_id": self.task["id"]}
+                    module_name, extra={"task_id": self.task.id}
                 )
             else:
                 log.debug("Started auxiliary module: %s",
@@ -149,7 +149,7 @@ class RunAuxiliary(object):
                 log.exception(
                     "Error performing callback %r on auxiliary module %r",
                     name, module.__class__.__name__,
-                    extra={"task_id": self.task["id"]}
+                    extra={"task_id": self.task.id}
                 )
 
             enabled.append(module)
@@ -165,7 +165,7 @@ class RunAuxiliary(object):
                 log.exception(
                     "Unable to stop auxiliary module: %s",
                     module.__class__.__name__,
-                    extra={"task_id": self.task["id"]}
+                    extra={"task_id": self.task.id}
                 )
             else:
                 log.debug("Stopped auxiliary module: %s",
