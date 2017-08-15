@@ -76,6 +76,9 @@ def tasks_create_file():
     exp_runs = request.form.get("exp_runs", "")
     exp_timedelta = request.form.get("exp_delta", "")
 
+    if exp and db.view_experiment(name=exp_name) is not None:
+        return json_error(400, "That experiment name is already in use")
+
     memory = parse_bool(request.form.get("memory", 0))
     unique = parse_bool(request.form.get("unique", 0))
     enforce_timeout = parse_bool(request.form.get("enforce_timeout", 0))
@@ -127,6 +130,9 @@ def tasks_create_url():
     exp_name = request.form.get("exp_name", "")
     exp_runs = request.form.get("exp_runs", "")
     exp_timedelta = request.form.get("exp_delta", "")
+
+    if exp and db.view_experiment(name=exp_name) is not None:
+        return json_error(400, "That experiment name is already in use")
 
     memory = request.form.get("memory", False)
     if memory:
