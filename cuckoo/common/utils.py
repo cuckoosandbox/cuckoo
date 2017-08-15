@@ -67,7 +67,7 @@ def validate_hash(h):
 
     return bool(re.match("[0-9a-fA-F]*$", h))
 
-def validate_url(url):
+def validate_url(url, allow_invalid=False):
     """Validates an URL using Django's built-in URL validator"""
     val = URLValidator(schemes=["http", "https"])
 
@@ -76,6 +76,11 @@ def validate_url(url):
         return url
     except:
         pass
+
+    if allow_invalid:
+        last = url.rfind("://")
+        if url[:last].split("://")[0] in ("http", "https"):
+            url = url[last+3:]
 
     try:
         val("http://%s" % url)
