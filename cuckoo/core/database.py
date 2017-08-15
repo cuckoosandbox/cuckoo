@@ -196,6 +196,8 @@ class Experiment(Base):
     # Amount of times this Experiment has ran already.
     times = Column(Integer(), nullable=True)
     machine_name = Column(Text(), nullable=True)
+    # Task id last completed for this experiment
+    last_completed = Column(Integer(), nullable=True)
 
     def to_dict(self, dt=False):
         """Converts object to dict.
@@ -1483,6 +1485,7 @@ class Database(object):
             None, id=task.experiment_id,
             runs=task.experiment.runs - 1,
             times=task.experiment.times + 1,
+            last_task_completed=task.id
         )
 
         # Only schedule task if there are still runs left after
@@ -1511,7 +1514,7 @@ class Database(object):
                 delta = task.experiment.delta
 
             # Schedule the next task.
-            task.added_on = task.added_on + datetime.timedelta(
+            task.added_on = datetime.datetime.now() + datetime.timedelta(
                 seconds=time_duration(delta)
             )
 
@@ -1774,7 +1777,8 @@ class Database(object):
         return machine
 
     def update_experiment(self, name, id=None, delta=None, timeout=None,
-                          machine_name=False, runs=None, times=None):
+                          machine_name=False, runs=None, times=None,
+                          last_task_completed=None):
         """Update fields of an experiment.
 
         The updated values will be reflected when the next analysis takes
@@ -1789,13 +1793,13 @@ class Database(object):
         """
         session = self.Session()
         try:
-            if id is not None:
+            if id:
                 experiment = session.query(Experiment).get(id)
             else:
                 experiment = session.query(Experiment).filter_by(
                     name=name).first()
 
-            if delta is not None:
+            if delta:
                 experiment.delta = delta
 
             if timeout is not None:
@@ -1810,6 +1814,9 @@ class Database(object):
 
             if machine_name is not False:
                 experiment.machine_name = machine_name
+
+            if last_task_completed:
+                experiment.last_completed = last_task_completed
 
             session.commit()
             session.refresh(experiment)
