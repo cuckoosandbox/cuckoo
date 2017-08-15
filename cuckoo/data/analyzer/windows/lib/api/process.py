@@ -28,9 +28,10 @@ def subprocess_checkcall(args, env=None):
         stderr=subprocess.PIPE, env=env,
     )
 
-def subprocess_checkoutput(args, env=None):
+def subprocess_checkoutput(args, env=None, startupinfo=None):
     return subprocess.check_output(
         args, stdin=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
+        startupinfo=startupinfo
     )
 
 class Process(object):
