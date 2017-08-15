@@ -142,18 +142,19 @@ class DatabaseEngine(object):
 
     def test_update_experiment(self):
         task_id = self.d.add_path(self.create_file(), experiment=True,
-                                  name="doges42", runs=3, delta="19d1h45m3s")
+                                  name="doges42", runs=1, delta="19d1h45m3s")
         task = self.d.view_task(task_id)
         exp = self.d.view_experiment(id=task.experiment_id)
 
-        self.d.update_experiment(None, id=task.experiment_id,
-                                         runs=2, times=1, timeout=1337)
+        self.d.update_experiment(None, id=task.experiment_id, runs=0, times=1,
+                                 timeout=1337, last_task_completed=10)
         exp_u = self.d.view_experiment(id=task.experiment_id)
         task_u = self.d.view_task(task_id)
 
         assert exp_u.name == exp.name
-        assert exp_u.runs == 2
+        assert exp_u.runs == 0
         assert exp_u.times == 1
+        assert exp_u.last_completed == 10
         assert task_u.timeout == 1337
 
     def test_delete_experiment(self):
@@ -514,17 +515,15 @@ class DatabaseEngine(object):
     def test_schedule_task_exp(self):
         task_id = self.d.add_path(self.create_file(), experiment=True,
                                   name="test_schedule", runs=2,
-                                  delta="19d", timeout=1200)
+                                  delta="1d10h", timeout=1200)
 
         task_u = self.d.view_task(task_id)
-        task_s = self.d.schedule_task_exp(task_id, timeout=821, delta="24h")
+        task_s = self.d.schedule_task_exp(task_id, timeout=821)
         task = self.d.view_task(task_s.id)
 
         assert task.timeout == 821
         assert task.status == "pending"
-        assert task.added_on == (task_u.added_on + datetime.timedelta(
-            seconds=86400)
-        )
+        assert (task.added_on - datetime.datetime.now()).days == 1
         assert task.experiment.runs == 1
         assert task.experiment.times == 1
 
