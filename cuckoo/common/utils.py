@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import platform
+import random
 import re
 import string
 import sys
@@ -380,3 +381,10 @@ def time_duration(s):
             duration += multiplier
 
     return duration
+
+def random_string(length):
+    """Return an unsafe random string of specified length"""
+    return ''.join(
+        random.choice(string.ascii_lowercase)
+        for i in range(0, length)
+    )
