@@ -41,6 +41,13 @@ before_install:
         brew update || brew update
         brew install libmagic cairo pango mongodb
         brew services start mongodb
+        # The following wasn't required in the past and therefore may become
+        # obsolete once again in the future. Let's wait and see.
+        wget https://bootstrap.pypa.io/get-pip.py
+        sudo python get-pip.py
+        sudo pip install virtualenv
+        virtualenv $HOME
+        source $HOME/bin/activate
     fi
 
 install:
