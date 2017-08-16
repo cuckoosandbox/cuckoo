@@ -3,11 +3,18 @@
 {% load analysis_tags %}
 {% block content %}
 
-    <div class="row">
-        {% include "analysis/pages/sidebar.html" %}
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
 
-        <div class="col-md-10">
+        <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+        <header class="page-header cuckoo-analysis__header">
+            <h1>MISP</h1>
+        </header>
+
+        <div class="container-fluid">
             <div class="row">
+                <div class="col-md-12">
 
                 <table class="table table-bordered" style="table-layout: fixed;">
                     <tbody>
@@ -52,7 +59,20 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
+
+        <!-- footer replacement to avoid double scrollbars -->
+        <footer class="flex-grid__footer center-left">
+            <p class="footnote">
+                &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+            </p>
+            <div class="logo">
+                <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                <a href="#">Back to Top</a>
+            </div>
+        </footer>
+    </section>
     </div>
 {% endblock %}
