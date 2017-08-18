@@ -387,9 +387,10 @@ As stated earlier, Distributed Cuckoo REST API may be started by running
 ``cuckoo distributed server`` or by deploying it properly with ``uWSGI`` and
 ``nginx``.
 
-The Distributed Cuckoo Worker may be started by running
-``supervisorctl start distributed`` in the ``CWD``. This will automatically
-start the Worker with the correct configuration and arguments, etc.
+The Distributed Cuckoo Worker may be started by running ``supervisorctl start
+distributed`` in the ``CWD`` (make sure to start ``supervisord`` first as per
+:ref:`cuckoo_background`). This will automatically start the Worker with the
+correct configuration and arguments, etc.
 
 Register Cuckoo nodes
 ---------------------
