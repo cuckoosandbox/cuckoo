@@ -3,56 +3,77 @@
 {% load analysis_tags %}
 {% block content %}
 
-    <div class="row">
-        {% include "analysis/pages/sidebar.html" %}
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
 
-        <div class="col-md-10">
-            <div class="row">
+        <section class="flex-nav__body cuckoo-analysis" tabindex="0">
 
-                <table class="table table-bordered" style="table-layout: fixed;">
-                    <tbody>
-                        <tr>
-                            <td width=80px><strong>Event ID</strong></td>
-                            <td width=100px><strong>Date</strong></td>
-                            <td><strong>IOCs</strong></td>
-                            <td><strong>Description</strong></td>
-                            <td width=60px><strong>Level</strong></td>
-                        </tr>
+            <header class="page-header cuckoo-analysis__header">
+                <h1>MISP</h1>
+            </header>
 
-                        {% for event in report.analysis.misp %}
+            <div class="container-fluid">
+                <div class="col-md-12">
+                    <div class="row">
+
+                        <table class="table table-bordered" style="table-layout: fixed;">
+                            <tbody>
                             <tr>
-                                <td>
-                                {% if event.event_id != None %}
-                                    <a href="{{event.url}}" target="_blank">{{event.event_id}}</a>
-                                {% endif  %}
-                                </td>
-                                <td>{{event.date}}</td>
-                                <td>
-                                {% for ioc in event.iocs %}
-                                    <pre>{{ioc}}</pre>
-                                {% endfor %}
-                                </td>
-                                <td>{{event.info}}</td>
-                                <td>
-                                {% if event.level %}
-                                    <p>
-                                    {% if event.level == "4" %}
-                                        <span class="label label-default">4</span>
-                                    {% elif event.level == "3" %}
-                                        <span class="label label-success">3</span>
-                                    {% elif event.level == "2" %}
-                                        <span class="label label-warning">2</span>
-                                    {% elif event.level == "1"  %}
-                                        <span class="label label-danger">1</span>
-                                    {% endif %}
-                                    </p>
-                                {% endif %}
-                                </td>
+                                <td width=80px><strong>Event ID</strong></td>
+                                <td width=100px><strong>Date</strong></td>
+                                <td><strong>IOCs</strong></td>
+                                <td><strong>Description</strong></td>
+                                <td width=60px><strong>Level</strong></td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+                            {% for event in report.analysis.misp %}
+                                <tr>
+                                    <td>
+                                        {% if event.event_id != None %}
+                                            <a href="{{event.url}}" target="_blank">{{event.event_id}}</a>
+                                        {% endif  %}
+                                    </td>
+                                    <td>{{event.date}}</td>
+                                    <td>
+                                        {% for ioc in event.iocs %}
+                                            <pre>{{ioc}}</pre>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{event.info}}</td>
+                                    <td>
+                                        {% if event.level %}
+                                            <p>
+                                                {% if event.level == "4" %}
+                                                    <span class="label label-default">4</span>
+                                                {% elif event.level == "3" %}
+                                                    <span class="label label-success">3</span>
+                                                {% elif event.level == "2" %}
+                                                    <span class="label label-warning">2</span>
+                                                {% elif event.level == "1"  %}
+                                                    <span class="label label-danger">1</span>
+                                                {% endif %}
+                                            </p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- footer replacement to avoid double scrollbars -->
+            <footer class="flex-grid__footer center-left">
+                <p class="footnote">
+                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                </p>
+                <div class="logo">
+                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                    <a href="#">Back to Top</a>
+                </div>
+            </footer>
+
+        </section>
     </div>
 {% endblock %}
