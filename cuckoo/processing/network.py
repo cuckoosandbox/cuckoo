@@ -95,9 +95,23 @@ class Pcap(object):
 
     def _build_whitelist(self):
         result = []
-        whitelist_path = cwd("whitelist", "domain.txt", private=True)
-        for line in open(whitelist_path, "rb"):
-            result.append(line.strip())
+
+        result.extend(self._build_whitelist_from_path(cwd("whitelist", "domain.txt", private=True)))
+        # grab whitelist also from $CWD
+        result.extend(self._build_whitelist_from_path(cwd("whitelist", "domain.txt")))
+
+        return result
+
+    def _build_whitelist_from_path(self, path):
+        result = []
+
+        try:
+            for line in open(path, "rb"):
+                result.append(line.strip())
+        except IOError:
+            log.debug("Domain Whitelist file {0} not found or not readable".format(path))
+            return result
+
         return result
 
     def _is_whitelisted(self, conn, hostname):
