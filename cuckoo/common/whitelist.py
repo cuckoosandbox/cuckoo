@@ -13,4 +13,11 @@ def is_whitelisted_domain(domain):
         for domain in open(cwd("whitelist", "domain.txt", private=True)):
             domains.add(domain.strip())
 
+        # collect whitelist also from $CWD when possible
+        try:
+            for domain in open(cwd("whitelist", "domain.txt")):
+                domains.add(domain.strip())
+        except IOError:
+            pass
+
     return domain in domains
