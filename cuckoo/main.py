@@ -98,7 +98,8 @@ def cuckoo_init(level, ctx, cfg=None):
     if not os.path.exists(cwd(".cwd")):
         sys.exit(
             "No proper Cuckoo Working Directory was identified, did you pass "
-            "along the correct directory?"
+            "along the correct directory ? For new installations please use "
+            "non-existant directory to built init !"
         )
 
     init_console_logging(level)
