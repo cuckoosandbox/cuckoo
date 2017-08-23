@@ -130,8 +130,10 @@ class Machinery(object):
                 port = ResultServer().port
 
             rdp_port = options.get("rdp_port", "")
-            experiment = self.db.view_experiment(machine_name=vmname)
+            experiment = self.db.view_experiment(machine_name=vmname,
+                                                 active=True)
             locked_by = None
+
             if experiment:
                 locked_by = experiment.id
 
@@ -147,7 +149,7 @@ class Machinery(object):
                 resultserver_ip=ip,
                 resultserver_port=port,
                 rdp_port=rdp_port,
-                locked_by=locked_by
+                locked_by=locked_by,
             )
 
     def _initialize_check(self):
@@ -256,9 +258,10 @@ class Machinery(object):
         """
         raise NotImplementedError
 
-    def stop(self, label=None):
+    def stop(self, label=None, safe=False):
         """Stop a machine.
         @param label: machine name.
+        @param safe: try to safely shutdown the VM
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
@@ -272,6 +275,13 @@ class Machinery(object):
     def dump_memory(self, label, path):
         """Takes a memory dump of a machine.
         @param path: path to where to store the memory dump.
+        """
+        raise NotImplementedError
+
+    def _status(self, label):
+        """Gets current status of a vm.
+        @param label: virtual machine name.
+        @return: status string.
         """
         raise NotImplementedError
 
@@ -413,9 +423,10 @@ class LibVirtMachinery(Machinery):
         # Check state.
         self._wait_status(label, self.RUNNING)
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stops a virtual machine. Kill them all.
         @param label: virtual machine name.
+        @param safe: try to safely shutdown the VM
         @raise CuckooMachineError: if unable to stop virtual machine.
         """
         log.debug("Stopping machine %s", label)
