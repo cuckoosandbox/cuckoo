@@ -670,6 +670,11 @@ class Database(object):
                           rdp_port=rdp_port,
                           locked_by=locked_by)
 
+        # If the machine is reserverd for an experiment id, lock it
+        if locked_by:
+            machine.locked = True
+            machine.locked_changed_on = datetime.datetime.now()
+
         # Deal with tags format (i.e., foo,bar,baz)
         if tags:
             for tag in tags.split(","):
@@ -1842,22 +1847,26 @@ class Database(object):
             session.close()
         return True
 
-    def view_experiment(self, id=None, name=None, machine_name=None):
+    def view_experiment(self, id=None, name=None, machine_name=None,
+                        active=False):
         """View experiment by id or name."""
         session = self.Session()
         try:
             experiment = session.query(Experiment)
+            if active:
+                experiment = experiment.filter(Experiment.runs > 0)
             if id is not None:
                 experiment = experiment.get(id)
             elif name is not None:
                 experiment = experiment.filter_by(name=name).first()
             elif machine_name is not None:
-                experiment = experiment.filter_by(machine_name=machine_name)
-                experiment = experiment.first()
+                experiment = experiment.filter_by(
+                    machine_name=machine_name).first()
             else:
                 log.critical(
                     "No experiment ID, name, or machine name has been provided")
                 return None
+
         except SQLAlchemyError as e:
             log.debug("Database error viewing experiment: {0}".format(e))
             return None
