@@ -105,6 +105,7 @@ class VirtualBox(Machinery):
         """Start a virtual machine.
         @param label: virtual machine name.
         @param task: task object.
+        @param revert: revert snapshot before starting
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s", label)
@@ -170,7 +171,7 @@ class VirtualBox(Machinery):
                 ]
                 subprocess.check_output(args)
                 log.debug("Started RDP on port %s for virtual machine %s",
-                          machine.rdp_port, machine.label)
+                          machine.rdp_port, label)
             except subprocess.CalledProcessError:
                 log.exception("Error enabling VRDE support")
 
@@ -201,9 +202,10 @@ class VirtualBox(Machinery):
             log.critical("Unable to enable NIC tracing (pcap file): %s", e)
             return
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stops a virtual machine.
         @param label: virtual machine name.
+        @param safe: try to safely shutdown the VM
         @raise CuckooMachineError: if unable to stop.
         """
         log.debug("Stopping vm %s" % label)
@@ -224,6 +226,12 @@ class VirtualBox(Machinery):
         vm_state_timeout = config("cuckoo:timeouts:vm_state")
 
         try:
+            # Try to use safe shutdown. If it fails, use unsafe shutdown
+            if safe and self._safe_stop(label):
+                self._wait_status(label, self.POWEROFF, self.ABORTED,
+                                  self.SAVED)
+                return
+
             args = [
                 self.options.virtualbox.path, "controlvm", label, "poweroff"
             ]
@@ -408,13 +416,57 @@ class VirtualBox(Machinery):
         """Tries to optimize HDD by compacting scattered data.
         @param label: virtual machine label
         """
+        log.debug("IN COMPACT HD")
+        hdd_uuid = self.vminfo(label, "\"IDE-ImageUUID-0-0\"")
 
-        hdd_uuid = self.vminfo(label, "IDE-ImageUUID-0-0")
+        if hdd_uuid.count('"') != 2:
+            log.debug("Unexpected HDD UUID value: %s", hdd_uuid)
+            return
+
+        hdd_uuid = hdd_uuid.split('"', 2)[1]
+
+        log.debug("HDD UUID VALUE: %s", hdd_uuid)
         if hdd_uuid:
             log.debug("Compacting HDD %s for VM %s", hdd_uuid, label)
             try:
-                subprocess.check_call([self.options.virtualbox.path,
-                                       "modifyhd",hdd_uuid, "--compact"])
+                subprocess.check_output(
+                    [self.options.virtualbox.path, "modifyhd", hdd_uuid,
+                     "--compact"], stderr=subprocess.PIPE)
             except subprocess.CalledProcessError as e:
                 log.warning("Error compacting HDD of VM %s: %s", label, e)
 
+    def _safe_stop(self, label):
+        """"Send a shutdown signal to VM so the OS
+        gets a chance to safely shut down. Returns True
+        if the VM was safely shut down, False if otherwise"""
+
+        args = [
+            self.options.virtualbox.path, "controlvm", label,
+            "acpipowerbutton"
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
+
+        count = 0
+        while proc.poll() is None or self._status(label) != self.POWEROFF:
+            if count < vm_state_timeout:
+                log.debug("Waiting for VM %s safe shutdown. Status: %s",
+                          label, self._status(label))
+                time.sleep(1)
+                count += 1
+            else:
+                if proc.poll() is None:
+                    proc.terminate()
+                log.debug("Safe shutdown of VM %s timed out. "
+                          "Using hard shutdown", label)
+
+                return False
+
+        if proc.returncode == 0:
+            return True
+
+        return False
