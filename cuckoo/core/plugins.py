@@ -181,7 +181,7 @@ class RunProcessing(object):
 
     def __init__(self, task):
         """@param task: task dictionary of the analysis to process."""
-        self.task = task.to_dict()
+        self.task = task
         self.machine = {}
         self.analysis_path = cwd("storage", "analyses", "%s" % self.task["id"])
         self.baseline_path = cwd("storage", "baseline")
@@ -536,7 +536,7 @@ class RunReporting(object):
 
     def __init__(self, task, results):
         """@param analysis_path: analysis folder path."""
-        self.task = task.to_dict()
+        self.task = task
         self.results = results
         self.analysis_path = cwd("storage", "analyses", "%s" % self.task["id"])
 
