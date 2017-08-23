@@ -603,9 +603,13 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
+            safestop = False
+            if self.task.experiment:
+                safestop = True
+
             try:
                 # Stop the analysis machine.
-                machinery.stop(self.machine.label)
+                machinery.stop(self.machine.label, safe=safestop)
             except CuckooMachineError as e:
                 log.warning(
                     "Unable to stop machine %s: %s",
@@ -669,9 +673,9 @@ class AnalysisManager(threading.Thread):
 
         # TODO Refactor this function as currently "cuckoo process" has a 1:1
         # copy of its code. TODO Also remove "archive" files.
-        results = RunProcessing(task=self.task).run()
+        results = RunProcessing(task=self.task.to_dict()).run()
         RunSignatures(results=results).run()
-        RunReporting(task=self.task, results=results).run()
+        RunReporting(task=self.task.to_dict(), results=results).run()
 
         # If the target is a file and the user enabled the option,
         # delete the original copy.
