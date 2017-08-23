@@ -355,6 +355,106 @@ class TestVirtualbox(object):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
+    def test_start_non_revert(self):
+        class machine_with_snapshot(object):
+            snapshot = "snapshot"
+            options = []
+            rdp_port = None
+
+
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m.vminfo = mock.MagicMock(return_value="label_hdd")
+
+        p1 = mock.MagicMock()
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
+
+        p2 = mock.MagicMock()
+        p2.communicate.return_value = "", ""
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+
+            p.side_effect = p1, p2
+            self.m.start("label", None, revert=False)
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "startvm", "label", "--type", "headless",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_compact_hd(self):
+        self.m.vminfo = mock.MagicMock(return_value="\"30d29d87-e54d\"")
+
+        c1 = mock.MagicMock()
+        c1.returncode = 0
+        c1.return_value = "", ""
+
+        with mock.patch("subprocess.check_output") as co:
+            co.side_effect = c1
+            self.m.compact_hd("label")
+
+        co.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"), "modifyhd",
+                "30d29d87-e54d", "--compact"
+            ], stderr=subprocess.PIPE
+        )
+
+    def test_start_with_rdp(self):
+        class machine_with_snapshot(object):
+            snapshot = "snapshot"
+            options = []
+            rdp_port = 3390
+
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m.restore = mock.MagicMock(return_value=None)
+
+        c1 = mock.MagicMock()
+        c1.returncode = 0
+        c1.return_value = "", ""
+        p1 = mock.MagicMock()
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
+
+        p2 = mock.MagicMock()
+        p2.communicate.return_value = "", ""
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            with mock.patch("subprocess.check_output") as co:
+                p.side_effect = p1, p2
+                co.side_effect = c1
+                self.m.start("label", None)
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "startvm", "label", "--type", "headless",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+        co.assert_has_calls([
+            mock.call(
+                [
+                    config("virtualbox:virtualbox:path"), "controlvm", "label",
+                    "vrde", "on"
+                ]
+            ),
+            mock.call(
+                [
+                    config("virtualbox:virtualbox:path"), "controlvm", "label",
+                    "vrdeport", "3390"
+                ]
+            )
+        ])
+
     def test_start_restore_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
@@ -433,6 +533,56 @@ class TestVirtualbox(object):
                 "snapshot", "label", "restore", "snapshot"
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_safe_stop_true(self):
+        self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m._safe_stop = mock.MagicMock(return_value=True)
+        self.m.stop("label", safe=True)
+
+        self.m._safe_stop.assert_called_once_with("label")
+
+    def test_safe_stop_true_fail(self):
+        self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m._safe_stop = mock.MagicMock(return_value=False)
+
+
+        p1 = mock.MagicMock()
+        p1.returncode = 0
+        p1.poll.return_value = 0
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1
+            self.m.stop("label", safe=True)
+
+        self.m._safe_stop.assert_called_once_with("label")
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "controlvm", "label", "poweroff"
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_safe_stop(self):
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+
+        p1 = mock.MagicMock()
+        p1.returncode = 0
+        p1.poll.return_value = 0
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1
+            ret = self.m._safe_stop("label")
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"), "controlvm", "label",
+                "acpipowerbutton"
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
     def test_stop_invalid_status(self):
