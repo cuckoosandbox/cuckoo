@@ -165,7 +165,7 @@ class vSphere(Machinery):
                     "Machine %s not found on host" % label
                 )
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stop a machine.
         @param label: machine name.
         @raise CuckooMachineError: if unable to stop machine

@@ -131,7 +131,7 @@ class QEMU(Machinery):
         self.qemu_dir = os.path.dirname(self.options.qemu.path)
         self.qemu_img = os.path.join(self.qemu_dir, "qemu-img")
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a virtual machine.
         @param label: virtual machine label.
         @param task: task object.
@@ -187,7 +187,7 @@ class QEMU(Machinery):
         except OSError as e:
             raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stops a virtual machine.
         @param label: virtual machine label.
         @raise CuckooMachineError: if unable to stop.

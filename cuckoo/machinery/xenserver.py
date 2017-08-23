@@ -240,7 +240,7 @@ class XenServer(Machinery):
 
         log.debug("Started vm: %s", label)
 
-    def stop(self, label=None):
+    def stop(self, label=None, safe=False):
         """Stop a virtual machine.
         @param label: vm uuid
         """
