@@ -494,7 +494,7 @@ class GuestManager(object):
                            "CurrentVersion\\Run /v %s /t REG_SZ /d \"%s %s\""
                 % (random_string(8), python_path, self.query_agent_path())
             }
-            r = self.post("/execute", data=data)
+            self.post("/execute", data=data)
             log.debug("Created HKLM run key on machine to autorun agent")
 
         if "execpy" in features:
