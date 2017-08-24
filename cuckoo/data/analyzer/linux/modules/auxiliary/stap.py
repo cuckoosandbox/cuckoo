@@ -1,18 +1,17 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import subprocess
 import time
-import logging
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
 from lib.core.config import Config
 
 log = logging.getLogger(__name__)
-
 
 class STAP(Auxiliary):
     """system-wide syscall trace with stap."""

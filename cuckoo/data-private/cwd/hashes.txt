@@ -218,7 +218,9 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 6d4811fec257ac752bfa96dd85fc1fa39bbd17ef analyzer/windows/modules/packages/ppt.py
 5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py
 
-# TBD release
+# TBD release (TODO support for removing analyzer/linux/modules/auxiliary/lkm.py)
+271e29efd19306e2769ff1c2fd0e46df7561bf81 analyzer/linux/modules/auxiliary/stap.py
+15adabd64969d5e23003d45b1f6f7b384b1e6bf0 analyzer/linux/modules/packages/generic.py
 0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
 bbae2a651067491925b2f52144575d3b821525fa analyzer/windows/lib/common/defines.py
 d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py

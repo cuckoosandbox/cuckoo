@@ -12,7 +12,6 @@ from cuckoo.common.abstracts import BehaviorHandler
 
 log = logging.getLogger(__name__)
 
-
 class FilteredProcessLog(list):
     def __init__(self, eventstream, **kwfilters):
         self.eventstream = eventstream
@@ -29,7 +28,6 @@ class FilteredProcessLog(list):
 
     def __nonzero__(self):
         return True
-
 
 class LinuxSystemTap(BehaviorHandler):
     """Parses systemtap generated plaintext logs (see
@@ -50,7 +48,7 @@ class LinuxSystemTap(BehaviorHandler):
             return True
 
     def parse(self, path):
-        parser = StapParser(open(path))
+        parser = StapParser(open(path, "rb"))
 
         for syscall in parser:
             # syscall specific hooks
@@ -89,11 +87,15 @@ class LinuxSystemTap(BehaviorHandler):
 
             # only update proc info after first succesful execve in this pid
             if not syscall["return_value"] and not pid["command_line"]:
-                pid["process_name"] = os.path.basename(str(syscall["arguments"]["p0"]))
+                pid["process_name"] = os.path.basename(
+                    str(syscall["arguments"]["p0"])
+                )
                 pid["command_line"] = " ".join(syscall["arguments"]["p1"])
 
     def get_proc(self, pid):
-        return filter(lambda proc: proc["pid"] == pid, self.processes)[0]
+        for process in self.processes:
+            if process["pid"] == pid:
+                return process
 
     def is_newpid(self, pid):
         return not any(p["pid"] == pid for p in self.processes)
@@ -104,7 +106,6 @@ class LinuxSystemTap(BehaviorHandler):
 
         self.processes.sort(key=lambda process: process["first_seen"])
         return self.processes
-
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
@@ -139,6 +140,8 @@ class StapParser(object):
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
+                # TODO Should "command_line" be emitted here?
+                # "command_line": "",
             }
 
     def parse_args(self, args):
@@ -175,14 +178,14 @@ class StapParser(object):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
     def parse_struct(self, argstr):
+        # Return as regular array if an element isn't named.
+        if "=" not in argstr:
+            return self.parse_array(argstr.lstrip("{"))
+
         parsed = {}
         for member in argstr.lstrip("{").split(", "):
-            try:
-                key, val = member.split("=")
-                parsed[key] = val
-            except ValueError as e:
-                # return as regular array if an element isn't named
-                return self.parse_array(argstr.lstrip("{"))
+            key, val = member.split("=")
+            parsed[key] = val
         return parsed
 
 

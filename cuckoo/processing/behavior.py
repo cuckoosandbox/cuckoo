@@ -223,13 +223,9 @@ class ExtractScripts(BehaviorHandler):
         self.ex = ExtractManager.for_task(self.analysis.task["id"])
 
     def handle_event(self, process):
-        try:
-            command = self.scr.parse_command(process["command_line"])
-            if command and command.get_script():
-                self.ex.push_script(process, command)
-        except KeyError as e:
-            log.exception(e)
-
+        command = self.scr.parse_command(process["command_line"])
+        if command and command.get_script():
+            self.ex.push_script(process, command)
 
     def run(self):
         pass

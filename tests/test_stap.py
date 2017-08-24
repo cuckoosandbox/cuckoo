@@ -4,10 +4,10 @@
 
 import datetime
 
-from cuckoo.processing.platform.linux import StapParser
+from cuckoo.processing.platform.linux import StapParser, LinuxSystemTap
 
 def test_staplog():
-    with open("tests/files/stap.log") as fd:
+    with open("tests/files/log.stap") as fd:
         assert list(StapParser(fd)) == [
             {
                 "api": "execve",
@@ -266,7 +266,14 @@ def test_staplog():
                         "0x55644b6bf5a0",
                         "SA_RESTORER",
                         "0x7f30ca2447f0",
-                        ["SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]"]
+                        [
+                            "SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|"
+                            "SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|"
+                            "SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|"
+                            "SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|"
+                            "SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|"
+                            "SIGSYS]"
+                        ],
                     ],
                     "p2": "0x0",
                     "p3": "8",

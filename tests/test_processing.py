@@ -278,7 +278,7 @@ class TestProcessing(object):
             "target": "lnk_2.lnk",
         })
         s.file_path = "tests/files/lnk_2.lnk"
-        assert not s.run()["elf"]
+        assert "elf" not in s.run()
 
     def test_procmon(self):
         p = Procmon()
@@ -852,6 +852,28 @@ class TestBehavior(object):
         }]
         assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
         assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+
+    @pytest.mark.xfail
+    def test_stap_log(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        mkdir(cwd(analysis=1))
+        mkdir(cwd("logs", analysis=1))
+        shutil.copy(
+            "tests/files/log.stap", cwd("logs", "all.stap", analysis=1)
+        )
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        assert ba.run() == [
+            # TODO We should be having some data here.
+        ]
 
 class TestPcap(object):
     @classmethod
