@@ -107,6 +107,8 @@ def enable_nat(interface):
     run(s.iptables, "-t", "nat", "-A", "POSTROUTING",
         "-o", interface, "-j", "MASQUERADE")
 
+    set_ipforward(1)
+
 def disable_nat(interface):
     """Disable NAT on this interface."""
     while True:
@@ -116,6 +118,12 @@ def disable_nat(interface):
         )
         if err:
             break
+    set_ipforward(0)
+
+def set_ipforward(value):
+    "Sets ip_forward 0/1 when requested"
+    open(os.path.join("/", "proc", "sys", "net",
+        "ipv4", "ip_forward"), "w").write("{0}".format(value))
 
 def init_rttable(rt_table, interface):
     """Initialise routing table for this interface using routes
