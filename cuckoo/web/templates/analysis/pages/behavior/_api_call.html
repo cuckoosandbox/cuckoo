@@ -35,10 +35,12 @@
   {% endfor %}
 </td>
 <td>
-    {% if call.status %}
+    {% if call.status == true %}
         success
-    {% else %}
+    {% elif call.status == false %}
         failed
+    {% elif call.status %}
+        {{ call.status }}
     {% endif %}
 </td>
 <td><span class="mono">{{call.return_value}}</span></td>

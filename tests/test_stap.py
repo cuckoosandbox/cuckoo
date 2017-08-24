@@ -121,7 +121,7 @@ def test_staplog():
                 "instruction_pointer": "b7768cf9",
                 "pid": 681,
                 "process_name": "helloworld.sh",
-                "raw": "Mon Jun 19 16:58:32 2017.037898 helloworld.sh@b7768cf9[681] exit_group(0) =\n",
+                "raw": "Mon Jun 19 16:58:32 2017.037898 helloworld.sh@b7768cf9[681] exit_group(0)\n",
                 "return_value": "",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 37898),
@@ -164,7 +164,7 @@ def test_staplog():
                 "instruction_pointer": "b7769cf9",
                 "pid": 680,
                 "process_name": "sh",
-                "raw": "Mon Jun 19 16:58:32 2017.051973 sh@b7769cf9[680] exit_group(0) =\n",
+                "raw": "Mon Jun 19 16:58:32 2017.051973 sh@b7769cf9[680] exit_group(0)\n",
                 "return_value": "",
                 "status": "",
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 51973),
@@ -234,4 +234,50 @@ def test_staplog():
                 "time": datetime.datetime(2017, 6, 19, 16, 58, 31, 445170),
                 "type": "apicall",
             },
+            {
+                "api": "set_thread_area",
+                "arguments": {
+                    "p0": {
+                        "entry_number": "4294967295",
+                        "base_addr": "3078293568",
+                        "limit": "1048575",
+                        "seg_32bit": "1",
+                        "contents": "0",
+                        "read_exec_only": "0",
+                        "limit_in_pages": "1",
+                        "seg_not_present": "0",
+                        "useable": "1",
+                    },
+                },
+                "instruction_pointer": "b77b5a21",
+                "pid": 818,
+                "process_name": "sh",
+                "raw": "Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0\n",
+                "return_value": "0",
+                "status": "",
+                "time": datetime.datetime(2017, 7, 27, 9, 51, 8, 595142),
+                "type": "apicall"
+            },
+            {
+                "api": "rt_sigaction",
+                "arguments": {
+                    "p0": "SIGCHLD",
+                    "p1": [
+                        "0x55644b6bf5a0",
+                        "SA_RESTORER",
+                        "0x7f30ca2447f0",
+                        ["SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]"]
+                    ],
+                    "p2": "0x0",
+                    "p3": "8",
+                },
+                "instruction_pointer": "7f30ca2448ee",
+                "pid": 900,
+                "process_name": "sh",
+                "raw": "Tue Aug  8 13:05:42 2017.464622 sh@7f30ca2448ee[900] rt_sigaction(SIGCHLD, {0x55644b6bf5a0, SA_RESTORER, 0x7f30ca2447f0, [SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]}, 0x0, 8) = 0\n",
+                "return_value": "0",
+                "status": "",
+                "time": datetime.datetime(2017, 8, 8, 13, 5, 42, 464622),
+                "type": "apicall"
+             },
         ]
