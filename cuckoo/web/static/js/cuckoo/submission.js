@@ -2494,6 +2494,7 @@ $(function () {
 
 							// machine guess: package options
 							// - also preselects the package field if available
+
 							if (item.package) {
 								item.per_file_options['package'] = item.package;
 								if (default_package_selection_options.indexOf(item.package) == -1) {
@@ -2641,6 +2642,7 @@ $(function () {
 											default: item.per_file_options['package'],
 											options: default_package_selection_options
 										}).on('change', function (value) {
+
 											item.per_file_options['package'] = value;
 											if (value == 'default') value = null;
 											setFieldValue.call(this, value);
@@ -2653,7 +2655,6 @@ $(function () {
 											options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
 										}).on('change', function (value) {
 											item.per_file_options['priority'] = value;
-											console.log(setFieldValue);
 											setFieldValue.call(this, parseInt(value));
 										});
 
@@ -2758,6 +2759,14 @@ $(function () {
 						doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
+					}).on('change', function (value) {
+
+						// sets all items to the correct value of package, this does
+						// not seem to work correctly, so this basically forces the
+						// correct value.
+						analysis_ui.filetree.each(function (item) {
+							item.per_file_options.package = value;
+						});
 					});
 
 					var priority = new this.TopSelect({
@@ -2802,8 +2811,9 @@ $(function () {
 
 						function compareAndOverwrite(item) {
 
+							// makes only exception rule for 'package'
 							for (var val in values) {
-								if (item.changed_properties && item.changed_properties.indexOf(val) == -1) {
+								if (item.changed_properties && item.changed_properties.indexOf(val) == -1 && val !== 'package') {
 									item.per_file_options[val] = values[val];
 								}
 							}
