@@ -2864,12 +2864,17 @@ $(function () {
 
 			e.preventDefault();
 
-			// $(".page-freeze").addClass('in');
-			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
-
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
 			}, true);
+
+			if (!JSON.parse(json).file_selection.length) {
+				alert('Please select some files first.');
+				return;
+			}
+
+			// $(".page-freeze").addClass('in');
+			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
 
 			if (debugging) {
 				console.log(JSON.parse(json));
