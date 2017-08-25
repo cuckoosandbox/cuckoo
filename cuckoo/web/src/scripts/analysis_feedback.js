@@ -6,7 +6,25 @@
  *
  */
 
+ var feedbackFormSubmitted = false;
+
+ function send_button_toggle() {
+
+   var sel = $('#modal_feedback');
+
+   sel.find("input#submit").toggleClass('sending');
+
+   if(sel.find('input#submit').hasClass('sending')) {
+    sel.find('input#submit').attr('disabled', true);
+    $("#modal_feedback").find("#result").html('Sending feedback... a moment.');
+   } else {
+    sel.find('input#submit').attr('disabled', false);
+   }
+ }
+
+
 function feedback_send(task_id, name, email, company, message, include_analysis, include_memdump, callback){
+
     var params = {
         "task_id": task_id,
         "email": email,
@@ -23,7 +41,10 @@ function feedback_send(task_id, name, email, company, message, include_analysis,
         if (err.responseJSON.hasOwnProperty("message")){
             let message = err.responseJSON.message;
             $("#modal_feedback").find("#result").html(message);
+            send_button_toggle();
+            feedbackFormSubmitted = false;
         }
 
     });
+
 }

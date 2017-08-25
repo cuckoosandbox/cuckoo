@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -6,7 +6,7 @@
 
 .app {
     // padding: 30px;
-    
+
     [id^="analysis"] &,
     [id^="submission/"] &,
     [id="dashboard"] &,
@@ -59,8 +59,8 @@ input[readonly] {
 
 // icon tab override fix
 .nav-tabs > .active > a > [class^="icon-"],
-.nav-tabs > .active  >a >[class*=" icon-"] { 
-    background-image:url("../img/glyphicons-halflings.png") !important; 
+.nav-tabs > .active  >a >[class*=" icon-"] {
+    background-image:url("../img/glyphicons-halflings.png") !important;
 }
 
 td {
@@ -119,7 +119,7 @@ body[id="analysis/import"] {
         cursor: inherit;
         display: block;
     }
-    
+
 }
 
 // feedback modal
@@ -146,7 +146,13 @@ body[id="analysis/import"] {
             color: grey;
         }
 
-    }    
+    }
+
+    input#submit.sending {
+      opacity: .5;
+      background-color: #999;
+      color: #444;
+    }
 
 }
 
@@ -204,13 +210,13 @@ pre code.hljs {
         background-color: #1d1f21;
         color: #999;
 
-        .hljs-type, 
-        .hljs-string, 
-        .hljs-number, 
-        .hljs-selector-id, 
-        .hljs-selector-class, 
-        .hljs-quote, 
-        .hljs-template-tag, 
+        .hljs-type,
+        .hljs-string,
+        .hljs-number,
+        .hljs-selector-id,
+        .hljs-selector-class,
+        .hljs-quote,
+        .hljs-template-tag,
         .hljs-deletion {
             color: #6f9ab3;
         }
@@ -225,13 +231,13 @@ pre code.hljs {
         background-color: #1d1f21;
         color: #999;
 
-        .hljs-type, 
-        .hljs-string, 
-        .hljs-number, 
-        .hljs-selector-id, 
-        .hljs-selector-class, 
-        .hljs-quote, 
-        .hljs-template-tag, 
+        .hljs-type,
+        .hljs-string,
+        .hljs-number,
+        .hljs-selector-id,
+        .hljs-selector-class,
+        .hljs-quote,
+        .hljs-template-tag,
         .hljs-deletion {
             color: #6f9ab3;
         }

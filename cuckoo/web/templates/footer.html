@@ -63,9 +63,14 @@
                 } else {
                     sel.find("span#result").html("error: " + data["message"]);
                 }
+                feedbackFormSubmitted = false;
+                send_button_toggle();
             }
 
             function send_feedback(){
+
+                send_button_toggle();
+
                 var email = sel.find("input#email").val();
                 var company = sel.find("input#company").val();
                 var message = sel.find("textarea#message").val();
@@ -106,7 +111,8 @@
                     export_estimate_size(task_id, dirs, files, "#modal_feedback small#export_estimate_size", "Estimated size: ");
                 }
 
-                sel.find("input#analysis").change("click", function(){
+                sel.find("input#analysis").change("click", function() {
+
                     if(!this.checked){
                         cb_analysis = false;
 
@@ -144,7 +150,9 @@
                 sel.find("input#submit").prop("disabled", false);
 
                 sel.find("input#submit").click(function(){
-                    send_feedback()
+                    if(feedbackFormSubmitted) return false;
+                    feedbackFormSubmitted = true;
+                    send_feedback();
                 });
 
                 if(task_id) {
@@ -178,7 +186,7 @@
             if(!$('table#recent').length) return;
 
             var recent;
-            
+
             $('body').on('click', 'div.nav_container>div', function() {
 
                 var btn_id = $(this).find("a").attr("data-filter");
@@ -287,7 +295,7 @@
                                 "info": "_PAGE_/_PAGES_"
                             }
                         });
-                    });                         
+                    });
                 }, 200);
 
             }
