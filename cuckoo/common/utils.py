@@ -77,10 +77,12 @@ def validate_url(url, allow_invalid=False):
     except:
         pass
 
-    if allow_invalid:
-        last = url.rfind("://")
-        if url[:last].split("://")[0] in ("http", "https"):
-            url = url[last+3:]
+    if allow_invalid and "://" in url:
+        parts = url.split("://")
+        # In case of "http://https://example.com" this will take the
+        # "https://" part and not the "http://" part.
+        if parts[-2] == "http" or parts[-2] == "https":
+            return "%s://%s" % (parts[-2], parts[-1])
 
     try:
         val("http://%s" % url)

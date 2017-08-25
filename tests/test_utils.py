@@ -386,7 +386,9 @@ def test_validate_url():
     assert utils.validate_url("google.com/test") == "http://google.com/test"
     assert utils.validate_url("https://google.com/") == "https://google.com/"
     assert utils.validate_url("ftp://google.com/") is None
-    assert utils.validate_url("https://https://google.com/") == "http://google.com/"
+    assert utils.validate_url(
+        "https://https://google.com/", allow_invalid=True
+    ) == "https://google.com/"
 
 def test_validate_hash():
     assert utils.validate_hash("a") is False
