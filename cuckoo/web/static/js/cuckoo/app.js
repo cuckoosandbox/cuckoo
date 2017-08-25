@@ -855,16 +855,18 @@ $(function () {
         CuckooWeb.submit_url(urls);
     });
 
-    // initialise hljs
-    hljs.configure({
-        languages: ['js']
-    });
+    if (hljs) {
+        // initialise hljs
+        hljs.configure({
+            languages: ['js']
+        });
 
-    hljs.initHighlightingOnLoad();
+        hljs.initHighlightingOnLoad();
 
-    $("pre code").each(function (i, element) {
-        hljs.highlightBlock(element);
-    });
+        $("pre code").each(function (i, element) {
+            hljs.highlightBlock(element);
+        });
+    }
 
     // retrieving powershell code and displaying it - if it hasn't been loaded yet.
     if ($(".extracted-switcher").length) {
