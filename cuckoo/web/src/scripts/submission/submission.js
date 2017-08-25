@@ -170,7 +170,7 @@ $(function() {
 
 						// this = item
 						var _$d = $(el).find('div');
-						var size = FileTree.Label('size', FileTree.humanizeBytes(this.size)); 
+						var size = FileTree.Label('size', FileTree.humanizeBytes(this.size));
 						var info = FileTree.Label('info', '<i class="fa fa-info-circle"></i>', 'a');
 
 						// adds the meta data
@@ -186,6 +186,9 @@ $(function() {
 							controller.detailView(self);
 						});
 
+						// make sure the filename is escaped to prevent XSS attacks
+						this.filename = CuckooWeb.escapeHTML(this.filename);
+
 						return el;
 					},
 
@@ -193,7 +196,7 @@ $(function() {
 
 						var self = this;
 						var _$d = $(el).find('div');
-						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this))); 
+						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
 						var archive, info;
 
 						if(this.type === 'container') {
@@ -218,7 +221,7 @@ $(function() {
 								});
 							}
 							_$d.append(archive);
-							
+
 						}
 
 						return el;
@@ -255,7 +258,7 @@ $(function() {
 							var form = new InterfaceControllers.Form({
 								container: $per_file_options,
 								configure: function(form) {
-									
+
 									var network = new this.TopSelect({
 										name: 'network-routing-' + item.filetree.index,
 										title: 'Network Routing',
@@ -330,7 +333,7 @@ $(function() {
 										default: item.per_file_options['options'],
 										options: submission_options,
 										on: {
-											init: function() {	
+											init: function() {
 
 												/*
 													attach any predefined values to the stack
@@ -468,11 +471,11 @@ $(function() {
 					form.draw();
 
 					// this gets fired EVERY time one of the fields
-					// insdie the form gets updated. it sends 
-					// back an object with all the current values of 
+					// insdie the form gets updated. it sends
+					// back an object with all the current values of
 					// the form instance.
 					form.on('change', function(values) {
-						
+
 						function compareAndOverwrite(item) {
 
 							for(var val in values) {
@@ -558,7 +561,7 @@ $(function() {
 				console.log(JSON.parse(json));
 				return;
 			}
-				
+
 			$.ajax({
 				url: '/submit/api/submit',
 				type: 'POST',
@@ -628,7 +631,7 @@ $(function() {
 				});
 			}
 		});
-		
+
 	}
 
 });

@@ -89,7 +89,7 @@ function getItemName(item) {
 	if(this.options.config.nameKey) {
 		name = item[this.options.config.nameKey];
 	}
-	return name;
+	return CuckooWeb.escapeHTML(name);
 }
 
 function createSelectable(item, name, text) {
@@ -98,7 +98,7 @@ function createSelectable(item, name, text) {
 	var _$c = document.createElement('input');
 	var _$l = document.createElement('label');
 	var _$s = document.createElement('span');
-	
+
 	_$s.innerHTML = text;
 
 	_$c.setAttribute('type', 'checkbox');
@@ -177,7 +177,7 @@ function build(items, parent) {
 
 		var item = items[i];
 		itemIndex += 1;
-		
+
 		item.filetree = {
 			index: itemIndex,
 			is_directory: isDirectory(item),
@@ -264,7 +264,7 @@ function bubbleSelection(arr, checked) {
 
 }
 
-// bubbles up a selection, works kind of the same as 
+// bubbles up a selection, works kind of the same as
 // bubbleSelection, but then the other direction around.
 function bubbleItemParentsUp(item, cb) {
 
@@ -323,7 +323,7 @@ function parentSelectedState(item, checked) {
 		bubbleItemParentsUp(item.parent, function(item) {
 			$(item.filetree.el).find('label:first').addClass('has-selected-child');
 		});
-		
+
 	} else {
 
 		bubbleItemParentsUp(item.parent, function(item) {
@@ -380,7 +380,7 @@ function selectHandler(checked, index, filetree) {
 }
 
 // handles a search (in the selection view)
-function searchHandler(value, selection, filetree) {	
+function searchHandler(value, selection, filetree) {
 
 	var list = $(this).find('#selection-overview');
 	list.find('[data-index]').removeClass('hidden');
@@ -443,7 +443,7 @@ function ellipseText(str, treshold) {
 }
 
 class FileTree {
-	
+
 	constructor(el, options) {
 
 		this.el = el;
@@ -530,7 +530,7 @@ class FileTree {
 			var type = $(this).data('type');
 			var index = $(this).find('[data-index]').data('index');
 			var item = null;
-			
+
 			if(type == 'file') {
 				self.detailView(self.getIndex(index));
 			}
@@ -573,7 +573,7 @@ class FileTree {
 	// loads file json
 	load(url, properties) {
 		var self = this;
-		
+
 		// response handler
 		function handleResponse(response) {
 
@@ -643,7 +643,7 @@ class FileTree {
 		var ret = [];
 
 		if(!this.data) return ret;
-		
+
 		function find(arr) {
 			arr.forEach(function(item) {
 
@@ -741,7 +741,7 @@ class FileTree {
 			$(self.options.config.sidebar).find('#search-selection').val('');
 			$(self.options.config.sidebar).find('.extension-select select').removeClass('none-selected');
 		});
-		
+
 		this.options.after.selectionView.call(selected, this.options.config.sidebar, this);
 
 	}
@@ -773,21 +773,21 @@ class FileTree {
 
 			item.options = diff(item.changed_properties, item.per_file_options);
 
-			// deletes all filetree specific properties from this item 
+			// deletes all filetree specific properties from this item
 			// (the properties that are sent out as JSON)
-			if(item.filetree) 
+			if(item.filetree)
 				delete item.filetree;
 
-			// if(item.changed_properties) 
+			// if(item.changed_properties)
 			// 	delete item.changed_properties;
 
-			if(item.parent) 
+			if(item.parent)
 				delete item.parent;
 
-			if(item.fname_short) 
+			if(item.fname_short)
 				delete item.fname_short;
 
-			if(item.rpath_short) 
+			if(item.rpath_short)
 				delete item.rpath_short;
 
 			return item;
@@ -808,7 +808,7 @@ class FileTree {
 				if(cb && typeof cb === 'function') cb(item);
 			});
 		}
-		
+
 		iterate(this.data.children, callback);
 
 	}

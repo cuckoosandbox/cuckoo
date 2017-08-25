@@ -606,7 +606,7 @@ function getItemName(item) {
 	if (this.options.config.nameKey) {
 		name = item[this.options.config.nameKey];
 	}
-	return name;
+	return CuckooWeb.escapeHTML(name);
 }
 
 function createSelectable(item, name, text) {
@@ -776,7 +776,7 @@ function bubbleSelection(arr, checked) {
 	});
 }
 
-// bubbles up a selection, works kind of the same as 
+// bubbles up a selection, works kind of the same as
 // bubbleSelection, but then the other direction around.
 function bubbleItemParentsUp(item, cb) {
 
@@ -1289,11 +1289,11 @@ var FileTree = function () {
 
 				item.options = diff(item.changed_properties, item.per_file_options);
 
-				// deletes all filetree specific properties from this item 
+				// deletes all filetree specific properties from this item
 				// (the properties that are sent out as JSON)
 				if (item.filetree) delete item.filetree;
 
-				// if(item.changed_properties) 
+				// if(item.changed_properties)
 				// 	delete item.changed_properties;
 
 				if (item.parent) delete item.parent;
@@ -2403,8 +2403,7 @@ var submission_options = [{
 	name: 'simulated-human-interaction',
 	label: 'Enable Simulated Human Interaction',
 	selected: true
-}
-];
+}];
 
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
@@ -2539,6 +2538,9 @@ $(function () {
 							e.stopImmediatePropagation();
 							controller.detailView(self);
 						});
+
+						// make sure the filename is escaped to prevent XSS attacks
+						this.filename = CuckooWeb.escapeHTML(this.filename);
 
 						return el;
 					},
@@ -2793,8 +2795,8 @@ $(function () {
 					form.draw();
 
 					// this gets fired EVERY time one of the fields
-					// insdie the form gets updated. it sends 
-					// back an object with all the current values of 
+					// insdie the form gets updated. it sends
+					// back an object with all the current values of
 					// the form instance.
 					form.on('change', function (values) {
 

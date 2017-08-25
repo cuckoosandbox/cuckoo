@@ -333,18 +333,18 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
 },"3":function(depth0,helpers,partials,data) {
     return "				<i class=\"fa fa-file-archive-o\"></i>\n";
 },"5":function(depth0,helpers,partials,data) {
-    return "				<i class=\"fa fa-file-o\"></i> \n";
+    return "				<i class=\"fa fa-file-o\"></i>\n";
 },"7":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
-    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1), depth0))
+    + ((stack1 = this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.fname_short : stack1), depth0)) != null ? stack1 : "")
     + "\n";
 },"9":function(depth0,helpers,partials,data) {
     var stack1;
 
   return "			"
-    + this.escapeExpression(this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filename : stack1), depth0))
+    + ((stack1 = this.lambda(((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.filename : stack1), depth0)) != null ? stack1 : "")
     + "\n";
 },"11":function(depth0,helpers,partials,data) {
     var stack1;
@@ -379,7 +379,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-file-detail"] = Handlebars.template({"1
     + ((stack1 = (helpers.file_size || (depth0 && depth0.file_size) || helpers.helperMissing).call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.size : stack1),{"name":"file_size","hash":{},"data":data})) != null ? stack1 : "")
     + "\n	</li>\n"
     + ((stack1 = helpers['if'].call(depth0,((stack1 = (depth0 != null ? depth0.item : depth0)) != null ? stack1.duplicate : stack1),{"name":"if","hash":{},"fn":this.program(15, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
-    + "</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Analysis Specific options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>";
+    + "</ul>\n\n<header class=\"flex-form__header\">\n	<h4><i class=\"fa fa-tasks\"></i> Analysis Specific options</h4>\n	<small>Options you change here are persisted to this file only.</small>\n</header>\n\n<div class=\"per-file-options flex-form\"></div>\n";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1;
@@ -423,12 +423,16 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
 },"12":function(depth0,helpers,partials,data) {
     return "								<i class=\"fa fa-file-o\"></i>\n";
 },"14":function(depth0,helpers,partials,data) {
-    return "							"
-    + this.escapeExpression(this.lambda((depth0 != null ? depth0.fname_short : depth0), depth0))
+    var stack1;
+
+  return "							"
+    + ((stack1 = this.lambda((depth0 != null ? depth0.fname_short : depth0), depth0)) != null ? stack1 : "")
     + "\n";
 },"16":function(depth0,helpers,partials,data) {
-    return "							"
-    + this.escapeExpression(this.lambda((depth0 != null ? depth0.filename : depth0), depth0))
+    var stack1;
+
+  return "							"
+    + ((stack1 = this.lambda((depth0 != null ? depth0.filename : depth0), depth0)) != null ? stack1 : "")
     + "\n";
 },"18":function(depth0,helpers,partials,data) {
     var stack1;
@@ -457,7 +461,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-selection-list"] = Handlebars.template(
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.selection : depth0),{"name":"each","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\n		<li class=\"no-results hidden\">\n			<p class=\"description\">Your search returned 0 results</p>\n		</li>\n\n	</ul>\n\n"
     + ((stack1 = helpers.unless.call(depth0,(depth0 != null ? depth0.empty : depth0),{"name":"unless","hash":{},"fn":this.program(23, data, 0),"inverse":this.program(25, data, 0),"data":data})) != null ? stack1 : "")
-    + "\n</div>";
+    + "\n</div>\n";
 },"useData":true});
 this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1, helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;

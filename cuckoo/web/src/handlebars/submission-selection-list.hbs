@@ -37,11 +37,11 @@
 							{{else}}
 								<i class="fa fa-file-o"></i>
 							{{/if}}
-						{{/if}}	
+						{{/if}}
 						{{#if this.fname_short}}
-							{{this.fname_short}}
+							{{{this.fname_short}}}
 						{{else}}
-							{{this.filename}}
+							{{{this.filename}}}
 						{{/if}}
 					</strong>
 					{{#unless this.filetree.is_directory}}
