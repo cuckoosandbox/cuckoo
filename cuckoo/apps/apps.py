@@ -488,6 +488,12 @@ def migrate_cwd():
     if not os.path.exists(cwd("stuff")):
         mkdir(cwd("stuff"))
 
+    # Create the new $CWD/whitelist/ directory.
+    if not os.path.exists(cwd("whitelist")):
+        shutil.copytree(
+            cwd("..", "data", "whitelist", private=True), cwd("whitelist")
+        )
+
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
         if not line.strip() or line.startswith("#"):
