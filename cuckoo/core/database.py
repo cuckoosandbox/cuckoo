@@ -43,17 +43,10 @@ TASK_REPORTED = "reported"
 TASK_FAILED_ANALYSIS = "failed_analysis"
 TASK_FAILED_PROCESSING = "failed_processing"
 TASK_FAILED_REPORTING = "failed_reporting"
-TASK_SCHEDULED = "scheduled"
-TASK_UNSCHEDULED = "unscheduled"
-
-# Task type (single or recurrent)
-TASK_SINGLE = "single"
-TASK_RECURRENT = "recurrent"
 
 status_type = Enum(
     TASK_PENDING, TASK_RUNNING, TASK_COMPLETED, TASK_REPORTED, TASK_RECOVERED,
     TASK_FAILED_ANALYSIS, TASK_FAILED_PROCESSING, TASK_FAILED_REPORTING,
-    TASK_SCHEDULED, TASK_UNSCHEDULED,
     name="status_type"
 )
 
