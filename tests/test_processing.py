@@ -862,7 +862,7 @@ class TestBehavior(object):
         mkdir(cwd(analysis=1))
         mkdir(cwd("logs", analysis=1))
         shutil.copy(
-            "tests/files/log.stap", cwd("logs", "all.stap", analysis=1)
+            "tests/files/log_full.stap", cwd("logs", "all.stap", analysis=1)
         )
 
         ba = BehaviorAnalysis()
