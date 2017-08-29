@@ -185,13 +185,14 @@ class StapParser(object):
         arg = argstr.lstrip("{")
         while arg:
             key, _, arg = arg.partition("=")
-            if arg[0] == "[":
-                val, _, arg = arg.partition("], ")
-            elif arg[0] == "{":
-                val, _, arg = arg.partition("}, ")
+            if self.is_array(arg):
+                delim = "], "
+            elif self.is_struct(arg):
+                delim = "}, "
             else:
-                val, _, arg = arg.partition(", ")
+                delim = ", "
 
+            val, _, arg = arg.partition(delim)
             parsed[key] = self.parse_arg(val)
 
         return parsed
