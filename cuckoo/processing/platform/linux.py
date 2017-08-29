@@ -193,7 +193,6 @@ class StapParser(object):
 
         return parsed
 
-
     def parse_string(self, argstr):
         return argstr.strip("\"").decode("string_escape")
 
