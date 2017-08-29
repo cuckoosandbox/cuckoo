@@ -184,8 +184,11 @@ class StapParser(object):
 
         parsed = {}
         for member in argstr.lstrip("{").split(", "):
-            key, val = member.split("=")
-            parsed[key] = val
+            try:
+                key, val = member.split("=")
+                parsed[key] = val
+            except ValueError:  # TODO: proper fix for array inside named struct
+                return self.parse_array(argstr.lstrip("{"))
         return parsed
 
 
