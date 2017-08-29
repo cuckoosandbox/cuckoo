@@ -140,8 +140,6 @@ class StapParser(object):
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
-                # TODO Should "command_line" be emitted here?
-                # "command_line": "",
             }
 
     def parse_args(self, args):
