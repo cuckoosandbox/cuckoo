@@ -178,17 +178,24 @@ class StapParser(object):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
     def parse_struct(self, argstr):
-        # Return as regular array if an element isn't named.
+        # Return as regular array if elements aren't named.
         if "=" not in argstr:
             return self.parse_array(argstr.lstrip("{"))
 
+        # Return as dict, parse value as array and struct when appropriate.
         parsed = {}
-        for member in argstr.lstrip("{").split(", "):
-            try:
-                key, val = member.split("=")
-                parsed[key] = val
-            except ValueError:  # TODO: proper fix for array inside named struct
-                return self.parse_array(argstr.lstrip("{"))
+        arg = argstr.lstrip("{")
+        while arg:
+            key, _, arg = arg.partition("=")
+            if arg[0] == "[":
+                val, _, arg = arg.partition("], ")
+            elif arg[0] == "{":
+                val, _, arg = arg.partition("}, ")
+            else:
+                val, _, arg = arg.partition(", ")
+
+            parsed[key] = self.parse_arg(val)
+
         return parsed
 
 
