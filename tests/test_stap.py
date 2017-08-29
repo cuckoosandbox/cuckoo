@@ -286,5 +286,29 @@ def test_staplog():
                 "status": "",
                 "time": datetime.datetime(2017, 8, 8, 13, 5, 42, 464622),
                 "type": "apicall"
-             },
+            },
+            {
+                "api": "sysinfo",
+                "arguments": {
+                    "p0": {
+                        "bufferram": "3212869720",
+                        "freeram": "3077782043",
+                        "freeswap": "3",
+                        "loads": ["0", "3077892816", "3212869720"],
+                        "procs": "20776",
+                        "sharedram": "134535000",
+                        "totalram": "3212869792",
+                        "totalswap": "3077892724",
+                        "uptime": "-1217188199"
+                    }
+                },
+                "instruction_pointer": "b7728cf9",
+                "pid": 821,
+                "process_name": "bash",
+                "raw": "Mon Aug 28 14:29:32 2017.619873 bash@b7728cf9[821] sysinfo({uptime=-1217188199, loads=[0, 3077892816, 3212869720], totalram=3212869792, freeram=3077782043, sharedram=134535000, bufferram=3212869720, totalswap=3077892724, freeswap=3, procs=20776}) = 0\n",
+                "return_value": "0",
+                "status": "",
+                "time": datetime.datetime(2017, 8, 28, 14, 29, 32, 619873),
+                "type": "apicall"
+            }
         ]

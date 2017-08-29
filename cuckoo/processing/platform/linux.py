@@ -140,8 +140,6 @@ class StapParser(object):
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
                 "type": "apicall", "raw": line,
-                # TODO Should "command_line" be emitted here?
-                # "command_line": "",
             }
 
     def parse_args(self, args):
@@ -178,16 +176,22 @@ class StapParser(object):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
     def parse_struct(self, argstr):
-        # Return as regular array if an element isn't named.
+        # Return as regular array if elements aren't named.
         if "=" not in argstr:
             return self.parse_array(argstr.lstrip("{"))
 
+        # Return as dict, parse value as array and struct when appropriate.
         parsed = {}
-        for member in argstr.lstrip("{").split(", "):
-            key, val = member.split("=")
-            parsed[key] = val
-        return parsed
+        arg = argstr.lstrip("{")
+        while arg:
+            key, _, arg = arg.partition("=")
+            delim = self.get_delim(arg)
+            if delim != ", ":
+                delim += ", "
+            val, _, arg = arg.partition(delim)
+            parsed[key] = self.parse_arg(val)
 
+        return parsed
 
     def parse_string(self, argstr):
         return argstr.strip("\"").decode("string_escape")
