@@ -183,12 +183,12 @@ class Experiment(Base):
     added_on = Column(DateTime(timezone=False),
                       default=datetime.datetime.now,
                       nullable=False)
-    delta = Column(String(), nullable=True)
+    delta = Column(String(), nullable=False, default="0s")
     # Amount of runs left for this Experiment.
-    runs = Column(Integer(), nullable=True)
+    runs = Column(Integer(), nullable=False)
     # Amount of times this Experiment has ran already.
-    times = Column(Integer(), nullable=True)
-    machine_name = Column(Text(), nullable=True)
+    times = Column(Integer(), nullable=False)
+    machine_name = Column(String(255), nullable=True)
     # Task id last completed for this experiment
     last_completed = Column(Integer(), nullable=True)
 
