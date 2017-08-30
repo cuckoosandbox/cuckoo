@@ -376,7 +376,7 @@ def tasks_report(task_id, report_format="json", elements=""):
     if not os.path.exists(report_path):
         return json_error(404, "Report not found")
 
-    if report_format == "json":
+    if report_format.lower() == "json":
         report_content = open(report_path, "rb").read()
         if(elements != ""):
             try:
@@ -390,6 +390,8 @@ def tasks_report(task_id, report_format="json", elements=""):
             response.headers["Content-Type"] = "application/json"
         return response
     else:
+        if(elements != ""):
+            return json_error(404, "Get specific field in report is not available in HTML format, try again with JSON format")
         return open(report_path, "rb").read()
 
 @app.route("/tasks/screenshots/<int:task_id>")
