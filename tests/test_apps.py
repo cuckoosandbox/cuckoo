@@ -680,6 +680,24 @@ class TestMigrateCWD(object):
             cwd("web/local_settings.py")
         )
 
+    @mock.patch("cuckoo.apps.apps.hashlib")
+    def test_deleted_file(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        def our_sha1(buf):
+            class obj(object):
+                def hexdigest(self):
+                    return "4989ba7ce0dc38709dd125d6c4fac5852914f0c7"
+            return obj() if buf == "yes!" else hashlib.sha1(buf)
+
+        p.sha1.side_effect = our_sha1
+
+        open(cwd("analyzer/windows/lib/common/errors.py"), "wb").write("yes!")
+        assert os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
+        migrate_cwd()
+        assert not os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
+
     def test_new_directory(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()

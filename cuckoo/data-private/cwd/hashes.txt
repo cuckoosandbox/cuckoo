@@ -218,10 +218,11 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 6d4811fec257ac752bfa96dd85fc1fa39bbd17ef analyzer/windows/modules/packages/ppt.py
 5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py
 
-# TBD release
+# 2.0.4 release
 0ee7780cdcd483b3002f1da1e7144d857e07112a analyzer/windows/analyzer.py
-457a3637f98bcfc2127120777c7cf0d9fb518593 analyzer/windows/lib/api/process.py
+5bce9b46793e68be557940769ec44f044e6f568b analyzer/windows/lib/api/process.py
 bbae2a651067491925b2f52144575d3b821525fa analyzer/windows/lib/common/defines.py
+0000000000000000000000000000000000000000 analyzer/windows/lib/common/errors.py
 d9de5e52cec21c5013efcf82ba030e10c6911e39 analyzer/windows/lib/core/ioctl.py
 4666fdb85f4b30b21bbc83d42210b6fb2964ffe6 analyzer/windows/lib/core/packages.py
 015897ffdaebeac241169748ac1d63fb46397b9f analyzer/windows/modules/auxiliary/dumptls.py

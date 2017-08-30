@@ -59,12 +59,13 @@ cwd_private = os.path.join("cuckoo", "data-private")
 open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
 
 def update_hashes():
-    hashes = {}
+    hashes, hashes_r = {}, {}
     for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
         if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
+        hashes_r[filename] = True
 
     new_hashes = []
     for dirpath, dirnames, filenames in os.walk(cwd_public):
@@ -77,6 +78,10 @@ def update_hashes():
             hash_ = hashlib.sha1(buf).hexdigest()
             if filepath not in hashes or hash_ not in hashes[filepath]:
                 new_hashes.append((filepath, hash_))
+            hashes_r.pop(filepath, None)
+
+    for filepath in hashes_r:
+        new_hashes.append((filepath, "0"*40))
 
     with open(os.path.join(cwd_private, "cwd", "hashes.txt"), "a+b") as f:
         new_hashes and f.write("\n")
