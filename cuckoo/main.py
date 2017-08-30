@@ -217,19 +217,16 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
-        message = red("{0}: {1}".format(e.__class__.__name__, e))
-        if len(log.handlers):
-            log.critical(message)
-        else:
-            sys.stderr.write("{0}\n".format(message))
+        log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
         if e.code:
             print e
-    except:
+    except Exception as e:
         # Deal with an unhandled exception.
-        message = exception_message()
-        print message, traceback.format_exc()
+        sys.stderr.write(exception_message())
+        log.exception(red("{0}: {1}".format(e.__class__.__name__, e)))
+        sys.exit(1)
 
 @main.command()
 @click.pass_context
