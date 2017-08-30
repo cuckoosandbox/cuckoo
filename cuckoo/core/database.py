@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 
 null = None
 
-SCHEMA_VERSION = "45e060776917"
+SCHEMA_VERSION = "f37a6c6dde99"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
