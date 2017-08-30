@@ -322,7 +322,9 @@ def tasks_delete(task_id):
 @app.route("/v1/tasks/report/<int:task_id>")
 @app.route("/tasks/report/<int:task_id>/<report_format>")
 @app.route("/v1/tasks/report/<int:task_id>/<report_format>")
-def tasks_report(task_id, report_format="json"):
+@app.route("/tasks/report/<int:task_id>/<report_format>/<elements>")
+@app.route("/v1/tasks/report/<int:task_id>/<report_format>/<elements>")
+def tasks_report(task_id, report_format="json", elements=""):
     formats = {
         "json": "report.json",
         "html": "report.html",
@@ -375,8 +377,17 @@ def tasks_report(task_id, report_format="json"):
         return json_error(404, "Report not found")
 
     if report_format == "json":
-        response = make_response(open(report_path, "rb").read())
-        response.headers["Content-Type"] = "application/json"
+        report_content = open(report_path, "rb").read()
+        if(elements != ""):
+            try:
+                from flask import json
+                response = make_response(json.dumps(json.loads(report_content)[elements]))
+                response.headers["Content-Type"] = "application/json"
+            except:
+                return json_error(404, "'{0}' not found".format(elements))
+        else:
+            response = make_response(open(report_path, "rb").read())
+            response.headers["Content-Type"] = "application/json"
         return response
     else:
         return open(report_path, "rb").read()
