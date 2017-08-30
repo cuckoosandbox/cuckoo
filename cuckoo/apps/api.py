@@ -85,7 +85,7 @@ def tasks_create_file():
 
         if not exp_runs or exp_runs == "0" or not exp_runs.isnumeric():
             return json_error(400, "No or invalid number of experiment runs"
-                                   " provided. Type: %s" % type(exp_runs))
+                                   " provided")
 
     memory = parse_bool(request.form.get("memory", 0))
     unique = parse_bool(request.form.get("unique", 0))
@@ -148,7 +148,7 @@ def tasks_create_url():
 
         if not exp_runs or exp_runs == "0" or not exp_runs.isnumeric():
             return json_error(400, "No or invalid number of experiment runs"
-                                   " provided. Type: %s" % type(exp_runs))
+                                   " provided")
 
     memory = request.form.get("memory", False)
     if memory:

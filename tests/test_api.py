@@ -313,6 +313,62 @@ class TestAPI(object):
         assert t.target != filepath
         assert t.target.endswith("foobar.bat")
 
+    def test_create_experiment(self):
+        options = {
+            "experiment": 1,
+            "exp_runs": 2,
+            "exp_name": "exp1",
+            "exp_delta": "12h"
+        }
+        res = self.create_task_options(options=options)
+        res_data = json.loads(res.data)
+        assert "task_id" in res_data
+        assert res_data["task_id"] is not None
+
+    def test_create_experiment_no_delta(self):
+        options = {
+            "experiment": 1,
+            "exp_runs": 2,
+            "exp_name": "exp1"
+        }
+        res = self.create_task_options(options=options)
+        res_data = json.loads(res.data)
+        assert "task_id" in res_data
+        assert res_data["task_id"] is not None
+
+    def test_create_experiment_0_runs(self):
+        options = {
+            "experiment": 1,
+            "exp_runs": 0,
+            "exp_name": "exp1"
+        }
+        res = self.create_task_options(options=options)
+        res_data = json.loads(res.data)
+        assert res.status_code == 400
+        assert res_data["message"] == "No or invalid number of " \
+                                      "experiment runs provided"
+
+    def test_create_experiment_no_runs(self):
+        options = {
+            "experiment": 1,
+            "exp_name": "exp1"
+        }
+        res = self.create_task_options(options=options)
+        res_data = json.loads(res.data)
+        assert res.status_code == 400
+        assert res_data["message"] == "No or invalid number of " \
+                                      "experiment runs provided"
+
+    def test_create_experiment_no_name(self):
+        options = {
+            "experiment": 1,
+            "exp_runs": 0
+        }
+        res = self.create_task_options(options=options)
+        res_data = json.loads(res.data)
+        assert res.status_code == 400
+        assert res_data["message"] == "No experiment name provided"
+
     def create_task(self, filename="a.js", content="eval('alert(1)')"):
         r = self.app.post("/tasks/create/file", data={
             "file": werkzeug.FileStorage(io.BytesIO(content), filename),
@@ -324,3 +380,11 @@ class TestAPI(object):
             "url": url,
         })
         return json.loads(r.data)["task_id"]
+
+    def create_task_options(self, filename="a.js",
+                               content="eval('alert(1)')", options={}):
+        data = {
+            "file": werkzeug.FileStorage(io.BytesIO(content), filename)
+            }
+        data.update(options)
+        return self.app.post("/tasks/create/file", data=data)
