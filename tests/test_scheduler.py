@@ -4,10 +4,9 @@
 
 import hashlib
 import json
+import mock
 import os.path
 import tempfile
-
-import mock
 
 from cuckoo.common.abstracts import Dictionary
 from cuckoo.common.files import Folders
@@ -54,7 +53,6 @@ def am_init(options={}, cfg={}):
 
     return am
 
-
 def test_am_init_success():
     am = am_init()
 
@@ -66,7 +64,6 @@ def test_am_init_success():
     # Manually disable per-task logging initiated by init().
     task_log_stop(1234)
 
-
 def test_am_init_duplicate_analysis():
     am = am_init()
 
@@ -75,7 +72,6 @@ def test_am_init_duplicate_analysis():
 
     # Manually disable per-task logging initiated by init().
     task_log_stop(1234)
-
 
 class Test_am_LaunchAnalysis(object):
     class exp(object):
@@ -365,7 +361,6 @@ class Test_am_LaunchAnalysis(object):
 
         assert succeeded == True
 
-
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_default_route(p):
     am = am_init({
@@ -386,7 +381,6 @@ def test_route_default_route(p):
     assert am.rt_table == "nic0rt"
     assert p.call_count == 4
 
-
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_none(p):
     am = am_init({
@@ -400,7 +394,6 @@ def test_route_none(p):
     p.assert_not_called()
     am.db.set_route.assert_called_once_with(1234, "none")
 
-
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_drop(p):
     am = am_init({
@@ -413,7 +406,6 @@ def test_route_drop(p):
     assert am.rt_table is None
     p.assert_called_once_with("drop_enable", "1.2.3.4", "192.168.56.1", "2042")
     am.db.set_route.assert_called_once_with(1234, "drop")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_inetsim(p):
@@ -433,7 +425,6 @@ def test_route_inetsim(p):
     assert am.rt_table is None
     p.assert_called_once_with("inetsim_enable", "1.2.3.4", "2.3.4.5", "2042")
     am.db.set_route.assert_called_once_with(1234, "inetsim")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_tor(p):
@@ -456,7 +447,6 @@ def test_route_tor(p):
         "tor_enable", "1.2.3.4", "192.168.56.1", "4242", "4141"
     )
     am.db.set_route.assert_called_once_with(1234, "tor")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_internet_route(p):
@@ -482,7 +472,6 @@ def test_route_internet_route(p):
     p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
     am.db.set_route.assert_called_once_with(1234, "internet")
 
-
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_internet_route_noconf(p):
     am = am_init({
@@ -501,7 +490,6 @@ def test_route_internet_route_noconf(p):
     assert am.rt_table is None
     p.assert_not_called()
     am.db.set_route.assert_called_once_with(1234, "none")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_internet_unroute(p):
@@ -524,7 +512,6 @@ def test_route_internet_unroute(p):
     p.assert_any_call("drop_disable", "1.2.3.4", "192.168.56.1", "2042")
     p.assert_any_call("forward_disable", "vboxnet0", "nic0int", "1.2.3.4")
     p.assert_any_call("srcroute_disable", "nic0rt", "1.2.3.4")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_vpn(p):
@@ -556,7 +543,6 @@ def test_route_vpn(p):
     p.assert_any_call("forward_enable", "vboxnet0", "tun1", "1.2.3.4")
     p.assert_any_call("srcroute_enable", "tun1rt", "1.2.3.4")
     am.db.set_route.assert_called_once_with(1234, "vpn1")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_scheduler_initialize(p):
@@ -601,7 +587,6 @@ def test_scheduler_initialize(p):
     p.assert_any_call("forward_disable", "int2", "vpnint0", "5.6.7.8")
     p.assert_any_call("forward_disable", "int1", "intern0t", "1.2.3.4")
     p.assert_any_call("forward_disable", "int2", "intern0t", "5.6.7.8")
-
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_scheduler_initialize_novpn(p):

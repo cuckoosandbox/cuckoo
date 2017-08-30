@@ -75,7 +75,6 @@ class JsonType(TypeDecorator):
     def process_result_value(self, value, dialect):
         return json.loads(value)
 
-
 class JsonTypeList255(TypeDecorator):
     """Custom JSON type."""
     impl = String(255)
@@ -85,7 +84,6 @@ class JsonTypeList255(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return json.loads(value) if value else []
-
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -159,7 +157,6 @@ class Machine(Base):
         self.rdp_port = rdp_port
         self.locked_by = locked_by
 
-
 class Tag(Base):
     """Tag describing anything you want."""
     __tablename__ = "tags"
@@ -172,7 +169,6 @@ class Tag(Base):
 
     def __init__(self, name):
         self.name = name
-
 
 class Experiment(Base):
     """Experiment regroups a list of tasks together"""
@@ -210,7 +206,6 @@ class Experiment(Base):
         @return: JSON data
         """
         return json.dumps(self.to_dict())
-
 
 class Guest(Base):
     """Tracks guest run."""
@@ -258,7 +253,6 @@ class Guest(Base):
         self.label = label
         self.manager = manager
 
-
 class Submit(Base):
     """Submitted files details."""
     __tablename__ = "submit"
@@ -273,7 +267,6 @@ class Submit(Base):
         self.tmp_path = tmp_path
         self.submit_type = submit_type
         self.data = data
-
 
 class Sample(Base):
     """Submitted files details."""
@@ -320,7 +313,6 @@ class Sample(Base):
         self.file_type = file_type
         self.ssdeep = ssdeep
 
-
 class Error(Base):
     """Analysis errors."""
     __tablename__ = "errors"
@@ -353,7 +345,6 @@ class Error(Base):
     def __repr__(self):
         return "<Error('{0}','{1}','{2}')>".format(self.id, self.message,
                                                    self.task_id)
-
 
 class Task(Base):
     """Analysis task queue."""
@@ -461,13 +452,11 @@ class Task(Base):
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)
 
-
 class AlembicVersion(Base):
     """Table used to pinpoint actual database schema release."""
     __tablename__ = "alembic_version"
 
     version_num = Column(String(32), nullable=False, primary_key=True)
-
 
 class Database(object):
     """Analysis queue database.
