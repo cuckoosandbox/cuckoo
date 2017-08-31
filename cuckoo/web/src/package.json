@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "gulp",
-    "build": "gulp build"
+    "build": "gulp build",
+    "production": "gulp build --production"
   },
   "author": "",
   "license": "ISC",
