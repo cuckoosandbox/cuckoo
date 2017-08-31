@@ -165,7 +165,7 @@ class TestAppsWithCWD(object):
     def test_machine_add(self):
         cuckoo_machine(
             "cuckoo2", "add", "1.2.3.4", "windows",
-            None, None, None, None, None
+            None, None, None, None, None, None
         )
         assert config("virtualbox:virtualbox:machines") == [
             "cuckoo1", "cuckoo2",
@@ -175,7 +175,7 @@ class TestAppsWithCWD(object):
 
     def test_machine_delete(self):
         cuckoo_machine(
-            "cuckoo1", "delete", None, None, None, None, None, None, None
+            "cuckoo1", "delete", None, None, None, None, None, None, None, None
         )
         assert config("virtualbox:virtualbox:machines") == []
 
