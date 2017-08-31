@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "gulp",
     "build": "gulp build",
-    "production": "gulp build --comb-css"
+    "production": "gulp build --production"
   },
   "author": "",
   "license": "ISC",
