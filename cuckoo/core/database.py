@@ -175,11 +175,11 @@ class Experiment(Base):
     __tablename__ = "experiments"
 
     id = Column(Integer(), primary_key=True)
-    name = Column(Text(), nullable=True, unique=True)
+    name = Column(String(255), nullable=True, unique=True)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.datetime.now,
                       nullable=False)
-    delta = Column(String(), nullable=False, default="0s")
+    delta = Column(String(255), nullable=False, default="0s")
     # Amount of runs left for this Experiment.
     runs = Column(Integer(), nullable=False)
     # Amount of times this Experiment has ran already.
@@ -1528,6 +1528,7 @@ class Database(object):
 
         return task
 
+    @classlock
     def list_experiments(self, limit=None, details=True, offset=None,
                          set_last_task=True):
         """"Retrieve list of experiments
@@ -1735,6 +1736,7 @@ class Database(object):
             session.close()
         return True
 
+    @classlock
     def unlock_machine_by_experiment(self, experiment):
         """Remove lock from a virtual machine.
         @param experiment: experiment id
@@ -1763,6 +1765,7 @@ class Database(object):
 
         return machine
 
+    @classlock
     def update_experiment(self, name, id=None, delta=None, timeout=None,
                           machine_name=False, runs=None, times=None,
                           last_task_completed=None):
@@ -1814,6 +1817,7 @@ class Database(object):
             session.close()
             return experiment
 
+    @classlock
     def delete_experiment(self, experiment_id):
         """Delete experiment by identifier."""
         session = self.Session()
@@ -1829,6 +1833,7 @@ class Database(object):
             session.close()
         return True
 
+    @classlock
     def view_experiment(self, id=None, name=None, machine_name=None,
                         active=False):
         """View experiment by id or name."""
@@ -1878,6 +1883,7 @@ class Database(object):
 
         return sample
 
+    @classlock
     def count_experiments(self, status=None):
         """Counts the amount of experiments in the database."""
         session = self.Session()
