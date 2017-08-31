@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1449,10 +1449,9 @@ var TEMPLATES = {
 	TopSelect: HANDLEBARS_TEMPLATES['control-top-select'],
 	SimpleSelect: HANDLEBARS_TEMPLATES['control-simple-select'],
 	ToggleList: HANDLEBARS_TEMPLATES['control-toggle-list']
+
+	// renders two interface controllers onto one row
 };
-
-// renders two interface controllers onto one row
-
 var Split = function () {
 	function Split(elements) {
 		_classCallCheck(this, Split);
@@ -2390,10 +2389,9 @@ var default_analysis_options = {
 	'vpn': 'united-states',
 	'available_vpns': [],
 	'available_machines': []
-};
 
-// default option set for the submission form
-var submission_options = [{
+	// default option set for the submission form
+};var submission_options = [{
 	name: 'enable-injection',
 	label: 'Enable Injection',
 	description: 'Enable behavioral analysis.'
@@ -2416,7 +2414,7 @@ var submission_options = [{
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'jse', 'hta', 'hwp', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'jse', 'hta', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
@@ -2619,140 +2617,136 @@ $(function () {
 						var $per_file_options = $(el).find('.per-file-options')[0];
 
 						if ($per_file_options) {
-							var form;
 
-							(function () {
+							// sets a value on a field
+							var setFieldValue = function setFieldValue(value) {
 
-								// sets a value on a field
-								var setFieldValue = function setFieldValue(value) {
+								var field = fieldName(this.name);
 
-									var field = fieldName(this.name);
+								if (item.changed_properties.indexOf(field) == -1) {
+									item.changed_properties.push(field);
+								}
 
-									if (item.changed_properties.indexOf(field) == -1) {
-										item.changed_properties.push(field);
-									}
+								item.per_file_options[field] = value;
+							};
 
-									item.per_file_options[field] = value;
-								};
-
-								// returns the fieldname as is
+							// returns the fieldname as is
 
 
-								var fieldName = function fieldName(str) {
-									var spl = str.split('-');
-									spl.splice(-1, 1);
-									return spl.join('-');
-								};
+							var fieldName = function fieldName(str) {
+								var spl = str.split('-');
+								spl.splice(-1, 1);
+								return spl.join('-');
+							};
 
-								form = new InterfaceControllers.Form({
-									container: $per_file_options,
-									configure: function configure(form) {
+							var form = new InterfaceControllers.Form({
+								container: $per_file_options,
+								configure: function configure(form) {
 
-										var network = new this.TopSelect({
-											name: 'network-routing-' + item.filetree.index,
-											title: 'Network Routing',
-											doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
-											default: item.per_file_options['network-routing'],
-											options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
-											extra_select: {
-												title: 'VPN via',
-												name: 'vpn-' + item.filetree.index,
-												default: item.per_file_options['vpn'] || undefined,
-												disabled: routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0,
-												options: default_analysis_options.available_vpns
-											}
-										}).on('change', function (value) {
-											item.per_file_options['network-routing'] = value;
-											setFieldValue.call(this, value);
-										});
+									var network = new this.TopSelect({
+										name: 'network-routing-' + item.filetree.index,
+										title: 'Network Routing',
+										doc_link: 'https://cuckoo.sh/docs/installation/host/routing.html',
+										default: item.per_file_options['network-routing'],
+										options: [{ name: 'none', value: 'none', disabled: routing_prefs['none'] === false }, { name: 'drop', value: 'drop', disabled: routing_prefs['drop'] === false }, { name: 'internet', value: 'internet', disabled: routing_prefs['internet'] === false }, { name: 'inetsim', value: 'inetsim', disabled: routing_prefs['inetsim'] === false }, { name: 'tor', value: 'tor', disabled: routing_prefs['tor'] === false }],
+										extra_select: {
+											title: 'VPN via',
+											name: 'vpn-' + item.filetree.index,
+											default: item.per_file_options['vpn'] || undefined,
+											disabled: routing_prefs['vpn'] === false || default_analysis_options.available_vpns.length === 0,
+											options: default_analysis_options.available_vpns
+										}
+									}).on('change', function (value) {
+										item.per_file_options['network-routing'] = value;
+										setFieldValue.call(this, value);
+									});
 
-										var pkg = new this.SimpleSelect({
-											name: 'package-' + item.filetree.index,
-											title: 'Package',
-											doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
-											default: item.per_file_options['package'],
-											options: default_package_selection_options
-										}).on('change', function (value) {
+									var pkg = new this.SimpleSelect({
+										name: 'package-' + item.filetree.index,
+										title: 'Package',
+										doc_link: 'https://cuckoo.sh/docs/usage/packages.html',
+										default: item.per_file_options['package'],
+										options: default_package_selection_options
+									}).on('change', function (value) {
 
-											item.per_file_options['package'] = value;
-											if (value == 'default') value = null;
-											setFieldValue.call(this, value);
-										});
+										item.per_file_options['package'] = value;
+										if (value == 'default') value = null;
+										setFieldValue.call(this, value);
+									});
 
-										var priority = new this.TopSelect({
-											name: 'piority-' + item.filetree.index,
-											title: 'Priority',
-											default: parseInt(item.per_file_options['priority']),
-											options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
-										}).on('change', function (value) {
-											item.per_file_options['priority'] = value;
-											setFieldValue.call(this, parseInt(value));
-										});
+									var priority = new this.TopSelect({
+										name: 'piority-' + item.filetree.index,
+										title: 'Priority',
+										default: parseInt(item.per_file_options['priority']),
+										options: [{ name: 'low', value: 1, className: 'priority-s' }, { name: 'medium', value: 2, className: 'priority-m' }, { name: 'high', value: 3, className: 'priority-l' }]
+									}).on('change', function (value) {
+										item.per_file_options['priority'] = value;
+										setFieldValue.call(this, parseInt(value));
+									});
 
-										var timeout = new this.TopSelect({
-											name: 'timeout-' + item.filetree.index,
-											title: 'Timeout',
-											default: item.per_file_options['timeout'],
-											units: 'seconds',
-											options: [{ name: 'short', value: 60, description: '60' }, { name: 'medium', value: 120, description: '120' }, { name: 'long', value: 300, description: '300' }, { name: 'custom', manual: true }]
-										}).on('change', function (value) {
-											item.per_file_options['timeout'] = value;
-											setFieldValue.call(this, value);
-										});
+									var timeout = new this.TopSelect({
+										name: 'timeout-' + item.filetree.index,
+										title: 'Timeout',
+										default: item.per_file_options['timeout'],
+										units: 'seconds',
+										options: [{ name: 'short', value: 60, description: '60' }, { name: 'medium', value: 120, description: '120' }, { name: 'long', value: 300, description: '300' }, { name: 'custom', manual: true }]
+									}).on('change', function (value) {
+										item.per_file_options['timeout'] = value;
+										setFieldValue.call(this, value);
+									});
 
-										var config = new this.ToggleList({
-											name: 'options-' + item.filetree.index,
-											title: 'Options',
-											extraOptions: true,
-											default: item.per_file_options['options'],
-											options: submission_options,
-											on: {
-												init: function init() {
+									var config = new this.ToggleList({
+										name: 'options-' + item.filetree.index,
+										title: 'Options',
+										extraOptions: true,
+										default: item.per_file_options['options'],
+										options: submission_options,
+										on: {
+											init: function init() {
 
-													/*
-             	attach any predefined values to the stack
-              */
+												/*
+            	attach any predefined values to the stack
+             */
 
-													var custom = [];
+												var custom = [];
 
-													var default_options = this.options.map(function (item) {
-														return item.name;
-													});
+												var default_options = this.options.map(function (item) {
+													return item.name;
+												});
 
-													for (var default_option in this.default) {
-														if (default_options.indexOf(default_option) == -1) {
-															custom.push({
-																key: default_option,
-																value: this.default[default_option]
-															});
-														}
+												for (var default_option in this.default) {
+													if (default_options.indexOf(default_option) == -1) {
+														custom.push({
+															key: default_option,
+															value: this.default[default_option]
+														});
 													}
-
-													this.options_extra_predefined = custom;
-												},
-												change: function change(value) {
-													item.per_file_options['options'] = value;
-													setFieldValue.call(this, value);
 												}
+
+												this.options_extra_predefined = custom;
+											},
+											change: function change(value) {
+												item.per_file_options['options'] = value;
+												setFieldValue.call(this, value);
 											}
-										});
+										}
+									});
 
-										var machine = new this.SimpleSelect({
-											name: 'machine-' + item.filetree.index,
-											title: 'Machine',
-											default: item.per_file_options['machine'],
-											options: default_analysis_options.available_machines
-										}).on('change', function (value) {
-											item.per_file_options['machine'] = value;
-											setFieldValue.call(this, value);
-										});
+									var machine = new this.SimpleSelect({
+										name: 'machine-' + item.filetree.index,
+										title: 'Machine',
+										default: item.per_file_options['machine'],
+										options: default_analysis_options.available_machines
+									}).on('change', function (value) {
+										item.per_file_options['machine'] = value;
+										setFieldValue.call(this, value);
+									});
 
-										form.add([network, [pkg, priority], timeout, config, machine]);
+									form.add([network, [pkg, priority], timeout, config, machine]);
 
-										form.draw();
-									}
-								});
-							})();
+									form.draw();
+								}
+							});
 						}
 					}
 				}

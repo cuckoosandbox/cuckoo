@@ -955,46 +955,41 @@ $(function () {
 
     // retrieving powershell code and displaying it - if it hasn't been loaded yet.
     if ($(".extracted-switcher").length) {
-        var switcher;
+        var fetchPowerShell = function fetchPowerShell(el) {
 
-        (function () {
-            var fetchPowerShell = function fetchPowerShell(el) {
+            var url = el.find('[data-powershell-source]').attr('data-powershell-source');
 
-                var url = el.find('[data-powershell-source]').attr('data-powershell-source');
-
-                $.get(url).success(function (response) {
-                    // do make newlines from ; for good overview
-                    var code = S(response).replaceAll(';', ';\n');
-                    // render code block and inject
-                    var html = $(CuckooWeb.renderCode(code), {
-                        type: 'powershell'
-                    });
-
-                    // initialize hljs on that codeblock
-                    html.find('code').each(function (i, block) {
-                        hljs.highlightBlock(block);
-                    });
-
-                    // inject somewhere after 'el'
-                    el.find('.powershell-preview').html(html);
-                    el.addClass('powershell-loaded');
-                }).error(function () {
-
-                    el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>');
+            $.get(url).success(function (response) {
+                // do make newlines from ; for good overview
+                var code = S(response).replaceAll(';', ';\n');
+                // render code block and inject
+                var html = $(CuckooWeb.renderCode(code), {
+                    type: 'powershell'
                 });
-            };
 
-            switcher = $(".extracted-switcher").data('pageSwitcher');
+                // initialize hljs on that codeblock
+                html.find('code').each(function (i, block) {
+                    hljs.highlightBlock(block);
+                });
 
+                // inject somewhere after 'el'
+                el.find('.powershell-preview').html(html);
+                el.addClass('powershell-loaded');
+            }).error(function () {
 
-            switcher.events.afterTransition = function (page) {
-                if (!page.el.hasClass('powershell-loaded')) {
-                    fetchPowerShell(page.el);
-                }
-            };
+                el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>');
+            });
+        };
 
-            switcher.transition(0);
-        })();
+        var switcher = $(".extracted-switcher").data('pageSwitcher');
+
+        switcher.events.afterTransition = function (page) {
+            if (!page.el.hasClass('powershell-loaded')) {
+                fetchPowerShell(page.el);
+            }
+        };
+
+        switcher.transition(0);
     }
 });
 
