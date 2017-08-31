@@ -682,13 +682,16 @@ def _201_202(c):
             c[machinery][machine]["osprofile"] = None
     return c
 
-def _202_203(c):
+def _203_204(c):
     c["processing"]["extracted"] = {
         "enabled": True,
     }
+    for machine in c["qemu"]["qemu"]["machines"]:
+        c["qemu"][machine]["snapshot"] = None
+        c["qemu"][machine]["enable_kvm"] = False
     return c
 
-def _203_205(c):
+def _204_205(c):
     c["auxiliary"]["experiment"] = {
         "enabled": True,
     }
@@ -708,8 +711,10 @@ migrations = {
     "2.0-rc2": ("2.0.0", _20c2_200),
     "2.0.0": ("2.0.1", _200_201),
     "2.0.1": ("2.0.2", _201_202),
-    "2.0.2": ("2.0.3", _202_203),
-    "2.0.3": ("2.0.5", _203_205),
+    "2.0.2": ("2.0.3", None),
+    "2.0.3": ("2.0.4", _203_204),
+    "2.0.4": ("2.0.5", _204_205),
+
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.

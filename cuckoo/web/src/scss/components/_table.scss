@@ -1,27 +1,27 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
 
- table.cuckoo-table {
+.cuckoo-table {
 	width: 100%;
 	background-color: #fff;
 	text-align: left;
 	font-size: 12px;
 	border-collapse: collapse;
-	border: 1px solid #ccc;	
+	border: 1px solid #ccc;
 
-	thead { 
-		border-bottom: 2px solid #ccc; 
+	thead {
+		border-bottom: 2px solid #ccc;
 		th { white-space: nowrap; }
 
 		tr:not(.table-display-config) {
 			th {
-				.fa { 
-					margin-right: 10px; 
-					&:before { 
-						content: "\f0dc"; 
+				.fa {
+					margin-right: 10px;
+					&:before {
+						content: "\f0dc";
 
 						.sorting-asc & { content: "\f0de"; }
 						.sorting-desc & { content: "\f0dd"; }
@@ -31,24 +31,24 @@
 		}
 
 	}
-	
+
 	tbody {
 		tr:not(:last-child) { border-bottom: 1px solid #ccc; }
-		tr:nth-child(even) { background-color: #f5f5f5;  }
+		tr:nth-child(odd) { background-color: #f5f5f5;  }
 		td:empty:before { content: "-"; color: #999; }
 
 		tr.clickable {
 			&:hover {
 				cursor: pointer;
-				background-color: #ddd; 
+				background-color: #ddd;
 			}
 		}
 	}
 
 	thead,
 	tbody {
-		th, td { 
-			padding: 10px; 
+		th, td {
+			padding: 10px;
 
 			&.cell-xs { width: 10%; }
 			&.cell-sm { width: 20%; }
@@ -57,14 +57,27 @@
 			&.cell-fill { width: 100%; }
 
 		}
+
+		td {
+			&.no-result {
+				background-color: #f5f5f5;
+				text-align: center;
+				padding: 20px 0;
+
+				@include cuckoo-theme('cyborg') {
+					background-color: #030e10;
+				}
+			}
+		}
+
 	}
 
 	tfoot {
 		text-align: left;
 		border-top: 2px solid #ccc;
 
-		td { 
-			padding: 5px; 
+		td {
+			padding: 5px;
 			p {
 				margin: 0;
 			}
@@ -81,9 +94,9 @@
 
 	.small-integer { width: 50px; }
 
-	.results-per-page { 
+	.results-per-page {
 
-		float: right; 
+		float: right;
 		display: inline-flex;
 		align-items: center;
 		line-height: 21px;
@@ -108,17 +121,17 @@
 		padding: 0;
 		margin: 3px 0 0 0;
 
-		& > li { 
-			border: 1px solid #ddd; 
-			border-left: 0; 
+		& > li {
+			border: 1px solid #ddd;
+			border-left: 0;
 			overflow: hidden;
 
-			&:first-child { 
+			&:first-child {
 				border-top-left-radius: 4px;
 				border-bottom-left-radius: 4px;
 				border-left: 1px solid #ddd;
 			}
-			&:last-child { 
+			&:last-child {
 				border-top-right-radius: 4px;
 				border-bottom-right-radius: 4px;
 			}
@@ -153,8 +166,8 @@
 	}
 
 	&.table-key-value {
-		td { 
-			width: 50%; 
+		td {
+			width: 50%;
 			border-right: 1px solid #ccc;
 
 			&:last-child { border: 0; }
@@ -228,9 +241,13 @@
 			border-bottom: 1px solid $cyborg_border_color;
 		}
 
-		tbody tr, 
+		tbody tr,
 		tfoot {
 			border-color: $cyborg_border_color;
+		}
+
+		tr:nth-child(odd) {
+			background-color: $cyborg_primary_color;
 		}
 
 		tbody tr.clickable:hover {
@@ -270,7 +287,7 @@
 		border-color: $night_border_color;
 		background-color: $night_primary_color;
 
-		tr:nth-child(even) {
+		tr:nth-child(odd) {
 			background-color: lighten($night_primary_color, 5);
 		}
 
@@ -279,7 +296,7 @@
 			border-bottom: 1px solid $night_border_color;
 		}
 
-		tbody tr, 
+		tbody tr,
 		tfoot {
 			border-color: $night_border_color;
 		}
@@ -340,7 +357,7 @@
 			&.status-pending { background-color: #bbb; }
 			&.status-running { background-color: #d2e24c; }
 			&.status-completed { background-color: #66ca4d; }
-			&.status-reported { 
+			&.status-reported {
 				background-color: transparent;
 				color: #66ca4d;
 				width: auto;

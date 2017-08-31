@@ -8,7 +8,6 @@ import hashlib
 import io
 import logging
 import os.path
-import pymongo
 import random
 import requests
 import shutil
@@ -23,6 +22,7 @@ from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
+from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode, time_duration
 from cuckoo.core.database import (
@@ -369,18 +369,14 @@ def cuckoo_clean():
                     "the connectivity, apply all migrations if needed or purge "
                     "it manually. Error description: %s", e)
 
-    # Check if MongoDB reporting is enabled and drop that if it is.
-    # TODO Move to the MongoDB abstract.
-    if config("reporting:mongodb:enabled"):
-        host = config("reporting:mongodb:host")
-        port = config("reporting:mongodb:port")
-        mdb = config("reporting:mongodb:db")
+    # Check if MongoDB reporting is enabled and drop the database if it is.
+    if mongo.init():
         try:
-            conn = pymongo.MongoClient(host, port)
-            conn.drop_database(mdb)
-            conn.close()
-        except:
-            log.warning("Unable to drop MongoDB database: %s", mdb)
+            mongo.connect()
+            mongo.drop()
+            mongo.close()
+        except Exception as e:
+            log.warning("Unable to drop MongoDB database: %s", e)
 
     # Check if ElasticSearch reporting is enabled and drop its data if it is.
     if elastic.init():
@@ -503,12 +499,14 @@ def migrate_cwd():
         "of our own."
     )
 
-    # Migration from 2.0.2 to 2.0.3. TODO Abstract this away.
-    if not os.path.exists(cwd("yara", "index_scripts.yar")):
-        open(cwd("yara", "index_scripts.yar"), "wb").close()
+    # Remove now-obsolete index_*.yar files.
+    for filename in os.listdir(cwd("yara")):
+        if filename.startswith("index_") and filename.endswith(".yar"):
+            os.remove(cwd("yara", filename))
 
-    if not os.path.exists(cwd("yara", "index_shellcode.yar")):
-        open(cwd("yara", "index_shellcode.yar"), "wb").close()
+    # Create the new $CWD/stuff/ directory.
+    if not os.path.exists(cwd("stuff")):
+        mkdir(cwd("stuff"))
 
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):

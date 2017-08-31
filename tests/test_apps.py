@@ -23,7 +23,7 @@ from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
+from cuckoo.core.startup import init_logfile, init_console_logging, init_yara
 from cuckoo.main import main, cuckoo_create, cuckoo_init
 from cuckoo.misc import set_cwd, decide_cwd, cwd, mkdir, is_linux
 from tests.utils import chdir
@@ -254,7 +254,7 @@ class TestProcessingTasks(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
-        index_yara()
+        init_yara()
 
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_task_range")
@@ -524,7 +524,7 @@ def test_clean_dropdb(p):
     p.return_value.drop.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
-@mock.patch("cuckoo.apps.apps.pymongo")
+@mock.patch("cuckoo.apps.apps.mongo")
 def test_clean_dropmongo(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -538,8 +538,10 @@ def test_clean_dropmongo(p, q):
     })
 
     cuckoo_clean()
-    p.MongoClient.assert_called_once_with("host", 13337)
-    p.MongoClient.return_value.drop_database.assert_called_once_with("cuckoo")
+    p.init.assert_called_once_with()
+    p.connect.assert_called_once_with()
+    p.drop.assert_called_once_with()
+    p.close.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
 def test_clean_keepdirs(p):
@@ -675,12 +677,15 @@ class TestMigrateCWD(object):
         cuckoo_create()
         shutil.rmtree(cwd("yara", "scripts"))
         shutil.rmtree(cwd("yara", "shellcode"))
+        shutil.rmtree(cwd("stuff"))
+        open(cwd("yara", "index_binaries.yar"), "wb").write("hello")
         migrate_cwd()
         # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
         assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
-        assert os.path.exists(cwd("yara", "index_scripts.yar"))
         assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
-        assert os.path.exists(cwd("yara", "index_shellcode.yar"))
+        # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
+        assert os.path.exists(cwd("stuff"))
+        assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
     def test_using_community(self):
         def h(filepath):
@@ -693,7 +698,13 @@ class TestMigrateCWD(object):
         shutil.copy("tests/files/sig-init-old.py", filepath)
         assert h(filepath) == "033e19e4fea1989680f4af19b904448347dd9589"
         migrate_cwd()
-        assert h(filepath) == "5966e9db6bcd3adcd70998f4c51072c7f81b4564"
+        assert h(filepath) == "eaffef3b08fd1069ba2d3c977015b598fa150941"
+
+    def test_current_community(self):
+        set_cwd(tempfile.mktemp())
+        shutil.copytree(os.path.expanduser("~/.cuckoo"), cwd())
+        open(cwd(".cwd"), "wb").write("somethingelse")
+        migrate_cwd()
 
 class TestCommunitySuggestion(object):
     @property
@@ -743,6 +754,7 @@ class TestCommunitySuggestion(object):
         sys.modules.pop("signatures.cross", None)
         sys.modules.pop("signatures.darwin", None)
         sys.modules.pop("signatures.extractor", None)
+        sys.modules.pop("signatures.linux", None)
         sys.modules.pop("signatures.network", None)
         sys.modules.pop("signatures.windows", None)
         cuckoo_create()

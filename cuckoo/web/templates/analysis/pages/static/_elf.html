@@ -1,0 +1,238 @@
+<section id="static_analysis">
+    {% if report.analysis.static.elf %}
+
+        {% if report.analysis.static.elf.file_header %}
+            <div id="file_header">
+            <h4>File header</h4>
+            <table class="table table-striped table-bordered">
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Magic</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.magic }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Class</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.class }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Data</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.data }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>EI Version</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.ei_version }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>OS/ABI</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.os_abi }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>ABI Version</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.abi_version }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Type</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.type }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Machine</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.machine }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Version</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.version }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Entry point address</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.entry_point_address }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Start of program headers</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.start_of_program_headers }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Start of section headers</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.start_of_section_headers }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Flags</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.flags }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Size of this header</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.size_of_this_header }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Size of program headers</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.size_of_program_headers }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Size of section headers</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.size_of_section_headers }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Number of section headers</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.number_of_section_headers }}</td>
+                </tr>
+                <tr>
+                    <td width=115px><strong>Section header string table index</strong></td>
+                    <td width=400>{{ report.analysis.static.elf.file_header.section_header_string_table_index }}</td>
+                </tr>
+            </table>
+            <div>
+        {% endif %}
+
+
+        {% if report.analysis.static.elf.section_headers %}
+            <div>
+                <h4>Sections</h4>
+                <div id="elf_sections">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Virtual Address</th>
+                            <th>Virtual Size</th>
+                        </tr>
+                        {% for section in report.analysis.static.elf.section_headers %}
+                            <tr>
+                                <td>{{ section.name }}</td>
+                                <td>{{ section.type }}</td>
+                                <td>{{ section.addr }}</td>
+                                <td>{{ section.size }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if report.analysis.static.elf.program_headers %}
+            <div>
+                <h4>Segments</h4>
+                <div id="elf_segments">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Type</th>
+                            <th>Flags</th>
+                            <th>Vritual Address</th>
+                            <th>Virtual Size</th>
+                        </tr>
+                        {% for segment in report.analysis.static.elf.program_headers %}
+                            <tr>
+                                <td>{{ segment.type }}</td>
+                                <td>{{ segment.flags }}</td>
+                                <td>{{ segment.addr }}</td>
+                                <td>{{ segment.size }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+        {% if report.analysis.static.elf.dynamic_tags %}
+            <div>
+                <h4>Dynamic tags</h4>
+                <div id="elf_sections">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Tag</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                        </tr>
+                        {% for section in report.analysis.static.elf.dynamic_tags %}
+                            <tr>
+                                <td>{{ section.tag }}</td>
+                                <td>{{ section.type }}</td>
+                                <td>{{ section.value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if report.analysis.static.elf.symbol_tables %}
+            <div>
+                <h4>Symbol table</h4>
+                <div id="symbol_table">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Value</th>
+                            <th>Type</th>
+                            <th>Bind</th>
+                            <th>NDX name</th>
+                        </tr>
+                        {% for section in report.analysis.static.elf.symbol_tables %}
+                            <tr>
+                                <td>{{ section.value }}</td>
+                                <td>{{ section.type }}</td>
+                                <td>{{ section.bind }}</td>
+                                <td>{{ section.ndx_name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+
+        {% if report.analysis.static.elf.relocations %}
+            <div>
+                <h4>Relocations</h4>
+                <div id="elf_relocations">
+                    {% for block in report.analysis.static.elf.relocations %}
+                        <h5><strong>Section {{ block.name }}</strong>:</h5>
+                        <table class="table table-striped table-bordered">
+                            <tr>
+                                <th>Offset</th>
+                                <th>Info</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Name</th>
+                            </tr>
+                            {% for section in block.entries %}
+                                {% if section.name %}
+                                    <tr>
+                                        <td>{{ section.offset }}</td>
+                                        <td>{{ section.info }}</td>
+                                        <td>{{ section.type }}</td>
+                                        <td>{{ section.value }}</td>
+                                        <td>{{ section.name }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if report.analysis.static.elf.notes %}
+            <div>
+                <h4>Notes</h4>
+                <div id="elf_notes">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Owner</th>
+                            <th>Size</th>
+                            <th>Note</th>
+                            <th>Name</th>
+                        </tr>
+                        {% for section in report.analysis.static.elf.notes %}
+                            <tr>
+                                <td>{{ section.owner }}</td>
+                                <td>{{ section.size }}</td>
+                                <td>{{ section.note }}</td>
+                                <td>{{ section.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</section>

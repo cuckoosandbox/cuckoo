@@ -76,6 +76,23 @@ class TestPowerShell(object):
             ["-windowstyle"], 0
         ) == (1, None)
 
+    def test_parse_cmdline_command(self):
+        assert self.ps1.parse_command_line(
+            "powershell.exe -c ping 8.8.8.8"
+        ) == {
+            "command": "ping 8.8.8.8",
+        }
+
+        assert self.ps1.parse_command_line(
+            "powershell -c $s=New-Object IO.MemoryStream(,"
+            "[Convert]::FromBase64String('aGVsbG8='));"
+        ) == {
+            "command": (
+                "$s=New-Object IO.MemoryStream(,"
+                "[Convert]::FromBase64String('aGVsbG8='));"
+            ),
+        }
+
     def test_parse_cmdline_encodedcommand(self):
         assert self.ps1.parse_command_line(
             "powershell.exe -EncodedCommand ZQBjAGgAbwAgACIARABvAHIAbwB0AGgAeQAiAA=="
@@ -182,15 +199,27 @@ class TestPowerShell(object):
         assert self.ps1.parse_command_line(
             "powershell.exe PowerShell.exe powershell -nologo"
         ) == {
+            "command": "PowerShell.exe powershell -nologo",
+        }
+
+        assert self.ps1.parse_command_line(
+            "PowerShell.exe powershell -nologo"
+        ) == {
+            "command": "powershell -nologo",
+        }
+
+        assert self.ps1.parse_command_line(
+            "powershell -nologo"
+        ) == {
             "nologo": True,
         }
 
-    @mock.patch("cuckoo.common.scripting.log")
-    def test_unhandled(self, p):
+    def test_parse_remainder(self):
         assert self.ps1.parse_command_line(
-            "powershell.exe -notaflag yesflag",
-        ) == {}
-        assert p.warning.call_count == 2
+            "powershell start-process ping.exe 8.8.8.8"
+        ) == {
+            "command": "start-process ping.exe 8.8.8.8",
+        }
 
 class TestScripting(object):
     def setup(self):
@@ -268,7 +297,7 @@ class TestScripting(object):
         }
         assert not obj.children[0].children
 
-    def test_powershell(self):
+    def test_powershell_encodedcommand(self):
         obj = self.scr.parse_command("""
             powershell -nop -ep bypass -enc
             ZQBjAGgAbwAgACIAUgBlAGMAdQByAHMAaQB2AGUAIgA=
@@ -280,3 +309,12 @@ class TestScripting(object):
             "encodedcommand": 'echo "Recursive"',
         }
         assert not obj.children
+        assert obj.get_script() == 'echo "Recursive"'
+
+    def test_powershell_command(self):
+        obj = self.scr.parse_command("""
+            powershell -nop -ep bypass -Command ping '8.8.8.8'
+        """)
+        assert obj.program == "powershell"
+        assert obj.ext == "ps1"
+        assert obj.get_script() == "ping '8.8.8.8'"

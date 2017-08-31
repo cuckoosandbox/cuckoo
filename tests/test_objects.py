@@ -12,9 +12,9 @@ from cuckoo.common.files import Files
 from cuckoo.common.objects import (
     Dictionary, File, Archive, YaraMatch, URL_REGEX
 )
-from cuckoo.core.startup import init_yara, HAVE_YARA
+from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
 from cuckoo.processing.static import PortableExecutable
 
 class TestDictionary(object):
@@ -114,12 +114,10 @@ def test_m2crypto():
     assert sig0["organization"] == "Microsoft Corporation"
     assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
 
-@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
 def test_yara_offsets():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
-
-    init_yara(True)
+    init_yara()
 
     buf = (
         # The SSEXY payload as per vmdetect.yar
@@ -150,6 +148,32 @@ def test_yara_offsets():
             "Zg9wAABmD9sAAAAAAGYP2wAAAAAAZg/v",
         ],
     }]
+
+def test_yara_no_description():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    open(cwd("yara", "binaries", "empty.yara"), "wb").write("""
+        rule EmptyRule {
+            condition:
+                1
+        }
+        rule DescrRule {
+            meta:
+                description = "this is description"
+            condition:
+                1
+        }
+    """)
+    init_yara()
+    a, b = File(Files.temp_put("hello")).get_yara()
+    assert a["name"] == "EmptyRule"
+    assert a["meta"] == {
+        "description": "(no description)",
+    }
+    assert b["name"] == "DescrRule"
+    assert b["meta"] == {
+        "description": "this is description",
+    }
 
 def test_get_urls():
     filepath = Files.temp_put("""
@@ -233,3 +257,4 @@ class TestYaraMatch(object):
             ],
         })
         assert ym.string("a", 0) == "bar"
+        assert ym.string("a") == "bar"

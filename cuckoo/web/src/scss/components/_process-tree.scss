@@ -1,0 +1,768 @@
+.process-tree {
+
+  position: relative;
+  background-color: #fff;
+  border: 1px solid #979797;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 0 15px;
+
+  // cyborg theming
+  @include cuckoo-theme('cyborg') {
+    background-color: $cyborg_background_color;
+    border: 1px solid shade($cyborg_border_color, 20%);
+  }
+
+  // night theming
+  @include cuckoo-theme('night') {
+    background-color: $night_background_color;
+    border: 1px solid $night_border_color;
+  }
+
+  // temporarily disables the UI when we're searching. indicates that the user
+  // has to wait untill we finished and processed the search request.
+  &.searching {
+    .process-tree__detail,
+    .process-tree__tree {
+      opacity: .5;
+      pointer-events: none;
+    }
+  }
+
+  /*
+    Search bar
+   */
+  &__search {
+
+    position: relative;
+    border-bottom: 1px solid #979797;
+
+    input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 10px 20px 10px 35px;
+
+      &:focus {
+        outline: 0;
+      }
+
+      &::placeholder {
+        color: #B5B5B5;
+      }
+
+    }
+
+    .fa-search {
+      position: absolute;
+      top: 13px;
+      left: 15px;
+      color: #B5B5B5;
+    }
+
+    &-submit {
+      @extend .button;
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding: 15px 15px 9px 15px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      font-size: 20px;
+
+      .fa {
+        display: none;
+      }
+
+      // styles for indicating an active search process
+      &.loading {
+
+        padding-top: 11px;
+        padding-right: 11px;
+
+        .fa {
+          display: block;
+        }
+        span {
+          display: none;
+        }
+      }
+    }
+
+    @include cuckoo-theme('cyborg') {
+      border-color: shade($cyborg_border_color, 40%);
+    }
+
+    @include cuckoo-theme('night') {
+      border-color: $night_border_color;
+    }
+
+  }
+
+  /*
+    The actual process tree
+   */
+  &__tree {
+    border-bottom: 1px solid #979797;
+
+    // custom styling on top of the reset for
+    // the process tree
+    .processes {
+
+      li {
+
+        width: 100%;
+
+        // line
+        &:before {
+          content: "";
+          position: absolute;
+          height: 1px;
+          width: 100%;
+          left: 0;
+          background-color: #ccc;
+        }
+
+        & > div {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-right: 15px;
+
+          a {
+
+            &.fa {
+
+              text-align: center;
+              font-size: 1.5em;
+
+              &:before {
+                content: "\f105";
+              }
+
+              &.is-open:before {
+                content: "\f107";
+              }
+
+            }
+
+            &:hover {
+              cursor: pointer;
+              text-decoration: none;
+            }
+
+          }
+
+          a.fa,
+          .fill {
+            width: 20px;
+          }
+
+        }
+
+      }
+
+      p {
+        max-width: 75%;
+        font-size: 14px;
+        color: #6297F8;
+        margin: 10px 0;
+        font-weight: 700;
+
+        // ensures flexible text wrapping
+        flex-basis: 100%;
+        flex-grow: 0;
+
+        em {
+          display: block;
+          color: #818181;
+          font-size: 12px;
+          margin-top: 5px;
+          font-weight: 400;
+
+          // configures maximum length - auto-ellipsing
+          max-width: 100%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+
+          .fa {
+            margin-right: 10px;
+            color: $cuckoo_secundary_color;
+            font-size: 1.3em;
+          }
+        }
+      }
+
+      .pid {
+        margin-left: auto;
+        margin-right: 15px;
+        background-color: #454545;
+        border: 1px solid #979797;
+        color: #fff;
+        padding: 4px 15px;
+        border-radius: 3px;
+        font-weight: 600;
+      }
+
+      // strip down the first list item stroke
+      & > li:first-child::before {
+        display: none;
+      }
+
+      div.selected {
+
+        // bump extra 15px to assure spacing that does not disturb.
+        padding-left: 15px;
+
+        & > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        a,
+        em,
+        em > .fa {
+          color: #fff;
+        }
+
+        // takes care of the selected background color
+        &:before {
+          content: "";
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          background-color: $cuckoo_secundary_color;
+          z-index: 0;
+        }
+      }
+
+      // theming: cyborg
+      @include cuckoo-theme('cyborg') {
+        background-color: $cyborg_background_color;
+        div.selected {
+          &:before {
+            background-color: $cyborg_primary_color;
+          }
+        }
+      }
+
+      // theming: night
+      @include cuckoo-theme('night') {
+        background-color: $night_background_color;
+        div.selected {
+          &:before {
+            background-color: shade($night_border_color, 10%);
+          }
+        }
+      }
+
+    }
+
+    // indentation bumps for ul>ul>ul>ul>etc childs
+    ul {
+      padding-left: 10px;
+    }
+
+    @include cuckoo-theme('cyborg') {
+      border-bottom: 1px solid $cyborg_border_color;
+
+      .processes {
+        li:before {
+          background-color: $cyborg_border_color;
+        }
+      }
+
+      em .fa {
+        color: $cyborg_secundary_color;
+      }
+    }
+
+    @include cuckoo-theme('night') {
+      border-bottom: 1px solid shade($night_border_color, 10%);
+
+      .processes {
+        li:before {
+          background-color: $night_border_color;
+        }
+      }
+
+      em .fa {
+        color: $night_link_color;
+      }
+    }
+
+  }
+
+  /*
+   The details with the items for that process tree
+  */
+  &__detail {
+
+  }
+
+  /*
+    A common style for headings
+  */
+  &__header {
+    border-bottom: 1px solid #979797;
+    background-color: #fafafa;
+    padding: 15px 20px 10px 20px;
+
+    h4 {
+      margin: 0;
+
+      .fa:first-child {
+        width: 25px;
+        color: $cuckoo_secundary_color;
+      }
+    }
+
+    &--right {
+      float: right;
+      width: auto;
+
+      &:before {
+        content: "\f054";
+      }
+
+      .open &:before {
+        content: "\f078";
+      }
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+    }
+
+    @include cuckoo-theme('cyborg') {
+      @extend %cyborg-heading;
+      border-bottom: 1px solid $cyborg_border_color;
+
+      h4 .fa {
+        color: $cyborg_secundary_color;
+      }
+    }
+
+    @include cuckoo-theme('night') {
+      background-color: $night_panel_color;
+      border-color: $night_border_color;
+      border-bottom: 1px solid shade($night_border_color, 10%);
+
+      h4 {
+        color: $night_text_color;
+        .fa {
+          color: $night_link_color;
+        }
+      }
+    }
+
+  }
+
+  /*
+    Shared styles for the detail pane and the tree pane
+    */
+  &__tree,
+  &__detail {
+
+    .process-tree__body {
+      display: none;
+    }
+
+    &.open .process-tree__body {
+      display: block;
+    }
+
+  }
+
+}
+
+/*
+  Process spec
+  - element that will define the layout of the process specs such
+    as names, metadata etc.
+ */
+.process-spec {
+
+  &--name {
+
+    background-color: #f5f5f5;
+    text-align: center;
+    color: $cuckoo_secundary_color;
+    padding-bottom: 10px;
+
+    h2 {
+      font-size: 22px;
+      margin: 0;
+      padding: 25px 0 15px 0;
+
+      span {
+        display: inline-block;
+        margin-bottom: 0px;
+        margin-top: 15px;
+
+        .fa {
+          margin-right: 15px;
+          opacity: .5;
+        }
+      }
+    }
+
+    // reset table styles for correct layout
+    .cuckoo-table {
+      border: 0;
+      background: transparent;
+
+      tbody {
+        tr {
+          background-color: transparent;
+          border-bottom: 0;
+          td {
+            border: 0;
+            background: transparent;
+            &:first-child { text-align: right; }
+          }
+        }
+      }
+    }
+
+    // cyborg theming
+    @include cuckoo-theme('cyborg') {
+
+      background-color: #030e10;
+      color: $cyborg_secundary_color;
+
+      h2, .cuckoo-table,
+      .cuckoo-table tbody tr {
+        background: transparent;
+      }
+    }
+
+    // night theming
+    @include cuckoo-theme('night') {
+
+      background-color: $night_background_color;
+      color: $night_link_color;
+
+      h2, .cuckoo-table,
+      .cuckoo-table tbody tr {
+        background: transparent;
+      }
+    }
+
+  }
+
+  &--tags {
+    display: flex;
+    background-color: #252525;
+    padding: 15px;
+    & > .badge {
+      padding: 10px 0;
+      flex-basis: 100%;
+      margin: 0 10px;
+      border-radius: 4px;
+      box-shadow: 0px 2px 4px rgba(0,0,0,.9),
+                  inset 0px 1px 0px rgba(255,255,255,.1);
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    @include cuckoo-theme('cyborg') {
+      background-color: $cyborg_panel_color;
+      border-top: 1px solid $cyborg_border_color;
+    }
+
+    @include cuckoo-theme('night') {
+      background-color: $night_background_color;
+      border-top: 1px solid tint($night_background_color, 5%);
+    }
+  }
+
+  &--pagination {
+
+    padding: 15px 25px;
+    background-color: #f5f5f5;
+
+    & > ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid $cuckoo_secundary_color;
+      border-radius: 4px;
+      overflow: hidden;
+
+      & > li {
+        flex-basis: 100%;
+
+        &:not(:last-child) {
+          border-right: 1px solid $cuckoo_secundary_color;
+        }
+
+        & > a {
+          display: block;
+          text-align: center;
+          font-weight: 700;
+          color: $cuckoo_secundary_color;
+          background-color: #fff;
+          padding: 5px 0;
+
+          &:hover {
+            background-color: #f5f5f5;
+            text-decoration: none;
+          }
+
+          &.active {
+            color: #fff;
+            background-color: $cuckoo_secundary_color;
+          }
+
+        }
+      }
+
+    }
+
+    // cyborg theming
+    @include cuckoo-theme('cyborg') {
+      background-color: $cyborg_panel_color;
+      border-top: 1px solid $cyborg_border_color;
+
+      ul,
+      ul > li {
+        border-color: $cyborg_border_color;
+      }
+
+      a {
+        background-color: $cyborg_panel_color;
+        color: $cyborg_text_color;
+
+        &:hover {
+          background-color: tint($cyborg_background_color, 5%);
+        }
+
+        &.active {
+          background-color: $cyborg_background_color;
+          color: $cyborg_secundary_color;
+        }
+      }
+    }
+
+    // night theming
+    @include cuckoo-theme('night') {
+      background-color: $night_background_color;
+      border-top: 1px solid tint($night_background_color, 10%);
+
+      ul,
+      ul > li {
+        border-color: tint($night_border_color, 20%);
+      }
+
+      a {
+        background-color: $night_panel_color;
+        color: $night_text_color;
+
+        &:hover {
+          background-color: tint($night_background_color, 5%);
+        }
+
+        &.active {
+          background-color: $night_background_color;
+          color: $night_text_color;
+        }
+      }
+    }
+
+  }
+
+  &--table {
+
+    .cuckoo-table {
+      border: 0;
+      font-size: 14px;
+
+      thead {
+        position: relative;
+        background-color: #fff;
+        box-shadow: 0px 2px 0px #ccc;
+        z-index: 10;
+
+        th {
+          border-bottom: 0;
+        }
+
+        @include cuckoo-theme('cyborg') {
+          box-shadow: 0px 2px 0px shade($cyborg_primary_color, 20%);
+        }
+
+        @include cuckoo-theme('night') {
+          box-shadow: 0px 2px 0px shade($night_border_color, 20%);
+        }
+      }
+
+      &.behavior-search-results {
+        border-top: 1px solid #ccc;
+      }
+
+      pre,
+      code {
+        background-color: transparent;
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+
+      .grey {
+        color: #999;
+      }
+
+      .date-api {
+
+        vertical-align: top;
+        padding: 15px 0;
+
+        & > p,
+        & > time {
+          width: 100%;
+          padding: 0 15px;
+        }
+
+        & > p {
+          font-weight: 700;
+          color: #434343;
+        }
+
+        & > time {
+          color: #9f9f9f;
+        }
+
+        & > .badge {
+          margin-left: 15px;
+        }
+
+        @include cuckoo-theme('cyborg') {
+          p {
+            color: $cyborg_secundary_color;
+          }
+        }
+
+        @include cuckoo-theme('night') {
+          p {
+            color: $night_link_color;
+          }
+        }
+
+      }
+    }
+
+    .search-process {
+      background-color: $cuckoo_secundary_color;
+      color: #fff;
+      font-weight: 700;
+
+      &:hover {
+        cursor: pointer;
+        background-color: shade($cuckoo_secundary_color, 10%);
+      }
+
+      .fa:before {
+        content: "\f078";
+      }
+
+      @include cuckoo-theme('cyborg') {
+        @extend %cyborg-heading;
+
+        &:hover {
+          background-color: shade($cyborg_panel_color, 10%);
+        }
+      }
+
+      @include cuckoo-theme('night') {
+        background-color: $night_panel_color;
+        border-color: $night_border_color;
+        border-bottom: 1px solid shade($night_border_color, 10%);
+      }
+
+    }
+
+    tr.collapsed > .search-process {
+      .fa:before {
+        content: "\f054";
+      }
+    }
+
+  }
+
+  .unloaded {
+    display: block;
+    padding: 40px 0;
+    background-color: #f5f5f5;
+
+    & > p {
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ddd;
+      margin: 0;
+
+      small {
+        display: block;
+        text-transform: none;
+        font-weight: 400;
+        color: #aaa;
+        margin-top: 15px;
+      }
+    }
+
+    // cyborg theming
+    @include cuckoo-theme('cyborg') {
+      background-color: $cyborg_panel_color;
+
+      p,
+      small {
+        color: $cyborg_text_color;
+      }
+    }
+
+    // night theming
+    @include cuckoo-theme('night') {
+      background-color: $night_background_color;
+
+      p,
+      small {
+        color: shade($night_text_color, 20%);
+      }
+    }
+  }
+
+  .loaded {
+    display: none;
+  }
+
+  .loading {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 0;
+    padding: 40px 0;
+
+    @include cuckoo-theme('cyborg') {
+      background-color: $cyborg_primary_color;
+      border-bottom-color: $cyborg_border_color;
+    }
+
+    @include cuckoo-theme('night') {
+      background-color: shade($night_background_color, 10%);
+      border-bottom-color: $night_border_color;
+    }
+  }
+
+}

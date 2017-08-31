@@ -2,9 +2,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import errno
 import json
 import mock
 import pytest
+import socket
 import tempfile
 
 from cuckoo.apps import rooter as r
@@ -203,7 +205,9 @@ def do_cuckoo_rooter():
             (json.dumps({
                 "command": "nic_available",
                 "args": ["interface"],
-            }), None), SystemExit
+            }), None),
+            socket.error(errno.EINTR, "such interrupt"),
+            SystemExit
         )
         r.cuckoo_rooter(
             socket_path, "group", __file__, __file__, __file__, __file__

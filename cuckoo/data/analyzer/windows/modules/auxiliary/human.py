@@ -4,17 +4,17 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import random
+import re
 import logging
 import threading
 
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import (
-    KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK,
+    KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, WM_CLOSE, BM_CLICK,
     EnumWindowsProc, EnumChildProc, create_unicode_buffer
 )
 
 log = logging.getLogger(__name__)
-
 
 RESOLUTION = {
     "x": USER32.GetSystemMetrics(0),
@@ -88,6 +88,18 @@ def foreach_child(hwnd, lparam):
     return True
 
 # Callback procedure invoked for every enumerated window.
+# Purpose is to close any office window
+def get_office_window(hwnd, lparam):
+    if USER32.IsWindowVisible(hwnd):
+        text = create_unicode_buffer(1024)
+        USER32.GetWindowTextW(hwnd, text, 1024)
+        # TODO Would " - Microsoft (Word|Excel|PowerPoint)$" be better?
+        if re.search("- (Microsoft|Word|Excel|PowerPoint)", text.value):
+            USER32.SendNotifyMessageW(hwnd, WM_CLOSE, None, None)
+            log.info("Closed Office window.")
+    return True
+
+# Callback procedure invoked for every enumerated window.
 def foreach_window(hwnd, lparam):
     # If the window is visible, enumerate its child objects, looking
     # for buttons.
@@ -128,6 +140,8 @@ class Human(threading.Thread, Auxiliary):
         self.do_run = False
 
     def run(self):
+        seconds = 0
+
         # Global disable flag.
         if "human" in self.options:
             self.do_move_mouse = int(self.options["human"])
@@ -149,6 +163,9 @@ class Human(threading.Thread, Auxiliary):
             self.do_click_buttons = int(self.options["human.click_buttons"])
 
         while self.do_run:
+            if seconds and not seconds % 60:
+                USER32.EnumWindows(EnumWindowsProc(get_office_window), 0)
+
             if self.do_click_mouse:
                 click_mouse()
 
@@ -159,3 +176,4 @@ class Human(threading.Thread, Auxiliary):
                 USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
 
             KERNEL32.Sleep(1000)
+            seconds += 1

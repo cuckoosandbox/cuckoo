@@ -9,13 +9,12 @@ import pytest
 import tempfile
 
 from sqlalchemy.orm.exc import DetachedInstanceError
-from sqlalchemy.orm import lazyload
 
 from cuckoo.common.files import Files
 from cuckoo.core.database import (
     Database, Task, AlembicVersion, SCHEMA_VERSION, Experiment
 )
-from cuckoo.core.startup import index_yara
+from cuckoo.core.startup import init_yara
 from cuckoo.distributed.app import create_app
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
@@ -551,7 +550,9 @@ class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
-        index_yara()
+        
+        
+        ()
 
     @mock.patch("cuckoo.main.Database")
     @mock.patch("cuckoo.apps.apps.Database")
@@ -593,9 +594,11 @@ class TestSqlite3Memory(DatabaseEngine):
 class TestSqlite3File(DatabaseEngine):
     URI = "sqlite:///%s" % tempfile.mktemp()
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestPostgreSQL(DatabaseEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest"
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestMySQL(DatabaseEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest"
 
@@ -660,6 +663,7 @@ class DatabaseMigration060(DatabaseMigrationEngine):
         assert machines[1][0] == "192.168.56.1"
         assert machines[1][1] == 2042
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDatabaseMigration060PostgreSQL(DatabaseMigration060):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060pg.sql"
@@ -748,6 +752,7 @@ class TestDatabaseMigration060SQLite3(DatabaseMigration060):
         assert tasks[2][0] == "completed"
         assert tasks[3][0] == "pending"
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDatabaseMigration060MySQL(DatabaseMigration060):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest060"
     SRC = "tests/files/sql/060my.sql"
@@ -809,6 +814,7 @@ class DatabaseMigration11(DatabaseMigrationEngine):
         assert tasks[0][0] == "human=1"
         assert tasks[0][1] == "custom1"
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDatabaseMigration11PostgreSQL(DatabaseMigration11):
     URI = "postgresql://cuckoo:cuckoo@localhost/cuckootest11"
     SRC = "tests/files/sql/11pg.sql"
@@ -826,6 +832,7 @@ class TestDatabaseMigration11SQLite3(DatabaseMigration11):
     def execute_script(cls, script):
         cls.s.connection().connection.cursor().executescript(script)
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDatabaseMigration11MySQL(DatabaseMigration11):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest11"
     SRC = "tests/files/sql/11my.sql"
@@ -893,8 +900,10 @@ class TestDistributedSqlite3Memory(DistributedDatabaseEngine):
 class TestDistributedSqlite3File(DistributedDatabaseEngine):
     URI = "sqlite:///%s" % tempfile.mktemp()
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDistributedPostgreSQL(DistributedDatabaseEngine):
     URI = "postgresql://cuckoo:cuckoo@localhost/distcuckootest"
 
+@pytest.mark.skipif("sys.platform == 'darwin'")
 class TestDistributedMySQL(DistributedDatabaseEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/distcuckootest"

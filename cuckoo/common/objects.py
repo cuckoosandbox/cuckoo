@@ -312,11 +312,19 @@ class File(object):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
-        # This only happens if Yara is missing (which is reported at startup).
-        if category not in File.yara_rules:
+        if not os.path.getsize(self.file_path):
             return []
 
-        if not os.path.getsize(self.file_path):
+        try:
+            # TODO Once Yara obtains proper Unicode filepath support we can
+            # remove this check. See also the following Github issue:
+            # https://github.com/VirusTotal/yara-python/issues/48
+            assert len(str(self.file_path)) == len(self.file_path)
+        except (UnicodeEncodeError, AssertionError):
+            log.warning(
+                "Can't run Yara rules on %r as Unicode paths are currently "
+                "not supported in combination with Yara!", self.file_path
+            )
             return []
 
         results = []
@@ -332,9 +340,14 @@ class File(object):
                     (offset, strings.index(base64.b64encode(value)))
                 )
 
+            meta = {
+                "description": "(no description)",
+            }
+            meta.update(match.meta)
+
             results.append({
                 "name": match.rule,
-                "meta": match.meta,
+                "meta": meta,
                 "strings": strings,
                 "offsets": offsets,
             })
@@ -415,6 +428,21 @@ class YaraMatch(object):
         for s in match["strings"]:
             self.strings.append(s.decode("base64"))
 
-    def string(self, identifier, index):
+    def string(self, identifier, index=0):
         off, idx = self.offsets[identifier][index]
         return self.strings[idx]
+
+class ExtractedMatch(object):
+    def __init__(self, match):
+        self.category = match["category"]
+        self.program = match.get("program")
+        self.first_seen = match.get("first_seen")
+        self.pid = match.get("pid")
+
+        self.yara = []
+        for ym in match["yara"]:
+            self.yara.append(YaraMatch(ym))
+
+        # Raw payload.
+        self.raw = match.get("raw")
+        self.payload = match[self.category]

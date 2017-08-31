@@ -7,6 +7,7 @@ import tempfile
 
 from cuckoo.common.abstracts import Extractor
 from cuckoo.common.scripting import Scripting
+from cuckoo.common.shellcode import shikata
 from cuckoo.core.extract import ExtractManager
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
@@ -48,9 +49,7 @@ rule Shellcode1 {
        all of them
 }
 """)
-    # No Yara has been installed.
-    if not init_yara(True):
-        return
+    init_yara()
 
     class Shellcode1(Extractor):
         yara_rules = "Shellcode1"
@@ -63,8 +62,11 @@ rule Shellcode1 {
 
     p.return_value = Shellcode1,
 
+    sc = shikata(open("tests/files/shellcode/shikata/1.bin", "rb").read())
+    sc = ",".join("0x%02x" % ord(ch) for ch in sc)
+
     scr = Scripting()
-    ps1 = "[Byte[]]$s = 0x79,0x6f,0x6c,0x6f;".encode("utf-16le")
+    ps1 = ("[Byte[]]$s = %s;" % sc).encode("utf-16le")
     cmd = scr.parse_command(
         "powershell -e %s" % ps1.encode("base64").replace("\n", "")
     )
@@ -78,6 +80,9 @@ rule Shellcode1 {
 
     assert len(em.items) == 2
     filepath = cwd("extracted", "0.ps1", analysis=1)
-    assert open(filepath, "rb").read().startswith("[Byte[]]$s = 0x79")
-    filepath = cwd("extracted", "1.bin", analysis=1)
-    assert open(filepath, "rb").read() == "yolo"
+    assert open(filepath, "rb").read().startswith("[Byte[]]$s = 0xfc")
+
+    buf = open(cwd("extracted", "1.bin.txt", analysis=1), "rb").read()
+    assert "call 0x88" in buf
+    assert "0x00c1: push 0xc69f8957" in buf
+    assert ".db 'www.service.chrome-up.date',0" in buf

@@ -125,7 +125,7 @@
                 typeof callback === 'function' && callback();
             }
         });
-        
+
     }
 
     function show_tab(id, callback) {
@@ -166,7 +166,7 @@
     function load_filtered_chunk(pid, category) {
 
         loader.start('loading ' + category);
-        
+
         $("#process_"+pid+" div.calltable").load("{% url "analysis/recent" %}filtered/{{report.analysis.info.id}}/"+pid+"/"+category+"/", function(data, status, xhr){
 
             if (status == "error") {

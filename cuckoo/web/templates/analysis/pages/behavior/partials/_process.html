@@ -1,0 +1,26 @@
+<li>
+  <div data-tree-pid="{{process.pid}}" data-load="{{process.pid}}">
+    <p>
+      <a href="#">
+        {{ process.process_name }}
+        <script type="application/json">{ "name": "{{ process.process_name }}", "pid": "{{ process.pid }}","ppid": "{{ process.ppid }}", "pages": "{{ process.calls|length }}" }</script>
+      </a>
+      <em><i data-toggle="tooltip" title="{{ process.command_line }}" class="fa fa-eye"></i>{{ process.command_line }}</em>
+    </p>
+    <span class="pid">{{ process.pid }}</span>
+    {% if process.children %}
+      <a class="fa" data-tree="toggle"></a>
+    {% else %}
+      <span class="fill"></span>
+    {% endif %}
+  </div>
+
+  {% if process.children %}
+    <ul>
+      {% for process in process.children %}
+        {% include "analysis/pages/behavior/partials/_process.html" %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+</li>

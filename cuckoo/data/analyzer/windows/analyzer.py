@@ -62,7 +62,7 @@ class Files(object):
         if filepath.lower() not in self.files:
             log.info(
                 "Added new file to list with pid %s and path %s",
-                pid, filepath
+                pid, filepath.encode("utf8")
             )
             self.files[filepath.lower()] = []
             self.files_orig[filepath.lower()] = filepath
@@ -642,6 +642,9 @@ class Analyzer(object):
         # Forward the command pipe and logpipe names on to zer0m0n.
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
+
+        # Initialize zer0m0n with our compiled Yara rules.
+        zer0m0n.yarald("bin/rules.yarac")
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.

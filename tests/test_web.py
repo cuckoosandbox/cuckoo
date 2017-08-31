@@ -182,7 +182,6 @@ class TestWebInterface(object):
                 ],
             },
             "options": {
-                "enable-services": False,
                 "enforce-timeout": False,
                 "full-memory-dump": False,
                 "enable-injection": True,
@@ -425,6 +424,32 @@ class TestWebInterface(object):
         settings.DEBUG = True
         r = client.get("/analysis/search/")
         assert r.status_code == 500
+
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_export_infoleak(self, p, client):
+        p._get_report.return_value = {
+            "info": {
+                "analysis_path": "/tmp",
+            },
+        }
+        r = client.post(
+            "/analysis/api/task/export_estimate_size/",
+            json.dumps({
+                "task_id": 1,
+                "dirs": [],
+                "files": [
+                    # TODO Should we support individual files in analysis
+                    # directories, e.g., "shots/0001.png"?
+                    "../../../../../../etc/passwd",
+                ],
+            }),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        assert r.status_code == 200
+        # The file should not be found and as such have size zero.
+        assert not json.loads(r.content)["size"]
 
 class TestWebInterfaceFeedback(object):
     def setup(self):
@@ -927,6 +952,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [],
                     }],
                 },
@@ -941,6 +967,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [
                             "http://thisisaurl.com/hello",
                         ],
@@ -951,6 +978,34 @@ class TestTemplates(object):
         assert "No PDF metadata" not in r.content
         assert ">http://thisisaurl.com/hello</li>" in r.content
 
+    def test_pdf_2_version_with_url(self, request):
+        r = render_template(request, "analysis/pages/static/index.html", report={
+            "analysis": {
+                "static": {
+                    "pdf": [{
+                        "version": 1,
+                        "urls": [
+                            "http://thisisaurl.com/url1",
+                        ],
+                    }, {
+                        "version": 2,
+                        "urls": [
+                            "http://thisisaurl.com/url2",
+                        ],
+                    }],
+                },
+            },
+        }, page="static")
+        assert "No PDF metadata" not in r.content
+        assert ">http://thisisaurl.com/url1</li>" in r.content
+        assert ">http://thisisaurl.com/url2</li>" in r.content
+        ul1 = r.content.index('<ul class="list-group">')
+        url1 = r.content.index("url1")
+        url2 = r.content.index("url2")
+        ul2 = r.content.index("</ul>", ul1)
+        assert url1 >= ul1 and url1 < ul2
+        assert url2 >= ul1 and url2 < ul2
+
     def test_pdf_has_javascript(self, request):
         r = render_template(request, "analysis/pages/static/index.html", report={
             "analysis": {
@@ -958,6 +1013,7 @@ class TestTemplates(object):
                     "pdf": [{
                         "creation": "",
                         "modification": "",
+                        "version": 1,
                         "urls": [],
                         "javascript": [{
                             "orig_code": "alert(1)",
@@ -1031,6 +1087,7 @@ class TestTemplates(object):
                             "http://downloadurl1",
                             "http://downloadurl2",
                         ],
+                        "type": "thisistype",
                     }],
                 },
             },
@@ -1038,6 +1095,7 @@ class TestTemplates(object):
         assert "Malware Configuration" in r.content
         assert "CnC" in r.content
         assert "URLs" in r.content
+        assert "thisistype" in r.content
 
     def test_summary_has_2_cfgextr(self, request):
         r = render_template(request, "analysis/pages/summary/index.html", report={

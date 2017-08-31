@@ -9,7 +9,7 @@ import tempfile
 
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
-    config2, List, String
+    config2, List, String, _cache
 )
 from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
@@ -1086,16 +1086,35 @@ platform = windows
     assert cfg["virtualbox"]["cuckoo1"]["osprofile"] is None
     assert cfg["virtualbox"]["cuckoo2"]["osprofile"] is None
 
-def test_migration_202_203():
+def test_migration_203_204():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
     Files.create(cwd("conf"), "processing.conf", """
 [dumptls]
 enabled = on
 """)
+    Files.create(cwd("conf"), "qemu.conf", """
+[qemu]
+machines = ubuntu32, ubuntu64
+[ubuntu32]
+arch = x86
+[ubuntu64]
+arch = x64
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
-    cfg = migrate(cfg, "2.0.2", "2.0.3")
+    cfg = migrate(cfg, "2.0.3", "2.0.4")
     assert cfg["processing"]["extracted"]["enabled"] is True
+    # Except for qemu.
+    machineries = (
+        "avd", "esx", "kvm", "physical", "virtualbox",
+        "vmware", "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        Files.create(
+            cwd("conf"), "%s.conf" % machinery, "[%s]\nmachines =" % machinery
+        )
+    assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
+    assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
 
 class FullMigration(object):
     DIRPATH = None
@@ -1384,3 +1403,21 @@ def test_no_superfluous_conf(p):
 def test_faq():
     assert faq("hehe").startswith("http")
     assert faq("hehe").endswith("#hehe")
+
+def test_incomplete_envvar():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "database": {
+                "connection": "%(",
+            },
+        },
+    })
+
+    # Clear cache.
+    for key in _cache.keys():
+        del _cache[key]
+
+    with pytest.raises(CuckooConfigurationError) as e:
+        config("cuckoo:database:connection")
+    e.match("One of the fields")

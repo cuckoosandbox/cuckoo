@@ -30,16 +30,38 @@ Add agent to autorun, the easier way is to add it to crontab::
     $ sudo crontab -e
     @reboot python path_to_agent.py
 
-The following instructions are only for x32/x64 linux guests
+The following instructions are only for x32/x64 ubuntu linux guests
 ============================================================
 
 Install dependencies inside of the virtual machine::
 
     # sudo apt-get install systemtap gcc linux-headers-$(uname -r)
 
+Install kernel debugging symbols::
+
+    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
+
+    $ codename=$(lsb_release -c | awk  '{print $2}')
+    $ sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
+    $ deb http://ddebs.ubuntu.com/ ${codename}      main restricted universe multiverse
+    $ deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
+    $ deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
+    $ deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
+    $ EOF
+
+    $ sudo apt-get update
+    $ sudo apt-get install linux-image-$(uname -r)-dbgsym
+
+Patch systemtap tapset::
+
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/systemtap/expand_execve_envp.patch
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/systemtap/escape_delimiters.patch
+    $ sudo patch /usr/share/systemtap/tapset/linux/sysc_execve.stp < expand_execve_envp.patch
+    $ sudo patch /usr/share/systemtap/tapset/uconversions.stp < escape_delimiters.patch
+
 Compile Kernel extension::
 
-    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/strace.stp
+    $ wget https://raw.githubusercontent.com/cuckoosandbox/cuckoo/master/stuff/systemtap/strace.stp
     $ sudo stap -p4 -r $(uname -r) strace.stp -m stap_ -v
 
 Once the compilation finishes you should see the file ``stap_.ko`` in the same

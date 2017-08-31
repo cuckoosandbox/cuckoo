@@ -27,6 +27,7 @@
     "highlight": "^9.10.0",
     "jquery-ui": "^1.12.1",
     "bowser": "browser#^1.6.1",
-    "Split.js": "^1.2.0"
+    "Split.js": "^1.2.0",
+    "bourbon": "^4.3.4"
   }
 }

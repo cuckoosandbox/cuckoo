@@ -8,14 +8,9 @@ import logging.handlers
 import os
 import requests
 import socket
+import yara
 
 from distutils.version import StrictVersion
-
-try:
-    import yara
-    HAVE_YARA = True
-except ImportError:
-    HAVE_YARA = False
 
 import cuckoo
 
@@ -28,6 +23,7 @@ from cuckoo.core.database import (
 )
 from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
+from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd, version
 
@@ -205,60 +201,68 @@ def init_modules():
             else:
                 log.debug("\t |-- %s", entry.__name__)
 
-def index_yara():
-    """Generates index for yara signatures."""
-    log.debug("Initializing Yara...")
+    # Initialize the RunSignatures module with all available Signatures.
+    RunSignatures.init_once()
 
-    indexed = []
-    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
-        # Check if there is a directory for the given category.
+def init_yara():
+    """Initialize & load/compile Yara rules."""
+    categories = (
+        "binaries", "urls", "memory", "scripts", "shellcode",
+    )
+    log.debug("Initializing Yara...")
+    for category in categories:
         dirpath = cwd("yara", category)
         if not os.path.exists(dirpath):
-            continue
+            log.warning("Missing Yara directory: %s?", dirpath)
 
-        # Populate the index Yara file for this category.
-        with open(cwd("yara", "index_%s.yar" % category), "wb") as f:
-            for entry in os.listdir(dirpath):
-                if entry.endswith((".yar", ".yara")):
-                    f.write("include \"%s\"\n" % os.path.join(dirpath, entry))
-                    indexed.append((category, entry))
+        rules, indexed = {}, []
+        for dirpath, dirnames, filenames in os.walk(dirpath, followlinks=True):
+            for filename in filenames:
+                if not filename.endswith((".yar", ".yara")):
+                    continue
 
-    indexed = sorted(indexed)
-    for category, entry in indexed:
-        if (category, entry) == indexed[-1]:
-            log.debug("\t `-- %s %s", category, entry)
-        else:
-            log.debug("\t |-- %s %s", category, entry)
+                filepath = os.path.join(dirpath, filename)
 
-def init_yara(index):
-    """Initialize & load/compile Yara rules."""
-    if not HAVE_YARA:
-        log.warning(
-            "Unable to import yara (install with "
-            "`pip install yara-python==3.5.0`)"
-        )
-        return False
+                try:
+                    # TODO Once Yara obtains proper Unicode filepath support we
+                    # can remove this check. See also this Github issue:
+                    # https://github.com/VirusTotal/yara-python/issues/48
+                    assert len(str(filepath)) == len(filepath)
+                except (UnicodeEncodeError, AssertionError):
+                    log.warning(
+                        "Can't load Yara rules at %r as Unicode filepaths are "
+                        "currently not supported in combination with Yara!",
+                        filepath
+                    )
+                    continue
 
-    if index:
-        index_yara()
-
-    for category in ("binaries", "urls", "memory", "scripts", "shellcode"):
-        rulepath = cwd("yara", "index_%s.yar" % category)
-        if not os.path.exists(rulepath) and not index:
-            raise CuckooStartupError(
-                "You must run the Cuckoo daemon before being able to run "
-                "this utility, as otherwise any potentially available Yara "
-                "rules will not be taken into account (yes, also if you "
-                "didn't configure any Yara rules)!"
-            )
+                rules["rule_%s_%d" % (category, len(rules))] = filepath
+                indexed.append(filename)
 
         try:
-            File.yara_rules[category] = yara.compile(rulepath)
+            File.yara_rules[category] = yara.compile(filepaths=rules)
         except yara.Error as e:
             raise CuckooStartupError(
                 "There was a syntax error in one or more Yara rules: %s" % e
             )
-    return True
+
+        # The memory.py processing module requires a yara file with all of its
+        # rules embedded in it, so create this file to remain compatible.
+        if category == "memory":
+            f = open(cwd("stuff", "index_memory.yar"), "wb")
+            for filename in indexed:
+                f.write('include "%s"\n' % cwd("yara", "memory", filename))
+
+        indexed = sorted(indexed)
+        for entry in indexed:
+            if (category, entry) == indexed[-1]:
+                log.debug("\t `-- %s %s", category, entry)
+            else:
+                log.debug("\t |-- %s %s", category, entry)
+
+    # Store the compiled Yara rules for the "memory" category in $CWD/stuff/
+    # so that we may easily pass it along to zer0m0n during an analysis.
+    File.yara_rules["memory"].save(cwd("stuff", "dumpmem.yarac"))
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer

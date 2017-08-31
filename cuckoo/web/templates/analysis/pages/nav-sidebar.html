@@ -54,7 +54,7 @@
 		<li>
 			<a href="{% url "analysis" report.analysis.info.id "dropped_files" %}"
 			{% if env.view_kwargs.page == 'dropped_files' %} class="active"	{% endif %}>
-				<i class="fa fa-file-code-o	"></i>
+				<i class="fa fa-file-code-o"></i>
 				<span>Dropped Files</span>
 				<em>{{ report.analysis.dropped|length }}</em>
 			</a>

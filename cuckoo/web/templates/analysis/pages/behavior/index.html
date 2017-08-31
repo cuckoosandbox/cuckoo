@@ -1,38 +1,105 @@
-{% extends "base.html" %}
-{% load staticfiles %}
-{% load analysis_tags %}
-{% block content %}
-    
-    <div class="flex-nav">
-        {% include "analysis/pages/nav-sidebar.html" %}
-        <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+{% extends "base.html" %} {% load staticfiles %} {% load analysis_tags %} {% block content %}
 
-            <header class="page-header cuckoo-analysis__header">
-                <h1>Behavioral Analysis</h1>
+<div class="flex-nav">
+  {% include "analysis/pages/nav-sidebar.html" %}
+  <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+    <header class="cuckoo-analysis__header">
+      <h1>Behavioral Analysis</h1>
+    </header>
+
+    <div class="container-fluid">
+      <div class="row">
+
+        <section class="process-tree" id="behavior-process-tree">
+          <div class="process-tree__search">
+            <input type="text" placeholder="Search" />
+            <i class="fa fa-search"></i>
+            <button class="process-tree__search-submit">
+              <span>&crarr;</span>
+              <i class="fa fa-spin fa-spinner"></i>
+            </button>
+          </div>
+          <div class="process-tree__tree open">
+            <header class="process-tree__header">
+              <h4><i class="fa fa-sitemap"></i> Process tree <a href="#" class="process-tree__header--right fa"></a></h4>
             </header>
 
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                        {% include "analysis/pages/behavior/_tree.html" %}
-                        <br />
-                        {% include "analysis/pages/behavior/_processes.html" %}
-                    </div>
-                </div>    
+            <div class="process-tree__body">
+              {% include "analysis/pages/behavior/partials/_tree.html" %}
             </div>
 
-             <!-- footer replacement to avoid double scrollbars -->
-            <footer class="flex-grid__footer spread-alignment">
-                <p class="footnote">
-                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
-                </p>
-                <div class="logo">
-                    <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
-                    <a href="#">Back to Top</a>
+          </div>
+          <div class="process-tree__detail open">
+            <header class="process-tree__header">
+              <h4><i class="fa fa-ellipsis-h"></i> Process contents <a href="#" class="process-tree__header--right fa"></a></h4>
+            </header>
+            <div class="process-tree__body process-spec">
+
+              {% include "components/loader.html" %}
+
+              <div class="unloaded">
+                <p>No process loaded  <small>Click on a process in the tree above to load its data.</small></p>
+              </div>
+
+              <div class="loaded">
+
+                <!-- name and meta about the process  -->
+                <header class="process-spec--name">
+                  <h2><span data-placeholder="process-detail-name"></span></h2>
+                  <table class="cuckoo-table table-key-value">
+                    <tr>
+                      <td>PID</td>
+                      <td><strong><span data-placeholder="process-detail-pid"></span></strong></td>
+                    </tr>
+                    <tr>
+                      <td>Parent PID</td>
+                      <td><strong><span data-placeholder="process-detail-ppid"></span></strong></td>
+                    </tr>
+                  </table>
+                </header>
+
+                <!-- pagination  -->
+                <div class="process-spec--pagination"><!-- renders w/ javascript --></div>
+
+                <!-- analysis tags -->
+                <div class="process-spec--tags">
+                  <a href="filter:default" class="badge default">default</a>
+                  <a href="filter:registry" class="badge registry">registry</a>
+                  <a href="filter:file" class="badge file">file</a>
+                  <a href="filter:network" class="badge network">network</a>
+                  <a href="filter:process" class="badge process">process</a>
+                  <a href="filter:services" class="badge services">services</a>
+                  <a href="filter:synchronisation" class="badge synchronisation">synchronisation</a>
+                  <a href="filter:iexplore" class="badge iexplore">iexplore</a>
+                  <a href="filter:office" class="badge office">office</a>
+                  <a href="filter:pdf" class="badge pdf">pdf</a>
                 </div>
-            </footer>
-            
+
+                <!-- details table -->
+                <div class="process-spec--table" id="behavior-table"><!-- populated w/ javascript --></div>
+
+              </div>
+
+            </div>
+          </div>
         </section>
+
+      </div>
     </div>
+
+    <!-- footer replacement to avoid double scrollbars -->
+    <footer class="flex-grid__footer spread-alignment">
+      <p class="footnote">
+        &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+      </p>
+      <div class="logo">
+        <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+        <a href="#">Back to Top</a>
+      </div>
+    </footer>
+
+  </section>
+</div>
 
 {% endblock %}

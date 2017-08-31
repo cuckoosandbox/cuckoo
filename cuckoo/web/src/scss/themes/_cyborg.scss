@@ -389,11 +389,11 @@ body.cyborg {
 	    border-bottom: 0px solid #8d8d8d;
 	}
 
-	.table-striped > tbody > tr:nth-of-type(even) {
+	.table-striped > tbody > tr:nth-of-type(odd) {
 	    background-color: #0b1d21;
 	}
 
-	.table-striped > tbody > tr:nth-of-type(odd) {
+	.table-striped > tbody > tr:nth-of-type(even) {
 	    background-color: #030e10;
 	}
 
@@ -1932,5 +1932,5 @@ body.cyborg {
 	// .flex-grid__header {
 	// 	border-color: #312e2e;
 	// }
-	
+
 }

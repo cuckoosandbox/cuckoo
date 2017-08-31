@@ -67,15 +67,17 @@ class Irma(Processing):
 
         result = None
 
+        start = time.time()
         while result is None or result.get("status") != self.IRMA_FINISHED_STATUS:
+            if start + self.timeout < time.time():
+                break
+
             log.debug("Polling for results for ID %s", init.get("id"))
             url = urlparse.urljoin(
                 self.url, "/api/v1.1/scans/%s" % init.get("id")
             )
             result = self._request_json(url)
             time.sleep(1)
-
-        return
 
     def _get_results(self, sha256):
         # Fetch list of scan IDs.

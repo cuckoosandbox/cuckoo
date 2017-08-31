@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,7 +13,9 @@ log = logging.getLogger()
 
 def init_logging():
     """Initialize logger."""
-    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    )
     sh = logging.StreamHandler()
     sh.setFormatter(formatter)
     log.addHandler(sh)

@@ -537,7 +537,7 @@ class Config(object):
                 "enabled": Boolean(True),
             },
             "extracted": {
-                "enabled": Boolean(True),
+                "enabled": Boolean(True, required=False),
             },
             "googleplay": {
                 "enabled": Boolean(False),
@@ -652,7 +652,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String(),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.2"),
                     "interface": String("qemubr"),
@@ -669,7 +671,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("mipsel"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.3"),
                     "interface": String("qemubr"),
@@ -687,7 +691,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("arm"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.4"),
                     "interface": String("qemubr"),
@@ -943,6 +949,18 @@ class Config(object):
                 raise CuckooConfigurationError(
                     "Missing environment variable: %s" % e
                 )
+            except ValueError as e:
+                if e.message == "incomplete format key":
+                    raise CuckooConfigurationError(
+                        "One of the fields that you've filled out in "
+                        "$CWD/conf/%s contains the sequence '%(' which is "
+                        "interpreted as environment variable sequence, e.g., "
+                        "'%(PGPASSWORD)s' would locate a PostgreSQL "
+                        "password. Please update the field to correctly "
+                        "state the environment variable or change it in a "
+                        "way that '%(' is no longer in the variable."
+                    )
+                raise
 
             for name, raw_value in items:
                 if name in self.env_keys:

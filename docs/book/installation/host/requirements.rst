@@ -56,7 +56,16 @@ This is mostly the same as the installation on Ubuntu/Debian, except that
 we'll be using the ``brew`` package manager. Install all the required
 dependencies as follows (this list is WIP)::
 
-    $ brew install libmagic
+    $ brew install libmagic cairo pango openssl
+
+In addition to that you'll also want to expose the openssl header files in the
+standard GCC/Clang include directory, so that ``yara-python`` may compile
+successfully. This can be done `as follows`_::
+
+    $ cd /usr/local/include
+    $ ln -s ../opt/openssl/include/openssl .
+
+.. _as follows: https://www.anintegratedworld.com/mac-osx-fatal-error-opensslsha-h-file-not-found/
 
 Installing Python libraries (on Windows 7)
 ==========================================

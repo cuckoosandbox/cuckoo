@@ -3,7 +3,7 @@ Distributed Cuckoo
 ==================
 
 As mentioned in :doc:`submit`, Cuckoo provides a REST API for Distributed
-Cuckoo usage. The distributed script allows one to setup a single REST API
+Cuckoo usage. Distributed Cuckoo allows one to setup a single REST API
 point to which samples and URLs can be submitted which will then, in turn, be
 submitted to one of the configured Cuckoo nodes.
 
@@ -11,11 +11,11 @@ A typical setup thus includes a machine on which Distributed Cuckoo is run
 and one or more machines running an instance of the Cuckoo daemon and the
 :doc:`Cuckoo REST API <api>`.
 
-A few notes;
+A few notes:
 
-* Using the distributed script only makes sense when running at least two
+* Using Distributed Cuckoo only makes sense when running at least two
   cuckoo nodes.
-* The distributed script can be run on a machine that also runs a Cuckoo
+* Distributed Cuckoo can be run on a machine that also runs a Cuckoo
   daemon and REST API, however, make sure it has enough disk space if the
   intention is to submit a lot of samples.
 
@@ -39,7 +39,7 @@ simple as running ``cuckoo distributed server``.
 
 The various configuration options are described in the configuration file, but
 following we have more in-depth descriptions as well. More advanced usage
-naturally includes deploying to ``uWSGI`` and ``nginx``.
+naturally includes deployment using ``uWSGI`` and ``nginx``.
 
 Distributed Cuckoo Configuration
 ================================
@@ -85,6 +85,8 @@ Following are all RESTful resources. Also make sure to check out the
 | ``GET`` :ref:`node_get`           | Get basic information about a node.                           |
 +-----------------------------------+---------------------------------------------------------------+
 | ``PUT`` :ref:`node_put`           | Update basic information of a node.                           |
++-----------------------------------+---------------------------------------------------------------+
+| ``POST`` :ref:`node_refresh`      | Refresh a Cuckoo nodes metadata.                              |
 +-----------------------------------+---------------------------------------------------------------+
 | ``DELETE`` :ref:`node_delete`     | Disable (not completely remove!) a node.                      |
 +-----------------------------------+---------------------------------------------------------------+
@@ -174,6 +176,30 @@ Update basic information of a Cuckoo node::
         -F url=http://1.2.3.4:8090/
     {
         "success": true
+    }
+
+.. _node_refresh:
+
+POST /api/node/<name>/refresh
+-----------------------------
+
+Refreshes metadata associated by a Cuckoo node, in particular, its machines::
+
+    $ curl -XPOST http://localhost:9003/api/node/localhost/refresh
+    {
+        "success": true,
+        "machines": [
+            {
+                "name": "cuckoo1",
+                "platform": "windows",
+                "tags": []
+            },
+            {
+                "name": "cuckoo2",
+                "platform": "windows",
+                "tags": []
+            }
+        ]
     }
 
 .. _node_delete:
@@ -291,33 +317,6 @@ Fetch a report for the given task in the specified format::
     $ curl http://localhost:9003/api/report/2
     ...
 
-.. _quick-usage:
-
-Quick usage
-===========
-
-For practical usage the following few commands will be most interesting.
-
-Register a Cuckoo node - a Cuckoo API running on the same machine in this
-case::
-
-    $ curl http://localhost:9003/api/node -F name=localhost -F ip=127.0.0.1
-
-Disable a Cuckoo node::
-
-    $ curl -XDELETE http://localhost:9003/api/node/localhost
-
-Submit a new analysis task without any special requirements (e.g., using
-Cuckoo ``tags``, a particular machine, etc)::
-
-    $ curl http://localhost:9003/api/task -F file=@/path/to/sample.exe
-
-Get the report of a task has been finished (if it hasn't finished you'll get
-an error with code 420). Following example will default to the ``JSON``
-report::
-
-    $ curl http://localhost:9003/api/report/1
-
 Proposed setup
 ==============
 
@@ -407,7 +406,67 @@ found in the :ref:`quick-usage` section. In case your Cuckoo node is not on
 ``localhost``, replace ``localhost`` with the IP address of the node where
 the Cuckoo REST API is running.
 
-If you want to experiment a real load balancing between the nodes you may want
+If you want to experiment with load balancing between the nodes you may want
 to try using a lower value for the ``threshold`` parameter in the
 ``$CWD/distributed/settings.py`` file as the default value is ``500`` (meaning
 tasks are assigned to Cuckoo nodes in batches of 500).
+
+.. _quick-usage:
+
+Quick usage
+===========
+
+For practical usage the following few commands will be most interesting.
+
+Register a Cuckoo node, in this case a Cuckoo API running on the same machine
+in this case::
+
+    $ curl http://localhost:9003/api/node -F name=localhost -F ip=127.0.0.1
+
+Disable a Cuckoo node::
+
+    $ curl -XDELETE http://localhost:9003/api/node/localhost
+
+Submit a new analysis task without any special requirements (e.g., using
+Cuckoo ``tags``, a particular machine, etc)::
+
+    $ curl http://localhost:9003/api/task -F file=@/path/to/sample.exe
+
+Get the report of a task has been finished (if it hasn't finished you'll get
+an error with code 420). Following example will default to the ``JSON``
+report::
+
+    $ curl http://localhost:9003/api/report/1
+
+If a Cuckoo node gets stuck and needs a reset, the following steps could be
+performed to restart it cleanly. Note that this requires usage of our
+SaltStack configuration and some manual SQL commands (and preferably the
+Distributed Cuckoo Worker is temporary disabled, i.e.,
+``supervisorctl stop distributed``)::
+
+    $ psql -c "UPDATE SET status = 'pending' WHERE status = 'processing' AND node_id = 123"
+    $ salt cuckoo1 state.apply cuckoo.clean
+    $ salt cuckoo1 state.apply cuckoo.start
+
+In order to upgrade the Distributed Cuckoo master, one may want to perform the
+following steps::
+
+    $ /etc/init.d/uwsgi stop
+    $ pip uninstall -y cuckoo
+    $ pip install cuckoo==2.0.0         # Specify your version here.
+    $ pip install Cuckoo-2.0.0.tar.gz   # Or use a locally archived build.
+    $ cuckoo distributed migrate
+    $ supervisorctl -c ~/.cuckoo/supervisord.conf restart distributed
+    $ /etc/init.d/uwsgi start
+    $ /etc/init.d/nginx restart
+
+In order to test your entire Cuckoo cluster, i.e., every machine on every
+Cuckoo node, one may take the ``stuff/distributed/cluster-test.py`` script as
+an example. As-is it allows one to check for an active internet connection in
+each and every configured machine in the cluster. This script may be used to
+identify machines that are incorrect or have been corrupted in one way or
+another. Example usage may look as follows::
+
+    # Assuming Distributed Cuckoo listens on localhost and that you want to
+    # run the 'internet' script (see also the source of cluster-test.py).
+    $ python stuff/distributed/cluster-test.py localhost -s internet

@@ -54,5 +54,5 @@ all the *rules* from the :doc:`../installation/host/cwd` and
 Happy development! Please reach out to us if you require additional help to
 get up-and-running with the latest development tricks.
 
-.. _`cuckoo/ directory`: https://github.com/cuckoosandbox/cuckoo/tree/package/cuckoo
+.. _`cuckoo/ directory`: https://github.com/cuckoosandbox/cuckoo/tree/master/cuckoo
 .. _`Community repository`: https://github.com/cuckoosandbox/community

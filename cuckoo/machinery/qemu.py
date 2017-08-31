@@ -142,19 +142,30 @@ class QEMU(Machinery):
         vm_info = self.db.view_machine_by_label(label)
         vm_options = getattr(self.options, vm_info.name)
 
-        snapshot_path = os.path.join(os.path.dirname(vm_options.image), vm_info.name) + ".qcow2"
-        if os.path.exists(snapshot_path):
-            os.remove(snapshot_path)
+        if vm_options.snapshot:
+            snapshot_path = vm_options.image
+        else:
+            snapshot_path = os.path.join(
+                os.path.dirname(vm_options.image),
+                "snapshot_%s.qcow2" % vm_info.name
+            )
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
 
-        # make sure we use a new harddisk layer by creating a new qcow2 with backing file
-        try:
-            proc = subprocess.Popen([self.qemu_img, "create", "-f", "qcow2", "-b", vm_options.image, snapshot_path],
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, err = proc.communicate()
-            if err:
-                raise OSError(err)
-        except OSError as e:
-            raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
+            # make sure we use a new harddisk layer by creating a new
+            # qcow2 with backing file
+            try:
+                proc = subprocess.Popen([
+                    self.qemu_img, "create", "-f", "qcow2",
+                    "-b", vm_options.image, snapshot_path
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output, err = proc.communicate()
+                if err:
+                    raise OSError(err)
+            except OSError as e:
+                raise CuckooMachineError(
+                    "QEMU failed starting the machine: %s" % e
+                )
 
         vm_arch = getattr(vm_options, "arch", "default")
         arch_config = dict(QEMU_ARGS[vm_arch])
@@ -178,6 +189,12 @@ class QEMU(Machinery):
 
         # magic arg building
         final_cmdline = [i.format(**params) for i in cmdline]
+
+        if vm_options.snapshot:
+            final_cmdline += ["-loadvm", vm_options.snapshot]
+
+        if vm_options.enable_kvm:
+            final_cmdline.append("-enable-kvm")
 
         log.debug("Executing QEMU %r", final_cmdline)
 

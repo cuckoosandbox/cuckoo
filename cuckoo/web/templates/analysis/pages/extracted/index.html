@@ -22,7 +22,7 @@
                     {% endfor %}
                     </nav>
                     <div class="page-switcher__pages">
-                    {% for extr in report.analysis.extracted %}    
+                    {% for extr in report.analysis.extracted %}
                         <div id="extracted_{{ forloop.counter }}" class="extracted-page {% if forloop.first %}active{% endif %}">
                           <div class="panel panel-default list-panel" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
                             <div class="panel-heading">
@@ -33,22 +33,27 @@
                                     <span class="item-label">Category:</span> {{ extr.category }}
                                 </li>
                                 <li class="list-group-item">
-                                    <span class="item-label">Yara:</span>  {% if extr.yara %}
-                                                                                <ul style="margin-bottom: 0;">
-                                                                                    {% for sign in extr.yara %}
-                                                                                        <li>{{ sign.name }} - {{ sign.meta.description }}</li>
-                                                                                    {% endfor %}
-                                                                                </ul>
-                                                                            {% else %}
-                                                                                None matched
-                                                                            {% endif %}
+                                    <span class="item-label">Yara:</span>
+                                    {% if extr.yara %}
+                                        <ul style="margin-bottom: 0;">
+                                        {% for sign in extr.yara %}
+                                            <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    None matched
+                                    {% endif %}
                                 </li>
+                                {% if extr.program %}
                                 <li class="list-group-item">
                                     <span class="item-label">Program:</span> {{ extr.program }}
                                 </li>
+                                {% endif %}
+                                {% if extr.first_seen %}
                                 <li class="list-group-item">
                                     <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
                                 </li>
+                                {% endif %}
                             </ul>
                           </div>
                           <div class="powershell-preview">
@@ -56,7 +61,7 @@
                           </div>
                         </div>
                     {% endfor %}
-                    </div>     
+                    </div>
                 </div>
             </div>
         </div>

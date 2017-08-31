@@ -15,9 +15,10 @@ from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
     CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
-from cuckoo.common.objects import YaraMatch
+from cuckoo.common.objects import YaraMatch, ExtractedMatch
 from cuckoo.common.utils import supported_version
-from cuckoo.misc import cwd, version
+from cuckoo.core.extract import ExtractManager
+from cuckoo.misc import cwd, version as cuckoo_version
 
 log = logging.getLogger(__name__)
 
@@ -238,8 +239,10 @@ class RunProcessing(object):
             # appended to the general results container.
             data = current.run()
 
-            log.debug("Executed processing module \"%s\" on analysis at "
-                      "\"%s\"", current.__class__.__name__, self.analysis_path)
+            log.debug(
+                "Executed processing module \"%s\" for task #%d",
+                current.__class__.__name__, self.task["id"]
+            )
 
             # If succeeded, return they module's key name and the data.
             return current.key, data
@@ -320,36 +323,50 @@ class RunProcessing(object):
 
 class RunSignatures(object):
     """Run Signatures."""
+    available_signatures = []
+    version = cuckoo_version
 
     def __init__(self, results):
         self.results = results
         self.matched = []
-        self.version = version
 
-        # Gather all enabled, up-to-date, and applicable signatures.
+        # Initialize each applicable Signature.
         self.signatures = []
-        for signature in cuckoo.signatures:
+        for signature in self.available_signatures:
             if self.should_enable_signature(signature):
                 self.signatures.append(signature(self))
-
-        # Sort Signatures by their order.
-        self.signatures.sort(key=lambda sig: sig.order)
 
         # Signatures to call per API name.
         self.api_sigs = {}
 
-    def should_enable_signature(self, signature):
+    @classmethod
+    def init_once(cls):
+        cls.available_signatures = []
+
+        # Gather all enabled & up-to-date Signatures.
+        for signature in cuckoo.signatures:
+            if cls.should_load_signature(signature):
+                cls.available_signatures.append(signature)
+
+        # Sort Signatures by their order.
+        cls.available_signatures.sort(key=lambda sig: sig.order)
+
+    @classmethod
+    def should_load_signature(cls, signature):
         """Should the given signature be enabled for this analysis?"""
         if not signature.enabled or signature.name is None:
             return False
 
-        if not self.check_signature_version(signature):
+        if not cls.check_signature_version(signature):
             return False
 
         if hasattr(signature, "enable") and callable(signature.enable):
             if not signature.enable():
                 return False
 
+        return True
+
+    def should_enable_signature(self, signature):
         # Network and/or cross-platform signatures.
         if not signature.platform:
             return True
@@ -364,17 +381,18 @@ class RunSignatures(object):
 
         return task_platform == signature.platform
 
-    def check_signature_version(self, sig):
+    @classmethod
+    def check_signature_version(cls, sig):
         """Check signature version.
         @param current: signature class/instance to check.
         @return: check result.
         """
-        if not supported_version(self.version, sig.minimum, sig.maximum):
+        if not supported_version(cls.version, sig.minimum, sig.maximum):
             log.debug(
                 "You are running a version of Cuckoo that's not compatible "
                 "with this signature (either it's too old or too new): "
                 "cuckoo=%s signature=%s minversion=%s maxversion=%s",
-                self.version, sig.name, sig.minimum, sig.maximum
+                cls.version, sig.name, sig.minimum, sig.maximum
             )
             return False
 
@@ -468,6 +486,15 @@ class RunSignatures(object):
         for extr in self.results.get("extracted", []):
             loop_yara("extracted", extr[extr["category"]], extr["yara"])
 
+    def process_extracted(self):
+        task_id = self.results.get("info", {}).get("id")
+        if not task_id:
+            return
+
+        for item in ExtractManager.for_task(task_id).results():
+            for sig in self.signatures:
+                self.call_signature(sig, sig.on_extract, ExtractedMatch(item))
+
     def run(self):
         """Run signatures."""
         # Allow signatures to initialize themselves.
@@ -488,6 +515,9 @@ class RunSignatures(object):
 
         # Iterate through all Yara matches.
         self.process_yara_matches()
+
+        # Iterate through all Extracted matches.
+        self.process_extracted()
 
         # Yield completion events to each signature.
         for sig in self.signatures:

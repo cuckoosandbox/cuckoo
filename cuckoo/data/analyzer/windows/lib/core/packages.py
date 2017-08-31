@@ -55,6 +55,8 @@ def choose_package(file_type, file_name, exports):
         return "ppt"
     elif file_name.endswith(".jar"):
         return "jar"
+    elif file_name.endswith(".hta"):
+        return "hta"
     elif "Zip" in file_type:
         return "zip"
     elif file_name.endswith((".py", ".pyc")) or "Python script" in file_type:
@@ -69,7 +71,7 @@ def choose_package(file_type, file_name, exports):
         return "ps1"
     elif file_name.endswith((".wsf", ".wsc")):
         return "wsf"
-    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta")):
+    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta", ".mht", ".mhtml")):
         return "ie"
     else:
         return "generic"
