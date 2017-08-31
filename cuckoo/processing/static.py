@@ -773,17 +773,9 @@ class LnkShortcut(object):
 
         header = LnkHeader.from_buffer_copy(buf[:ctypes.sizeof(LnkHeader)])
         if header.signature[:] != self.signature:
-            log.warning(
-                "Provided .lnk file is not a Microsoft Shortcut "
-                "(invalid signature)!"
-            )
             return
 
         if header.guid[:] != self.guid:
-            log.warning(
-                "Provided .lnk file is not a Microsoft Shortcut "
-                "(invalid guid)!"
-            )
             return
 
         ret = {

@@ -61,7 +61,9 @@ class TestAppsWithCWD(object):
     def test_main_exception(self, p, q):
         q.side_effect = Exception("this is a test")
         with pytest.raises(SystemExit):
-            main.main(("--cwd", cwd(), "-d"), standalone_mode=False)
+            main.main(
+                ("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False
+            )
         p.exception.assert_called_once()
 
     def test_api(self):
