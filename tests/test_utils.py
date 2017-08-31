@@ -428,3 +428,11 @@ def test_time_duration():
     assert utils.time_duration("1d") == 86400
     assert utils.time_duration("1w") == 604800
     assert utils.time_duration("1s1m1h1d1w") == 694861
+
+def test_random_string():
+    randstr = utils.random_string(5)
+    emptystr = utils.random_string(0)
+    assert len(randstr) == 5
+    assert isinstance(randstr, basestring)
+    assert len(emptystr) == 0
+    assert isinstance(emptystr, basestring)

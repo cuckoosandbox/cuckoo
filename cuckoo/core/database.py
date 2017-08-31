@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 
 null = None
 
-SCHEMA_VERSION = "45e060776917"
+SCHEMA_VERSION = "f37a6c6dde99"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -75,7 +75,6 @@ class JsonType(TypeDecorator):
     def process_result_value(self, value, dialect):
         return json.loads(value)
 
-
 class JsonTypeList255(TypeDecorator):
     """Custom JSON type."""
     impl = String(255)
@@ -85,7 +84,6 @@ class JsonTypeList255(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return json.loads(value) if value else []
-
 
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
@@ -159,7 +157,6 @@ class Machine(Base):
         self.rdp_port = rdp_port
         self.locked_by = locked_by
 
-
 class Tag(Base):
     """Tag describing anything you want."""
     __tablename__ = "tags"
@@ -173,7 +170,6 @@ class Tag(Base):
     def __init__(self, name):
         self.name = name
 
-
 class Experiment(Base):
     """Experiment regroups a list of tasks together"""
     __tablename__ = "experiments"
@@ -183,12 +179,12 @@ class Experiment(Base):
     added_on = Column(DateTime(timezone=False),
                       default=datetime.datetime.now,
                       nullable=False)
-    delta = Column(String(), nullable=True)
+    delta = Column(String(), nullable=False, default="0s")
     # Amount of runs left for this Experiment.
-    runs = Column(Integer(), nullable=True)
+    runs = Column(Integer(), nullable=False)
     # Amount of times this Experiment has ran already.
-    times = Column(Integer(), nullable=True)
-    machine_name = Column(Text(), nullable=True)
+    times = Column(Integer(), nullable=False)
+    machine_name = Column(String(255), nullable=True)
     # Task id last completed for this experiment
     last_completed = Column(Integer(), nullable=True)
 
@@ -210,7 +206,6 @@ class Experiment(Base):
         @return: JSON data
         """
         return json.dumps(self.to_dict())
-
 
 class Guest(Base):
     """Tracks guest run."""
@@ -258,7 +253,6 @@ class Guest(Base):
         self.label = label
         self.manager = manager
 
-
 class Submit(Base):
     """Submitted files details."""
     __tablename__ = "submit"
@@ -273,7 +267,6 @@ class Submit(Base):
         self.tmp_path = tmp_path
         self.submit_type = submit_type
         self.data = data
-
 
 class Sample(Base):
     """Submitted files details."""
@@ -320,7 +313,6 @@ class Sample(Base):
         self.file_type = file_type
         self.ssdeep = ssdeep
 
-
 class Error(Base):
     """Analysis errors."""
     __tablename__ = "errors"
@@ -353,7 +345,6 @@ class Error(Base):
     def __repr__(self):
         return "<Error('{0}','{1}','{2}')>".format(self.id, self.message,
                                                    self.task_id)
-
 
 class Task(Base):
     """Analysis task queue."""
@@ -461,13 +452,11 @@ class Task(Base):
     def __repr__(self):
         return "<Task('{0}','{1}')>".format(self.id, self.target)
 
-
 class AlembicVersion(Base):
     """Table used to pinpoint actual database schema release."""
     __tablename__ = "alembic_version"
 
     version_num = Column(String(32), nullable=False, primary_key=True)
-
 
 class Database(object):
     """Analysis queue database.

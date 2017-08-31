@@ -416,7 +416,7 @@ class VirtualBox(Machinery):
         """Tries to optimize HDD by compacting scattered data.
         @param label: virtual machine label
         """
-        log.debug("IN COMPACT HD")
+
         hdd_uuid = self.vminfo(label, "\"IDE-ImageUUID-0-0\"")
 
         if hdd_uuid.count('"') != 2:
@@ -425,7 +425,6 @@ class VirtualBox(Machinery):
 
         hdd_uuid = hdd_uuid.split('"', 2)[1]
 
-        log.debug("HDD UUID VALUE: %s", hdd_uuid)
         if hdd_uuid:
             log.debug("Compacting HDD %s for VM %s", hdd_uuid, label)
             try:

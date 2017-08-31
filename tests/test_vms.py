@@ -40,6 +40,7 @@ snapshot = derpb
 platform = windows
 ip = 5.6.7.8
 resultserver_ip = 7.5.3.1
+rdp_port = 3389
 
 [c]
 label = c
@@ -71,6 +72,7 @@ resultserver_port = 4242
     assert machines[1].snapshot == "derpb"
     assert machines[1].ip == "5.6.7.8"
     assert machines[1].resultserver_ip == "7.5.3.1"
+    assert machines[1].rdp_port == "3389"
     assert machines[1].resultserver_port == 9001
     assert machines[2].label == "c"
     assert machines[2].snapshot == "derpc"

@@ -751,7 +751,6 @@ class TestVirtualbox(object):
 
         # TODO Properly handle "vboxmanage -v" returning an error status code.
 
-
 class TestBrokenMachine(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -799,7 +798,6 @@ def test_esx_not_installed():
     with pytest.raises(CuckooDependencyError) as e:
         ESX()
     e.match("libvirt package has not")
-
 
 class TestVirtualboxInitialize(object):
     def test_initialize_global(self):
@@ -871,7 +869,6 @@ class TestVirtualboxInitialize(object):
         assert sorted((t.name for t in m.tags)) == [
             "tag1", "tag2"
         ]
-
 
 class TestVMWare(object):
     class task(object):
@@ -1044,7 +1041,6 @@ class TestVMWare(object):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
-
 class TestLibVirtMachinery(object):
     class task(object):
         def __init__(self):
@@ -1171,7 +1167,6 @@ class TestLibVirtMachinery(object):
         self.m._disconnect.assert_called_once_with("conn")
         self.m._wait_status.assert_called_once_with(self.machineobj.label,
                                                     self.m.RUNNING)
-
 
 class TestXenServer(object):
     class task(object):

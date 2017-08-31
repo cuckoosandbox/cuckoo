@@ -72,12 +72,20 @@ def tasks_create_file():
 
     # Fields used for experiments
     exp = request.form.get("experiment", False)
-    exp_name = request.form.get("exp_name", "")
+    exp_name = request.form.get("exp_name", None)
     exp_runs = request.form.get("exp_runs", "")
-    exp_timedelta = request.form.get("exp_delta", "")
+    exp_timedelta = request.form.get("exp_delta", None)
 
-    if exp and db.view_experiment(name=exp_name) is not None:
-        return json_error(400, "That experiment name is already in use")
+    if exp:
+        if not exp_name:
+            return json_error(400, "No experiment name provided")
+
+        if db.view_experiment(name=exp_name) is not None:
+            return json_error(400, "That experiment name is already in use")
+
+        if not exp_runs or exp_runs == "0" or not exp_runs.isnumeric():
+            return json_error(400, "No or invalid number of experiment runs"
+                                   " provided")
 
     memory = parse_bool(request.form.get("memory", 0))
     unique = parse_bool(request.form.get("unique", 0))
@@ -127,12 +135,20 @@ def tasks_create_url():
 
     # Fields used for experiments
     exp = request.form.get("experiment", False)
-    exp_name = request.form.get("exp_name", "")
+    exp_name = request.form.get("exp_name", None)
     exp_runs = request.form.get("exp_runs", "")
-    exp_timedelta = request.form.get("exp_delta", "")
+    exp_timedelta = request.form.get("exp_delta", None)
 
-    if exp and db.view_experiment(name=exp_name) is not None:
-        return json_error(400, "That experiment name is already in use")
+    if exp:
+        if not exp_name:
+            return json_error(400, "No experiment name provided")
+
+        if db.view_experiment(name=exp_name) is not None:
+            return json_error(400, "That experiment name is already in use")
+
+        if not exp_runs or exp_runs == "0" or not exp_runs.isnumeric():
+            return json_error(400, "No or invalid number of experiment runs"
+                                   " provided")
 
     memory = request.form.get("memory", False)
     if memory:
