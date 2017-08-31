@@ -386,7 +386,7 @@ def tasks_report(task_id, report_format="json", elements=""):
             except:
                 return json_error(404, "'{0}' not found".format(elements))
         else:
-            response = make_response(open(report_path, "rb").read())
+            response = make_response(report_content)
             response.headers["Content-Type"] = "application/json"
         return response
     else:
