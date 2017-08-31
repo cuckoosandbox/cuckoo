@@ -11,7 +11,7 @@ import socket
 import tarfile
 import zipfile
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, json
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
@@ -322,9 +322,7 @@ def tasks_delete(task_id):
 @app.route("/v1/tasks/report/<int:task_id>")
 @app.route("/tasks/report/<int:task_id>/<report_format>")
 @app.route("/v1/tasks/report/<int:task_id>/<report_format>")
-@app.route("/tasks/report/<int:task_id>/<report_format>/<elements>")
-@app.route("/v1/tasks/report/<int:task_id>/<report_format>/<elements>")
-def tasks_report(task_id, report_format="json", elements=""):
+def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
         "html": "report.html",
@@ -376,22 +374,25 @@ def tasks_report(task_id, report_format="json", elements=""):
     if not os.path.exists(report_path):
         return json_error(404, "Report not found")
 
+    elements = request.args.get("elements")
     if report_format.lower() == "json":
         report_content = open(report_path, "rb").read()
-        if(elements != ""):
-            try:
-                from flask import json
-                response = make_response(json.dumps(json.loads(report_content)[elements]))
-                response.headers["Content-Type"] = "application/json"
-            except:
+        if elements is not None:
+            elements_content = json.loads(report_content).get(elements)
+            if elements_content is None:
                 return json_error(404, "'{0}' not found".format(elements))
-        else:
-            response = make_response(report_content)
-            response.headers["Content-Type"] = "application/json"
+            else:
+                response = make_response(json.dumps(elements_content))
+                response.headers["Content-Type"] = "application/json"
+                return response
+        
+        response = make_response(report_content)
+        response.headers["Content-Type"] = "application/json"
         return response
     else:
-        if(elements != ""):
-            return json_error(404, "Get specific field in report is not available in HTML format, try again with JSON format")
+        if elements is not None:
+            return json_error(404, "Get specific field is not available in HTML format,"\
+                              " try again with JSON format")
         return open(report_path, "rb").read()
 
 @app.route("/tasks/screenshots/<int:task_id>")
