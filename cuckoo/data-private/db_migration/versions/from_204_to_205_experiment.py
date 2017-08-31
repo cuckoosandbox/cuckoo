@@ -62,15 +62,17 @@ def upgrade():
         conn.execute("SELECT 1 FROM experiments").fetchone()
         log.warning("The \'experiments\' table already exists."
                     " Skipping creation of this table")
-    except sa.exc.OperationalError:
+    except (sa.exc.OperationalError, sa.exc.ProgrammingError):
 
         op.create_table(
             "experiments",
             sa.Column("id", sa.Integer(), nullable=False),
-            sa.Column("name", sa.String(), nullable=True, unique=True),
+            sa.Column("name", sa.String(length=255),
+                      nullable=True, unique=True),
             sa.Column("added_on", sa.DateTime(), nullable=False,
                       default=datetime.datetime.now),
-            sa.Column("delta", sa.String(), nullable=False, default="0s"),
+            sa.Column("delta", sa.String(length=255),
+                      nullable=False, default="0s"),
             sa.Column("runs", sa.Integer(), nullable=False),
             sa.Column("times", sa.Integer(), nullable=False),
             sa.Column("machine_name", sa.String(length=255), nullable=True),
