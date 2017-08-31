@@ -221,6 +221,24 @@ class TestSubmitManager(object):
             "route": "tor",
         }
 
+    def test_submit_file5_exp(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "pdf0.pdf",
+            "data": open("tests/files/pdf0.pdf", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/file5_exp.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("pdf0.pdf")
+        assert t.enforce_timeout is True
+        assert t.memory is True
+        assert not t.machine
+        assert t.experiment
+        assert t.experiment.runs == 2
+        assert t.experiment.delta == "5m"
+        assert t.experiment.name == "exp1"
+
     def test_submit_arc1(self):
         assert self.submit_manager.pre("files", [{
             "name": "msg_invoice.msg",
