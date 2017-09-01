@@ -12,7 +12,6 @@ import pytest
 import shutil
 import tempfile
 
-from collections import defaultdict
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
@@ -873,96 +872,85 @@ class TestBehavior(object):
         })
 
         assert ba.run() == {
-            "generic": [
-                {
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
-                    "pid": 820,
-                    "ppid": 819,
-                    "process_name": "sh",
-                    "process_path": None,
-                    "summary": defaultdict(set, {})
-                },
-                {
+            "generic": [{
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "process_path": None,
+                "summary": {},
+            }, {
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
+                "pid": 821,
+                "ppid": 820,
+                "process_name": "bash",
+                "process_path": None,
+                "summary": {},
+            }, {
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                "pid": 822,
+                "ppid": 821,
+                "process_name": "ls",
+                "process_path": None,
+                "summary": {},
+            }],
+            "processes": [{
+                "calls": [],
+                "command_line": "/bin/sh /tmp/execve.sh",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "type": "process"
+            }, {
+                "calls": [],
+                "command_line": (
+                    "/bin/bash -c python -c 'import subprocess; "
+                    "subprocess.call([\"/bin/ls\", \"/hax\"])'"
+                ),
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
+                "pid": 821,
+                "ppid": 820,
+                "process_name": "bash",
+                "type": "process"
+            }, {
+                "calls": [],
+                "command_line": "/bin/ls /hax",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                "pid": 822,
+                "ppid": 821,
+                "process_name": "ls",
+                "type": "process"
+            }],
+            "processtree": [{
+                "children": [{
+                    "children": [{
+                        "children": [],
+                        "command_line": "/bin/ls /hax",
+                        "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                        "pid": 822,
+                        "ppid": 821,
+                        "process_name": "ls",
+                        "track": True
+                    }],
+                    "command_line": (
+                        "/bin/bash -c python -c 'import subprocess; "
+                        "subprocess.call([\"/bin/ls\", \"/hax\"])'"
+                    ),
                     "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
                     "pid": 821,
                     "ppid": 820,
                     "process_name": "bash",
-                    "process_path": None,
-                    "summary": defaultdict(set, {})
-                },
-                {
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
-                    "pid": 822,
-                    "ppid": 821,
-                    "process_name": "ls",
-                    "process_path": None,
-                    "summary": defaultdict(set, {})
-                }
-            ],
-            "processes": [
-                {
-                    "calls": [],
-                    "command_line": "/bin/sh /tmp/execve.sh",
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
-                    "pid": 820,
-                    "ppid": 819,
-                    "process_name": "sh",
-                    "type": "process"
-                },
-                {
-                    "calls": [],
-                    "command_line": "/bin/bash -c python -c 'import subprocess; " 
-                                    "subprocess.call([\"/bin/ls\", \"/hax\"])'",
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
-                    "pid": 821,
-                    "ppid": 820,
-                    "process_name": "bash",
-                    "type": "process"
-                },
-                {
-                    "calls": [],
-                    "command_line": "/bin/ls /hax",
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
-                    "pid": 822,
-                    "ppid": 821,
-                    "process_name": "ls",
-                    "type": "process"
-                }
-            ],
-            "processtree": [
-                {
-                    "children": [
-                        {
-                            "children": [
-                                {
-                                    "children": [],
-                                    "command_line": "/bin/ls /hax",
-                                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
-                                    "pid": 822,
-                                    "ppid": 821,
-                                    "process_name": "ls",
-                                    "track": True
-                                }
-                            ],
-                            "command_line": "/bin/bash -c python -c 'import subprocess; "
-                                            "subprocess.call([\"/bin/ls\", \"/hax\"])'",
-                            "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
-                            "pid": 821,
-                            "ppid": 820,
-                            "process_name": "bash",
-                            "track": True
-                        }
-                    ],
-                    "command_line": "/bin/sh /tmp/execve.sh",
-                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
-                    "pid": 820,
-                    "ppid": 819,
-                    "process_name": "sh",
                     "track": True
-                }
-            ]
+                }],
+                "command_line": "/bin/sh /tmp/execve.sh",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "track": True
+            }],
         }
-
 
 class TestPcap(object):
     @classmethod
