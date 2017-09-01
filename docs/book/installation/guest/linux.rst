@@ -30,8 +30,8 @@ Add agent to autorun, the easier way is to add it to crontab::
     $ sudo crontab -e
     @reboot python path_to_agent.py
 
-The following instructions are only for x32/x64 ubuntu linux guests
-============================================================
+The following instructions are only for x32/x64 ubuntu 17.04 linux guests
+=========================================================================
 
 Install dependencies inside of the virtual machine::
 

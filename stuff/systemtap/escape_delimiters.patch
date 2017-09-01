@@ -53,6 +53,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +function cuckoo_escape_delimiters:string (str:string) {
 +  str = str_replace(str, "[", "\\x5b")
 +  str = str_replace(str, "]", "\\x5d")
++  str = str_replace(str, "{", "\\x7b")
++  str = str_replace(str, "}", "\\x7d")
 +  str = str_replace(str, "\\\"", "\\x22")
 +  str = str_replace(str, ",", "\\x2c")
 +  return str

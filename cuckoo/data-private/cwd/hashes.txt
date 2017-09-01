@@ -219,6 +219,9 @@ e82ee483607284b743dbc66289dbde13862c6ef9 analyzer/windows/lib/core/packages.py
 5721fef52df4b69671fb33a6e193276bd5028d33 analyzer/windows/modules/packages/xls.py
 
 # 2.0.4 release
+0000000000000000000000000000000000000000 analyzer/linux/modules/auxiliary/lkm.py
+271e29efd19306e2769ff1c2fd0e46df7561bf81 analyzer/linux/modules/auxiliary/stap.py
+15adabd64969d5e23003d45b1f6f7b384b1e6bf0 analyzer/linux/modules/packages/generic.py
 49c7e98dbe03121c8cadee4cd1214b1e1f80ceb2 analyzer/windows/analyzer.py
 5bce9b46793e68be557940769ec44f044e6f568b analyzer/windows/lib/api/process.py
 bbae2a651067491925b2f52144575d3b821525fa analyzer/windows/lib/common/defines.py
