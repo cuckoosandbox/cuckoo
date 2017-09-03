@@ -411,3 +411,16 @@ around don't, then some additional problems may be at hand:
 
 If you've triple-checked the above and are still experiencing issues, then
 please contact us through one of the various communication channels.
+
+Cuckoo says there's a version 2.1.0?
+------------------------------------
+
+If you see the message ``Outdated! Cuckoo Sandbox version 2.1.0 is available
+now.`` and you've come to this FAQ entry then you're entirely correct. There
+is indeed no version ``2.1.0``, yet (!). However, due to the logic implemented
+in the version checker of our ``2.0-RC1`` and ``2.0-RC2`` releases, the only
+way to inform our users about our latest releases is by having a *"new"* major
+version release (i.e., ``2.1.0`` or later).
+We've decided that it's better to sling a little bit of confusion regarding a
+non-existing version than not mentioning any new versions to our users
+altogether. So please bear with us and install the latest version :-)
