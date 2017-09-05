@@ -64,7 +64,9 @@ class VirtualBox(Machinery):
             if machine.label not in machines:
                 continue
 
-            self.restore(machine.label, machine)
+            # Only revert if the machine is not locked by an experiment
+            if not machine.locked_by:
+                self.restore(machine.label, machine)
 
     def restore(self, label, machine):
         """Restore a VM to its snapshot."""
