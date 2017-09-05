@@ -18,6 +18,7 @@ from cuckoo.misc import set_cwd, cwd
 
 sha256_ = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
 
+
 def am_init(options={}, cfg={}):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg=cfg)
@@ -28,6 +29,7 @@ def am_init(options={}, cfg={}):
             self.category = "file"
             self.target = __file__
             self.options = options
+            self.sample_id = 1
 
         def to_dict(self):
             return Dictionary(self.__dict__)
@@ -70,6 +72,294 @@ def test_am_init_duplicate_analysis():
 
     # Manually disable per-task logging initiated by init().
     task_log_stop(1234)
+
+class Test_am_LaunchAnalysis(object):
+    class exp(object):
+        def __init__(self):
+            self.id = 2
+            self.runs = 2
+            self.times = 0
+
+    class task(object):
+        def __init__(self):
+            self.id = 1234
+            self.category = "file"
+            self.target = __file__
+            self.options = {}
+            self.custom = None
+            self.experiment_id = 1
+            self.experiment = Test_am_LaunchAnalysis.exp()
+            self.package = "py"
+            self.memory = None
+
+        def to_dict(self):
+            return Dictionary(self.__dict__)
+
+        def to_json(self):
+            return json.dumps(self.to_dict())
+
+    class machine(object):
+        def __init__(self):
+            self.ip = "1.2.3.4"
+            self.interface = "vboxnet0"
+            self.name = "machine1"
+            self.options = {}
+            self.label = "machine1"
+            self.platform = "windows"
+
+    @mock.patch("cuckoo.core.scheduler.Database")
+    @mock.patch("cuckoo.core.scheduler.RunAuxiliary")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.add_task")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.del_task")
+    @mock.patch("cuckoo.core.scheduler.GuestManager")
+    def test_am_launch_analysis_task(self, mock_gm, mock_rs_del_task,
+                                mock_rs_add_task, mock_ra, mock_db):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg=Dictionary({}))
+
+        cuckoo.core.scheduler.machine_lock = mock.MagicMock()
+        cuckoo.core.scheduler.machinery = mock.MagicMock()
+
+        taskobj = Test_am_LaunchAnalysis.task()
+        taskobj.experiment_id = None
+        taskobj.experiment = None
+        built_options = {}
+        am = AnalysisManager(taskobj.id, None)
+        am.task = taskobj
+        am.machine = Test_am_LaunchAnalysis.machine()
+        am.guest_manager = mock_gm
+
+        am.init = mock.MagicMock(return_value=True)
+        am.acquire_machine = mock.MagicMock()
+        am.build_options = mock.MagicMock(return_value=built_options)
+        am.route_network = mock.MagicMock()
+        am.unroute_network = mock.MagicMock()
+        am.guest_manage = mock.MagicMock()
+        am.wait_finish = mock.MagicMock()
+        am.aux = mock_ra
+        am.db = mock_db
+
+        # Start tested method
+        succeeded = am.launch_analysis()
+
+        am.init.assert_called_once()
+        am.acquire_machine.assert_called_once()
+        mock_rs_add_task.assert_called_once_with(am.task, am.machine)
+        mock_gm.assert_called_once_with(am.machine.name, am.machine.ip,
+                                        am.machine.platform, am.task.id, am)
+
+        mock_ra.assert_called_once_with(am.task, am.machine, am.guest_manager)
+        am.aux.start.assert_called_once()
+        am.db.guest_start.assert_called_once_with(am.task.id, am.machine.name,
+                                                  am.machine.label, mock.ANY)
+
+        # This should be experiment: 0 because in this test the exp is
+        # on its first run
+        assert built_options == {}
+
+        # Revert is true because it is not an experiment
+        cuckoo.core.scheduler.machinery.start.assert_called_once_with(
+            am.machine.label, am.task, revert=True
+        )
+
+        am.route_network.assert_called_once()
+        cuckoo.core.scheduler.machine_lock.release.assert_called_once()
+        am.guest_manage.assert_called_once_with(built_options)
+
+        # Wait finish should not be called because guest manage is already
+        # called
+        am.wait_finish.assert_not_called()
+
+        am.aux.stop.assert_called_once()
+
+        # Stop should be called with safe=False because the machine
+        # will be restored to a snapshot on next use
+        cuckoo.core.scheduler.machinery.stop.assert_called_once_with(
+            am.machine.label, safe=False
+        )
+
+        mock_rs_del_task.assert_called_once_with(am.task, am.machine)
+        am.unroute_network.assert_called_once()
+        am.db.guest_stop.assert_called_once()
+
+        # No exp should be scheduled because this is not an experiment
+        am.db.schedule_task_exp.assert_not_called()
+
+        # Release should not be called because the machine is needed for the
+        # next run of this experiment
+        cuckoo.core.scheduler.machinery.release.assert_called_once_with(
+            am.machine.label
+        )
+
+        assert succeeded == True
+
+    @mock.patch("cuckoo.core.scheduler.Database")
+    @mock.patch("cuckoo.core.scheduler.RunAuxiliary")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.add_task")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.del_task")
+    @mock.patch("cuckoo.core.scheduler.GuestManager")
+    def test_am_launch_analysis_exp(self, mock_gm, mock_rs_del_task,
+                                mock_rs_add_task, mock_ra, mock_db):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg=Dictionary({}))
+
+        cuckoo.core.scheduler.machine_lock = mock.MagicMock()
+        cuckoo.core.scheduler.machinery = mock.MagicMock()
+
+        taskobj = Test_am_LaunchAnalysis.task()
+        built_options = {}
+        am = AnalysisManager(taskobj.id, None)
+        am.task = taskobj
+        am.machine = Test_am_LaunchAnalysis.machine()
+        am.guest_manager = mock_gm
+
+        am.init = mock.MagicMock(return_value=True)
+        am.acquire_machine = mock.MagicMock()
+        am.build_options = mock.MagicMock(return_value=built_options)
+        am.route_network = mock.MagicMock()
+        am.unroute_network = mock.MagicMock()
+        am.guest_manage = mock.MagicMock()
+        am.wait_finish = mock.MagicMock()
+        am.aux = mock_ra
+        am.db = mock_db
+
+        # Start tested method
+        succeeded = am.launch_analysis()
+
+        am.init.assert_called_once()
+        am.acquire_machine.assert_called_once()
+        mock_rs_add_task.assert_called_once_with(am.task, am.machine)
+        mock_gm.assert_called_once_with(am.machine.name, am.machine.ip,
+                                        am.machine.platform, am.task.id, am)
+
+        mock_ra.assert_called_once_with(am.task, am.machine, am.guest_manager)
+        am.aux.start.assert_called_once()
+        am.db.guest_start.assert_called_once_with(am.task.id, am.machine.name,
+                                                  am.machine.label, mock.ANY)
+
+        # This should be experiment: 0 because in this test the exp is
+        # on its first run
+        assert built_options == {"experiment": 0}
+
+        # Revert is true because it is the first run of an experiment
+        cuckoo.core.scheduler.machinery.start.assert_called_once_with(
+            am.machine.label, am.task, revert=True
+        )
+
+        am.route_network.assert_called_once()
+        cuckoo.core.scheduler.machine_lock.release.assert_called_once()
+        am.guest_manage.assert_called_once_with(built_options)
+
+        # Wait finish should not be called because guest manage is already
+        # called
+        am.wait_finish.assert_not_called()
+
+        am.aux.stop.assert_called_once()
+
+        # Stop should be called with safe=True because the experiment
+        # has runs left, meaning the OS should be shut down safely to be sure
+        # changes are written to disk
+        cuckoo.core.scheduler.machinery.stop.assert_called_once_with(
+            am.machine.label, safe=True
+        )
+
+        mock_rs_del_task.assert_called_once_with(am.task, am.machine)
+        am.unroute_network.assert_called_once()
+        am.db.guest_stop.assert_called_once()
+
+        # Schedule task exp should be called if the experiment has runs left
+        am.db.schedule_task_exp.assert_called_once_with(am.task.id)
+
+        # Release should not be called because the machine is needed for the
+        # next run of this experiment
+        cuckoo.core.scheduler.machinery.release.assert_not_called()
+
+        assert succeeded == True
+
+    @mock.patch("cuckoo.core.scheduler.Database")
+    @mock.patch("cuckoo.core.scheduler.RunAuxiliary")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.add_task")
+    @mock.patch("cuckoo.core.scheduler.ResultServer.del_task")
+    @mock.patch("cuckoo.core.scheduler.GuestManager")
+    def test_am_launch_analysis_exp_2d_run(self, mock_gm, mock_rs_del_task,
+                                mock_rs_add_task, mock_ra, mock_db):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg=Dictionary({}))
+
+        cuckoo.core.scheduler.machine_lock = mock.MagicMock()
+        cuckoo.core.scheduler.machinery = mock.MagicMock()
+
+        taskobj = Test_am_LaunchAnalysis.task()
+        taskobj.experiment.times = 1
+        built_options = {}
+        am = AnalysisManager(taskobj.id, None)
+        am.task = taskobj
+        am.machine = Test_am_LaunchAnalysis.machine()
+        am.guest_manager = mock_gm
+
+        am.init = mock.MagicMock(return_value=True)
+        am.acquire_machine = mock.MagicMock()
+        am.build_options = mock.MagicMock(return_value=built_options)
+        am.route_network = mock.MagicMock()
+        am.unroute_network = mock.MagicMock()
+        am.guest_manage = mock.MagicMock()
+        am.wait_finish = mock.MagicMock()
+        am.aux = mock_ra
+        am.db = mock_db
+
+        # Start tested method
+        succeeded = am.launch_analysis()
+
+        am.init.assert_called_once()
+        am.acquire_machine.assert_called_once()
+        mock_rs_add_task.assert_called_once_with(am.task, am.machine)
+        mock_gm.assert_called_once_with(am.machine.name, am.machine.ip,
+                                        am.machine.platform, am.task.id, am)
+
+        mock_ra.assert_called_once_with(am.task, am.machine, am.guest_manager)
+        am.aux.start.assert_called_once()
+        am.db.guest_start.assert_called_once_with(am.task.id, am.machine.name,
+                                                  am.machine.label, mock.ANY)
+
+        # This should be experiment: 1 because in this test the exp is
+        # on a second run. Experiment package should be used after the first
+        # run of an experiment.
+        assert built_options == {"experiment": 1, "package": "experiment"}
+
+        # Revert is False because it is not the first run of this experiment
+        cuckoo.core.scheduler.machinery.start.assert_called_once_with(
+            am.machine.label, am.task, revert=False
+        )
+
+        am.route_network.assert_called_once()
+        cuckoo.core.scheduler.machine_lock.release.assert_called_once()
+        am.guest_manage.assert_called_once_with(built_options)
+
+        # Wait finish should not be called because guest manage is already
+        # called
+        am.wait_finish.assert_not_called()
+
+        am.aux.stop.assert_called_once()
+
+        # Stop should be called with safe=True because the experiment
+        # has runs left, meaning the OS should be shut down safely to be sure
+        # changes are written to disk
+        cuckoo.core.scheduler.machinery.stop.assert_called_once_with(
+            am.machine.label, safe=True
+        )
+
+        mock_rs_del_task.assert_called_once_with(am.task, am.machine)
+        am.unroute_network.assert_called_once()
+        am.db.guest_stop.assert_called_once()
+
+        # Schedule task exp should be called if the experiment has runs left
+        am.db.schedule_task_exp.assert_called_once_with(am.task.id)
+
+        # Release should not be called because the machine is needed for the
+        # next run of this experiment
+        cuckoo.core.scheduler.machinery.release.assert_not_called()
+
+        assert succeeded == True
 
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_default_route(p):

@@ -62,6 +62,11 @@ class AnalysisInfo(Processing):
         else:
             monitor = None
 
+        if task.experiment_id:
+            exp_id = int(task.experiment_id)
+        else:
+            exp_id = None
+
         return dict(
             version=version,
             git={
@@ -73,6 +78,7 @@ class AnalysisInfo(Processing):
             started=task["started_on"],
             ended=task.get("completed_on", "none"),
             duration=task.get("duration", -1),
+            exp_id=exp_id,
             id=int(task["id"]),
             category=task["category"],
             custom=task["custom"],

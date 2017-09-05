@@ -64,7 +64,7 @@ class Physical(Machinery):
 
         raise CuckooMachineError("No machine with label: %s." % label)
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a physical machine.
         @param label: physical machine name.
         @param task: task object.
@@ -81,7 +81,7 @@ class Physical(Machinery):
             raise CuckooMachineError("Error occurred while starting: "
                                      "%s (STATUS=%s)" % (label, status))
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stops a physical machine.
         @param label: physical machine name.
         @raise CuckooMachineError: if unable to stop.

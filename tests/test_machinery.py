@@ -8,8 +8,9 @@ import pytest
 import subprocess
 import tempfile
 
+from cuckoo.common import abstracts
 from cuckoo.common.config import config, Config
-from cuckoo.common.exceptions import (
+from cuckoo.common.exceptions import  (
     CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
     CuckooDependencyError, CuckooMissingMachineError
 )
@@ -19,12 +20,15 @@ from cuckoo.core.database import Database
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.log import task_log_start, task_log_stop
 from cuckoo.core.startup import init_logging
+from cuckoo.machinery import xenserver, vsphere
 from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
+from cuckoo.machinery.vmware import VMware
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
 db = Database()
+
 
 class TestVirtualbox(object):
     def setup(self):
@@ -268,6 +272,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -305,6 +310,7 @@ class TestVirtualbox(object):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -333,6 +339,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -353,10 +360,109 @@ class TestVirtualbox(object):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
+    def test_start_non_revert(self):
+        class machine_with_snapshot(object):
+            snapshot = "snapshot"
+            options = []
+            rdp_port = None
+
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m.vminfo = mock.MagicMock(return_value="label_hdd")
+
+        p1 = mock.MagicMock()
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
+
+        p2 = mock.MagicMock()
+        p2.communicate.return_value = "", ""
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1, p2
+            self.m.start("label", None, revert=False)
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "startvm", "label", "--type", "headless",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_compact_hd(self):
+        self.m.vminfo = mock.MagicMock(return_value="\"30d29d87-e54d\"")
+
+        c1 = mock.MagicMock()
+        c1.returncode = 0
+        c1.return_value = "", ""
+
+        with mock.patch("subprocess.check_output") as co:
+            co.side_effect = c1
+            self.m.compact_hd("label")
+
+        co.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"), "modifyhd",
+                "30d29d87-e54d", "--compact"
+            ], stderr=subprocess.PIPE
+        )
+
+    def test_start_with_rdp(self):
+        class machine_with_snapshot(object):
+            snapshot = "snapshot"
+            options = []
+            rdp_port = 3390
+
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m.restore = mock.MagicMock(return_value=None)
+
+        c1 = mock.MagicMock()
+        c1.returncode = 0
+        c1.return_value = "", ""
+        p1 = mock.MagicMock()
+        p1.communicate.return_value = "", ""
+        p1.returncode = 0
+
+        p2 = mock.MagicMock()
+        p2.communicate.return_value = "", ""
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            with mock.patch("subprocess.check_output") as co:
+                p.side_effect = p1, p2
+                co.side_effect = c1
+                self.m.start("label", None)
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "startvm", "label", "--type", "headless",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+        co.assert_has_calls([
+            mock.call(
+                [
+                    config("virtualbox:virtualbox:path"), "controlvm", "label",
+                    "vrde", "on"
+                ]
+            ),
+            mock.call(
+                [
+                    config("virtualbox:virtualbox:path"), "controlvm", "label",
+                    "vrdeport", "3390"
+                ]
+            )
+        ])
+
     def test_start_restore_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -380,6 +486,7 @@ class TestVirtualbox(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -410,6 +517,7 @@ class TestVirtualbox(object):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -428,6 +536,55 @@ class TestVirtualbox(object):
                 "snapshot", "label", "restore", "snapshot"
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_safe_stop_true(self):
+        self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m._safe_stop = mock.MagicMock(return_value=True)
+        self.m.stop("label", safe=True)
+
+        self.m._safe_stop.assert_called_once_with("label")
+
+    def test_safe_stop_true_fail(self):
+        self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
+        self.m._wait_status = mock.MagicMock(return_value=None)
+        self.m._safe_stop = mock.MagicMock(return_value=False)
+
+        p1 = mock.MagicMock()
+        p1.returncode = 0
+        p1.poll.return_value = 0
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1
+            self.m.stop("label", safe=True)
+
+        self.m._safe_stop.assert_called_once_with("label")
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"),
+                "controlvm", "label", "poweroff"
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+        )
+
+    def test_safe_stop(self):
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+
+        p1 = mock.MagicMock()
+        p1.returncode = 0
+        p1.poll.return_value = 0
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1
+            ret = self.m._safe_stop("label")
+
+        p.assert_called_once_with(
+            [
+                config("virtualbox:virtualbox:path"), "controlvm", "label",
+                "acpipowerbutton"
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
     def test_stop_invalid_status(self):
@@ -468,11 +625,12 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         def poll():
-            return True if p["Popen"].return_value.terminate.call_count else None
+            return True if p[
+                "Popen"].return_value.terminate.call_count else None
 
         with mock.patch.multiple(
-            "cuckoo.machinery.virtualbox",
-            time=mock.DEFAULT, Popen=mock.DEFAULT
+                "cuckoo.machinery.virtualbox",
+                time=mock.DEFAULT, Popen=mock.DEFAULT
         ) as p:
             p["time"].sleep.return_value = None
             p["Popen"].return_value.poll.side_effect = poll
@@ -628,6 +786,7 @@ class TestBrokenMachine(object):
         class machine_no_snapshot(object):
             snapshot = None
             options = []
+            rdp_port = None
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -651,6 +810,7 @@ class TestBrokenMachine(object):
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
+
 
 def test_esx_not_installed():
     with pytest.raises(CuckooDependencyError) as e:
@@ -727,3 +887,478 @@ class TestVirtualboxInitialize(object):
         assert sorted((t.name for t in m.tags)) == [
             "tag1", "tag2"
         ]
+
+class TestVMWare(object):
+    class task(object):
+        def __init__(self):
+            self.id = 1
+
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()
+
+        with mock.patch("cuckoo.common.abstracts.Database") as p:
+            p.return_value = mock.MagicMock()
+            self.m = VMware()
+
+        self.m.db.clean_machines.assert_called_once()
+        self.m.set_options(Config("vmware"))
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.Popen")
+    def test_start(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = ("", "")
+
+        self.m._snapshot_from_vmx = mock.MagicMock(return_value="snapshot")
+        self.m._is_running = mock.MagicMock(return_value=False)
+        self.m._revert = mock.MagicMock()
+
+        self.m.start("/vmx/vm1.vmx", TestVMWare.task(), revert=True)
+
+        self.m._revert.assert_called_once_with("/vmx/vm1.vmx", "snapshot")
+        mock_popen.assert_called_once_with(
+            [self.m.options.vmware.path, "start", "/vmx/vm1.vmx",
+             self.m.options.vmware.mode], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.Popen")
+    def test_start_fail(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = ("", "")
+
+        self.m._snapshot_from_vmx = mock.MagicMock(return_value="snapshot")
+        self.m._is_running = mock.MagicMock(return_value=False)
+        self.m._revert = mock.MagicMock()
+        mock_popen.side_effect = OSError("tosti42")
+
+        with pytest.raises(CuckooMachineError):
+            self.m.start("/vmx/vm1.vmx", TestVMWare.task(), revert=True)
+
+        self.m._revert.assert_called_once_with("/vmx/vm1.vmx", "snapshot")
+        mock_popen.assert_called_once_with(
+            [self.m.options.vmware.path, "start", "/vmx/vm1.vmx",
+             self.m.options.vmware.mode], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.Popen")
+    def test_start_non_revert(self, mock_popen):
+        mock_popen.return_value.communicate.return_value = ("", "")
+
+        self.m._snapshot_from_vmx = mock.MagicMock(return_value="snapshot")
+        self.m._is_running = mock.MagicMock(return_value=False)
+        self.m._revert = mock.MagicMock()
+
+        self.m.start("/vmx/vm1.vmx", TestVMWare.task(), revert=False)
+
+        self.m._revert.assert_not_called()
+        mock_popen.assert_called_once_with(
+            [self.m.options.vmware.path, "start", "/vmx/vm1.vmx",
+             self.m.options.vmware.mode], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_stop(self, mock_call):
+        self.m._is_running = mock.MagicMock(return_value=True)
+        self.m._safe_stop = mock.MagicMock(return_value=True)
+
+        mock_call.return_value = 0
+        vmx_path = "/vmx/vm1.vmx"
+        self.m.stop(vmx_path, safe=False)
+
+        self.m._is_running.assert_called_once_with(vmx_path)
+        self.m._safe_stop.assert_not_called()
+        mock_call.assert_called_once_with(
+            [self.m.options.vmware.path, "stop", vmx_path, "hard"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_stop_fail(self, mock_call):
+        self.m._is_running = mock.MagicMock(return_value=True)
+        self.m._safe_stop = mock.MagicMock(return_value=True)
+
+        mock_call.return_value = 1
+        vmx_path = "/vmx/vm1.vmx"
+
+        with pytest.raises(CuckooMachineError):
+            self.m.stop(vmx_path, safe=False)
+
+        self.m._is_running.assert_called_once_with(vmx_path)
+        self.m._safe_stop.assert_not_called()
+
+        mock_call.assert_called_once_with(
+            [self.m.options.vmware.path, "stop", vmx_path, "hard"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_stop_safe(self, mock_call):
+        self.m._is_running = mock.MagicMock(return_value=True)
+        self.m._safe_stop = mock.MagicMock(return_value=True)
+
+        vmx_path = "/vmx/vm1.vmx"
+        self.m.stop(vmx_path, safe=True)
+
+        self.m._is_running.assert_called_once_with(vmx_path)
+        self.m._safe_stop.assert_called_once_with(vmx_path)
+        mock_call.assert_not_called()
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.Popen")
+    def test_safe_stop(self, mock_popen):
+        self.m._is_running = mock.MagicMock(return_value=False)
+        mock_popen.return_value.poll.return_value = 0
+        mock_popen.return_value.returncode = 0
+
+        ret = self.m._safe_stop("/vmx/vm1.vmx")
+
+        mock_popen.assert_called_once_with(
+            [self.m.options.vmware.path, "stop", "/vmx/vm1.vmx", "soft"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        assert ret == True
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_revert(self, mock_call):
+        mock_call.return_value = 0
+
+        self.m._revert("/vmx/vm1.vmx", "snapshot1")
+
+        mock_call.assert_called_once_with(
+            [self.m.options.vmware.path, "revertToSnapshot", "/vmx/vm1.vmx",
+             "snapshot1"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_revert_fail(self, mock_call):
+        mock_call.return_value = 1
+
+        with pytest.raises(CuckooMachineError):
+            self.m._revert("/vmx/vm1.vmx", "snapshot1")
+
+        mock_call.assert_called_once_with(
+            [self.m.options.vmware.path, "revertToSnapshot", "/vmx/vm1.vmx",
+             "snapshot1"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+    @mock.patch("cuckoo.machinery.vmware.subprocess.call")
+    def test_revert_fail_oserr(self, mock_call):
+        mock_call.return_value = 1
+        mock_call.side_effect = OSError("Tosti42")
+
+        with pytest.raises(CuckooMachineError):
+            self.m._revert("/vmx/vm1.vmx", "snapshot1")
+
+        mock_call.assert_called_once_with(
+            [self.m.options.vmware.path, "revertToSnapshot", "/vmx/vm1.vmx",
+             "snapshot1"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+class TestLibVirtMachinery(object):
+    class task(object):
+        def __init__(self):
+            self.id = 1
+
+    class machine(object):
+        def __init__(self):
+            self.label = "machine1"
+            self.name = "machine1"
+            self.snapshot = "snapshot1"
+
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()
+        abstracts.HAVE_LIBVIRT = True
+
+        with mock.patch("cuckoo.common.abstracts.Database") as db:
+            db.return_value = mock.MagicMock()
+            self.m = abstracts.LibVirtMachinery()
+
+        self.m.db.clean_machines.assert_called_once()
+        self.m.set_options(Config("kvm"))
+
+        self.m.vms = {}
+        self.machineobj = TestLibVirtMachinery.machine()
+        self.taskobj = TestLibVirtMachinery.task()
+
+    def test_stop(self):
+        """Test stopping of a running machine"""
+        vm_mock = mock.MagicMock()
+        vm_mock.isActive.return_value = True
+        self.m.vms = {self.machineobj.label: vm_mock}
+        self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
+        self.m._connect = mock.MagicMock(return_value="conn")
+        self.m._wait_status = mock.MagicMock()
+        self.m._disconnect = mock.MagicMock()
+
+        self.m.stop(self.machineobj.label, safe=False)
+
+        self.m._status.assert_called_once()
+        self.m._connect.assert_called_once()
+        self.m.vms[self.machineobj.label].isActive.assert_called_once()
+        self.m.vms[self.machineobj.label].destroy.assert_called_once()
+        self.m._disconnect.assert_called_once_with("conn")
+        self.m._wait_status.assert_called_once_with(self.machineobj.label,
+                                                    self.m.POWEROFF)
+
+    def test_start(self):
+        """Test revert to snapshot and starting a stopped
+        machine"""
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m._connect = mock.MagicMock(return_value="conn")
+        self.m.db.view_machine_by_label = mock.MagicMock(
+            return_value=self.machineobj
+        )
+        self.m._disconnect = mock.MagicMock()
+        self.m._wait_status = mock.MagicMock()
+
+        vm_mock = mock.MagicMock()
+        vm_mock.snapshotListNames.return_value = [self.machineobj.snapshot]
+        vm_mock.snapshotLookupByName.return_value = self.machineobj.snapshot
+        self.m.vms = {self.machineobj.label: vm_mock}
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=True)
+
+        self.m._status.assert_called_once_with(self.machineobj.label)
+        self.m._connect.assert_called_once()
+        self.m.db.view_machine_by_label.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m.vms[self.machineobj.label]. \
+            snapshotListNames.assert_called_once_with(flags=0)
+
+        # Create should not be called because it is being
+        # reverted to a snapshot
+        self.m.vms[self.machineobj.label].create.assert_not_called()
+
+        self.m.vms[self.machineobj.label]. \
+            snapshotLookupByName.assert_called_once_with(
+            self.machineobj.snapshot, flags=0
+        )
+        self.m.vms[self.machineobj.label]. \
+            revertToSnapshot.assert_called_once_with(
+            self.machineobj.snapshot, flags=0
+        )
+        self.m._disconnect.assert_called_once_with("conn")
+        self.m._wait_status.assert_called_once_with(self.machineobj.label,
+                                                    self.m.RUNNING)
+
+    def test_start_non_revert(self):
+        """Test starting a stopped machine without reverting
+        to a snapshot"""
+        self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
+        self.m._connect = mock.MagicMock(return_value="conn")
+        self.m.db.view_machine_by_label = mock.MagicMock(
+            return_value=self.machineobj
+        )
+        self.m._disconnect = mock.MagicMock()
+        self.m._wait_status = mock.MagicMock()
+
+        vm_mock = mock.MagicMock()
+        self.m.vms = {self.machineobj.label: vm_mock}
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=False)
+
+        self.m._status.assert_called_once_with(self.machineobj.label)
+        self.m._connect.assert_called_once()
+        self.m.db.view_machine_by_label.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m.vms[self.machineobj.label]. \
+            snapshotListNames.assert_called_once_with(flags=0)
+
+        # Create should be called because it is not being reverted back to a
+        # snapshot
+        self.m.vms[self.machineobj.label].create.assert_called_once()
+
+        self.m.vms[self.machineobj.label]. \
+            snapshotLookupByName.assert_not_called()
+        self.m.vms[self.machineobj.label]. \
+            revertToSnapshot.assert_not_called()
+
+        self.m._disconnect.assert_called_once_with("conn")
+        self.m._wait_status.assert_called_once_with(self.machineobj.label,
+                                                    self.m.RUNNING)
+
+class TestXenServer(object):
+    class task(object):
+        def __init__(self):
+            self.id = 1
+
+    class machine(object):
+        def __init__(self):
+            self.label = "machine1"
+            self.name = "machine1"
+            self.snapshot = "snapshot1"
+
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()
+        xenserver.HAVE_XENAPI = True
+        xenserver.XenAPI = mock.MagicMock()
+
+        with mock.patch("cuckoo.common.abstracts.Database") as db:
+            db.return_value = mock.MagicMock()
+            self.m = xenserver.XenServer()
+
+        self.m.db.clean_machines.assert_called_once()
+        self.m.set_options(Config("xenserver"))
+
+        self.m.vms = {}
+        self.machineobj = TestXenServer.machine()
+        self.taskobj = TestXenServer.task()
+
+    @mock.patch("cuckoo.machinery.xenserver.XenServer.session")
+    def test_start(self, mock_ses):
+        """Test restoring a snapshot and resuming the machine"""
+        self.m._get_vm_ref = mock.MagicMock(return_value="vmref")
+        self.m._get_vm_record = mock.MagicMock(return_value="vmrecord")
+        self.m._is_halted = mock.MagicMock(return_value=True)
+        self.m._snapshot_from_vm_uuid = mock.MagicMock(
+            return_value="snapshot1"
+        )
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=True)
+
+        self.m._is_halted.assert_called_once_with("vmrecord")
+        assert self.m._get_vm_ref.call_count == 2
+        self.m._get_vm_record.assert_called_once_with("vmref")
+        self.m._snapshot_from_vm_uuid.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m.session.xenapi.VM.revert.assert_called_once_with("vmref")
+        self.m.session.xenapi.VM.resume.assert_called_once_with(
+            "vmref", False, False
+        )
+
+    @mock.patch("cuckoo.machinery.xenserver.XenServer.session")
+    def test_start_non_revert(self, mock_ses):
+        """Test starting a machine without restoring a snapshot"""
+        self.m._get_vm_ref = mock.MagicMock(return_value="vmref")
+        self.m._get_vm_record = mock.MagicMock(return_value="vmrecord")
+        self.m._is_halted = mock.MagicMock(return_value=True)
+        self.m._snapshot_from_vm_uuid = mock.MagicMock(
+            return_value="snapshot1"
+        )
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=False)
+
+        self.m._is_halted.assert_called_once_with("vmrecord")
+        self.m._get_vm_ref.assert_called_once()
+        self.m._get_vm_record.assert_called_once_with("vmref")
+        self.m._snapshot_from_vm_uuid.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m.session.xenapi.VM.revert.assert_not_called()
+        self.m.session.xenapi.VM.resume.assert_not_called()
+        self.m.session.xenapi.VM.start.assert_called_once_with("vmref", False,
+                                                               False)
+
+    @mock.patch("cuckoo.machinery.xenserver.XenServer.session")
+    def test_stop(self, mock_ses):
+        """Test stopping a machine"""
+        self.m._get_vm_ref = mock.MagicMock(return_value="vmref")
+        self.m._get_vm_record = mock.MagicMock(return_value="vmrecord")
+        self.m._is_halted = mock.MagicMock(return_value=False)
+
+        self.m.stop(self.machineobj.label, safe=False)
+
+        self.m._is_halted.assert_called_once_with("vmrecord")
+        self.m._get_vm_ref.assert_called_once_with(self.machineobj.label)
+        self.m._get_vm_record.assert_called_once_with("vmref")
+        self.m.session.xenapi.VM.hard.shutdown("vmref")
+
+class TestvSphere(object):
+    class task(object):
+        def __init__(self):
+            self.id = 1
+
+    class machine(object):
+        def __init__(self):
+            self.label = "machine1"
+            self.name = "machine1"
+            self.snapshot = "snapshot1"
+
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        Folders.create(cwd(), "conf")
+        write_cuckoo_conf()
+        vsphere.HAVE_PYVMOMI = True
+        vsphere.SmartConnection = mock.MagicMock()
+
+        with mock.patch("cuckoo.common.abstracts.Database") as db:
+            db.return_value = mock.MagicMock()
+            self.m = vsphere.vSphere()
+
+        self.m.db.clean_machines.assert_called_once()
+        self.m.set_options(Config("vsphere"))
+
+        self.machineobj = TestvSphere.machine()
+        self.taskobj = TestvSphere.task()
+        self.m.connect_opts = {}
+
+    def test_stop(self):
+        """Test stopping a machine"""
+        self.m._get_virtual_machine_by_label = mock.MagicMock(
+            return_value="vm"
+        )
+        self.m._stop_virtual_machine = mock.MagicMock()
+
+        self.m.stop(self.machineobj.label, safe=False)
+        self.m._get_virtual_machine_by_label.assert_called_once_with(
+            mock.ANY, self.machineobj.label
+        )
+        self.m._stop_virtual_machine.assert_called_once_with("vm")
+
+    def test_start(self):
+        """Test reverting machine to snapshot and starting machine"""
+        self.m.db.view_machine_by_label = mock.MagicMock(
+            return_value=self.machineobj
+        )
+        self.m._get_virtual_machine_by_label = mock.MagicMock(
+            return_value="vm"
+        )
+        self.m._revert_snapshot = mock.MagicMock()
+        self.m._start_virtual_machine = mock.MagicMock()
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=True)
+
+        self.m.db.view_machine_by_label.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m._get_virtual_machine_by_label.assert_called_once_with(
+            mock.ANY, self.machineobj.label
+        )
+        self.m._revert_snapshot.assert_called_once_with(
+            "vm", self.machineobj.snapshot
+        )
+        self.m._start_virtual_machine.assert_not_called()
+
+    def test_start_non_revert(self):
+        """Test starting machine without reverting snapshot"""
+        self.m.db.view_machine_by_label = mock.MagicMock(
+            return_value=self.machineobj
+        )
+        self.m._get_virtual_machine_by_label = mock.MagicMock(
+            return_value="vm"
+        )
+        self.m._revert_snapshot = mock.MagicMock()
+        self.m._start_virtual_machine = mock.MagicMock()
+
+        self.m.start(self.machineobj.label, self.taskobj, revert=False)
+
+        self.m.db.view_machine_by_label.assert_called_once_with(
+            self.machineobj.label
+        )
+        self.m._get_virtual_machine_by_label.assert_called_once_with(
+            mock.ANY, self.machineobj.label
+        )
+        self.m._revert_snapshot.assert_not_called()
+        self.m._start_virtual_machine.assert_called_once_with("vm")

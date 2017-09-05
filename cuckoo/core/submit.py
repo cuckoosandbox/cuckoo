@@ -230,6 +230,14 @@ class SubmitManager(object):
                 "submit_id": submit_id,
             }
 
+            if info.get("experiment"):
+                kw.update({
+                    "experiment": True,
+                    "name": info.get("exp_name"),
+                    "delta": info.get("exp_delta"),
+                    "runs": info.get("exp_runs")
+                })
+
             if entry["type"] == "url":
                 ret.append(db.add_url(
                     url=info["filename"], **kw

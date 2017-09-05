@@ -194,7 +194,7 @@ class XenServer(Machinery):
         """
         return vm["power_state"] == "Halted"
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a virtual machine.
         @param label: vm uuid
         @param task: task object.
@@ -206,7 +206,7 @@ class XenServer(Machinery):
             raise CuckooMachineError("Vm is already running: %s", label)
 
         snapshot = self._snapshot_from_vm_uuid(label)
-        if snapshot:
+        if revert and snapshot:
             snapshot_ref = self._get_vm_ref(snapshot)
             try:
                 log.debug("Reverting vm %s to snapshot %s", label, snapshot)
@@ -223,7 +223,15 @@ class XenServer(Machinery):
                 raise CuckooMachineError("Unable to resume vm %s: %s"
                                          % (label, e.details[0]))
         else:
-            log.debug("No snapshot found for vm, booting: %s", label)
+            if not revert:
+                log.debug("This task is part of an experiment,"
+                          "not reverting to snapshot")
+                # TODO implement a disk compacting call if the vm is not being
+                # reverted. It is quite possible that if a lot happens during
+                # the various long term runs that the hdd starts to scatter.
+            elif not snapshot:
+                log.debug("No snapshot found for vm, booting: %s", label)
+
             try:
                 self.session.xenapi.VM.start(vm_ref, False, False)
             except XenAPI.Failure as e:
@@ -232,7 +240,7 @@ class XenServer(Machinery):
 
         log.debug("Started vm: %s", label)
 
-    def stop(self, label=None):
+    def stop(self, label=None, safe=False):
         """Stop a virtual machine.
         @param label: vm uuid
         """

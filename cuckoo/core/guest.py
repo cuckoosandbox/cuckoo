@@ -22,7 +22,7 @@ from cuckoo.common.constants import (
 from cuckoo.common.exceptions import (
     CuckooGuestError, CuckooGuestCriticalTimeout
 )
-from cuckoo.common.utils import TimeoutServer
+from cuckoo.common.utils import TimeoutServer, random_string
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
@@ -285,6 +285,8 @@ class GuestManager(object):
         self.analyzer_path = None
         self.environ = {}
 
+        self.agent_path = None
+
         self.options = {}
 
     @property
@@ -359,6 +361,12 @@ class GuestManager(object):
         if self.platform == "windows":
             return self.environ["TEMP"]
         return "/tmp"
+
+    def query_agent_path(self):
+        """Ask the agent where its file is located"""
+        if not self.agent_path:
+            self.agent_path = self.get("/path").json()["filepath"]
+        return self.agent_path
 
     def upload_analyzer(self, monitor):
         """Upload the analyzer to the Virtual Machine."""
@@ -470,17 +478,37 @@ class GuestManager(object):
         # Allow Auxiliary modules to prepare the Guest.
         self.aux.callback("prepare_guest")
 
-        # If the target is a file, upload it to the guest.
-        if options["category"] == "file" or options["category"] == "archive":
+        # Only upload sample when it is a task
+        # or the first run of an experiment
+        exp = options.get("experiment")
+        if exp is None or exp == 0:
+
+            # If the target is a file, upload it to the guest.
+            if options["category"] == "file" or options["category"] == "archive":
+                data = {
+                    "filepath": os.path.join(
+                        self.environ["TEMP"], options["file_name"]
+                    ),
+                }
+                files = {
+                    "file": ("sample.bin", open(options["target"], "rb")),
+                }
+                self.post("/store", files=files, data=data)
+
+        # If first run of experiment and platform is windows,
+        # add run key for agent to that it is started after reboot
+        if exp == 0 and self.platform == "windows":
+            # Assume default pythonw path
+            python_path = "C:\\Python27\\pythonw.exe"
             data = {
-                "filepath": os.path.join(
-                    self.determine_temp_path(), options["file_name"]
-                ),
+                "command": "C:\\Windows\\System32\\reg.exe add "
+                           "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\"
+                           "CurrentVersion\\Run /v %s /t REG_SZ /d \"%s %s\""
+                % (random_string(8), python_path, self.query_agent_path())
             }
-            files = {
-                "file": ("sample.bin", open(options["target"], "rb")),
-            }
-            self.post("/store", files=files, data=data)
+
+            self.post("/execute", data=data)
+            log.debug("Created HKLM run key on machine to autorun agent")
 
         if "execpy" in features:
             data = {

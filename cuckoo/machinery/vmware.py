@@ -12,6 +12,7 @@ import shutil
 import time
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooMachineError
 
 log = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ class VMware(Machinery):
                                          "No output from "
                                          "`vmrun listSnapshots`" % vmx_path)
 
-    def start(self, vmx_path, task):
+    def start(self, vmx_path, task, revert=True):
         """Start a virtual machine.
         @param vmx_path: path to vmx file.
         @param task: task object.
@@ -92,9 +93,15 @@ class VMware(Machinery):
             raise CuckooMachineError("Machine %s is already running" %
                                      vmx_path)
 
-        self._revert(vmx_path, snapshot)
-
-        time.sleep(3)
+        if revert:
+            self._revert(vmx_path, snapshot)
+            time.sleep(3)
+        else:
+            log.debug("This task is part of an experiment,"
+                      "not reverting to snapshot")
+            # TODO implement a disk compacting call if the vm is not being
+            # reverted. It is quite possible that if a lot happens during the
+            # various long term runs that the hdd starts to scatter.
 
         log.debug("Starting vm %s" % vmx_path)
         try:
@@ -113,14 +120,18 @@ class VMware(Machinery):
             raise CuckooMachineError("Unable to start machine %s in %s "
                                      "mode: %s" % (vmx_path, mode, e))
 
-    def stop(self, vmx_path):
+    def stop(self, vmx_path, safe=False):
         """Stops a virtual machine.
         @param vmx_path: path to vmx file
+        @param safe: try to safely shutdown the VM
         @raise CuckooMachineError: if unable to stop.
         """
         log.debug("Stopping vm %s" % vmx_path)
         if self._is_running(vmx_path):
             try:
+                if safe and self._safe_stop(vmx_path):
+                    return
+
                 if subprocess.call([self.options.vmware.path,
                                     "stop", vmx_path, "hard"],
                                    stdout=subprocess.PIPE,
@@ -212,3 +223,32 @@ class VMware(Machinery):
             raise CuckooMachineError("vmrun failed to delete the temporary snapshot in %s: %s" % (vmx_path, e))
 
         log.info("Successfully generated memory dump for virtual machine with label %s ", vmx_path)
+
+    def _safe_stop(self, vmx_path):
+        """"Send a shutdown signal to VM so the OS
+        gets a chance to safely shut down. Returns True
+        if the VM was safely shut down, False if otherwise"""
+        proc = subprocess.Popen([self.options.vmware.path, "stop", vmx_path,
+                                 "soft"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
+
+        count = 0
+        while proc.poll() is None or self._is_running(vmx_path):
+            if count < vm_state_timeout:
+                log.debug("Waiting for VM %s safe shutdown", vmx_path)
+                time.sleep(1)
+                count += 1
+            else:
+                if proc.poll() is None:
+                    proc.terminate()
+                log.debug("Safe shutdown of VM %s timed out. "
+                          "Using hard shutdown", vmx_path)
+
+                return False
+
+        if proc.returncode == 0:
+            return True
+
+        return False

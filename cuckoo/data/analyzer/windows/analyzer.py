@@ -432,6 +432,7 @@ class Analyzer(object):
         self.package = None
 
         self.reboot = []
+        self.experiment = {}
 
     def get_pipe_path(self, name):
         """Returns \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
@@ -565,6 +566,8 @@ class Analyzer(object):
         else:
             package = self.config.package
 
+        log.debug("Using analysis package: %s", package)
+
         # Generate the package path.
         package_name = "modules.packages.%s" % package
 
@@ -593,7 +596,8 @@ class Analyzer(object):
         # task - one is able to override the starting path of the sample.
         # E.g., for some samples it might be useful to run from %APPDATA%
         # instead of %TEMP%.
-        if self.config.category == "file":
+        if self.config.category == "file" \
+                and self.config.package != "experiment":
             self.target = self.package.move_curdir(self.target)
 
         # Initialize Auxiliary modules

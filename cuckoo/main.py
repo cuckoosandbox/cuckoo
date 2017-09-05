@@ -289,10 +289,17 @@ def clean():
 @click.option("--pattern", help="Provide a glob-pattern when submitting a directory")
 @click.option("--max", type=int, help="Submit up to X tasks at once")
 @click.option("--unique", is_flag=True, help="Only submit samples that have not been analyzed before")
+@click.option("--experiment",  is_flag=True, help="Create an experiment out of this submit")
+@click.option("--exp-name", help="The name for the experiment")
+@click.option("--exp-runs", type=int,  help="The amount of tasks the experiment should consists of")
+@click.option("--exp-delta", help="The amount of time between each task in the experiment. "
+                                  "s - seconds, m - minutes, h - hours, d - days, w - weeks "
+                                  "Example: \'1m17s\' for one minute and 17 seconds in between each task")
 @click.pass_context
 def submit(ctx, target, url, options, package, custom, owner, timeout,
            priority, machine, platform, memory, enforce_timeout, clock, tags,
-           baseline, remote, shuffle, pattern, max, unique):
+           baseline, remote, shuffle, pattern, max, unique, experiment,
+           exp_name, exp_runs, exp_delta):
     """Submit one or more files or URLs to Cuckoo."""
     init_console_logging(level=ctx.parent.level)
     Database().connect()
@@ -301,7 +308,8 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
         l = submit_tasks(
             target, options, package, custom, owner, timeout, priority,
             machine, platform, memory, enforce_timeout, clock, tags, remote,
-            pattern, max, unique, url, baseline, shuffle
+            pattern, max, unique, url, baseline, shuffle, experiment,
+            exp_name, exp_runs, exp_delta
         )
 
         for category, target, task_id in l:
@@ -571,15 +579,16 @@ def web(ctx, args, host, port, uwsgi, nginx):
 @click.option("--interface", help="Sniffer interface for this Virtual Machine")
 @click.option("--snapshot", help="Specific Virtual Machine Snapshot to use")
 @click.option("--resultserver", help="IP:Port of the Result Server")
+@click.option("--rdpport", help="RDP port that should be used for this Virtual Machine")
 @click.pass_context
 def machine(ctx, vmname, ip, action, platform, options, tags, interface,
-            snapshot, resultserver):
+            snapshot, resultserver, rdpport):
     """Dynamically add/remove machines."""
     init_console_logging(level=ctx.parent.level)
     Database().connect()
     cuckoo_machine(
         vmname, action, ip, platform, options, tags, interface,
-        snapshot, resultserver
+        snapshot, resultserver, rdpport
     )
 
 @main.command()

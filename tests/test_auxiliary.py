@@ -3,10 +3,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os
 import pytest
 import subprocess
 import tempfile
 
+from cuckoo.core.database import Database
+from cuckoo.auxiliary.experiment import Experiment
 from cuckoo.auxiliary.sniffer import Sniffer
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -159,3 +162,76 @@ def test_sniffer():
     with mock.patch("subprocess.Popen") as p:
         p.side_effect = ValueError("this is awkward")
         assert s.start() is False
+
+class Exp_obj(object):
+    id = 2
+    last_completed = 1
+
+class GuestManager(object):
+    analyzer_path = "C:\\fTvYDijo"
+
+    def post(self, method, files, data):
+        return None
+
+class TestExperiment(object):
+
+    def setup_class(self):
+        set_cwd(tempfile.mkdtemp())
+        os.makedirs(cwd("storage", "analyses"))
+        taskobj = task()
+        taskobj.experiment = Exp_obj()
+        taskobj.experiment_id = 2
+        self.exp = Experiment()
+        self.exp.set_task(taskobj)
+        self.exp.set_guest_manager(GuestManager())
+        self.task_folder = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "files", "sample_analysis_storage")
+        Database().connect()
+
+    def test_start_no_file(self):
+        m = mock.MagicMock()
+        m.list_tasks.return_value = [task()]
+
+        with mock.patch("cuckoo.auxiliary.experiment.Database") as db:
+            db.return_value = mock.MagicMock()
+            db.side_effect = m
+            self.exp.start()
+
+        path = cwd("storage", "analyses", str(self.exp.task.id),
+                   "experiment.json")
+
+        assert not os.path.exists(path)
+
+    def test_read_reboot(self):
+        injectables = set()
+        self.exp._read_reboot(self.task_folder, injectables)
+        exepath = "C:\\Users\\Administrator\\AppData\\Local\\hkmsvc.exe"
+
+        assert exepath in injectables
+
+    def test_read_files(self):
+        injectables = set()
+        self.exp._read_files(self.task_folder, injectables)
+        binpath = "C:\\Users\\Administrator\\AppData\\Roaming" \
+                  "\\Adobe\\Acrobat\\9.0\\UserCache.bin"
+
+        assert binpath in injectables
+
+    def test_cb_prepare_guest(self):
+
+        os.path.exists = mock.MagicMock(return_value=True)
+        self.exp.guest_manager.post = mock.MagicMock(return_value=None)
+
+        mocked_open = mock.mock_open(read_data="data")
+
+        with mock.patch("__builtin__.open", mocked_open):
+            self.exp.cb_prepare_guest()
+
+        data = {
+            "filepath": os.path.join(self.exp.guest_manager.analyzer_path,
+                                       "experiment.json")
+        }
+        self.exp.guest_manager.post.assert_called_once_with(
+            "/store", files=mock.ANY, data=data
+        )

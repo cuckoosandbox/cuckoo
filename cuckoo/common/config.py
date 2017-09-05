@@ -274,6 +274,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "rdp_port": String(),
                 "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
             },
@@ -312,6 +313,9 @@ class Config(object):
             "reboot": {
                 "enabled": Boolean(True),
             },
+            "experiment": {
+                "enabled": Boolean(True),
+            }
         },
         "avd": {
             "avd": {

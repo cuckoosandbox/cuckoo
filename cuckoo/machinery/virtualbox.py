@@ -64,7 +64,9 @@ class VirtualBox(Machinery):
             if machine.label not in machines:
                 continue
 
-            self.restore(machine.label, machine)
+            # Only revert if the machine is not locked by an experiment
+            if not machine.locked_by:
+                self.restore(machine.label, machine)
 
     def restore(self, label, machine):
         """Restore a VM to its snapshot."""
@@ -101,10 +103,11 @@ class VirtualBox(Machinery):
                 "how to setup a snapshot for your VM): %s" % (label, e)
             )
 
-    def start(self, label, task):
+    def start(self, label, task, revert=True):
         """Start a virtual machine.
         @param label: virtual machine name.
         @param task: task object.
+        @param revert: revert snapshot before starting
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Starting vm %s", label)
@@ -115,9 +118,14 @@ class VirtualBox(Machinery):
             )
 
         machine = self.db.view_machine_by_label(label)
-        self.restore(label, machine)
 
-        self._wait_status(label, self.SAVED)
+        if revert:
+            self.restore(label, machine)
+            self._wait_status(label, self.SAVED)
+        else:
+            log.debug("This task is part of an experiment,"
+                      " not reverting to snapshot")
+            self.compact_hd(label)
 
         try:
             args = [
@@ -150,6 +158,25 @@ class VirtualBox(Machinery):
         if "nictrace" in machine.options:
             self.dump_pcap(label, task)
 
+        # Use the configured RDP port to enable RDP for this specific machine
+        if machine.rdp_port:
+            try:
+                args = [
+                    self.options.virtualbox.path, "controlvm",
+                    label, "vrde", "on",
+                ]
+                subprocess.check_output(args)
+
+                args = [
+                    self.options.virtualbox.path, "controlvm",
+                    label, "vrdeport", "%s" % machine.rdp_port,
+                ]
+                subprocess.check_output(args)
+                log.debug("Started RDP on port %s for virtual machine %s",
+                          machine.rdp_port, label)
+            except subprocess.CalledProcessError:
+                log.exception("Error enabling VRDE support")
+
     def dump_pcap(self, label, task):
         """Dump the pcap for this analysis through the VirtualBox integrated
         nictrace functionality. This is useful in scenarios where multiple
@@ -177,9 +204,10 @@ class VirtualBox(Machinery):
             log.critical("Unable to enable NIC tracing (pcap file): %s", e)
             return
 
-    def stop(self, label):
+    def stop(self, label, safe=False):
         """Stops a virtual machine.
         @param label: virtual machine name.
+        @param safe: try to safely shutdown the VM
         @raise CuckooMachineError: if unable to stop.
         """
         log.debug("Stopping vm %s" % label)
@@ -200,6 +228,12 @@ class VirtualBox(Machinery):
         vm_state_timeout = config("cuckoo:timeouts:vm_state")
 
         try:
+            # Try to use safe shutdown. If it fails, use unsafe shutdown
+            if safe and self._safe_stop(label):
+                self._wait_status(label, self.POWEROFF, self.ABORTED,
+                                  self.SAVED)
+                return
+
             args = [
                 self.options.virtualbox.path, "controlvm", label, "poweroff"
             ]
@@ -379,3 +413,61 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
             )
+
+    def compact_hd(self, label):
+        """Tries to optimize HDD by compacting scattered data.
+        @param label: virtual machine label
+        """
+
+        hdd_uuid = self.vminfo(label, "\"IDE-ImageUUID-0-0\"")
+
+        if hdd_uuid.count('"') != 2:
+            log.debug("Unexpected HDD UUID value: %s", hdd_uuid)
+            return
+
+        hdd_uuid = hdd_uuid.split('"', 2)[1]
+
+        if hdd_uuid:
+            log.debug("Compacting HDD %s for VM %s", hdd_uuid, label)
+            try:
+                subprocess.check_output(
+                    [self.options.virtualbox.path, "modifyhd", hdd_uuid,
+                     "--compact"], stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as e:
+                log.warning("Error compacting HDD of VM %s: %s", label, e)
+
+    def _safe_stop(self, label):
+        """"Send a shutdown signal to VM so the OS
+        gets a chance to safely shut down. Returns True
+        if the VM was safely shut down, False if otherwise"""
+
+        args = [
+            self.options.virtualbox.path, "controlvm", label,
+            "acpipowerbutton"
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
+
+        count = 0
+        while proc.poll() is None or self._status(label) != self.POWEROFF:
+            if count < vm_state_timeout:
+                log.debug("Waiting for VM %s safe shutdown. Status: %s",
+                          label, self._status(label))
+                time.sleep(1)
+                count += 1
+            else:
+                if proc.poll() is None:
+                    proc.terminate()
+                log.debug("Safe shutdown of VM %s timed out. "
+                          "Using hard shutdown", label)
+
+                return False
+
+        if proc.returncode == 0:
+            return True
+
+        return False

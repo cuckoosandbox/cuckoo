@@ -16,6 +16,7 @@ from cuckoo.core.startup import init_yara
 def test_basics():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
+    init_yara()
     mkdir(cwd(analysis=1))
 
     em = ExtractManager(1)
