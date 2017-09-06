@@ -58,6 +58,10 @@ cwd_private = os.path.join("cuckoo", "data-private")
 
 open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
 
+hashes_ignore = (
+    "whitelist/domain.txt",
+)
+
 def update_hashes():
     hashes, hashes_r = {}, {}
     for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
@@ -74,6 +78,8 @@ def update_hashes():
             if filename.endswith((".pyc", ".DS_Store")):
                 continue
             filepath = os.path.join(dirname, filename).replace("\\", "/")
+            if filepath in hashes_ignore:
+                continue
             buf = open(os.path.join(cwd_public, filepath), "rb").read()
             hash_ = hashlib.sha1(buf).hexdigest()
             if filepath not in hashes or hash_ not in hashes[filepath]:
@@ -81,7 +87,8 @@ def update_hashes():
             hashes_r.pop(filepath, None)
 
     for filepath in hashes_r:
-        new_hashes.append((filepath, "0"*40))
+        if hashes[filepath][-1] != "0"*40:
+            new_hashes.append((filepath, "0"*40))
 
     with open(os.path.join(cwd_private, "cwd", "hashes.txt"), "a+b") as f:
         new_hashes and f.write("\n")
