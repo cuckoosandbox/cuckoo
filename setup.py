@@ -43,20 +43,24 @@ open("MANIFEST.in", "wb").write("\n".join(manifest) + "\n")
 
 def githash():
     """Extracts the current Git hash."""
-    git_head = os.path.join(".git", "HEAD")
-    if os.path.exists(git_head):
-        head = open(git_head, "rb").read().strip()
-        if not head.startswith("ref: "):
-            return head
+    git_value = os.path.join(".git", "HEAD")
+    while True:
+        if os.path.exists(git_value):
+            git_value = open(git_value, "rb").read().strip()
+            continue
 
-        git_ref = os.path.join(".git", head.split()[1])
-        if os.path.exists(git_ref):
-            return open(git_ref, "rb").read().strip()
+        if git_value.startswith("ref: "):
+            git_value = os.path.join(".git", git_value.split()[1])
+            continue
+
+        return git_value
 
 cwd_public = os.path.join("cuckoo", "data")
 cwd_private = os.path.join("cuckoo", "data-private")
 
-open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
+cwd_filepath = os.path.join(cwd_private, ".cwd")
+if not os.path.exists(cwd_filepath):
+    open(cwd_filepath, "wb").write(githash())
 
 hashes_ignore = (
     "whitelist/domain.txt",
