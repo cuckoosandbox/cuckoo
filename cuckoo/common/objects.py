@@ -424,13 +424,19 @@ class YaraMatch(object):
         self.offsets = match["offsets"]
         self.category = category
 
-        self.strings = []
+        self._strings = []
         for s in match["strings"]:
-            self.strings.append(s.decode("base64"))
+            self._strings.append(s.decode("base64"))
 
     def string(self, identifier, index=0):
         off, idx = self.offsets[identifier][index]
-        return self.strings[idx]
+        return self._strings[idx]
+
+    def strings(self, identifier):
+        ret = []
+        for off, idx in self.offsets[identifier]:
+            ret.append(self._strings[idx])
+        return ret
 
 class ExtractedMatch(object):
     def __init__(self, match):
