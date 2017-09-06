@@ -130,7 +130,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.3",
+    version="2.0.4",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
