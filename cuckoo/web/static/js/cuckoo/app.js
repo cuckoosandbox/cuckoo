@@ -208,7 +208,7 @@ var CuckooWeb = function () {
 
             var t = document.createElement('textarea');
             t.innerHTML = string;
-            return t.innerHTML;
+            return t.value;
         }
     }]);
 
