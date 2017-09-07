@@ -204,24 +204,11 @@ var CuckooWeb = function () {
         key: 'unescapeHTML',
         value: function unescapeHTML(string) {
             // the most amazing solution ever, found at:
-            // https://stackoverflow.com/questions/5796718/html-entity-decode
+            // https://stackoverflow.com/questions/1147359/how-to-decode-html-entities-using-jquery#comment6018122_2419664
 
-            var entities = {
-                'amp': '&',
-                'apos': '\'',
-                '#x27': '\'',
-                '#x2F': '/',
-                '#39': '\'',
-                '#47': '/',
-                'lt': '<',
-                'gt': '>',
-                'nbsp': ' ',
-                'quot': '"'
-            };
-
-            return string.replace(/&([^;]+);/gm, function (match, entity) {
-                return entities[entity] || match;
-            });
+            var t = document.createElement('textarea');
+            t.innerHTML = string;
+            return t.innerHTML;
         }
     }]);
 

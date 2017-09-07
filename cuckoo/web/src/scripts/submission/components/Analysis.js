@@ -104,8 +104,6 @@ class AnalysisInterface {
 
 		});
 
-		console.log(ret);
-
 		// auto stringify using a paremeter flag
 		if(stringified) ret = JSON.stringify(ret);
 
