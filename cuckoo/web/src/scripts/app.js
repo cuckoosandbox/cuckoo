@@ -175,12 +175,10 @@ class CuckooWeb {
     }
 
     // reverses the above function
-    static unescapeHTML(safe) {
-      return safe.replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'");
+    static unescapeHTML(string) {
+      // the most amazing solution ever, found at:
+      // https://stackoverflow.com/questions/5796718/html-entity-decode
+      return $('<textarea />').html(string).text();
     }
 
 }
