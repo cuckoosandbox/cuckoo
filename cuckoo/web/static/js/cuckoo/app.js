@@ -205,7 +205,23 @@ var CuckooWeb = function () {
         value: function unescapeHTML(string) {
             // the most amazing solution ever, found at:
             // https://stackoverflow.com/questions/5796718/html-entity-decode
-            return $('<textarea />').html(string).text();
+
+            var entities = {
+                'amp': '&',
+                'apos': '\'',
+                '#x27': '\'',
+                '#x2F': '/',
+                '#39': '\'',
+                '#47': '/',
+                'lt': '<',
+                'gt': '>',
+                'nbsp': ' ',
+                'quot': '"'
+            };
+
+            return string.replace(/&([^;]+);/gm, function (match, entity) {
+                return entities[entity] || match;
+            });
         }
     }]);
 
