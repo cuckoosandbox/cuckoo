@@ -969,6 +969,16 @@ $(function() {
 
     }
 
+    if($(".modal-cuckoo").length) {
+      $(".modal-cuckoo").on('show.bs.modal', function(e) {
+        setTimeout(function() {
+          $(".modal-backdrop").addClass('modal-cuckoo-backdrop')
+        }, 50);
+      }).on('hidden.bs.modal', function() {
+          $(".modal-backdrop").removeClass('modal-cuckoo-backdrop');
+      });
+    }
+
 
 });
 
