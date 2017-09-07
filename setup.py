@@ -58,10 +58,6 @@ def githash():
 cwd_public = os.path.join("cuckoo", "data")
 cwd_private = os.path.join("cuckoo", "data-private")
 
-cwd_filepath = os.path.join(cwd_private, ".cwd")
-if not os.path.exists(cwd_filepath):
-    open(cwd_filepath, "wb").write(githash())
-
 hashes_ignore = (
     "whitelist/domain.txt",
 )
@@ -99,8 +95,12 @@ def update_hashes():
         for filename, hash_ in sorted(new_hashes):
             f.write("%s %s\n" % (hash_, filename))
 
-# Provide hashes for our CWD migration process.
-update_hashes()
+# Provide hashes for our CWD migration process & update the $CWD/.cwd version.
+# Only do these steps when "python setup.py sdist" is invoked.
+if "setup.py" in sys.argv and "sdist" in sys.argv:
+    update_hashes()
+    cwd_filepath = os.path.join(cwd_private, ".cwd")
+    open(cwd_filepath, "wb").write(githash())
 
 def do_help(e, message):
     if isinstance(e, ValueError) and "jpeg is required" in e.message:

@@ -542,15 +542,23 @@ def migrate_cwd():
 
         sys.exit(1)
 
-    for filename in deleted:
+    for filename in sorted(deleted):
         log.debug("Deleted %s", filename)
         os.unlink(cwd(filename))
 
-    for filename in outdated:
+    for filename in sorted(outdated):
+        filepath = cwd("..", "data", filename, private=True)
+        if not os.path.exists(filepath):
+            log.debug(
+                "Failed to upgrade file not shipped with this release: %s",
+                filename
+            )
+            continue
+
         log.debug("Upgraded %s", filename)
         if not os.path.exists(os.path.dirname(cwd(filename))):
             os.makedirs(os.path.dirname(cwd(filename)))
-        shutil.copy(cwd("..", "data", filename, private=True), cwd(filename))
+        shutil.copy(filepath, cwd(filename))
 
     log.info(
         "Automated migration of your CWD was successful! Continuing "
