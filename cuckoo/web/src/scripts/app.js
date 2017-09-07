@@ -175,12 +175,14 @@ class CuckooWeb {
     }
 
     // reverses the above function
-    static unescapeHTML(safe) {
-      return safe.replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'");
+    static unescapeHTML(string) {
+      // the most amazing solution ever, found at:
+      // https://stackoverflow.com/questions/1147359/how-to-decode-html-entities-using-jquery#comment6018122_2419664
+
+      var t = document.createElement('textarea');
+      t.innerHTML = string;
+      return t.value;
+
     }
 
 }

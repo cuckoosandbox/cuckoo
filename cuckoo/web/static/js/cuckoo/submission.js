@@ -122,6 +122,8 @@ var AnalysisInterface = function () {
 					delete item.children;
 				}
 
+				item.filename = CuckooWeb.unescapeHTML(item.filename);
+
 				return item;
 			});
 
