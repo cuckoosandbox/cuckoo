@@ -363,13 +363,12 @@ def process(ctx, instance, report, maxcount):
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
 @click.option("-g", "--group", default="cuckoo", help="Unix socket group")
-@click.option("--ifconfig", type=click.Path(exists=True), default="/sbin/ifconfig", help="Path to ifconfig(8)")
 @click.option("--service", type=click.Path(exists=True), default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
 @click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
-def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
+def rooter(ctx, socket, group, service, iptables, ip, sudo):
     """Instantiates the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
@@ -377,7 +376,6 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         args = [
             "sudo", sys.argv[0], "rooter", socket,
             "--group", group,
-            "--ifconfig", ifconfig,
             "--service", service,
             "--iptables", iptables,
             "--ip", ip,
@@ -392,7 +390,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
             pass
     else:
         try:
-            cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+            cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
 

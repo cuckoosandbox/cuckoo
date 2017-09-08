@@ -21,7 +21,6 @@ except ImportError:
 from cuckoo.misc import version as __version__
 
 class s(object):
-    ifconfig = None
     service = None
     iptables = None
     ip = None
@@ -46,7 +45,7 @@ def nic_available(interface):
         return False
 
     try:
-        subprocess.check_call([s.ifconfig, interface],
+        subprocess.check_call([s.ip, "link", "show", interface],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
         return True
@@ -305,7 +304,7 @@ handlers = {
     "drop_disable": drop_disable,
 }
 
-def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
+def cuckoo_rooter(socket_path, group, service, iptables, ip):
     if not HAVE_GRP:
         sys.exit(
             "Could not find the `grp` module, the Cuckoo Rooter is only "
@@ -318,9 +317,6 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
             "Note that on CentOS you should provide --service /sbin/service, "
             "rather than using the Ubuntu/Debian default /usr/sbin/service."
         )
-
-    if not ifconfig or not os.path.exists(ifconfig):
-        sys.exit("The `ifconfig` binary is not available, eh?!")
 
     if not iptables or not os.path.exists(iptables):
         sys.exit("The `iptables` binary is not available, eh?!")
@@ -357,7 +353,6 @@ def cuckoo_rooter(socket_path, group, ifconfig, service, iptables, ip):
     os.chmod(socket_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)
 
     # Initialize global variables.
-    s.ifconfig = ifconfig
     s.service = service
     s.iptables = iptables
     s.ip = ip
