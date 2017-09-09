@@ -532,9 +532,6 @@ class Config(object):
             "dumptls": {
                 "enabled": Boolean(True),
             },
-            "extracted": {
-                "enabled": Boolean(True, required=False),
-            },
             "googleplay": {
                 "enabled": Boolean(False),
                 "android_id": String(),
@@ -615,6 +612,9 @@ class Config(object):
                 ),
             },
             "targetinfo": {
+                "enabled": Boolean(True),
+            },
+            "tie": {
                 "enabled": Boolean(True),
             },
             "virustotal": {
@@ -706,6 +706,9 @@ class Config(object):
             "__star__": ("qemu", "machines"),
         },
         "reporting": {
+            "tieupdate": {
+                "enabled": Boolean(True),
+            },
             "feedback": {
                 "enabled": Boolean(False),
             },
