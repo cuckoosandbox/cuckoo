@@ -43,7 +43,7 @@ Cuckoo Package.
 
   .. code-block:: bash
 
-      (cuckoo-development)$ python setup.py develop
+      (cuckoo-development)$ python setup.py sdist develop
 
 You will now be ready to modify and test files. Note that the code files are
 located in the `cuckoo/ directory`_ of the Git repository and the fact that,
