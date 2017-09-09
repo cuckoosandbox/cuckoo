@@ -111,36 +111,30 @@ def test_flush_rttable():
 def do_cuckoo_rooter():
     with pytest.raises(SystemExit) as e:
         with mock.patch.dict(r.__dict__, {"HAVE_GRP": False}):
-            r.cuckoo_rooter(None, None, None, None, None, None)
+            r.cuckoo_rooter(None, None, None, None, None)
     e.match("not find the `grp` module")
 
     with pytest.raises(SystemExit) as e:
-        r.cuckoo_rooter(None, None, None, None, None, None)
+        r.cuckoo_rooter(None, None, None, None, None)
     e.match("service binary is not")
 
     with pytest.raises(SystemExit) as e:
-        r.cuckoo_rooter(None, None, None, "DOES NOT EXIST", None, None)
+        r.cuckoo_rooter(None, None, "DOES NOT EXIST", None, None)
     e.match("The service binary")
 
     with pytest.raises(SystemExit) as e:
-        r.cuckoo_rooter(None, None, "DOES NOT EXIST", __file__, None, None)
-    e.match("The `ifconfig` binary")
-
-    with pytest.raises(SystemExit) as e:
-        r.cuckoo_rooter(None, None, __file__, __file__, "DOES NOT EXIST", None)
+        r.cuckoo_rooter(None, None, __file__, "DOES NOT EXIST", None)
     e.match("The `iptables` binary")
 
     with pytest.raises(SystemExit) as e:
-        r.cuckoo_rooter(
-            None, None, __file__, __file__, __file__, "DOES NOT EXIST"
-        )
+        r.cuckoo_rooter(None, None, __file__, __file__, "DOES NOT EXIST")
     e.match("The `ip` binary")
 
     os_getuid = mock.patch("os.getuid").start()
 
     with pytest.raises(SystemExit) as e:
         os_getuid.return_value = 1000
-        r.cuckoo_rooter(None, None, __file__, __file__, __file__, __file__)
+        r.cuckoo_rooter(None, None, __file__, __file__, __file__)
     e.match("invoke it with the --sudo flag")
 
     os_getuid.return_value = 0
@@ -160,9 +154,7 @@ def do_cuckoo_rooter():
 
     with pytest.raises(SystemExit) as e:
         gr.side_effect = KeyError("foobar")
-        r.cuckoo_rooter(
-            socket_path, "group", __file__, __file__, __file__, __file__
-        )
+        r.cuckoo_rooter(socket_path, "group", __file__, __file__, __file__)
     e.match("Please define the group")
 
     gr.side_effect = None
@@ -176,25 +168,19 @@ def do_cuckoo_rooter():
 
     with pytest.raises(SystemExit):
         sock.return_value.recvfrom.side_effect = SystemExit
-        r.cuckoo_rooter(
-            socket_path, "group", __file__, __file__, __file__, __file__
-        )
+        r.cuckoo_rooter(socket_path, "group", __file__, __file__, __file__)
 
     with pytest.raises(SystemExit):
         sock.return_value.recvfrom.side_effect = (
             ("this is not json", None), SystemExit
         )
-        r.cuckoo_rooter(
-            socket_path, "group", __file__, __file__, __file__, __file__
-        )
+        r.cuckoo_rooter(socket_path, "group", __file__, __file__, __file__)
 
     with pytest.raises(SystemExit):
         sock.return_value.recvfrom.side_effect = (
             (json.dumps({"a": "b"}), None), SystemExit
         )
-        r.cuckoo_rooter(
-            socket_path, "group", __file__, __file__, __file__, __file__
-        )
+        r.cuckoo_rooter(socket_path, "group", __file__, __file__, __file__)
 
     nic_available = mock.MagicMock()
     mock.patch.dict(r.handlers, {"nic_available": nic_available}).start()
@@ -209,9 +195,7 @@ def do_cuckoo_rooter():
             socket.error(errno.EINTR, "such interrupt"),
             SystemExit
         )
-        r.cuckoo_rooter(
-            socket_path, "group", __file__, __file__, __file__, __file__
-        )
+        r.cuckoo_rooter(socket_path, "group", __file__, __file__, __file__)
 
     nic_available.assert_called_once_with("interface")
     sock.return_value.sendto.assert_called_once_with(json.dumps({
