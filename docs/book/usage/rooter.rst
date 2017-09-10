@@ -21,7 +21,6 @@ Its usage is as follows::
 
     Options:
       -g, --group TEXT  Unix socket group
-      --ifconfig PATH   Path to ifconfig(8)
       --service PATH    Path to service(8) for invoking OpenVPN
       --iptables PATH   Path to iptables(8)
       --ip PATH         Path to ip(8)
