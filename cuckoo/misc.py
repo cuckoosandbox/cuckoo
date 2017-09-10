@@ -43,7 +43,7 @@ def cwd(*args, **kwargs):
     optionally - when private=True has been passed along - to our private
     Cuckoo Working Directory which is not configurable."""
     if kwargs.get("private"):
-        return os.path.join(cuckoo.__path__[0], "data-private", *args)
+        return os.path.join(cuckoo.__path__[0], "private", *args)
     elif kwargs.get("raw"):
         return _raw
     elif kwargs.get("root"):
