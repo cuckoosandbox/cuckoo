@@ -365,6 +365,28 @@ class Config(object):
             },
             "__star__": ("esx", "machines"),
         },
+        "proxmox": {
+            "proxmox": {
+                "username": String("username"),
+                "password": String("password"),
+                "hostname": String("Hostname"),
+                "interface": String("eth1"),
+                "machines": List(String, "analysis1"),
+            },
+            "*": {
+                "__section__": "analysis1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.122.101"),
+                "snapshot": String("win_snapshot"),
+                "vmid": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "tags": String(),
+                "osprofile": String(required=False),
+            },
+            "__star__": ("proxmox", "machines"),
+        },
         "kvm": {
             "kvm": {
                 "interface": String("virbr0"),
