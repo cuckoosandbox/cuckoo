@@ -319,8 +319,9 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
 @click.argument("instance", required=False)
 @click.option("-r", "--report", help="Re-generate one or more reports")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
+@click.option("-t", "--timeout", default=0, help="Maximum timeout to process analyses (in seconds)")
 @click.pass_context
-def process(ctx, instance, report, maxcount):
+def process(ctx, instance, report, maxcount, timeout):
     """Process raw task data into reports."""
     init_console_logging(level=ctx.parent.level)
 
@@ -356,7 +357,7 @@ def process(ctx, instance, report, maxcount):
                 "Initialized instance=%s, ready to process some tasks",
                 instance
             )
-            process_tasks(instance, maxcount)
+            process_tasks(instance, maxcount, timeout)
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
 
