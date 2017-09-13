@@ -306,12 +306,28 @@ def process_task_range(tasks):
         if os.path.isdir(cwd(analysis=task_id)):
             process_task(Dictionary(task))
 
-def process_tasks(instance, maxcount):
+def process_check_stop(count, maxcount, endtime):
+    """Check if we need to stop processing.
+     Options passed by maxcount (-m) or calculated endtime (-t)
+    """
+    if maxcount and count != maxcount:
+        return False
+
+    if endtime and int(time.time()) > endtime:
+        return False
+
+    return True
+
+def process_tasks(instance, maxcount, timeout):
     count = 0
+    endtime = 0
     db = Database()
 
+    if timeout:
+        endtime = int(time.time() + timeout)
+
     try:
-        while not maxcount or count != maxcount:
+        while process_check_stop(count, maxcount, endtime):
             task_id = db.processing_get_task(instance)
 
             # Wait a small while before trying to fetch a new task.
