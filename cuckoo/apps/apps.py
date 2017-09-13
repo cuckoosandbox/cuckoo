@@ -310,7 +310,7 @@ def process_check_stop(count, maxcount, endtime):
     """Check if we need to stop processing.
      Options passed by maxcount (-m) or calculated endtime (-t)
     """
-    if maxcount and count > maxcount:
+    if maxcount and count >= maxcount:
         return False
 
     if endtime and int(time.time()) > endtime:
