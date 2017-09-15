@@ -1,2 +1,50 @@
-"use strict";function send_button_toggle(){var e=$("#modal_feedback");e.find("input#submit").toggleClass("sending"),e.find("input#submit").hasClass("sending")?(e.find("input#submit").attr("disabled",!0),$("#modal_feedback").find("#result").html("Sending feedback... a moment.")):e.find("input#submit").attr("disabled",!1)}function feedback_send(e,n,s,a,t,i,d,m){var u={task_id:e,email:s,message:t,name:n,company:a,include_memdump:d,include_analysis:i};CuckooWeb.api_post("/analysis/api/task/feedback_send/",u,function(e){m(e)},function(e){if(e.responseJSON.hasOwnProperty("message")){var n=e.responseJSON.message;$("#modal_feedback").find("#result").html(n),send_button_toggle(),feedbackFormSubmitted=!1}})}var feedbackFormSubmitted=!1;
+'use strict';
+
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
+var feedbackFormSubmitted = false;
+
+function send_button_toggle() {
+
+    var sel = $('#modal_feedback');
+
+    sel.find("input#submit").toggleClass('sending');
+
+    if (sel.find('input#submit').hasClass('sending')) {
+        sel.find('input#submit').attr('disabled', true);
+        $("#modal_feedback").find("#result").html('Sending feedback... a moment.');
+    } else {
+        sel.find('input#submit').attr('disabled', false);
+    }
+}
+
+function feedback_send(task_id, name, email, company, message, include_analysis, include_memdump, callback) {
+
+    var params = {
+        "task_id": task_id,
+        "email": email,
+        "message": message,
+        "name": name,
+        "company": company,
+        "include_memdump": include_memdump,
+        "include_analysis": include_analysis
+    };
+
+    CuckooWeb.api_post("/analysis/api/task/feedback_send/", params, function (data) {
+        callback(data);
+    }, function (err) {
+        if (err.responseJSON.hasOwnProperty("message")) {
+            var _message = err.responseJSON.message;
+            $("#modal_feedback").find("#result").html(_message);
+            send_button_toggle();
+            feedbackFormSubmitted = false;
+        }
+    });
+}
 //# sourceMappingURL=analysis_feedback.js.map

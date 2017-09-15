@@ -1,2 +1,308 @@
-"use strict";function _classCallCheck(i,t){if(!(i instanceof t))throw new TypeError("Cannot call a class as a function")}var _createClass=function(){function i(i,t){for(var e=0;e<t.length;e++){var a=t[e];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(i,a.key,a)}}return function(t,e,a){return e&&i(t.prototype,e),a&&i(t,a),t}}(),SummaryBehaviorDetail=function(){function i(t,e,a,s,l){_classCallCheck(this,i),this.task_id=t,this.pname=e,this.pid=a,this.category=s,this.val=l,this.limit=5,this.offset=0,this._setup=!1,this._sel=$("section#summary div#summary_"+this.category)}return _createClass(i,[{key:"start",value:function(i,t){var e={task_id:this.task_id,pid:this.pid,watcher:this.val,pname:this.pname};null!=i?e.offset=i:e.offset=this.offset,null!=t?e.limit=t:e.limit=this.limit;var a=this;CuckooWeb.api_post("/analysis/api/task/behavior_get_watcher/",e,function(i){a.start_cb(i,a)})}},{key:"_setup_html",value:function(i){var t='\n            <li id="cat_'+i.val+'" class="list-group-item">\n                <p><b>'+i.val+'</b></p>\n                <ul id="'+i.val+'"></ul>\n                <p class="btn_action">\n                    <span class="load_more">Load more</span> | <span class="load_all">Load all</span>\n                </p>\n            </li>';i._sel.find("ul#"+i.pid).append(t),i._sel.find("ul#"+i.pid+" #cat_"+i.val+" .btn_action .load_more").click(function(){i.more()}),i._sel.find("ul#"+i.pid+" #cat_"+i.val+" .btn_action .load_all").click(function(){i.all()}),i._setup=!0}},{key:"start_cb",value:function(i,t){t._setup||t._setup_html(t);var e=t._sel.find("ul#"+t.pid+" #cat_"+t.val);i.data.length<t.limit&&0!=t.offset?e.find(".btn_action").html('<span class="no_results">No more results...</span>'):i.data.length<t.limit&&0==t.offset&&e.find(".btn_action").hide();var a="";i.data.forEach(function(i,t){a+="<li>"+i+"</li>"}),e.find("ul#"+t.val).append(a)}},{key:"more",value:function(){this.offset+=this.limit,this.start()}},{key:"all",value:function(){i.clear_list(this),i.clear_ctrl_btns(this),this.start(0,0)}}],[{key:"clear_list",value:function(i){i._sel.find("ul#"+i.pid+" #cat_"+i.val+" ul#"+i.val).html("")}},{key:"clear_ctrl_btns",value:function(i){i._sel.find("ul#"+i.pid+" #cat_"+i.val+" .btn_action").hide()}}]),i}(),SummaryBehaviorController=function(){function i(t,e,a){_classCallCheck(this,i),this.task_id=t,this.pname=e,this.pid=a,this.loading=!1,this.loader=new Loader($(".loading")),this.behavioral_details=[]}return _createClass(i,[{key:"start",value:function(){var i={task_id:this.task_id,pid:this.pid},t=this;CuckooWeb.api_post("/analysis/api/task/behavior_get_watchers/",i,function(i){t.start_cb(i,t)})}},{key:"start_cb",value:function(i,t){$.each(i.data,function(i,e){var a=i,s=$("div#summary_"+a);s.append('\n                <div class="panel panel-default">\n                    <div class="panel-heading"><h3 class="panel-title">'+t.pname+" <small>pid: "+t.pid+'</small></h3></div>\n                    <ul id="'+t.pid+'" class="list-group">\n                    </ul>\n                </div>'),$.each(e,function(i,e){var s=new SummaryBehaviorDetail(t.task_id,t.pname,t.pid,a,e);s.start(),t.behavioral_details.push(s)})})}}],[{key:"toggle_loading",value:function(){this.loader.toggle()}}]),i}(),SummarySimplifier=function(){function i(t){return _classCallCheck(this,i),this.el=t,this._simplified=!1,this._keepQuery="keep",this._hideQuery="hide",this._callbacks={on:[],off:[]},this.initialise()}return _createClass(i,[{key:"initialise",value:function(){var i=this;return this.el.on("click",function(t){t.preventDefault(),i.toggle()}),"true"===$("body").attr("data-simplified")?(this._simplified=!0,this._update()):(this._simplified=!1,this._update()),this}},{key:"toggle",value:function(){this._simplified?this._off():this._on(),this._save()}},{key:"_off",value:function(){this._simplified=!1,this._update()}},{key:"_on",value:function(){this._simplified=!0,this._update();for(var i in this._callbacks.on)this._callbacks.on[i]()}},{key:"_update",value:function(i){this._simplified?(this.el.addClass("active"),this.el.find("span").text("default overview"),$("body").attr("data-simplified","true")):(this.el.removeClass("active"),this.el.find("span").text("simplify overview"),$("body").attr("data-simplified","false"))}},{key:"_save",value:function(){Cookies("simplified_view",this._simplified,{expires:3650})}},{key:"listen",value:function(i,t){this._callbacks[i].push(t)}}]),i}();$(function(){var i;if($("#toggle-simplified").length&&(i=window.simplifier=new SummarySimplifier($("#toggle-simplified"))),window.pewpew&&"function"==typeof window.pewpew)if(i){if(!i._simplified)return void i.listen("on",function(){window.pewpew()});window.pewpew()}else window.pewpew()});
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+ * Copyright (C) 2010-2013 Claudio Guarnieri.
+ * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ * See the file 'docs/LICENSE' for copying permission.
+ *
+ */
+
+// @TO-DO: cleanup jQuery selectors / comment code / trigger loading indicator
+
+var SummaryBehaviorDetail = function () {
+    function SummaryBehaviorDetail(task_id, pname, pid, category, val) {
+        _classCallCheck(this, SummaryBehaviorDetail);
+
+        this.task_id = task_id;
+        this.pname = pname;
+        this.pid = pid;
+        this.category = category;
+        this.val = val;
+        this.limit = 5;
+        this.offset = 0;
+
+        this._setup = false;
+        this._sel = $("section#summary div#summary_" + this.category);
+    }
+
+    _createClass(SummaryBehaviorDetail, [{
+        key: "start",
+        value: function start(offset, limit) {
+            var params = {
+                "task_id": this.task_id,
+                "pid": this.pid,
+                "watcher": this.val,
+                "pname": this.pname
+            };
+
+            if (offset != null) params["offset"] = offset;else params["offset"] = this.offset;
+            if (limit != null) params["limit"] = limit;else params["limit"] = this.limit;
+
+            var self = this;
+
+            CuckooWeb.api_post("/analysis/api/task/behavior_get_watcher/", params, function (data) {
+                self.start_cb(data, self);
+            });
+        }
+    }, {
+        key: "_setup_html",
+        value: function _setup_html(context) {
+            var html = "\n            <li id=\"cat_" + context.val + "\" class=\"list-group-item\">\n                <p><b>" + context.val + "</b></p>\n                <ul id=\"" + context.val + "\"></ul>\n                <p class=\"btn_action\">\n                    <span class=\"load_more\">Load more</span> | <span class=\"load_all\">Load all</span>\n                </p>\n            </li>";
+
+            context._sel.find("ul#" + context.pid).append(html);
+            context._sel.find("ul#" + context.pid + " #cat_" + context.val + " .btn_action .load_more").click(function () {
+                context.more();
+            });
+            context._sel.find("ul#" + context.pid + " #cat_" + context.val + " .btn_action .load_all").click(function () {
+                context.all();
+            });
+
+            context._setup = true;
+        }
+    }, {
+        key: "start_cb",
+        value: function start_cb(data, context) {
+            if (!context._setup) context._setup_html(context);
+            var sel = context._sel.find("ul#" + context.pid + " #cat_" + context.val);
+
+            if (data["data"].length < context.limit && context.offset != 0) {
+                sel.find(".btn_action").html("<span class=\"no_results\">No more results...</span>");
+            } else if (data["data"].length < context.limit && context.offset == 0) {
+                sel.find(".btn_action").hide();
+            }
+
+            var html = "";
+            data["data"].forEach(function (obj, i) {
+                html += "<li>" + obj + "</li>";
+            });
+
+            sel.find("ul#" + context.val).append(html);
+        }
+
+        /**
+         * Lazyloads more list items
+         * @return
+         */
+
+    }, {
+        key: "more",
+        value: function more() {
+            this.offset += this.limit;
+            this.start();
+        }
+
+        /**
+         * Clears the list and fetches everything
+         * @return
+         */
+
+    }, {
+        key: "all",
+        value: function all() {
+            SummaryBehaviorDetail.clear_list(this);
+            SummaryBehaviorDetail.clear_ctrl_btns(this);
+
+            this.start(0, 0); // fetch all
+        }
+
+        /**
+         * Clears li items
+         * @return
+         */
+
+    }], [{
+        key: "clear_list",
+        value: function clear_list(context) {
+            context._sel.find("ul#" + context.pid + " #cat_" + context.val + " ul#" + context.val).html("");
+        }
+
+        /**
+         * Clears the buttons
+         * @return
+         */
+
+    }, {
+        key: "clear_ctrl_btns",
+        value: function clear_ctrl_btns(context) {
+            context._sel.find("ul#" + context.pid + " #cat_" + context.val + " .btn_action").hide();
+        }
+    }]);
+
+    return SummaryBehaviorDetail;
+}();
+
+var SummaryBehaviorController = function () {
+    function SummaryBehaviorController(task_id, pname, pid) {
+        _classCallCheck(this, SummaryBehaviorController);
+
+        this.task_id = task_id;
+        this.pname = pname;
+        this.pid = pid;
+        this.loading = false;
+        this.loader = new Loader($(".loading"));
+
+        this.behavioral_details = [];
+    }
+
+    _createClass(SummaryBehaviorController, [{
+        key: "start",
+        value: function start() {
+            var params = { "task_id": this.task_id, "pid": this.pid };
+            var self = this;
+
+            CuckooWeb.api_post("/analysis/api/task/behavior_get_watchers/", params, function (data) {
+                self.start_cb(data, self);
+            });
+        }
+    }, {
+        key: "start_cb",
+        value: function start_cb(data, context) {
+            $.each(data["data"], function (key, val) {
+                var category = key;
+
+                var sel = $("div#summary_" + category);
+                sel.append("\n                <div class=\"panel panel-default\">\n                    <div class=\"panel-heading\"><h3 class=\"panel-title\">" + context.pname + " <small>pid: " + context.pid + "</small></h3></div>\n                    <ul id=\"" + context.pid + "\" class=\"list-group\">\n                    </ul>\n                </div>");
+
+                $.each(val, function (i, obj) {
+                    var behavior_detail = new SummaryBehaviorDetail(context.task_id, context.pname, context.pid, category, obj);
+                    behavior_detail.start();
+                    context.behavioral_details.push(behavior_detail);
+                });
+            });
+        }
+    }], [{
+        key: "toggle_loading",
+        value: function toggle_loading() {
+            this.loader.toggle();
+        }
+    }]);
+
+    return SummaryBehaviorController;
+}();
+
+var SummarySimplifier = function () {
+    function SummarySimplifier(el) {
+        _classCallCheck(this, SummarySimplifier);
+
+        this.el = el;
+        this._simplified = false;
+        this._keepQuery = 'keep';
+        this._hideQuery = 'hide';
+        this._callbacks = {
+            on: [],
+            off: []
+        };
+        return this.initialise();
+    }
+
+    _createClass(SummarySimplifier, [{
+        key: "initialise",
+        value: function initialise() {
+
+            var _self = this;
+
+            this.el.on('click', function (e) {
+                e.preventDefault();
+                _self.toggle();
+            });
+
+            if ($('body').attr('data-simplified') === 'true') {
+                this._simplified = true;
+                this._update();
+            } else {
+                this._simplified = false;
+                this._update();
+            }
+
+            return this;
+        }
+    }, {
+        key: "toggle",
+        value: function toggle() {
+
+            if (this._simplified) {
+                this._off();
+            } else {
+                this._on();
+            }
+
+            this._save();
+        }
+    }, {
+        key: "_off",
+        value: function _off() {
+            this._simplified = false;
+            this._update();
+        }
+    }, {
+        key: "_on",
+        value: function _on() {
+            this._simplified = true;
+            this._update();
+
+            for (var cb in this._callbacks.on) {
+                this._callbacks.on[cb]();
+            }
+        }
+    }, {
+        key: "_update",
+        value: function _update(preset) {
+
+            if (this._simplified) {
+                this.el.addClass('active');
+                this.el.find('span').text('default overview');
+                $('body').attr('data-simplified', "true");
+            } else {
+                this.el.removeClass('active');
+                this.el.find('span').text('simplify overview');
+                $('body').attr('data-simplified', 'false');
+            }
+        }
+    }, {
+        key: "_save",
+        value: function _save() {
+            Cookies("simplified_view", this._simplified, { expires: 365 * 10 });
+        }
+
+        // adds 'listener' callbacks, like events
+
+    }, {
+        key: "listen",
+        value: function listen(namespace, fn) {
+            this._callbacks[namespace].push(fn);
+        }
+    }]);
+
+    return SummarySimplifier;
+}();
+
+$(function () {
+
+    var simplifier;
+
+    if ($("#toggle-simplified").length) {
+        simplifier = window.simplifier = new SummarySimplifier($("#toggle-simplified"));
+    }
+
+    // since the pew pew won't draw if it's invisible
+    if (window.pewpew && typeof window.pewpew === 'function') {
+        if (simplifier) {
+            if (!simplifier._simplified) {
+                simplifier.listen('on', function () {
+                    window.pewpew();
+                });
+                return;
+            } else {
+                window.pewpew();
+            }
+        } else {
+            window.pewpew();
+        }
+    }
+});
 //# sourceMappingURL=analysis_behavior.js.map
