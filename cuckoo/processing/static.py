@@ -914,13 +914,17 @@ class ELF(object):
             if not isinstance(section, DynamicSection):
                 continue
             for tag in section.iter_tags():
-                dynamic_tags.append({
-                    "tag": self._print_addr(
-                        ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
-                    ),
-                    "type": tag.entry.d_tag[3:],
-                    "value": self._parse_tag(tag),
-                })
+                try:
+                    dynamic_tags.append({
+                        "tag": self._print_addr(
+                            ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
+                        ),
+                        "type": tag.entry.d_tag[3:],
+                        "value": self._parse_tag(tag),
+                    })
+                except Exception as e:
+                    log.error(e)
+                    
         return dynamic_tags
 
     def _get_symbol_tables(self):
