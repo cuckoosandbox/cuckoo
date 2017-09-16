@@ -897,16 +897,13 @@ class ELF(object):
             if not isinstance(section, DynamicSection):
                 continue
             for tag in section.iter_tags():
-                try:
-                    dynamic_tags.append({
-                        "tag": self._print_addr(
-                            ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
-                        ),
-                        "type": tag.entry.d_tag[3:],
-                        "value": self._parse_tag(tag),
-                    })
-                except Exception as e:
-                    log.error(e)
+                dynamic_tags.append({
+                    "tag": self._print_addr(
+                        ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
+                    ),
+                    "type": str(tag.entry.d_tag)[3:],
+                    "value": self._parse_tag(tag),
+                })
                     
         return dynamic_tags
 
@@ -1010,9 +1007,9 @@ class ELF(object):
             parsed = "Library runpath: [%s]" % tag.runpath
         elif tag.entry.d_tag == "DT_SONAME":
             parsed = "Library soname: [%s]" % tag.soname
-        elif tag.entry.d_tag.endswith(("SZ", "ENT")):
+        elif isinstance(tag.entry.d_tag, basestring) and tag.entry.d_tag.endswith(("SZ", "ENT")):
             parsed = "%i (bytes)" % tag["d_val"]
-        elif tag.entry.d_tag.endswith(("NUM", "COUNT")):
+        elif isinstance(tag.entry.d_tag, basestring) and tag.entry.d_tag.endswith(("NUM", "COUNT")):
             parsed = "%i" % tag["d_val"]
         elif tag.entry.d_tag == "DT_PLTREL":
             s = describe_dyn_tag(tag.entry.d_val)
