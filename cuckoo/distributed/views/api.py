@@ -6,7 +6,9 @@ import os
 import tempfile
 import time
 
+from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request, send_file
+from sqlalchemy import and_
 
 from cuckoo.distributed.api import list_machines
 from cuckoo.distributed.db import db, Node, Task, Machine, NodeStatus
@@ -390,3 +392,30 @@ def status_get():
 
     return jsonify(success=True, nodes=statuses, tasks=tasks,
                    dist=dist, timestamp=int(time.time()))
+
+@blueprint.route("/stats")
+def stats_get():
+
+    steps = {
+        "hour": {"step": 10,
+                 "times": 6},
+        "day": {"step": 60,
+                 "times": 24},
+        "week": {"step": 1440,
+                 "times": 7},
+    }
+    res = {}
+
+    # 1 hour
+    for step_name, step in steps.iteritems():
+        time_steps = {}
+        prev = datetime.now()
+        for x in range(step.get("times")):
+            cur = prev - timedelta(minutes=step.get("step"))
+            tasks = Task.query.filter(Task.completed >= cur,
+                                  Task.completed <= prev).count()
+            time_steps[prev.strftime("%Y-%m-%d %H:%M:%S")] = tasks
+            prev = cur
+        res[step_name] = time_steps
+
+    return jsonify(success=res)
