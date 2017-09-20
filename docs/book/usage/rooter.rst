@@ -78,7 +78,7 @@ matter how often you restart your Cuckoo instance.
 
 .. _cuckoo_rooter_as_a_service:
 
-Cuckoo Rooter as a Service
+Cuckoo Rooter as a Systemd Service
 ==========================
 
 While you can start ``rooter`` manually, it may be more convenient to add it as a service.
