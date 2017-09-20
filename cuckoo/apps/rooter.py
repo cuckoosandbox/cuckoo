@@ -152,10 +152,10 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
-    run(s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+    run(s.iptables, "-I", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT")
 
-    run(s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+    run(s.iptables, "-I", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT")
 
 def forward_disable(src, dst, ipaddr):
