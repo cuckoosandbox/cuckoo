@@ -73,7 +73,7 @@ def tasks_iocs(task_id, detail=False):
 
     buf = {}
     if FULL_DB:
-        buf = results_db.analysis.find_one({"info.id": task_id})
+        buf = results_db.analysis.find_one({"info.id": task_id}, sort=[("_id", pymongo.DESCENDING)])
         del buf["_id"]
 
     if not buf:
