@@ -75,3 +75,51 @@ particular.
 It is therefore that once the Cuckoo Rooter has been started you may leave it
 be - the Cuckoo Rooter will take care of itself from that point onwards, no
 matter how often you restart your Cuckoo instance.
+
+.. _cuckoo_rooter_as_a_service:
+
+Cuckoo Rooter as a Service
+==========================
+
+While you can start ``rooter`` manually, it may be more convenient to add it as a service.
+
+Change to the services directory::
+
+    $ cd /etc/systemd/system
+
+Create a new service file::
+
+    $ sudo vim rooter.service
+
+Paste in the following which will set the service to run after the network starts. You will need to update the ``CWD`` to match your environment::
+
+    [Unit]
+    Description=Cuckoo Rooter
+    After=network.target
+    
+    [Service]
+    Type=simple
+    Restart=on-failure
+    StandardOutput=tty
+    ExecStart=/usr/local/bin/cuckoo --cwd /home/cuckoo/cwd rooter
+    WorkingDirectory=/home/cuckoo/cwd
+    
+    [Install]
+    WantedBy=multi-user.target
+
+Enable the new service::
+
+    $ sudo systemctl enable rooter.service
+
+Start the ``rooter`` service::
+
+    $ sudo systemctl status rooter.service
+    
+You can verify that the ``rooter`` is running via::
+
+    $ ps auxf|grep rooter
+
+Also, you may need to enable forwarding as follows::
+
+    $ sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+  
