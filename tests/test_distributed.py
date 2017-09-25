@@ -2,7 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from datetime import datetime, timedelta
 import flask_testing
+import json
 import mock
 import os
 import pytest
@@ -243,3 +245,91 @@ class TestDatabase(flask_testing.TestCase):
             "message": "Task already deleted",
         }
         assert not os.path.exists(filepath)
+
+
+class TestAPIStats(flask_testing.TestCase):
+    TESTING = True
+
+    @classmethod
+    def setup_class(cls):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        with open(cwd("distributed", "settings.py"), "a+b") as f:
+            f.write("SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'\n")
+            # TODO Perhaps use tempdir() in settings.py?
+            f.write("import tempfile\n")
+            f.write("samples_directory = tempfile.gettempdir()\n")
+            f.write("reports_directory = tempfile.gettempdir()\n")
+
+    def create_app(self):
+        return app.create_app()
+
+    # Unique for these unittests as we're using flask_testing here (rather
+    # than the default pytest mechanisms).
+    def setUp(self):
+        self.db = db.db
+        self.db.create_all()
+
+        # Create some tasks in task with different statuses
+        dates_completed = [None , None, None, "2017-8-15 14:00:00"]
+        statuses = ["pending", "pending", "pending", "deleted"]
+        prios = [1,1,5,1]
+        for c in range(4):
+            fd, path = tempfile.mkstemp()
+            with open(path, "wb") as fw:
+                fw.write(os.urandom(64))
+
+            kwargs = dict(
+                status=statuses[c],
+                priority=prios[c]
+            )
+            task = db.Task(path=path, filename=os.path.basename(path),
+                           **kwargs)
+
+            if dates_completed[c] is not None:
+                task.completed = datetime.strptime(dates_completed[c],
+                                                   "%Y-%m-%d %H:%M:%S")
+            task.submitted = datetime.strptime("2017-8-15 13:40:00",
+                                               "%Y-%m-%d %H:%M:%S")
+            self.db.session.add(task)
+            self.db.session.commit()
+
+        # Create some nodes and status reports
+        with open("tests/files/nodestatus.json", "rb") as fp:
+            node_statuses = json.loads(fp.read())
+
+        now = datetime.strptime("2017-8-15 13:40:00", "%Y-%m-%d %H:%M:%S")
+
+        for name in ["node1", "node2"]:
+            self.db.session.add(db.Node(name, "http://localhost:9085/",
+                                        "normal"))
+        for node_status in node_statuses:
+            now = now + timedelta(seconds=10)
+            name = node_status.get("hostname")
+            self.db.session.add(db.NodeStatus(name, now, node_status))
+            self.db.session.commit()
+
+
+        self.db.session.flush()
+
+    def tearDown(self):
+        self.db.session.remove()
+        self.db.drop_all()
+
+    def teststats(self):
+        res = self.client.get("/api/stats/2017-8-16")
+        res_json = res.json
+
+        with open("tests/files/statsapireply.json") as fp:
+            correct_reply = json.loads(fp.read())
+
+        stat_keys = res_json.keys()
+
+        assert res.status_code == 200
+        assert res_json == correct_reply
+        assert len(stat_keys) == 7
+
+        for stat in stat_keys:
+            stat_res = self.client.get("/api/stats/2017-8-16?include=%s"
+                                       % stat)
+            assert stat_res.json[stat] == correct_reply[stat]
