@@ -12,6 +12,7 @@ import tarfile
 import zipfile
 
 from flask import Flask, request, jsonify, make_response
+from multiprocessing import cpu_count
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
@@ -557,6 +558,11 @@ def cuckoo_status():
     else:
         memory = memavail = memtotal = None
 
+    try:
+        cpu_core_count = cpu_count()
+    except NotImplementedError:
+        cpu_core_count = None
+
     response = dict(
         version=version,
         hostname=socket.gethostname(),
@@ -573,6 +579,7 @@ def cuckoo_status():
         ),
         diskspace=diskspace,
         cpuload=cpuload,
+        cpu_count=cpu_core_count,
         memory=memory,
         memavail=memavail,
         memtotal=memtotal,
