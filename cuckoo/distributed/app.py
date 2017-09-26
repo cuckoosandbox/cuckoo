@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 import os.path
 import sys
 
@@ -14,7 +14,11 @@ from cuckoo.distributed.views import blueprints
 app_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
 def create_app():
-    app = Flask("Distributed Cuckoo", template_folder=app_folder + "/templates")
+    app = Flask("Distributed Cuckoo",
+                    template_folder=app_folder + "/templates",
+                    static_folder=app_folder + "/static")
+
+    print(app)
 
     init_settings()
     app.config.from_object(settings)
