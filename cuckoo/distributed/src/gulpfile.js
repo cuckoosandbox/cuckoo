@@ -56,8 +56,8 @@ gulp.task('babel', function() {
   Gulp system watchers
  */
 gulp.task('watch', function() {
-  gulp.watch('scripts/**/*.babel', ['babel']);
-  gulp.watch('scss/**/*.scss', ['sass']);
+  gulp.watch('./scripts/**/*.babel', ['babel']);
+  gulp.watch('./scss/**/*.scss', ['sass']);
 });
 
 // default task: 'gulp'
