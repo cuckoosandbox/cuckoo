@@ -6,17 +6,17 @@ const API = new StatsApi();
 
 // api event: request sent
 API.on('request', data => {
-  console.log('API started a request.');
+  // console.log('API started a request.');
 });
 
 // api event: request received
 API.on('receive', data => {
-  console.log('API resolved a request successfull.');
+  // console.log('API resolved a request successfull.');
 });
 
 // api event: errored somewhere
 API.on('error', err => {
-  console.log('API gave an error.');
+  // console.log('API gave an error.');
 });
 
 // 1: fetching data with the api
