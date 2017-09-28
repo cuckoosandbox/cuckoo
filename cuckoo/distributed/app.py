@@ -56,6 +56,11 @@ def create_app():
             not os.path.isdir(settings.reports_directory):
         sys.exit("Please configure a reports directory path.")
 
+    # this routes makes packages from npm available for include
+    @app.route('/modules/<path:filename>')
+    def serve_modules(filename):
+        return send_from_directory(app_folder + "/src/node_modules", filename)
+
     @app.route("/")
     def index():
         return render_template('index.html')

@@ -1,5 +1,9 @@
-// import $ from 'jquery';
+import DraggableUI from './lib/DraggableUI';
 import StatsApi from './lib/StatsApi';
+
+// create UI instance
+const UI = new DraggableUI(document.getElementById('grid'));
+console.log(UI);
 
 // create API wrapper instance
 const API = new StatsApi();
@@ -20,8 +24,8 @@ API.on('error', err => {
 });
 
 // 1: fetching data with the api
-API.fetch('task_completed').then(data => {
-  console.log(data);
-}).catch(err => {
-  console.log(err);
-});
+// API.fetch('task_completed').then(data => {
+//   console.log(data);
+// }).catch(err => {
+//   console.log(err);
+// });

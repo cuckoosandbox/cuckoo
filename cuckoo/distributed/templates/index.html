@@ -6,8 +6,55 @@
     <title>Cuckoo Distributed</title>
   </head>
   <body>
-    <h1>Cuckoo Distributed</h1>
-    <p>Je suis le index.html! and a live edit :)</p>
+
+    <!-- main application wrapper -->
+    <main role="application">
+
+      <!-- application header -->
+      <header role="banner">
+        <a href="#" class="logo">
+          <img src="/static/images/cuckoo_inverse.png" alt="Cuckoo Sandbox" />
+        </a>
+        <div role="heading">
+          <h1>usage &amp; memory consumption statistics <small role="complementary">v1.0</small></h1>
+        </div>
+      </header>
+
+      <!-- main application body  -->
+      <section role="main">
+
+        <div class="grid-stack widget-grid" role="grid" id="grid">
+
+          <div class="grid-stack-item" data-gs-x="0" data-gs-y="0" data-gs-width="2" data-gs-height="4" role="gridcell">
+            <div class="grid-stack-item-content widget" role="widget">
+              <div class="widget-title">
+                <h3>Tasks completed</h3>
+              </div>
+              <a class="widget-handle" role="command"></a>
+            </div>
+          </div>
+
+          <div class="grid-stack-item" data-gs-x="1" data-gs-y="0" data-gs-width="2" data-gs-height="4" role="gridcell">
+            <div class="grid-stack-item-content widget" role="widget">
+              <div class="widget-title">
+                <h3>Tasks completed</h3>
+              </div>
+              <a class="widget-handle" role="command"></a>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- temporary workaround: direct node_modules includes (routed with Flask) -->
+    <script src="/modules/lodash/lodash.js"></script>
+    <script src="/modules/jquery/dist/jquery.js"></script>
+    <script src="/modules/jquery-ui-bundle/jquery-ui.js"></script>
+    <script src="/modules/gridstack/dist/gridstack.js"></script>
+    <script src="/modules/gridstack/dist/gridstack.jQueryUI.js"></script>
     <script src="/static/js/main.js"></script>
   </body>
 </html>
