@@ -11,7 +11,7 @@
     <main role="application">
 
       <!-- application header -->
-      <header role="banner">
+      <header id="app-header" role="banner">
         <a href="#" class="logo">
           <img src="/static/images/cuckoo_inverse.png" alt="Cuckoo Sandbox" />
         </a>
@@ -23,13 +23,33 @@
       <!-- main application body  -->
       <section role="main">
 
+        <!-- grid: jumbo block for big items that needs attention -->
+        <div class="grid-stack jumbo-grid" role="grid" id="jumbo-grid">
+
+        </div>
+
+        <!-- grid: sub-grid with all other kinds of charts -->
         <div class="grid-stack widget-grid" role="grid" id="grid">
 
           <div class="grid-stack-item" data-gs-x="0" data-gs-y="0" data-gs-width="6" data-gs-height="4" role="gridcell">
             <div class="grid-stack-item-content widget" role="widget">
-              <div class="widget-title">
-                <h3>Tasks completed</h3>
-              </div>
+              <header class="widget-header" role="heading">
+                <div class="widget-title">
+                  <h3>Tasks completed</h3>
+                </div>
+                <ul class="widget-controls">
+                  <li>
+                    <a href="widget:expand">
+                      <span data-svg-src="/static/images/expand.svg"></span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="widget:close">
+                      <span data-svg-src="/static/images/close.svg"></span>
+                    </a>
+                  </li>
+                </ul>
+              <header>
               <a class="widget-handle" role="command"></a>
             </div>
           </div>

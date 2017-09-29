@@ -1,6 +1,24 @@
+import { StatsAPI } from './StatsAPI';
+
+/*
+  Defines a simple widget - tries to correspond to the Gridstack API
+  - every widget has an API instance to control itself from within. That means
+    that if 1 call is busy being executed, it will not stop the other charts from
+    rendering their own data.
+ */
+class DraggableUIWidget {
+
+  constructor() {
+    this.name = "";
+    this.content = "";
+    this.api = new StatsAPI();
+  }
+
+}
+
 /*
   class DraggableUI
-    - controls the draggable user interface behavior
+    - controls draggable grids
  */
 class DraggableUI {
 

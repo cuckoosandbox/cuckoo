@@ -68,4 +68,36 @@
     }
 
   }
+
+  &-controls {
+    @extend %flex-list;
+    padding: 15px 15px 0 0;
+
+    & > li:not(:last-child) {
+      margin-right: 15px;
+    }
+
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+
+    .widget-controls {
+      margin-left: auto;
+    }
+  }
+
+}
+
+/*
+  Holds the big jumbo grid with reserved spots for at least two highlighted
+  elements. Idea is that one can swap regular grids to this field as well.
+ */
+.jumbo-grid {
+  background-color: #fff;
+  height: 400px;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-bottom: 2px solid rgba(#98AFB6, .5);
 }

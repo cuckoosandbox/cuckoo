@@ -1,10 +1,10 @@
-header {
+#app-header {
   display: flex;
   align-items: center;
   padding: 13px 15px;
   background-color: #222;
   color: #f5f5f5;
-  margin-bottom: 15px;
+  max-height: 66px;
 
   h1 {
     font-size: 18px;
@@ -20,6 +20,7 @@ header {
 
   .logo {
     margin-right: 15px;
+    padding-top: 7px;
     & > img {
       height: 36px;
     }

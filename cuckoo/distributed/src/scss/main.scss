@@ -8,6 +8,23 @@ body {
   background-color: #F5F5F5;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
+
+  * {
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+  }
+}
+
+%reset-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+%flex-list {
+  @extend %reset-list;
+  display: flex;
 }
 
 @import "./lib/header";

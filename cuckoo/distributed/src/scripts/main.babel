@@ -1,27 +1,54 @@
 import DraggableUI from './lib/DraggableUI';
 import StatsApi from './lib/StatsApi';
+import SVGLoader from './lib/SVGLoader';
 
-// create UI instance
-const UI = new DraggableUI(document.getElementById('grid'));
-console.log(UI);
+window.loadedSVG = [];
 
-// create API wrapper instance
-const API = new StatsApi();
+$(function() {
 
-// api event: request sent
-API.on('request', data => {
-  // console.log('API started a request.');
+  // automagically load svg's INTO the DOM (alterable), rather than loading them
+  // using <img src /> (they are NOT alterable)
+  SVGLoader.loadPlaceholders('.widget-header [data-svg-src]', {
+    class: '.widget-controls--control'
+  }).loaded(svg => {
+    // fires after 1 svg loaded
+    // returns jquery instance of parsed svg file
+  }).done(elements => {
+    // fires after all svg elements completed parsing and loading
+    // returns jquery array of all the svg's
+  }).failed(err => {
+    // spits out an error with related information about the element
+    // and the xhr error.
+  });
+
+  // create UI instance
+  const UI = new DraggableUI(document.getElementById('grid'));
+
 });
 
-// api event: request received
-API.on('receive', data => {
-  // console.log('API resolved a request successfull.');
-});
+// underneath code is going to be a single instance per widget to allow for asynchronous
+// requests. That means that the UI won't break entirely if some request is failing, the others
+// keep on working. This implementation is because some calls would take longer than the other,
+// making it a hell to load this page properly without lacking a lot of UX (waiting on the other
+// elements etc.) stay tuned.
 
-// api event: errored somewhere
-API.on('error', err => {
-  // console.log('API gave an error.');
-});
+// // create API wrapper instance
+// const API = new StatsApi();
+//
+// // api event: request sent
+// API.on('request', data => {
+//   // console.log('API started a request.');
+// });
+//
+// // api event: request received
+// API.on('receive', data => {
+//   // console.log('API resolved a request successfull.');
+// });
+//
+// // api event: errored somewhere
+// API.on('error', err => {
+//   // console.log('API gave an error.');
+// });
 
 // 1: fetching data with the api
 // API.fetch('task_completed').then(data => {

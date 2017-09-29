@@ -2238,25 +2238,38 @@ body {
   background-color: #F5F5F5;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased; }
+  body * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box; }
 
-header {
+.widget-controls {
+  padding: 0;
+  margin: 0;
+  list-style: none; }
+
+.widget-controls {
+  display: flex; }
+
+#app-header {
   display: flex;
   align-items: center;
   padding: 13px 15px;
   background-color: #222;
   color: #f5f5f5;
-  margin-bottom: 15px; }
-  header h1 {
+  max-height: 66px; }
+  #app-header h1 {
     font-size: 18px;
     font-weight: 400;
     margin: 0; }
-    header h1 small {
+    #app-header h1 small {
       display: block;
       font-size: .6em;
       font-weight: 700; }
-  header .logo {
-    margin-right: 15px; }
-    header .logo > img {
+  #app-header .logo {
+    margin-right: 15px;
+    padding-top: 7px; }
+    #app-header .logo > img {
       height: 36px; }
 
 .grid-stack-item[data-gs-width='1'] {
@@ -2335,3 +2348,23 @@ header {
       margin: 0;
       font-size: 16px;
       color: #596B70; }
+  .widget-controls {
+    padding: 15px 15px 0 0; }
+    .widget-controls > li:not(:last-child) {
+      margin-right: 15px; }
+  .widget-header {
+    display: flex;
+    justify-content: space-between; }
+    .widget-header .widget-controls {
+      margin-left: auto; }
+
+/*
+  Holds the big jumbo grid with reserved spots for at least two highlighted
+  elements. Idea is that one can swap regular grids to this field as well.
+ */
+.jumbo-grid {
+  background-color: #fff;
+  height: 400px;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-bottom: 2px solid rgba(152, 175, 182, 0.5); }
