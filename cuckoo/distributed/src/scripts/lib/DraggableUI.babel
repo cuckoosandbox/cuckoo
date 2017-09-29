@@ -1,0 +1,26 @@
+/*
+  class DraggableUI
+    - controls the draggable user interface behavior
+ */
+class DraggableUI {
+
+  constructor(context) {
+    this.ctx = $(context);
+    this.initialise();
+  }
+
+  initialise() {
+
+    this.ctx.gridstack({
+      animate: true,
+      disableResize: true,
+      draggable: {
+        handle: '.widget-handle'
+      }
+    });
+
+  }
+
+}
+
+export default DraggableUI;

@@ -1,0 +1,28 @@
+header {
+  display: flex;
+  align-items: center;
+  padding: 13px 15px;
+  background-color: #222;
+  color: #f5f5f5;
+  margin-bottom: 15px;
+
+  h1 {
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0;
+
+    small {
+      display: block;
+      font-size: .6em;
+      font-weight: 700;
+    }
+  }
+
+  .logo {
+    margin-right: 15px;
+    & > img {
+      height: 36px;
+    }
+  }
+
+}

@@ -1,0 +1,71 @@
+// fixes the grid to a max 3 times, from the
+// Gridstack docs:
+.grid-stack-item {
+  $gridstack-columns: 3;
+  @for $i from 1 through $gridstack-columns {
+    &[data-gs-width='#{$i}'] { width: (100% / $gridstack-columns) * $i; }
+    &[data-gs-x='#{$i}'] { left: (100% / $gridstack-columns) * $i; }
+    &.grid-stack-item[data-gs-min-width='#{$i}'] { min-width: (100% / $gridstack-columns) * $i; }
+    &.grid-stack-item[data-gs-max-width='#{$i}'] { max-width: (100% / $gridstack-columns) * $i; }
+  }
+}
+
+// widget definition
+.widget {
+
+  background-color: #FFF;
+  border: 2px solid rgba(#98AFB6, .5);
+  border-radius: 12px;
+
+  &-handle {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 19px;
+    border-radius: 0px 0px 4px 4px;
+    background-color: #CBD7DA;
+    left: 50%;
+    top: 0;
+    margin-left: -21px;
+
+    // cursor changes
+    cursor: grab;
+    cursor: -webkit-grab;
+
+    &:active {
+      cursor: grabbing;
+      cursor: -webkit-grabbing;
+    }
+
+    &:before,
+    &:after {
+      content: "";
+      width: 30px;
+      height: 3px;
+      background-color: #88A0A6;
+      margin: 2px 0;
+      border-radius: 10px;
+    }
+
+  }
+
+  &-title {
+
+    border: 2px solid #C9D7DB;
+    border-width: 0 2px 2px 0;
+    border-bottom-right-radius: 8px;
+    background-color: #DAE6E9;
+    display: inline-block;
+    padding: 10px;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #596B70;
+    }
+
+  }
+}

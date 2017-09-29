@@ -1,3 +1,19 @@
+var CONFIG = {
+  // configures the to-concat javascript library paths, relative
+  // to the node_modules folder. (this gets corrected automagically)
+  // later on.
+  javascriptLibraryPaths: [
+    'lodash/lodash.js',
+    'jquery/dist/jquery.js',
+    'jquery-ui-bundle/jquery-ui.js',
+    'gridstack/dist/gridstack.js',
+    'gridstack/dist/gridstack.jQueryUI.js',
+    'chart.js/dist/Chart.bundle.js'
+  ]
+
+}
+
+var fs         = require('fs');
 var path       = require('path');
 var chalk      = require('chalk');
 var gulp       = require('gulp');
@@ -6,9 +22,21 @@ var browserify = require('browserify');
 var babelify   = require('babelify');
 var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
+var concat     = require('gulp-concat');
 
 // scss packages as node wrappers for sass.includePaths
 var bourbon    = require('bourbon');
+
+// shortcut
+function _modulePath(modulePath) {
+  var p = path.resolve(__dirname + '/node_modules/' + modulePath);
+  if(!fs.existsSync(p)) {
+    console.log('`'+p+'` does not exist :( please try npm-installing this package and try again.');
+    return false;
+  } else {
+    return p;
+  }
+}
 
 /*
   Sass rendering task
@@ -59,6 +87,23 @@ gulp.task('babel', function() {
 	}).pipe(source('main.js'))
 		.pipe(buffer())
 		.pipe(gulp.dest('../static/js'));
+
+});
+
+/*
+  Utility concatenation of library files
+  */
+gulp.task('lib', function() {
+
+  var MAPPED_JAVASCRIPT_LIBRARIES = CONFIG.javascriptLibraryPaths.map(function(lib) {
+    return _modulePath(lib);
+  }).filter(function(lib) {
+    return lib !== false;
+  });
+
+  gulp.src(MAPPED_JAVASCRIPT_LIBRARIES)
+    .pipe(concat('lib.js'))
+    .pipe(gulp.dest('../static/js'));
 
 });
 

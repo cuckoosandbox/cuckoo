@@ -1,0 +1,123 @@
+import $ from 'jquery';
+import { config } from '../config';
+
+// global configuration aliases
+const API_BASE  = config.API_BASE;
+const API_HOST  = config.API_HOST;
+
+// cross-pointers to the python implementation, these parameters
+// mirror the API implementations. When new options are added to the
+// API backend, they should be persisted in these variables.
+const SUPPORTED_INCLUDES = [
+  'task_completed',
+  'task_uncompleted',
+  'vm_running',
+  'disk_usage',
+  'cpu_usage',
+  'memory_usage',
+  'amount_prio_queued'
+]
+
+/*
+  This is a utility wrapper around the stats api. It translates
+  the REST service to an easy-to-use javascript class.
+ */
+export default class StatsAPI {
+
+  constructor() {
+    // stores callbacks to their eventtypes, these are dispatched
+    // with the _dispatchEvent() method
+    this.events = {
+      request: [],
+      receive: [],
+      error: []
+    }
+  }
+
+  // fetch - calls to the database, resolves like a promise the es6 way!
+  fetch(include = '') {
+
+    let url,
+        self = this;
+
+    return new Promise((resolve, reject) => {
+
+        url = `${API_HOST}/${API_BASE}`;
+
+        if(include !== '') {
+          if(SUPPORTED_INCLUDES.indexOf(include) > -1) {
+            url += `?include=${include}`;
+          } else {
+            return reject({
+              status: 0,
+              message: `'${include}' is either not supported or mapped.`,
+              error: {}
+            });
+          }
+        }
+
+        // dispatch the 'request' event
+        self._dispatchEvent('request', { url: url });
+
+        $.ajax({
+          url: url,
+          method: 'GET',
+          dataType: 'json',
+          contentType: 'application/json'
+        }).done((response, status) => {
+
+          // dispatch the 'receive' event
+          self._dispatchEvent('receive', {
+            url: url,
+            response: response
+          });
+
+          // resolve the promise when the ajax call returned OK from the server
+          // with the response data and other stuff for front-end handling.
+          return resolve({
+            status: (status === "success") ? 200 : status,
+            url: url,
+            data: response
+          });
+
+        }).fail((xhr, err) => {
+
+          console.log(xhr, err);
+
+          // dispatch the 'error' event
+          self._dispatchEvent('error', {
+            url: url
+          });
+
+          // reject on a failing xhr call, with as lots of reference stuff
+          // as possible for catching up in the frontend on this error.
+          return reject({
+            url: url,
+            status: err.status,
+            message: `The request failed.`,
+            error: err,
+            xhr: xhr
+          });
+
+        });
+
+    });
+
+  }
+
+  // general event listener utility
+  on(eventName = null, cb = function(){}) {
+    // opt out if the event is invalid
+    if(!this.events[eventName]) return false;
+    this.events[eventName].push(cb);
+  }
+
+  // dispatches events
+  _dispatchEvent(eventName, data = {}) {
+    if(!this.events[eventName]) return false;
+    this.events[eventName].forEach(fn => {
+      if(typeof fn === 'function') fn.apply(this, data);
+    });
+  }
+
+}
