@@ -24,6 +24,30 @@ $(function() {
   // create UI instance
   const UI = new DraggableUI(document.getElementById('grid'));
 
+  UI.widget('tasks_completed', {
+    template: $("#widget--tasks-complete"),
+    widgetLayout: {
+      width: 6,
+      height: 1,
+      x: 0,
+      y: 0
+    },
+    request: 'tasks_completed'
+  });
+
+  UI.widget('tasks_uncompleted', {
+    template: $("#widget--tasks-incomplete"),
+    widgetLayout: {
+      width: 6,
+      height: 1,
+      x: 6,
+      y: 0
+    },
+    request: 'tasks_uncompleted'
+  });
+
+  UI.draw();
+
 });
 
 // underneath code is going to be a single instance per widget to allow for asynchronous

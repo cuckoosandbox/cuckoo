@@ -29,43 +29,12 @@
         </div>
 
         <!-- grid: sub-grid with all other kinds of charts -->
-        <div class="grid-stack widget-grid" role="grid" id="grid">
-
-          <div class="grid-stack-item" data-gs-x="0" data-gs-y="0" data-gs-width="6" data-gs-height="4" role="gridcell">
-            <div class="grid-stack-item-content widget" role="widget">
-              <header class="widget-header" role="heading">
-                <div class="widget-title">
-                  <h3>Tasks completed</h3>
-                </div>
-                <ul class="widget-controls">
-                  <li>
-                    <a href="widget:expand">
-                      <span data-svg-src="/static/images/expand.svg"></span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="widget:close">
-                      <span data-svg-src="/static/images/close.svg"></span>
-                    </a>
-                  </li>
-                </ul>
-              <header>
-              <a class="widget-handle" role="command"></a>
-            </div>
-          </div>
-
-          <div class="grid-stack-item" data-gs-x="8" data-gs-y="0" data-gs-width="6" data-gs-height="4" role="gridcell">
-            <div class="grid-stack-item-content widget" role="widget">
-              <div class="widget-title">
-                <h3>Tasks incomplete</h3>
-              </div>
-              <a class="widget-handle" role="command"></a>
-            </div>
-          </div>
-
-        </div>
+        <div class="grid-stack widget-grid" role="grid" id="grid"></div>
 
       </section>
+
+      <template id="widget--tasks-complete">{% include 'widgets/tasks_completed.html' %}</template>
+      <template id="widget--tasks-incomplete">{% include 'widgets/tasks_uncompleted.html' %}</template>
 
     </main>
 

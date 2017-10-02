@@ -1,4 +1,11 @@
-import { StatsAPI } from './StatsAPI';
+import StatsAPI from './StatsAPI';
+
+function parseFragment(fragment) {
+  let result = $.parseHTML(fragment.html());
+  $(result).attr('id', $(fragment).attr('id'));
+  fragment.remove();
+  return $(result);
+}
 
 /*
   Defines a simple widget - tries to correspond to the Gridstack API
@@ -8,10 +15,56 @@ import { StatsAPI } from './StatsAPI';
  */
 class DraggableUIWidget {
 
-  constructor() {
-    this.name = "";
-    this.content = "";
+  constructor(name, config) {
+
+    this.name = name || 'widget';
+    this.template = config.template || '';
+
+    this.widgetLayout = $.extend({
+      el: null,
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+      minWidth: 1,
+      maxWidth: 1,
+      minHeight: 1,
+      maxHeight: 1,
+      id: null
+    }, config.widgetLayout);
+
+    // api-specific
+    this.api_endpoint = config.api_endpoint;
     this.api = new StatsAPI();
+
+  }
+
+  // injects a grid widget to the frontend
+  inject(grid) {
+
+    let template = $(this.template);
+    let id       = template.attr('id');
+
+    // set html in grid
+    grid.container.append(template);
+
+    template.wrap(`
+      <div
+        class='grid-stack-item'
+        data-gs-width='${this.widgetLayout.width}'
+        data-gs-height='${this.widgetLayout.height}'
+        data-gs-x='${this.widgetLayout.x}'
+        data-gs-y='${this.widgetLayout.y}'
+        data-gs-id='${this.name}'
+        data-gs-no-resize='true',
+        data-gs-id='${id}'
+        id='${id}'
+      ></div>
+    `);
+
+    // template.id = template.childNode;
+    grid.makeWidget($(`#${id}`));
+
   }
 
 }
@@ -24,7 +77,9 @@ class DraggableUI {
 
   constructor(context) {
     this.ctx = $(context);
-    this.initialise();
+    this.grid = null;
+    this.widgets = {};
+    return this.initialise();
   }
 
   initialise() {
@@ -37,6 +92,41 @@ class DraggableUI {
       }
     });
 
+    // apply initialized grid api to the controller
+    // class.
+    this.grid = this.ctx.data('gridstack');
+
+    return this;
+
+  }
+
+  widget(name, options) {
+
+    if(options.template.length && options.template) {
+      options.template = parseFragment(options.template);
+    }
+
+    // let widget;
+    if(name) {
+      this.widgets[name] = new DraggableUIWidget(name, options);
+    } else {
+      console.log('A name has to be given.');
+    }
+
+    return this;
+  }
+
+  draw() {
+
+    // renders all the defined widgets to the grid
+    for(let w in this.widgets) {
+      let widget = this.widgets[w];
+      widget.inject(this.grid);
+    }
+
+    this.grid.commit();
+
+    return this;
   }
 
 }

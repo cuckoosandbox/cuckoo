@@ -2272,42 +2272,6 @@ body {
     #app-header .logo > img {
       height: 36px; }
 
-.grid-stack-item[data-gs-width='1'] {
-  width: 33.33333%; }
-
-.grid-stack-item[data-gs-x='1'] {
-  left: 33.33333%; }
-
-.grid-stack-item.grid-stack-item[data-gs-min-width='1'] {
-  min-width: 33.33333%; }
-
-.grid-stack-item.grid-stack-item[data-gs-max-width='1'] {
-  max-width: 33.33333%; }
-
-.grid-stack-item[data-gs-width='2'] {
-  width: 66.66667%; }
-
-.grid-stack-item[data-gs-x='2'] {
-  left: 66.66667%; }
-
-.grid-stack-item.grid-stack-item[data-gs-min-width='2'] {
-  min-width: 66.66667%; }
-
-.grid-stack-item.grid-stack-item[data-gs-max-width='2'] {
-  max-width: 66.66667%; }
-
-.grid-stack-item[data-gs-width='3'] {
-  width: 100%; }
-
-.grid-stack-item[data-gs-x='3'] {
-  left: 100%; }
-
-.grid-stack-item.grid-stack-item[data-gs-min-width='3'] {
-  min-width: 100%; }
-
-.grid-stack-item.grid-stack-item[data-gs-max-width='3'] {
-  max-width: 100%; }
-
 .widget {
   background-color: #FFF;
   border: 2px solid rgba(152, 175, 182, 0.5);
