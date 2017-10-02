@@ -333,3 +333,7 @@ class TestAPIStats(flask_testing.TestCase):
             stat_res = self.client.get("/api/stats/2017-8-16?include=%s"
                                        % stat)
             assert stat_res.json[stat] == correct_reply[stat]
+
+        stat_res = self.client.get("/api/stats/2017-8-16?period=hour")
+        assert "week" not in stat_res.json["vm_running"]
+        assert "day" not in stat_res.json["vm_running"]

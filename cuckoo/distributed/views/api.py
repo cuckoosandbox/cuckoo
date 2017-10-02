@@ -12,7 +12,7 @@ from sqlalchemy import func
 
 from cuckoo.distributed.api import list_machines
 from cuckoo.distributed.db import db, Node, Task, Machine, NodeStatus
-from cuckoo.distributed.misc import settings
+from cuckoo.distributed.misc import settings, StatsCache
 
 blueprint = Blueprint("api", __name__)
 routes = ["/api", "/api/v1"]
@@ -407,7 +407,7 @@ def stats_get(end_date=None):
             return json_error(500, "Given date does not match format "
                                    "YYYY-M-D")
     else:
-        end_date = datetime.now()
+        end_date = datetime.now().replace(second=0, microsecond=0)
 
     stat_handlers = {
         "task_completed": _summarize_task_completed,
@@ -419,6 +419,15 @@ def stats_get(end_date=None):
         "amount_prio_queued": _summarize_priority_count
     }
 
+    steps = {
+        "hour": {"step": 5,
+                 "times": 12},
+        "day": {"step": 15,
+                "times": 96},
+        "week": {"step": 60,
+                 "times": 168},
+    }
+
     statistics = {}
     use_handlers = stat_handlers.keys()
     if request.args.get("include"):
@@ -427,26 +436,28 @@ def stats_get(end_date=None):
             if use not in stat_handlers:
                 return json_error(404, message="Unknown statistics key \'%s\'"
                                                % use)
+    if request.args.get("period"):
+        _steps = {}
+        periods = request.args.get("period").split(",")
+        for period in periods:
+            if period not in steps:
+                return json_error(404, message="Unknown period key. "
+                                               "Available keys \'%s\'"
+                                               % steps.keys())
+            _steps[period] = steps[period]
+        steps = _steps
 
     for name in use_handlers:
         stat = stat_handlers.get(name)
         if stat:
-            statistics[name] = stat(end_date)
+            statistics[name] = stat(end_date, steps)
 
     return jsonify(statistics)
 
-def _summarize_task_uncompleted(end_date):
+def _summarize_task_uncompleted(end_date, steps):
     """Create a list of datetime points containing the amounts of
     uncompleted/queued tasks by last hour, day, week up to the given
     date"""
-    steps = {
-        "hour": {"step": 10,
-                 "times": 6},
-        "day": {"step": 60,
-                "times": 24},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     result = {}
     for step_name, step in steps.iteritems():
@@ -467,9 +478,17 @@ def _summarize_task_uncompleted(end_date):
         for x in range(step.get("times")):
             later = past + timedelta(minutes=step.get("step"))
 
-            # Find all submissions that are not completed yet/still queued
-            uncompleted = Task.query.filter(Task.completed == None,
-                                            Task.submitted <= later).count()
+            # Find all submissions that are not completed yet/still queued.
+            # If not in cache, search db
+            uncompleted = StatsCache().get_stat("uncompleted", later,
+                                                step.get("step"))
+
+            if uncompleted is None:
+                uncompleted = Task.query.filter(
+                    Task.status < Task.FINISHED, Task.submitted <= later
+                ).count()
+                StatsCache().update("uncompleted", step.get("step"),
+                                    set_dt=later, set_value=uncompleted)
 
             if uncompleted > max_uncompleted:
                 max_uncompleted = uncompleted
@@ -486,19 +505,10 @@ def _summarize_task_uncompleted(end_date):
 
     return result
 
-def _summarize_task_completed(end_date):
+def _summarize_task_completed(end_date, steps):
     """Create a list of datetime points containing the amounts of
     completed tasks per hour, day, week up to the given
     date"""
-
-    steps = {
-        "hour": {"step": 10,
-                 "times": 6},
-        "day": {"step": 60,
-                "times": 24},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     result = {}
     for step_name, step in steps.iteritems():
@@ -520,8 +530,14 @@ def _summarize_task_completed(end_date):
             later = past + timedelta(minutes=step.get("step"))
 
             # Find completed tasks between date ranges
-            tasks = Task.query.filter(Task.completed >= past,
+            tasks = StatsCache().get_stat("completed", later,
+                                          step.get("step"))
+
+            if tasks is None:
+                tasks = Task.query.filter(Task.completed >= past,
                                       Task.completed <= later).count()
+                StatsCache().update("completed", step.get("step"),
+                                    set_dt=later, set_value=tasks)
 
             if tasks > max_completed:
                 max_completed = tasks
@@ -538,18 +554,10 @@ def _summarize_task_completed(end_date):
 
     return result
 
-def _summarize_disk_usage(end_date):
+def _summarize_disk_usage(end_date, steps):
     """Create a list of datetime points containing the amounts of
     currently used disk space per node by last hour, day, week up to the given
     date"""
-    steps = {
-        "hour": {"step": 2,
-                 "times": 30},
-        "day": {"step": 15,
-                "times": 96},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     results = {}
     nodes = Node.query.filter_by(enabled=True).all()
@@ -593,17 +601,29 @@ def _summarize_disk_usage(end_date):
 
             for node in nodes:
                 # Query for latest entry for current node in given time range
-                stat = NodeStatus.query.filter(
-                    NodeStatus.name == node.name, NodeStatus.timestamp >= past,
-                    NodeStatus.timestamp <= later,
-                ).order_by(NodeStatus.timestamp.desc()).first()
+                status = StatsCache().get_stat("status", later,
+                                                step.get("step"),
+                                                key_prefix=node.name)
 
-                if not stat:
+                if status is None:
+                    q = NodeStatus.query.filter(
+                        NodeStatus.name==node.name,
+                        NodeStatus.timestamp >= past
+                    ).order_by(NodeStatus.timestamp.asc()).first()
+
+                    if q:
+                        status = q.status
+                        StatsCache().update("status", step.get("step"),
+                                            set_value=status,
+                                            set_dt=later,
+                                            key_prefix=node.name)
+
+                if not status:
                     continue
 
                 time_key = later.strftime("%Y-%m-%d %H:%M:%S")
                 current = results[step_name][node.name]["points"]
-                for st_name, val in stat.status.get("diskspace").iteritems():
+                for st_name, val in status.get("diskspace").iteritems():
                     storage_name = "%s_used" % st_name
 
                     if storage_name not in current:
@@ -618,19 +638,10 @@ def _summarize_disk_usage(end_date):
 
     return results
 
-def _summarize_vms_running(end_date):
+def _summarize_vms_running(end_date, steps):
     """Create a list of datetime points containing the amounts of
     running vms by hour, day, week up to the given
     date"""
-
-    steps = {
-        "hour": {"step": 2,
-                 "times": 30},
-        "day": {"step": 15,
-                "times": 96},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     results = {}
     nodes = Node.query.filter_by(enabled=True).all()
@@ -650,7 +661,7 @@ def _summarize_vms_running(end_date):
         )
         results[step_name] = {
             "info": {
-                "total_vms": vm_count,
+                "max": vm_count,
                 "max_points": step.get("times"),
                 "step_size": step.get("step"),
                 "start": past.strftime("%Y-%m-%d %H:%M:%S"),
@@ -666,19 +677,31 @@ def _summarize_vms_running(end_date):
 
             for node in nodes:
                 # Query for latest entry for current node in given time range
-                stat = NodeStatus.query.filter(
-                    NodeStatus.name==node.name, NodeStatus.timestamp >= past,
-                    NodeStatus.timestamp <= later,
-                ).order_by(NodeStatus.timestamp.desc()).first()
+                status = StatsCache().get_stat("status", later,
+                                                step.get("step"),
+                                                key_prefix=node.name)
 
-                if not stat:
+                if status is None:
+                    q = NodeStatus.query.filter(
+                        NodeStatus.name==node.name,
+                        NodeStatus.timestamp >= past
+                    ).order_by(NodeStatus.timestamp.asc()).first()
+
+                    if q:
+                        status = q.status
+                        StatsCache().update("status", step.get("step"),
+                                            set_value=status,
+                                            set_dt=later,
+                                            key_prefix=node.name)
+
+                if not status:
                     continue
 
                 if running is None:
                     running = 0
 
-                total_vms = stat.status["machines"].get("total")
-                running += total_vms - stat.status["machines"].get("available")
+                total_vms = status["machines"].get("total")
+                running += total_vms - status["machines"].get("available")
 
             time_key = later.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -698,23 +721,14 @@ def _summarize_vms_running(end_date):
         if max_running > vm_count:
             vm_count = max_running
 
-        results[step_name]["info"]["total_vms"] = vm_count
+        results[step_name]["info"]["max"] = vm_count
 
     return results
 
-def _summarize_cpu_usage(end_date):
+def _summarize_cpu_usage(end_date, steps):
     """Create a list of datetime points containing the amounts of
     CPU usage in percent per node per hour, day, week up to the given
     date"""
-
-    steps = {
-        "hour": {"step": 2,
-                 "times": 30},
-        "day": {"step": 15,
-                "times": 96},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     result = {}
     nodes = Node.query.filter_by(enabled=True).all()
@@ -729,7 +743,8 @@ def _summarize_cpu_usage(end_date):
                     "max_points": step.get("times"),
                     "step_size": step.get("step"),
                     "start": past.strftime("%Y-%m-%d %H:%M:%S"),
-                    "finish": end_date.strftime("%Y-%m-%d %H:%M:%S")
+                    "finish": end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "max": 100
                 },
                 "points": []
             }
@@ -741,16 +756,28 @@ def _summarize_cpu_usage(end_date):
 
             for node in nodes:
                 # Query for latest entry for current node in given time range
-                stat = NodeStatus.query.filter(
-                    NodeStatus.name == node.name, NodeStatus.timestamp >= past,
-                    NodeStatus.timestamp <= later,
-                ).order_by(NodeStatus.timestamp.desc()).first()
+                status = StatsCache().get_stat("status", later,
+                                                step.get("step"),
+                                                key_prefix=node.name)
 
-                if not stat or stat.status.get("cpu_count") is None:
+                if status is None:
+                    q = NodeStatus.query.filter(
+                        NodeStatus.name==node.name,
+                        NodeStatus.timestamp >= past
+                    ).order_by(NodeStatus.timestamp.asc()).first()
+
+                    if q:
+                        status = q.status
+                        StatsCache().update("status", step.get("step"),
+                                            set_value=status,
+                                            set_dt=later,
+                                            key_prefix=node.name)
+
+                if not status or status.get("cpu_count") is None:
                     continue
 
-                cpu_count = stat.status.get("cpu_count")
-                cpu_load = stat.status.get("cpuload")
+                cpu_count = status.get("cpu_count")
+                cpu_load = status.get("cpuload")
 
                 # Use average load of last minute. See doc (os.getloadavg)
                 load = int(cpu_load[0] / cpu_count * 100)
@@ -766,19 +793,10 @@ def _summarize_cpu_usage(end_date):
 
     return result
 
-def _summarize_ram_usage(end_date):
+def _summarize_ram_usage(end_date, steps):
     """Create a list of datetime points containing the amounts of
     RAM usage per node per hour, day, week up to the given
     date"""
-
-    steps = {
-        "hour": {"step": 2,
-                 "times": 30},
-        "day": {"step": 15,
-                "times": 96},
-        "week": {"step": 60,
-                 "times": 168},
-    }
 
     result = {}
     nodes = Node.query.filter_by(enabled=True).all()
@@ -793,7 +811,8 @@ def _summarize_ram_usage(end_date):
                     "max_points": step.get("times"),
                     "step_size": step.get("step"),
                     "start": past.strftime("%Y-%m-%d %H:%M:%S"),
-                    "finish": end_date.strftime("%Y-%m-%d %H:%M:%S")
+                    "finish": end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "max": 100
                 },
                 "points": []
             }
@@ -805,16 +824,28 @@ def _summarize_ram_usage(end_date):
 
             for node in nodes:
                 # Query for latest entry for current node in given time range
-                stat = NodeStatus.query.filter(
-                    NodeStatus.name == node.name, NodeStatus.timestamp >= past,
-                    NodeStatus.timestamp <= later,
-                ).order_by(NodeStatus.timestamp.desc()).first()
+                status = StatsCache().get_stat("status", later,
+                                                step.get("step"),
+                                                key_prefix=node.name)
 
-                if not stat or stat.status.get("memory") is None:
+                if status is None:
+                    q = NodeStatus.query.filter(
+                        NodeStatus.name==node.name,
+                        NodeStatus.timestamp >= past
+                    ).order_by(NodeStatus.timestamp.asc()).first()
+
+                    if q:
+                        status = q.status
+                        StatsCache().update("status", step.get("step"),
+                                            set_value=status,
+                                            set_dt=later,
+                                            key_prefix=node.name)
+
+                if not status or status.get("memory") is None:
                     continue
 
                 try:
-                    memory = int(stat.status.get("memory"))
+                    memory = int(status.get("memory"))
                 except ValueError:
                     continue
 
@@ -828,7 +859,7 @@ def _summarize_ram_usage(end_date):
 
     return result
 
-def _summarize_priority_count(end_date):
+def _summarize_priority_count(end_date, steps):
     """Create a dictionary containing the total amount of queued
     task per priority that exists"""
 
