@@ -19,7 +19,9 @@ from cuckoo.apps import (
     migrate_database, migrate_cwd
 )
 from cuckoo.common.config import read_kv_conf
-from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import (
+    CuckooCriticalError, CuckooProcessExistsError
+)
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
@@ -30,10 +32,11 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing
+    init_routing, check_create_pidfile
 )
 from cuckoo.misc import (
-    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
+    remove_pidfile
 )
 
 log = logging.getLogger("cuckoo")
@@ -103,6 +106,10 @@ def cuckoo_init(level, ctx, cfg=None):
             "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
         )
 
+    # Only one Cuckoo process should exist per CWD.
+    # Run this check before any files are possibly modified
+    check_create_pidfile("cuckoo")
+
     init_console_logging(level)
 
     check_configs()
@@ -161,12 +168,14 @@ def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
+
     try:
         ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
+        remove_pidfile("cuckoo")
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
@@ -221,6 +230,10 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     except SystemExit as e:
         if e.code:
             print e
+    except CuckooProcessExistsError as e:
+        message = "Cuckoo is already running. PID: %s\n" % e.pid
+        sys.stderr.write(red(message))
+        sys.exit(1)
     except Exception as e:
         # Deal with an unhandled exception.
         sys.stderr.write(exception_message())
@@ -325,6 +338,14 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
+        try:
+            check_create_pidfile(instance)
+        except CuckooProcessExistsError as e:
+            message = "Cuckoo process instance \'%s\' already exists. " \
+                      "PID: %s\n" % (instance, e.pid)
+            log.error(message)
+            sys.exit(1)
+
         init_logfile("process-%s.json" % instance)
 
     Database().connect()
@@ -359,6 +380,8 @@ def process(ctx, instance, report, maxcount):
             process_tasks(instance, maxcount)
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
+        if instance:
+            remove_pidfile(instance)
 
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)

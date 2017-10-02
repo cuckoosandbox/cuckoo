@@ -12,15 +12,17 @@ import tempfile
 from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
-from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.exceptions import (
+    CuckooStartupError, CuckooProcessExistsError
+)
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_tasks, init_binaries
+    init_tasks, init_binaries, check_create_pidfile
 )
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, load_signatures, cwd, is_linux
+from cuckoo.misc import set_cwd, load_signatures, cwd, is_linux, create_pidfile
 
 def test_init_tasks():
     def init(reschedule):
@@ -642,3 +644,52 @@ class TestYaraIntegration(object):
         init_yara()
         assert len(File.yara_rules) == 5
         assert not list(File.yara_rules["binaries"])
+
+def test_create_check_pidfile_exists():
+    set_cwd(tempfile.mkdtemp())
+    create_pidfile("test")
+
+    with pytest.raises(CuckooProcessExistsError) as e:
+        check_create_pidfile("test")
+        assert e.pid == os.getpid()
+
+def test_create_check_pidfile_dead_proc():
+    set_cwd(tempfile.mkdtemp())
+    pidfiles_path = cwd("pidfiles")
+    pidfile = cwd("pidfiles", "test2.pid")
+    os.mkdir(pidfiles_path)
+
+    with open(pidfile, "wb") as fw:
+        fw.write("9991337")
+
+    try:
+        check_create_pidfile("test2")
+    except CuckooProcessExistsError:
+        pytest.fail("Raised exception. It should not do so if the pid"
+                    " does not exist.")
+
+    with open(pidfile, "rb") as fp:
+        assert int(fp.read()) == os.getpid()
+
+def test_create_check_pidfile():
+    set_cwd(tempfile.mkdtemp())
+    try:
+        check_create_pidfile("test3")
+    except CuckooProcessExistsError:
+        pytest.fail("Raised exception. It should not do so if the pidfile "
+                    "and process do not exist")
+
+    pidfile = cwd("pidfiles", "test3.pid")
+    assert os.path.exists(pidfile)
+    with open(pidfile, "rb") as fp:
+        assert int(fp.read()) == os.getpid()
+
+def test_create_check_pidfile_createfalse():
+    set_cwd(tempfile.mkdtemp())
+    try:
+        check_create_pidfile("test4", create=False)
+    except CuckooProcessExistsError:
+        pytest.fail("Raised exception. It should not do so if the pidfile "
+                    "and process do not exist")
+
+    assert not os.path.exists(cwd("pidfiles", "test4.pid"))

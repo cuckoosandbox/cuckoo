@@ -16,7 +16,9 @@ import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config, config2
-from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.common.exceptions import (
+    CuckooStartupError, CuckooFeedbackError, CuckooProcessExistsError
+)
 from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
@@ -25,7 +27,9 @@ from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, version
+from cuckoo.misc import (
+    cwd, version, pidfile_exists, pid_exists, create_pidfile
+)
 
 log = logging.getLogger(__name__)
 
@@ -404,3 +408,14 @@ def init_routing():
         if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
+
+def check_create_pidfile(name, create=True):
+    """Check if pidfile for given name exists and see if pid is still
+    alive. Create pidfile for name if it does not exist. Raises
+    CuckooProcessExistsError if pid is still alive"""
+    pid = pidfile_exists(name)
+    if pid and pid_exists(pid):
+        raise CuckooProcessExistsError("Process exists. PID: %s"
+                                       "" % pid, pid)
+    elif create:
+        create_pidfile(name)

@@ -21,7 +21,7 @@ from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
-from cuckoo.misc import cwd, version, decide_cwd
+from cuckoo.misc import cwd, version, decide_cwd, get_active_pids
 
 db = Database()
 sm = SubmitManager()
@@ -583,6 +583,7 @@ def cuckoo_status():
         memory=memory,
         memavail=memavail,
         memtotal=memtotal,
+        processes=get_active_pids()
     )
 
     return jsonify(response)

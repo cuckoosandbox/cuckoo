@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import ctypes
+import errno
 import importlib
 import logging
 import multiprocessing
@@ -228,3 +229,93 @@ class Structure(ctypes.Structure):
             else:
                 ret[field] = value
         return ret
+
+def pid_exists(pid):
+    """Returns True if pid exists, False if not. None
+    if platform not supported. Supports Windows, Linux, Macosx"""
+
+    if is_windows():
+        from ctypes import windll, wintypes
+        dw_exit = wintypes.DWORD()
+        # https://msdn.microsoft.com/en-us/library/ms684880(v=vs.85).aspx
+        # 1024 = PROCESS_QUERY_INFORMATION
+        proc_h = windll.kernel32.OpenProcess(1024, 0, pid)
+        windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
+
+        # https://msdn.microsoft.com/en-us/library/windows/desktop
+        # /ms683189(v=vs.85).aspx
+        # 259 = STILL_ACTIVE
+
+        return dw_exit.value == 259
+
+    elif is_linux() or is_macosx():
+        # Send signal 0 to process. Exception will be thrown if it does not
+        # exist or there is no permission to send to this process. This
+        # indicates a process does exist.
+        try:
+            os.kill(pid, 0)
+        except OSError as e:
+            return e.errno == errno.EPERM
+
+        return True
+    else:
+        # Return none if not of of the above platforms
+        return None
+
+def create_pidfile(name):
+    """Creates a file with a .pid extension containing
+    the pid of the process executing this method
+    @param name: name without extension to use for file
+    """
+    pid_path = cwd("pidfiles")
+    if not os.path.exists(pid_path):
+        os.mkdir(pid_path)
+
+    with open(os.path.join(pid_path, "%s.pid"% name), "wb") as fw:
+        fw.write(str(os.getpid()))
+
+def remove_pidfile(name):
+    """Remove pidfile of name if it exists
+    @param name: name without extension to use for file
+    """
+    pid_path = cwd("pidfiles", "%s.pid" % name)
+    if os.path.exists(pid_path):
+        os.remove(pid_path)
+
+def pidfile_exists(name):
+    """Check if a pid file exists for the given name. Returns int PID
+    if the pidfile exists, False if not. None if invalid pidfile
+    @param name: name without extension to use for file
+    """
+    if not name.endswith(".pid"):
+        name = "%s.pid" % name
+
+    pidfile_path = cwd("pidfiles", name)
+    if not os.path.exists(pidfile_path):
+        return False
+
+    with open(pidfile_path, "rb") as fp:
+        try:
+            pid = int(fp.read())
+        except ValueError:
+            # Return None if pidfile contains invalid value
+            return None
+
+    return pid
+
+def get_active_pids():
+    """Return a dict containing active pids.
+    Key is the pidfile name and value is pid"""
+
+    pidfile_path = cwd("pidfiles")
+    pids = {}
+    if not os.path.exists(pidfile_path):
+        return pids
+
+    for pidf in os.listdir(pidfile_path):
+        pid = pidfile_exists(pidf)
+        if pid:
+            if pid_exists(pid):
+                pids[pidf.split(".",1)[0]] = pid
+
+    return pids
