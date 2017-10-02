@@ -24,27 +24,33 @@ $(function() {
   // create UI instance
   const UI = new DraggableUI(document.getElementById('grid'));
 
+  // callback function for the widgets to perform some after-init stuff, graphs will
+  // be initialized here as well.
+  function onWidgetRender() {
+    SVGLoader.loadPlaceholders($(this.template.find('[data-svg-src]')));
+  }
+
   UI.widget('tasks_completed', {
     template: $("#widget--tasks-complete"),
     widgetLayout: {
       width: 6,
-      height: 1,
+      height: 6,
       x: 0,
       y: 0
     },
     request: 'tasks_completed'
-  });
+  }).on('render', onWidgetRender);
 
   UI.widget('tasks_uncompleted', {
     template: $("#widget--tasks-incomplete"),
     widgetLayout: {
       width: 6,
-      height: 1,
+      height: 6,
       x: 6,
       y: 0
     },
     request: 'tasks_uncompleted'
-  });
+  }).on('render', onWidgetRender);
 
   UI.draw();
 

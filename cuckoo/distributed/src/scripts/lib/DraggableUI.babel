@@ -33,6 +33,10 @@ class DraggableUIWidget {
       id: null
     }, config.widgetLayout);
 
+    this.events = {
+      render: []
+    };
+
     // api-specific
     this.api_endpoint = config.api_endpoint;
     this.api = new StatsAPI();
@@ -56,7 +60,7 @@ class DraggableUIWidget {
         data-gs-x='${this.widgetLayout.x}'
         data-gs-y='${this.widgetLayout.y}'
         data-gs-id='${this.name}'
-        data-gs-no-resize='true',
+        data-gs-no-resize='true'
         data-gs-id='${id}'
         id='${id}'
       ></div>
@@ -64,7 +68,29 @@ class DraggableUIWidget {
 
     // template.id = template.childNode;
     grid.makeWidget($(`#${id}`));
+    this.dispatchEvent('render');
 
+  }
+
+  // event trigger
+  on(evt, cb = function() {}) {
+    if(this.events[evt]) {
+      this.events[evt].push(cb);
+    }
+
+    return this;
+  }
+
+  dispatchEvent(evt, data = {}) {
+    if(this.events[evt]) {
+      this.events[evt].forEach(callback => {
+        if(callback instanceof Function) {
+          callback.apply(this);
+        }
+      });
+    }
+
+    return this;
   }
 
 }
@@ -102,18 +128,20 @@ class DraggableUI {
 
   widget(name, options) {
 
+    let widget;
+
     if(options.template.length && options.template) {
       options.template = parseFragment(options.template);
     }
 
     // let widget;
     if(name) {
-      this.widgets[name] = new DraggableUIWidget(name, options);
+      this.widgets[name] = widget = new DraggableUIWidget(name, options);
     } else {
       console.log('A name has to be given.');
     }
 
-    return this;
+    return widget;
   }
 
   draw() {

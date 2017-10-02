@@ -118,11 +118,18 @@ function load(path, placeholder) {
  */
 class SVGLoader {
 
-  static loadPlaceholders(selector, config = {}) {
+  static loadPlaceholders(el, config = {}) {
 
     let options  = $.extend(_defaults, config);
     let promises = [];
     let loaded   = [];
+    let selector;
+
+    if(!(el instanceof jQuery)) {
+      selector = $(el);
+    } else {
+      selector = el;
+    }
 
     let chain = {
       _success: noop,
@@ -131,7 +138,7 @@ class SVGLoader {
     }
 
     // preflight all results
-    $(selector).each((i, placeholder) => {
+    selector.each((i, placeholder) => {
       let src = $(placeholder).data('svgSrc');
       promises.push(load(src, placeholder));
     });
