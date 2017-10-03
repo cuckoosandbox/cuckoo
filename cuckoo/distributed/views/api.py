@@ -416,7 +416,8 @@ def stats_get(end_date=None):
         "disk_usage": _summarize_disk_usage,
         "cpu_usage": _summarize_cpu_usage,
         "memory_usage": _summarize_ram_usage,
-        "amount_prio_queued": _summarize_priority_count
+        "amount_prio_queued": _summarize_priority_count,
+        "active_processes": _get_nodes_processes
     }
 
     steps = {
@@ -447,14 +448,16 @@ def stats_get(end_date=None):
             _steps[period] = steps[period]
         steps = _steps
 
+    nodes = Node.query.filter_by(enabled=True).all()
+    statistics["nodes"] = [node.name for node in nodes]
     for name in use_handlers:
         stat = stat_handlers.get(name)
         if stat:
-            statistics[name] = stat(end_date, steps)
+            statistics[name] = stat(end_date, steps, nodes)
 
     return jsonify(statistics)
 
-def _summarize_task_uncompleted(end_date, steps):
+def _summarize_task_uncompleted(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     uncompleted/queued tasks by last hour, day, week up to the given
     date"""
@@ -505,7 +508,7 @@ def _summarize_task_uncompleted(end_date, steps):
 
     return result
 
-def _summarize_task_completed(end_date, steps):
+def _summarize_task_completed(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     completed tasks per hour, day, week up to the given
     date"""
@@ -554,13 +557,12 @@ def _summarize_task_completed(end_date, steps):
 
     return result
 
-def _summarize_disk_usage(end_date, steps):
+def _summarize_disk_usage(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     currently used disk space per node by last hour, day, week up to the given
     date"""
 
     results = {}
-    nodes = Node.query.filter_by(enabled=True).all()
 
     # For each node, determine which storages there are and their total
     # storage volume
@@ -638,13 +640,12 @@ def _summarize_disk_usage(end_date, steps):
 
     return results
 
-def _summarize_vms_running(end_date, steps):
+def _summarize_vms_running(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     running vms by hour, day, week up to the given
     date"""
 
     results = {}
-    nodes = Node.query.filter_by(enabled=True).all()
 
     vm_count = 0
     # Determine the total current VMs
@@ -725,13 +726,12 @@ def _summarize_vms_running(end_date, steps):
 
     return results
 
-def _summarize_cpu_usage(end_date, steps):
+def _summarize_cpu_usage(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     CPU usage in percent per node per hour, day, week up to the given
     date"""
 
     result = {}
-    nodes = Node.query.filter_by(enabled=True).all()
 
     for step_name, step in steps.iteritems():
         past = end_date - timedelta(
@@ -793,13 +793,12 @@ def _summarize_cpu_usage(end_date, steps):
 
     return result
 
-def _summarize_ram_usage(end_date, steps):
+def _summarize_ram_usage(end_date, steps, nodes):
     """Create a list of datetime points containing the amounts of
     RAM usage per node per hour, day, week up to the given
     date"""
 
     result = {}
-    nodes = Node.query.filter_by(enabled=True).all()
 
     for step_name, step in steps.iteritems():
         past = end_date - timedelta(
@@ -859,7 +858,7 @@ def _summarize_ram_usage(end_date, steps):
 
     return result
 
-def _summarize_priority_count(end_date, steps):
+def _summarize_priority_count(end_date, steps, nodes):
     """Create a dictionary containing the total amount of queued
     task per priority that exists"""
 
@@ -875,3 +874,28 @@ def _summarize_priority_count(end_date, steps):
     }
 
     return result
+
+def _get_nodes_processes(end_date, steps, nodes):
+    """Returns the running processes per node"""
+
+    results = {}
+
+    for node in nodes:
+        node_procs = {"cuckoo": False, "other": []}
+        status = NodeStatus.query.filter(NodeStatus.name == node.name,
+                                         NodeStatus.timestamp <= end_date
+        ).order_by(NodeStatus.timestamp.desc()).first()
+
+        if not status:
+            results[node.name] = node_procs
+            continue
+
+        procs = status.status.get("processes", {})
+        for proc in procs:
+            if proc == "cuckoo":
+                node_procs["cuckoo"] = True
+            else:
+                node_procs["other"].append(proc)
+        results[node.name] = node_procs
+
+    return results

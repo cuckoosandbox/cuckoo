@@ -327,11 +327,13 @@ class TestAPIStats(flask_testing.TestCase):
 
         assert res.status_code == 200
         assert res_json == correct_reply
-        assert len(stat_keys) == 7
+        assert len(stat_keys) == 9
 
+        stat_keys.remove("nodes")
         for stat in stat_keys:
             stat_res = self.client.get("/api/stats/2017-8-16?include=%s"
                                        % stat)
+            assert stat_res.status_code == 200
             assert stat_res.json[stat] == correct_reply[stat]
 
         stat_res = self.client.get("/api/stats/2017-8-16?period=hour")
