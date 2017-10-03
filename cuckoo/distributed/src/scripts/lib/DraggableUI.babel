@@ -1,5 +1,8 @@
 import StatsAPI from './StatsAPI';
 
+// placeholder empty function => true
+let noop = () => true;
+
 function parseFragment(fragment) {
   let result = $.parseHTML(fragment.html());
   $(result).attr('id', $(fragment).attr('id'));
@@ -41,6 +44,20 @@ class DraggableUIWidget {
     this.api_endpoint = config.api_endpoint;
     this.api = new StatsAPI();
 
+    // chartjs-specific
+    this.chart = null;
+    this.chartOptions = $.extend({
+      type: 'line',
+      data: {
+        labels: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+        datasets: [{
+          label: "My first dataset",
+          data: [14, 2, 22, 47, 59, 32, 78, 92, 62, 73]
+        }]
+      },
+      options: {}
+    }, config.chart);
+
   }
 
   // injects a grid widget to the frontend
@@ -68,29 +85,47 @@ class DraggableUIWidget {
 
     // template.id = template.childNode;
     grid.makeWidget($(`#${id}`));
-    this.dispatchEvent('render');
+    this.dispatchEvent('render', {}, () => {
+      this.createChart();
+    });
 
   }
 
   // event trigger
-  on(evt, cb = function() {}) {
-    if(this.events[evt]) {
-      this.events[evt].push(cb);
+  on(evt, cb = noop) {
+
+    let add = (evt,cb) => this.events[evt].push(cb);
+
+    if(cb instanceof Array) {
+      cb.forEach(cba => add(evt, cba));
+    } else {
+      if(this.events[evt]) {
+        add(evt, cb)
+      }
     }
 
     return this;
   }
 
-  dispatchEvent(evt, data = {}) {
+  dispatchEvent(evt, data = {}, cb = noop) {
     if(this.events[evt]) {
       this.events[evt].forEach(callback => {
         if(callback instanceof Function) {
           callback.apply(this);
+          cb();
         }
       });
     }
 
     return this;
+  }
+
+  // starts drawing the chart into widget-chart
+  createChart() {
+    let ctx = this.template.find('.widget-chart canvas');
+    if(!this.chart && ctx.length) {
+      let c = new Chart(ctx[0], this.chartOptions);
+    }
   }
 
 }

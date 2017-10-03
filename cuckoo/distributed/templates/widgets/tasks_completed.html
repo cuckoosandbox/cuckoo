@@ -3,18 +3,10 @@
     <div class="widget-title">
       <h3>Tasks completed</h3>
     </div>
-    <ul class="widget-controls">
-      <li>
-        <a href="widget:expand">
-          <span data-svg-src="/static/images/expand.svg"></span>
-        </a>
-      </li>
-      <li>
-        <a href="widget:close">
-          <span data-svg-src="/static/images/close.svg"></span>
-        </a>
-      </li>
-    </ul>
-  <header>
+    {% include 'partials/widget-controls.html' %}
+  </header>
   <a class="widget-handle" role="command"></a>
+  <section class="widget-content">
+    <div class="widget-chart"><canvas></canvas></div>
+  </section>
 </div>

@@ -62,6 +62,15 @@ const _defaults = {
   class: false
 }
 
+// cache utilities
+let _cached = [];
+let _inCache = (path) => _cached.filter(item => item.path === path);
+let _cache = (path, content) => {
+  if(_inCache(path).length === 0) {
+    _cached.push({path:path,content:content})
+  }
+}
+
 // syntactical pleasure: noop is an empty function :D
 const noop = new Function();
 
@@ -97,10 +106,23 @@ function populate(result, options) {
 // load path with a promise
 function load(path, placeholder) {
   return new Promise((resolve, reject) => {
+
+    let cachedPath = _inCache(path);
+
+    if(cachedPath.length) {
+      resolve({
+        svg: cachedPath[0].content,
+        placeholder: $(placeholder),
+        path: path
+      });
+      return;
+    }
+
     $.get(path).done(function(response) {
       resolve({
         svg: $(response).find('svg'),
-        placeholder: $(placeholder)
+        placeholder: $(placeholder),
+        path: path
       });
     }).fail(function(err, xhr) {
       reject({
@@ -148,7 +170,8 @@ class SVGLoader {
       for(var r in results) {
         let parsed = populate(results[r], options)
         loaded.push(parsed);
-        chain._success(parsed)
+        chain._success(parsed);
+        _cache(results[r].path, parsed);
       }
       chain._done(loaded);
     }).catch(err => {
@@ -184,4 +207,4 @@ class SVGLoader {
 export default SVGLoader;
 
 // export meta properties on the SVGLoader namespace
-export { _defaults };
+export { _defaults, _cached };

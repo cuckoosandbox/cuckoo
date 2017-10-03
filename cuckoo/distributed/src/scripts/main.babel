@@ -39,7 +39,7 @@ $(function() {
       y: 0
     },
     request: 'tasks_completed'
-  }).on('render', onWidgetRender);
+  }).on('render', [onWidgetRender]);
 
   UI.widget('tasks_uncompleted', {
     template: $("#widget--tasks-incomplete"),
@@ -50,7 +50,7 @@ $(function() {
       y: 0
     },
     request: 'tasks_uncompleted'
-  }).on('render', onWidgetRender);
+  }).on('render', [onWidgetRender]);
 
   UI.draw();
 

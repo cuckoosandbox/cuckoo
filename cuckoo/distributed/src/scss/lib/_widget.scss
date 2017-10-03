@@ -17,6 +17,11 @@
   border: 2px solid rgba(#98AFB6, .5);
   border-radius: 12px;
 
+  // grid spacer
+  &-grid {
+    margin-top: 15px;
+  }
+
   &-handle {
     position: absolute;
     display: flex;
@@ -88,6 +93,10 @@
     }
   }
 
+  &-content {
+    padding: 15px;
+  }
+
 }
 
 /*
@@ -97,7 +106,6 @@
 .jumbo-grid {
   background-color: #fff;
   height: 400px;
-  margin-bottom: 15px;
   padding: 15px;
   border-bottom: 2px solid rgba(#98AFB6, .5);
 }

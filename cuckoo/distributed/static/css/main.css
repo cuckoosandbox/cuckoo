@@ -2276,6 +2276,8 @@ body {
   background-color: #FFF;
   border: 2px solid rgba(152, 175, 182, 0.5);
   border-radius: 12px; }
+  .widget-grid {
+    margin-top: 15px; }
   .widget-handle {
     position: absolute;
     display: flex;
@@ -2321,6 +2323,8 @@ body {
     justify-content: space-between; }
     .widget-header .widget-controls {
       margin-left: auto; }
+  .widget-content {
+    padding: 15px; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted
@@ -2329,6 +2333,5 @@ body {
 .jumbo-grid {
   background-color: #fff;
   height: 400px;
-  margin-bottom: 15px;
   padding: 15px;
   border-bottom: 2px solid rgba(152, 175, 182, 0.5); }
