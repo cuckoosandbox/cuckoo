@@ -23,7 +23,11 @@ const SUPPORTED_INCLUDES = [
  */
 export default class StatsAPI {
 
-  constructor() {
+  constructor(defaultEndpoint) {
+
+    // stores a cached response from the api
+    this.store = {};
+
     // stores callbacks to their eventtypes, these are dispatched
     // with the _dispatchEvent() method
     this.events = {
@@ -31,6 +35,15 @@ export default class StatsAPI {
       receive: [],
       error: []
     }
+
+    // stores an array of middleware-like functions that will do something
+    // after the response data has been received. Think in object formatting
+    // or mapping for use out of the API context (Chart.js expects data in a
+    // particular serialization and configurations. Allthough the API returns the
+    // data differently, hence it needs some mapping.)
+    this.transforms = [];
+    this.defaultInclude = false;
+
   }
 
   // fetch - calls to the database, resolves like a promise the es6 way!
@@ -42,6 +55,10 @@ export default class StatsAPI {
     return new Promise((resolve, reject) => {
 
         url = `${API_HOST}/${API_BASE}`;
+
+        if(self.defaultInclude) {
+          include = self.defaultInclude;
+        }
 
         if(include !== '') {
           if(SUPPORTED_INCLUDES.indexOf(include) > -1) {
@@ -65,10 +82,15 @@ export default class StatsAPI {
           contentType: 'application/json'
         }).done((response, status) => {
 
+          if(self.transforms.length) {
+            self.transforms.forEach(transformation => transformation(response));
+          }
+
           // dispatch the 'receive' event
           self._dispatchEvent('receive', {
             url: url,
-            response: response
+            original: response,
+            data: response
           });
 
           // resolve the promise when the ajax call returned OK from the server
@@ -80,8 +102,6 @@ export default class StatsAPI {
           });
 
         }).fail((xhr, err) => {
-
-          console.log(xhr, err);
 
           // dispatch the 'error' event
           self._dispatchEvent('error', {
@@ -101,6 +121,19 @@ export default class StatsAPI {
         });
 
     });
+
+  }
+
+  transform(tr) {
+
+    // test if the transform really is doing a transform
+    let testJSON = {'foo': 'bar','baz': ['foo','bar','baz']};
+    let _testTransform = tr(testJSON);
+    if(typeof _testTransform !== 'object') {
+      console.error('Transform function should return an object');
+    } else {
+      this.transforms.push(tr);
+    }
 
   }
 

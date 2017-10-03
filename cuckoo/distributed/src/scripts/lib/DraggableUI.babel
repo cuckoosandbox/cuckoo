@@ -1,4 +1,5 @@
 import StatsAPI from './StatsAPI';
+import WidgetLoader from './WidgetLoader';
 
 // placeholder empty function => true
 let noop = () => true;
@@ -37,12 +38,21 @@ class DraggableUIWidget {
     }, config.widgetLayout);
 
     this.events = {
-      render: []
+      render: [],
+      received: [],
+      loading: [],
+      loaded: []
     };
 
     // api-specific
-    this.api_endpoint = config.api_endpoint;
-    this.api = new StatsAPI();
+    this.api                = new StatsAPI();
+    this.api.defaultInclude = config.request || false;
+
+    this.api.transform(res => {
+      // chart js data mapping should be done here
+      res.ThisIsANewProperty = 'I have been appended by being transformed.';
+      return res;
+    });
 
     // chartjs-specific
     this.chart = null;
@@ -57,6 +67,9 @@ class DraggableUIWidget {
       },
       options: {}
     }, config.chart);
+
+    // configure the widget loader
+    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this);
 
   }
 
@@ -123,8 +136,16 @@ class DraggableUIWidget {
   // starts drawing the chart into widget-chart
   createChart() {
     let ctx = this.template.find('.widget-chart canvas');
+    let self = this;
+    let c;
+
     if(!this.chart && ctx.length) {
-      let c = new Chart(ctx[0], this.chartOptions);
+      this.api.fetch().then(response => {
+        c = new Chart(ctx[0], this.chartOptions);
+      }).catch(err => {
+        console.log(err);
+      });
+
     }
   }
 

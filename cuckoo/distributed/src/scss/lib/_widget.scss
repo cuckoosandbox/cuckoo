@@ -97,6 +97,22 @@
     padding: 15px;
   }
 
+  &-loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -72px;
+    margin-left: -72px;
+    width: 144px;
+    height: 144px;
+    & > div {
+      @extend %roto-loader;
+      margin-top: 0;
+      margin-left: 0;
+      left: 0;
+    }
+  }
+
 }
 
 /*

@@ -6,21 +6,6 @@ window.loadedSVG = [];
 
 $(function() {
 
-  // automagically load svg's INTO the DOM (alterable), rather than loading them
-  // using <img src /> (they are NOT alterable)
-  SVGLoader.loadPlaceholders('.widget-header [data-svg-src]', {
-    class: '.widget-controls--control'
-  }).loaded(svg => {
-    // fires after 1 svg loaded
-    // returns jquery instance of parsed svg file
-  }).done(elements => {
-    // fires after all svg elements completed parsing and loading
-    // returns jquery array of all the svg's
-  }).failed(err => {
-    // spits out an error with related information about the element
-    // and the xhr error.
-  });
-
   // create UI instance
   const UI = new DraggableUI(document.getElementById('grid'));
 
@@ -34,23 +19,23 @@ $(function() {
     template: $("#widget--tasks-complete"),
     widgetLayout: {
       width: 6,
-      height: 6,
-      x: 0,
+      height: 5,
+      x: 2,
       y: 0
     },
-    request: 'tasks_completed'
+    request: 'task_completed'
   }).on('render', [onWidgetRender]);
 
-  UI.widget('tasks_uncompleted', {
-    template: $("#widget--tasks-incomplete"),
-    widgetLayout: {
-      width: 6,
-      height: 6,
-      x: 6,
-      y: 0
-    },
-    request: 'tasks_uncompleted'
-  }).on('render', [onWidgetRender]);
+  // UI.widget('tasks_uncompleted', {
+  //   template: $("#widget--tasks-incomplete"),
+  //   widgetLayout: {
+  //     width: 6,
+  //     height: 5,
+  //     x: 6,
+  //     y: 0
+  //   },
+  //   request: 'task_uncompleted'
+  // }).on('render', [onWidgetRender]);
 
   UI.draw();
 
