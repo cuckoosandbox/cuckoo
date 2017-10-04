@@ -15,9 +15,8 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
-    Structure, HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
-    create_pidfile, remove_pidfile, pidfile_exists, pid_exists,
-    get_active_pids
+    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
+    Pidfile, pid_exists, Structure, PUBLICKEYSTRUC, RSAPUBKEY
 )
 
 def return_value(value):
@@ -243,7 +242,7 @@ def test_structure():
 
 def test_create_pidfile():
     set_cwd(tempfile.mkdtemp())
-    create_pidfile("test1")
+    p = Pidfile("test1").create()
 
     pidfile = cwd("pidfiles", "test1.pid")
     assert os.path.exists(pidfile)
@@ -252,32 +251,34 @@ def test_create_pidfile():
 
 def test_remove_pidfile():
     set_cwd(tempfile.mkdtemp())
-    create_pidfile("test2")
+    p = Pidfile("test2")
+    p.create()
     pidfile = cwd("pidfiles", "test2.pid")
 
     assert os.path.exists(pidfile)
-    remove_pidfile("test2")
+    p.remove()
     assert not os.path.exists(pidfile)
 
 def test_pidfile_exists_false():
     set_cwd(tempfile.mkdtemp())
-    assert not pidfile_exists("test3")
+    assert not Pidfile("test3").exists()
 
 def test_pidfile_exists_true():
     set_cwd(tempfile.mkdtemp())
-    create_pidfile("test4")
-
-    assert pidfile_exists("test4") == os.getpid()
+    p = Pidfile("test4")
+    p.create()
+    assert p.exists() == os.getpid()
 
 def test_pidfile_none():
     set_cwd(tempfile.mkdtemp())
+    p = Pidfile("test5")
+    p.create()
     pidfile = cwd("pidfiles", "test5.pid")
-    os.mkdir(cwd("pidfiles"))
 
     with open(pidfile, "wb") as fw:
         fw.write("doges42")
 
-    assert pidfile_exists("test5") is None
+    assert p.exists() is None
 
 def test_pid_exists_true():
     assert pid_exists(os.getpid())
@@ -291,6 +292,19 @@ def test_pid_exists_unsupported_platform(monkeypatch):
 
 def test_active_pids():
     set_cwd(tempfile.mkdtemp())
-    create_pidfile("test6")
+    Pidfile("test6").create()
 
-    assert get_active_pids() == {"test6": os.getpid()}
+    assert Pidfile.get_active_pids() == {"test6": os.getpid()}
+
+def test_publickeystruct():
+    a = PUBLICKEYSTRUC.from_buffer_copy("A"*8)
+    assert a.type == 0x41
+    assert a.version == 0x41
+    assert a.reserved == 0x4141
+    assert a.algid == 0x41414141
+
+def test_rsapublickeystruct():
+    a = RSAPUBKEY.from_buffer_copy("A"*12)
+    assert a.magic == 0x41414141
+    assert a.bitlen == 0x41414141
+    assert a.pubexp == 0x41414141
