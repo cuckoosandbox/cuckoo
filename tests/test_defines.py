@@ -2,18 +2,19 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from cuckoo.common.defines import PUBLICKEYSTRUC, RSAPUBKEY, REG_DWORD
+from cuckoo.common.defines import (
+    REG_NONE, REG_SZ, REG_EXPAND_SZ, REG_BINARY, REG_DWORD_LITTLE_ENDIAN,
+    REG_DWORD, REG_DWORD_BIG_ENDIAN, WIN_PROCESS_QUERY_INFORMATION,
+    WIN_ERR_STILL_ALIVE
+)
 
 def test_defines():
-    a = PUBLICKEYSTRUC.from_buffer_copy("A"*8)
-    assert a.type == 0x41
-    assert a.version == 0x41
-    assert a.reserved == 0x4141
-    assert a.algid == 0x41414141
-
-    a = RSAPUBKEY.from_buffer_copy("A"*12)
-    assert a.magic == 0x41414141
-    assert a.bitlen == 0x41414141
-    assert a.pubexp == 0x41414141
-
+    assert REG_NONE == 0
+    assert REG_SZ == 1
+    assert REG_EXPAND_SZ == 2
+    assert REG_BINARY == 3
+    assert REG_DWORD_LITTLE_ENDIAN == 4
     assert REG_DWORD == 4
+    assert REG_DWORD_BIG_ENDIAN == 5
+    assert WIN_PROCESS_QUERY_INFORMATION == 0x0400
+    assert WIN_ERR_STILL_ALIVE == 259

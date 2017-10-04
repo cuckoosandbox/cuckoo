@@ -21,7 +21,11 @@ except ImportError:
 
 import cuckoo
 
+from cuckoo.common.defines import (
+    WIN_PROCESS_QUERY_INFORMATION, WIN_ERR_STILL_ALIVE
+)
 from cuckoo.common.exceptions import CuckooStartupError
+
 
 log = logging.getLogger(__name__)
 
@@ -237,16 +241,11 @@ def pid_exists(pid):
     if is_windows():
         from ctypes import windll, wintypes
         dw_exit = wintypes.DWORD()
-        # https://msdn.microsoft.com/en-us/library/ms684880(v=vs.85).aspx
-        # 1024 = PROCESS_QUERY_INFORMATION
-        proc_h = windll.kernel32.OpenProcess(1024, 0, pid)
+        proc_h = windll.kernel32.OpenProcess(WIN_PROCESS_QUERY_INFORMATION,
+                                             0, pid)
         windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
 
-        # https://msdn.microsoft.com/en-us/library/windows/desktop
-        # /ms683189(v=vs.85).aspx
-        # 259 = STILL_ACTIVE
-
-        return dw_exit.value == 259
+        return dw_exit.value == WIN_ERR_STILL_ALIVE
 
     elif is_linux() or is_macosx():
         # Send signal 0 to process. Exception will be thrown if it does not
@@ -262,60 +261,92 @@ def pid_exists(pid):
         # Return none if not of of the above platforms
         return None
 
-def create_pidfile(name):
-    """Creates a file with a .pid extension containing
-    the pid of the process executing this method
-    @param name: name without extension to use for file
-    """
-    pid_path = cwd("pidfiles")
-    if not os.path.exists(pid_path):
-        os.mkdir(pid_path)
+class Pidfile(object):
 
-    with open(os.path.join(pid_path, "%s.pid"% name), "wb") as fw:
-        fw.write(str(os.getpid()))
+    def __init__(self, name=None):
+        """Manage pidfile of given name
+        @param name: name without extension to use for file
+        """
+        self.dir = cwd("pidfiles")
+        self.name = None
+        self.pidfile_path = None
+        self.pid = None
+        if name:
+            self.set_name(name)
 
-def remove_pidfile(name):
-    """Remove pidfile of name if it exists
-    @param name: name without extension to use for file
-    """
-    pid_path = cwd("pidfiles", "%s.pid" % name)
-    if os.path.exists(pid_path):
-        os.remove(pid_path)
+    def set_name(self, name):
+        """Change pidfile name"""
+        if not name.endswith(".pid"):
+            name = "%s.pid" % name
+        self.name = name
+        self.pidfile_path = os.path.join(self.dir, self.name)
 
-def pidfile_exists(name):
-    """Check if a pid file exists for the given name. Returns int PID
-    if the pidfile exists, False if not. None if invalid pidfile
-    @param name: name without extension to use for file
-    """
-    if not name.endswith(".pid"):
-        name = "%s.pid" % name
+    def create(self):
+        """Creates a file with a .pid extension containing
+        the pid of the process executing this method"""
+        if not os.path.exists(self.dir):
+            os.mkdir(self.dir)
 
-    pidfile_path = cwd("pidfiles", name)
-    if not os.path.exists(pidfile_path):
-        return False
+        with open(self.pidfile_path, "wb") as fw:
+            fw.write(str(os.getpid()))
 
-    with open(pidfile_path, "rb") as fp:
-        try:
-            pid = int(fp.read())
-        except ValueError:
-            # Return None if pidfile contains invalid value
-            return None
+    def remove(self):
+        """Remove pidfile of name if it exists"""
+        if os.path.exists(self.pidfile_path):
+            os.remove(self.pidfile_path)
+            return True
+        else:
+            return False
 
-    return pid
+    def exists(self):
+        """Check if a pid file exists for the given name. Returns int PID
+        if the pidfile exists, False if not. None if invalid pidfile"""
+        if not os.path.exists(self.pidfile_path):
+            return False
 
-def get_active_pids():
-    """Return a dict containing active pids.
-    Key is the pidfile name and value is pid"""
+        return self.read()
 
-    pidfile_path = cwd("pidfiles")
-    pids = {}
-    if not os.path.exists(pidfile_path):
+    def read(self):
+        """Read PID from pidfile. Will raise IOError if pidfile does
+        not exist"""
+        with open(self.pidfile_path, "rb") as fp:
+            try:
+                self.pid = int(fp.read())
+            except ValueError:
+                # Set pid to None if pidfile contains invalid value
+                self.pid = None
+
+        return self.pid
+
+    @staticmethod
+    def get_active_pids():
+        """Return a dict containing active pids.
+        Key is the pidfile name and value is pid"""
+        pids = {}
+
+        pidfile = Pidfile()
+        for pidf in os.listdir(pidfile.dir):
+            pidfile.set_name(pidf)
+            pid = pidfile.read()
+            if pid:
+                if pid_exists(pid):
+                    pids[pidf.split(".", 1)[0]] = pid
+
         return pids
 
-    for pidf in os.listdir(pidfile_path):
-        pid = pidfile_exists(pidf)
-        if pid:
-            if pid_exists(pid):
-                pids[pidf.split(".",1)[0]] = pid
+class PUBLICKEYSTRUC(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("type", ctypes.c_ubyte),
+        ("version", ctypes.c_ubyte),
+        ("reserved", ctypes.c_ushort),
+        ("algid", ctypes.c_uint),
+    ]
 
-    return pids
+class RSAPUBKEY(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("magic", ctypes.c_uint),
+        ("bitlen", ctypes.c_uint),
+        ("pubexp", ctypes.c_uint),
+    ]

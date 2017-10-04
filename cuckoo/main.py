@@ -32,11 +32,11 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing, check_create_pidfile
+    init_routing
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    remove_pidfile
+    Pidfile, pid_exists
 )
 
 log = logging.getLogger("cuckoo")
@@ -108,7 +108,11 @@ def cuckoo_init(level, ctx, cfg=None):
 
     # Only one Cuckoo process should exist per CWD.
     # Run this check before any files are possibly modified
-    check_create_pidfile("cuckoo")
+    pidf = Pidfile("cuckoo")
+    if pidf.exists() and pid_exists(pidf.pid):
+        raise CuckooProcessExistsError("", pidf.pid)
+    else:
+        pidf.create()
 
     init_console_logging(level)
 
@@ -175,7 +179,7 @@ def cuckoo_main(max_analysis_count=0):
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
-        remove_pidfile("cuckoo")
+    Pidfile("cuckoo").remove()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
@@ -338,13 +342,14 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
-        try:
-            check_create_pidfile(instance)
-        except CuckooProcessExistsError as e:
+        pidf = Pidfile(instance)
+        if pidf.exists() and pid_exists(pidf.pid):
             message = "Cuckoo process instance \'%s\' already exists. " \
-                      "PID: %s\n" % (instance, e.pid)
-            log.error(message)
+                      "PID: %s\n" % (instance, pidf.pid)
+            log.error(red(message))
             sys.exit(1)
+        else:
+            pidf.create()
 
         init_logfile("process-%s.json" % instance)
 
@@ -380,8 +385,9 @@ def process(ctx, instance, report, maxcount):
             process_tasks(instance, maxcount)
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
-        if instance:
-            remove_pidfile(instance)
+
+    if instance:
+        Pidfile(instance).remove()
 
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
