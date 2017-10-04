@@ -31,10 +31,6 @@ class DraggableUIWidget {
       y: 0,
       width: 1,
       height: 1,
-      minWidth: 1,
-      maxWidth: 1,
-      minHeight: 1,
-      maxHeight: 1,
       id: null
     }, config.widgetLayout);
 
@@ -46,25 +42,22 @@ class DraggableUIWidget {
     };
 
     // api-specific
-    this.api                = new StatsAPI();
+    this.api                = new StatsAPI(config.api || {});
     this.api.defaultInclude = config.request || false;
 
     // chartjs-specific
     this.chart = null;
     this.chartOptions = $.extend({
       type: 'line',
-      data: {
-        labels: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-        datasets: [{
-          label: "My first dataset",
-          data: [14, 2, 22, 47, 59, 32, 78, 92, 62, 73]
-        }]
-      },
+      data: {},
       options: {}
     }, config.chart);
 
     // configure the widget loader
     this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, config.loaderText || null);
+
+    // wire all the implemented services
+    this._start();
 
   }
 
@@ -87,9 +80,7 @@ class DraggableUIWidget {
 
     widget = grid.makeWidget(`#${this.elementId}`);
 
-    this.dispatchEvent('render', {}, () => {
-      this.createChart();
-    });
+    this.dispatchEvent('render');
 
   }
 
@@ -122,21 +113,36 @@ class DraggableUIWidget {
     return this;
   }
 
+  pull() {
+    return this.api.fetch();
+  }
+
   // starts drawing the chart into widget-chart
   createChart() {
 
-    let ctx = this.template.find('.widget-chart canvas');
-    let self = this;
-    let c;
+    let c,
+        ctx = this.template.find('.widget-chart canvas');
 
     if(!this.chart && ctx.length) {
-      this.api.fetch().then(response => {
-        c = new Chart(ctx[0], this.chartOptions);
-      }).catch(err => {
-        console.log(err);
-      });
-
+      c = new Chart(ctx[0], this.chartOptions);
+      $(this.template).data('chart', c);
     }
+
+  }
+
+  // internal working-togethers
+  _start() {
+
+    // after we pulled, start drawing the canvas
+    this.api.on('receive', res => {
+      if(res.data) {
+        this.chartOptions.data = res.data;
+        this.createChart();
+      }
+    });
+
+    this.pull();
+
   }
 
 }

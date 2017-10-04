@@ -1,10 +1,11 @@
 var CONFIG = {
-  
+
   // configures the to-concat javascript library paths, relative
   // to the node_modules folder. (this gets corrected automagically)
   // later on.
   javascriptLibraryPaths: [
     'lodash/lodash.js',
+    'moment/moment.js',
     'jquery/dist/jquery.js',
     'jquery-ui-bundle/jquery-ui.js',
     'gridstack/dist/gridstack.js',

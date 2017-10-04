@@ -23,7 +23,12 @@ const SUPPORTED_INCLUDES = [
  */
 export default class StatsAPI {
 
-  constructor(defaultEndpoint) {
+  constructor(options = {}) {
+
+    let config = this.config = $.extend({
+      params: {},
+      transformators: []
+    }, options);
 
     // stores a cached response from the api
     this.store = {};
@@ -36,13 +41,61 @@ export default class StatsAPI {
       error: []
     }
 
+    // optional parameters
+    this.params = {
+      include: config.params.include || null,
+      period: config.params.period || 'hour',
+      date: config.params.date || null
+    }
+
     // stores an array of middleware-like functions that will do something
     // after the response data has been received. Think in object formatting
     // or mapping for use out of the API context (Chart.js expects data in a
     // particular serialization and configurations. Allthough the API returns the
     // data differently, hence it needs some mapping.)
-    this.transforms = [];
-    this.defaultInclude = false;
+    this.transformators = [];
+
+    // initialize transformations from config
+    if(config.transform) {
+      if(config.transform instanceof Array) {
+        config.transform.forEach(tr => this.transform(tr));
+      } else {
+        this.transform(config.transform);
+      }
+    }
+
+  }
+
+  // buildURL utility that wraps all params into a single url format to request
+  // to the api
+  buildURL() {
+
+    let url = `${API_HOST}/${API_BASE}`;
+
+    let _before = (str) => {
+      if(str.indexOf('?') < 1) {
+        str += '?';
+      } else {
+        str += '&';
+      }
+      return str;
+    }
+
+    if(this.params.date) {
+      url += `/${this.params.date}`;
+    }
+
+    if(this.params.period) {
+      url = _before(url);
+      url += `period=${this.params.period}`;
+    }
+
+    if(this.params.include) {
+      url = _before(url);
+      url += `include=${this.params.include}`;
+    }
+
+    return url;
 
   }
 
@@ -54,23 +107,7 @@ export default class StatsAPI {
 
     return new Promise((resolve, reject) => {
 
-        url = `${API_HOST}/${API_BASE}`;
-
-        if(self.defaultInclude) {
-          include = self.defaultInclude;
-        }
-
-        if(include !== '') {
-          if(SUPPORTED_INCLUDES.indexOf(include) > -1) {
-            url += `?include=${include}`;
-          } else {
-            return reject({
-              status: 0,
-              message: `'${include}' is either not supported or mapped.`,
-              error: {}
-            });
-          }
-        }
+        url = this.buildURL();
 
         // dispatch the 'request' event
         self._dispatchEvent('request', { url: url });
@@ -82,15 +119,18 @@ export default class StatsAPI {
           contentType: 'application/json'
         }).done((response, status) => {
 
-          if(self.transforms.length) {
-            self.transforms.forEach(transformation => transformation(response));
+          let transformed = {};
+
+          if(self.transformators.length) {
+            self.transformators.forEach(transformation => transformed = transformation(response, self.params));
+            transformed._wasTransformed = true;
           }
 
           // dispatch the 'receive' event
           self._dispatchEvent('receive', {
             url: url,
             original: response,
-            data: response
+            data: transformed._wasTransformed ? transformed : response
           });
 
           // resolve the promise when the ajax call returned OK from the server
@@ -127,13 +167,16 @@ export default class StatsAPI {
   transform(tr) {
 
     // test if the transform really is doing a transform
-    let testJSON = {'foo': 'bar','baz': ['foo','bar','baz'], 'yes': true, 'number': 1};
-    let _testTransform = tr(testJSON);
-    if(typeof _testTransform !== 'object') {
-      console.error('Transform function should return an object');
-    } else {
-      this.transforms.push(tr);
-    }
+
+    // let testJSON = {'foo': 'bar','baz': ['foo','bar','baz'], 'yes': true, 'number': 1};
+    // let _testTransform = tr(testJSON, this.params, true);
+    // if(typeof _testTransform !== 'object') {
+    //   console.error('Transform function should return an object');
+    // } else {
+    //
+    // }
+
+    this.transformators.push(tr);
 
   }
 
@@ -148,8 +191,39 @@ export default class StatsAPI {
   _dispatchEvent(eventName, data = {}) {
     if(!this.events[eventName]) return false;
     this.events[eventName].forEach(fn => {
-      if(typeof fn === 'function') fn.apply(this, data);
+      if(typeof fn === 'function') fn.apply(this, [data]);
     });
   }
 
+  // easy-param swapping to 'scroll' through the api easily, a bit like:
+  // StatsApi.include('task_completed').period().fetch().then(...)
+  // - these methods alter the this.params{} object
+
+  // sets the data inclusion parameters
+  include(includeParams) {
+    this.params.includes = includeParams;
+    return this;
+  }
+
+  // sets the periods (day,week,month)
+  period(periods) {
+    this.params.period = periods;
+    return this;
+  }
+
+  // sets the date of the dataset
+  date(date) {
+    this.params.date = date;
+    return this;
+  }
+
+}
+
+// nooping for silent mode
+export function apilog(silent) {
+  if(silent) {
+    return () => true;
+  } else {
+    return console.log;
+  }
 }
