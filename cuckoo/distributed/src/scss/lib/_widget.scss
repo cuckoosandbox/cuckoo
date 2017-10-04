@@ -1,18 +1,12 @@
-// fixes the grid to a max 3 times, from the
-// Gridstack docs:
-// .grid-stack-item {
-//   $gridstack-columns: 3;
-//   @for $i from 1 through $gridstack-columns {
-//     &[data-gs-width='#{$i}'] { width: (100% / $gridstack-columns) * $i; }
-//     &[data-gs-x='#{$i}'] { left: (100% / $gridstack-columns) * $i; }
-//     &.grid-stack-item[data-gs-min-width='#{$i}'] { min-width: (100% / $gridstack-columns) * $i; }
-//     &.grid-stack-item[data-gs-max-width='#{$i}'] { max-width: (100% / $gridstack-columns) * $i; }
-//   }
-// }
+.grid-stack-item-content {
+  padding: 0px 7px 7px 7px !important;
+}
 
 // widget definition
 .widget {
 
+  position: relative;
+  min-height: 100%;
   background-color: #FFF;
   border: 2px solid rgba(#98AFB6, .5);
   border-radius: 12px;
@@ -35,6 +29,7 @@
     left: 50%;
     top: 0;
     margin-left: -21px;
+    z-index: 5;
 
     // cursor changes
     cursor: grab;

@@ -1,4 +1,5 @@
 var CONFIG = {
+  
   // configures the to-concat javascript library paths, relative
   // to the node_modules folder. (this gets corrected automagically)
   // later on.

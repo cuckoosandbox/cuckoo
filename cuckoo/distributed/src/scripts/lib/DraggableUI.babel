@@ -8,7 +8,7 @@ function parseFragment(fragment) {
   let result = $.parseHTML(fragment.html());
   $(result).attr('id', $(fragment).attr('id'));
   fragment.remove();
-  return $(result);
+  return $(result).eq(result.length-1);
 }
 
 /*
@@ -23,6 +23,7 @@ class DraggableUIWidget {
 
     this.name = name || 'widget';
     this.template = config.template || '';
+    this.elementId = config.elementId || undefined;
 
     this.widgetLayout = $.extend({
       el: null,
@@ -48,12 +49,6 @@ class DraggableUIWidget {
     this.api                = new StatsAPI();
     this.api.defaultInclude = config.request || false;
 
-    this.api.transform(res => {
-      // chart js data mapping should be done here
-      res.ThisIsANewProperty = 'I have been appended by being transformed.';
-      return res;
-    });
-
     // chartjs-specific
     this.chart = null;
     this.chartOptions = $.extend({
@@ -76,28 +71,22 @@ class DraggableUIWidget {
   // injects a grid widget to the frontend
   inject(grid) {
 
+    let widget;
     let template = $(this.template);
-    let id       = template.attr('id');
 
     // set html in grid
     grid.container.append(template);
 
-    template.wrap(`
-      <div
-        class='grid-stack-item'
-        data-gs-width='${this.widgetLayout.width}'
-        data-gs-height='${this.widgetLayout.height}'
-        data-gs-x='${this.widgetLayout.x}'
-        data-gs-y='${this.widgetLayout.y}'
-        data-gs-id='${this.name}'
-        data-gs-no-resize='true'
-        data-gs-id='${id}'
-        id='${id}'
-      ></div>
-    `);
+    // append the attributes
+    template.attr('data-gs-width', this.widgetLayout.width);
+    template.attr('data-gs-height', this.widgetLayout.height);
+    template.attr('data-gs-x', this.widgetLayout.x);
+    template.attr('data-gs-y', this.widgetLayout.y);
+    template.attr('data-gs-no-resize', true);
+    template.attr('id', this.elementId);
 
-    // template.id = template.childNode;
-    grid.makeWidget($(`#${id}`));
+    widget = grid.makeWidget(`#${this.elementId}`);
+
     this.dispatchEvent('render', {}, () => {
       this.createChart();
     });
@@ -171,7 +160,9 @@ class DraggableUI {
       animate: true,
       disableResize: true,
       draggable: {
-        handle: '.widget-handle'
+        handle: '.widget-handle',
+        appendTo: 'body',
+        scroll: false
       }
     });
 
@@ -203,13 +194,15 @@ class DraggableUI {
 
   draw() {
 
+    let gs = this.grid;
+
     // renders all the defined widgets to the grid
     for(let w in this.widgets) {
+      gs.batchUpdate();
       let widget = this.widgets[w];
-      widget.inject(this.grid);
+      widget.inject(gs);
+      gs.commit();
     }
-
-    this.grid.commit();
 
     return this;
   }

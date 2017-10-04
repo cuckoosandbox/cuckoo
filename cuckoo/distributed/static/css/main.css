@@ -2321,7 +2321,12 @@ body {
   border-right: 11px solid #c9d7db;
   animation: cssload-roto 2.65s infinite linear; }
 
+.grid-stack-item-content {
+  padding: 0px 7px 7px 7px !important; }
+
 .widget {
+  position: relative;
+  min-height: 100%;
   background-color: #FFF;
   border: 2px solid rgba(152, 175, 182, 0.5);
   border-radius: 12px; }
@@ -2340,6 +2345,7 @@ body {
     left: 50%;
     top: 0;
     margin-left: -21px;
+    z-index: 5;
     cursor: grab;
     cursor: -webkit-grab; }
     .widget-handle:active {

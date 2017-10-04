@@ -127,7 +127,7 @@ export default class StatsAPI {
   transform(tr) {
 
     // test if the transform really is doing a transform
-    let testJSON = {'foo': 'bar','baz': ['foo','bar','baz']};
+    let testJSON = {'foo': 'bar','baz': ['foo','bar','baz'], 'yes': true, 'number': 1};
     let _testTransform = tr(testJSON);
     if(typeof _testTransform !== 'object') {
       console.error('Transform function should return an object');
