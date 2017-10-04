@@ -69,7 +69,7 @@ class DraggableUIWidget {
     }, config.chart);
 
     // configure the widget loader
-    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this);
+    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, config.loaderText || null);
 
   }
 
@@ -135,6 +135,7 @@ class DraggableUIWidget {
 
   // starts drawing the chart into widget-chart
   createChart() {
+
     let ctx = this.template.find('.widget-chart canvas');
     let self = this;
     let c;

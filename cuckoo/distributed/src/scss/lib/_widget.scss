@@ -98,6 +98,7 @@
   }
 
   &-loader {
+
     position: absolute;
     left: 50%;
     top: 50%;
@@ -105,12 +106,23 @@
     margin-left: -72px;
     width: 144px;
     height: 144px;
+
     & > div {
       @extend %roto-loader;
       margin-top: 0;
       margin-left: 0;
       left: 0;
     }
+
+    .loader-text {
+      position: absolute;
+      width: 300px;
+      left: 50%;
+      margin-left: -150px;
+      text-align: center;
+      bottom: -30px;
+    }
+
   }
 
 }

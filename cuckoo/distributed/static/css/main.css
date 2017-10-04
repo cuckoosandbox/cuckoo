@@ -2386,6 +2386,13 @@ body {
       margin-top: 0;
       margin-left: 0;
       left: 0; }
+    .widget-loader .loader-text {
+      position: absolute;
+      width: 300px;
+      left: 50%;
+      margin-left: -150px;
+      text-align: center;
+      bottom: -30px; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted

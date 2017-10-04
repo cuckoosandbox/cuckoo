@@ -20,10 +20,11 @@ $(function() {
     widgetLayout: {
       width: 6,
       height: 5,
-      x: 2,
+      x: 0,
       y: 0
     },
-    request: 'task_completed'
+    request: 'task_completed',
+    loaderText: 'Loading completed tasks'
   }).on('render', [onWidgetRender]);
 
   // UI.widget('tasks_uncompleted', {
@@ -34,7 +35,8 @@ $(function() {
   //     x: 6,
   //     y: 0
   //   },
-  //   request: 'task_uncompleted'
+  //   request: 'task_uncompleted',
+  //   loaderText: 'Loading uncompleted tasks'
   // }).on('render', [onWidgetRender]);
 
   UI.draw();

@@ -1,17 +1,26 @@
+<!-- Widget -->
 <div class="grid-stack-item-content widget" role="widget">
+
+  <!-- Header -->
   <header class="widget-header" role="heading">
     <div class="widget-title" role="title">
       <h3>Tasks completed</h3>
     </div>
     {% include 'partials/widget-controls.html' %}
   </header>
+
+  <!-- Handle -->
   <a class="widget-handle" role="command"></a>
+
+  <!-- Body -->
   <section class="widget-content">
 
-    <div class="widget-loader">
-      <div class="loader"></div>
-    </div>
-    
+    <!-- Chart -->
     <div class="widget-chart"><canvas></canvas></div>
+
   </section>
+
+  <!-- Loader -->
+  {% include 'partials/widget-loader.html' %}
+
 </div>

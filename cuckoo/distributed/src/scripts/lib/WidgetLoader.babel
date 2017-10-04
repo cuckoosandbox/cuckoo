@@ -17,15 +17,21 @@ const noop = () => true;
  */
 export default class WidgetLoader {
 
-  constructor(el, widget) {
+  constructor(el, widget, text = null) {
 
-    this.el = el;
+    this.el     = el;
     this.widget = widget;
+
+    // hide the element on init
     this.el.hide();
 
     this.events = {
       started: [],
       stopped: []
+    }
+
+    if(text) {
+      this.text(text);
     }
 
     // we should not worry about starting/stopping loaders inside the widgets,
@@ -49,12 +55,16 @@ export default class WidgetLoader {
     this.el.fadeIn(800, () => {
       this._dispatchEvent('started');
     });
+
+    return this;
   }
 
   stop() {
     this.el.fadeOut(800, () => {
       this._dispatchEvent('stopped');
     });
+
+    return this;
   }
 
   // basic events for capturing some hooks of this class
@@ -62,12 +72,20 @@ export default class WidgetLoader {
     if(this.events[evt]) {
       this.events[evt].push(cb);
     }
+
+    return this;
   }
 
   _dispatchEvent(evt, data) {
     if(this.events[evt]) {
       this.events[evt].forEach(cb => cb.apply(this, data));
     }
+
+    return this;
+  }
+
+  text(message) {
+    this.el.find('.loader-text').text(message);
   }
 
 }
