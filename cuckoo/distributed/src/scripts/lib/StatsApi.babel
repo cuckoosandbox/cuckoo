@@ -27,7 +27,7 @@ export default class StatsAPI {
 
     let config = this.config = $.extend({
       params: {},
-      transformators: []
+      transform: []
     }, options);
 
     // stores a cached response from the api
