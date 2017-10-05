@@ -1,9 +1,8 @@
-import DraggableZ              from './lib/DraggableZ';
-import { StatsApi }     from './lib/StatsApi';
+import DraggableZ from './lib/DraggableZ';
 import widgets from './widgets';
 
 $(function() {
 
   const UI = new DraggableZ($("#grid"), widgets);
-
+  
 });

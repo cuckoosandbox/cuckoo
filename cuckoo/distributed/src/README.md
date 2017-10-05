@@ -12,11 +12,11 @@ features:
 Before one can start developing awe-some dashboards and widgets for the
 distributed data, one must set up a few things:
 
-*Install:*
+**Install:**
   - node.js (with npm)
   - gulp
 
-*Then:*
+**Then:**
   - from the distributed folder, cd into `src` and run `$ npm install`,
     this will install all the node.js and frontend packages needed
   - run `gulp lib` to generate a version of the client frameworks in advance
@@ -66,9 +66,12 @@ creating callbacks is a breeze. An example:
       a Promise.
    */
   api
+    // sets the ?period parameter
     .period('day')
-    .date('2017-1-1')
+    // sets the ?include parameter
     .include('task_completed,task_uncompleted')
+    // sets the /date endpoint
+    .date('2017-1-1')
     .fetch().then(response => {
       console.log(response);
     }).catch(err => {
@@ -81,18 +84,21 @@ creating callbacks is a breeze. An example:
    */
 
   let onReceive = (response) => processResponse(response);
-  let onRequest = () => processRequest(request);
-  let onError   = (err) = => processError(err);
+  let onRequest = ()         => processRequest(request);
+  let onError   = (err)      => processError(err);
 
-  api.period('day').include('task_completed').date('2017-1-1');
+  // sets parameters
+  api
+    .period('day')
+    .include('task_completed')
+    .date('2017-1-1');
 
+  // attach event handlers to the api instance
   api.on('receive', response => onReceive(response));
-  api.on('request', params => onRequest(params));
-  api.on('error', (err) => onError(err));
+  api.on('request', params   => onRequest(params));
+  api.on('error', (err)      => onError(err));
 
-  // this will actually do the request, firing the above
-  // events on there occurence. so each time you would do
-  // api.fetch(), above event handlers will fire.
+  // do the request with fetch
   api.fetch();
 ```
 
@@ -101,6 +107,23 @@ by the UI itself (from a dropdown example). This allows for easily making
 calls and updating the UI where possible with not-so-much configuration,
 keeping the other libraries primarily focussed on doing their thing as
 abstract as possible.
+
+### StatsApi API
+
+StatsApi(options = {})
+
+The main constructor, when you instantiate a new instance, you call this
+constructor like `new StatsApi({...})`.
+
+**Accepted options:**
+
+option | type | value
+------ | ---- | -----
+params | Object | Object containing the api parameters
+params.include | String | Comma separated list of includables (for ?include=)
+params.transform | Function/Array | An array of functions or a function that will
+                                    transform the response for this response
+                                    (eg for use in other libraries)
 
 ## The Grid
 
