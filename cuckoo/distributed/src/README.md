@@ -72,6 +72,7 @@ creating callbacks is a breeze. An example:
     .include('task_completed,task_uncompleted')
     // sets the /date endpoint
     .date('2017-1-1')
+    // makes the call and returns a plain ol' promise for handling the fetch
     .fetch().then(response => {
       console.log(response);
     }).catch(err => {
@@ -110,22 +111,22 @@ abstract as possible.
 
 ### StatsApi API
 
-StatsApi(options = {})
+#### StatsApi(options = {})
 
 The main constructor, when you instantiate a new instance, you call this
 constructor like `new StatsApi({...})`.
 
-**Accepted options:**
+**Accepted options:**\
 
 option | type | value
 ------ | ---- | -----
-params | Object | Object containing the api parameters
-params.include | String | Comma separated list of includable data: `task_completed,task_uncompleted` => `?include=...`
-params.period | String | Comma-separated period representable: `hour,day,week` => `?period=...`
-params.date | String | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
-transform | Array/Function | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
+`params` | Object | Object containing the api parameters
+`params.include` | String | Comma separated list of includable data: `task_completed,task_uncompleted` => `?include=...`
+`params.period` | String | Comma-separated period representable: `hour,day,week` => `?period=...`
+`params.date` | String | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
+`transform` | Array/Function | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
 
-**Accepted include parameters**
+**Accepted include parameters**\
 - `task_completed` - list of completed tasks since `date` in `period`
 - `task_uncompleted` - list of uncompleted tasks since `date` in `period`
 - `vm_running` - all running vm's
@@ -134,6 +135,60 @@ transform | Array/Function | A transformation function, must always return the f
 - `memory_usage` - cuckoo memory usage
 - `amount_prio_queued` - amount of prioritized task queues
 - `active_processes` - current active processes
+
+**Accepted period parameters**\
+_note: These are only for the `task_completed` and `task_uncompleted` calls_
+- `hour` - returns the last hour data in `minutes`
+- `day` - returns the last day date in `hours`
+- `week` - returns the last week date in `days`
+
+**Timestamp formatting**\
+From the service backend docs: _"datetime format is always: YYYY-MM-DD HH:MM:SS"_\
+for .date(), only use a day-date, no time support.
+
+#### StatsApi.buildURL() [=> String url]
+
+This method constructs the url from the given parameters. it will render something like:\
+`http://localhost:9003/api/stats/2017-5-15?include=task_completed&period=hour`\
+depending on the `api.params` configuration.
+
+#### StatsApi.date([String date]) [=> api]
+
+Chainable method to configure `api.params.date`.
+
+#### StatsApi.dispatchEvent([String event], [Object data]) [=> api]
+
+Dispatches (triggers) an event cycle. A data object can be passed as well to the
+event handler.
+
+#### StatsApi.fetch() [=> Promise]
+
+This chainable method will call `buildURL()` and requests to it. It will resolve
+like a promise (.then(...).catch(...)) to deliver its (transformed) response to
+the front-end libraries that depend on it.
+
+#### StatsApi.include([String include]) [=> api]
+
+Chainable method to configure `api.params.include`.
+
+#### StatsApi.on([String event], [Function callback])
+
+Adds callbacks to the event cycle stack. These event listeners are executed
+when the internal `api.dispatchEvent(evt)` fires. Supported events:
+
+Event | Description
+----- | -----------
+`request` | Cycles when a request did start
+`received` | Cycles when a request did finish OK. Sends the response to the callback
+`error` | Cycles when a request was erroreous.
+
+#### StatsApi.period([String period]) [=> api]
+
+Chainable method to configure `api.params.period`.
+
+#### StatsApi.transform([Function transformation]) [=> api]
+
+Chainable method to add transformations to `api.transforms`.
 
 ## The Grid
 
