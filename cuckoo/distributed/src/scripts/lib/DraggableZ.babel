@@ -17,7 +17,7 @@ function parseFragment(fragment) {
     that if 1 call is busy being executed, it will not stop the other charts from
     rendering their own data.
  */
-class DraggableUIWidget {
+class DraggableZWidget {
 
   constructor(name, config) {
 
@@ -144,7 +144,7 @@ class DraggableUIWidget {
   class DraggableUI
     - controls draggable grids
  */
-class DraggableUI {
+class DraggableZ {
 
   constructor(context, widgets) {
     this.ctx = $(context);
@@ -186,7 +186,7 @@ class DraggableUI {
     }
 
     if(name) {
-      this.widgets[name] = widget = new DraggableUIWidget(name, options);
+      this.widgets[name] = widget = new DraggableZWidget(name, options);
     } else {
       console.log('A name has to be given.');
     }
@@ -196,7 +196,7 @@ class DraggableUI {
   }
 
   widgetFabricated(widget) {
-    if(!widget instanceof DraggableUIWidget) {
+    if(!widget instanceof DraggableZWidget) {
       console.log('A widget has to be an instance of DraggableUIWidget [use DraggableUI.fabricate(name,options)]');
     } else {
       this.widgets[widget.name] = widget;
@@ -231,7 +231,7 @@ class DraggableUI {
 
 }
 
-export default DraggableUI;
+export default DraggableZ;
 
 // utility function for defining widgets outside
 // of the interface container. usefull for ripping apart
@@ -246,7 +246,7 @@ export function fabricate(name, options) {
   }
 
   if(name) {
-    widget = new DraggableUIWidget(name, options);
+    widget = new DraggableZWidget(name, options);
   } else {
     console.log('A name has to be given.');
   }

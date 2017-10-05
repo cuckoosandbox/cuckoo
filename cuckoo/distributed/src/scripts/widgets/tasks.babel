@@ -1,5 +1,5 @@
 import SVGLoader     from '../lib/SVGLoader';
-import { fabricate } from '../lib/DraggableUI';
+import { fabricate } from '../lib/DraggableZ';
 import { apilog }    from '../lib/StatsApi';
 
 // widget-specific API middleware. it consumes a bare response
