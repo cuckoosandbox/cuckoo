@@ -120,10 +120,10 @@ constructor like `new StatsApi({...})`.
 option | type | value
 ------ | ---- | -----
 params | Object | Object containing the api parameters
-params.include | String | Comma separated list of includables (for ?include=)
-params.transform | Function/Array | An array of functions or a function that will
-                                    transform the response for this response
-                                    (eg for use in other libraries)
+params.include | String | Comma separated list of includable data: `task_completed,task_uncompleted` => `?include=...`
+params.period | String | Comma-separated period representable: `hour,day,week` => `?period=...`
+params.date | String | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
+transform | Array/Function | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
 
 ## The Grid
 
