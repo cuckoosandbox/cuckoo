@@ -14,6 +14,7 @@ import tempfile
 
 from cuckoo.common.files import Files
 from cuckoo.distributed import api, app, db, instance
+from cuckoo.distributed.misc import StatsCache
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
@@ -339,3 +340,94 @@ class TestAPIStats(flask_testing.TestCase):
         stat_res = self.client.get("/api/stats/2017-8-16?period=hour")
         assert "week" not in stat_res.json["vm_running"]
         assert "day" not in stat_res.json["vm_running"]
+
+
+class TestStatsCache:
+
+    def test_update_increment(self):
+        c = StatsCache()
+        c._init_stats()
+        dt = datetime.now()
+        key = c._round_nearest_step(dt, 15).strftime(c.dt_ftm)
+        c.update(name="test1", step_size=15)
+
+        assert c.stats["test1"][key] == 1
+
+    def test_update_increment_changed(self):
+        c = StatsCache()
+        c._init_stats()
+        dt = datetime.now()
+        key = c._round_nearest_step(dt, 15).strftime(c.dt_ftm)
+        c.update(name="test1", step_size=15)
+        c.update(name="test1", step_size=15, increment_by=1337)
+
+        assert c.stats["test1"][key] == 1338
+
+    def test_update_set_dt_value(self):
+        c = StatsCache()
+        c._init_stats()
+        value = os.urandom(64)
+        dt1 = datetime(2017, 5, 15, 15, 9, 22)
+        c.update(name="test2", step_size=15, set_dt=dt1, set_value=value)
+        dt2 = datetime(2017, 5, 15, 15, 13, 42)
+
+        assert c.get_stat(name="test2", dt=dt2, step_size=15) == value
+
+    def test_update_key_prefix(self):
+        c = StatsCache()
+        c._init_stats()
+        value = os.urandom(64)
+        dt1 = datetime(2017, 5, 15, 15, 9, 22)
+        dt2 = datetime(2017, 5, 15, 15, 11, 42)
+        c.update(name="test3", step_size=15, set_dt=dt1, set_value=value,
+                 key_prefix="node1")
+
+        key = "node1%s" % c._round_nearest_step(dt1, 15).strftime(c.dt_ftm)
+        assert c.get_stat("test3", dt2, 15, key_prefix="node1") == value
+        assert c.stats["test3"][key] == value
+
+    def test_get_now_is_none(self):
+        c = StatsCache()
+        c._init_stats()
+        value = os.urandom(64)
+        c.update(name="test4", step_size=15, set_value=value,
+                 set_dt=datetime.now())
+
+        assert c.get_stat(
+            name="test4", step_size=15, dt=datetime.now()
+        ) is None
+
+    def test_get_nonexistant(self):
+        c = StatsCache()
+        c._init_stats()
+        dt = datetime(2017, 5, 15, 15, 9, 22)
+
+        assert c.get_stat(name="test5", dt=dt, step_size=15) is None
+        c.update(name="test5", step_size=15,
+                 set_dt=datetime(2017, 5, 15, 1, 5, 19))
+        assert c.get_stat(name="test5", dt=dt, step_size=15) is None
+
+    def test_round_nearest_step(self):
+        now = datetime(2017, 5, 15, 15, 11, 22)
+        five_min = datetime(2017, 5, 15, 15, 15)
+        ten_min = datetime(2017, 5, 15, 15, 20)
+        fifteen_min = datetime(2017, 5, 15, 15, 15)
+        thirty_min = datetime(2017, 5, 15, 15, 30)
+        sixty_min = datetime(2017, 5, 15, 16)
+
+        assert StatsCache._round_nearest_step(now, 5) == five_min
+        assert StatsCache._round_nearest_step(now, 10) == ten_min
+        assert StatsCache._round_nearest_step(now, 15) == fifteen_min
+        assert StatsCache._round_nearest_step(now, 30) == thirty_min
+        assert StatsCache._round_nearest_step(now, 60) == sixty_min
+
+    def test_constants(self):
+        assert StatsCache.dt_ftm == "%Y-%m-%d %H:%M:%S"
+        assert StatsCache.max_cache_days == 60
+
+    def test_reset(self):
+        c = StatsCache()
+        assert len(c.stats) > 1
+        c._reset_at = datetime.now() - timedelta(days=1)
+        c.get_stat(name="test7", dt=datetime.now(), step_size=15)
+        assert len(c.stats) == 1
