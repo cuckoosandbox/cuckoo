@@ -132,17 +132,10 @@ class DraggableUIWidget {
 
   // internal working-togethers
   _start() {
-
     // after we pulled, start drawing the canvas
-    this.api.on('receive', res => {
-      if(res.data) {
-        this.chartOptions.data = res.data;
-        this.createChart();
-      }
-    });
-
+    this.api.on('receive', res => this.chartOptions.data = res.data);
+    this.loader.on('stopped', () => this.createChart());
     this.pull();
-
   }
 
 }
@@ -153,14 +146,14 @@ class DraggableUIWidget {
  */
 class DraggableUI {
 
-  constructor(context) {
+  constructor(context, widgets) {
     this.ctx = $(context);
     this.grid = null;
     this.widgets = {};
-    return this.initialise();
+    return this.initialise(widgets);
   }
 
-  initialise() {
+  initialise(prefabWidgets) {
 
     this.ctx.gridstack({
       animate: true,
@@ -176,6 +169,10 @@ class DraggableUI {
     // class.
     this.grid = this.ctx.data('gridstack');
 
+    if(prefabWidgets) {
+      this.prefabricated(prefabWidgets);
+    }
+
     return this;
 
   }
@@ -188,7 +185,6 @@ class DraggableUI {
       options.template = parseFragment(options.template);
     }
 
-    // let widget;
     if(name) {
       this.widgets[name] = widget = new DraggableUIWidget(name, options);
     } else {
@@ -196,6 +192,26 @@ class DraggableUI {
     }
 
     return widget;
+
+  }
+
+  widgetFabricated(widget) {
+    if(!widget instanceof DraggableUIWidget) {
+      console.log('A widget has to be an instance of DraggableUIWidget [use DraggableUI.fabricate(name,options)]');
+    } else {
+      this.widgets[widget.name] = widget;
+    }
+    return this;
+  }
+
+  prefabricated(widgets) {
+    if(!widgets instanceof Array) {
+      console.log('`widgets` has to be of type Array');
+    } else {
+      widgets.forEach(widget => this.widgetFabricated(widget));
+    }
+
+    this.draw();
   }
 
   draw() {
@@ -216,3 +232,25 @@ class DraggableUI {
 }
 
 export default DraggableUI;
+
+// utility function for defining widgets outside
+// of the interface container. usefull for ripping apart
+// widget-specific code and organize modularity. duplicates
+// the method with changes, but can be injected in an instance.
+export function fabricate(name, options) {
+
+  let widget;
+
+  if(options.template.length && options.template) {
+    options.template = parseFragment(options.template);
+  }
+
+  if(name) {
+    widget = new DraggableUIWidget(name, options);
+  } else {
+    console.log('A name has to be given.');
+  }
+
+  return widget;
+
+}

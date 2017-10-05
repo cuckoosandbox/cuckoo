@@ -1,0 +1,9 @@
+// collects all the external source widgets and
+// exports them in a single array.
+import tasks from './tasks';
+
+const widgets = [
+  tasks
+];
+
+export default widgets;

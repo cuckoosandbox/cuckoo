@@ -1,0 +1,93 @@
+import SVGLoader     from '../lib/SVGLoader';
+import { fabricate } from '../lib/DraggableUI';
+import { apilog }    from '../lib/StatsApi';
+
+// widget-specific API middleware. it consumes a bare response
+// and returns it altered to the flavor of the output (in this case chartjs.)
+// it will make use of the api-specific params set for breaking down the content
+// to 'just' what chartjs needs.
+function responseBreakdownTasks(res, params, silent) {
+
+  let log = apilog(silent);
+
+  let result = {
+    labels: [],
+    datasets: []
+  }
+
+  let addDataset = (set) => {
+
+    let selected = res[set];
+
+    if(params.period) {
+      selected = selected[params.period];
+    } else {
+      selected = selected['hour'];
+    }
+
+    result.labels = selected.points.map(point => moment(point.datetime).format('m'));
+
+    result.datasets.push({
+      label: set,
+      data: selected.points.map(point => point.value)
+    });
+
+  }
+
+  if(params.include.indexOf(',') > -1) {
+    params.include.split(',').forEach(inc => addDataset(inc));
+  } else {
+    addDataset(params.include)
+  }
+
+  return result;
+
+}
+
+/*
+  Widget properties
+ */
+const widget = fabricate('tasks', {
+
+  template: $("#widget--tasks"),
+  elementId: $("#widget--tasks").attr('id'),
+  widgetLayout: {
+    width: 6,
+    height: 7,
+    x: 3,
+    y: 3
+  },
+  loaderText: 'Loading tasks',
+
+  // chart configuration
+  chart: {
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  },
+
+  // api configuration
+  api: {
+    params: {
+      include: 'task_completed,task_uncompleted'
+    },
+    transform: responseBreakdownTasks
+  }
+
+});
+
+/*
+  Widget event handling
+ */
+widget.on('render', function() {
+  SVGLoader.loadPlaceholders($(this.template).find('[data-svg-src]'));
+});
+
+// exports the UI widget configuration
+export default widget;
