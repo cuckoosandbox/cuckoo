@@ -125,6 +125,16 @@ params.period | String | Comma-separated period representable: `hour,day,week` =
 params.date | String | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
 transform | Array/Function | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
 
+**Accepted include parameters**
+- `task_completed` - list of completed tasks since `date` in `period`
+- `task_uncompleted` - list of uncompleted tasks since `date` in `period`
+- `vm_running` - all running vm's
+- `disk_usage` - cuckoo disk usage
+- `cpu_usage` - cuckoo cpu usage
+- `memory_usage` - cuckoo memory usage
+- `amount_prio_queued` - amount of prioritized task queues
+- `active_processes` - current active processes
+
 ## The Grid
 
 ## The Widgets
