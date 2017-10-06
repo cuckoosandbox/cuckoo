@@ -295,16 +295,3 @@ def test_active_pids():
     Pidfile("test6").create()
 
     assert Pidfile.get_active_pids() == {"test6": os.getpid()}
-
-def test_publickeystruct():
-    a = PUBLICKEYSTRUC.from_buffer_copy("A"*8)
-    assert a.type == 0x41
-    assert a.version == 0x41
-    assert a.reserved == 0x4141
-    assert a.algid == 0x41414141
-
-def test_rsapublickeystruct():
-    a = RSAPUBKEY.from_buffer_copy("A"*12)
-    assert a.magic == 0x41414141
-    assert a.bitlen == 0x41414141
-    assert a.pubexp == 0x41414141

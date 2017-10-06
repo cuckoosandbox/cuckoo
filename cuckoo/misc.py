@@ -219,21 +219,6 @@ def drop_privileges(username):
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
 
-class Structure(ctypes.Structure):
-    def as_dict(self):
-        ret = {}
-        for field, _ in self._fields_:
-            value = getattr(self, field)
-            if isinstance(value, Structure):
-                ret[field] = value.as_dict()
-            elif hasattr(value, "value"):
-                ret[field] = value
-            elif hasattr(value, "__getitem__"):
-                ret[field] = value[:]
-            else:
-                ret[field] = value
-        return ret
-
 def pid_exists(pid):
     """Returns True if pid exists, False if not. None
     if platform not supported. Supports Windows, Linux, Macosx"""
@@ -333,20 +318,3 @@ class Pidfile(object):
                     pids[pidf.split(".", 1)[0]] = pid
 
         return pids
-
-class PUBLICKEYSTRUC(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("type", ctypes.c_ubyte),
-        ("version", ctypes.c_ubyte),
-        ("reserved", ctypes.c_ushort),
-        ("algid", ctypes.c_uint),
-    ]
-
-class RSAPUBKEY(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ("magic", ctypes.c_uint),
-        ("bitlen", ctypes.c_uint),
-        ("pubexp", ctypes.c_uint),
-    ]
