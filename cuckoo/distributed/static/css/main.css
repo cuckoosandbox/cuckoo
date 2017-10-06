@@ -2243,12 +2243,12 @@ body {
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
 
-.widget-controls {
+.widget-controls, .widget-toolbar > ul {
   padding: 0;
   margin: 0;
   list-style: none; }
 
-.widget-controls {
+.widget-controls, .widget-toolbar > ul {
   display: flex; }
 
 #app-header {
@@ -2375,7 +2375,8 @@ body {
       margin-right: 15px; }
   .widget-header {
     display: flex;
-    justify-content: space-between; }
+    justify-content: space-between;
+    margin-bottom: 15px; }
     .widget-header .widget-controls {
       margin-left: auto; }
   .widget-content {
@@ -2398,7 +2399,28 @@ body {
       left: 50%;
       margin-left: -150px;
       text-align: center;
-      bottom: -30px; }
+      bottom: -40px;
+      font-size: 13px; }
+  .widget-toolbar {
+    font-size: 12px;
+    border-bottom: 1px solid #C9D7DB;
+    padding: 15px; }
+    .widget-toolbar > ul {
+      align-items: center;
+      justify-content: center; }
+      .widget-toolbar > ul > li {
+        margin: 0 7px; }
+        .widget-toolbar > ul > li:first-child {
+          margin-left: 0; }
+        .widget-toolbar > ul > li:last-child {
+          margin-right: 0; }
+        .widget-toolbar > ul > li.title {
+          font-weight: 700;
+          color: #a1acaf; }
+        .widget-toolbar > ul > li input[type="radio"] {
+          margin-right: 3px; }
+        .widget-toolbar > ul > li label + input[type="text"] {
+          margin-left: 3px; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted

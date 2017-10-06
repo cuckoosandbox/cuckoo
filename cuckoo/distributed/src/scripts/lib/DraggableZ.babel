@@ -43,10 +43,13 @@ class DraggableZWidget {
 
     // api-specific
     this.api                = new StatsAPI(config.api || {});
-    this.api.defaultInclude = config.request || false;
 
     // chartjs-specific
     this.chart = null;
+
+    this.chartHeight = config.chartHeight || false;
+    this.chartScrollable = config.chartScrollable || false;
+
     this.chartOptions = $.extend({
       type: 'line',
       data: {},
@@ -120,12 +123,32 @@ class DraggableZWidget {
   // starts drawing the chart into widget-chart
   createChart() {
 
+    console.log('new chart create');
+
     let c,
         ctx = this.template.find('.widget-chart canvas');
 
-    if(!this.chart && ctx.length) {
+    if(ctx.length) {
+
+      if(this.chartHeight) {
+        ctx[0].height = this.chartHeight;
+      }
+
+      // merges chart layout configuration into the dataset configuration
+      if(this.chartOptions.dataLayout) {
+        this.chartOptions.data.datasets.forEach((dataset, i) => {
+          if(this.chartOptions.dataLayout[i]) {
+            for(let prop in this.chartOptions.dataLayout[i]) {
+              dataset[prop] = this.chartOptions.dataLayout[i][prop];
+            }
+          }
+        });
+      }
+
       c = new Chart(ctx[0], this.chartOptions);
       $(this.template).data('chart', c);
+      this.chart = c;
+
     }
 
   }
@@ -149,7 +172,7 @@ class DraggableZ {
   constructor(context, widgets) {
     this.ctx = $(context);
     this.grid = null;
-    this.widgets = {};
+    this.widgets = [];
     return this.initialise(widgets);
   }
 
@@ -158,6 +181,7 @@ class DraggableZ {
     this.ctx.gridstack({
       animate: true,
       disableResize: true,
+      cellHeight: 50,
       draggable: {
         handle: '.widget-handle',
         appendTo: 'body',
@@ -253,4 +277,14 @@ export function fabricate(name, options) {
 
   return widget;
 
+}
+
+// a configuration of colors to use in the charts:
+// configured with coolors.io: https://coolors.co/331832-1d3461-396494-ed5e8b-82204a
+export const colors = {
+  darkPurple: '#331832',
+  spaceCadet: '#1D3461',
+  queenBlue: '#396494',
+  strawBerry: '#ED5E8B',
+  pansyPurple: '#82204A'
 }

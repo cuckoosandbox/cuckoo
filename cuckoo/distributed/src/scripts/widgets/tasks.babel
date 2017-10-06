@@ -1,6 +1,6 @@
-import SVGLoader     from '../lib/SVGLoader';
-import { fabricate } from '../lib/DraggableZ';
-import { apilog }    from '../lib/StatsApi';
+import SVGLoader             from '../lib/SVGLoader';
+import { fabricate, colors } from '../lib/DraggableZ';
+import { apilog }            from '../lib/StatsApi';
 
 // widget-specific API middleware. it consumes a bare response
 // and returns it altered to the flavor of the output (in this case chartjs.)
@@ -53,23 +53,64 @@ const widget = fabricate('tasks', {
   elementId: $("#widget--tasks").attr('id'),
   widgetLayout: {
     width: 6,
-    height: 7,
-    x: 3,
+    height: 6,
+    x: 0,
     y: 3
   },
-  loaderText: 'Loading tasks',
+  loaderText: 'Loading',
+
+  chartHeight: 120,
 
   // chart configuration
   chart: {
+    type: 'line',
     options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
       scales: {
         yAxes: [{
           ticks: {
             beginAtZero: true
           }
+        }],
+        xAxes: [{
+          stepSize: 100
         }]
       }
-    }
+    },
+
+    // layout per data entry, in order.
+    dataLayout: [
+
+      // task_completed
+      {
+        label: "Completed",
+        fill: false,
+        backgroundColor: colors.darkPurple,
+        borderColor: colors.darkPurple,
+        borderWidth: 1,
+        pointRadius: 2
+      },
+
+      // task_uncompleted
+      {
+        label: "Uncompleted",
+        fill: false,
+        backgroundColor: colors.queenBlue,
+        borderColor: colors.queenBlue,
+        borderWidth: 1,
+        pointRadius: 2
+      }
+
+    ]
+
   },
 
   // api configuration
@@ -86,7 +127,39 @@ const widget = fabricate('tasks', {
   Widget event handling
  */
 widget.on('render', function() {
+
+  let chart = $(this.template).find('.widget-chart');
+
+  let rerender = (opt) => {
+    this.chart.destroy();
+    this.pull();
+  }
+
+  // load svg icons
   SVGLoader.loadPlaceholders($(this.template).find('[data-svg-src]'));
+
+  // initialize datepicker
+  $(this.template).find('[data-datepicker]').datepicker({
+    dateFormat: 'yy-mm-dd'
+  }).datepicker('setDate', new Date());
+
+  // start listening to toolbar changes (PROOF OF CONCEPT, THIS IS GOING TO BE ABSTRACTIFIED)
+  let toolbar = $(this.template).find('.widget-toolbar');
+  let toolbarDate = toolbar.find('input[name="tasks-date"]');
+  let toolbarPeriod = toolbar.find('input[name="tasks-period"]');
+
+  toolbarDate.on('change', e => {
+    let t = $(e.currentTarget);
+    let val = t.val()
+    this.api.date(t.val());
+    rerender();
+  });
+
+  toolbarPeriod.on('change', e => {
+    this.api.period($(e.currentTarget).val());
+    rerender();
+  });
+
 });
 
 // exports the UI widget configuration

@@ -6,7 +6,7 @@
     <!-- Header -->
     <header class="widget-header" role="heading">
       <div class="widget-title" role="title">
-        <h3>Tasks completed</h3>
+        <h3>Tasks</h3>
       </div>
       {% include 'partials/widget-controls.html' %}
     </header>
@@ -14,11 +14,42 @@
     <!-- Handle -->
     <a class="widget-handle" role="command"></a>
 
+    <!-- Toolbar -->
+    <form class="widget-toolbar">
+      <ul>
+        <li class="title">Show:</li>
+        <li class="date-selector">
+          <label for="tasks-date">date</label>
+          <input type="text" name="tasks-date" id="tasks-date" placeholder="Select date" data-datepicker />
+        </li>
+        <li>
+          <label for="tasks-period-hour">
+            <input type="radio" name="tasks-period" id="tasks-period-hour" value="hour" checked />
+            <span>hour</span>
+          </label>
+        </li>
+        <li>
+          <label for="tasks-period-day">
+            <input type="radio" name="tasks-period" id="tasks-period-day" value="day" />
+            <span>day</span>
+          </label>
+        </li>
+        <li>
+          <label for="tasks-period-week">
+            <input type="radio" name="tasks-period" id="tasks-period-week" value="week" />
+            <span>week</span>
+          </label>
+        </li>
+      </ul>
+    </form>
+
     <!-- Body -->
     <section class="widget-content">
 
       <!-- Chart -->
-      <div class="widget-chart"><canvas></canvas></div>
+      <div class="widget-chart">
+        <canvas></canvas>
+      </div>
 
     </section>
 

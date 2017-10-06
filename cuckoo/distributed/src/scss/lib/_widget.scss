@@ -82,6 +82,7 @@
   &-header {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 15px;
 
     .widget-controls {
       margin-left: auto;
@@ -115,7 +116,42 @@
       left: 50%;
       margin-left: -150px;
       text-align: center;
-      bottom: -30px;
+      bottom: -40px;
+      font-size: 13px;
+    }
+
+  }
+
+  &-toolbar {
+
+    font-size: 12px;
+    border-bottom: 1px solid #C9D7DB;
+    padding: 15px;
+
+    & > ul {
+      @extend %flex-list;
+      align-items: center;
+      justify-content: center;
+
+      & > li {
+        margin: 0 7px;
+        &:first-child { margin-left: 0; }
+        &:last-child { margin-right: 0; }
+
+        &.title {
+          font-weight: 700;
+          color: shade(#C9D7DB, 20%);
+        }
+
+        input[type="radio"] {
+          margin-right: 3px;
+        }
+
+        label + input[type="text"] {
+          margin-left: 3px;
+        }
+
+      }
     }
 
   }

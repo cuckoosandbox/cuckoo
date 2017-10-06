@@ -1,8 +1,13 @@
 import DraggableZ from './lib/DraggableZ';
 import widgets from './widgets';
 
+// chart.js defaults
+if(Chart) {
+  Chart.defaults.global.defaultFontFamily   = "'Roboto','Helvetica Neue','Arial', sans-serif";
+}
+
 $(function() {
 
   const UI = new DraggableZ($("#grid"), widgets);
-  
+
 });

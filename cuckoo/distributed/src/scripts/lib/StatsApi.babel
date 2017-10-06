@@ -30,9 +30,6 @@ export default class StatsAPI {
       transform: []
     }, options);
 
-    // stores a cached response from the api
-    this.store = {};
-
     // stores callbacks to their eventtypes, these are dispatched
     // with the _dispatchEvent() method
     this.events = {
@@ -100,7 +97,7 @@ export default class StatsAPI {
   }
 
   // fetch - calls to the database, resolves like a promise the es6 way!
-  fetch(include = '') {
+  fetch() {
 
     let url,
         self = this;
@@ -130,7 +127,8 @@ export default class StatsAPI {
           self._dispatchEvent('receive', {
             url: url,
             original: response,
-            data: transformed._wasTransformed ? transformed : response
+            data: transformed._wasTransformed ? transformed : response,
+            params: self.params
           });
 
           // resolve the promise when the ajax call returned OK from the server
@@ -165,19 +163,8 @@ export default class StatsAPI {
   }
 
   transform(tr) {
-
-    // test if the transform really is doing a transform
-
-    // let testJSON = {'foo': 'bar','baz': ['foo','bar','baz'], 'yes': true, 'number': 1};
-    // let _testTransform = tr(testJSON, this.params, true);
-    // if(typeof _testTransform !== 'object') {
-    //   console.error('Transform function should return an object');
-    // } else {
-    //
-    // }
-
     this.transformators.push(tr);
-
+    return this;
   }
 
   // general event listener utility
@@ -185,6 +172,7 @@ export default class StatsAPI {
     // opt out if the event is invalid
     if(!this.events[eventName]) return false;
     this.events[eventName].push(cb);
+    return this;
   }
 
   // dispatches events
@@ -193,6 +181,7 @@ export default class StatsAPI {
     this.events[eventName].forEach(fn => {
       if(typeof fn === 'function') fn.apply(this, [data]);
     });
+    return this;
   }
 
   // easy-param swapping to 'scroll' through the api easily, a bit like:
