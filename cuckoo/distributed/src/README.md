@@ -14,7 +14,7 @@ distributed data, one must set up a few things:
 
 **Install:**
   - node.js (with npm)
-  - gulp
+  - gulp.js
 
 **Then:**
   - from the distributed folder, cd into `src` and run `$ npm install`,
@@ -120,11 +120,11 @@ constructor like `new StatsApi({...})`.
 
 option | type | value
 ------ | ---- | -----
-`params` | Object | Object containing the api parameters
-`params.include` | String | Comma separated list of includable data: `task_completed,task_uncompleted` => `?include=...`
-`params.period` | String | Comma-separated period representable: `hour,day,week` => `?period=...`
-`params.date` | String | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
-`transform` | Array/Function | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
+`params` | `Object` | Object containing the api parameters
+`params.include` | `String` | Comma separated list of includable data: `task_completed,task_uncompleted` => `?include=...`
+`params.period` | `String` | Comma-separated period representable: `hour,day,week` => `?period=...`
+`params.date` | `String` | Date selector: `2017-5-15` => `api/stats/2017-5-15...`
+`transform` | `Array/Function` | A transformation function, must always return the formatted response object. External libraries will only receive the formatted data if a transformator is given. Can also be an array of transformation functions.
 
 **Accepted include parameters**\
 - `task_completed` - list of completed tasks since `date` in `period`
@@ -192,4 +192,78 @@ Chainable method to add transformations to `api.transforms`.
 
 ## The Grid
 
+The grid is powered by an external library: `gridstack.js`. This is an extremely
+powerfull grid library that allows for dragging and dropping widgets into a grid
+of from a single grid to another grid instance. DraggableZ is based on this
+framework, by using the DraggableZ constructor, a new grid is created and its
+wrapper allows for dynamically adding/removing widgets from that grid.
+
+### DraggableZ API
+
+#### DraggableZ (ctx = (jQuery), widgets = [])
+
+This is the wrapping constructor. A DraggableZ instance is capable of receiving
+widgets, as altering and managing widgets. It takes two arguments: `ctx` and `widgets`.
+
+`ctx` is a jQuery selector to the referring element to create a grid on. `widgets`
+can be an array of widgets (made with `DraggableZ.fabricate()`, for example) to
+auto-initialise widgets onto the grid. An example (bare minimum):
+
+``` javascript
+
+import DraggableZ from './lib/DraggableZ';
+const grid = new DraggableZ($("#grid"), []);
+
+```
+
+#### DraggableZ.draw()
+
+Draws the widgets onto the grid, applies listeners etc. This function should
+be called when all the widgets have been added into the widgets stack and is ready
+for rendering.
+
+#### DraggableZ.initialise(widgets = {});
+
+Called onto construction, creates the Gridstack.js instance, and (if widgets were
+pre-passed into the constructor) initializes these widgets.
+
+#### DraggableZ => fabricate(name, options)
+
+This is an external shim of DraggableZ.widget for use outside of the grid context.
+This is the function that is being imported into external widget files and exported
+the result of that file. it returns a `DraggableZWidget` instance to use in
+`DraggableZ.prefabricated()`
+
+#### DraggableZ.prefabricated(widgets)
+
+Takes in an array of widgets and renders them automagically! This is considered
+an internal method and should not be used outside of utility.
+
+#### DraggableZ.widget(name = String, options = {})
+
+Creates a widget and injects it into the DraggableZ.widgets array. A widget
+consumes a list of different options, so look up this table for some explanatory
+features of a widget:
+
+Option | Type | Description
+------ | ---- | -----------
+`template` | `jQuery` | Refers to the `<template />` the html for the widget lives in (should be in the DOM)
+`elementId` | `String` | Is the ID of the element it lives in, will deprecate soon.
+`widgetLayout` | `Object` | A list of options to pass to gridstack.js for creating widgets (contains information about size, position etc.)
+`loaderText` | `String` | A string to show when the loader is visible
+`chartHeight` | `Number` | The height of the chart that is rendered into the widget
+`chart` | `Object` | Properties to pass to chart.js for rendering the chart (if applicable)
+`api` | `Object`| Properties to pass to StatsApi (internal instance). Refer to the StatsApi guides above for more info.
+
+#### DraggableZ.widgetFabricated(widget = DraggableZWidget)
+
+Adds a pre-fabricated widget into the DraggableZ grid. This is considered an
+internal method and should not be used outside of utility.
+
 ## The Widgets
+
+## The Charts
+
+## The Loader
+
+## The SVG Loader
