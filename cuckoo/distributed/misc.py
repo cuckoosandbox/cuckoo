@@ -39,7 +39,7 @@ class StatsCache(object):
     def __init__(self):
         self._init_stats()
 
-    def update(self, name, step_size, increment_by=1,
+    def update(self, name, step_size, increment_by=1, default={},
                set_value=None, set_dt=None, key_prefix=""):
         """Set or increment value for given name/group under current time
         rounded to nearest stepsize in minutes.
@@ -48,25 +48,33 @@ class StatsCache(object):
         @param step_size: size in minute (1,5,30,60 etc) to which the current
         datetime should be rounded up to.
         @param increment_by: increment existing value by this number.
+        @param default: Used to store "nothing" if no data is available
         @param set_value: the value given to be stored
         @param set_dt: datetime obj to create the key with step_size
         @param key_prefix: prefix to use with given datetime obj
         """
         self._check_if_reset()
 
+        now = datetime.datetime.now()
+        # Do not cache values for future dates
+        if set_dt and now <= set_dt:
+            return
+
         # Get current datetime and round to nearest step_size
-        key = self._round_nearest_step(datetime.datetime.now(), step_size
+        key = self._round_nearest_step(now, step_size
                                        ).strftime(self.dt_ftm)
         if name not in self.stats:
             self.stats[name] = {}
 
-        if set_value is not None:
-            if set_dt:
-                key = "%s%s" % (
-                    key_prefix,
-                    self._round_nearest_step(set_dt, step_size
-                                               ).strftime(self.dt_ftm)
-                )
+        if set_dt:
+            if set_value is None:
+                set_value = default
+
+            key = "%s%s" % (
+                key_prefix,
+                self._round_nearest_step(set_dt, step_size
+                                           ).strftime(self.dt_ftm)
+            )
             self.stats[name][key] = set_value
 
         else:

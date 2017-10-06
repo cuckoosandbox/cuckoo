@@ -330,6 +330,12 @@ class TestAPIStats(flask_testing.TestCase):
         assert res_json == correct_reply
         assert len(stat_keys) == 9
 
+        for node in res_json["nodes"]:
+            res = self.client.get("/api/stats?nodes=%s&include=memory_usage"
+                                  % node)
+            assert res.status_code == 200
+            assert res.json["memory_usage"]["hour"].keys() == [node]
+
         stat_keys.remove("nodes")
         for stat in stat_keys:
             stat_res = self.client.get("/api/stats/2017-8-16?include=%s"
@@ -340,6 +346,9 @@ class TestAPIStats(flask_testing.TestCase):
         stat_res = self.client.get("/api/stats/2017-8-16?period=hour")
         assert "week" not in stat_res.json["vm_running"]
         assert "day" not in stat_res.json["vm_running"]
+
+        stat_time = self.client.get("/api/stats/2017-8-16/13:40")
+        assert stat_time.status_code == 200
 
 
 class TestStatsCache:
@@ -406,6 +415,22 @@ class TestStatsCache:
         c.update(name="test5", step_size=15,
                  set_dt=datetime(2017, 5, 15, 1, 5, 19))
         assert c.get_stat(name="test5", dt=dt, step_size=15) is None
+
+    def test_update_to_default(self):
+        c = StatsCache()
+        c._init_stats()
+        dt = datetime(2017, 5, 15, 15, 9, 22)
+
+        c.update(name="test8", set_dt=dt, step_size=15)
+        assert c.get_stat(name="test8", dt=dt, step_size=15) == {}
+
+    def test_update_changed_default(self):
+        c = StatsCache()
+        c._init_stats()
+        dt = datetime(2017, 5, 15, 15, 9, 22)
+
+        c.update(name="test9", set_dt=dt, step_size=15, default="Doge")
+        assert c.get_stat(name="test9", dt=dt, step_size=15) == "Doge"
 
     def test_round_nearest_step(self):
         now = datetime(2017, 5, 15, 15, 11, 22)

@@ -395,17 +395,29 @@ def status_get():
 
 @blueprint.route("/stats")
 @blueprint.route("/stats/<string:end_date>")
-def stats_get(end_date=None):
+@blueprint.route("/stats/<string:end_date>/<string:end_time>")
+def stats_get(end_date=None, end_time=None):
     """Returns a JSON answer containing stats over time. These stats
     are intended to be used in a graph. If no data is available for a point
     in time, it will not be inserted. The 'include' GET param can be
     used to select specific statistics keys"""
+
     if end_date:
         try:
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            _end_date = datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
             return json_error(500, "Given date does not match format "
-                                   "YYYY-M-D")
+                       "YYYY-M-D")
+
+        if end_time:
+            try:
+                _end_date = datetime.combine(
+                    _end_date, datetime.strptime(end_time, "%H:%M").time()
+                )
+            except ValueError:
+                return json_error(500, "Given time does not match format H:M")
+
+        end_date = _end_date
     else:
         end_date = datetime.now().replace(second=0, microsecond=0)
 
@@ -448,8 +460,18 @@ def stats_get(end_date=None):
             _steps[period] = steps[period]
         steps = _steps
 
-    nodes = Node.query.filter_by(enabled=True).all()
-    statistics["nodes"] = [node.name for node in nodes]
+    e_nodes = Node.query.filter_by(enabled=True).all()
+    if request.args.get("nodes"):
+        nodes = []
+        _nodes = request.args.get("nodes").split(",")
+        for node in _nodes:
+            node = Node.query.filter(Node.name==node).first()
+            if node:
+                nodes.append(node)
+    else:
+        nodes = e_nodes
+
+    statistics["nodes"] = [node.name for node in e_nodes]
     for name in use_handlers:
         stat = stat_handlers.get(name)
         if stat:
@@ -613,14 +635,15 @@ def _summarize_disk_usage(end_date, steps, nodes):
                         NodeStatus.timestamp >= past
                     ).order_by(NodeStatus.timestamp.asc()).first()
 
-                    if q:
+                    if q is not None:
                         status = q.status
-                        StatsCache().update("status", step.get("step"),
-                                            set_value=status,
-                                            set_dt=later,
-                                            key_prefix=node.name)
 
-                if not status:
+                    StatsCache().update("status", step.get("step"),
+                                        set_value=status,
+                                        set_dt=later,
+                                        key_prefix=node.name)
+
+                if not status or status == {}:
                     continue
 
                 time_key = later.strftime("%Y-%m-%d %H:%M:%S")
@@ -688,14 +711,15 @@ def _summarize_vms_running(end_date, steps, nodes):
                         NodeStatus.timestamp >= past
                     ).order_by(NodeStatus.timestamp.asc()).first()
 
-                    if q:
+                    if q is not None:
                         status = q.status
-                        StatsCache().update("status", step.get("step"),
-                                            set_value=status,
-                                            set_dt=later,
-                                            key_prefix=node.name)
 
-                if not status:
+                    StatsCache().update("status", step.get("step"),
+                                        set_value=status,
+                                        set_dt=later,
+                                        key_prefix=node.name)
+
+                if not status or status == {}:
                     continue
 
                 if running is None:
@@ -766,14 +790,16 @@ def _summarize_cpu_usage(end_date, steps, nodes):
                         NodeStatus.timestamp >= past
                     ).order_by(NodeStatus.timestamp.asc()).first()
 
-                    if q:
+                    if q is not None:
                         status = q.status
-                        StatsCache().update("status", step.get("step"),
-                                            set_value=status,
-                                            set_dt=later,
-                                            key_prefix=node.name)
 
-                if not status or status.get("cpu_count") is None:
+                    StatsCache().update("status", step.get("step"),
+                                        set_value=status,
+                                        set_dt=later,
+                                        key_prefix=node.name)
+
+                if not status or status == {} or\
+                                status.get("cpu_count") is None:
                     continue
 
                 cpu_count = status.get("cpu_count")
@@ -833,14 +859,16 @@ def _summarize_ram_usage(end_date, steps, nodes):
                         NodeStatus.timestamp >= past
                     ).order_by(NodeStatus.timestamp.asc()).first()
 
-                    if q:
+                    if q is not None:
                         status = q.status
-                        StatsCache().update("status", step.get("step"),
-                                            set_value=status,
-                                            set_dt=later,
-                                            key_prefix=node.name)
 
-                if not status or status.get("memory") is None:
+                    StatsCache().update("status", step.get("step"),
+                                        set_value=status,
+                                        set_dt=later,
+                                        key_prefix=node.name)
+
+                if not status or status == {} or \
+                                status.get("memory") is None:
                     continue
 
                 try:
