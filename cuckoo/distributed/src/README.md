@@ -262,6 +262,21 @@ internal method and should not be used outside of utility.
 
 ## The Widgets
 
+A widget should be treated as an application entity that holds its own scope
+of data and interactions, configurable in development. Widgets connect a whole
+load of services and api's to work for themself internally. This enables unobtrusive
+widget behavior, that will load for themselves and won't break other widgets.
+
+Widgets have their own instance of `StatsApi` and `WidgetLoader` and feature their
+own event cycles to listen to. Widgets on their time listen to their own instances
+as well for deciding which render actions or callbacks to fire, as so they become
+their own mechanical decision-making chart-rendering materials that can be altered
+easily by user input without caring what the other widgets 'are'.
+
+### DraggableZWidget(name, options)
+
+
+
 ## The Charts
 
 ## The Loader
