@@ -131,7 +131,7 @@
     & > ul {
       @extend %flex-list;
       align-items: center;
-      justify-content: center;
+      // justify-content: center;
 
       & > li {
         margin: 0 7px;
@@ -151,6 +151,17 @@
           margin-left: 3px;
         }
 
+        &.right {
+          margin-left: auto;
+        }
+
+      }
+    }
+
+    .control-nodes {
+      display: none;
+      &.has-nodes {
+        display: block;
       }
     }
 

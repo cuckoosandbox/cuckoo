@@ -1,14 +1,11 @@
 import SVGLoader             from '../lib/SVGLoader';
 import { fabricate, colors } from '../lib/DraggableZ';
-import { apilog }            from '../lib/StatsApi';
 
 // widget-specific API middleware. it consumes a bare response
 // and returns it altered to the flavor of the output (in this case chartjs.)
 // it will make use of the api-specific params set for breaking down the content
 // to 'just' what chartjs needs.
-function responseBreakdownTasks(res, params, silent) {
-
-  let log = apilog(silent);
+function responseBreakdown(res, params, silent) {
 
   let result = {
     labels: [],
@@ -118,7 +115,7 @@ const widget = fabricate('tasks', {
     params: {
       include: 'task_completed,task_uncompleted'
     },
-    transform: responseBreakdownTasks
+    transform: responseBreakdown
   }
 
 });
@@ -158,6 +155,33 @@ widget.on('render', function() {
   toolbarPeriod.on('change', e => {
     this.api.period($(e.currentTarget).val());
     rerender();
+  });
+
+  // bind the nodes and display any node related controls
+  this.api.on('receive', data => {
+
+    if(data.original.nodes) {
+      let select = $(widget.template).find('.widget-toolbar select#tasks-filter-nodes');
+
+      // sort on order and append to select
+      data.original.nodes.sort((a, b) => {
+        if(a < b) return -1;
+        if(a > b) return 1;
+        return 0;
+      }).forEach(node => {
+        select.append(`<option value="${node}">${node}</option>`);
+      });
+
+      // display the node controls
+      $(widget.template).find('.control-nodes').addClass('has-nodes');
+
+      // bind a change event to that same select to respond to it.
+      select.bind('change', e => {
+        
+      });
+
+    }
+
   });
 
 });

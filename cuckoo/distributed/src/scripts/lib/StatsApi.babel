@@ -42,7 +42,8 @@ export default class StatsAPI {
     this.params = {
       include: config.params.include || null,
       period: config.params.period || 'hour',
-      date: config.params.date || null
+      date: config.params.date || null,
+      node: config.params.node || null
     }
 
     // stores an array of middleware-like functions that will do something
@@ -204,6 +205,11 @@ export default class StatsAPI {
   date(date) {
     this.params.date = date;
     return this;
+  }
+
+  // sets the node of the dataset
+  node(node) {
+    this.params.node = node;
   }
 
 }

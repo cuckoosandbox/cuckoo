@@ -1,9 +1,11 @@
 // collects all the external source widgets and
 // exports them in a single array.
 import tasks from './tasks';
+import vms   from './runningVM';
 
 const widgets = [
-  tasks
+  tasks,
+  vms
 ];
 
 export default widgets;

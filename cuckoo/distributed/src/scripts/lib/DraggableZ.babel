@@ -1,3 +1,4 @@
+import ejs from 'ejs';
 import StatsAPI from './StatsAPI';
 import WidgetLoader from './WidgetLoader';
 
@@ -22,7 +23,7 @@ class DraggableZWidget {
   constructor(name, config) {
 
     this.name = name || 'widget';
-    this.template = config.template || '';
+    this.template = config.template || false;
     this.elementId = config.elementId || undefined;
 
     this.widgetLayout = $.extend({
@@ -60,30 +61,42 @@ class DraggableZWidget {
     this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, config.loaderText || null);
 
     // wire all the implemented services
-    this._start();
+    if(this.template) {
+      return this._start();
+    } else {
+      return this;
+    }
 
   }
 
   // injects a grid widget to the frontend
   inject(grid) {
 
-    let widget;
-    let template = $(this.template);
+    let widget, template;
 
-    // set html in grid
-    grid.container.append(template);
+    if(this.template) {
+      template = $(this.template);
 
-    // append the attributes
-    template.attr('data-gs-width', this.widgetLayout.width);
-    template.attr('data-gs-height', this.widgetLayout.height);
-    template.attr('data-gs-x', this.widgetLayout.x);
-    template.attr('data-gs-y', this.widgetLayout.y);
-    template.attr('data-gs-no-resize', true);
-    template.attr('id', this.elementId);
+      // set html in grid
+      grid.container.append(template);
 
-    widget = grid.makeWidget(`#${this.elementId}`);
+      // append the attributes
+      template.attr('data-gs-width', this.widgetLayout.width);
+      template.attr('data-gs-height', this.widgetLayout.height);
+      template.attr('data-gs-x', this.widgetLayout.x);
+      template.attr('data-gs-y', this.widgetLayout.y);
+      template.attr('data-gs-no-resize', true);
+      template.attr('id', this.elementId);
 
-    this.dispatchEvent('render');
+      widget = grid.makeWidget(`#${this.elementId}`);
+
+      this.dispatchEvent('render');
+
+    } else {
+
+      // we have no template?
+      
+    }
 
   }
 
@@ -120,10 +133,16 @@ class DraggableZWidget {
     return this.api.fetch();
   }
 
+  // chainable configuration method for parsing html on
+  // the fly. This function is called upon initialization and should not
+  // be called afterwards. It will create html on the fly from a string
+  // and can populate variable stuff handlebars-style.
+  context(scope, content) {
+    return this._start();
+  }
+
   // starts drawing the chart into widget-chart
   createChart() {
-
-    console.log('new chart create');
 
     let c,
         ctx = this.template.find('.widget-chart canvas');
@@ -159,6 +178,8 @@ class DraggableZWidget {
     this.api.on('receive', res => this.chartOptions.data = res.data);
     this.loader.on('stopped', () => this.createChart());
     this.pull();
+
+    return this;
   }
 
 }
@@ -255,17 +276,16 @@ class DraggableZ {
 
 }
 
-export default DraggableZ;
-
 // utility function for defining widgets outside
 // of the interface container. usefull for ripping apart
 // widget-specific code and organize modularity. duplicates
 // the method with changes, but can be injected in an instance.
-export function fabricate(name, options) {
+function fabricate(name, options) {
 
   let widget;
 
-  if(options.template.length && options.template) {
+  // check for the template
+  if(options.template && options.template.length) {
     options.template = parseFragment(options.template);
   }
 
@@ -279,6 +299,9 @@ export function fabricate(name, options) {
 
 }
 
+// export the DraggableZ
+export default DraggableZ;
+
 // a configuration of colors to use in the charts:
 // configured with coolors.io: https://coolors.co/331832-1d3461-396494-ed5e8b-82204a
 export const colors = {
@@ -288,3 +311,6 @@ export const colors = {
   strawBerry: '#ED5E8B',
   pansyPurple: '#82204A'
 }
+
+// export utilities utilities
+export { DraggableZWidget, parseFragment, fabricate };

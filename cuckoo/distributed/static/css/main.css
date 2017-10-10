@@ -2406,8 +2406,7 @@ body {
     border-bottom: 1px solid #C9D7DB;
     padding: 15px; }
     .widget-toolbar > ul {
-      align-items: center;
-      justify-content: center; }
+      align-items: center; }
       .widget-toolbar > ul > li {
         margin: 0 7px; }
         .widget-toolbar > ul > li:first-child {
@@ -2421,6 +2420,12 @@ body {
           margin-right: 3px; }
         .widget-toolbar > ul > li label + input[type="text"] {
           margin-left: 3px; }
+        .widget-toolbar > ul > li.right {
+          margin-left: auto; }
+    .widget-toolbar .control-nodes {
+      display: none; }
+      .widget-toolbar .control-nodes.has-nodes {
+        display: block; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted

@@ -1,0 +1,75 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// transformation for chart.js
+function responseBreakdown(res, params, silent) {
+
+  console.log(`response:`, res);
+
+  let result = {
+    labels: [],
+    datasets: []
+  }
+
+  let addDataset = (set) => {
+
+    let selected = res[set];
+
+    if(params.period) {
+      selected = selected[params.period];
+    } else {
+      selected = selected['hour'];
+    }
+
+    result.labels = selected.points.map(point => moment(point.datetime).format('m'));
+
+    result.datasets.push({
+      label: set,
+      data: selected.points.map(point => point.value)
+    });
+
+  }
+
+  if(params.include.indexOf(',') > -1) {
+    params.include.split(',').forEach(inc => addDataset(inc));
+  } else {
+    addDataset(params.include)
+  }
+
+  console.log(`result: `, result);
+
+  return result;
+
+}
+
+const widget = fabricate('running_vm', {
+
+  template: $("#widget--running-vms"),
+  elementId: $("#widget--running-vms").attr('id'),
+
+  elementId: 'widget--running-vms',
+
+  widgetLayout: {
+    width: 6,
+    height: 6,
+    x: 6,
+    y: 0
+  },
+
+  loaderText: 'Loading',
+
+  chartHeight: 120,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'vm_running'
+    },
+    transform: responseBreakdown
+  }
+
+});
+
+export default widget;
