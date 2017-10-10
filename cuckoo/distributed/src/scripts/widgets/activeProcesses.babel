@@ -1,6 +1,7 @@
 import { fabricate } from '../lib/DraggableZ';
 import mock from '../sample-data/example-reply.json';
 
+// generates an HTML list as jQuery from a dataset.
 function createNodelist(data) {
 
   let el = $('<ul />', { class: 'widget-node-status' });
@@ -59,10 +60,7 @@ const widget = fabricate('active_processes', {
     }
   }
 
-});
-
-// :)
-widget.on('render', function() {
+}).on('render', function() {
 
   // waits for the receive to append the node list to the widget.
   this.api.on('receive', function(data) {

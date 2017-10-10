@@ -6,6 +6,7 @@ var CONFIG = {
   javascriptLibraryPaths: [
     'lodash/lodash.js',
     'moment/moment.js',
+    'humanize-plus/dist/humanize.js',
     'jquery/dist/jquery.js',
     'jquery-ui-bundle/jquery-ui.js',
     'gridstack/dist/gridstack.js',

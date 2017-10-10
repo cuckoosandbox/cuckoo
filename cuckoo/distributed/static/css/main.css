@@ -2243,12 +2243,12 @@ body {
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
 
-.widget-controls, .widget-toolbar > ul, .widget-node-status {
+.widget-controls, .widget-toolbar > ul, .widget-node-status, .widget-priority-list {
   padding: 0;
   margin: 0;
   list-style: none; }
 
-.widget-controls, .widget-toolbar > ul, .widget-node-status {
+.widget-controls, .widget-toolbar > ul, .widget-node-status, .widget-priority-list {
   display: flex; }
 
 #app-header {
@@ -2359,10 +2359,10 @@ body {
       margin: 2px 0;
       border-radius: 10px; }
   .widget-title {
-    border: 2px solid #C9D7DB;
-    border-width: 0 2px 2px 0;
     border-bottom-right-radius: 8px;
     border-top-left-radius: 8px;
+    border: 2px solid #C9D7DB;
+    border-width: 0 2px 2px 0;
     background-color: #DAE6E9;
     display: inline-block;
     padding: 10px; }
@@ -2461,6 +2461,27 @@ body {
         .widget-node-status > li span.online {
           background-color: #23CE6B;
           border-color: #20b960; }
+  .widget-priority-list {
+    position: relative; }
+    .widget-priority-list > li {
+      flex-basis: 100%;
+      background-color: #DAE6E9;
+      border: 1px solid #C9D7DB;
+      border-radius: 4px;
+      text-align: center;
+      margin: 0 7px;
+      padding: 5px 0; }
+      .widget-priority-list > li h4 {
+        display: inline-block;
+        margin: 0;
+        background-color: #fff;
+        width: 32px;
+        height: 32px;
+        padding-top: 6px;
+        font-weight: 500;
+        color: #999;
+        border-radius: 16px;
+        border: 1px solid #C9D7DB; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted
