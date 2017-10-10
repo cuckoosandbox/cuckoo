@@ -1,8 +1,9 @@
 import { config } from '../config';
 
 // global configuration aliases
-const API_BASE  = config.API_BASE;
-const API_HOST  = config.API_HOST;
+const API_BASE     = config.API_BASE;
+const API_HOST     = config.API_HOST;
+const MOCK_INCLUDE = config.API_MOCK_INCLUDE || {};
 
 // cross-pointers to the python implementation, these parameters
 // mirror the API implementations. When new options are added to the
@@ -14,8 +15,9 @@ const SUPPORTED_INCLUDES = [
   'disk_usage',
   'cpu_usage',
   'memory_usage',
-  'amount_prio_queued'
-]
+  'amount_prio_queued',
+  'active_processes'
+];
 
 /*
   This is a utility wrapper around the stats api. It translates
@@ -27,7 +29,8 @@ export default class StatsAPI {
 
     let config = this.config = $.extend({
       params: {},
-      transform: []
+      transform: [],
+      mock: false
     }, options);
 
     // stores callbacks to their eventtypes, these are dispatched
@@ -52,6 +55,12 @@ export default class StatsAPI {
     // particular serialization and configurations. Allthough the API returns the
     // data differently, hence it needs some mapping.)
     this.transformators = [];
+
+    // this is a general pointer to mocked configurations. This constructor
+    // checks it availability in options.mock. When the response should be parsed,
+    // it will priotize to return this mocked json property.
+    this.mock = config.mock;
+    this.mockDelay = config.mockDelay || 1500;
 
     // initialize transformations from config
     if(config.transform) {
@@ -119,54 +128,94 @@ export default class StatsAPI {
         // dispatch the 'request' event
         self._dispatchEvent('request', { url: url });
 
-        $.ajax({
-          url: url,
-          method: 'GET',
-          dataType: 'json',
-          contentType: 'application/json'
-        }).done((response, status) => {
+        // resolve a mocked response - is almost the same as
+        // receiving regularly, but then everything is static.
+        if(this.mock) {
 
-          let transformed = {};
+          let transformed = { active_processes: this.mock };
+          for(let prop in MOCK_INCLUDE) {
+            transformed[prop] = MOCK_INCLUDE[prop];
+          }
+          let orig = JSON.parse(JSON.stringify(transformed));
 
           if(self.transformators.length) {
-            self.transformators.forEach(transformation => transformed = transformation(response, self.params));
+            self.transformators.forEach(transformation => transformed = transformation(transformed, self.params));
             transformed._wasTransformed = true;
           }
 
-          // dispatch the 'receive' event
-          self._dispatchEvent('receive', {
+          return setTimeout(() => {
+
+            // dispatch the 'receive' event
+            self._dispatchEvent('receive', {
+              url: url,
+              original: orig,
+              data: transformed._wasTransformed ? transformed : orig,
+              params: self.params
+            });
+
+            return resolve({
+              status: 'mock',
+              url: url,
+              data: transformed._wasTransformed ? transformed : orig,
+              original: orig
+            });
+
+          }, this.mockDelay);
+
+        } else {
+
+          // if not mocked, ajax that response
+
+          $.ajax({
             url: url,
-            original: response,
-            data: transformed._wasTransformed ? transformed : response,
-            params: self.params
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json'
+          }).done((response, status) => {
+
+            let transformed = {};
+
+            if(self.transformators.length) {
+              self.transformators.forEach(transformation => transformed = transformation(response, self.params));
+              transformed._wasTransformed = true;
+            }
+
+            // dispatch the 'receive' event
+            self._dispatchEvent('receive', {
+              url: url,
+              original: response,
+              data: transformed._wasTransformed ? transformed : response,
+              params: self.params
+            });
+
+            // resolve the promise when the ajax call returned OK from the server
+            // with the response data and other stuff for front-end handling.
+            return resolve({
+              status: (status === "success") ? 200 : status,
+              url: url,
+              data: response
+            });
+
+          }).fail((xhr, err) => {
+
+            // dispatch the 'error' event
+            self._dispatchEvent('error', {
+              url: url
+            });
+
+            // reject on a failing xhr call, with as lots of reference stuff
+            // as possible for catching up in the frontend on this error.
+            return reject({
+              url: url,
+              status: err.status,
+              message: `The request failed.`,
+              error: err,
+              xhr: xhr
+            });
+
           });
 
-          // resolve the promise when the ajax call returned OK from the server
-          // with the response data and other stuff for front-end handling.
-          return resolve({
-            status: (status === "success") ? 200 : status,
-            url: url,
-            data: response
-          });
-
-        }).fail((xhr, err) => {
-
-          // dispatch the 'error' event
-          self._dispatchEvent('error', {
-            url: url
-          });
-
-          // reject on a failing xhr call, with as lots of reference stuff
-          // as possible for catching up in the frontend on this error.
-          return reject({
-            url: url,
-            status: err.status,
-            message: `The request failed.`,
-            error: err,
-            xhr: xhr
-          });
-
-        });
+        }
 
     });
 

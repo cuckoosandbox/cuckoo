@@ -2243,12 +2243,12 @@ body {
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
 
-.widget-controls, .widget-toolbar > ul {
+.widget-controls, .widget-toolbar > ul, .widget-node-status {
   padding: 0;
   margin: 0;
   list-style: none; }
 
-.widget-controls, .widget-toolbar > ul {
+.widget-controls, .widget-toolbar > ul, .widget-node-status {
   display: flex; }
 
 #app-header {
@@ -2362,6 +2362,7 @@ body {
     border: 2px solid #C9D7DB;
     border-width: 0 2px 2px 0;
     border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
     background-color: #DAE6E9;
     display: inline-block;
     padding: 10px; }
@@ -2381,6 +2382,16 @@ body {
       margin-left: auto; }
   .widget-content {
     padding: 15px; }
+    .widget-content > .widget-content-copy {
+      color: #999; }
+      .widget-content > .widget-content-copy.center {
+        text-align: center; }
+      .widget-content > .widget-content-copy.message-error {
+        font-weight: 500;
+        color: #EF2D56; }
+      .widget-content > .widget-content-copy.message-success {
+        font-weight: 500;
+        color: #23CE6B; }
   .widget-loader {
     position: absolute;
     left: 50%;
@@ -2426,6 +2437,30 @@ body {
       display: none; }
       .widget-toolbar .control-nodes.has-nodes {
         display: block; }
+  .widget-node-status {
+    justify-content: center; }
+    .widget-node-status > li {
+      padding: 7px 10px 8px 10px;
+      margin: 7px;
+      border: 1px solid rgba(152, 175, 182, 0.5);
+      border-radius: 50px; }
+      .widget-node-status > li h4 {
+        margin: 0;
+        font-weight: 400; }
+        .widget-node-status > li h4 span {
+          vertical-align: middle;
+          margin-right: 3px; }
+      .widget-node-status > li span {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-color: #EF2D56;
+        vertical-align: middle;
+        border-radius: 50%;
+        border: 1px solid #d7294d; }
+        .widget-node-status > li span.online {
+          background-color: #23CE6B;
+          border-color: #20b960; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted

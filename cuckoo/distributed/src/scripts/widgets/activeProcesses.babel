@@ -1,4 +1,34 @@
 import { fabricate } from '../lib/DraggableZ';
+import mock from '../sample-data/example-reply.json';
+
+function createNodelist(data) {
+
+  let el = $('<ul />', { class: 'widget-node-status' });
+  let hasData = false;
+
+  for(let prop in data.active_processes) {
+    let li = $('<li />');
+    let t = $('<h4 />');
+    let s = $('<span />');
+    t.text(prop);
+    s.toggleClass('online', data.active_processes[prop].cuckoo);
+    t.prepend(s);
+    li.append(t);
+    el.append(li);
+    hasData = true;
+  }
+
+  // if there is no data at el, replace the element by a <p> telling something
+  // like: 'no nodes here matey!'
+  if(!hasData) {
+    el = $('<p />', {
+      text: 'There are no measurable nodes at the moment.',
+      class: 'widget-content-copy message-error center'
+    });
+  }
+
+  return el;
+}
 
 // fabricate a widget
 const widget = fabricate('active_processes', {
@@ -22,10 +52,23 @@ const widget = fabricate('active_processes', {
 
   // api configuration
   api: {
+    // mock: mock.active_processes,
+    // mockDelay: 500,
     params: {
       include: 'active_processes'
     }
   }
+
+});
+
+// :)
+widget.on('render', function() {
+
+  // waits for the receive to append the node list to the widget.
+  this.api.on('receive', function(data) {
+    let list = createNodelist(data.data);
+    $(widget.template).find('.widget-content').append(list);
+  });
 
 });
 

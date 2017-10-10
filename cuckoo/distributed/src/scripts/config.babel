@@ -1,8 +1,13 @@
+import mock from './sample-data/example-reply.json';
+
 /*
   Global configuration parameters
  */
 export const config = {
   // API_HOST: window.location.hostname,
   API_HOST: 'http://cuck.oo:9003',
-  API_BASE: 'api/stats'
+  API_BASE: 'api/stats',
+  API_MOCK_INCLUDE: {
+    nodes: mock.nodes
+  }
 }

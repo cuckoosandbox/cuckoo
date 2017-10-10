@@ -63,7 +63,7 @@ const _defaults = {
 }
 
 // cache utilities
-let _cached = [];
+const _cached = [];
 let _inCache = (path) => _cached.filter(item => item.path === path);
 let _cache = (path, content) => {
   if(_inCache(path).length === 0) {
@@ -119,11 +119,15 @@ function load(path, placeholder) {
     }
 
     $.get(path).done(function(response) {
-      resolve({
+
+      let data = {
         svg: $(response).find('svg'),
         placeholder: $(placeholder),
         path: path
-      });
+      };
+      _cache(data.path, data.svg);
+      resolve(data);
+
     }).fail(function(err, xhr) {
       reject({
         err: err,

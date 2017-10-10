@@ -9,6 +9,7 @@ if(Chart) {
 
 $(function() {
 
+  // global callbacks
   widgets.forEach(widget => {
     widget.on('render', () => {
       SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
