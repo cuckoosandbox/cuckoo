@@ -10,9 +10,9 @@ it and in a matter of seconds Cuckoo will provide you back some detailed
 results outlining what such file did when executed inside an isolated
 environment.
 
-If you want to contribute to development, please read the
-`development guidelines`_ and the `contribution requirements`_ first. Make
-sure you check our Issues and Pull Requests and that you join our IRC channel.
+If you want to contribute to development, report a bug, make a feature request or ask a question, please first
+take a look at our `community guidelines`_. For development, please also take a look at the `contribution requirements`_.
+Make sure you check our Issues and Pull Requests and that you join our IRC channel.
 
 This branch represents the new **cuckoo package**. Its setup instructions may
 be found `in <https://cuckoo.sh/docs/installation/host/requirements.html>`_
@@ -49,5 +49,5 @@ You can find a full documentation of the latest stable release
    :alt: Codecov Coverage Status
    :target: https://codecov.io/gh/cuckoosandbox/cuckoo
 
-.. _`development guidelines`: http://www.cuckoosandbox.org/development.html
+.. _`community guidelines`: http://docs.cuckoosandbox.org/en/latest/introduction/community
 .. _`contribution requirements`: http://www.cuckoofoundation.org/contribute.html
