@@ -2,10 +2,18 @@
 // exports them in a single array.
 import tasks from './tasks';
 import vms   from './runningVM';
+import cpu   from './cpu';
+import disk  from './disk';
+import memory from './memory';
+import queue from './queue';
+import activeProcesses from './activeProcesses';
 
-const widgets = [
+export default [
   tasks,
-  vms
+  cpu,
+  disk,
+  memory,
+  vms,
+  queue,
+  activeProcesses
 ];
-
-export default widgets;

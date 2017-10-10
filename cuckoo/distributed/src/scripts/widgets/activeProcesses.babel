@@ -1,0 +1,32 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// fabricate a widget
+const widget = fabricate('active_processes', {
+
+  template: $("#widget--active-processes"),
+  elementId: $("#widget--active-processes").attr('id'),
+
+  widgetLayout: {
+    width: 6,
+    height: 4,
+    x: 6,
+    y: 10
+  },
+
+  loaderText: 'Loading',
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'active_processes'
+    }
+  }
+
+});
+
+export default widget;

@@ -1,0 +1,32 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// fabricate a widget
+const widget = fabricate('memory_usage', {
+
+  template: $("#widget--memory-usage"),
+  elementId: $("#widget--memory-usage").attr('id'),
+
+  widgetLayout: {
+    width: 4,
+    height: 4,
+    x: 0,
+    y: 0
+  },
+
+  loaderText: 'Loading',
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'memory_usage'
+    }
+  }
+
+});
+
+export default widget;

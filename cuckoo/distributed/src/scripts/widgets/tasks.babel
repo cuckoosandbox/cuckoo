@@ -1,4 +1,3 @@
-import SVGLoader             from '../lib/SVGLoader';
 import { fabricate, colors } from '../lib/DraggableZ';
 
 // widget-specific API middleware. it consumes a bare response
@@ -131,9 +130,6 @@ widget.on('render', function() {
     this.chart.destroy();
     this.pull();
   }
-
-  // load svg icons
-  SVGLoader.loadPlaceholders($(this.template).find('[data-svg-src]'));
 
   // initialize datepicker
   $(this.template).find('[data-datepicker]').datepicker({

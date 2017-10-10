@@ -93,7 +93,6 @@ class DraggableZWidget {
 
       this.dispatchEvent('render', this, () => {
         this.initialized = true;
-        console.log(this);
       });
 
     } else {

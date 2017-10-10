@@ -1,0 +1,32 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// fabricate a widget
+const widget = fabricate('amount_prio_queued', {
+
+  template: $("#widget--amount-prio-queued"),
+  elementId: $("#widget--amount-prio-queued").attr('id'),
+
+  widgetLayout: {
+    width: 6,
+    height: 4,
+    x: 0,
+    y: 10
+  },
+
+  loaderText: 'Loading',
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'amount_prio_queued'
+    }
+  }
+
+});
+
+export default widget;

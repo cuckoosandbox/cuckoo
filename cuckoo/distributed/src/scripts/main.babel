@@ -1,3 +1,4 @@
+import SVGLoader from './lib/SVGLoader';
 import DraggableZ from './lib/DraggableZ';
 import widgets from './widgets';
 
@@ -7,6 +8,12 @@ if(Chart) {
 }
 
 $(function() {
+
+  widgets.forEach(widget => {
+    widget.on('render', () => {
+      SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
+    });
+  });
 
   const UI = new DraggableZ($("#grid"), widgets);
 

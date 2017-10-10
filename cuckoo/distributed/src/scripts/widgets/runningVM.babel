@@ -3,8 +3,6 @@ import { fabricate } from '../lib/DraggableZ';
 // transformation for chart.js
 function responseBreakdown(res, params, silent) {
 
-  console.log(`response:`, res);
-
   let result = {
     labels: [],
     datasets: []
@@ -35,8 +33,6 @@ function responseBreakdown(res, params, silent) {
     addDataset(params.include)
   }
 
-  console.log(`result: `, result);
-
   return result;
 
 }
@@ -46,18 +42,16 @@ const widget = fabricate('running_vm', {
   template: $("#widget--running-vms"),
   elementId: $("#widget--running-vms").attr('id'),
 
-  elementId: 'widget--running-vms',
-
   widgetLayout: {
     width: 6,
     height: 6,
     x: 6,
-    y: 0
+    y: 4
   },
 
   loaderText: 'Loading',
 
-  chartHeight: 120,
+  chartHeight: 80,
 
   // chart configuration
   chart: {},

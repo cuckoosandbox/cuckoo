@@ -1,0 +1,32 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// fabricate a widget
+const widget = fabricate('disk_usage', {
+
+  template: $("#widget--disk-usage"),
+  elementId: $("#widget--disk-usage").attr('id'),
+
+  widgetLayout: {
+    width: 4,
+    height: 4,
+    x: 4,
+    y: 0
+  },
+
+  loaderText: 'Loading',
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'disk_usage'
+    }
+  }
+
+});
+
+export default widget;
