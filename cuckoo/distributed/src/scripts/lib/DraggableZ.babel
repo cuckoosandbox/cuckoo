@@ -25,6 +25,7 @@ class DraggableZWidget {
     this.name = name || 'widget';
     this.template = config.template || false;
     this.elementId = config.elementId || undefined;
+    this.initialized = false;
 
     this.widgetLayout = $.extend({
       el: null,
@@ -90,12 +91,15 @@ class DraggableZWidget {
 
       widget = grid.makeWidget(`#${this.elementId}`);
 
-      this.dispatchEvent('render');
+      this.dispatchEvent('render', this, () => {
+        this.initialized = true;
+        console.log(this);
+      });
 
     } else {
 
       // we have no template?
-      
+
     }
 
   }

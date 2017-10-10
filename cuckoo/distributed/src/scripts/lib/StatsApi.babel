@@ -79,18 +79,27 @@ export default class StatsAPI {
       return str;
     }
 
+    // include the date param
     if(this.params.date) {
       url += `/${this.params.date}`;
     }
 
+    // include the period param
     if(this.params.period) {
       url = _before(url);
       url += `period=${this.params.period}`;
     }
 
+    // include the include param
     if(this.params.include) {
       url = _before(url);
       url += `include=${this.params.include}`;
+    }
+
+    // include the node param
+    if(this.params.node) {
+      url = _before(url);
+      url += `node=${this.params.node}`;
     }
 
     return url;

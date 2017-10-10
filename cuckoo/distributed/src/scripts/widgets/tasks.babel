@@ -127,7 +127,7 @@ widget.on('render', function() {
 
   let chart = $(this.template).find('.widget-chart');
 
-  let rerender = (opt) => {
+  let rerender = () => {
     this.chart.destroy();
     this.pull();
   }
@@ -160,7 +160,8 @@ widget.on('render', function() {
   // bind the nodes and display any node related controls
   this.api.on('receive', data => {
 
-    if(data.original.nodes) {
+    if(data.original.nodes && !widget.hasNodes) {
+
       let select = $(widget.template).find('.widget-toolbar select#tasks-filter-nodes');
 
       // sort on order and append to select
@@ -177,8 +178,11 @@ widget.on('render', function() {
 
       // bind a change event to that same select to respond to it.
       select.bind('change', e => {
-        
+        widget.api.node(select.val());
+        rerender();
       });
+
+      widget.hasNodes = true;
 
     }
 
