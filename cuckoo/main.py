@@ -545,7 +545,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
 
     try:
         execute_from_command_line(
-            ("cuckoo", "runserver", "%s:%d" % (host, port))
+            ("cuckoo", "runserver", "%s:%d" % (host, port), "--noreload")
             if not args else
             ("cuckoo",) + args
         )
