@@ -34,7 +34,7 @@ class DraggableZWidget {
       width: 1,
       height: 1,
       id: null
-    }, config.widgetLayout);
+    }, config.widgetLayout || {});
 
     this.events = {
       render: [],
@@ -42,6 +42,13 @@ class DraggableZWidget {
       loading: [],
       loaded: []
     };
+
+    // extend the users set of actions versus a default implemented few
+    this.actions = $.extend({
+      refresh: function() {
+        this.pull();
+      }
+    }, config.actions || {});
 
     // api-specific
     this.api                = new StatsAPI(config.api || {});
@@ -56,7 +63,7 @@ class DraggableZWidget {
       type: 'line',
       data: {},
       options: {}
-    }, config.chart);
+    }, config.chart || {});
 
     // configure the widget loader
     this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, config.loaderText || null);
@@ -94,6 +101,14 @@ class DraggableZWidget {
       this.dispatchEvent('render', this, () => {
         this.initialized = true;
       });
+
+      // create dead simple action listeners
+      for(let a in this.actions) {
+        $(this.template).find(`a[href="widget:${a}"]`).bind('click', e => {
+          e.preventDefault();
+          if(this.actions[a] instanceof Function) this.actions[a].apply(this, e);
+        });
+      }
 
     } else {
 

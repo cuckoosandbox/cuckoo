@@ -88,6 +88,19 @@
 
     .widget-controls {
       margin-left: auto;
+
+      // set a transition on an svg property of the icons
+      .svg-icon {
+        transition: fill 150ms linear;
+      }
+
+      a:hover {
+        // change the svg fill with plain css :D
+        .svg-icon {
+          fill: shade(#CBD7DA, 30%);
+        }
+      }
+      
     }
   }
 

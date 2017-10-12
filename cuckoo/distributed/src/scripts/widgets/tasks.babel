@@ -55,7 +55,7 @@ const widget = fabricate('tasks', {
   },
   loaderText: 'Loading',
 
-  chartHeight: 120,
+  chartHeight: 110,
 
   // chart configuration
   chart: {

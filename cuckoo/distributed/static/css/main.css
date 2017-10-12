@@ -2381,6 +2381,10 @@ body {
     margin-bottom: 15px; }
     .widget-header .widget-controls {
       margin-left: auto; }
+      .widget-header .widget-controls .svg-icon {
+        transition: fill 150ms linear; }
+      .widget-header .widget-controls a:hover .svg-icon {
+        fill: #8e9799; }
   .widget-content {
     padding: 15px; }
     .widget-content > .widget-content-copy {
