@@ -173,6 +173,8 @@ class Physical(Machinery):
         data.update({
             "uname": self.options.fog.username,
             "upass": self.options.fog.password,
+            "ulang": "English",
+            "login": "Login",
         })
 
         return requests.post(url, data=data)
@@ -184,7 +186,7 @@ class Physical(Machinery):
             return
 
         # TODO Handle exceptions such as not being able to connect.
-        r = self.fog_query("node=tasks&sub=listhosts")
+        r = self.fog_query("node=task&sub=listhosts")
 
         # Parse the HTML.
         b = bs4.BeautifulSoup(r.content, "html.parser")
@@ -198,7 +200,9 @@ class Physical(Machinery):
         # for "downloading" a safe image onto the host. Great piece of FOG API
         # usage here.
         for row in b.find_all("table")[0].find_all("tr")[1:]:
-            hostname, macaddr, download, upload, advanced = row.find_all("td")
+            hostinfo, assignedimage, download = row.find_all("td")
+            hostname = hostinfo.find_all("a")[0]
+            macaddr = hostinfo.find_all("small")[0]
             self.fog_machines[hostname.text] = (
                 macaddr.text, next(download.children).attrs["href"][1:],
             )
