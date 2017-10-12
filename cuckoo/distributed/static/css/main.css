@@ -2235,7 +2235,7 @@ a.ui-button:active,
 
 body {
   font-family: "Roboto", "Helvetica", sans-serif;
-  background-color: #F5F5F5;
+  background-color: #3f444c;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased; }
   body * {
@@ -2329,7 +2329,8 @@ body {
   min-height: 100%;
   background-color: #FFF;
   border: 2px solid rgba(152, 175, 182, 0.5);
-  border-radius: 12px; }
+  border-radius: 12px;
+  box-shadow: 0px 4px 8px #34383f; }
   .widget-grid {
     margin-top: 15px; }
   .widget-handle {

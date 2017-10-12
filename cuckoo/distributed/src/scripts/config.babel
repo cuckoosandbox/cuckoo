@@ -1,13 +1,21 @@
 import mock from './sample-data/example-reply.json';
 
+let appurl = () => `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
 /*
   Global configuration parameters
  */
 export const config = {
-  // API_HOST: window.location.hostname,
-  API_HOST: 'http://cuck.oo:9003',
+  API_HOST: appurl(),
   API_BASE: 'api/stats',
   API_MOCK_INCLUDE: {
     nodes: mock.nodes
   }
 }
+
+/*
+  Export utility functions
+ */
+export {
+  appurl
+};
