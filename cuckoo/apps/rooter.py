@@ -41,7 +41,7 @@ def version():
 
 def nic_available(interface):
     """Check if specified network interface is available."""
-    if not re.match("[a-zA-Z0-9-_]+$", interface):
+    if not re.match("[a-zA-Z0-9-._]+$", interface):
         return False
 
     try:
