@@ -287,6 +287,35 @@
     }
   }
 
+  &-no-data {
+    display: none;
+    position: absolute;
+    width: calc(100% - 30px);
+    height: calc(100% - 110px);
+    top: 95px;
+    left: 15px;
+    border-radius: 6px;
+
+    svg {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -10px;
+      margin-left: -32px;
+      width: 64px;
+      height: 64px;
+
+      .IconCross {
+        fill: #ccc;
+      }
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+    }
+  }
+
 }
 
 /*

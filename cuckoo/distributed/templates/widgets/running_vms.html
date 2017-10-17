@@ -14,6 +14,9 @@
     <!-- Handle -->
     <a class="widget-handle" role="command"></a>
 
+    <!-- Toolbar -->
+    {% include 'partials/widget-toolbar.html' %}
+
     <!-- Body -->
     <section class="widget-content">
       <div class="widget-chart"><canvas></canvas></div>
@@ -21,6 +24,9 @@
 
     <!-- Loader -->
     {% include 'partials/widget-loader.html' %}
+
+    <!-- No data -->
+    {% include 'partials/widget-no-data.html' %}
 
   </div>
 

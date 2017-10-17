@@ -56,13 +56,12 @@ const widget = fabricate('tasks', {
   },
   loaderText: 'Loading',
 
-  chartHeight: 150,
+  chartHeight: 250,
 
   // chart configuration
   chart: {
     type: 'line',
     options: {
-      responsive: true,
       legend: {
         position: 'bottom',
         strokeStyle: false,

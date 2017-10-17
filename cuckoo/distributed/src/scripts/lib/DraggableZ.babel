@@ -32,7 +32,7 @@ function initializeToolbar(widget) {
 
   // chart rerender hook
   let rerender = () => {
-    widget.chart.destroy();
+    if(widget.chart) widget.chart.destroy();
     widget.pull();
   }
 
@@ -52,7 +52,8 @@ function initializeToolbar(widget) {
 
   // initialize datepicker
   toolbar.find('[data-datepicker]').datepicker({
-    dateFormat: 'yy-mm-dd'
+    dateFormat: 'yy-mm-dd',
+    maxDate: new Date()
   }).datepicker('setDate', new Date());
 
   let toolbarDate = toolbar.find('input[name="toolbar-date"]');
@@ -256,6 +257,12 @@ class DraggableZWidget {
     let c,
         ctx = this.template.find('.widget-chart canvas');
 
+    let create = () => {
+      c = new Chart(ctx[0], this.chartOptions);
+      $(this.template).data('chart', c);
+      this.chart = c;
+    }
+
     if(ctx.length) {
 
       if(this.chartHeight) {
@@ -281,9 +288,15 @@ class DraggableZWidget {
         dataset.fill = dataset.fill || false;
       });
 
-      c = new Chart(ctx[0], this.chartOptions);
-      $(this.template).data('chart', c);
-      this.chart = c;
+      if(this.chartOptions.data.labels.length == 0) {
+        $(this.template).find('.widget-chart').fadeOut(500, () => {
+          $(this.template).find('.widget-no-data').fadeIn(500);
+        });
+      } else {
+        $(this.template).find('.widget-no-data').fadeOut(500, () => {
+          $(this.template).find('.widget-chart').fadeIn(500, create);
+        });
+      }
 
     }
 
@@ -291,7 +304,9 @@ class DraggableZWidget {
 
   // internal working-togethers
   _start() {
+
     // after we pulled, start drawing the canvas
+    this.api.on('request', () => $(this.template).find('.widget-no-data').fadeOut(500));
     this.api.on('receive', res => this.chartOptions.data = res.data);
     this.loader.on('stopped', () => this.createChart());
     this.pull();

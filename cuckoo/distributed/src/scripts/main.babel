@@ -5,6 +5,8 @@ import widgets from './widgets';
 // chart.js defaults
 if(Chart) {
   Chart.defaults.global.defaultFontFamily   = "'Roboto','Helvetica Neue','Arial', sans-serif";
+  Chart.defaults.global.responsive = true;
+  Chart.defaults.global.maintainAspectRatio = false;
 }
 
 $(function() {

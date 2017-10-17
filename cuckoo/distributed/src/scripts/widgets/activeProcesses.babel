@@ -65,6 +65,11 @@ const widget = fabricate('active_processes', {
   // waits for the receive to append the node list to the widget.
   this.api.on('receive', function(data) {
     let list = createNodelist(data.data);
+
+    if($(widget.template).find('.widget-node-status').length > 0) {
+      // remove the node list if it already exists
+      $(widget.template).find('.widget-node-status').remove();
+    }
     $(widget.template).find('.widget-content').append(list);
   });
 
