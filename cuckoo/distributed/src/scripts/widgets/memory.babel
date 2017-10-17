@@ -1,5 +1,5 @@
 import { transformators } from '../lib/StatsAPI';
-import { fabricate } from '../lib/DraggableZ';
+import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
 import mock from '../sample-data/example-reply.json';
 
 // fabricate a widget
@@ -17,27 +17,47 @@ const widget = fabricate('memory_usage', {
 
   loaderText: 'Loading',
 
-  chartHeight: 80,
+  chartHeight: 120,
 
   // chart configuration
-  chart: {},
+  chart: {
+    type: 'line',
+    options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          ticks: {
+            type: 'time',
+            maxTicksLimit: 10
+          }
+        }]
+      }
+    }
+  },
 
   // api configuration
   api: {
-    mock: mock,
     params: {
-      include: 'memory_usage',
-      period: 'week'
+      include: 'memory_usage'
     },
     transform: transformators.nodeResponseBreakdown
   }
 
 }).on('render', function() {
-
-  this.api.on('receive', data => {
-    console.log('inbound memory_usage:', data);
-  });
-
+  initializeToolbar(this);
 });
 
 export default widget;

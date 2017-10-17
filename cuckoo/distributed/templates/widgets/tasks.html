@@ -15,39 +15,7 @@
     <a class="widget-handle" role="command"></a>
 
     <!-- Toolbar -->
-    <form class="widget-toolbar">
-      <ul>
-        <li class="title">Show:</li>
-        <li class="date-selector">
-          <label for="tasks-date">date</label>
-          <input type="text" name="tasks-date" id="tasks-date" placeholder="Select date" data-datepicker />
-        </li>
-        <li>
-          <label for="tasks-period-hour">
-            <input type="radio" name="tasks-period" id="tasks-period-hour" value="hour" checked />
-            <span>hour</span>
-          </label>
-        </li>
-        <li>
-          <label for="tasks-period-day">
-            <input type="radio" name="tasks-period" id="tasks-period-day" value="day" />
-            <span>day</span>
-          </label>
-        </li>
-        <li>
-          <label for="tasks-period-week">
-            <input type="radio" name="tasks-period" id="tasks-period-week" value="week" />
-            <span>week</span>
-          </label>
-        </li>
-        <li class="right title control-nodes"><label for="tasks-filter-nodes">Node:</label></li>
-        <li class="control-nodes">
-          <select name="tasks-node" id="tasks-filter-nodes">
-            <option value="all">All</option>
-          </select>
-        </li>
-      </ul>
-    </form>
+    {% include 'partials/widget-toolbar.html' %}
 
     <!-- Body -->
     <section class="widget-content">

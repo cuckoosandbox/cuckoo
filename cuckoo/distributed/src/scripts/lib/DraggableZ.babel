@@ -11,6 +11,86 @@ function parseFragment(fragment) {
   return $(result).eq(result.length-1);
 }
 
+function initializeToolbar(widget) {
+
+  // verify the existence of a toolbar and a widget before proceeding
+  if(!widget) return false;
+  if(!$(widget.template).find('.widget-toolbar').length) return false;
+  let toolbar = $(widget.template).find('.widget-toolbar');
+
+  // chart rerender hook
+  let rerender = () => {
+    widget.chart.destroy();
+    widget.pull();
+  }
+
+  // unique-ify all the elements
+  toolbar.find('#toolbar-date, #toolbar-period-day, #toolbar-period-hour, #toolbar-period-week, #toolbar-filter-nodes').each(function() {
+
+    let curID = $(this).attr('id');
+    let tID = curID.replace('toolbar-',`${widget.name}-`);
+
+    if(toolbar.find(`label[for="${curID}"]`)) {
+      toolbar.find(`label[for="${curID}"]`).attr('for', tID);
+    }
+
+    $(this).attr('id', tID);
+
+  });
+
+  // initialize datepicker
+  toolbar.find('[data-datepicker]').datepicker({
+    dateFormat: 'yy-mm-dd'
+  }).datepicker('setDate', new Date());
+
+  let toolbarDate = toolbar.find('input[name="toolbar-date"]');
+  let toolbarPeriod = toolbar.find('input[name="toolbar-period"]');
+
+  toolbarDate.on('change', e => {
+    let t = $(e.currentTarget);
+    console.log(t);
+    let val = t.val()
+    widget.api.date(t.val());
+    rerender();
+  });
+
+  toolbarPeriod.on('change', e => {
+    widget.api.period($(e.currentTarget).val());
+    rerender();
+  });
+
+  widget.api.on('receive', data => {
+
+    if(data.original.nodes && !widget.hasNodes) {
+
+      let select = toolbar.find('select[name="toolbar-node"]');
+
+      // sort on order and append to select
+      data.original.nodes.sort((a, b) => {
+        if(a < b) return -1;
+        if(a > b) return 1;
+        return 0;
+      }).forEach(node => {
+        select.append(`<option value="${node}">${node}</option>`);
+      });
+
+      // display the node controls
+      toolbar.find('.control-nodes').addClass('has-nodes');
+
+      // bind a change event to that same select to respond to it.
+      select.bind('change', e => {
+        widget.api.node(select.val());
+        rerender();
+      });
+
+      widget.hasNodes = true;
+
+    }
+
+  });
+
+}
+
 /*
   Defines a simple widget - tries to correspond to the Gridstack API
   - every widget has an API instance to control itself from within. That means
@@ -329,5 +409,10 @@ export const colors = {
   pansyPurple: '#82204A'
 }
 
-// export utilities utilities
-export { DraggableZWidget, parseFragment, fabricate };
+// export utilities
+export {
+  DraggableZWidget,
+  parseFragment,
+  fabricate,
+  initializeToolbar
+};

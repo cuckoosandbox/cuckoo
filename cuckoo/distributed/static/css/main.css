@@ -2420,7 +2420,7 @@ body {
   .widget-toolbar {
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
-    padding: 15px; }
+    padding: 0 15px 5px 15px; }
     .widget-toolbar > ul {
       align-items: center; }
       .widget-toolbar > ul > li {
@@ -2442,6 +2442,13 @@ body {
       display: none; }
       .widget-toolbar .control-nodes.has-nodes {
         display: block; }
+    .widget-toolbar .date-selector {
+      margin-left: 0; }
+      .widget-toolbar .date-selector label svg {
+        position: relative;
+        top: 3px; }
+      .widget-toolbar .date-selector input {
+        width: 75px; }
   .widget-node-status {
     justify-content: center; }
     .widget-node-status > li {

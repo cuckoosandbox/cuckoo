@@ -19,6 +19,22 @@ const SUPPORTED_INCLUDES = [
   'active_processes'
 ];
 
+let dateLabelFormat = (d, p) => {
+  let result;
+  switch(p) {
+    case 'hour':
+      result = moment(d).format('hh:mm');
+    break;
+    case 'day':
+      result = moment(d).format('hh:mm');
+    break;
+    case 'week':
+      result = moment(d).format('DD/MM');
+    break;
+  }
+  return result;
+};
+
 // simple transformation sequences
 const transformators = {
 
@@ -46,7 +62,7 @@ const transformators = {
       }
 
       if(selected.points) {
-        result.labels = selected.points.map(point => moment(point.datetime).format('m'));
+        result.labels = selected.points.map(point => dateLabelFormat(point.datetime, params.period));
         result.datasets.push({
           label: set,
           data: selected.points.map(point => point.value)
@@ -94,7 +110,9 @@ const transformators = {
         for(let node in selected) {
           if(selected[node].points) {
             let s = selected[node];
-            result.labels.push(node);
+
+            result.labels = s.points.map(point => dateLabelFormat(point.datetime, params.period));
+
             result.datasets.push({
               label: node,
               data: s.points.map(point => point.value)

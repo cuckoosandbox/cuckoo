@@ -12,8 +12,6 @@ function humanizeAmount(amount) {
 // is sent with a message.)
 function createQueueOverview(queue) {
 
-  console.log(queue);
-
   let el = $('<ul />', { class: 'widget-priority-list' });
   let hasData = false;
 

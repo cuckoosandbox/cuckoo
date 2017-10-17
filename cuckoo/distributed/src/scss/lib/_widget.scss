@@ -100,7 +100,7 @@
           fill: shade(#CBD7DA, 30%);
         }
       }
-      
+
     }
   }
 
@@ -162,7 +162,7 @@
 
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
-    padding: 15px;
+    padding: 0 15px 5px 15px;
 
     & > ul {
       @extend %flex-list;
@@ -198,6 +198,22 @@
       display: none;
       &.has-nodes {
         display: block;
+      }
+    }
+
+    .date-selector {
+
+      margin-left: 0;
+
+      label {
+        svg {
+          position: relative;
+          top: 3px;
+        }
+      }
+
+      input {
+        width: 75px;
       }
     }
 
