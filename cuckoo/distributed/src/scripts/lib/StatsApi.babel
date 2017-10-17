@@ -110,9 +110,7 @@ const transformators = {
         for(let node in selected) {
           if(selected[node].points) {
             let s = selected[node];
-
             result.labels = s.points.map(point => dateLabelFormat(point.datetime, params.period));
-
             result.datasets.push({
               label: node,
               data: s.points.map(point => point.value)
@@ -399,4 +397,4 @@ export function apilog(silent) {
   }
 }
 
-export { transformators };
+export { transformators, dateLabelFormat };

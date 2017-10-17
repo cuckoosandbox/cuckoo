@@ -1,10 +1,11 @@
-import { fabricate } from '../lib/DraggableZ';
+import { transformators, dateLabelFormat } from '../lib/StatsAPI';
+import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
 
 // fabricate a widget
-const widget = fabricate('cpu_usage', {
+const widget = fabricate('disk_usage', {
 
-  template: $("#widget--cpu-usage"),
-  elementId: $("#widget--cpu-usage").attr('id'),
+  template: $("#widget--disk-usage"),
+  elementId: $("#widget--disk-usage").attr('id'),
 
   widgetLayout: {
     width: 4,
@@ -15,17 +16,69 @@ const widget = fabricate('cpu_usage', {
 
   loaderText: 'Loading',
 
-  chartHeight: 80,
+  chartHeight: 120,
 
   // chart configuration
-  chart: {},
+  chart: {
+    type: 'line',
+    options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          ticks: {
+            type: 'time',
+            maxTicksLimit: 10
+          }
+        }]
+      }
+    }
+  },
 
   // api configuration
   api: {
     params: {
-      include: 'cpu_usage'
+      include: 'disk_usage'
+    },
+    transform: function(res, params, silent) {
+
+      let selected = res.disk_usage[params.period];
+
+      let result = {
+        datasets: [],
+        labels: []
+      };
+
+      for(let node in res.disk_usage[params.period]) {
+        let s = res.disk_usage[params.period][node];
+        if(s.points.analyses_used) {
+          result.labels = s.points.analyses_used.map(point => dateLabelFormat(point.datetime, params.period));
+          result.datasets.push({
+            label: node,
+            data: s.points.analyses_used.map(point => point.value)
+          });
+        }
+      }
+
+      return result;
     }
   }
+
+}).on('render', function() {
+
+  initializeToolbar(this);
 
 });
 

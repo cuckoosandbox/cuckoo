@@ -1,10 +1,12 @@
-import { fabricate } from '../lib/DraggableZ';
+import mock from '../sample-data/example-reply.json';
+import { transformators, dateLabelFormat } from '../lib/StatsAPI';
+import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
 
 // fabricate a widget
-const widget = fabricate('disk_usage', {
+const widget = fabricate('cpu_usage', {
 
-  template: $("#widget--disk-usage"),
-  elementId: $("#widget--disk-usage").attr('id'),
+  template: $("#widget--cpu-usage"),
+  elementId: $("#widget--cpu-usage").attr('id'),
 
   widgetLayout: {
     width: 4,
@@ -15,18 +17,51 @@ const widget = fabricate('disk_usage', {
 
   loaderText: 'Loading',
 
-  chartHeight: 80,
+  chartHeight: 120,
 
   // chart configuration
-  chart: {},
+  chart: {
+    type: 'line',
+    options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          ticks: {
+            type: 'time',
+            maxTicksLimit: 10
+          }
+        }]
+      }
+    }
+  },
 
   // api configuration
   api: {
     params: {
-      include: 'disk_usage'
-    }
+      include: 'cpu_usage'
+    },
+    transform: transformators.nodeResponseBreakdown
   }
 
+}).on('render', function() {
+
+  initializeToolbar(this);
+
 });
+
+console.log(mock);
 
 export default widget;
