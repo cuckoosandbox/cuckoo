@@ -19,6 +19,105 @@ const SUPPORTED_INCLUDES = [
   'active_processes'
 ];
 
+// simple transformation sequences
+const transformators = {
+
+  // cuts down a default response set from the backend
+  simpleResponseBreakdown: function(res, params, silent) {
+
+    let result = {
+      labels: [],
+      datasets: []
+    }
+
+    let addDataset = (set, searchSet = false) => {
+
+      let selected;
+
+      if(searchSet) {
+        selected = res[set];
+        if(!selected) return;
+      } else {
+        selected = res[set][params.period || 'hour'];
+      }
+
+      if(searchSet && params.period) {
+        selected = selected[params.period];
+      }
+
+      if(selected.points) {
+        result.labels = selected.points.map(point => moment(point.datetime).format('m'));
+        result.datasets.push({
+          label: set,
+          data: selected.points.map(point => point.value)
+        });
+      }
+
+    }
+
+    if(params.include.indexOf(',') > -1) {
+      params.include.split(',').forEach(inc => addDataset(inc, true));
+    } else {
+      addDataset(params.include);
+    }
+
+    return result;
+
+  },
+
+  // cuts down a response set aimed at using nodes for labels,
+  // like the memory usage charts etc.
+  nodeResponseBreakdown: function(res, params, silent) {
+
+    let result = {
+      labels: [],
+      datasets: []
+    }
+
+    let addDataset = (set, searchSet = false) => {
+
+      let selected;
+
+      if(searchSet) {
+        selected = res[set];
+        if(!selected) return;
+      } else {
+        selected = res[set][params.period || 'hour'];
+      }
+
+      if(searchSet && params.period) {
+        selected = selected[params.period];
+      }
+
+      if(selected instanceof Object) {
+
+        for(let node in selected) {
+          if(selected[node].points) {
+            let s = selected[node];
+            result.labels.push(node);
+            result.datasets.push({
+              label: node,
+              data: s.points.map(point => point.value)
+            });
+          }
+        }
+
+      }
+
+    }
+
+    if(params.include.indexOf(',') > -1) {
+      params.include.split(',').forEach(inc => addDataset(inc, true));
+    } else {
+      addDataset(params.include);
+    }
+
+    return result;
+
+  }
+
+}
+
 /*
   This is a utility wrapper around the stats api. It translates
   the REST service to an easy-to-use javascript class.
@@ -132,7 +231,8 @@ export default class StatsAPI {
         // receiving regularly, but then everything is static.
         if(this.mock) {
 
-          let transformed = { active_processes: this.mock };
+          let transformed = {};
+          transformed[this.params.include] = this.mock[this.params.include];
           for(let prop in MOCK_INCLUDE) {
             transformed[prop] = MOCK_INCLUDE[prop];
           }
@@ -280,3 +380,5 @@ export function apilog(silent) {
     return console.log;
   }
 }
+
+export { transformators };

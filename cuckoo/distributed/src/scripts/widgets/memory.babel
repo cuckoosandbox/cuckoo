@@ -1,4 +1,6 @@
+import { transformators } from '../lib/StatsAPI';
 import { fabricate } from '../lib/DraggableZ';
+import mock from '../sample-data/example-reply.json';
 
 // fabricate a widget
 const widget = fabricate('memory_usage', {
@@ -22,10 +24,19 @@ const widget = fabricate('memory_usage', {
 
   // api configuration
   api: {
+    mock: mock,
     params: {
-      include: 'memory_usage'
-    }
+      include: 'memory_usage',
+      period: 'week'
+    },
+    transform: transformators.nodeResponseBreakdown
   }
+
+}).on('render', function() {
+
+  this.api.on('receive', data => {
+    console.log('inbound memory_usage:', data);
+  });
 
 });
 

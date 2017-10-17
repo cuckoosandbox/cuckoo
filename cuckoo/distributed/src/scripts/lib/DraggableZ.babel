@@ -1,4 +1,3 @@
-import ejs from 'ejs';
 import StatsAPI from './StatsAPI';
 import WidgetLoader from './WidgetLoader';
 
