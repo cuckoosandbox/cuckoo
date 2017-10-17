@@ -1,4 +1,4 @@
-import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
+import { fabricate, initializeToolbar } from '../lib/DraggableZ';
 import { transformators } from '../lib/StatsAPI';
 
 // widget-specific API middleware. it consumes a bare response
@@ -63,7 +63,6 @@ const widget = fabricate('tasks', {
     type: 'line',
     options: {
       responsive: true,
-      color: colors,
       legend: {
         position: 'bottom',
         strokeStyle: false,
@@ -91,8 +90,6 @@ const widget = fabricate('tasks', {
       {
         label: "Completed",
         fill: false,
-        backgroundColor: colors.darkPurple,
-        borderColor: colors.darkPurple,
         borderWidth: 1,
         pointRadius: 2
       },
@@ -101,8 +98,6 @@ const widget = fabricate('tasks', {
       {
         label: "Uncompleted",
         fill: false,
-        backgroundColor: colors.queenBlue,
-        borderColor: colors.queenBlue,
         borderWidth: 1,
         pointRadius: 2
       }

@@ -62,6 +62,4 @@ const widget = fabricate('cpu_usage', {
 
 });
 
-console.log(mock);
-
 export default widget;

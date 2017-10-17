@@ -4,6 +4,18 @@ import WidgetLoader from './WidgetLoader';
 // placeholder empty function => true
 let noop = () => true;
 
+const COLOR_LIB = [
+  '#4D4D4D',
+  '#5DA5DA',
+  '#FAA43A',
+  '#60BD68',
+  '#F17CB0',
+  '#B2912F',
+  '#B276B2',
+  '#DECF3F',
+  '#F15854'
+]
+
 function parseFragment(fragment) {
   let result = $.parseHTML(fragment.html());
   $(result).attr('id', $(fragment).attr('id'));
@@ -252,6 +264,7 @@ class DraggableZWidget {
 
       // merges chart layout configuration into the dataset configuration
       if(this.chartOptions.dataLayout) {
+
         this.chartOptions.data.datasets.forEach((dataset, i) => {
           if(this.chartOptions.dataLayout[i]) {
             for(let prop in this.chartOptions.dataLayout[i]) {
@@ -259,7 +272,14 @@ class DraggableZWidget {
             }
           }
         });
+
       }
+
+      this.chartOptions.data.datasets.forEach((dataset, i) => {
+        dataset.backgroundColor = dataset.backgroundColor || COLOR_LIB[i];
+        dataset.borderColor = dataset.borderColor || COLOR_LIB[i];
+        dataset.fill = dataset.fill || false;
+      });
 
       c = new Chart(ctx[0], this.chartOptions);
       $(this.template).data('chart', c);
@@ -398,16 +418,6 @@ function fabricate(name, options) {
 
 // export the DraggableZ
 export default DraggableZ;
-
-// a configuration of colors to use in the charts:
-// configured with coolors.io: https://coolors.co/331832-1d3461-396494-ed5e8b-82204a
-export const colors = {
-  darkPurple: '#331832',
-  spaceCadet: '#1D3461',
-  queenBlue: '#396494',
-  strawBerry: '#ED5E8B',
-  pansyPurple: '#82204A'
-}
 
 // export utilities
 export {
