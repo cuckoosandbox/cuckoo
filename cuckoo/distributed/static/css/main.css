@@ -2416,7 +2416,8 @@ body {
       margin-left: -150px;
       text-align: center;
       bottom: -40px;
-      font-size: 13px; }
+      font-size: 13px;
+      padding: 5px; }
   .widget-toolbar {
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;

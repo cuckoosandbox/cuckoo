@@ -10,14 +10,12 @@ const widget = fabricate('memory_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 4,
+    height: 6,
     x: 0,
     y: 0
   },
 
-  loaderText: 'Loading',
-
-  chartHeight: 120,
+  chartHeight: 270,
 
   // chart configuration
   chart: {
@@ -45,7 +43,12 @@ const widget = fabricate('memory_usage', {
           }
         }]
       }
-    }
+    },
+    // data layout
+    dataLayout: {
+      borderWidth: 1,
+      pointRadius: 1
+    },
   },
 
   // api configuration

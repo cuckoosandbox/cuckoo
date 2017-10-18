@@ -10,10 +10,8 @@ const widget = fabricate('running_vm', {
     width: 6,
     height: 6,
     x: 6,
-    y: 4
+    y: 6
   },
-
-  loaderText: 'Loading',
 
   chartHeight: 250,
 

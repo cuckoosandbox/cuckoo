@@ -49,10 +49,8 @@ const widget = fabricate('amount_prio_queued', {
     width: 6,
     height: 4,
     x: 0,
-    y: 10
+    y: 12
   },
-
-  loaderText: 'Loading',
 
   chartHeight: 80,
 

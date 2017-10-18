@@ -61,7 +61,6 @@ function initializeToolbar(widget) {
 
   toolbarDate.on('change', e => {
     let t = $(e.currentTarget);
-    console.log(t);
     let val = t.val()
     widget.api.date(t.val());
     rerender();
@@ -143,7 +142,7 @@ class DraggableZWidget {
     }, config.actions || {});
 
     // api-specific
-    this.api                = new StatsAPI(config.api || {});
+    this.api = new StatsAPI(config.api || {});
 
     // chartjs-specific
     this.chart = null;
@@ -158,7 +157,8 @@ class DraggableZWidget {
     }, config.chart || {});
 
     // configure the widget loader
-    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, config.loaderText || null);
+    this.loaderText = config.loaderText || 'Fetching data';
+    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, this.loaderText || null);
 
     // wire all the implemented services
     if(this.template) {
@@ -272,13 +272,25 @@ class DraggableZWidget {
       // merges chart layout configuration into the dataset configuration
       if(this.chartOptions.dataLayout) {
 
-        this.chartOptions.data.datasets.forEach((dataset, i) => {
-          if(this.chartOptions.dataLayout[i]) {
-            for(let prop in this.chartOptions.dataLayout[i]) {
-              dataset[prop] = this.chartOptions.dataLayout[i][prop];
+        // in case we get an array, it will be dataset-specific, on order.
+        if(this.chartOptions.dataLayout instanceof Array) {
+          this.chartOptions.data.datasets.forEach((dataset, i) => {
+            if(this.chartOptions.dataLayout[i]) {
+              for(let prop in this.chartOptions.dataLayout[i]) {
+                dataset[prop] = this.chartOptions.dataLayout[i][prop];
+              }
             }
-          }
-        });
+          });
+        }
+
+        // 'each' dataset inherits these options
+        if(this.chartOptions.dataLayout instanceof Object) {
+          this.chartOptions.data.datasets.forEach(dataset => {
+            for(let prop in this.chartOptions.dataLayout) {
+              dataset[prop] = this.chartOptions.dataLayout[prop];
+            }
+          });
+        }
 
       }
 
@@ -305,10 +317,33 @@ class DraggableZWidget {
   // internal working-togethers
   _start() {
 
+    let iv = null;
+    let messages = [
+      this.loaderText,
+      'still loading...',
+      'a moment now, still...',
+      'crunching afk brb',
+      'this sure is a hell of a JSON',
+      'ok almost there...',
+      'I am still working!',
+      'I need a little longer...',
+      'Nothing broke, just doing my thing.'
+    ]
+
     // after we pulled, start drawing the canvas
     this.api.on('request', () => $(this.template).find('.widget-no-data').fadeOut(500));
     this.api.on('receive', res => this.chartOptions.data = res.data);
-    this.loader.on('stopped', () => this.createChart());
+
+    this.loader.on('started', () => {
+      iv = setInterval(() => {
+        this.loader.text(messages[Math.floor(Math.random() * messages.length)]);
+      }, 5000);
+    });
+
+    this.loader.on('stopped', () => {
+      if(iv) clearInterval(iv);
+      this.createChart();
+    });
     this.pull();
 
     return this;

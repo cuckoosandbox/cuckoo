@@ -9,14 +9,18 @@ const widget = fabricate('disk_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 4,
+    height: 6,
     x: 8,
     y: 0
   },
 
-  loaderText: 'Loading',
+  chartHeight: 270,
 
-  chartHeight: 120,
+  // chart styles
+  dataLayout: {
+    borderWidth: 1,
+    pointRadius: 1
+  },
 
   // chart configuration
   chart: {

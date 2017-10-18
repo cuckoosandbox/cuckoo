@@ -1,4 +1,3 @@
-import mock from '../sample-data/example-reply.json';
 import { transformators, dateLabelFormat } from '../lib/StatsAPI';
 import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
 
@@ -10,14 +9,18 @@ const widget = fabricate('cpu_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 4,
+    height: 6,
     x: 4,
     y: 0
   },
 
-  loaderText: 'Loading',
+  chartHeight: 270,
 
-  chartHeight: 120,
+  // chart styles
+  dataLayout: {
+    borderWidth: 1,
+    pointRadius: 1
+  },
 
   // chart configuration
   chart: {

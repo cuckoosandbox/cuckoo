@@ -8,12 +8,22 @@ import memory from './memory';
 import queue from './queue';
 import activeProcesses from './activeProcesses';
 
+// export default [
+//   memory,
+//   cpu,
+//   disk,
+//   tasks,
+//   vms,
+//   queue,
+//   activeProcesses
+// ];
+
 export default [
-  tasks,
+  memory,
   cpu,
   disk,
-  memory,
+  tasks,
   vms,
   queue,
   activeProcesses
-];
+]

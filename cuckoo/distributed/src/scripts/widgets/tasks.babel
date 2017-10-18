@@ -52,9 +52,8 @@ const widget = fabricate('tasks', {
     width: 6,
     height: 6,
     x: 0,
-    y: 3
+    y: 6
   },
-  loaderText: 'Loading',
 
   chartHeight: 250,
 
@@ -87,18 +86,16 @@ const widget = fabricate('tasks', {
 
       // task_completed
       {
-        label: "Completed",
-        fill: false,
+        label: "Completed" ,
         borderWidth: 1,
-        pointRadius: 2
+        pointRadius: 1
       },
 
       // task_uncompleted
       {
         label: "Uncompleted",
-        fill: false,
         borderWidth: 1,
-        pointRadius: 2
+        pointRadius: 1
       }
 
     ]
