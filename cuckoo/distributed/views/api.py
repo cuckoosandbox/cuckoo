@@ -439,6 +439,8 @@ def stats_get(end_date=None, end_time=None):
                 "times": 96},
         "week": {"step": 60,
                  "times": 168},
+        "month": {"step": 1440,
+                  "times": 28},
     }
 
     statistics = {}
