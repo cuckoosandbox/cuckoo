@@ -26,4 +26,57 @@
     }
   }
 
+  .right {
+    margin-left: auto;
+
+    .sync-toggle {
+      position: relative;
+      display: inline-block;
+      background-color: #ccc;
+      padding: 3px;
+      width: 62px;
+
+      span {
+        position: relative;
+        display: block;
+        left: 0;
+        width: 25px;
+        height: 25px;
+        background-color: #222;
+        transition: left 150ms cubic-bezier(.29,.56,.68,.43),
+                    background-color 100ms ease-in-out;
+
+        &:after {
+          content: "S";
+          position: relative;
+          display: block;
+          text-align: center;
+          padding-top: 3px;
+          color: #555;
+          font-weight: 700;
+          transition: color 100ms ease-in;
+        }
+
+        &:hover {
+          cursor: pointer;
+        }
+
+      }
+
+      input {
+        display: none;
+
+        &:checked + span {
+          left: 30px;
+          background-color: #222;
+          &:after {
+            color: #5d9bc1;
+          }
+        }
+      }
+
+    }
+
+  }
+
 }
