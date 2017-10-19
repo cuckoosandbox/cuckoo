@@ -1027,7 +1027,7 @@ class Static(Processing):
     """Static analysis."""
 
     office_ext = [
-        "doc", "docm", "dotm", "docx", "ppt", "pptm", "pptx", "potm",
+        "doc", "docm", "dotm", "docx", "hwp", "ppt", "pptm", "pptx", "potm",
         "ppam", "ppsm", "xls", "xlsm", "xlsx",
     ]
 
