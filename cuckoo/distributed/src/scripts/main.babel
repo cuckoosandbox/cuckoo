@@ -29,7 +29,7 @@ $(function() {
     });
 
     widget.on('synced', is => {
-      $(widget.template).find('.widget-toolbar input').prop('disabled', is);
+      $(widget.template).find('.widget-toolbar input, .widget-toolbar select').prop('disabled', is);
     });
 
   });
@@ -111,14 +111,14 @@ $(function() {
 
   UI.on('sync.on', () => {
     $('body').addClass('mode-sync');
-    $("#app-header .widget-toolbar input").prop('disabled', false);
+    $("#app-header .widget-toolbar input, #app-header .widget-toolbar select").prop('disabled', false);
     widgets.forEach(widget => widget.synced(true));
   });
 
   UI.on('sync.off', () => {
     $('body').removeClass('mode-sync');
     widgets.forEach(widget => widget.synced(false));
-    $("#app-header .widget-toolbar input").prop('disabled', true);
+    $("#app-header .widget-toolbar input, #app-header .widget-toolbar select").prop('disabled', true);
   });
 
   // listens to a change in sync mode and sync up the ui per widget to correspond
