@@ -2324,6 +2324,8 @@ body {
       font-weight: 700;
       text-align: center;
       width: 100px; }
+    #app-header .widget-toolbar .period-selector input[type="radio"]:checked + span {
+      background-color: #666; }
 
 @keyframes cssload-roto {
   0% {
@@ -2487,8 +2489,18 @@ body {
         .widget-toolbar > ul > li.title {
           font-weight: 700;
           color: #a1acaf; }
+        .widget-toolbar > ul > li.period-selector {
+          margin-right: 0; }
         .widget-toolbar > ul > li input[type="radio"] {
-          margin-right: 3px; }
+          display: none; }
+          .widget-toolbar > ul > li input[type="radio"] + span:hover {
+            cursor: pointer; }
+          .widget-toolbar > ul > li input[type="radio"]:checked + span {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: #ccc;
+            font-weight: 700; }
         .widget-toolbar > ul > li label + input[type="text"] {
           margin-left: 3px; }
         .widget-toolbar > ul > li.right {

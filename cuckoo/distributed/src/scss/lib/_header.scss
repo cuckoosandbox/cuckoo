@@ -102,6 +102,13 @@
       text-align: center;
       width: 100px;
     }
+
+    .period-selector {
+      input[type="radio"]:checked + span {
+        background-color: #666;
+      }
+    }
+
   }
 
 }

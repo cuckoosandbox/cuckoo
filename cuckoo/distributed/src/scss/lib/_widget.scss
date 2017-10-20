@@ -181,8 +181,24 @@
           color: shade(#C9D7DB, 20%);
         }
 
+        &.period-selector {
+          margin-right: 0;
+        }
+
         input[type="radio"] {
-          margin-right: 3px;
+          display: none;
+
+          & + span:hover {
+            cursor: pointer;
+          }
+
+          &:checked + span {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: #ccc;
+            font-weight: 700;
+          }
         }
 
         label + input[type="text"] {
