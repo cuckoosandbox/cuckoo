@@ -2324,6 +2324,9 @@ body {
       font-weight: 700;
       text-align: center;
       width: 100px; }
+    #app-header .widget-toolbar .time-selector > select {
+      background-color: transparent;
+      border: 1px solid #666; }
     #app-header .widget-toolbar .period-selector input[type="radio"]:checked + span {
       background-color: #666; }
 

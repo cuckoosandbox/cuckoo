@@ -53,11 +53,13 @@ $(function() {
     let toolbar = $("#app-header .widget-toolbar");
     let date = toolbar.find('input#toolbar-date');
     let period = toolbar.find('input[name="toolbar-period"]');
+    let time = toolbar.find('select[name="toolbar-time"]');
     let toggle = $('#app-header input#sync-widgets');
 
     let emitChange = (params) => UI.dispatchEvent('sync.change', {
       date: params.date || date.val(),
-      period: params.period || period.val()
+      period: params.period || period.val(),
+      time: params.time || time.val()
     });
 
     // binds the sync toggle handle to the toggle, and to the handler
@@ -94,6 +96,17 @@ $(function() {
       });
     });
 
+    time.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.time($(e.currentTarget).val()).fetch();
+      });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        time: $(e.currentTarget).val()
+      });
+    });
+
   }
 
   UI.on('sync.on', () => {
@@ -119,6 +132,8 @@ $(function() {
       $(widget.template).find('.widget-toolbar input[name="toolbar-period"]').prop('checked', false);
       // set period radio
       $(widget.template).find(`.widget-toolbar input[name="toolbar-period"][value="${params.period}"]`).prop('checked', true);
+      // set time select value
+      $(widget.template).find('.widget-toolbar select[name="toolbar-time"]').val(params.time);
     });
   });
 

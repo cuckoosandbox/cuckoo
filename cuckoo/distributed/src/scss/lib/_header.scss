@@ -103,6 +103,11 @@
       width: 100px;
     }
 
+    .time-selector > select {
+      background-color: transparent;
+      border: 1px solid #666;
+    }
+
     .period-selector {
       input[type="radio"]:checked + span {
         background-color: #666;
