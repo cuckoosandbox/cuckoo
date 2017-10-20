@@ -2316,6 +2316,14 @@ body {
     .mode-sync #app-header .widget-toolbar {
       opacity: 1;
       pointer-events: auto; }
+    #app-header .widget-toolbar .date-selector > input {
+      width: 150px;
+      background-color: transparent;
+      padding: 10px;
+      border: 0;
+      font-weight: 700;
+      text-align: center;
+      width: 100px; }
 
 @keyframes cssload-roto {
   0% {
@@ -2391,7 +2399,7 @@ body {
     left: 50%;
     top: 0;
     margin-left: -21px;
-    z-index: 5;
+    z-index: 1;
     cursor: grab;
     cursor: -webkit-grab; }
     .widget-handle:active {

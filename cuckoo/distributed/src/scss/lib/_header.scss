@@ -92,6 +92,16 @@
       opacity: 1;
       pointer-events: auto;
     }
+
+    .date-selector > input {
+      width: 150px;
+      background-color: transparent;
+      padding: 10px;
+      border: 0;
+      font-weight: 700;
+      text-align: center;
+      width: 100px;
+    }
   }
 
 }

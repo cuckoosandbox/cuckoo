@@ -11,6 +11,8 @@ if(Chart) {
 
 $(function() {
 
+  SVGLoader.loadPlaceholders($('*[data-svg-src]'));
+
   // global callbacks
   widgets.forEach(widget => {
 
@@ -18,7 +20,7 @@ $(function() {
       SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
     });
 
-    widget.on('changed', () => {
+    widget.on('changed', params => {
       if(widget._synced) {
         console.log('will sync up');
       } else {
@@ -32,7 +34,55 @@ $(function() {
 
   });
 
+  // grid
   const UI = new DraggableZ($("#grid"), widgets);
+
+  // handles a sync toggle
+  function handleSyncToggle(e) {
+    let toggle = $(this);
+    if(toggle.is(':checked')) {
+      UI.dispatchEvent('sync.on');
+    } else {
+      UI.dispatchEvent('sync.off');
+    }
+  }
+
+  // scoped function for initializing the header behavior
+  function initializeHeaderToolbar() {
+
+    let toolbar = $("#app-header .widget-toolbar");
+    let date = toolbar.find('input#toolbar-date');
+    let period = toolbar.find('input[name="toolbar-period"]');
+    let toggle = $('#app-header input#sync-widgets');
+
+
+    // binds the sync toggle handle to the toggle, and to the handler
+    // once for initialization
+    toggle.on('change', handleSyncToggle);
+    handleSyncToggle();
+
+    // initialize the date picker
+    date.datepicker({
+      dateFormat: 'yy-mm-dd',
+      maxDate: new Date()
+    }).datepicker('setDate', new Date());
+
+    // bind the listeners
+    date.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.date($(e.currentTarget).val()).fetch();
+      });
+    });
+
+    period.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.period($(e.currentTarget).val()).fetch();
+      });
+    });
+
+  }
 
   UI.on('sync.on', () => {
     $('body').addClass('mode-sync');
@@ -46,19 +96,6 @@ $(function() {
     $("#app-header .widget-toolbar input").prop('disabled', true);
   });
 
-  // handles a toggle
-  function handleSyncToggle(force = false) {
-    let toggle = $('input#sync-widgets');
-    if(toggle.is(':checked')) {
-      UI.dispatchEvent('sync.on');
-    } else {
-      UI.dispatchEvent('sync.off');
-    }
-  }
-
-  // binds the sync toggle handle to the toggle, and to the handler
-  // once for initialization
-  $('input#sync-widgets').on('change', handleSyncToggle);
-  handleSyncToggle();
+  initializeHeaderToolbar();
 
 });
