@@ -2272,6 +2272,8 @@ body {
     #app-header .logo > img {
       height: 36px; }
   #app-header .right {
+    display: flex;
+    align-items: center;
     margin-left: auto; }
     #app-header .right .sync-toggle {
       position: relative;
@@ -2305,6 +2307,15 @@ body {
           background-color: #222; }
           #app-header .right .sync-toggle input:checked + span:after {
             color: #5d9bc1; }
+  #app-header .widget-toolbar {
+    border-bottom: 0;
+    padding-bottom: 0;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none; }
+    .mode-sync #app-header .widget-toolbar {
+      opacity: 1;
+      pointer-events: auto; }
 
 @keyframes cssload-roto {
   0% {
@@ -2455,7 +2466,8 @@ body {
   .widget-toolbar {
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
-    padding: 0 15px 5px 15px; }
+    padding: 0 15px 5px 15px;
+    transition: opacity 250ms ease-in-out; }
     .widget-toolbar > ul {
       align-items: center; }
       .widget-toolbar > ul > li {
@@ -2484,6 +2496,8 @@ body {
         top: 3px; }
       .widget-toolbar .date-selector input {
         width: 75px; }
+    .mode-sync .widget .widget-toolbar {
+      opacity: .5; }
   .widget-node-status {
     justify-content: center; }
     .widget-node-status > li {

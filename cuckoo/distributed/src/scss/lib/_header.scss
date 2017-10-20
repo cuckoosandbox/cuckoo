@@ -27,6 +27,8 @@
   }
 
   .right {
+    display: flex;
+    align-items: center;
     margin-left: auto;
 
     .sync-toggle {
@@ -77,6 +79,19 @@
 
     }
 
+  }
+
+  .widget-toolbar {
+    border-bottom: 0;
+    padding-bottom: 0;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+
+    .mode-sync & {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 
 }

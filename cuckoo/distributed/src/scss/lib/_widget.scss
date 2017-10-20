@@ -164,6 +164,7 @@
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
     padding: 0 15px 5px 15px;
+    transition: opacity 250ms ease-in-out;
 
     & > ul {
       @extend %flex-list;
@@ -215,6 +216,12 @@
 
       input {
         width: 75px;
+      }
+    }
+
+    .widget & {
+      .mode-sync & {
+        opacity: .5;
       }
     }
 

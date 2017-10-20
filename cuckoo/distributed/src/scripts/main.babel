@@ -13,11 +13,52 @@ $(function() {
 
   // global callbacks
   widgets.forEach(widget => {
+
     widget.on('render', () => {
       SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
     });
+
+    widget.on('changed', () => {
+      if(widget._synced) {
+        console.log('will sync up');
+      } else {
+        console.log('will not sync up');
+      }
+    });
+
+    widget.on('synced', is => {
+      $(widget.template).find('.widget-toolbar input').prop('disabled', is);
+    });
+
   });
 
   const UI = new DraggableZ($("#grid"), widgets);
+
+  UI.on('sync.on', () => {
+    $('body').addClass('mode-sync');
+    $("#app-header .widget-toolbar input").prop('disabled', false);
+    widgets.forEach(widget => widget.synced(true));
+  });
+
+  UI.on('sync.off', () => {
+    $('body').removeClass('mode-sync');
+    widgets.forEach(widget => widget.synced(false));
+    $("#app-header .widget-toolbar input").prop('disabled', true);
+  });
+
+  // handles a toggle
+  function handleSyncToggle(force = false) {
+    let toggle = $('input#sync-widgets');
+    if(toggle.is(':checked')) {
+      UI.dispatchEvent('sync.on');
+    } else {
+      UI.dispatchEvent('sync.off');
+    }
+  }
+
+  // binds the sync toggle handle to the toggle, and to the handler
+  // once for initialization
+  $('input#sync-widgets').on('change', handleSyncToggle);
+  handleSyncToggle();
 
 });

@@ -117,6 +117,7 @@ class DraggableZWidget {
     this.template = config.template || false;
     this.elementId = config.elementId || undefined;
     this.initialized = false;
+    this._synced = false;
 
     this.widgetLayout = $.extend({
       el: null,
@@ -131,7 +132,9 @@ class DraggableZWidget {
       render: [],
       received: [],
       loading: [],
-      loaded: []
+      loaded: [],
+      changed: [],
+      synced: []
     };
 
     // extend the users set of actions versus a default implemented few
@@ -230,7 +233,7 @@ class DraggableZWidget {
     if(this.events[evt]) {
       this.events[evt].forEach(callback => {
         if(callback instanceof Function) {
-          callback.apply(this);
+          callback.call(this, data);
           cb();
         }
       });
@@ -344,9 +347,22 @@ class DraggableZWidget {
       if(iv) clearInterval(iv);
       this.createChart();
     });
+
     this.pull();
 
     return this;
+  }
+
+  synced(is) {
+    if(is === undefined) {
+      // toggle if undefined
+      this._synced = !this._synced;
+    } else {
+      // set to 'is' value
+      this._synced = is;
+    }
+
+    this.dispatchEvent('synced', this._synced);
   }
 
 }
@@ -361,6 +377,11 @@ class DraggableZ {
     this.ctx = $(context);
     this.grid = null;
     this.widgets = [];
+    this.sync = false;
+    this.events = {
+      'sync.on': [],
+      'sync.off': []
+    };
     return this.initialise(widgets);
   }
 
@@ -436,6 +457,40 @@ class DraggableZ {
       let widget = this.widgets[w];
       widget.inject(gs);
       gs.commit();
+    }
+
+    return this;
+  }
+
+  // toggle synchronization to on, this will set each parameter the same for each widget
+  toggleSync() {
+    this.sync = true;
+  }
+
+  // event trigger
+  on(evt, cb = noop) {
+
+    let add = (evt,cb) => this.events[evt].push(cb);
+
+    if(cb instanceof Array) {
+      cb.forEach(cba => add(evt, cba));
+    } else {
+      if(this.events[evt]) {
+        add(evt, cb)
+      }
+    }
+
+    return this;
+  }
+
+  dispatchEvent(evt, data = {}, cb = noop) {
+    if(this.events[evt]) {
+      this.events[evt].forEach(callback => {
+        if(callback instanceof Function) {
+          callback.apply(this);
+          cb();
+        }
+      });
     }
 
     return this;
