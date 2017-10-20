@@ -161,6 +161,7 @@ export default class StatsAPI {
       include: config.params.include || null,
       period: config.params.period || 'hour',
       date: config.params.date || null,
+      time: config.params.time || null,
       node: config.params.node || null
     }
 
@@ -206,6 +207,10 @@ export default class StatsAPI {
     // include the date param
     if(this.params.date) {
       url += `/${this.params.date}`;
+
+      if(this.params.time) {
+        url += `/${this.params.time}`;
+      }
     }
 
     // include the period param
@@ -384,6 +389,13 @@ export default class StatsAPI {
   // sets the node of the dataset
   node(node) {
     this.params.node = node;
+    return this;
+  }
+
+  // sets the time of the dataset
+  time(time) {
+    this.params.time = `${time}:00`;
+    return this;
   }
 
 }

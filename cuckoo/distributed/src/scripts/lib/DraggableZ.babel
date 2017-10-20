@@ -37,7 +37,7 @@ function initializeToolbar(widget) {
   }
 
   // unique-ify all the elements
-  toolbar.find('#toolbar-date, #toolbar-period-day, #toolbar-period-hour, #toolbar-period-week, #toolbar-filter-nodes').each(function() {
+  toolbar.find('#toolbar-date, #toolbar-period-day, #toolbar-period-hour, #toolbar-period-week, #toolbar-filter-nodes, #toolbar-time').each(function() {
 
     let curID = $(this).attr('id');
     let tID = curID.replace('toolbar-',`${widget.name}-`);
@@ -58,6 +58,7 @@ function initializeToolbar(widget) {
 
   let toolbarDate = toolbar.find('input[name="toolbar-date"]');
   let toolbarPeriod = toolbar.find('input[name="toolbar-period"]');
+  let toolbarTime = toolbar.find('select[name="toolbar-time"]');
 
   toolbarDate.on('change', e => {
     if(widget._synced) return false;
@@ -70,6 +71,12 @@ function initializeToolbar(widget) {
   toolbarPeriod.on('change', e => {
     if(widget._synced) return false;
     widget.api.period($(e.currentTarget).val());
+    rerender();
+  });
+
+  toolbarTime.on('change', e => {
+    if(widget._synced) return false;
+    widget.api.time($(e.currentTarget).val());
     rerender();
   });
 

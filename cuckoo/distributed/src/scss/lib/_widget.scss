@@ -222,17 +222,40 @@
     .date-selector {
 
       margin-left: 0;
+      margin-right: 0;
 
       label {
         svg {
           position: relative;
-          top: 3px;
+          top: 2px;
         }
       }
 
       input {
+        position: relative;
+        top: -1px;
         width: 75px;
       }
+    }
+
+    .time-selector {
+
+      margin-left: 0;
+
+      select {
+        -webkit-appearance: none;
+        position: relative;
+        border-left: 0;
+        border-radius: 0;
+        width: auto;
+        padding: 2px 5px;
+        text-align: center;
+
+        & + span {
+          position: relative;
+        }
+      }
+
     }
 
     .widget & {
