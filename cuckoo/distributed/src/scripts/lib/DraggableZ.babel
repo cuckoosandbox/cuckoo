@@ -60,6 +60,7 @@ function initializeToolbar(widget) {
   let toolbarPeriod = toolbar.find('input[name="toolbar-period"]');
 
   toolbarDate.on('change', e => {
+    if(widget._synced) return false;
     let t = $(e.currentTarget);
     let val = t.val()
     widget.api.date(t.val());
@@ -67,6 +68,7 @@ function initializeToolbar(widget) {
   });
 
   toolbarPeriod.on('change', e => {
+    if(widget._synced) return false;
     widget.api.period($(e.currentTarget).val());
     rerender();
   });
@@ -91,6 +93,7 @@ function initializeToolbar(widget) {
 
       // bind a change event to that same select to respond to it.
       select.bind('change', e => {
+        if(widget._synced) return false;
         widget.api.node(select.val());
         rerender();
       });
@@ -380,7 +383,8 @@ class DraggableZ {
     this.sync = false;
     this.events = {
       'sync.on': [],
-      'sync.off': []
+      'sync.off': [],
+      'sync.change': []
     };
     return this.initialise(widgets);
   }
@@ -487,7 +491,7 @@ class DraggableZ {
     if(this.events[evt]) {
       this.events[evt].forEach(callback => {
         if(callback instanceof Function) {
-          callback.apply(this);
+          callback.call(this, data);
           cb();
         }
       });

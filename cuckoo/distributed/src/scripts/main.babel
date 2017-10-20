@@ -55,6 +55,10 @@ $(function() {
     let period = toolbar.find('input[name="toolbar-period"]');
     let toggle = $('#app-header input#sync-widgets');
 
+    let emitChange = (params) => UI.dispatchEvent('sync.change', {
+      date: params.date || date.val(),
+      period: params.period || period.val()
+    });
 
     // binds the sync toggle handle to the toggle, and to the handler
     // once for initialization
@@ -73,12 +77,20 @@ $(function() {
         if(!widget._synced) return;
         widget.api.date($(e.currentTarget).val()).fetch();
       });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        date: $(e.currentTarget).val()
+      });
     });
 
     period.on('change', e => {
       widgets.forEach(widget => {
         if(!widget._synced) return;
         widget.api.period($(e.currentTarget).val()).fetch();
+      });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        period: $(e.currentTarget).val()
       });
     });
 
@@ -94,6 +106,20 @@ $(function() {
     $('body').removeClass('mode-sync');
     widgets.forEach(widget => widget.synced(false));
     $("#app-header .widget-toolbar input").prop('disabled', true);
+  });
+
+  // listens to a change in sync mode and sync up the ui per widget to correspond
+  // with the data it's displaying
+  UI.on('sync.change', params => {
+    widgets.forEach(widget => {
+      if(!widget._synced) return;
+      // set date
+      $(widget.template).find('.widget-toolbar input[name="toolbar-date"]').val(params.date);
+      // unset period radio
+      $(widget.template).find('.widget-toolbar input[name="toolbar-period"]').prop('checked', false);
+      // set period radio
+      $(widget.template).find(`.widget-toolbar input[name="toolbar-period"][value="${params.period}"]`).prop('checked', true);
+    });
   });
 
   initializeHeaderToolbar();
