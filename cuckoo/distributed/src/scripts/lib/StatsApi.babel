@@ -140,8 +140,6 @@ const transformators = {
       addDataset(params.include);
     }
 
-    console.log(result);
-
     return result;
 
   }

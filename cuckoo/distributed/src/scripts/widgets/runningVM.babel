@@ -29,7 +29,7 @@ const widget = fabricate('running_vm', {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: true
+            beginAtZero: false
           }
         }],
         xAxes: [{

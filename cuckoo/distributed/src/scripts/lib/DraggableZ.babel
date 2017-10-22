@@ -313,6 +313,24 @@ class DraggableZWidget {
         dataset.fill = dataset.fill || false;
       });
 
+      // transform the axes if a config has been given, but makes sure it extends properly
+      // onto any existing options in the widget specs. Follows instructions of Ricardo
+      // in the README_API.txt documentation.
+
+      if(this.chartOptions.data.config) {
+
+        let c = this.chartOptions.data.config;
+
+        // define the y axes
+        for(let y in this.chartOptions.options.scales.yAxes) {
+          let yo = this.chartOptions.options.scales.yAxes[y];
+          if(!yo.ticks) yo.ticks = {}; // prep
+          if(c.max_points) yo.maxTicksLimit = c.max_points;
+          // if(c.max) yo.ticks.max = c.max; // stripped out for convenience, imho rounding the max UP by the framework is OK. using this property renders the graph a bit ugly and weird.
+        }
+
+      }
+
       if(this.chartOptions.data.labels.length == 0) {
         $(this.template).find('.widget-chart').fadeOut(500, () => {
           $(this.template).find('.widget-no-data').fadeIn(500);

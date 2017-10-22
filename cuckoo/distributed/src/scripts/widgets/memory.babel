@@ -33,7 +33,7 @@ const widget = fabricate('memory_usage', {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: true
+            beginAtZero: false
           }
         }],
         xAxes: [{
