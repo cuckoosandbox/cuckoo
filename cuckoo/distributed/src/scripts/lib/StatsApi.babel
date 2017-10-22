@@ -43,7 +43,8 @@ const transformators = {
 
     let result = {
       labels: [],
-      datasets: []
+      datasets: [],
+      config: undefined
     }
 
     let addDataset = (set, searchSet = false) => {
@@ -69,6 +70,10 @@ const transformators = {
         });
       }
 
+      if(selected.info) {
+        result.config = selected.info;
+      }
+
     }
 
     if(params.include.indexOf(',') > -1) {
@@ -87,7 +92,8 @@ const transformators = {
 
     let result = {
       labels: [],
-      datasets: []
+      datasets: [],
+      config: undefined
     }
 
     let addDataset = (set, searchSet = false) => {
@@ -108,6 +114,7 @@ const transformators = {
       if(selected instanceof Object) {
 
         for(let node in selected) {
+
           if(selected[node].points) {
             let s = selected[node];
             result.labels = s.points.map(point => dateLabelFormat(point.datetime, params.period));
@@ -116,6 +123,11 @@ const transformators = {
               data: s.points.map(point => point.value)
             });
           }
+
+          if(selected[node].info && !result.config) {
+            result.config = selected[node].info;
+          }
+
         }
 
       }
@@ -127,6 +139,8 @@ const transformators = {
     } else {
       addDataset(params.include);
     }
+
+    console.log(result);
 
     return result;
 

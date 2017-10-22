@@ -363,6 +363,21 @@
     }
   }
 
+  &-resize {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover {
+      cursor: nwse-resize;
+    }
+  }
+
 }
 
 /*

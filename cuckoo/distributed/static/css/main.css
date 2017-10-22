@@ -2602,6 +2602,15 @@ body {
     .widget-no-data p {
       text-align: center;
       font-size: 14px; }
+  .widget-resize {
+    position: absolute;
+    bottom: 5px;
+    right: 10px; }
+    .widget-resize svg {
+      width: 24px;
+      height: 24px; }
+    .widget-resize:hover {
+      cursor: nwse-resize; }
 
 /*
   Holds the big jumbo grid with reserved spots for at least two highlighted
