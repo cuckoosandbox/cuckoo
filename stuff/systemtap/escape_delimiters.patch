@@ -45,7 +45,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  %{
    size_t outlen = (size_t)clamp_t(int, STAP_ARG_outlen, 0, MAXSTRINGLEN);
    if (outlen == 0)
-@@ -1002,3 +1006,11 @@
+@@ -1002,3 +1006,13 @@
      STAP_ERROR("Unable to access user space data at 0x%lx",
  	       (unsigned long)(void *)(uintptr_t)STAP_ARG_addr);
  %}
