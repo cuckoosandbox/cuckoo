@@ -239,7 +239,7 @@ class Suricata(Processing):
                 referer = None
 
             self.results["files"].append({
-                "id": int(filepath.split(".", 1)[-1]),
+                "id": int(filepath.split(".")[-1]),
                 "filesize": event["size"],
                 "filename": os.path.basename(event["filename"]),
                 "hostname": event.get("http_host"),
