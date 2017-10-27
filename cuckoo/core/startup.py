@@ -16,9 +16,7 @@ import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config, config2
-from cuckoo.common.exceptions import (
-    CuckooStartupError, CuckooFeedbackError
-)
+from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
 from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING

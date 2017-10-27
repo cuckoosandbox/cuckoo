@@ -26,7 +26,6 @@ from cuckoo.common.defines import (
 )
 from cuckoo.common.exceptions import CuckooStartupError
 
-
 log = logging.getLogger(__name__)
 
 # Cuckoo Working Directory base path.
@@ -220,19 +219,17 @@ def drop_privileges(username):
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
 
 def pid_exists(pid):
-    """Returns True if pid exists, False if not. None
-    if platform not supported. Supports Windows, Linux, Macosx"""
-
+    """Returns True if pid exists, False if not, and None if unsupported."""
     if is_windows():
         from ctypes import windll, wintypes
         dw_exit = wintypes.DWORD()
-        proc_h = windll.kernel32.OpenProcess(WIN_PROCESS_QUERY_INFORMATION,
-                                             0, pid)
+        proc_h = windll.kernel32.OpenProcess(
+            WIN_PROCESS_QUERY_INFORMATION, 0, pid
+        )
         windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
-
         return dw_exit.value == WIN_ERR_STILL_ALIVE
 
-    elif is_linux() or is_macosx():
+    if is_linux() or is_macosx():
         # Send signal 0 to process. Exception will be thrown if it does not
         # exist or there is no permission to send to this process. This
         # indicates a process does exist.
@@ -240,14 +237,9 @@ def pid_exists(pid):
             os.kill(pid, 0)
         except OSError as e:
             return e.errno == errno.EPERM
-
         return True
-    else:
-        # Return none if not of of the above platforms
-        return None
 
 class Pidfile(object):
-
     def __init__(self, name=None):
         """Manage pidfile of given name
         @param name: name without extension to use for file
@@ -294,13 +286,10 @@ class Pidfile(object):
     def read(self):
         """Read PID from pidfile. Will raise IOError if pidfile does
         not exist"""
-        with open(self.pidfile_path, "rb") as fp:
-            try:
-                self.pid = int(fp.read())
-            except ValueError:
-                # Set pid to None if pidfile contains invalid value
-                self.pid = None
-
+        try:
+            self.pid = int(open(self.pidfile_path, "rb").read())
+        except ValueError:
+            self.pid = None
         return self.pid
 
     @staticmethod

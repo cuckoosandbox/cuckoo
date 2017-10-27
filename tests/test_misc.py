@@ -16,7 +16,7 @@ from cuckoo.common.files import Files
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
     HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
-    Pidfile, pid_exists, Structure, PUBLICKEYSTRUC, RSAPUBKEY
+    Pidfile, pid_exists, Structure
 )
 
 def return_value(value):
@@ -242,7 +242,7 @@ def test_structure():
 
 def test_create_pidfile():
     set_cwd(tempfile.mkdtemp())
-    p = Pidfile("test1").create()
+    Pidfile("test1").create()
 
     pidfile = cwd("pidfiles", "test1.pid")
     assert os.path.exists(pidfile)
@@ -294,4 +294,6 @@ def test_active_pids():
     set_cwd(tempfile.mkdtemp())
     Pidfile("test6").create()
 
-    assert Pidfile.get_active_pids() == {"test6": os.getpid()}
+    assert Pidfile.get_active_pids() == {
+        "test6": os.getpid(),
+    }

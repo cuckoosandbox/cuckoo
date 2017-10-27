@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -61,8 +61,7 @@ class StatsCache(object):
             return
 
         # Get current datetime and round to nearest step_size
-        key = self._round_nearest_step(now, step_size
-                                       ).strftime(self.dt_ftm)
+        key = self.round_nearest_step(now, step_size).strftime(self.dt_ftm)
         if name not in self.stats:
             self.stats[name] = {}
 
@@ -70,13 +69,12 @@ class StatsCache(object):
             if set_value is None:
                 set_value = default
 
-            key = "%s%s" % (
-                key_prefix,
-                self._round_nearest_step(set_dt, step_size
-                                           ).strftime(self.dt_ftm)
-            )
-            self.stats[name][key] = set_value
+            dt_step = self.round_nearest_step(
+                set_dt, step_size
+            ).strftime(self.dt_ftm)
 
+            key = "%s%s" % (key_prefix, dt_step)
+            self.stats[name][key] = set_value
         else:
             if key not in self.stats[name]:
                 self.stats[name][key] = 0
@@ -90,7 +88,7 @@ class StatsCache(object):
         if name not in self.stats:
             return None
 
-        dt = self._round_nearest_step(dt, step_size)
+        dt = self.round_nearest_step(dt, step_size)
 
         # Never return a cache value for current time, since these values
         # can still change
@@ -116,8 +114,7 @@ class StatsCache(object):
             del self.stats
             self._init_stats()
 
-    @staticmethod
-    def _round_nearest_step(dt, step_size):
+    def round_nearest_step(self, dt, step_size):
         """Round given datetime to nearest step size (minutes).
         16:44 with step size 15 will be 16:45 etc"""
         until_next = (step_size - (dt.minute % step_size))

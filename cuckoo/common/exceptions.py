@@ -58,7 +58,7 @@ class CuckooApiError(CuckooOperationalError):
     """Error during API usage."""
 
 class CuckooProcessExistsError(CuckooOperationalError):
-    """Use to indicate a process already exists."""
+    """Used to indicate a process already exists."""
 
     def __init__(self, message, pid):
         super(CuckooProcessExistsError, self).__init__(message)

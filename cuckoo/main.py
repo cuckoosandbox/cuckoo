@@ -107,7 +107,7 @@ def cuckoo_init(level, ctx, cfg=None):
         )
 
     # Only one Cuckoo process should exist per CWD.
-    # Run this check before any files are possibly modified
+    # Run this check before any files are possibly modified.
     pidf = Pidfile("cuckoo")
     if pidf.exists() and pid_exists(pidf.pid):
         raise CuckooProcessExistsError("", pidf.pid)
@@ -172,13 +172,13 @@ def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
-
     try:
         ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
+
     Pidfile("cuckoo").remove()
 
 @click.group(invoke_without_command=True)

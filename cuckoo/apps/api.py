@@ -6,13 +6,13 @@
 import datetime
 import hashlib
 import io
+import multiprocessing
 import os
 import socket
 import tarfile
 import zipfile
 
 from flask import Flask, request, jsonify, make_response
-from multiprocessing import cpu_count
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
@@ -559,7 +559,7 @@ def cuckoo_status():
         memory = memavail = memtotal = None
 
     try:
-        cpu_core_count = cpu_count()
+        cpu_core_count = multiprocessing.cpu_count()
     except NotImplementedError:
         cpu_core_count = None
 

@@ -33,10 +33,10 @@ except:
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
+from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch
-from cuckoo.common.structures import LnkHeader, LnkEntry
 
 from elftools.common.exceptions import ELFError
 from elftools.elf.constants import E_FLAGS

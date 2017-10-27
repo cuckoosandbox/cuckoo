@@ -12,9 +12,7 @@ import tempfile
 from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
-from cuckoo.common.exceptions import (
-    CuckooStartupError, CuckooProcessExistsError
-)
+from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (

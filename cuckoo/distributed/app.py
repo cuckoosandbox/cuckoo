@@ -1,24 +1,25 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from flask import Flask, render_template, send_from_directory
+import flask
 import os.path
 import sys
 
 from cuckoo.distributed.db import db, AlembicVersion
 from cuckoo.distributed.misc import settings, init_settings
 from cuckoo.distributed.views import blueprints
+from cuckoo.misc import cwd
 
 # aliases the current working folder
 app_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
 def create_app():
-    app = Flask("Distributed Cuckoo",
-                    template_folder=app_folder + "/templates",
-                    static_folder=app_folder + "/static")
-
-    print(app)
+    app = flask.Flask(
+        "Distributed Cuckoo",
+        template_folder=cwd("..", "distributed", "templates", private=True),
+        static_folder=cwd("..", "distributed", "static", private=True),
+    )
 
     init_settings()
     app.config.from_object(settings)
@@ -55,10 +56,6 @@ def create_app():
     if not settings.reports_directory or \
             not os.path.isdir(settings.reports_directory):
         sys.exit("Please configure a reports directory path.")
-
-    @app.route("/")
-    def index():
-        return render_template('index.html')
 
     @app.after_request
     def custom_headers(response):

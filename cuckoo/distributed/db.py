@@ -11,6 +11,8 @@ from sqlalchemy.inspection import inspect
 db = SQLAlchemy(session_options=dict(autoflush=True))
 ALEMBIC_VERSION = "701e3dde12ba"
 
+null = None
+
 class Serializer(object):
     """Serialize a query result object."""
     def to_dict(self):
@@ -111,10 +113,14 @@ class Task(db.Model, Serializer):
 
     __table_args__ = (
         db.Index("ix_node_task", node_id, task_id),
-        db.Index("ix_completed_not_null", completed,
-                 postgresql_where=(completed != None)),
-        db.Index("ix_status_ltfinished_submitted", submitted, status,
-                 postgresql_where=(status < FINISHED))
+        db.Index(
+            "ix_completed_not_null", completed,
+            postgresql_where=completed != null
+        ),
+        db.Index(
+            "ix_status_ltfinished_submitted", submitted, status,
+            postgresql_where=status < FINISHED
+        )
     )
 
     def __init__(self, path=None, filename=None, package=None, timeout=None,
