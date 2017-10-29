@@ -339,23 +339,23 @@ class TestProcessing(object):
             "category": "file",
         })
 
-        fd, filepath = tempfile.mkstemp()
-        os.write(fd, "ABCDEFGH\n"*0x1000)
-        os.close(fd)
+        with tempfile.NamedTemporaryFile() as fd:
+            filepath = fd.name
+            fd.write("ABCDEFGH\n"*0x1000)
 
-        s.file_path = filepath
-        assert len(s.run()) == s.MAX_STRINGCNT
+            s.file_path = filepath
+            assert len(s.run()) == s.MAX_STRINGCNT
 
-        fd, filepath = tempfile.mkstemp()
-        os.write(fd, ("%s\n" % ("A"*0x1000)) * 200)
-        os.close(fd)
+        with tempfile.NamedTemporaryFile() as fd:
+            filepath = fd.name
+            fd.write(("%s\n" % ("A"*0x1000)) * 200)
 
-        s.file_path = filepath
-        strings = s.run()
-        assert len(strings) == 200
-        assert len(strings[0]) == s.MAX_STRINGLEN
-        assert len(strings[42]) == s.MAX_STRINGLEN
-        assert len(strings[199]) == s.MAX_STRINGLEN
+            s.file_path = filepath
+            strings = s.run()
+            assert len(strings) == 200
+            assert len(strings[0]) == s.MAX_STRINGLEN
+            assert len(strings[42]) == s.MAX_STRINGLEN
+            assert len(strings[199]) == s.MAX_STRINGLEN
 
     @mock.patch("cuckoo.processing.screenshots.log")
     def test_screenshot_tesseract(self, p):
