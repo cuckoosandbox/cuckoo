@@ -387,6 +387,7 @@ def test_on_yara():
         "virtualpc": [(0, 0)],
     }
     assert ym.string("virtualpc", 0) == "\x0f\x3f\x07\x0b"
+    shutil.rmtree(cwd())
 
 def test_on_extract():
     set_cwd(tempfile.mkdtemp())
@@ -452,6 +453,7 @@ def test_on_extract():
     sig1.on_extract.assert_called_once()
     em = sig1.on_extract.call_args_list[0][0][0]
     assert em.category == "script"
+    shutil.rmtree(cwd())
 
 class TestSignatureMethods(object):
     def report(self, obj):
