@@ -93,6 +93,7 @@ class TestProcessing(object):
         results = d.run()
         assert len(results["action"]) == 3
         assert len(results["errors"]) == 4
+        shutil.rmtree(cwd())
 
     def test_droidmon_url(self):
         d = Droidmon()
@@ -379,6 +380,7 @@ class TestProcessing(object):
         })
         assert s.run() == []
         p.error.assert_called_once()
+        shutil.rmtree(s.shots_path)
 
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     def test_screenshots(self, p):
@@ -459,6 +461,8 @@ class TestProcessing(object):
             "url": "http://google.com",
         }
 
+        shutil.rmtree(cwd())
+
     def test_targetinfo_empty(self):
         ti = TargetInfo()
         ti.file_path = "file404"
@@ -525,6 +529,7 @@ class TestProcessing(object):
         with pytest.raises(CuckooProcessingError) as e:
             VirusTotal().run()
         e.match("API key not configured")
+        shutil.rmtree(cwd())
 
     def test_virustotal_invalidcategory(self):
         set_cwd(tempfile.mkdtemp())
@@ -536,6 +541,7 @@ class TestProcessing(object):
             })
             v.run()
         e.match("Unsupported task category")
+        shutil.rmtree(cwd())
 
 @pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
 class TestVolatility(object):
@@ -582,6 +588,7 @@ class TestVolatility(object):
         m.set_machine({})
         m.run()
         p.assert_called_once_with(filepath, "profile0")
+        shutil.rmtree(cwd())
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_vm_osprofile(self, p):
@@ -601,6 +608,7 @@ class TestVolatility(object):
         })
         m.run()
         p.assert_called_once_with(filepath, "profile1")
+        shutil.rmtree(cwd())
 
     def test_empty_profile(self):
         with pytest.raises(CuckooOperationalError) as e:
@@ -657,6 +665,7 @@ class TestVolatility(object):
         assert m.enabled("psxview", []) is False
         assert m.enabled("sockscan", ["winxp"]) is False
         assert m.enabled("netscan", ["vista", "win7"]) is False
+        shutil.rmtree(cwd())
 
     def test_s(self):
         assert obj_s(1) == "1"
@@ -687,6 +696,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine["name"] == "cuckoo1"
         assert rp.machine["label"] == "cuckoo1"
         assert rp.machine["ip"] == "192.168.56.101"
+        shutil.rmtree(cwd())
 
     def test_machine_info_cuckoo2(self):
         set_cwd(tempfile.mkdtemp())
@@ -703,6 +713,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine == {
             "name": "cuckoo2",
         }
+        shutil.rmtree(cwd())
 
 class TestBehavior(object):
     def test_process_tree_regular(self):
@@ -801,6 +812,7 @@ class TestBehavior(object):
         assert sorted(list(ba._enum_logs())) == [
             cwd("logs", "2.txt", analysis=1),
         ]
+        shutil.rmtree(cwd())
 
     def test_extract_scripts(self):
         set_cwd(tempfile.mkdtemp())
@@ -853,6 +865,7 @@ class TestBehavior(object):
         }]
         assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
         assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+        shutil.rmtree(cwd())
 
     def test_stap_log(self):
         set_cwd(tempfile.mkdtemp())
@@ -951,6 +964,7 @@ class TestBehavior(object):
                 "track": True
             }],
         }
+        shutil.rmtree(cwd())
 
 class TestPcap(object):
     @classmethod
@@ -958,6 +972,10 @@ class TestPcap(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
+
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(cwd())
 
     def test_dns_server_list(self):
         assert self.pcap["dns_servers"] == ["8.8.8.8"]
@@ -1134,6 +1152,7 @@ class TestPcapAdditional(object):
             "dst": "4.5.6.7",
         }, dpkt.icmp.ICMP(str(pkt)))
         assert len(p.icmp_requests) == 1
+        shutil.rmtree(cwd())
 
     def test_no_sorted_pcap(self):
         set_cwd(tempfile.mkdtemp())
@@ -1154,6 +1173,7 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert not os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+        shutil.rmtree(cwd())
 
     def test_yes_sorted_pcap(self):
         set_cwd(tempfile.mkdtemp())
@@ -1174,6 +1194,7 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+        shutil.rmtree(cwd())
 
     def test_duplicate_dns_requests(self):
         results = Pcap(
@@ -1210,11 +1231,13 @@ class TestPcapAdditional(object):
         na.set_options({})
         na.run()
         p.warning.assert_not_called()
+        shutil.rmtree(cwd())
 
 class TestPcap2(object):
     def test_smtp_ex(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/smtp.pcap", None, _tmp_dir
         ).run()
 
         assert len(obj["smtp_ex"]) == 1
@@ -1230,20 +1253,25 @@ class TestPcap2(object):
         assert obj["smtp_ex"][0]["resp"]["banner"] == (
             "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
         )
+        shutil.rmtree(_tmp_dir)
 
     def test_http_status(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/status-code.pcap", None, _tmp_dir
         ).run()
         assert len(obj["http_ex"]) == 1
         assert not obj["https_ex"]
         assert obj["http_ex"][0]["status"] == 301
+        shutil.rmtree(_tmp_dir)
 
     def test_http_nostatus(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/not-http.pcap", None, _tmp_dir
         ).run()
         assert len(obj["http_ex"]) == 1
+        shutil.rmtree(_tmp_dir)
 
 @mock.patch("os.remove")
 def test_sort_pcap_rm_temp(p):
