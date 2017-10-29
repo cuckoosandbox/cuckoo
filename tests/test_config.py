@@ -5,6 +5,7 @@
 import mock
 import os
 import pytest
+import shutil
 import tempfile
 
 from cuckoo.common.config import (
@@ -39,6 +40,9 @@ class TestConfig:
         open(self.path, "wb").write(CONF_EXAMPLE)
 
         self.c = Config(cfg=self.path)
+
+    def teardown(self):
+        shutil.rmtree(cwd())
 
     def test_get_option_exist(self):
         """Fetch an option of each type from default config file."""
@@ -80,6 +84,7 @@ tmppath = %(CUCKOO_CWD)s/foo%(FOOBAR)sbar
 """
 
 def test_env():
+    set_cwd(tempfile.mkdtemp())
     path = tempfile.mkstemp()[1]
 
     os.environ["CUCKOO_FOOBAR"] = "top"
@@ -98,6 +103,7 @@ def test_env():
 
     os.environ.pop("FOOBAR")
     os.environ.pop("CUCKOO_FOOBAR")
+    shutil.rmtree(cwd())
 
 VIRTUALBOX_CONFIG_EXAMPLE = """
 [virtualbox]
@@ -139,6 +145,9 @@ class TestConfigType:
         filepath = cwd("conf", "cuckoo.conf")
         open(filepath, "wb").write(CUCKOO_CONFIG_EXAMPLE)
         self.cuckoo = Config(file_name="cuckoo", cfg=filepath)
+
+    def teardown(self):
+        shutil.rmtree(cwd())
 
     def test_integer_parse(self):
         """Testing the integer parsing in the configuration file parsing."""
@@ -226,6 +235,7 @@ def test_invalid_section():
     with pytest.raises(CuckooConfigurationError) as e:
         config("cuckoo:invalid:entry", strict=True)
     e.match("No such configuration value exists")
+    shutil.rmtree(cwd())
 
 def test_confdir():
     set_cwd(tempfile.mkdtemp())
@@ -241,8 +251,11 @@ def test_confdir():
     cfg = Config.from_confdir(cwd("conf"))
     assert cfg["cuckoo"]["cuckoo"]["delete_original"] is True
     assert cfg["virtualbox"]["virtualbox"]["path"] == "/usr/bin/VBoxManage"
+    shutil.rmtree(cwd())
 
 def test_unknown_section():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     Files.create(
         cwd("conf"), "cuckoo.conf",
         "[virtualbox]\npath = /usr/bin/VBoxManage"
@@ -252,8 +265,11 @@ def test_unknown_section():
 
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert cfg["cuckoo"]["virtualbox"]["path"] == "/usr/bin/VBoxManage"
+    shutil.rmtree(cwd())
 
 def test_unknown_conf_file():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     Files.create(
         cwd("conf"), "foobar.conf",
         "[derp]\nfoo = bar"
@@ -263,6 +279,7 @@ def test_unknown_conf_file():
 
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert cfg["foobar"]["derp"]["foo"] == "bar"
+    shutil.rmtree(cwd())
 
 def test_sanitize():
     set_cwd(tempfile.mkdtemp())
@@ -280,6 +297,7 @@ def test_sanitize():
     cfg = Config.from_confdir(cwd("conf"), sanitize=True)
     assert cfg["cuckoo"]["database"]["timeout"] == 42
     assert cfg["cuckoo"]["database"]["connection"] == "*"*8
+    shutil.rmtree(cwd())
 
 def test_invalid_machinery():
     set_cwd(tempfile.mkdtemp())
@@ -294,6 +312,7 @@ def test_invalid_machinery():
     with pytest.raises(CuckooStartupError) as e:
         check_configs()
     e.match("unknown machinery")
+    shutil.rmtree(cwd())
 
 def test_invalid_feedback():
     set_cwd(tempfile.mkdtemp())
@@ -309,6 +328,7 @@ def test_invalid_feedback():
     with pytest.raises(CuckooStartupError) as e:
         check_configs()
     e.match("Cuckoo Feedback configuration")
+    shutil.rmtree(cwd())
 
 def test_whitespace_before_line():
     set_cwd(tempfile.mkdtemp())
@@ -323,6 +343,7 @@ ip = 1.2.3.4
     with pytest.raises(CuckooConfigurationError) as e:
         Config(file_name="virtualbox", cfg=filepath)
     e.match("error reading in the")
+    shutil.rmtree(cwd())
 
 def test_whitespace_before_line2():
     set_cwd(tempfile.mkdtemp())
@@ -337,6 +358,7 @@ snapshot = asnapshot
     with pytest.raises(CuckooConfigurationError) as e:
         Config(file_name="virtualbox", cfg=filepath)
     e.match("Most likely there are leading whitespaces")
+    shutil.rmtree(cwd())
 
 def test_migration_041_042():
     set_cwd(tempfile.mkdtemp())
@@ -359,6 +381,7 @@ def test_migration_041_042():
     assert cfg["vmware"]["cuckoo1"]["label"] == "../vmware-xp3.vmx,Snapshot1"
     assert cfg["vmware"]["cuckoo1"]["platform"] == "windows"
     assert cfg["vmware"]["cuckoo1"]["ip"] == "192.168.54.111"
+    shutil.rmtree(cwd())
 
 def test_migration_042_050():
     set_cwd(tempfile.mkdtemp())
@@ -399,6 +422,7 @@ timeout = 1337
     assert cfg["cuckoo"]["graylog"]["port"] == 12201
     assert cfg["cuckoo"]["graylog"]["level"] == "error"
     assert "timeout" not in cfg["virtualbox"]["virtualbox"]
+    shutil.rmtree(cwd())
 
 def test_migration_050_060():
     set_cwd(tempfile.mkdtemp())
@@ -442,6 +466,7 @@ def test_migration_050_060():
             "key": "a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088",
         },
     }
+    shutil.rmtree(cwd())
 
 def test_migration_060_100():
     set_cwd(tempfile.mkdtemp())
@@ -563,6 +588,7 @@ label = label,snapshot
     assert cfg["vmware"]["vmware"]["machines"] == ["hello"]
     assert cfg["vmware"]["hello"]["label"] == "label"
     assert cfg["vmware"]["hello"]["snapshot"] == "snapshot"
+    shutil.rmtree(cwd())
 
 def test_migration_100_110():
     set_cwd(tempfile.mkdtemp())
@@ -574,6 +600,7 @@ delete_original = on
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "1.0.0", "1.1.0")
     assert cfg["cuckoo"]["cuckoo"]["tmppath"] == "/tmp"
+    shutil.rmtree(cwd())
 
 def test_migration_110_120():
     set_cwd(tempfile.mkdtemp())
@@ -648,6 +675,7 @@ snapshot = snapshot
     assert cfg["xenserver"]["cuckoo1"]["platform"] == "windows"
     assert cfg["xenserver"]["cuckoo1"]["ip"] == "192.168.54.111"
     assert cfg["xenserver"]["xenserver"]["user"] == "root"
+    shutil.rmtree(cwd())
 
 def test_migration_120_20c1():
     set_cwd(tempfile.mkdtemp())
@@ -836,6 +864,7 @@ machines = cuckoo1
     assert cfg["vsphere"]["analysis1"]["snapshot"] == "cuckoo_ready_running"
     assert cfg["vsphere"]["analysis1"]["ip"] == "192.168.1.1"
     assert cfg["xenserver"]["xenserver"]["interface"] == "virbr0"
+    shutil.rmtree(cwd())
 
 def test_migration_20c1_20c2():
     set_cwd(tempfile.mkdtemp())
@@ -901,6 +930,7 @@ interface = hehe
     assert cfg["reporting"]["mattermost"]["username"] == "cuckoo"
     assert cfg["vpn"]["vpn"]["enabled"] == "yes"
     assert cfg["vpn"]["vpn0"]["rt_table"] == "hehe"
+    shutil.rmtree(cwd())
 
 def test_migration_20c2_200():
     set_cwd(tempfile.mkdtemp())
@@ -1048,6 +1078,7 @@ interface = eth0
     assert cfg["routing"]["vpn1"]["rt_table"] == "internet"
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
+    shutil.rmtree(cwd())
 
 def test_migration_200_201():
     set_cwd(tempfile.mkdtemp())
@@ -1059,6 +1090,7 @@ pid_generic =
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.0", "2.0.1")
     assert cfg["memory"]["mask"]["pid_generic"] == []
+    shutil.rmtree(cwd())
 
 def test_migration_201_202():
     set_cwd(tempfile.mkdtemp())
@@ -1085,6 +1117,7 @@ platform = windows
     cfg = migrate(cfg, "2.0.1", "2.0.2")
     assert cfg["virtualbox"]["cuckoo1"]["osprofile"] is None
     assert cfg["virtualbox"]["cuckoo2"]["osprofile"] is None
+    shutil.rmtree(cwd())
 
 def test_migration_203_204():
     set_cwd(tempfile.mkdtemp())
@@ -1115,6 +1148,7 @@ arch = x64
         )
     assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
     assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
+    shutil.rmtree(cwd())
 
 def test_migration_204_205():
     set_cwd(tempfile.mkdtemp())
@@ -1179,6 +1213,7 @@ class FullMigration(object):
         cfg = Config.from_confdir(self.DIRPATH, loose=True)
         cfg = migrate(cfg, self.VERSION)
         cuckoo_create(cfg=cfg)
+        shutil.rmtree(cwd())
 
 class TestFullMigration040(FullMigration):
     DIRPATH = "tests/files/conf/040_plain"
@@ -1248,6 +1283,7 @@ def test_list_split():
     assert config("virtualbox:cuckoo1:options") == [
         "noagent", "nictrace",
     ]
+    shutil.rmtree(cwd())
 
 @mock.patch("cuckoo.common.config.log")
 def test_list_default_none(p):
@@ -1341,6 +1377,7 @@ def test_config2_default():
         "socket": None, "suricata": "/usr/bin/suricata",
         "conf": "/etc/suricata/suricata.yaml", "files_log": "files-json.log",
     }
+    shutil.rmtree(cwd())
 
 def test_config2_custom():
     set_cwd(tempfile.mkdtemp())
@@ -1357,6 +1394,7 @@ def test_config2_custom():
         "timeout": 60,
         "scan": False,
     }
+    shutil.rmtree(cwd())
 
 def test_config2_vpns():
     set_cwd(tempfile.mkdtemp())
@@ -1396,11 +1434,13 @@ def test_config2_vpns():
 
     assert config2("routing", "a").name == "name_a"
     assert config2("routing", "a").interface is None
+    shutil.rmtree(cwd())
 
 def test_config2_liststar():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     assert config2("qemu", "vm1").interface == "qemubr"
+    shutil.rmtree(cwd())
 
 @mock.patch("cuckoo.common.config.log")
 def test_no_superfluous_conf(p):
@@ -1410,6 +1450,7 @@ def test_no_superfluous_conf(p):
     cuckoo_create()
     Config.from_confdir(cwd("conf"))
     p.error.assert_not_called()
+    shutil.rmtree(cwd())
 
 def test_faq():
     assert faq("hehe").startswith("http")
@@ -1432,3 +1473,4 @@ def test_incomplete_envvar():
     with pytest.raises(CuckooConfigurationError) as e:
         config("cuckoo:database:connection")
     e.match("One of the fields")
+    shutil.rmtree(cwd())
