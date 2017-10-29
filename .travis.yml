@@ -37,7 +37,6 @@ before_install:
         psql -U postgres -c "CREATE DATABASE cuckootestimport"
         psql -U postgres cuckootestimport <tests/files/sql/11pg.sql >/dev/null
         pip install psycopg2 mysql-python m2crypto==0.24.0 weasyprint
-        rm -v /home/travis/build/cuckoosandbox/cuckoo/cuckoo/private/.cwd
     else
         brew update || brew update
         brew install libmagic cairo pango mongodb
