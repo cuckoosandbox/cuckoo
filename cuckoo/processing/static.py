@@ -777,18 +777,19 @@ class LnkShortcut(object):
         self.buf = buf = open(self.filepath, "rb").read()
         if len(buf) < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
-            return
+            return {"status": "error"}
 
         header = LnkHeader.from_buffer_copy(buf[:ctypes.sizeof(LnkHeader)])
         if header.signature[:] != self.signature:
-            return
+            return {"status": "error"}
 
         if header.guid[:] != self.guid:
-            return
+            return {"status": "error"}
 
         ret = {
             "flags": {},
-            "attrs": []
+            "attrs": [],
+            "status": "success"
         }
 
         for x in xrange(7):
