@@ -2,13 +2,15 @@ $RDP_APP_VIEWPORT_BGC: #000;
 $RDP_APP_HEADER_BGC: #2E3A4F;
 $RDP_APP_CONTROLS_BGC: #15272A;
 $RDP_APP_TOOLBAR_BUTTON_BGC: #6297F8;
+$RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC: #354A71;
+$RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC: #6D6D6D;
 $RDP_APP_TOOLBAR_ICON_COLOR: #1E3C73;
 $RDP_APP_CREDIT_BGC: #383838;
 
 // rdp toolbar button element style
 %rdp-toolbar-button {
   -webkit-appearance: none;
-  padding: 5px;
+  padding: 7px 5px 5px;
   border: 0;
   border-radius: 5px;
   background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
@@ -16,6 +18,37 @@ $RDP_APP_CREDIT_BGC: #383838;
   font-size: 44px;
   color: $RDP_APP_TOOLBAR_ICON_COLOR;
   text-shadow: 0px 1px 0px rgba(255,255,255,.2);
+
+  transition: background-color 100ms linear,
+              box-shadow 100ms linear,
+              color 150ms linear;
+
+  &:hover {
+    background-color: tint($RDP_APP_TOOLBAR_BUTTON_BGC, 10%);
+  }
+
+  &.active,
+  &:active {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC;
+    box-shadow: inset 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 70%),
+                0px 1px 0px tint($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 10%);
+    color: #fff;
+    text-shadow: 0px 1px 0px shade($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 70%);
+  }
+
+  &.disabled,
+  &[disabled] {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+    color: tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 10%);
+    text-shadow: 0px -2px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+    box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%);
+    pointer-events: none;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
 }
 
 .rdp {
@@ -67,17 +100,44 @@ $RDP_APP_CREDIT_BGC: #383838;
     & > button {
 
       @extend %rdp-toolbar-button;
+      position: relative;
       flex-shrink: 0;
       flex-grow: 0;
 
-      margin: 20px 0;
+      margin: 25px 0;
 
-      .fa-camera,
-      .fa-expand,
-      .fa-power-off {
+      .fa {
         position: relative;
         top: 2px;
       }
+
+      &:after {
+        content: attr(name);
+        pointer-events: none;
+        position: absolute;
+        bottom: -30px;
+        left: 0;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 400;
+        text-transform: capitalize;
+        color: #fff;
+        text-shadow: none;
+      }
+
+      &:active:after,
+      &.active:after {
+        font-weight: 700;
+      }
+
+      &[disabled]:after,
+      &.disabled:after {
+        color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+      }
+
+      &:first-child { margin-top: 0; }
+      &:last-child { margin-bottom: 0; }
+
     }
 
   }
