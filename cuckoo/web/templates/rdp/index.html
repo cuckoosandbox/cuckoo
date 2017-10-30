@@ -1,1 +1,26 @@
-RDP page.
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+
+  <section class="rdp-app">
+    <div class="rdp-app__display">
+      <div class="rdp-app__header"></div>
+      <div class="rdp-app__viewport"></div>
+    </div>
+    <div class="rdp-app__controls">
+      <nav class="rdp-toolbar">
+        <button><i class="fa fa-expand"></i></button>
+        <button><i class="fa fa-camera"></i></button>
+        <button><i class="fa fa-hand-o-up"></i></button>
+        <button><i class="fa fa-refresh"></i></button>
+        <button><i class="fa fa-power-off"></i></button>
+      </nav>
+      <div class="rdp-credits">
+        <a href="https://guacamole.incubator.apache.org/" target="_blank" title="Cuckoo Ripple is powered by the Guacamole project.">
+          <img src="{% static 'graphic/guacamole.png' %}" alt="Guacamole" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
