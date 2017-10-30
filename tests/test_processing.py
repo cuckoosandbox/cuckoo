@@ -135,7 +135,9 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         s.file_path = "tests/files/pdf0.zip"
-        assert "%48%65" in s.run()["pdf"][0]["javascript"][0]["orig_code"]
+        result = s.run()["pdf"][0]
+        assert "%48%65" in result["javascript"][0]["orig_code"]
+        assert result["status"] == "success"
 
     def test_pe(self):
         set_cwd(tempfile.mkdtemp())
@@ -425,6 +427,7 @@ class TestProcessing(object):
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+        assert r["status"] == "success"
 
     def test_phishing0_pdf(self):
         set_cwd(tempfile.mkdtemp())
@@ -439,7 +442,9 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         s.file_path = "tests/files/phishing0.pdf"
-        assert "googleattachmentsigned" in s.run()["pdf"][0]["urls"][0]
+        r = s.run()["pdf"]
+        assert "googleattachmentsigned" in r[0]["urls"][0]
+        assert r[0]["status"] == "success"
 
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
@@ -489,6 +494,7 @@ class TestProcessing(object):
             "version": 1,
             "openaction": None,
             "attachments": [],
+            "status": "success"
         }
 
     def test_pdf_attach(self):
@@ -510,6 +516,7 @@ class TestProcessing(object):
         assert len(obj["attachments"]) == 1
         assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
         assert "kkkllsslll" in obj["openaction"]
+        assert obj["status"] == "success"
 
     def test_office(self):
         s = Static()
@@ -523,6 +530,7 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+        assert r["status"] == "success"
 
     def test_lnk1(self):
         s = Static()
@@ -533,6 +541,7 @@ class TestProcessing(object):
         })
         s.file_path = "tests/files/lnk_1.lnk"
         obj = s.run()["lnk"]
+        assert obj["status"] == "success"
         assert obj["basepath"] == "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
         assert obj["flags"] == {
             "cmdline": True, "description": True, "icon": True,
