@@ -443,6 +443,9 @@ class WindowsScriptFile(object):
             # Decode JScript.Encode encoding.
             if language in ("jscript.encode", "vbscript.encode"):
                 source = self.decode(source)
+            if not source:
+                # the block between <script ...> </script> was empty
+                continue
 
             ret.append(to_unicode(source))
 
