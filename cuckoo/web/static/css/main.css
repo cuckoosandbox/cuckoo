@@ -10670,7 +10670,7 @@ body.night .app-message {
 
 .rdp-toolbar > button {
   -webkit-appearance: none;
-  padding: 5px;
+  padding: 7px 5px 5px;
   border: 0;
   border-radius: 5px;
   background-color: #6297F8;
@@ -10678,6 +10678,31 @@ body.night .app-message {
   font-size: 44px;
   color: #1E3C73;
   text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2);
+  -webkit-transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+  transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+}
+
+.rdp-toolbar > button:hover {
+  background-color: #72a1f9;
+}
+
+.rdp-toolbar > button.active, .rdp-toolbar > button:active {
+  background-color: #354A71;
+  box-shadow: inset 0px 2px 0px #101622, 0px 1px 0px #495c7f;
+  color: #fff;
+  text-shadow: 0px 1px 0px #101622;
+}
+
+.rdp-toolbar > button.disabled, .rdp-toolbar > button[disabled] {
+  pointer-events: none;
+  background-color: #6D6D6D;
+  color: #7c7c7c;
+  text-shadow: 0px -2px 0px #4c4c4c;
+  box-shadow: 0px 2px 0px #414141;
+}
+
+.rdp-toolbar > button:focus {
+  outline: none;
 }
 
 .rdp-app {
@@ -10747,19 +10772,50 @@ body.night .app-message {
 }
 
 .rdp-toolbar > button {
+  position: relative;
   -ms-flex-negative: 0;
       flex-shrink: 0;
   -webkit-box-flex: 0;
       -ms-flex-positive: 0;
           flex-grow: 0;
-  margin: 20px 0;
+  margin: 25px 0;
 }
 
-.rdp-toolbar > button .fa-camera,
-.rdp-toolbar > button .fa-expand,
-.rdp-toolbar > button .fa-power-off {
+.rdp-toolbar > button .fa, .rdp-toolbar > button .custom-select:after, .rdp-toolbar > button .dns-badge__content:before, .rdp-toolbar > button .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button .cuckoo-analysis__panel--toggle:before, .rdp-toolbar > button .cuckoo-analysis__panel--toggle:after, .rdp-toolbar > button .cuckoo-files ul div:before, .cuckoo-files ul .rdp-toolbar > button div:before, .rdp-toolbar > button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-toolbar > button .extension-select:after, .rdp-toolbar > button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-toolbar > button .extension-select:before, .rdp-toolbar > button .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-toolbar > button .custom-checkbox > input + span, .rdp-toolbar > button .breadcrumbs > li:not(:last-child):after, .rdp-toolbar > button .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-toolbar > button input[type="radio"] + span:before, .rdp-toolbar > button .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar > button input[type="radio"] + span:before, .rdp-toolbar > button
+.list-panel .list-group-option input[type="checkbox"] + span:before,
+.list-panel .list-group-option .rdp-toolbar > button input[type="checkbox"] + span:before, .rdp-toolbar > button .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar > button input[type="checkbox"] + span:before {
   position: relative;
   top: 2px;
+}
+
+.rdp-toolbar > button:after {
+  content: attr(name);
+  pointer-events: none;
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: capitalize;
+  color: #fff;
+  text-shadow: none;
+}
+
+.rdp-toolbar > button:active:after, .rdp-toolbar > button.active:after {
+  font-weight: 700;
+}
+
+.rdp-toolbar > button[disabled]:after, .rdp-toolbar > button.disabled:after {
+  color: #6D6D6D;
+}
+
+.rdp-toolbar > button:first-child {
+  margin-top: 0;
+}
+
+.rdp-toolbar > button:last-child {
+  margin-bottom: 0;
 }
 
 .rdp-credits a {
