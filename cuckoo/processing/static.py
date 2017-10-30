@@ -34,6 +34,7 @@ except:
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
+from cuckoo.common.exceptions import CuckooPartialStaticAnalysis
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch, Structure
 

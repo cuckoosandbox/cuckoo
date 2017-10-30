@@ -33,6 +33,9 @@ class CuckooMachineSnapshotError(CuckooMachineError):
 class CuckooAnalysisError(CuckooOperationalError):
     """Error during analysis."""
 
+class CuckooPartialStaticAnalysis(Exception):
+    """Only partial data could be extracted."""
+
 class CuckooProcessingError(CuckooOperationalError):
     """Error in processor module."""
 
