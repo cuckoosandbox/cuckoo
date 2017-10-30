@@ -476,7 +476,7 @@ class OfficeDocument(object):
         try:
             p = oletools.olevba.VBA_Parser(self.filepath)
         except TypeError:
-            return
+            raise CuckooPartialStaticAnalysis("Can not parse VBA")
 
         # We're not interested in plaintext.
         if p.type == "Text":
@@ -495,6 +495,7 @@ class OfficeDocument(object):
                 "Error extracting macros from office document (this is an "
                 "issue with oletools - please report upstream): %s", e
             )
+            yield {"status": "error"}
 
     def deobfuscate(self, code):
         """Bruteforce approach of regex-based deobfuscation."""
@@ -529,11 +530,16 @@ class OfficeDocument(object):
 
     def run(self):
         self.unpack_docx()
+        ret = {"status": "success", "macros": [], "eps": []}
+        try:
+            ret.update({
+                "macros": list(self.get_macros()),
+                "eps": self.extract_eps(),
+            })
+        except Exception as e:
+            ret["status"] = "error"
 
-        return {
-            "macros": list(self.get_macros()),
-            "eps": self.extract_eps(),
-        }
+        return ret
 
 class PdfDocument(object):
     """Static analysis of PDF documents."""
