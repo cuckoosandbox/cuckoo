@@ -30,7 +30,14 @@ class BasePopen(object):
         pass
 
     def communicate(self):
-        return "", "X packets captured"
+        return "", (
+            "1 packet captured\n"
+            "X packets captured\n"
+            "1 packet dropped by kernel\n"
+            "Y packets dropped by kernel\n"
+            "1 packet received by filter\n"
+            "Z packets received by filter\n"
+        )
 
 class PopenStdout(BasePopen):
     def communicate(self):

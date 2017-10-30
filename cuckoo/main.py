@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import sys
-import traceback
 
 import cuckoo
 
@@ -20,7 +19,9 @@ from cuckoo.apps import (
     migrate_database, migrate_cwd
 )
 from cuckoo.common.config import read_kv_conf
-from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import (
+    CuckooCriticalError, CuckooProcessExistsError
+)
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
@@ -34,7 +35,8 @@ from cuckoo.core.startup import (
     init_routing
 )
 from cuckoo.misc import (
-    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
+    Pidfile, pid_exists
 )
 
 log = logging.getLogger("cuckoo")
@@ -104,6 +106,14 @@ def cuckoo_init(level, ctx, cfg=None):
             "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
         )
 
+    # Only one Cuckoo process should exist per CWD.
+    # Run this check before any files are possibly modified.
+    pidf = Pidfile("cuckoo")
+    if pidf.exists() and pid_exists(pidf.pid):
+        raise CuckooProcessExistsError("", pidf.pid)
+    else:
+        pidf.create()
+
     init_console_logging(level)
 
     check_configs()
@@ -169,6 +179,8 @@ def cuckoo_main(max_analysis_count=0):
     except KeyboardInterrupt:
         sched.stop()
 
+    Pidfile("cuckoo").remove()
+
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
@@ -217,19 +229,20 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
-        message = red("{0}: {1}".format(e.__class__.__name__, e))
-        if len(log.handlers):
-            log.critical(message)
-        else:
-            sys.stderr.write("{0}\n".format(message))
+        log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
         if e.code:
             print e
-    except:
+    except CuckooProcessExistsError as e:
+        message = "Cuckoo is already running. PID: %s\n" % e.pid
+        sys.stderr.write(red(message))
+        sys.exit(1)
+    except Exception as e:
         # Deal with an unhandled exception.
-        message = exception_message()
-        print message, traceback.format_exc()
+        sys.stderr.write(exception_message())
+        log.exception(red("{0}: {1}".format(e.__class__.__name__, e)))
+        sys.exit(1)
 
 @main.command()
 @click.pass_context
@@ -329,6 +342,15 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
+        pidf = Pidfile(instance)
+        if pidf.exists() and pid_exists(pidf.pid):
+            message = "Cuckoo process instance \'%s\' already exists. " \
+                      "PID: %s\n" % (instance, pidf.pid)
+            log.error(red(message))
+            sys.exit(1)
+        else:
+            pidf.create()
+
         init_logfile("process-%s.json" % instance)
 
     Database().connect()
@@ -364,16 +386,18 @@ def process(ctx, instance, report, maxcount):
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
 
+    if instance:
+        Pidfile(instance).remove()
+
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
 @click.option("-g", "--group", default="cuckoo", help="Unix socket group")
-@click.option("--ifconfig", type=click.Path(exists=True), default="/sbin/ifconfig", help="Path to ifconfig(8)")
 @click.option("--service", type=click.Path(exists=True), default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
 @click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
-def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
+def rooter(ctx, socket, group, service, iptables, ip, sudo):
     """Instantiates the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
@@ -381,7 +405,6 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         args = [
             "sudo", sys.argv[0], "rooter", socket,
             "--group", group,
-            "--ifconfig", ifconfig,
             "--service", service,
             "--iptables", iptables,
             "--ip", ip,
@@ -396,7 +419,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
             pass
     else:
         try:
-            cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+            cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
 

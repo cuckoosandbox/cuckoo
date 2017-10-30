@@ -1,0 +1,424 @@
+import { config } from '../config';
+
+// global configuration aliases
+const API_BASE     = config.API_BASE;
+const API_HOST     = config.API_HOST;
+const MOCK_INCLUDE = config.API_MOCK_INCLUDE || {};
+
+// cross-pointers to the python implementation, these parameters
+// mirror the API implementations. When new options are added to the
+// API backend, they should be persisted in these variables.
+const SUPPORTED_INCLUDES = [
+  'task_completed',
+  'task_uncompleted',
+  'vm_running',
+  'disk_usage',
+  'cpu_usage',
+  'memory_usage',
+  'amount_prio_queued',
+  'active_processes'
+];
+
+let dateLabelFormat = (d, p) => {
+  let result;
+  switch(p) {
+    case 'hour':
+      result = moment(d).format('hh:mm');
+    break;
+    case 'day':
+      result = moment(d).format('hh:mm');
+    break;
+    case 'week':
+      result = moment(d).format('DD/MM');
+    break;
+  }
+  return result;
+};
+
+// simple transformation sequences
+const transformators = {
+
+  // cuts down a default response set from the backend
+  simpleResponseBreakdown: function(res, params, silent) {
+
+    let result = {
+      labels: [],
+      datasets: [],
+      config: undefined
+    }
+
+    let addDataset = (set, searchSet = false) => {
+
+      let selected;
+
+      if(searchSet) {
+        selected = res[set];
+        if(!selected) return;
+      } else {
+        selected = res[set][params.period || 'hour'];
+      }
+
+      if(searchSet && params.period) {
+        selected = selected[params.period];
+      }
+
+      if(selected.points) {
+        result.labels = selected.points.map(point => dateLabelFormat(point.datetime, params.period));
+        result.datasets.push({
+          label: set,
+          data: selected.points.map(point => point.value)
+        });
+      }
+
+      if(selected.info) {
+        result.config = selected.info;
+      }
+
+    }
+
+    if(params.include.indexOf(',') > -1) {
+      params.include.split(',').forEach(inc => addDataset(inc, true));
+    } else {
+      addDataset(params.include);
+    }
+
+    return result;
+
+  },
+
+  // cuts down a response set aimed at using nodes for labels,
+  // like the memory usage charts etc.
+  nodeResponseBreakdown: function(res, params, silent) {
+
+    let result = {
+      labels: [],
+      datasets: [],
+      config: undefined
+    }
+
+    let addDataset = (set, searchSet = false) => {
+
+      let selected;
+
+      if(searchSet) {
+        selected = res[set];
+        if(!selected) return;
+      } else {
+        selected = res[set][params.period || 'hour'];
+      }
+
+      if(searchSet && params.period) {
+        selected = selected[params.period];
+      }
+
+      if(selected instanceof Object) {
+
+        for(let node in selected) {
+
+          if(selected[node].points) {
+            let s = selected[node];
+            result.labels = s.points.map(point => dateLabelFormat(point.datetime, params.period));
+            result.datasets.push({
+              label: node,
+              data: s.points.map(point => point.value)
+            });
+          }
+
+          if(selected[node].info && !result.config) {
+            result.config = selected[node].info;
+          }
+
+        }
+
+      }
+
+    }
+
+    if(params.include.indexOf(',') > -1) {
+      params.include.split(',').forEach(inc => addDataset(inc, true));
+    } else {
+      addDataset(params.include);
+    }
+
+    return result;
+
+  }
+
+}
+
+/*
+  This is a utility wrapper around the stats api. It translates
+  the REST service to an easy-to-use javascript class.
+ */
+export default class StatsAPI {
+
+  constructor(options = {}) {
+
+    let config = this.config = $.extend({
+      params: {},
+      transform: [],
+      mock: false
+    }, options);
+
+    // stores callbacks to their eventtypes, these are dispatched
+    // with the _dispatchEvent() method
+    this.events = {
+      request: [],
+      receive: [],
+      error: []
+    }
+
+    // optional parameters
+    this.params = {
+      include: config.params.include || null,
+      period: config.params.period || 'hour',
+      date: config.params.date || null,
+      time: config.params.time || null,
+      node: config.params.node || null
+    }
+
+    // stores an array of middleware-like functions that will do something
+    // after the response data has been received. Think in object formatting
+    // or mapping for use out of the API context (Chart.js expects data in a
+    // particular serialization and configurations. Allthough the API returns the
+    // data differently, hence it needs some mapping.)
+    this.transformators = [];
+
+    // this is a general pointer to mocked configurations. This constructor
+    // checks it availability in options.mock. When the response should be parsed,
+    // it will priotize to return this mocked json property.
+    this.mock = config.mock;
+    this.mockDelay = config.mockDelay || 1500;
+
+    // initialize transformations from config
+    if(config.transform) {
+      if(config.transform instanceof Array) {
+        config.transform.forEach(tr => this.transform(tr));
+      } else {
+        this.transform(config.transform);
+      }
+    }
+
+  }
+
+  // buildURL utility that wraps all params into a single url format to request
+  // to the api
+  buildURL() {
+
+    let url = `${API_HOST}/${API_BASE}`;
+
+    let _before = (str) => {
+      if(str.indexOf('?') < 1) {
+        str += '?';
+      } else {
+        str += '&';
+      }
+      return str;
+    }
+
+    // include the date param
+    if(this.params.date) {
+      url += `/${this.params.date}`;
+
+      if(this.params.time) {
+        url += `/${this.params.time}`;
+      }
+    }
+
+    // include the period param
+    if(this.params.period) {
+      url = _before(url);
+      url += `period=${this.params.period}`;
+    }
+
+    // include the include param
+    if(this.params.include) {
+      url = _before(url);
+      url += `include=${this.params.include}`;
+    }
+
+    // include the node param
+    if(this.params.node) {
+      url = _before(url);
+      url += `node=${this.params.node}`;
+    }
+
+    return url;
+
+  }
+
+  // fetch - calls to the database, resolves like a promise the es6 way!
+  fetch() {
+
+    let url,
+        self = this;
+
+    return new Promise((resolve, reject) => {
+
+        url = this.buildURL();
+
+        // dispatch the 'request' event
+        self._dispatchEvent('request', { url: url });
+
+        // resolve a mocked response - is almost the same as
+        // receiving regularly, but then everything is static.
+        if(this.mock) {
+
+          let transformed = {};
+          transformed[this.params.include] = this.mock[this.params.include];
+          for(let prop in MOCK_INCLUDE) {
+            transformed[prop] = MOCK_INCLUDE[prop];
+          }
+          let orig = JSON.parse(JSON.stringify(transformed));
+
+          if(self.transformators.length) {
+            self.transformators.forEach(transformation => transformed = transformation(transformed, self.params));
+            transformed._wasTransformed = true;
+          }
+
+          return setTimeout(() => {
+
+            // dispatch the 'receive' event
+            self._dispatchEvent('receive', {
+              url: url,
+              original: orig,
+              data: transformed._wasTransformed ? transformed : orig,
+              params: self.params
+            });
+
+            return resolve({
+              status: 'mock',
+              url: url,
+              data: transformed._wasTransformed ? transformed : orig,
+              original: orig
+            });
+
+          }, this.mockDelay);
+
+        } else {
+
+          // if not mocked, ajax that response
+
+          $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json'
+          }).done((response, status) => {
+
+            let transformed = {};
+
+            if(self.transformators.length) {
+              self.transformators.forEach(transformation => transformed = transformation(response, self.params));
+              transformed._wasTransformed = true;
+            }
+
+            // dispatch the 'receive' event
+            self._dispatchEvent('receive', {
+              url: url,
+              original: response,
+              data: transformed._wasTransformed ? transformed : response,
+              params: self.params
+            });
+
+            // resolve the promise when the ajax call returned OK from the server
+            // with the response data and other stuff for front-end handling.
+            return resolve({
+              status: (status === "success") ? 200 : status,
+              url: url,
+              data: response
+            });
+
+          }).fail((xhr, err) => {
+
+            // dispatch the 'error' event
+            self._dispatchEvent('error', {
+              url: url
+            });
+
+            // reject on a failing xhr call, with as lots of reference stuff
+            // as possible for catching up in the frontend on this error.
+            return reject({
+              url: url,
+              status: err.status,
+              message: `The request failed.`,
+              error: err,
+              xhr: xhr
+            });
+
+          });
+
+        }
+
+    });
+
+  }
+
+  transform(tr) {
+    this.transformators.push(tr);
+    return this;
+  }
+
+  // general event listener utility
+  on(eventName = null, cb = function(){}) {
+    // opt out if the event is invalid
+    if(!this.events[eventName]) return false;
+    this.events[eventName].push(cb);
+    return this;
+  }
+
+  // dispatches events
+  _dispatchEvent(eventName, data = {}) {
+    if(!this.events[eventName]) return false;
+    this.events[eventName].forEach(fn => {
+      if(typeof fn === 'function') fn.apply(this, [data]);
+    });
+    return this;
+  }
+
+  // easy-param swapping to 'scroll' through the api easily, a bit like:
+  // StatsApi.include('task_completed').period().fetch().then(...)
+  // - these methods alter the this.params{} object
+
+  // sets the data inclusion parameters
+  include(includeParams) {
+    this.params.includes = includeParams;
+    return this;
+  }
+
+  // sets the periods (day,week,month)
+  period(periods) {
+    this.params.period = periods;
+    return this;
+  }
+
+  // sets the date of the dataset
+  date(date) {
+    this.params.date = date;
+    return this;
+  }
+
+  // sets the node of the dataset
+  node(node) {
+    this.params.node = node;
+    return this;
+  }
+
+  // sets the time of the dataset
+  time(time) {
+    this.params.time = `${time}:00`;
+    return this;
+  }
+
+}
+
+// nooping for silent mode
+export function apilog(silent) {
+  if(silent) {
+    return () => true;
+  } else {
+    return console.log;
+  }
+}
+
+export { transformators, dateLabelFormat };

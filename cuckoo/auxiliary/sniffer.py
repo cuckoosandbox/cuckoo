@@ -112,8 +112,11 @@ class Sniffer(Auxiliary):
         )
 
         err_whitelist_ends = (
+            "packet captured",
             "packets captured",
+            "packet received by filter",
             "packets received by filter",
+            "packet dropped by kernel",
             "packets dropped by kernel",
             "dropped privs to root",
         )

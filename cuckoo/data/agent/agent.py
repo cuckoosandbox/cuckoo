@@ -21,7 +21,7 @@ import zipfile
 import SimpleHTTPServer
 import SocketServer
 
-AGENT_VERSION = "0.7"
+AGENT_VERSION = "0.8"
 AGENT_FEATURES = [
     "execpy", "pinning", "logs", "largefile", "unicodepath",
 ]
@@ -247,7 +247,11 @@ def do_mktemp():
     prefix = request.form.get("prefix", "tmp")
     dirpath = request.form.get("dirpath")
 
-    fd, filepath = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dirpath)
+    try:
+        fd, filepath = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dirpath)
+    except:
+        return json_exception("Error creating temporary file")
+
     os.close(fd)
 
     return json_success("Successfully created temporary file",
@@ -259,7 +263,11 @@ def do_mkdtemp():
     prefix = request.form.get("prefix", "tmp")
     dirpath = request.form.get("dirpath")
 
-    dirpath = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dirpath)
+    try:
+        dirpath = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dirpath)
+    except:
+        return json_exception("Error creating temporary directory")
+
     return json_success("Successfully created temporary directory",
                         dirpath=dirpath)
 

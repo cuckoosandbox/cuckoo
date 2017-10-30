@@ -1,0 +1,29 @@
+// collects all the external source widgets and
+// exports them in a single array.
+import tasks from './tasks';
+import vms   from './runningVM';
+import cpu   from './cpu';
+import disk  from './disk';
+import memory from './memory';
+import queue from './queue';
+import activeProcesses from './activeProcesses';
+
+// export default [
+//   memory,
+//   cpu,
+//   disk,
+//   tasks,
+//   vms,
+//   queue,
+//   activeProcesses
+// ];
+
+export default [
+  memory,
+  cpu,
+  disk,
+  tasks,
+  vms,
+  queue,
+  activeProcesses
+]

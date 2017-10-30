@@ -15,7 +15,8 @@ from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
-    Structure, HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
+    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
+    Pidfile, pid_exists, Structure
 )
 
 def return_value(value):
@@ -237,4 +238,62 @@ def test_structure():
         },
         "b": 0x4141414141414141,
         "c": "A"*32,
+    }
+
+def test_create_pidfile():
+    set_cwd(tempfile.mkdtemp())
+    Pidfile("test1").create()
+
+    pidfile = cwd("pidfiles", "test1.pid")
+    assert os.path.exists(pidfile)
+    with open(pidfile, "rb") as fp:
+        assert int(fp.read()) == os.getpid()
+
+def test_remove_pidfile():
+    set_cwd(tempfile.mkdtemp())
+    p = Pidfile("test2")
+    p.create()
+    pidfile = cwd("pidfiles", "test2.pid")
+
+    assert os.path.exists(pidfile)
+    p.remove()
+    assert not os.path.exists(pidfile)
+
+def test_pidfile_exists_false():
+    set_cwd(tempfile.mkdtemp())
+    assert not Pidfile("test3").exists()
+
+def test_pidfile_exists_true():
+    set_cwd(tempfile.mkdtemp())
+    p = Pidfile("test4")
+    p.create()
+    assert p.exists() == os.getpid()
+
+def test_pidfile_none():
+    set_cwd(tempfile.mkdtemp())
+    p = Pidfile("test5")
+    p.create()
+    pidfile = cwd("pidfiles", "test5.pid")
+
+    with open(pidfile, "wb") as fw:
+        fw.write("doges42")
+
+    assert p.exists() is None
+
+def test_pid_exists_true():
+    assert pid_exists(os.getpid())
+
+def test_pid_exists_false():
+    assert not pid_exists(421337)
+
+def test_pid_exists_unsupported_platform(monkeypatch):
+    monkeypatch.setattr(sys, "platform", "DogeOS")
+    assert pid_exists(os.getpid()) is None
+
+def test_active_pids():
+    set_cwd(tempfile.mkdtemp())
+    Pidfile("test6").create()
+
+    assert Pidfile.get_active_pids() == {
+        "test6": os.getpid(),
     }

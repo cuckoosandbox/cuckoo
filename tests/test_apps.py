@@ -56,6 +56,16 @@ class TestAppsWithCWD(object):
         main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
         q.assert_called_once()
 
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.log")
+    def test_main_exception(self, p, q):
+        q.side_effect = Exception("this is a test")
+        with pytest.raises(SystemExit):
+            main.main(
+                ("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False
+            )
+        p.exception.assert_called_once()
+
     def test_api(self):
         with mock.patch("cuckoo.main.cuckoo_api") as p:
             p.return_value = None
@@ -671,6 +681,24 @@ class TestMigrateCWD(object):
             cwd("..", "data", "web/local_settings.py", private=True),
             cwd("web/local_settings.py")
         )
+
+    @mock.patch("cuckoo.apps.apps.hashlib")
+    def test_deleted_file(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        def our_sha1(buf):
+            class obj(object):
+                def hexdigest(self):
+                    return "4989ba7ce0dc38709dd125d6c4fac5852914f0c7"
+            return obj() if buf == "yes!" else hashlib.sha1(buf)
+
+        p.sha1.side_effect = our_sha1
+
+        open(cwd("analyzer/windows/lib/common/errors.py"), "wb").write("yes!")
+        assert os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
+        migrate_cwd()
+        assert not os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
 
     def test_new_directory(self):
         set_cwd(tempfile.mkdtemp())

@@ -24,7 +24,9 @@ class Scripting(object):
         try:
             return shlex.split(cmdline, posix=False)
         except ValueError:
-            log.warning("Error parsing command-line: %s", cmdline)
+            log.warning(
+                "Error parsing command-line: %s", cmdline.encode("utf8")
+            )
             return []
 
     def match_command(self, program):

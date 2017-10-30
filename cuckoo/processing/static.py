@@ -33,9 +33,10 @@ except:
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
+from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
-from cuckoo.misc import cwd, dispatch, Structure
+from cuckoo.misc import cwd, dispatch
 
 from elftools.common.exceptions import ELFError
 from elftools.elf.constants import E_FLAGS
@@ -706,32 +707,6 @@ class PdfDocument(object):
 
         return ret
 
-class LnkHeader(Structure):
-    _fields_ = [
-        ("signature", ctypes.c_ubyte * 4),
-        ("guid", ctypes.c_ubyte * 16),
-        ("flags", ctypes.c_uint),
-        ("attrs", ctypes.c_uint),
-        ("creation", ctypes.c_ulonglong),
-        ("access", ctypes.c_ulonglong),
-        ("modified", ctypes.c_ulonglong),
-        ("target_len", ctypes.c_uint),
-        ("icon_len", ctypes.c_uint),
-        ("show_window", ctypes.c_uint),
-        ("hotkey", ctypes.c_uint),
-    ]
-
-class LnkEntry(Structure):
-    _fields_ = [
-        ("length", ctypes.c_uint),
-        ("first_offset", ctypes.c_uint),
-        ("volume_flags", ctypes.c_uint),
-        ("local_volume", ctypes.c_uint),
-        ("base_path", ctypes.c_uint),
-        ("net_volume", ctypes.c_uint),
-        ("path_remainder", ctypes.c_uint),
-    ]
-
 class LnkShortcut(object):
     signature = [0x4c, 0x00, 0x00, 0x00]
     guid = [
@@ -773,17 +748,9 @@ class LnkShortcut(object):
 
         header = LnkHeader.from_buffer_copy(buf[:ctypes.sizeof(LnkHeader)])
         if header.signature[:] != self.signature:
-            log.warning(
-                "Provided .lnk file is not a Microsoft Shortcut "
-                "(invalid signature)!"
-            )
             return
 
         if header.guid[:] != self.guid:
-            log.warning(
-                "Provided .lnk file is not a Microsoft Shortcut "
-                "(invalid guid)!"
-            )
             return
 
         ret = {
@@ -1070,7 +1037,7 @@ class Static(Processing):
 
         package = self.task.get("package")
 
-        if package == "generic" or ext == "elf" or "ELF" in f.get_type():
+        if package == "generic" and (ext == "elf" or "ELF" in f.get_type()):
             static["elf"] = ELF(f.file_path).run()
             static["keys"] = f.get_keys()
 

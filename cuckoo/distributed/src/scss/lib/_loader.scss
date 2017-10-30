@@ -1,0 +1,43 @@
+@keyframes cssload-roto {
+	0%{transform:rotateZ(0deg);}
+	100%{transform:rotateZ(360deg);}
+}
+
+@-o-keyframes cssload-roto {
+	0%{-o-transform:rotateZ(0deg);}
+	100%{-o-transform:rotateZ(360deg);}
+}
+
+@-ms-keyframes cssload-roto {
+	0%{-ms-transform:rotateZ(0deg);}
+	100%{-ms-transform:rotateZ(360deg);}
+}
+
+@-webkit-keyframes cssload-roto {
+	0%{-webkit-transform:rotateZ(0deg);}
+	100%{-webkit-transform:rotateZ(360deg);}
+}
+
+@-moz-keyframes cssload-roto {
+	0%{-moz-transform:rotateZ(0deg);}
+	100%{-moz-transform:rotateZ(360deg);}
+}
+
+%roto-loader {
+	display:block;
+	position:absolute;
+	height:9em;width:9em;
+	left:50%;
+	margin-top:-4em;
+	margin-left:-4em;
+	background-color:rgb(51,136,153);
+	border-radius:5.5em 5.5em 5.5em 5.5em;
+	box-shadow:inset 0 0 0 1.5em rgb(255,255,255);
+	background: linear-gradient(-45deg, rgb(218,230,233), rgb(218,230,233) 50%, rgb(201,215,219) 50%, rgb(201,215,219));
+	background-blend-mode: multiply;
+	border-top:11px solid rgb(218,230,233);
+	border-left:11px solid rgb(218,230,233);
+	border-bottom:11px solid rgb(201,215,219);
+	border-right:11px solid rgb(201,215,219);
+	animation:cssload-roto 2.65s infinite linear;
+}

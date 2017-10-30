@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 Cuckoo Foundation.
+/* Copyright (C) 2015-2017 Cuckoo Foundation.
  # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
  # See the file 'docs/LICENSE' for copying permission.
  #
@@ -7,9 +7,9 @@
 
 /* configuration options; set these with stap -G */
 global timestamp = 1     /* -Gtimestamp=0 means don't print a syscall timestamp */
-global elapsed_time = 0  /* -Gelapsed_time=1 means print a syscall duration too */
 
 global thread_argstr%
+global thread_scname%
 global thread_time%
 
 global syscalls_nonreturn
@@ -24,8 +24,14 @@ probe nd_syscall.* {
     if (!target_set_pid(pid())) next    # skip unrelated processes
 
     t = tid()
+
+    /* last syscall that could've returned didn't */
+    if (thread_argstr[t] != "")
+        report(thread_scname[t], thread_argstr[t], "")
+
     thread_argstr[t] = argstr
-    if (timestamp || elapsed_time)
+    thread_scname[t] = name
+    if (timestamp)
         thread_time[t] = gettimeofday_us()
 
     if (name in syscalls_nonreturn)
@@ -42,17 +48,11 @@ probe nd_syscall.*.return {
 function report(syscall_name, syscall_argstr, syscall_retstr) {
     t = tid()
 
-    if (timestamp || elapsed_time) {
-        now = gettimeofday_us()
+    if (timestamp) {
         then = thread_time[t]
 
         if (timestamp)
             prefix = sprintf("%s.%06d ", ctime(then / 1000000), then % 1000000)
-
-        if (elapsed_time && (now > then)) {
-            diff = now - then
-            suffix = sprintf(" <%d.%06d>", diff / 1000000, diff % 1000000)
-        }
 
         delete thread_time[t]
     }
@@ -66,10 +66,11 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
     syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
     syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
 
-    printf("%s%s(%s) = %s%s\n",
-        prefix,
-        syscall_name, syscall_argstr, syscall_retstr,
-        suffix)
+    if (syscall_retstr == "")
+        printf("%s%s(%s)\n", prefix, syscall_name, syscall_argstr)
+    else
+        printf("%s%s(%s) = %s\n", prefix, syscall_name, syscall_argstr, syscall_retstr)
 
     delete thread_argstr[t]
+    delete thread_scname[t]
 }

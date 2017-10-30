@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import ctypes
+import errno
 import importlib
 import logging
 import multiprocessing
@@ -20,6 +21,9 @@ except ImportError:
 
 import cuckoo
 
+from cuckoo.common.defines import (
+    WIN_PROCESS_QUERY_INFORMATION, WIN_ERR_STILL_ALIVE
+)
 from cuckoo.common.exceptions import CuckooStartupError
 
 log = logging.getLogger(__name__)
@@ -28,7 +32,10 @@ log = logging.getLogger(__name__)
 _root = None
 _raw = None
 
-version = pkg_resources.require("Cuckoo")[0].version
+# This normalizes the installed version of Cuckoo to a regular minor version.
+# That is, both 2.0.4.2 and 2.0.4 return version 2.0.4, avoiding issues with
+# distutils later on.
+version = ".".join(pkg_resources.require("Cuckoo")[0].version.split(".")[:3])
 
 def set_cwd(path, raw=None):
     global _root, _raw
@@ -40,7 +47,7 @@ def cwd(*args, **kwargs):
     optionally - when private=True has been passed along - to our private
     Cuckoo Working Directory which is not configurable."""
     if kwargs.get("private"):
-        return os.path.join(cuckoo.__path__[0], "data-private", *args)
+        return os.path.join(cuckoo.__path__[0], "private", *args)
     elif kwargs.get("raw"):
         return _raw
     elif kwargs.get("root"):
@@ -211,17 +218,92 @@ def drop_privileges(username):
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
 
-class Structure(ctypes.Structure):
-    def as_dict(self):
-        ret = {}
-        for field, _ in self._fields_:
-            value = getattr(self, field)
-            if isinstance(value, Structure):
-                ret[field] = value.as_dict()
-            elif hasattr(value, "value"):
-                ret[field] = value
-            elif hasattr(value, "__getitem__"):
-                ret[field] = value[:]
-            else:
-                ret[field] = value
-        return ret
+def pid_exists(pid):
+    """Returns True if pid exists, False if not, and None if unsupported."""
+    if is_windows():
+        from ctypes import windll, wintypes
+        dw_exit = wintypes.DWORD()
+        proc_h = windll.kernel32.OpenProcess(
+            WIN_PROCESS_QUERY_INFORMATION, 0, pid
+        )
+        windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
+        return dw_exit.value == WIN_ERR_STILL_ALIVE
+
+    if is_linux() or is_macosx():
+        # Send signal 0 to process. Exception will be thrown if it does not
+        # exist or there is no permission to send to this process. This
+        # indicates a process does exist.
+        try:
+            os.kill(pid, 0)
+        except OSError as e:
+            return e.errno == errno.EPERM
+        return True
+
+class Pidfile(object):
+    def __init__(self, name=None):
+        """Manage pidfile of given name
+        @param name: name without extension to use for file
+        """
+        self.dir = cwd("pidfiles")
+        self.name = None
+        self.pidfile_path = None
+        self.pid = None
+        if name:
+            self.set_name(name)
+
+    def set_name(self, name):
+        """Change pidfile name"""
+        if not name.endswith(".pid"):
+            name = "%s.pid" % name
+        self.name = name
+        self.pidfile_path = os.path.join(self.dir, self.name)
+
+    def create(self):
+        """Creates a file with a .pid extension containing
+        the pid of the process executing this method"""
+        if not os.path.exists(self.dir):
+            os.mkdir(self.dir)
+
+        with open(self.pidfile_path, "wb") as fw:
+            fw.write(str(os.getpid()))
+
+    def remove(self):
+        """Remove pidfile of name if it exists"""
+        if os.path.exists(self.pidfile_path):
+            os.remove(self.pidfile_path)
+            return True
+        else:
+            return False
+
+    def exists(self):
+        """Check if a pid file exists for the given name. Returns int PID
+        if the pidfile exists, False if not. None if invalid pidfile"""
+        if not os.path.exists(self.pidfile_path):
+            return False
+
+        return self.read()
+
+    def read(self):
+        """Read PID from pidfile. Will raise IOError if pidfile does
+        not exist"""
+        try:
+            self.pid = int(open(self.pidfile_path, "rb").read())
+        except ValueError:
+            self.pid = None
+        return self.pid
+
+    @staticmethod
+    def get_active_pids():
+        """Return a dict containing active pids.
+        Key is the pidfile name and value is pid"""
+        pids = {}
+
+        pidfile = Pidfile()
+        for pidf in os.listdir(pidfile.dir):
+            pidfile.set_name(pidf)
+            pid = pidfile.read()
+            if pid:
+                if pid_exists(pid):
+                    pids[pidf.split(".", 1)[0]] = pid
+
+        return pids

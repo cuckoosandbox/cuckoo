@@ -39,21 +39,8 @@ class LinuxSystemTap(BehaviorHandler):
         super(LinuxSystemTap, self).__init__(*args, **kwargs)
 
         self.processes = []
-        self.pids_seen = set()
         self.forkmap = {}
         self.matched = False
-
-        self._check_for_probelkm()
-
-    def _check_for_probelkm(self):
-        path_lkm = os.path.join(self.analysis.logs_path, "all.lkm")
-        if os.path.exists(path_lkm):
-            lines = open(path_lkm).readlines()
-
-            forks = [re.findall("task (\d+)@0x[0-9a-f]+ forked to (\d+)@0x[0-9a-f]+", line) for line in lines]
-            self.forkmap = dict((j, i) for i, j in reduce(lambda x, y: x+y, forks, []))
-
-            # self.results["source"].append("probelkm")
 
     def handles_path(self, path):
         if path.endswith(".stap"):
@@ -61,30 +48,57 @@ class LinuxSystemTap(BehaviorHandler):
             return True
 
     def parse(self, path):
-        parser = StapParser(open(path))
+        parser = StapParser(open(path, "rb"))
 
-        for event in parser:
-            pid = event["pid"]
-            if pid not in self.pids_seen:
-                self.pids_seen.add(pid)
-                ppid = self.forkmap.get(pid, -1)
+        for syscall in parser:
+            # syscall specific hooks
+            self.pre_hook(syscall)
 
-                process = {
+            pid = syscall["pid"]
+
+            # skip first analyzer process
+            if pid not in self.forkmap:
+                continue
+
+            if self.is_newpid(pid):
+                p_pid = self.forkmap.get(pid, -1)
+                calls = FilteredProcessLog(parser, pid=pid)
+                self.processes.append({
+                    "type": "process",
                     "pid": pid,
-                    "ppid": ppid,
-                    "process_name": event["process_name"],
-                    "first_seen": event["time"],
-                }
+                    "ppid": p_pid,
+                    "process_name": syscall["process_name"],
+                    "first_seen": syscall["time"],
+                    "command_line": "",
+                    "calls": calls,
+                })
 
-                # create a process event as we don't have those with linux+systemtap
-                pevent = dict(process)
-                pevent["type"] = "process"
-                yield pevent
+            self.post_hook(syscall)
 
-                process["calls"] = FilteredProcessLog(parser, pid=pid)
-                self.processes.append(process)
+        return self.processes
 
-            yield event
+    def pre_hook(self, syscall):
+        if syscall["api"] == "clone":
+            self.forkmap[int(syscall["return_value"])] = syscall["pid"]
+
+    def post_hook(self, syscall):
+        if syscall["api"] == "execve":
+            pid = self.get_proc(syscall["pid"])
+
+            # only update proc info after first succesful execve in this pid
+            if not syscall["return_value"] and not pid["command_line"]:
+                pid["process_name"] = os.path.basename(
+                    str(syscall["arguments"]["p0"])
+                )
+                pid["command_line"] = " ".join(syscall["arguments"]["p1"])
+
+    def get_proc(self, pid):
+        for process in self.processes:
+            if process["pid"] == pid:
+                return process
+
+    def is_newpid(self, pid):
+        return not any(p["pid"] == pid for p in self.processes)
 
     def run(self):
         if not self.matched:
@@ -141,11 +155,18 @@ class StapParser(object):
         return p_args
 
     def get_delim(self, argstr):
-        return "]" if self.is_array(argstr) else ", "
+        if self.is_array(argstr):
+            return "]"
+        elif self.is_struct(argstr):
+            return "}"
+        else:
+            return ", "
 
     def parse_arg(self, argstr):
         if self.is_array(argstr):
             return self.parse_array(argstr)
+        elif self.is_struct(argstr):
+            return self.parse_struct(argstr)
         elif self.is_string(argstr):
             return self.parse_string(argstr)
         else:
@@ -154,11 +175,32 @@ class StapParser(object):
     def parse_array(self, argstr):
         return [self.parse_arg(a) for a in argstr.lstrip("[").split(", ")]
 
+    def parse_struct(self, argstr):
+        # Return as regular array if elements aren't named.
+        if "=" not in argstr:
+            return self.parse_array(argstr.lstrip("{"))
+
+        # Return as dict, parse value as array and struct when appropriate.
+        parsed = {}
+        arg = argstr.lstrip("{")
+        while arg:
+            key, _, arg = arg.partition("=")
+            delim = self.get_delim(arg)
+            if delim != ", ":
+                delim += ", "
+            val, _, arg = arg.partition(delim)
+            parsed[key] = self.parse_arg(val)
+
+        return parsed
+
     def parse_string(self, argstr):
         return argstr.strip("\"").decode("string_escape")
 
     def is_array(self, arg):
         return arg.startswith("[") and not arg.startswith("[/*")
+
+    def is_struct(self, arg):
+        return arg.startswith("{")
 
     def is_string(self, arg):
         return arg.startswith("\"") and arg.endswith("\"")

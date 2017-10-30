@@ -15,7 +15,6 @@ from ctypes import c_uint, c_wchar_p, create_unicode_buffer
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
 from lib.common.defines import THREAD_ALL_ACCESS, PROCESS_ALL_ACCESS
-from lib.common.errors import get_error_string
 from lib.common.exceptions import CuckooError
 from lib.common.results import upload_to_host
 from lib.core.ioctl import zer0m0n
@@ -201,13 +200,15 @@ class Process(object):
         elif os.path.isdir("C:\\Windows\\Sysnative") and \
                 path.lower().startswith("c:\\windows\\system32"):
             return False
+        elif not os.path.exists(path):
+            raise CuckooError("File not found: %s" % path)
         else:
             args = [is32bit_exe, "-f", self.shortpath(path)]
 
         try:
             bitsize = int(subprocess_checkoutput(args))
         except subprocess.CalledProcessError as e:
-            raise CuckooError("Error returned by is32bit: %s" % e)
+            raise CuckooError("Error returned by is32bit: %s" % e.output)
 
         return bitsize == 32
 
@@ -286,10 +287,11 @@ class Process(object):
         try:
             output = subprocess_checkoutput(argv, env)
             self.pid, self.tid = map(int, output.split())
-        except Exception:
-            log.error("Failed to execute process from path %r with "
-                      "arguments %r (Error: %s)", path, argv,
-                      get_error_string(KERNEL32.GetLastError()))
+        except subprocess.CalledProcessError as e:
+            log.error(
+                "Failed to execute process from path %r with "
+                "arguments %r (Error: %s)", path, argv, e
+            )
             return False
 
         # Report this PID to the kernel driver (if present).
@@ -318,10 +320,11 @@ class Process(object):
 
         try:
             subprocess_checkoutput(argv, env)
-        except Exception:
-            log.error("Failed to execute process from path %r with "
-                      "arguments %r (Error: %s)", path, argv,
-                      get_error_string(KERNEL32.GetLastError()))
+        except subprocess.CalledProcessError as e:
+            log.error(
+                "Failed to execute process from path %r with "
+                "arguments %r (Error: %s)", path, argv, e
+            )
             return False
 
         log.info("Successfully executed process from path %r with "

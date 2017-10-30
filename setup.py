@@ -43,46 +43,64 @@ open("MANIFEST.in", "wb").write("\n".join(manifest) + "\n")
 
 def githash():
     """Extracts the current Git hash."""
-    git_head = os.path.join(".git", "HEAD")
-    if os.path.exists(git_head):
-        head = open(git_head, "rb").read().strip()
-        if not head.startswith("ref: "):
-            return head
+    git_value = os.path.join(".git", "HEAD")
+    while True:
+        if os.path.exists(git_value):
+            git_value = open(git_value, "rb").read().strip()
+            continue
 
-        git_ref = os.path.join(".git", head.split()[1])
-        if os.path.exists(git_ref):
-            return open(git_ref, "rb").read().strip()
+        if git_value.startswith("ref: "):
+            git_value = os.path.join(".git", git_value.split()[1])
+            continue
+
+        return git_value
 
 cwd_public = os.path.join("cuckoo", "data")
-cwd_private = os.path.join("cuckoo", "data-private")
+cwd_private = os.path.join("cuckoo", "private")
 
-open(os.path.join(cwd_private, ".cwd"), "wb").write(githash() or "")
+hashes_ignore = (
+    "whitelist/domain.txt",
+)
 
 def update_hashes():
-    hashes = {}
+    hashes, hashes_r = {}, {}
     for line in open(os.path.join(cwd_private, "cwd", "hashes.txt"), "rb"):
         if not line.strip() or line.startswith("#"):
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
+        hashes_r[filename] = True
 
     new_hashes = []
     for dirpath, dirnames, filenames in os.walk(cwd_public):
         dirname = dirpath[len(cwd_public)+1:]
         for filename in filenames:
+            if filename.endswith((".pyc", ".DS_Store")):
+                continue
             filepath = os.path.join(dirname, filename).replace("\\", "/")
+            if filepath in hashes_ignore:
+                continue
             buf = open(os.path.join(cwd_public, filepath), "rb").read()
             hash_ = hashlib.sha1(buf).hexdigest()
             if filepath not in hashes or hash_ not in hashes[filepath]:
                 new_hashes.append((filepath, hash_))
+            hashes_r.pop(filepath, None)
+
+    for filepath in hashes_r:
+        if hashes[filepath][-1] != "0"*40:
+            new_hashes.append((filepath, "0"*40))
 
     with open(os.path.join(cwd_private, "cwd", "hashes.txt"), "a+b") as f:
         new_hashes and f.write("\n")
         for filename, hash_ in sorted(new_hashes):
             f.write("%s %s\n" % (hash_, filename))
 
-# Provide hashes for our CWD migration process.
-update_hashes()
+# Provide hashes for our CWD migration process & update the $CWD/.cwd version.
+# Only do these steps when "python setup.py sdist" is invoked.
+if "setup.py" in sys.argv and "sdist" in sys.argv:
+    update_hashes()
+    cwd_filepath = os.path.join(cwd_private, ".cwd")
+    open(cwd_filepath, "wb").write(githash())
 
 def do_help(e, message):
     if isinstance(e, ValueError) and "jpeg is required" in e.message:
@@ -123,7 +141,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.3",
+    version="2.0.4.4",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[

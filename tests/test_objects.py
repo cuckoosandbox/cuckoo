@@ -258,3 +258,28 @@ class TestYaraMatch(object):
         })
         assert ym.string("a", 0) == "bar"
         assert ym.string("a") == "bar"
+
+    def test_multiple(self):
+        ym = YaraMatch({
+            "name": "foo",
+            "meta": {},
+            "offsets": {
+                "a": [
+                    (1, 0),
+                    (2, 2),
+                ],
+                "b": [
+                    (3, 1),
+                ],
+            },
+            "strings": [
+                "bar".encode("base64"),
+                "baz".encode("base64"),
+                "foo".encode("base64"),
+            ],
+        })
+        assert ym.string("a", 0) == "bar"
+        assert ym.string("a", 1) == "foo"
+        assert ym.string("b", 0) == "baz"
+        assert ym.strings("a") == ["bar", "foo"]
+        assert ym.strings("b") == ["baz"]

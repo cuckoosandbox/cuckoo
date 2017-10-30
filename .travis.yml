@@ -55,7 +55,8 @@ install:
   - python stuff/monitor.py
 
   - pip install -U pip setuptools
-  - python setup.py develop
+  - python setup.py sdist
+  - pip install -e .
   - pip install pytest pytest-cov codecov coveralls distorm3 pycrypto
 
   # Install Volatility.
