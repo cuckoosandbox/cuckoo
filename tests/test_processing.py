@@ -1599,6 +1599,14 @@ def test_parse_cmdline():
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
 
+def test_wsf_crash_001():
+    wsf = WindowsScriptFile("tests/files/wsf/crash-0d55c284df4ed683a4f4c30d44f282fc.wsf")
+    r = wsf.run()
+    assert len(r) == 0
+    # TODO: wsf class return a list with scripts, there is no way
+    # for putting status in there
+    #assert r["status"] == "success"
+
 def test_wsf_language():
     wsf = WindowsScriptFile(Files.temp_put(
         "<script language='JScript.Encode'></script>"
