@@ -685,6 +685,7 @@ class PdfDocument(object):
                 "urls": [],
                 "attachments": [],
                 "openaction": None,
+                "status": "success",
             }
 
             for obj in f.body[version].objects.values():
