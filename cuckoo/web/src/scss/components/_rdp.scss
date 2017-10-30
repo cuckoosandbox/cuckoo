@@ -1,0 +1,110 @@
+$RDP_APP_VIEWPORT_BGC: #000;
+$RDP_APP_HEADER_BGC: #2E3A4F;
+$RDP_APP_CONTROLS_BGC: #15272A;
+$RDP_APP_TOOLBAR_BUTTON_BGC: #6297F8;
+$RDP_APP_TOOLBAR_ICON_COLOR: #1E3C73;
+$RDP_APP_CREDIT_BGC: #383838;
+
+// rdp toolbar button element style
+%rdp-toolbar-button {
+  -webkit-appearance: none;
+  padding: 5px;
+  border: 0;
+  border-radius: 5px;
+  background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+  box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_BGC, 30%);
+  font-size: 44px;
+  color: $RDP_APP_TOOLBAR_ICON_COLOR;
+  text-shadow: 0px 1px 0px rgba(255,255,255,.2);
+}
+
+.rdp {
+
+  // base app grid layout
+  &-app {
+    position: fixed;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding-top: 50px;
+
+    &__display {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+    }
+
+    &__controls {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 128px;
+      background-color: $RDP_APP_CONTROLS_BGC;
+    }
+
+    &__header {
+      flex-basis: 66px;
+      background-color: $RDP_APP_HEADER_BGC;
+    }
+
+    &__viewport {
+      flex-basis: 100%;
+      background-color: $RDP_APP_VIEWPORT_BGC;
+    }
+
+  }
+
+  // toolbar styles
+  &-toolbar {
+    display: flex;
+    flex-basis: 100%;
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px 20px;
+    overflow-y: auto;
+
+    & > button {
+
+      @extend %rdp-toolbar-button;
+      flex-shrink: 0;
+      flex-grow: 0;
+
+      margin: 20px 0;
+
+      .fa-camera,
+      .fa-expand,
+      .fa-power-off {
+        position: relative;
+        top: 2px;
+      }
+    }
+
+  }
+
+  // bottom toolbar credits to guacamole
+  &-credits {
+
+    a {
+      display: block;
+      text-align: center;
+      height: 58px;
+      padding-top: 14px;
+      background-color: $RDP_APP_CREDIT_BGC;
+      box-shadow: inset 0px 2px 4px rgba(shade($RDP_APP_CREDIT_BGC, 80%), .8);
+      transition: background-color 150ms ease-out,
+                  box-shadow 150ms ease-out;
+
+      &:hover {
+        background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+        box-shadow: inset 0px 2px 4px rgba(shade($RDP_APP_TOOLBAR_BUTTON_BGC, 60%), .8);
+      }
+    }
+
+    img {
+      height: 32px;
+    }
+
+  }
+
+}
