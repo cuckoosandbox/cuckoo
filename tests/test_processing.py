@@ -1599,6 +1599,17 @@ def test_parse_cmdline():
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
 
+def test_lnk_crash_001():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-c7b138ad498c313b071af245d16dfda3.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-c7b138ad498c313b071af245d16dfda3.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
 def test_wsf_crash_001():
     wsf = WindowsScriptFile("tests/files/wsf/crash-0d55c284df4ed683a4f4c30d44f282fc.wsf")
     r = wsf.run()
