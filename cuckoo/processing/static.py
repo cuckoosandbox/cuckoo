@@ -307,7 +307,10 @@ class PortableExecutable(object):
         try:
             self.pe = pefile.PE(self.file_path)
         except pefile.PEFormatError:
-            return {}
+            return {"status": "error"}
+        except Exception as e:
+            log.exception("Can not process PE file")
+            return {"status": "error"}
 
         results = {}
         results["peid_signatures"] = self._get_peid_signatures()
