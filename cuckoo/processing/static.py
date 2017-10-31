@@ -701,7 +701,14 @@ class PdfDocument(object):
         ret = []
 
         for version in xrange(f.updates + 1):
-            md = f.getBasicMetadata(version)
+            try:
+                md = f.getBasicMetadata(version)
+            except Exception as e:
+                log.exception("Can not get basic metadata for this PDF file")
+                ret.append({"status": "error",
+                            "version": version})
+                continue
+
             row = {
                 "version": version,
                 "creator": self._sanitize(md, "creator"),
