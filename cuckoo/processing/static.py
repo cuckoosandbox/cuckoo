@@ -762,23 +762,35 @@ class LnkShortcut(object):
     def __init__(self, filepath):
         self.filepath = filepath
 
+    def _validate_offset(self, offset, name="default"):
+        if offset > self.buf_size:
+            raise CuckooPartialStaticAnalysis(
+                "Malformed .lnk file: offset {} out of bound {} (name)".format(
+                    offset, self.buf_size, name)
+            )
+
     def read_uint16(self, offset):
+        self._validate_offset(offset, "uint16")
         return struct.unpack("H", self.buf[offset:offset+2])[0]
 
     def read_uint32(self, offset):
+        self._validate_offset(offset, "uint32")
         return struct.unpack("I", self.buf[offset:offset+4])[0]
 
     def read_stringz(self, offset):
+        self._validate_offset(offset, "stringz")
         return self.buf[offset:self.buf.index("\x00", offset)]
 
     def read_string16(self, offset):
+        self._validate_offset(offset, "string16")
         length = self.read_uint16(offset) * 2
         ret = self.buf[offset+2:offset+2+length].decode("utf16")
         return offset + 2 + length, ret
 
     def run(self):
         self.buf = buf = open(self.filepath, "rb").read()
-        if len(buf) < ctypes.sizeof(LnkHeader):
+        self.buf_size = len(self.buf)
+        if self.buf_size < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
             return {"status": "error"}
 
@@ -803,33 +815,49 @@ class LnkShortcut(object):
                 ret["attrs"].append(self.attrs[x])
 
         offset = 78 + self.read_uint16(76)
-        off = LnkEntry.from_buffer_copy(buf[offset:offset+28])
+        upper_offset = offset+28
+        try:
+            self._validate_offset(upper_offset, "from_buffer_copy")
+            off = LnkEntry.from_buffer_copy(buf[offset:upper_offset])
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
 
-        # Local volume.
-        if off.volume_flags & 1:
-            ret["basepath"] = self.read_stringz(offset + off.base_path)
-        # Network volume.
-        else:
-            ret["net_share"] = self.read_stringz(offset + off.net_volume + 20)
-            network_drive = self.read_uint32(offset + off.net_volume + 12)
-            if network_drive:
-                ret["network_drive"] = self.read_stringz(
-                    offset + network_drive
-                )
+        try:
+            # Local volume.
+            if off.volume_flags & 1:
+                ret["basepath"] = self.read_stringz(offset + off.base_path)
+            # Network volume.
+            else:
+                ret["net_share"] = self.read_stringz(offset + off.net_volume + 20)
+                network_drive = self.read_uint32(offset + off.net_volume + 12)
+                if network_drive:
+                    ret["network_drive"] = self.read_stringz(
+                        offset + network_drive
+                    )
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
 
         ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
 
         extra = offset + off.length
-        if ret["flags"]["description"]:
-            extra, ret["description"] = self.read_string16(extra)
-        if ret["flags"]["relapath"]:
-            extra, ret["relapath"] = self.read_string16(extra)
-        if ret["flags"]["workingdir"]:
-            extra, ret["workingdir"] = self.read_string16(extra)
-        if ret["flags"]["cmdline"]:
-            extra, ret["cmdline"] = self.read_string16(extra)
-        if ret["flags"]["icon"]:
-            extra, ret["icon"] = self.read_string16(extra)
+        self._validate_offset(extra, "extra")
+
+        try:
+            if ret["flags"]["description"]:
+                extra, ret["description"] = self.read_string16(extra)
+            if ret["flags"]["relapath"]:
+                extra, ret["relapath"] = self.read_string16(extra)
+            if ret["flags"]["workingdir"]:
+                extra, ret["workingdir"] = self.read_string16(extra)
+            if ret["flags"]["cmdline"]:
+                extra, ret["cmdline"] = self.read_string16(extra)
+            if ret["flags"]["icon"]:
+                extra, ret["icon"] = self.read_string16(extra)
+        except (UnicodeDecodeError, CuckooPartialStaticAnalysis):
+            ret["status"] = "partial"
+
         return ret
 
 class ELF(object):
