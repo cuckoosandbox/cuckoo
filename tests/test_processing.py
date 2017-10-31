@@ -412,7 +412,8 @@ class TestProcessing(object):
                           'pe_timestamp': '2017-03-24 10:03:56',
                           'pe_versioninfo': [],
                           'peid_signatures': ['InstallShield 2000'],
-                          'signature': []}
+                          'signature': [],
+                          'status' : 'success'}
         shutil.rmtree(cwd())
 
     def test_pdf(self):
