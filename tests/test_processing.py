@@ -1668,6 +1668,14 @@ def test_pdf_crash_004():
     assert len(result) == 1
     assert result[0]["status"] == "error"
 
+def test_pdf_crash_005():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-f6fc219e3f063d0a4adca9325ab83f99.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "error"
+
 def test_lnk_crash_001():
     s = Static()
     s.set_task({
