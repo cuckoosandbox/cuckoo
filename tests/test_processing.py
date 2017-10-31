@@ -1632,6 +1632,17 @@ def test_lnk_crash_003():
     obj = s.run()["lnk"]
     assert obj["status"] == "partial"
 
+def test_lnk_crash_004():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-d59b5cd2b9f6a92e8ce5fc50d3f67d79.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-d59b5cd2b9f6a92e8ce5fc50d3f67d79.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
 def test_wsf_crash_001():
     wsf = WindowsScriptFile("tests/files/wsf/crash-0d55c284df4ed683a4f4c30d44f282fc.wsf")
     r = wsf.run()
