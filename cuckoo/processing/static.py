@@ -613,10 +613,9 @@ class PdfDocument(object):
             return
 
         ref = obj.object.elements["/JS"]
-
-        if ref.id not in f.body[version].objects:
+        if not hasattr(ref, "id") or ref.id not in f.body[version].objects:
             log.warning("PDFObject: Reference is broken, can't follow")
-            return
+            raise CuckooPartialStaticAnalysis
 
         obj = f.body[version].objects[ref.id]
         return {
