@@ -726,9 +726,12 @@ class PdfDocument(object):
                 except CuckooPartialStaticAnalysis:
                     row["status"] = "partial"
 
-                js = self.get_javascript(obj, f, version)
-                if js:
-                    row["javascript"].append(js)
+                try:
+                    js = self.get_javascript(obj, f, version)
+                    if js:
+                        row["javascript"].append(js)
+                except CuckooPartialStaticAnalysis:
+                    row["status"] = "partial"
 
                 att = self.get_attachments(obj, f, version)
                 if att:
