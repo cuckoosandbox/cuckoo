@@ -66,6 +66,7 @@ class PortableExecutable(object):
         """@param file_path: file path."""
         self.file_path = file_path
         self.pe = None
+        self._partial_results = False
 
     def _get_filetype(self, data):
         """Gets filetype, uses libmagic if available.
@@ -251,6 +252,7 @@ class PortableExecutable(object):
         try:
             dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
         except IndexError:
+            self._partial_results = True
             return []
 
         if not dir_entry or not dir_entry.VirtualAddress or not dir_entry.Size:
@@ -303,7 +305,7 @@ class PortableExecutable(object):
         @return: analysis results dict or None.
         """
         if not os.path.exists(self.file_path):
-            return {}
+            return {"status": "error"}
 
         try:
             self.pe = pefile.PE(self.file_path)
@@ -325,6 +327,7 @@ class PortableExecutable(object):
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
+        results["status"] = "success"
         return results
 
 class WindowsScriptFile(object):
