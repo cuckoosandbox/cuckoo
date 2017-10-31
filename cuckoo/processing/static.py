@@ -671,11 +671,15 @@ class PdfDocument(object):
             return action.value
 
         if isinstance(action, peepdf.PDFCore.PDFReference):
-            referenced = f.body[version].objects[action.id]
-            if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
-                obj = referenced.object
-                if isinstance(obj, peepdf.PDFCore.PDFDictionary):
-                    return obj.value
+            try:
+                referenced = f.body[version].objects[action.id]
+                if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
+                    obj = referenced.object
+                    if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+                        return obj.value
+            except KeyError:
+                # Malformed/damaged PDF may have refeneces to objects we don't have
+                raise CuckooPartialStaticAnalysis
 
         return None
 
@@ -715,9 +719,12 @@ class PdfDocument(object):
             }
 
             for obj in f.body[version].objects.values():
-                action = self.get_openaction(obj, f, version)
-                if action:
-                    row["openaction"] = action
+                try:
+                    action = self.get_openaction(obj, f, version)
+                    if action:
+                        row["openaction"] = action
+                except CuckooPartialStaticAnalysis:
+                    row["status"] = "partial"
 
                 js = self.get_javascript(obj, f, version)
                 if js:
