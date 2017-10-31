@@ -1712,6 +1712,41 @@ def test_lnk_crash_004():
     obj = s.run()["lnk"]
     assert obj["status"] == "partial"
 
+def test_doc_crash_001():
+    # Fuzzed vbaProject.bin in zipped file
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-c714d165266927805c7b4efd78fd0627.doc",
+    })
+    s.file_path = "tests/files/vba/crash-c714d165266927805c7b4efd78fd0627.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
+def test_doc_crash_002():
+    # vbaProject.bin works too
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-b59e26f463592c129de30859d4f6d687.doc",
+    })
+    s.file_path = "tests/files/vba/crash-b59e26f463592c129de30859d4f6d687.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
+def test_doc_crash_003():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-fb81733ddb19cd594c0431d0d8ad4d61.doc",
+    })
+    s.file_path = "tests/files/vba/crash-fb81733ddb19cd594c0431d0d8ad4d61.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
 def test_wsf_crash_001():
     wsf = WindowsScriptFile("tests/files/wsf/crash-0d55c284df4ed683a4f4c30d44f282fc.wsf")
     r = wsf.run()
