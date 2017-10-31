@@ -1614,14 +1614,14 @@ def test_pe_crash_002():
         'tests/files/pe/crash-a217f283037b8793d60a5e98ceb68432.exe'
     )
     obj = pe.run()
-    assert obj["status"] == "success"
+    assert obj["status"] == "partial"
 
 def test_pe_crash_003():
     pe = PortableExecutable(
         'tests/files/pe/crash-7f10b354da0347b500fc75d574f7e264.exe'
     )
     obj = pe.run()
-    assert obj["status"] == "success"
+    assert obj["status"] == "partial"
 
 def test_pe_crash_004():
     pe = PortableExecutable(

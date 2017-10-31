@@ -118,12 +118,16 @@ class PortableExecutable(object):
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                exports.append({
-                    "address": hex(self.pe.OPTIONAL_HEADER.ImageBase +
-                                   exported_symbol.address),
-                    "name": exported_symbol.name,
-                    "ordinal": exported_symbol.ordinal,
-                })
+                if exported_symbol.address:
+                    exports.append({
+                        "address": hex(
+                            self.pe.OPTIONAL_HEADER.ImageBase + exported_symbol.address
+                        ),
+                        "name": exported_symbol.name,
+                        "ordinal": exported_symbol.ordinal,
+                    })
+                else:
+                    self._partial_results = True
 
         return exports
 
@@ -327,7 +331,9 @@ class PortableExecutable(object):
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
-        results["status"] = "success"
+
+        results["status"] = "partial" if self._partial_results else "success"
+
         return results
 
 class WindowsScriptFile(object):
