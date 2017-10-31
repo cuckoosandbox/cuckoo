@@ -248,10 +248,11 @@ class PortableExecutable(object):
     def _get_signature(self):
         """If this executable is signed, get its signature(s)."""
         dir_index = pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_SECURITY"]
-        if len(self.pe.OPTIONAL_HEADER.DATA_DIRECTORY) < dir_index:
+        try:
+            dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
+        except IndexError:
             return []
 
-        dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
         if not dir_entry or not dir_entry.VirtualAddress or not dir_entry.Size:
             return []
 
