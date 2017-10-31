@@ -10868,6 +10868,80 @@ body.night .app-message {
   margin-right: 10px;
 }
 
+.rdp-snapshots {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  list-style: none;
+  margin: 0;
+}
+
+.rdp-snapshots > li {
+  position: relative;
+}
+
+.rdp-snapshots > li:not(:last-child) {
+  margin-right: 15px;
+}
+
+.rdp-snapshots > li figure {
+  height: 53px;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #88A1CB;
+}
+
+.rdp-snapshots > li figure img {
+  height: 100%;
+  opacity: .4;
+  -webkit-transition: opacity 100ms ease-out;
+  transition: opacity 100ms ease-out;
+}
+
+.rdp-snapshots > li figure:hover > img {
+  opacity: 1;
+}
+
+.rdp-snapshots > li .controls {
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  right: -8px;
+  height: 100%;
+  top: 0;
+}
+
+.rdp-snapshots > li .controls a {
+  display: inline-block;
+  background-color: #000;
+  border: 1px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  text-align: center;
+  margin: 5px 0;
+}
+
+.rdp-snapshots > li .controls a .fa, .rdp-snapshots > li .controls a .custom-select:after, .rdp-snapshots > li .controls a .dns-badge__content:before, .rdp-snapshots > li .controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots > li .controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots > li .controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots > li .controls a div:before, .rdp-snapshots > li .controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots > li .controls a .extension-select:after, .rdp-snapshots > li .controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots > li .controls a .extension-select:before, .rdp-snapshots > li .controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots > li .controls a .custom-checkbox > input + span, .rdp-snapshots > li .controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots > li .controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots > li .controls a input[type="radio"] + span:before, .rdp-snapshots > li .controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots > li .controls a input[type="radio"] + span:before, .rdp-snapshots > li .controls a
+.list-panel .list-group-option input[type="checkbox"] + span:before,
+.list-panel .list-group-option .rdp-snapshots > li .controls a input[type="checkbox"] + span:before, .rdp-snapshots > li .controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots > li .controls a input[type="checkbox"] + span:before {
+  position: relative;
+  top: -1px;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
