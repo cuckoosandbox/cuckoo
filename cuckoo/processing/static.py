@@ -682,13 +682,18 @@ class PdfDocument(object):
 
     def run(self):
         p = peepdf.PDFCore.PDFParser()
-        r, f = p.parse(
-            self.filepath, forceMode=True,
-            looseMode=True, manualAnalysis=False
-        )
+        try:
+            r, f = p.parse(
+                self.filepath, forceMode=True,
+                looseMode=True, manualAnalysis=False
+            )
+        except Exception as e:
+            log.exception("PDF parser exception")
+            r = 999
+
         if r:
             log.warning("Error parsing PDF file, error code %s", r)
-            return
+            return [{"status": "error"}]
 
         ret = []
 
