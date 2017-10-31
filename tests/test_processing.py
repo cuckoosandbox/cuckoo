@@ -34,7 +34,10 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile
+from cuckoo.processing.static import (
+    Static, WindowsScriptFile, PortableExecutable,
+    PdfDocument, OfficeDocument
+)
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -1598,6 +1601,41 @@ def test_parse_cmdline():
     assert rb.parse_cmdline(u"stuff.exe \u4404\u73a8 \uecbc\uee9e") == (
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
+
+def test_pe_crash_001():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-dbbbc96f03e71e0e976cb704377446d4.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
+
+def test_pe_crash_002():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-a217f283037b8793d60a5e98ceb68432.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "success"
+
+def test_pe_crash_003():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-7f10b354da0347b500fc75d574f7e264.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "success"
+
+def test_pe_crash_004():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-2b4671309bf5c50a99cd32e70f3dabfe.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
+
+def test_pe_crash_005():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-5f666d19434a8c31e03f701239d8179b.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
 
 def test_lnk_crash_001():
     s = Static()
