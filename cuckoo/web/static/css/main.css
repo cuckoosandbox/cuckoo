@@ -10694,11 +10694,11 @@ body.night .app-message {
 }
 
 .rdp-toolbar > button.disabled, .rdp-toolbar > button[disabled] {
-  pointer-events: none;
   background-color: #6D6D6D;
   color: #7c7c7c;
   text-shadow: 0px -2px 0px #4c4c4c;
   box-shadow: 0px 2px 0px #414141;
+  pointer-events: none;
 }
 
 .rdp-toolbar > button:focus {
@@ -10743,9 +10743,22 @@ body.night .app-message {
 }
 
 .rdp-app__header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   -ms-flex-preferred-size: 66px;
       flex-basis: 66px;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  padding: 0 30px;
   background-color: #2E3A4F;
+}
+
+.rdp-app__header--right {
+  margin-left: auto;
 }
 
 .rdp-app__viewport {
@@ -10836,6 +10849,23 @@ body.night .app-message {
 
 .rdp-credits img {
   height: 32px;
+}
+
+.rdp-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  color: #6297F8;
+}
+
+.rdp-title .fa, .rdp-title .custom-select:after, .rdp-title .dns-badge__content:before, .rdp-title .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-title .status.status-reported:before, .rdp-title #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-title .status.status-reported:before, .rdp-title .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-title .status.status-reported:before, .rdp-title .cuckoo-analysis__panel--toggle:before, .rdp-title .cuckoo-analysis__panel--toggle:after, .rdp-title .cuckoo-files ul div:before, .cuckoo-files ul .rdp-title div:before, .rdp-title .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-title .extension-select:after, .rdp-title .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-title .extension-select:before, .rdp-title .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-title .custom-checkbox > input + span, .rdp-title .breadcrumbs > li:not(:last-child):after, .rdp-title .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-title input[type="radio"] + span:before, .rdp-title .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-title input[type="radio"] + span:before, .rdp-title
+.list-panel .list-group-option input[type="checkbox"] + span:before,
+.list-panel .list-group-option .rdp-title input[type="checkbox"] + span:before, .rdp-title .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-title input[type="checkbox"] + span:before {
+  position: relative;
+  top: 1px;
+  vertical-align: middle;
+  font-size: 1.4em;
+  margin-right: 10px;
 }
 
 /* 

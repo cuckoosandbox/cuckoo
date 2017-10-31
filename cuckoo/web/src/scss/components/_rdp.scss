@@ -77,8 +77,16 @@ $RDP_APP_CREDIT_BGC: #383838;
     }
 
     &__header {
+      display: flex;
+      align-items: center;
       flex-basis: 66px;
+      flex-shrink: 0;
+      padding: 0 30px;
       background-color: $RDP_APP_HEADER_BGC;
+
+      &--right {
+        margin-left: auto;
+      }
     }
 
     &__viewport {
@@ -165,6 +173,21 @@ $RDP_APP_CREDIT_BGC: #383838;
       height: 32px;
     }
 
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+
+    .fa {
+      position: relative;
+      top: 1px;
+      vertical-align: middle;
+      font-size: 1.4em;
+      margin-right: 10px;
+    }
   }
 
 }
