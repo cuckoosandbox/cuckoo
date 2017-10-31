@@ -618,6 +618,9 @@ class PdfDocument(object):
             raise CuckooPartialStaticAnalysis
 
         obj = f.body[version].objects[ref.id]
+        if not hasattr(obj.object, 'decodedStream'):
+            raise CuckooPartialStaticAnalysis
+
         return {
             "orig_code": obj.object.decodedStream,
             "beautified": jsbeautify(obj.object.decodedStream),
