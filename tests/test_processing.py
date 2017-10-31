@@ -1637,6 +1637,36 @@ def test_pe_crash_005():
     obj = pe.run()
     assert obj["status"] == "error"
 
+def test_pdf_crash_001():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-f96dd7b08b034749b13655df1c651810.pdf'
+    )
+    obj, = pdf.run()
+    assert obj["status"] == "partial"
+
+def test_pdf_crash_002():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-c334315afc379537117339f56dc90f4d.pdf'
+    )
+    obj, = pdf.run()
+    assert obj["status"] == "partial"
+
+def test_pdf_crash_003():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-a43522520333fc9fe11f00dfd722bcb5.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "error"
+
+def test_pdf_crash_004():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-cd50feace1638e2870481d4dda5ea8a0.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "error"
+
 def test_lnk_crash_001():
     s = Static()
     s.set_task({
