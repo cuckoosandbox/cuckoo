@@ -1674,7 +1674,7 @@ def test_pdf_crash_005():
     )
     result = pdf.run()
     assert len(result) == 1
-    assert result[0]["status"] == "error"
+    assert result[0]["status"] == "partial"
 
 def test_lnk_crash_001():
     s = Static()
