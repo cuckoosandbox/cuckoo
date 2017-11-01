@@ -11,18 +11,18 @@ var uglify = require('gulp-uglify');
 module.exports = function() {
 
 	browserify({
-			entries: ['./scripts/submission/submission.js'],
+			entries: ['./scripts/rdp/client.js'],
 			extensions: ['.js'],
 			debug: true
 		})
 		.transform(babelify, {
 			extensions: ['.js'],
 			presets: ["es2015"],
-			sourceRoot: './scripts/submission'
+			sourceRoot: './scripts/rdp'
 		})
 		.bundle()
 		.on('error', function(err) { console.log(err); })
-		.pipe(source('submission.js'))
+		.pipe(source('rdp.js'))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({loadMaps: true}))
 		.pipe(gutil.env.production ? uglify() : gutil.noop())
