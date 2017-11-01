@@ -10777,9 +10777,6 @@ body.night .app-message {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
   padding: 15px 20px;
   overflow-y: auto;
 }
