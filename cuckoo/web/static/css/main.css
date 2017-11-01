@@ -10668,7 +10668,7 @@ body.night .app-message {
   font-size: 12px;
 }
 
-.rdp-toolbar > button {
+.rdp-toolbar button {
   -webkit-appearance: none;
   padding: 7px 5px 5px;
   border: 0;
@@ -10682,18 +10682,18 @@ body.night .app-message {
   transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
 }
 
-.rdp-toolbar > button:hover {
+.rdp-toolbar button:hover {
   background-color: #72a1f9;
 }
 
-.rdp-toolbar > button.active, .rdp-toolbar > button:active {
+.rdp-toolbar button.active, .rdp-toolbar button:active {
   background-color: #354A71;
   box-shadow: inset 0px 2px 0px #101622, 0px 1px 0px #495c7f;
   color: #fff;
   text-shadow: 0px 1px 0px #101622;
 }
 
-.rdp-toolbar > button.disabled, .rdp-toolbar > button[disabled] {
+.rdp-toolbar button.disabled, .rdp-toolbar button[disabled] {
   background-color: #6D6D6D;
   color: #7c7c7c;
   text-shadow: 0px -2px 0px #4c4c4c;
@@ -10701,7 +10701,7 @@ body.night .app-message {
   pointer-events: none;
 }
 
-.rdp-toolbar > button:focus {
+.rdp-toolbar button:focus {
   outline: none;
 }
 
@@ -10784,6 +10784,7 @@ body.night .app-message {
   overflow-y: auto;
 }
 
+.rdp-toolbar > .button-fill,
 .rdp-toolbar > button {
   position: relative;
   -ms-flex-negative: 0;
@@ -10794,14 +10795,66 @@ body.night .app-message {
   margin: 25px 0;
 }
 
-.rdp-toolbar > button .fa, .rdp-toolbar > button .custom-select:after, .rdp-toolbar > button .dns-badge__content:before, .rdp-toolbar > button .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-toolbar > button .status.status-reported:before, .rdp-toolbar > button .cuckoo-analysis__panel--toggle:before, .rdp-toolbar > button .cuckoo-analysis__panel--toggle:after, .rdp-toolbar > button .cuckoo-files ul div:before, .cuckoo-files ul .rdp-toolbar > button div:before, .rdp-toolbar > button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-toolbar > button .extension-select:after, .rdp-toolbar > button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-toolbar > button .extension-select:before, .rdp-toolbar > button .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-toolbar > button .custom-checkbox > input + span, .rdp-toolbar > button .breadcrumbs > li:not(:last-child):after, .rdp-toolbar > button .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-toolbar > button input[type="radio"] + span:before, .rdp-toolbar > button .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar > button input[type="radio"] + span:before, .rdp-toolbar > button
+.rdp-toolbar > .button-fill > button {
+  width: 100%;
+  z-index: 2;
+}
+
+.rdp-toolbar > .button-fill span[class^="ss-v-e-"] {
+  position: absolute;
+  height: 3px;
+  width: 66px;
+  z-index: 1;
+}
+
+.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-1 {
+  left: 6px;
+  top: -3px;
+  background-color: #D8D8D8;
+}
+
+.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-2 {
+  width: 58px;
+  left: 10px;
+  top: -6px;
+  background-color: #A9A9A9;
+}
+
+.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-3 {
+  width: 52px;
+  left: 13px;
+  top: -9px;
+  background-color: #616060;
+}
+
+.rdp-toolbar > .button-fill .button-badge {
+  position: absolute;
+  z-index: 3;
+  top: -5px;
+  right: -5px;
+  text-align: center;
+  min-width: 20px;
+  height: 20px;
+  background-color: #D73A3A;
+  border: 1px solid #D9C7C7;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 18px;
+  border-radius: 50px;
+  padding: 0 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.75);
+}
+
+.rdp-toolbar button .fa, .rdp-toolbar button .custom-select:after, .rdp-toolbar button .dns-badge__content:before, .rdp-toolbar button .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button .cuckoo-analysis__panel--toggle:before, .rdp-toolbar button .cuckoo-analysis__panel--toggle:after, .rdp-toolbar button .cuckoo-files ul div:before, .cuckoo-files ul .rdp-toolbar button div:before, .rdp-toolbar button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-toolbar button .extension-select:after, .rdp-toolbar button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-toolbar button .extension-select:before, .rdp-toolbar button .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-toolbar button .custom-checkbox > input + span, .rdp-toolbar button .breadcrumbs > li:not(:last-child):after, .rdp-toolbar button .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-toolbar button input[type="radio"] + span:before, .rdp-toolbar button .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar button input[type="radio"] + span:before, .rdp-toolbar button
 .list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-toolbar > button input[type="checkbox"] + span:before, .rdp-toolbar > button .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar > button input[type="checkbox"] + span:before {
+.list-panel .list-group-option .rdp-toolbar button input[type="checkbox"] + span:before, .rdp-toolbar button .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar button input[type="checkbox"] + span:before {
   position: relative;
   top: 2px;
 }
 
-.rdp-toolbar > button:after {
+.rdp-toolbar button:after {
   content: attr(name);
   pointer-events: none;
   position: absolute;
@@ -10815,19 +10868,19 @@ body.night .app-message {
   text-shadow: none;
 }
 
-.rdp-toolbar > button:active:after, .rdp-toolbar > button.active:after {
+.rdp-toolbar button:active:after, .rdp-toolbar button.active:after {
   font-weight: 700;
 }
 
-.rdp-toolbar > button[disabled]:after, .rdp-toolbar > button.disabled:after {
+.rdp-toolbar button[disabled]:after, .rdp-toolbar button.disabled:after {
   color: #6D6D6D;
 }
 
-.rdp-toolbar > button:first-child {
+.rdp-toolbar button:first-child {
   margin-top: 0;
 }
 
-.rdp-toolbar > button:last-child {
+.rdp-toolbar button:last-child {
   margin-bottom: 0;
 }
 
@@ -10905,7 +10958,7 @@ body.night .app-message {
   opacity: 1;
 }
 
-.rdp-snapshots > li .controls {
+.rdp-snapshots--controls {
   position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -10922,7 +10975,44 @@ body.night .app-message {
   top: 0;
 }
 
-.rdp-snapshots > li .controls a {
+.rdp-snapshots--controls a {
+  display: inline-block;
+  background-color: #000;
+  border: 1px solid #88A1CB;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  text-align: center;
+  margin: 5px 0;
+}
+
+.rdp-snapshots--controls a .fa, .rdp-snapshots--controls a .custom-select:after, .rdp-snapshots--controls a .dns-badge__content:before, .rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots--controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots--controls a div:before, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before, .rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span, .rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots--controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a
+.list-panel .list-group-option input[type="checkbox"] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before {
+  position: relative;
+  top: -1px;
+}
+
+.rdp-snapshots--controls {
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  right: -8px;
+  height: 100%;
+  top: 0;
+}
+
+.rdp-snapshots--controls a {
   display: inline-block;
   background-color: #000;
   border: 1px solid #fff;
@@ -10935,9 +11025,9 @@ body.night .app-message {
   margin: 5px 0;
 }
 
-.rdp-snapshots > li .controls a .fa, .rdp-snapshots > li .controls a .custom-select:after, .rdp-snapshots > li .controls a .dns-badge__content:before, .rdp-snapshots > li .controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots > li .controls a .status.status-reported:before, .rdp-snapshots > li .controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots > li .controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots > li .controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots > li .controls a div:before, .rdp-snapshots > li .controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots > li .controls a .extension-select:after, .rdp-snapshots > li .controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots > li .controls a .extension-select:before, .rdp-snapshots > li .controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots > li .controls a .custom-checkbox > input + span, .rdp-snapshots > li .controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots > li .controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots > li .controls a input[type="radio"] + span:before, .rdp-snapshots > li .controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots > li .controls a input[type="radio"] + span:before, .rdp-snapshots > li .controls a
+.rdp-snapshots--controls a .fa, .rdp-snapshots--controls a .custom-select:after, .rdp-snapshots--controls a .dns-badge__content:before, .rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots--controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots--controls a div:before, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before, .rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span, .rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots--controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a
 .list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-snapshots > li .controls a input[type="checkbox"] + span:before, .rdp-snapshots > li .controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots > li .controls a input[type="checkbox"] + span:before {
+.list-panel .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before {
   position: relative;
   top: -1px;
 }
