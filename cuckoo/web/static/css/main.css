@@ -10777,7 +10777,7 @@ body.night .app-message {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  padding: 15px 20px;
+  padding: 15px 20px 75px;
   overflow-y: auto;
 }
 
@@ -10881,6 +10881,10 @@ body.night .app-message {
   margin-bottom: 0;
 }
 
+.rdp-credits {
+  position: relative;
+}
+
 .rdp-credits a {
   display: block;
   text-align: center;
@@ -10899,6 +10903,17 @@ body.night .app-message {
 
 .rdp-credits img {
   height: 32px;
+}
+
+.rdp-credits:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 25px;
+  top: -25px;
+  background: -webkit-linear-gradient(top, rgba(21, 39, 42, 0) 0%, #15272a 100%);
+  background: linear-gradient(to bottom, rgba(21, 39, 42, 0) 0%, #15272a 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
 }
 
 .rdp-title {
