@@ -875,13 +875,16 @@ class LnkShortcut(object):
         except CuckooPartialStaticAnalysis:
             ret["status"] = "partial"
             return ret
-
-        ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
-
-        extra = offset + off.length
-        self._validate_offset(extra, "extra")
+        try:
+            ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
 
         try:
+            extra = offset + off.length
+
+            self._validate_offset(extra, "extra")
             if ret["flags"]["description"]:
                 extra, ret["description"] = self.read_string16(extra)
             if ret["flags"]["relapath"]:
