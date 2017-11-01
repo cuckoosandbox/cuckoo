@@ -4,56 +4,12 @@
 
   <section class="rdp-app" id="rdp-client">
     <div class="rdp-app__display">
-      <header class="rdp-app__header">
-        <h2 class="rdp-title"><i class="fa fa-desktop"></i> Locky.zip</h2>
-        <div class="rdp-app__header--right">
-          <ul class="rdp-snapshots">
-            <li>
-              <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
-              <div class="rdp-snapshots--controls">
-                <a href="#"><i class="fa fa-remove"></i></a>
-              </div>
-            </li>
-            <li>
-              <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
-              <div class="rdp-snapshots--controls">
-                <a href="#"><i class="fa fa-remove"></i></a>
-              </div>
-            </li>
-            <li>
-              <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
-              <div class="rdp-snapshots--controls">
-                <a href="#"><i class="fa fa-remove"></i></a>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </header>
-      <div class="rdp-app__viewport"></div>
+      {% include 'rdp/partials/rdp-header.html' %}
+      {% include 'rdp/partials/rdp-viewport.html' %}
     </div>
-    <div class="rdp-app__controls">
-      <nav class="rdp-toolbar">
-        <button name="fullscreen"><i class="fa fa-expand"></i></button>
-        <div class="button-fill">
-          <!-- snapshot bars -->
-          <span class="ss-v-e-1"></span>
-          <span class="ss-v-e-2"></span>
-          <span class="ss-v-e-3"></span>
-          <!-- the actual button -->
-          <button name="snapshot"><i class="fa fa-camera"></i></button>
-          <!-- the button badge (contains `n` snapshots made, refers to the snapshot library) -->
-          <span class="button-badge">3</span>
-        </div>
-        <button name="control"><i class="fa fa-hand-o-up"></i></button>
-        <button name="reboot"><i class="fa fa-refresh"></i></button>
-        <button name="close"><i class="fa fa-power-off"></i></button>
-      </nav>
-      <div class="rdp-credits">
-        <a href="https://guacamole.incubator.apache.org/" target="_blank" title="Cuckoo Ripple is powered by the Guacamole project.">
-          <img src="{% static 'graphic/guacamole.png' %}" alt="Guacamole" />
-        </a>
-      </div>
-    </div>
+    <aside class="rdp-app__controls">
+      {% include 'rdp/partials/rdp-toolbar.html' %}
+    </aside>
   </section>
 
 {% endblock %}
