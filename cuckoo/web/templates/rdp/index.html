@@ -10,13 +10,19 @@
           <ul class="rdp-snapshots">
             <li>
               <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
-              <div class="controls">
+              <div class="rdp-snapshots--controls">
                 <a href="#"><i class="fa fa-remove"></i></a>
               </div>
             </li>
             <li>
               <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
-              <div class="controls">
+              <div class="rdp-snapshots--controls">
+                <a href="#"><i class="fa fa-remove"></i></a>
+              </div>
+            </li>
+            <li>
+              <figure><img src="{% static 'graphic/screenshot-sample.png' %}" /></figure>
+              <div class="rdp-snapshots--controls">
                 <a href="#"><i class="fa fa-remove"></i></a>
               </div>
             </li>
@@ -28,9 +34,18 @@
     <div class="rdp-app__controls">
       <nav class="rdp-toolbar">
         <button name="fullscreen" disabled><i class="fa fa-expand"></i></button>
-        <button name="snapshot"><i class="fa fa-camera"></i></button>
+        <div class="button-fill">
+          <!-- snapshot bars -->
+          <span class="ss-v-e-1"></span>
+          <span class="ss-v-e-2"></span>
+          <span class="ss-v-e-3"></span>
+          <!-- the actual button -->
+          <button name="snapshot"><i class="fa fa-camera"></i></button>
+          <!-- the button badge (contains `n` snapshots made, refers to the snapshot library) -->
+          <span class="button-badge">3</span>
+        </div>
         <button name="control"><i class="fa fa-hand-o-up"></i></button>
-        <button name="refresh"><i class="fa fa-refresh"></i></button>
+        <button name="reboot"><i class="fa fa-refresh"></i></button>
         <button name="close"><i class="fa fa-power-off"></i></button>
       </nav>
       <div class="rdp-credits">
