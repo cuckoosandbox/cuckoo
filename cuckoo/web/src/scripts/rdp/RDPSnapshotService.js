@@ -67,8 +67,6 @@ export default class RDPSnapshotService extends Hookable {
     this.count = this.count+1;
     this.bar.add(s);
     this.dispatchHook('create', s);
-
-    console.log(this.count);
   }
 
   remove(id) {
@@ -80,7 +78,6 @@ export default class RDPSnapshotService extends Hookable {
 
     if(pos !== false) {
       this.snapshots.splice(pos, 1);
-      console.log(this);
     }
 
     this.dispatchHook('remove', {});
