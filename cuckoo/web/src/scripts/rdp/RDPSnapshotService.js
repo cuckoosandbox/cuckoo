@@ -15,24 +15,33 @@ class SnapshotBar extends Hookable {
 
   // adds an item to the bar
   add(s) {
-    let template = `
+
+    let template = $(`
       <li data-snapshot-id="${s.id}">
         <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>
         <div class="rdp-snapshots--controls">
-          <a href="#"><i class="fa fa-remove"></i></a>
+          <a href="snapshot:remove"><i class="fa fa-remove"></i></a>
         </div>
       </li>
-    `;
+    `);
 
     // append this to the list
     this.$.prepend(template);
+    this.dispatchHook('added', template);
+
+    template.find('a[href="snapshot:remove"]').bind('click', e => {
+      e.preventDefault();
+      this.service.remove(template.data('snapshotId'));
+      template.remove();
+      this.dispatchHook('removed');
+    });
   }
 
 }
 
 class Snapshot {
   constructor(id) {
-    this.id = 0;
+    this.id = id;
   }
 }
 
@@ -55,12 +64,25 @@ export default class RDPSnapshotService extends Hookable {
   create() {
     let s = new Snapshot(this.count);
     this.snapshots.push(s);
-    this.count++;
+    this.count = this.count+1;
     this.bar.add(s);
     this.dispatchHook('create', s);
+
+    console.log(this.count);
   }
 
-  remove() {
+  remove(id) {
+    let pos = false;
+
+    this.snapshots.forEach((snapshot, index) => {
+      if(snapshot.id == id) pos = index;
+    });
+
+    if(pos !== false) {
+      this.snapshots.splice(pos, 1);
+      console.log(this);
+    }
+
     this.dispatchHook('remove', {});
   }
 

@@ -10786,6 +10786,9 @@ body.night .app-message {
       flex-basis: 66px;
   -ms-flex-negative: 0;
       flex-shrink: 0;
+  -webkit-box-flex: 0;
+      -ms-flex-positive: 0;
+          flex-grow: 0;
   padding: 0 30px;
   background-color: #2E3A4F;
 }
@@ -10987,6 +10990,8 @@ body.night .app-message {
   margin: 0;
   font-size: 20px;
   font-weight: 400;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
   color: #6297F8;
 }
 
@@ -11009,6 +11014,9 @@ body.night .app-message {
           align-items: center;
   list-style: none;
   margin: 0;
+  max-width: 500px;
+  overflow-x: auto;
+  padding-right: 10px;
 }
 
 .rdp-snapshots > li {

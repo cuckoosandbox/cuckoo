@@ -97,6 +97,7 @@ $RDP_APP_CREDIT_BGC: #383838;
       align-items: center;
       flex-basis: 66px;
       flex-shrink: 0;
+      flex-grow: 0;
       padding: 0 30px;
       background-color: $RDP_APP_HEADER_BGC;
 
@@ -154,6 +155,7 @@ $RDP_APP_CREDIT_BGC: #383838;
           z-index: 3;
           &.in { top: -3px; }
         }
+
         &.ss-v-e-2 {
           width: 67px;
           left: 10px;
@@ -162,6 +164,7 @@ $RDP_APP_CREDIT_BGC: #383838;
 
           &.in { top: -6px; }
         }
+
         &.ss-v-e-3 {
           width: 60px;
           left: 13px;
@@ -290,6 +293,7 @@ $RDP_APP_CREDIT_BGC: #383838;
     margin: 0;
     font-size: 20px;
     font-weight: 400;
+    flex-shrink: 0;
     color: $RDP_APP_TOOLBAR_BUTTON_BGC;
 
     .fa {
@@ -306,6 +310,9 @@ $RDP_APP_CREDIT_BGC: #383838;
     align-items: center;
     list-style: none;
     margin: 0;
+    max-width: 500px;
+    overflow-x: auto;
+    padding-right: 10px;
 
     & > li {
       position: relative;

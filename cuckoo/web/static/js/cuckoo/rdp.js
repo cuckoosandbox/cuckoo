@@ -152,10 +152,20 @@ var SnapshotBar = function (_Hookable) {
   _createClass(SnapshotBar, [{
     key: 'add',
     value: function add(s) {
-      var template = '\n      <li data-snapshot-id="' + s.id + '">\n        <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>\n        <div class="rdp-snapshots--controls">\n          <a href="#"><i class="fa fa-remove"></i></a>\n        </div>\n      </li>\n    ';
+      var _this2 = this;
+
+      var template = $('\n      <li data-snapshot-id="' + s.id + '">\n        <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>\n        <div class="rdp-snapshots--controls">\n          <a href="snapshot:remove"><i class="fa fa-remove"></i></a>\n        </div>\n      </li>\n    ');
 
       // append this to the list
       this.$.prepend(template);
+      this.dispatchHook('added', template);
+
+      template.find('a[href="snapshot:remove"]').bind('click', function (e) {
+        e.preventDefault();
+        _this2.service.remove(template.data('snapshotId'));
+        template.remove();
+        _this2.dispatchHook('removed');
+      });
     }
   }]);
 
@@ -165,7 +175,7 @@ var SnapshotBar = function (_Hookable) {
 var Snapshot = function Snapshot(id) {
   _classCallCheck(this, Snapshot);
 
-  this.id = 0;
+  this.id = id;
 };
 
 var RDPSnapshotService = function (_Hookable2) {
@@ -174,19 +184,19 @@ var RDPSnapshotService = function (_Hookable2) {
   function RDPSnapshotService(client) {
     _classCallCheck(this, RDPSnapshotService);
 
-    var _this2 = _possibleConstructorReturn(this, (RDPSnapshotService.__proto__ || Object.getPrototypeOf(RDPSnapshotService)).call(this));
+    var _this3 = _possibleConstructorReturn(this, (RDPSnapshotService.__proto__ || Object.getPrototypeOf(RDPSnapshotService)).call(this));
 
-    _this2.client = client;
-    _this2.snapshots = [];
-    _this2.bar = new SnapshotBar(_this2.client.$.find('#rdp-snapshot-collection'), _this2);
-    _this2.count = 0;
+    _this3.client = client;
+    _this3.snapshots = [];
+    _this3.bar = new SnapshotBar(_this3.client.$.find('#rdp-snapshot-collection'), _this3);
+    _this3.count = 0;
 
-    _this2.hooks = {
+    _this3.hooks = {
       create: [],
       remove: []
     };
 
-    return _this2;
+    return _this3;
   }
 
   _createClass(RDPSnapshotService, [{
@@ -194,13 +204,26 @@ var RDPSnapshotService = function (_Hookable2) {
     value: function create() {
       var s = new Snapshot(this.count);
       this.snapshots.push(s);
-      this.count++;
+      this.count = this.count + 1;
       this.bar.add(s);
       this.dispatchHook('create', s);
+
+      console.log(this.count);
     }
   }, {
     key: 'remove',
-    value: function remove() {
+    value: function remove(id) {
+      var pos = false;
+
+      this.snapshots.forEach(function (snapshot, index) {
+        if (snapshot.id == id) pos = index;
+      });
+
+      if (pos !== false) {
+        this.snapshots.splice(pos, 1);
+        console.log(this);
+      }
+
       this.dispatchHook('remove', {});
     }
   }, {
@@ -382,17 +405,32 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
     value: function update() {
       var _this3 = this;
 
+      var isRemoved = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+
       var total = this.client.snapshots.total();
       this.$.find('.button-badge').text(total);
 
-      if (total <= 3) {
-        this.$.find('.ss-v-e-' + total).addClass('in');
-      }
+      if (!isRemoved) {
 
-      this.$.find('button').addClass('shutter-in');
-      setTimeout(function () {
-        return _this3.$.find('button').removeClass('shutter-in');
-      }, 1500);
+        if (total <= 3) {
+          this.$.find('.ss-v-e-' + total).addClass('in');
+        }
+
+        this.$.find('button').addClass('shutter-in');
+        setTimeout(function () {
+          return _this3.$.find('button').removeClass('shutter-in');
+        }, 1500);
+      } else {
+
+        // this is something that could be done better, but works for now.
+        if (total == 2) this.$.find('.ss-v-e-3').removeClass('in');
+        if (total == 1) this.$.find('.ss-v-e-2').removeClass('in');
+        if (total == 0) {
+          this.$.find('.ss-v-e-1').removeClass('in');
+          this.$.find('.button-badge').text('');
+        }
+      }
     }
 
     // litte changes in the disable method for this button, as the $ is not a button.
@@ -457,6 +495,10 @@ var RDPClient = function (_Hookable) {
     // bind snapshot interactions
     _this.snapshots.on('create', function (snapshot) {
       _this.toolbar.buttons.snapshot.update();
+    });
+
+    _this.snapshots.bar.on('removed', function () {
+      _this.toolbar.buttons.snapshot.update(true);
     });
 
     return _this;

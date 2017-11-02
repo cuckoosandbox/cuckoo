@@ -16,6 +16,10 @@ class RDPClient extends Hookable {
       this.toolbar.buttons.snapshot.update();
     });
 
+    this.snapshots.bar.on('removed', () => {
+      this.toolbar.buttons.snapshot.update(true);
+    });
+
   }
 }
 
