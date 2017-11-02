@@ -34,7 +34,10 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile
+from cuckoo.processing.static import (
+    Static, WindowsScriptFile, PortableExecutable,
+    PdfDocument, OfficeDocument
+)
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
@@ -93,6 +96,7 @@ class TestProcessing(object):
         results = d.run()
         assert len(results["action"]) == 3
         assert len(results["errors"]) == 4
+        shutil.rmtree(cwd())
 
     def test_droidmon_url(self):
         d = Droidmon()
@@ -134,7 +138,283 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         s.file_path = "tests/files/pdf0.zip"
-        assert "%48%65" in s.run()["pdf"][0]["javascript"][0]["orig_code"]
+        result = s.run()["pdf"][0]
+        assert "%48%65" in result["javascript"][0]["orig_code"]
+        assert result["status"] == "success"
+
+    def test_pe(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "exe",
+            "target": "mzdos0.exe",
+        })
+        s.file_path = "tests/files/mzdos0"
+        result = s.run()
+        assert result == {'imported_dll_count': 4,
+                          'keys': [],
+                          'pdb_path': None,
+                          'pe_exports': [],
+                          'pe_imphash': '98ff144cf22516034f781305cedf2405',
+                          'pe_imports': [{'dll': 'KERNEL32.dll',
+                                          'imports': [{'address': '0x42c010',
+                                                       'name': 'GetThreadLocale'},
+                                                      {'address': '0x42c014',
+                                                       'name': 'GetTickCount'},
+                                                      {'address': '0x42c018',
+                                                       'name': 'LoadLibraryA'},
+                                                      {'address': '0x42c01c',
+                                                       'name': 'GetProcAddress'},
+                                                      {'address': '0x42c020',
+                                                       'name': 'GetLocaleInfoA'},
+                                                      {'address': '0x42c024',
+                                                       'name': 'GetLocalTime'},
+                                                      {'address': '0x42c028',
+                                                       'name': 'DeleteCriticalSection'},
+                                                      {'address': '0x42c02c',
+                                                       'name': 'RaiseException'},
+                                                      {'address': '0x42c030', 'name': 'GetACP'},
+                                                      {'address': '0x42c034',
+                                                       'name': 'InterlockedExchange'},
+                                                      {'address': '0x42c038', 'name': 'LocalAlloc'},
+                                                      {'address': '0x42c03c',
+                                                       'name': 'GetVersionExA'},
+                                                      {'address': '0x42c040',
+                                                       'name': 'GetModuleFileNameW'},
+                                                      {'address': '0x42c044',
+                                                       'name': 'OpenFileMappingA'},
+                                                      {'address': '0x42c048', 'name': 'GetVersion'},
+                                                      {'address': '0x42c04c',
+                                                       'name': 'CreateFileMappingA'},
+                                                      {'address': '0x42c050',
+                                                       'name': 'MapViewOfFile'},
+                                                      {'address': '0x42c054',
+                                                       'name': 'UnmapViewOfFile'},
+                                                      {'address': '0x42c058', 'name': 'lstrcpynW'},
+                                                      {'address': '0x42c05c',
+                                                       'name': 'OutputDebugStringW'},
+                                                      {'address': '0x42c060', 'name': 'lstrcpyW'},
+                                                      {'address': '0x42c064', 'name': 'lstrcpyA'},
+                                                      {'address': '0x42c068', 'name': 'lstrlenA'},
+                                                      {'address': '0x42c06c', 'name': 'OpenEventA'},
+                                                      {'address': '0x42c070', 'name': 'SetEvent'},
+                                                      {'address': '0x42c074',
+                                                       'name': 'WaitForSingleObject'},
+                                                      {'address': '0x42c078',
+                                                       'name': 'LCMapStringW'},
+                                                      {'address': '0x42c07c', 'name': 'DebugBreak'},
+                                                      {'address': '0x42c080',
+                                                       'name': 'IsBadWritePtr'},
+                                                      {'address': '0x42c084',
+                                                       'name': 'IsBadReadPtr'},
+                                                      {'address': '0x42c088',
+                                                       'name': 'HeapValidate'},
+                                                      {'address': '0x42c08c', 'name': 'RtlUnwind'},
+                                                      {'address': '0x42c090',
+                                                       'name': 'GetStdHandle'},
+                                                      {'address': '0x42c094', 'name': 'WriteFile'},
+                                                      {'address': '0x42c098',
+                                                       'name': 'InterlockedDecrement'},
+                                                      {'address': '0x42c09c',
+                                                       'name': 'OutputDebugStringA'},
+                                                      {'address': '0x42c0a0',
+                                                       'name': 'InterlockedIncrement'},
+                                                      {'address': '0x42c0a4',
+                                                       'name': 'GetModuleFileNameA'},
+                                                      {'address': '0x42c0a8',
+                                                       'name': 'GetModuleHandleA'},
+                                                      {'address': '0x42c0ac',
+                                                       'name': 'GetStartupInfoA'},
+                                                      {'address': '0x42c0b0',
+                                                       'name': 'GetCommandLineA'},
+                                                      {'address': '0x42c0b4',
+                                                       'name': 'WideCharToMultiByte'},
+                                                      {'address': '0x42c0b8',
+                                                       'name': 'GetTimeZoneInformation'},
+                                                      {'address': '0x42c0bc',
+                                                       'name': 'EnterCriticalSection'},
+                                                      {'address': '0x42c0c0',
+                                                       'name': 'LeaveCriticalSection'},
+                                                      {'address': '0x42c0c4',
+                                                       'name': 'GetLastError'},
+                                                      {'address': '0x42c0c8',
+                                                       'name': 'GetFileAttributesW'},
+                                                      {'address': '0x42c0cc', 'name': 'HeapFree'},
+                                                      {'address': '0x42c0d0', 'name': 'HeapAlloc'},
+                                                      {'address': '0x42c0d4',
+                                                       'name': 'GetProcessHeap'},
+                                                      {'address': '0x42c0d8', 'name': 'CloseHandle'},
+                                                      {'address': '0x42c0dc',
+                                                       'name': 'GetCurrentProcess'},
+                                                      {'address': '0x42c0e0', 'name': 'FreeLibrary'},
+                                                      {'address': '0x42c0e4', 'name': 'HeapReAlloc'},
+                                                      {'address': '0x42c0e8', 'name': 'HeapDestroy'},
+                                                      {'address': '0x42c0ec', 'name': 'HeapCreate'},
+                                                      {'address': '0x42c0f0', 'name': 'VirtualFree'},
+                                                      {'address': '0x42c0f4',
+                                                       'name': 'TerminateProcess'},
+                                                      {'address': '0x42c0f8', 'name': 'ExitProcess'},
+                                                      {'address': '0x42c0fc',
+                                                       'name': 'VirtualAlloc'},
+                                                      {'address': '0x42c100', 'name': 'TlsAlloc'},
+                                                      {'address': '0x42c104',
+                                                       'name': 'GetCurrentThreadId'},
+                                                      {'address': '0x42c108', 'name': 'TlsFree'},
+                                                      {'address': '0x42c10c', 'name': 'TlsSetValue'},
+                                                      {'address': '0x42c110', 'name': 'TlsGetValue'},
+                                                      {'address': '0x42c114',
+                                                       'name': 'SetLastError'},
+                                                      {'address': '0x42c118',
+                                                       'name': 'GetCurrentThread'},
+                                                      {'address': '0x42c11c',
+                                                       'name': 'UnhandledExceptionFilter'},
+                                                      {'address': '0x42c120',
+                                                       'name': 'FreeEnvironmentStringsA'},
+                                                      {'address': '0x42c124',
+                                                       'name': 'GetEnvironmentStrings'},
+                                                      {'address': '0x42c128',
+                                                       'name': 'FreeEnvironmentStringsW'},
+                                                      {'address': '0x42c12c',
+                                                       'name': 'GetEnvironmentStringsW'},
+                                                      {'address': '0x42c130',
+                                                       'name': 'SetHandleCount'},
+                                                      {'address': '0x42c134', 'name': 'GetFileType'},
+                                                      {'address': '0x42c138',
+                                                       'name': 'InitializeCriticalSection'},
+                                                      {'address': '0x42c13c',
+                                                       'name': 'MultiByteToWideChar'},
+                                                      {'address': '0x42c140',
+                                                       'name': 'VirtualQuery'},
+                                                      {'address': '0x42c144', 'name': 'CreateFileA'},
+                                                      {'address': '0x42c148', 'name': 'GetCPInfo'},
+                                                      {'address': '0x42c14c',
+                                                       'name': 'GetStringTypeA'},
+                                                      {'address': '0x42c150',
+                                                       'name': 'GetStringTypeW'},
+                                                      {'address': '0x42c154', 'name': 'GetOEMCP'},
+                                                      {'address': '0x42c158',
+                                                       'name': 'QueryPerformanceCounter'},
+                                                      {'address': '0x42c15c',
+                                                       'name': 'GetCurrentProcessId'},
+                                                      {'address': '0x42c160',
+                                                       'name': 'GetSystemTimeAsFileTime'},
+                                                      {'address': '0x42c164',
+                                                       'name': 'SetUnhandledExceptionFilter'},
+                                                      {'address': '0x42c168',
+                                                       'name': 'IsBadCodePtr'},
+                                                      {'address': '0x42c16c',
+                                                       'name': 'CompareStringA'},
+                                                      {'address': '0x42c170',
+                                                       'name': 'CompareStringW'},
+                                                      {'address': '0x42c174',
+                                                       'name': 'SetEnvironmentVariableA'},
+                                                      {'address': '0x42c178',
+                                                       'name': 'SetEnvironmentVariableW'},
+                                                      {'address': '0x42c17c',
+                                                       'name': 'FlushFileBuffers'},
+                                                      {'address': '0x42c180',
+                                                       'name': 'SetStdHandle'},
+                                                      {'address': '0x42c184',
+                                                       'name': 'SetEndOfFile'},
+                                                      {'address': '0x42c188', 'name': 'ReadFile'},
+                                                      {'address': '0x42c18c',
+                                                       'name': 'SetFilePointer'},
+                                                      {'address': '0x42c190',
+                                                       'name': 'VirtualProtect'},
+                                                      {'address': '0x42c194',
+                                                       'name': 'GetSystemInfo'},
+                                                      {'address': '0x42c198',
+                                                       'name': 'LCMapStringA'}]},
+                                         {'dll': 'USER32.dll',
+                                          'imports': [{'address': '0x42c1a0', 'name': 'LoadStringA'},
+                                                      {'address': '0x42c1a4',
+                                                       'name': 'TranslateMessage'},
+                                                      {'address': '0x42c1a8',
+                                                       'name': 'DestroyWindow'},
+                                                      {'address': '0x42c1ac',
+                                                       'name': 'DefWindowProcA'},
+                                                      {'address': '0x42c1b0', 'name': 'BeginPaint'},
+                                                      {'address': '0x42c1b4', 'name': 'EndPaint'},
+                                                      {'address': '0x42c1b8',
+                                                       'name': 'PostQuitMessage'},
+                                                      {'address': '0x42c1bc',
+                                                       'name': 'CreateWindowExA'},
+                                                      {'address': '0x42c1c0', 'name': 'ShowWindow'},
+                                                      {'address': '0x42c1c4',
+                                                       'name': 'UpdateWindow'},
+                                                      {'address': '0x42c1c8', 'name': 'LoadCursorA'},
+                                                      {'address': '0x42c1cc',
+                                                       'name': 'RegisterClassExA'},
+                                                      {'address': '0x42c1d0',
+                                                       'name': 'TranslateAcceleratorA'},
+                                                      {'address': '0x42c1d4',
+                                                       'name': 'DispatchMessageW'},
+                                                      {'address': '0x42c1d8', 'name': 'GetMessageW'},
+                                                      {'address': '0x42c1dc',
+                                                       'name': 'IsWindowUnicode'},
+                                                      {'address': '0x42c1e0',
+                                                       'name': 'PeekMessageA'},
+                                                      {'address': '0x42c1e4',
+                                                       'name': 'MsgWaitForMultipleObjects'},
+                                                      {'address': '0x42c1e8', 'name': 'GetMessageA'},
+                                                      {'address': '0x42c1ec',
+                                                       'name': 'DispatchMessageA'}]},
+                                         {'dll': 'ole32.dll',
+                                          'imports': [{'address': '0x42c1f4',
+                                                       'name': 'CoLoadLibrary'},
+                                                      {'address': '0x42c1f8',
+                                                       'name': 'CoReleaseMarshalData'},
+                                                      {'address': '0x42c1fc',
+                                                       'name': 'CoMarshalInterface'},
+                                                      {'address': '0x42c200',
+                                                       'name': 'CreateStreamOnHGlobal'},
+                                                      {'address': '0x42c204',
+                                                       'name': 'CoUnmarshalInterface'},
+                                                      {'address': '0x42c208',
+                                                       'name': 'CoRevokeClassObject'},
+                                                      {'address': '0x42c20c',
+                                                       'name': 'CoRegisterClassObject'}]},
+                                         {'dll': 'ADVAPI32.dll',
+                                          'imports': [{'address': '0x42c000',
+                                                       'name': 'SetThreadToken'},
+                                                      {'address': '0x42c004',
+                                                       'name': 'OpenThreadToken'},
+                                                      {'address': '0x42c008',
+                                                       'name': 'RevertToSelf'}]}],
+                          'pe_resources': [],
+                          'pe_sections': [{'entropy': 6.168710125937636,
+                                           'name': '.text',
+                                           'size_of_data': '0x0001d000',
+                                           'virtual_address': '0x0000f000',
+                                           'virtual_size': '0x0001c10f'},
+                                          {'entropy': 7.407560392186049,
+                                           'name': '.rdata',
+                                           'size_of_data': '0x0003b000',
+                                           'virtual_address': '0x0002c000',
+                                           'virtual_size': '0x0003ab54'},
+                                          {'entropy': 2.17108092523925,
+                                           'name': '.data',
+                                           'size_of_data': '0x00001000',
+                                           'virtual_address': '0x00067000',
+                                           'virtual_size': '0x0000ceb4'},
+                                          {'entropy': 0.043008587297959075,
+                                           'name': '.xdata',
+                                           'size_of_data': '0x00001000',
+                                           'virtual_address': '0x00074000',
+                                           'virtual_size': '0x00000034'},
+                                          {'entropy': 0.0,
+                                           'name': '.rsrc',
+                                           'size_of_data': '0x00001000',
+                                           'virtual_address': '0x00075000',
+                                           'virtual_size': '0x00000010'}],
+                          'pe_timestamp': '2017-03-24 10:03:56',
+                          'pe_versioninfo': [],
+                          'peid_signatures': ['InstallShield 2000'],
+                          'signature': [],
+                          'status' : 'success'}
+        shutil.rmtree(cwd())
 
     def test_pdf(self):
         set_cwd(tempfile.mkdtemp())
@@ -151,6 +431,7 @@ class TestProcessing(object):
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+        assert r["status"] == "success"
 
     def test_phishing0_pdf(self):
         set_cwd(tempfile.mkdtemp())
@@ -165,7 +446,9 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         s.file_path = "tests/files/phishing0.pdf"
-        assert "googleattachmentsigned" in s.run()["pdf"][0]["urls"][0]
+        r = s.run()["pdf"]
+        assert "googleattachmentsigned" in r[0]["urls"][0]
+        assert r[0]["status"] == "success"
 
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
@@ -215,6 +498,7 @@ class TestProcessing(object):
             "version": 1,
             "openaction": None,
             "attachments": [],
+            "status": "success"
         }
 
     def test_pdf_attach(self):
@@ -236,6 +520,7 @@ class TestProcessing(object):
         assert len(obj["attachments"]) == 1
         assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
         assert "kkkllsslll" in obj["openaction"]
+        assert obj["status"] == "success"
 
     def test_office(self):
         s = Static()
@@ -249,6 +534,7 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+        assert r["status"] == "success"
 
     def test_lnk1(self):
         s = Static()
@@ -259,6 +545,7 @@ class TestProcessing(object):
         })
         s.file_path = "tests/files/lnk_1.lnk"
         obj = s.run()["lnk"]
+        assert obj["status"] == "success"
         assert obj["basepath"] == "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
         assert obj["flags"] == {
             "cmdline": True, "description": True, "icon": True,
@@ -339,23 +626,23 @@ class TestProcessing(object):
             "category": "file",
         })
 
-        fd, filepath = tempfile.mkstemp()
-        os.write(fd, "ABCDEFGH\n"*0x1000)
-        os.close(fd)
+        with tempfile.NamedTemporaryFile() as fd:
+            filepath = fd.name
+            fd.write("ABCDEFGH\n"*0x1000)
 
-        s.file_path = filepath
-        assert len(s.run()) == s.MAX_STRINGCNT
+            s.file_path = filepath
+            assert len(s.run()) == s.MAX_STRINGCNT
 
-        fd, filepath = tempfile.mkstemp()
-        os.write(fd, ("%s\n" % ("A"*0x1000)) * 200)
-        os.close(fd)
+        with tempfile.NamedTemporaryFile() as fd:
+            filepath = fd.name
+            fd.write(("%s\n" % ("A"*0x1000)) * 200)
 
-        s.file_path = filepath
-        strings = s.run()
-        assert len(strings) == 200
-        assert len(strings[0]) == s.MAX_STRINGLEN
-        assert len(strings[42]) == s.MAX_STRINGLEN
-        assert len(strings[199]) == s.MAX_STRINGLEN
+            s.file_path = filepath
+            strings = s.run()
+            assert len(strings) == 200
+            assert len(strings[0]) == s.MAX_STRINGLEN
+            assert len(strings[42]) == s.MAX_STRINGLEN
+            assert len(strings[199]) == s.MAX_STRINGLEN
 
     @mock.patch("cuckoo.processing.screenshots.log")
     def test_screenshot_tesseract(self, p):
@@ -379,6 +666,7 @@ class TestProcessing(object):
         })
         assert s.run() == []
         p.error.assert_called_once()
+        shutil.rmtree(s.shots_path)
 
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     def test_screenshots(self, p):
@@ -459,6 +747,8 @@ class TestProcessing(object):
             "url": "http://google.com",
         }
 
+        shutil.rmtree(cwd())
+
     def test_targetinfo_empty(self):
         ti = TargetInfo()
         ti.file_path = "file404"
@@ -525,6 +815,7 @@ class TestProcessing(object):
         with pytest.raises(CuckooProcessingError) as e:
             VirusTotal().run()
         e.match("API key not configured")
+        shutil.rmtree(cwd())
 
     def test_virustotal_invalidcategory(self):
         set_cwd(tempfile.mkdtemp())
@@ -536,6 +827,7 @@ class TestProcessing(object):
             })
             v.run()
         e.match("Unsupported task category")
+        shutil.rmtree(cwd())
 
 @pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
 class TestVolatility(object):
@@ -582,6 +874,7 @@ class TestVolatility(object):
         m.set_machine({})
         m.run()
         p.assert_called_once_with(filepath, "profile0")
+        shutil.rmtree(cwd())
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_vm_osprofile(self, p):
@@ -601,6 +894,7 @@ class TestVolatility(object):
         })
         m.run()
         p.assert_called_once_with(filepath, "profile1")
+        shutil.rmtree(cwd())
 
     def test_empty_profile(self):
         with pytest.raises(CuckooOperationalError) as e:
@@ -657,6 +951,7 @@ class TestVolatility(object):
         assert m.enabled("psxview", []) is False
         assert m.enabled("sockscan", ["winxp"]) is False
         assert m.enabled("netscan", ["vista", "win7"]) is False
+        shutil.rmtree(cwd())
 
     def test_s(self):
         assert obj_s(1) == "1"
@@ -687,6 +982,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine["name"] == "cuckoo1"
         assert rp.machine["label"] == "cuckoo1"
         assert rp.machine["ip"] == "192.168.56.101"
+        shutil.rmtree(cwd())
 
     def test_machine_info_cuckoo2(self):
         set_cwd(tempfile.mkdtemp())
@@ -703,6 +999,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine == {
             "name": "cuckoo2",
         }
+        shutil.rmtree(cwd())
 
 class TestBehavior(object):
     def test_process_tree_regular(self):
@@ -801,6 +1098,7 @@ class TestBehavior(object):
         assert sorted(list(ba._enum_logs())) == [
             cwd("logs", "2.txt", analysis=1),
         ]
+        shutil.rmtree(cwd())
 
     def test_extract_scripts(self):
         set_cwd(tempfile.mkdtemp())
@@ -853,6 +1151,7 @@ class TestBehavior(object):
         }]
         assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
         assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+        shutil.rmtree(cwd())
 
     def test_stap_log(self):
         set_cwd(tempfile.mkdtemp())
@@ -951,6 +1250,7 @@ class TestBehavior(object):
                 "track": True
             }],
         }
+        shutil.rmtree(cwd())
 
 class TestPcap(object):
     @classmethod
@@ -958,6 +1258,10 @@ class TestPcap(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
+
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(cwd())
 
     def test_dns_server_list(self):
         assert self.pcap["dns_servers"] == ["8.8.8.8"]
@@ -1134,6 +1438,7 @@ class TestPcapAdditional(object):
             "dst": "4.5.6.7",
         }, dpkt.icmp.ICMP(str(pkt)))
         assert len(p.icmp_requests) == 1
+        shutil.rmtree(cwd())
 
     def test_no_sorted_pcap(self):
         set_cwd(tempfile.mkdtemp())
@@ -1154,6 +1459,7 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert not os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+        shutil.rmtree(cwd())
 
     def test_yes_sorted_pcap(self):
         set_cwd(tempfile.mkdtemp())
@@ -1174,6 +1480,7 @@ class TestPcapAdditional(object):
         na.set_path(cwd(analysis=1))
         na.run()
         assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
+        shutil.rmtree(cwd())
 
     def test_duplicate_dns_requests(self):
         results = Pcap(
@@ -1210,11 +1517,13 @@ class TestPcapAdditional(object):
         na.set_options({})
         na.run()
         p.warning.assert_not_called()
+        shutil.rmtree(cwd())
 
 class TestPcap2(object):
     def test_smtp_ex(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/smtp.pcap", None, _tmp_dir
         ).run()
 
         assert len(obj["smtp_ex"]) == 1
@@ -1230,20 +1539,25 @@ class TestPcap2(object):
         assert obj["smtp_ex"][0]["resp"]["banner"] == (
             "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
         )
+        shutil.rmtree(_tmp_dir)
 
     def test_http_status(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/status-code.pcap", None, _tmp_dir
         ).run()
         assert len(obj["http_ex"]) == 1
         assert not obj["https_ex"]
         assert obj["http_ex"][0]["status"] == 301
+        shutil.rmtree(_tmp_dir)
 
     def test_http_nostatus(self):
+        _tmp_dir = tempfile.mkdtemp()
         obj = Pcap2(
-            "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/not-http.pcap", None, _tmp_dir
         ).run()
         assert len(obj["http_ex"]) == 1
+        shutil.rmtree(_tmp_dir)
 
 @mock.patch("os.remove")
 def test_sort_pcap_rm_temp(p):
@@ -1288,6 +1602,166 @@ def test_parse_cmdline():
     assert rb.parse_cmdline(u"stuff.exe \u4404\u73a8 \uecbc\uee9e") == (
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
+
+def test_pe_crash_001():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-dbbbc96f03e71e0e976cb704377446d4.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
+
+def test_pe_crash_002():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-a217f283037b8793d60a5e98ceb68432.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "partial"
+
+def test_pe_crash_003():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-7f10b354da0347b500fc75d574f7e264.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "partial"
+
+def test_pe_crash_004():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-2b4671309bf5c50a99cd32e70f3dabfe.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
+
+def test_pe_crash_005():
+    pe = PortableExecutable(
+        'tests/files/pe/crash-5f666d19434a8c31e03f701239d8179b.exe'
+    )
+    obj = pe.run()
+    assert obj["status"] == "error"
+
+def test_pdf_crash_001():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-f96dd7b08b034749b13655df1c651810.pdf'
+    )
+    obj, = pdf.run()
+    assert obj["status"] == "partial"
+
+def test_pdf_crash_002():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-c334315afc379537117339f56dc90f4d.pdf'
+    )
+    obj, = pdf.run()
+    assert obj["status"] == "partial"
+
+def test_pdf_crash_003():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-a43522520333fc9fe11f00dfd722bcb5.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "error"
+
+def test_pdf_crash_004():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-cd50feace1638e2870481d4dda5ea8a0.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "error"
+
+def test_pdf_crash_005():
+    pdf = PdfDocument(
+        'tests/files/pdf/crash-f6fc219e3f063d0a4adca9325ab83f99.pdf'
+    )
+    result = pdf.run()
+    assert len(result) == 1
+    assert result[0]["status"] == "partial"
+
+def test_lnk_crash_001():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-c7b138ad498c313b071af245d16dfda3.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-c7b138ad498c313b071af245d16dfda3.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
+def test_lnk_crash_002():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-2800116be97370dda1dc2fa7aa0b76a8.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-2800116be97370dda1dc2fa7aa0b76a8.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
+def test_lnk_crash_003():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-986986f3bfae306ac9a1fc2134f544a7.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-986986f3bfae306ac9a1fc2134f544a7.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
+def test_lnk_crash_004():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-d59b5cd2b9f6a92e8ce5fc50d3f67d79.lnk",
+    })
+    s.file_path = "tests/files/lnk/crash-d59b5cd2b9f6a92e8ce5fc50d3f67d79.lnk"
+    obj = s.run()["lnk"]
+    assert obj["status"] == "partial"
+
+def test_doc_crash_001():
+    # Fuzzed vbaProject.bin in zipped file
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-c714d165266927805c7b4efd78fd0627.doc",
+    })
+    s.file_path = "tests/files/vba/crash-c714d165266927805c7b4efd78fd0627.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
+def test_doc_crash_002():
+    # vbaProject.bin works too
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-b59e26f463592c129de30859d4f6d687.doc",
+    })
+    s.file_path = "tests/files/vba/crash-b59e26f463592c129de30859d4f6d687.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
+def test_doc_crash_003():
+    s = Static()
+    s.set_task({
+        "category": "file",
+        "package": "generic",
+        "target": "crash-fb81733ddb19cd594c0431d0d8ad4d61.doc",
+    })
+    s.file_path = "tests/files/vba/crash-fb81733ddb19cd594c0431d0d8ad4d61.doc"
+    obj = s.run()["office"]
+    assert obj["status"] == "error"
+
+def test_wsf_crash_001():
+    wsf = WindowsScriptFile("tests/files/wsf/crash-0d55c284df4ed683a4f4c30d44f282fc.wsf")
+    r = wsf.run()
+    assert len(r) == 0
+    # TODO: wsf class return a list with scripts, there is no way
+    # for putting status in there
+    #assert r["status"] == "success"
 
 def test_wsf_language():
     wsf = WindowsScriptFile(Files.temp_put(

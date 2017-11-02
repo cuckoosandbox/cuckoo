@@ -35,6 +35,7 @@ from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
+from cuckoo.common.exceptions import CuckooPartialStaticAnalysis
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch
 
@@ -66,6 +67,7 @@ class PortableExecutable(object):
         """@param file_path: file path."""
         self.file_path = file_path
         self.pe = None
+        self._partial_results = False
 
     def _get_filetype(self, data):
         """Gets filetype, uses libmagic if available.
@@ -117,12 +119,16 @@ class PortableExecutable(object):
 
         if hasattr(self.pe, "DIRECTORY_ENTRY_EXPORT"):
             for exported_symbol in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                exports.append({
-                    "address": hex(self.pe.OPTIONAL_HEADER.ImageBase +
-                                   exported_symbol.address),
-                    "name": exported_symbol.name,
-                    "ordinal": exported_symbol.ordinal,
-                })
+                if exported_symbol.address:
+                    exports.append({
+                        "address": hex(
+                            self.pe.OPTIONAL_HEADER.ImageBase + exported_symbol.address
+                        ),
+                        "name": exported_symbol.name,
+                        "ordinal": exported_symbol.ordinal,
+                    })
+                else:
+                    self._partial_results = True
 
         return exports
 
@@ -248,10 +254,12 @@ class PortableExecutable(object):
     def _get_signature(self):
         """If this executable is signed, get its signature(s)."""
         dir_index = pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_SECURITY"]
-        if len(self.pe.OPTIONAL_HEADER.DATA_DIRECTORY) < dir_index:
+        try:
+            dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
+        except IndexError:
+            self._partial_results = True
             return []
 
-        dir_entry = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[dir_index]
         if not dir_entry or not dir_entry.VirtualAddress or not dir_entry.Size:
             return []
 
@@ -302,12 +310,15 @@ class PortableExecutable(object):
         @return: analysis results dict or None.
         """
         if not os.path.exists(self.file_path):
-            return {}
+            return {"status": "error"}
 
         try:
             self.pe = pefile.PE(self.file_path)
         except pefile.PEFormatError:
-            return {}
+            return {"status": "error"}
+        except Exception as e:
+            log.exception("Can not process PE file")
+            return {"status": "error"}
 
         results = {}
         results["peid_signatures"] = self._get_peid_signatures()
@@ -321,6 +332,9 @@ class PortableExecutable(object):
         results["pdb_path"] = self._get_pdb_path()
         results["signature"] = self._get_signature()
         results["imported_dll_count"] = len([x for x in results["pe_imports"] if x.get("dll")])
+
+        results["status"] = "partial" if self._partial_results else "success"
+
         return results
 
 class WindowsScriptFile(object):
@@ -443,6 +457,9 @@ class WindowsScriptFile(object):
             # Decode JScript.Encode encoding.
             if language in ("jscript.encode", "vbscript.encode"):
                 source = self.decode(source)
+            if not source:
+                # the block between <script ...> </script> was empty
+                continue
 
             ret.append(to_unicode(source))
 
@@ -476,7 +493,7 @@ class OfficeDocument(object):
         try:
             p = oletools.olevba.VBA_Parser(self.filepath)
         except TypeError:
-            return
+            raise CuckooPartialStaticAnalysis("Can not parse VBA")
 
         # We're not interested in plaintext.
         if p.type == "Text":
@@ -495,6 +512,7 @@ class OfficeDocument(object):
                 "Error extracting macros from office document (this is an "
                 "issue with oletools - please report upstream): %s", e
             )
+            yield {"status": "error"}
 
     def deobfuscate(self, code):
         """Bruteforce approach of regex-based deobfuscation."""
@@ -529,11 +547,16 @@ class OfficeDocument(object):
 
     def run(self):
         self.unpack_docx()
+        ret = {"status": "success", "macros": [], "eps": []}
+        try:
+            ret.update({
+                "macros": list(self.get_macros()),
+                "eps": self.extract_eps(),
+            })
+        except Exception as e:
+            ret["status"] = "error"
 
-        return {
-            "macros": list(self.get_macros()),
-            "eps": self.extract_eps(),
-        }
+        return ret
 
 class PdfDocument(object):
     """Static analysis of PDF documents."""
@@ -591,12 +614,14 @@ class PdfDocument(object):
             return
 
         ref = obj.object.elements["/JS"]
-
-        if ref.id not in f.body[version].objects:
+        if not hasattr(ref, "id") or ref.id not in f.body[version].objects:
             log.warning("PDFObject: Reference is broken, can't follow")
-            return
+            raise CuckooPartialStaticAnalysis
 
         obj = f.body[version].objects[ref.id]
+        if not hasattr(obj.object, 'decodedStream'):
+            raise CuckooPartialStaticAnalysis
+
         return {
             "orig_code": obj.object.decodedStream,
             "beautified": jsbeautify(obj.object.decodedStream),
@@ -650,28 +675,44 @@ class PdfDocument(object):
             return action.value
 
         if isinstance(action, peepdf.PDFCore.PDFReference):
-            referenced = f.body[version].objects[action.id]
-            if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
-                obj = referenced.object
-                if isinstance(obj, peepdf.PDFCore.PDFDictionary):
-                    return obj.value
+            try:
+                referenced = f.body[version].objects[action.id]
+                if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
+                    obj = referenced.object
+                    if isinstance(obj, peepdf.PDFCore.PDFDictionary):
+                        return obj.value
+            except KeyError:
+                # Malformed/damaged PDF may have refeneces to objects we don't have
+                raise CuckooPartialStaticAnalysis
 
         return None
 
     def run(self):
         p = peepdf.PDFCore.PDFParser()
-        r, f = p.parse(
-            self.filepath, forceMode=True,
-            looseMode=True, manualAnalysis=False
-        )
+        try:
+            r, f = p.parse(
+                self.filepath, forceMode=True,
+                looseMode=True, manualAnalysis=False
+            )
+        except Exception as e:
+            log.exception("PDF parser exception")
+            r = 999
+
         if r:
             log.warning("Error parsing PDF file, error code %s", r)
-            return
+            return [{"status": "error"}]
 
         ret = []
 
         for version in xrange(f.updates + 1):
-            md = f.getBasicMetadata(version)
+            try:
+                md = f.getBasicMetadata(version)
+            except Exception as e:
+                log.exception("Can not get basic metadata for this PDF file")
+                ret.append({"status": "error",
+                            "version": version})
+                continue
+
             row = {
                 "version": version,
                 "creator": self._sanitize(md, "creator"),
@@ -685,16 +726,23 @@ class PdfDocument(object):
                 "urls": [],
                 "attachments": [],
                 "openaction": None,
+                "status": "success",
             }
 
             for obj in f.body[version].objects.values():
-                action = self.get_openaction(obj, f, version)
-                if action:
-                    row["openaction"] = action
+                try:
+                    action = self.get_openaction(obj, f, version)
+                    if action:
+                        row["openaction"] = action
+                except CuckooPartialStaticAnalysis:
+                    row["status"] = "partial"
 
-                js = self.get_javascript(obj, f, version)
-                if js:
-                    row["javascript"].append(js)
+                try:
+                    js = self.get_javascript(obj, f, version)
+                    if js:
+                        row["javascript"].append(js)
+                except CuckooPartialStaticAnalysis:
+                    row["status"] = "partial"
 
                 att = self.get_attachments(obj, f, version)
                 if att:
@@ -726,36 +774,49 @@ class LnkShortcut(object):
     def __init__(self, filepath):
         self.filepath = filepath
 
+    def _validate_offset(self, offset, name="default"):
+        if offset > self.buf_size:
+            raise CuckooPartialStaticAnalysis(
+                "Malformed .lnk file: offset {} out of bound {} (name)".format(
+                    offset, self.buf_size, name)
+            )
+
     def read_uint16(self, offset):
+        self._validate_offset(offset, "uint16")
         return struct.unpack("H", self.buf[offset:offset+2])[0]
 
     def read_uint32(self, offset):
+        self._validate_offset(offset, "uint32")
         return struct.unpack("I", self.buf[offset:offset+4])[0]
 
     def read_stringz(self, offset):
+        self._validate_offset(offset, "stringz")
         return self.buf[offset:self.buf.index("\x00", offset)]
 
     def read_string16(self, offset):
+        self._validate_offset(offset, "string16")
         length = self.read_uint16(offset) * 2
         ret = self.buf[offset+2:offset+2+length].decode("utf16")
         return offset + 2 + length, ret
 
     def run(self):
         self.buf = buf = open(self.filepath, "rb").read()
-        if len(buf) < ctypes.sizeof(LnkHeader):
+        self.buf_size = len(self.buf)
+        if self.buf_size < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
-            return
+            return {"status": "error"}
 
         header = LnkHeader.from_buffer_copy(buf[:ctypes.sizeof(LnkHeader)])
         if header.signature[:] != self.signature:
-            return
+            return {"status": "error"}
 
         if header.guid[:] != self.guid:
-            return
+            return {"status": "error"}
 
         ret = {
             "flags": {},
-            "attrs": []
+            "attrs": [],
+            "status": "success"
         }
 
         for x in xrange(7):
@@ -766,33 +827,52 @@ class LnkShortcut(object):
                 ret["attrs"].append(self.attrs[x])
 
         offset = 78 + self.read_uint16(76)
-        off = LnkEntry.from_buffer_copy(buf[offset:offset+28])
+        upper_offset = offset+28
+        try:
+            self._validate_offset(upper_offset, "from_buffer_copy")
+            off = LnkEntry.from_buffer_copy(buf[offset:upper_offset])
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
 
-        # Local volume.
-        if off.volume_flags & 1:
-            ret["basepath"] = self.read_stringz(offset + off.base_path)
-        # Network volume.
-        else:
-            ret["net_share"] = self.read_stringz(offset + off.net_volume + 20)
-            network_drive = self.read_uint32(offset + off.net_volume + 12)
-            if network_drive:
-                ret["network_drive"] = self.read_stringz(
-                    offset + network_drive
-                )
+        try:
+            # Local volume.
+            if off.volume_flags & 1:
+                ret["basepath"] = self.read_stringz(offset + off.base_path)
+            # Network volume.
+            else:
+                ret["net_share"] = self.read_stringz(offset + off.net_volume + 20)
+                network_drive = self.read_uint32(offset + off.net_volume + 12)
+                if network_drive:
+                    ret["network_drive"] = self.read_stringz(
+                        offset + network_drive
+                    )
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
+        try:
+            ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
+        except CuckooPartialStaticAnalysis:
+            ret["status"] = "partial"
+            return ret
 
-        ret["remaining_path"] = self.read_stringz(offset + off.path_remainder)
+        try:
+            extra = offset + off.length
 
-        extra = offset + off.length
-        if ret["flags"]["description"]:
-            extra, ret["description"] = self.read_string16(extra)
-        if ret["flags"]["relapath"]:
-            extra, ret["relapath"] = self.read_string16(extra)
-        if ret["flags"]["workingdir"]:
-            extra, ret["workingdir"] = self.read_string16(extra)
-        if ret["flags"]["cmdline"]:
-            extra, ret["cmdline"] = self.read_string16(extra)
-        if ret["flags"]["icon"]:
-            extra, ret["icon"] = self.read_string16(extra)
+            self._validate_offset(extra, "extra")
+            if ret["flags"]["description"]:
+                extra, ret["description"] = self.read_string16(extra)
+            if ret["flags"]["relapath"]:
+                extra, ret["relapath"] = self.read_string16(extra)
+            if ret["flags"]["workingdir"]:
+                extra, ret["workingdir"] = self.read_string16(extra)
+            if ret["flags"]["cmdline"]:
+                extra, ret["cmdline"] = self.read_string16(extra)
+            if ret["flags"]["icon"]:
+                extra, ret["icon"] = self.read_string16(extra)
+        except (UnicodeDecodeError, CuckooPartialStaticAnalysis):
+            ret["status"] = "partial"
+
         return ret
 
 class ELF(object):

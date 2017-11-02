@@ -5,6 +5,7 @@
 import io
 import json
 import os.path
+import shutil
 import tempfile
 import time
 import werkzeug
@@ -13,7 +14,7 @@ from cuckoo.apps import api
 from cuckoo.common.files import Files, temppath
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
 
 db = Database()
 
@@ -25,6 +26,9 @@ class TestAPI(object):
 
         api.app.config["TESTING"] = True
         self.app = api.app.test_client()
+
+    def teardown(self):
+        shutil.rmtree(cwd())
 
     def test_list_tasks(self):
         # Test an empty task list.
