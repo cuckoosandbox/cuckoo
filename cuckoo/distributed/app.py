@@ -11,9 +11,6 @@ from cuckoo.distributed.misc import settings, init_settings
 from cuckoo.distributed.views import blueprints
 from cuckoo.misc import cwd
 
-# aliases the current working folder
-app_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-
 def create_app():
     app = flask.Flask(
         "Distributed Cuckoo",

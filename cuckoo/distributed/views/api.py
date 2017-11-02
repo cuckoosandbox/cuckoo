@@ -401,33 +401,27 @@ def status_get():
 @blueprint.route("/stats/<string:end_date>")
 @blueprint.route("/stats/<string:end_date>/<string:end_time>")
 def stats_get(end_date=None, end_time=None):
-    """Returns a JSON answer containing stats over time. These stats
-    are intended to be used in a graph. If no data is available for a point
-    in time, it will not be inserted. The 'include' GET param can be
-    used to select specific statistics keys"""
+    """Returns JSON containing performance metrics over time. Optionally may
+    provide 'include' GET parameter for selecting specific results."""
 
     if end_date:
         try:
-            _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
             return json_error(
-                500, "Given date does not match format YYYY-M-D"
+                500, "Given date does not match format YYYY-MM-DD"
             )
-
-        if end_time:
-            try:
-                _end_date = datetime.datetime.combine(
-                    _end_date,
-                    datetime.datetime.strptime(end_time, "%H:%M").time()
-                )
-            except ValueError:
-                return json_error(
-                    500, "Given time does not match format HH:MM"
-                )
-
-        end_date = _end_date
     else:
         end_date = datetime.datetime.now().replace(second=0, microsecond=0)
+
+    if end_time:
+        try:
+            t = datetime.datetime.strptime(end_time, "%H:%M").time()
+            end_date = datetime.datetime.combine(end_date, t)
+        except ValueError:
+            return json_error(
+                500, "Given time does not match format HH:MM"
+            )
 
     stat_handlers = {
         "task_completed": _summarize_task_completed,
@@ -455,42 +449,41 @@ def stats_get(end_date=None, end_time=None):
         },
     }
 
-    statistics = {}
-    use_handlers = stat_handlers.keys()
+    handlers = stat_handlers.keys()
     if request.args.get("include"):
-        use_handlers = request.args.get("include").split(",")
-        for use in use_handlers:
-            if use not in stat_handlers:
+        handlers = request.args.get("include").split(",")
+        for handler in handlers:
+            if handler not in stat_handlers:
                 return json_error(
-                    404, message="Unknown statistics key '%s'" % use
+                    500, "Unknown statistics key '%s'" % handler
                 )
 
     if request.args.get("period"):
-        _steps = {}
+        new_steps = {}
         periods = request.args.get("period").split(",")
         for period in periods:
             if period not in steps:
-                return json_error(404, message="Unknown period key. "
-                                               "Available keys \'%s\'"
-                                               % steps.keys())
-            _steps[period] = steps[period]
-        steps = _steps
+                return json_error(500, "Unknown period key '%s'" % period)
+            new_steps[period] = steps[period]
+        steps = new_steps
 
-    e_nodes = Node.query.filter_by(enabled=True).all()
     if request.args.get("nodes"):
         nodes = []
         for node in request.args.get("nodes").split(","):
-            node = Node.query.filter(Node.name == node).first()
+            node = Node.query.filter_by(name=node).first()
             if node:
                 nodes.append(node)
     else:
-        nodes = e_nodes
+        nodes = Node.query.filter_by(enabled=True).all()
 
-    statistics["nodes"] = []
-    for node in e_nodes:
+    statistics = {
+        "nodes": [],
+    }
+
+    for node in nodes:
         statistics["nodes"].append(node.name)
 
-    for name in use_handlers:
+    for name in handlers:
         if name in stat_handlers:
             statistics[name] = stat_handlers[name](end_date, steps, nodes)
 

@@ -4,8 +4,8 @@
 
 import datetime
 
-from cuckoo.misc import cwd
 from cuckoo.common.utils import Singleton
+from cuckoo.misc import cwd
 
 class settings(object):
     """Settings object containing the various configurable components of
@@ -27,9 +27,7 @@ class StatsCache(object):
     The key can contain a given str prefix. A step size is an int representing
     an amount of minutes to which a given datetime will be rounded.
 
-    Cache will be cleared after max_cached_days has passed
-
-    This obj is a singleton
+    Cache entries will be cleared after max_cached_days have passed.
     """
 
     __metaclass__ = Singleton
