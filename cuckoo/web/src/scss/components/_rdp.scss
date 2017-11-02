@@ -7,6 +7,20 @@ $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC: #6D6D6D;
 $RDP_APP_TOOLBAR_ICON_COLOR: #1E3C73;
 $RDP_APP_CREDIT_BGC: #383838;
 
+@keyframes SnapshotShutter {
+  0% {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+  }
+  25% {
+    background-color: #fff;
+    box-shadow: 0px 2px 0px rgba(0,0,0,.5);
+  }
+  100% {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+    box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_BGC, 30%);
+  }
+}
+
 // rdp toolbar button element style
 %rdp-toolbar-button {
   -webkit-appearance: none;
@@ -162,7 +176,7 @@ $RDP_APP_CREDIT_BGC: #383838;
       .button-badge {
         position: absolute;
         z-index: 3;
-        top: -5px;
+        top: -13px;
         right: -5px;
         text-align: center;
         min-width: 20px;
@@ -220,6 +234,14 @@ $RDP_APP_CREDIT_BGC: #383838;
 
       &:first-child { margin-top: 0; }
       &:last-child { margin-bottom: 0; }
+
+      // handle a shutter animation for nice-eys.
+      &.shutter-in {
+        animation: SnapshotShutter;
+        animation-duration: 1500ms;
+        animation-iteration-count: 1;
+        pointer-events: none;
+      }
 
     }
 

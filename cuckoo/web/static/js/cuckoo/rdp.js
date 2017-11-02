@@ -280,7 +280,7 @@ var RDPToolbarButton = function (_Hookable) {
     _this.client = conf.client;
     _this.holdToggle = conf.holdToggle || false;
     _this.toggled = _this.$.hasClass('active');
-    _this.disabled = !!_this.$.attr('disabled');
+    _this.isDisabled = !!_this.$.attr('disabled');
 
     _this.hooks = {
       click: [],
@@ -315,6 +315,7 @@ var RDPToolbarButton = function (_Hookable) {
         this.$.prop('disabled', _disable);
       }
 
+      this.disabled = this.$.prop('disabled');
       this.dispatchHook('disabled');
     }
   }]);
@@ -356,6 +357,21 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
       setTimeout(function () {
         return _this3.$.find('button').removeClass('shutter-in');
       }, 1500);
+    }
+
+    // litte changes in the disable method for this button, as the $ is not a button.
+
+  }, {
+    key: 'disable',
+    value: function disable(_disable2) {
+      if (_disable2 === undefined) {
+        this.$.find('button').prop('disabled', !!this.disabled);
+      } else {
+        this.$.find('button').prop('disabled', _disable2);
+      }
+
+      this.isDisabled = this.$.find('button').prop('disabled');
+      this.dispatchHook('disabled', this.isDisabled);
     }
   }]);
 
