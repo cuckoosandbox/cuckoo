@@ -57,17 +57,32 @@ class RDPSnapshotButton extends RDPToolbarButton {
     this.$ = this.$.parent();
   }
 
-  update() {
+  update(isRemoved = false) {
 
     let total = this.client.snapshots.total();
     this.$.find('.button-badge').text(total);
 
-    if(total <= 3) {
-      this.$.find(`.ss-v-e-${total}`).addClass('in');
-    }
+    if(!isRemoved) {
 
-    this.$.find('button').addClass('shutter-in');
-    setTimeout(() => this.$.find('button').removeClass('shutter-in'), 1500);
+      if(total <= 3) {
+        this.$.find(`.ss-v-e-${total}`).addClass('in');
+      }
+
+      this.$.find('button').addClass('shutter-in');
+      setTimeout(() => this.$.find('button').removeClass('shutter-in'), 1500);
+
+    } else {
+
+      // this is something that could be done better, but works for now.
+      if(total == 2) this.$.find(`.ss-v-e-3`).removeClass('in');
+      if(total == 1) this.$.find('.ss-v-e-2').removeClass('in');
+      if(total == 0) {
+        this.$.find('.ss-v-e-1').removeClass('in');
+        this.$.find('.button-badge').text('');
+      }
+
+
+    }
 
   }
 
