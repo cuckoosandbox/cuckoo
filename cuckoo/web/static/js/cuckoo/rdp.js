@@ -207,8 +207,6 @@ var RDPSnapshotService = function (_Hookable2) {
       this.count = this.count + 1;
       this.bar.add(s);
       this.dispatchHook('create', s);
-
-      console.log(this.count);
     }
   }, {
     key: 'remove',
@@ -221,7 +219,6 @@ var RDPSnapshotService = function (_Hookable2) {
 
       if (pos !== false) {
         this.snapshots.splice(pos, 1);
-        console.log(this);
       }
 
       this.dispatchHook('remove', {});
