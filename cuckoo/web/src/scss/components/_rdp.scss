@@ -74,6 +74,8 @@ $RDP_APP_CREDIT_BGC: #383838;
       flex-direction: column;
       flex-basis: 128px;
       background-color: $RDP_APP_CONTROLS_BGC;
+      flex-shrink: 0;
+      flex-grow: 0;
     }
 
     &__header {
@@ -123,26 +125,38 @@ $RDP_APP_CREDIT_BGC: #383838;
       span[class^="ss-v-e-"] {
         position: absolute;
         height: 3px;
-        width: 66px;
-        z-index: 1;
+        top: 0;
+        opacity: 0;
+        width: 75px;
+        pointer-events: none;
+        transition: top 250ms linear,
+                    opacity 250ms linear;
+
+        &.in { opacity: 1; }
 
         &.ss-v-e-1 {
           left: 6px;
-          top: -3px;
           background-color: #D8D8D8;
+          z-index: 3;
+          &.in { top: -3px; }
         }
         &.ss-v-e-2 {
-          width: 58px;
+          width: 67px;
           left: 10px;
-          top: -6px;
+          z-index: 2;
           background-color: #A9A9A9;
+
+          &.in { top: -6px; }
         }
         &.ss-v-e-3 {
-          width: 52px;
+          width: 60px;
           left: 13px;
-          top: -9px;
+          z-index: 1;
           background-color: #616060;
+
+          &.in { top: -9px; }
         }
+
       }
 
       .button-badge {
@@ -163,6 +177,10 @@ $RDP_APP_CREDIT_BGC: #383838;
         border-radius: 50px;
         padding: 0 5px;
         box-shadow: 0px 2px 4px rgba(0,0,0,.75);
+
+        &:empty {
+          display: none;
+        }
       }
 
     }

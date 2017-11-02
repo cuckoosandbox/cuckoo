@@ -50,9 +50,22 @@ class RDPToolbarButton extends Hookable {
 // variety: snapshot button, contains some controls for the graphical
 // enhancemants that come with it.
 class RDPSnapshotButton extends RDPToolbarButton {
+
   constructor(element, conf = {}) {
     super(element, conf);
+    this.$ = this.$.parent();
   }
+
+  update() {
+    let total = this.client.snapshots.total();
+    this.$.find('.button-badge').text(total);
+
+    if(total <= 3) {
+      this.$.find(`.ss-v-e-${total}`).addClass('in');
+    }
+
+  }
+
 }
 
 export { RDPToolbarButton, RDPSnapshotButton };

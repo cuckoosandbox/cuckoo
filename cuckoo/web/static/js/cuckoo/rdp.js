@@ -114,6 +114,86 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Hookable2 = require('./Hookable');
+
+var _Hookable3 = _interopRequireDefault(_Hookable2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// general index counter for snapshots, used for making id's
+var snapshotCounter = 0;
+
+// defines a snapshot
+
+var RDPSnapshot = function RDPSnapshot() {
+  _classCallCheck(this, RDPSnapshot);
+
+  this.id = snapshotCounter;
+};
+
+// exports the service for importing externally
+
+
+var RDPSnapshotService = function (_Hookable) {
+  _inherits(RDPSnapshotService, _Hookable);
+
+  function RDPSnapshotService(client) {
+    _classCallCheck(this, RDPSnapshotService);
+
+    var _this = _possibleConstructorReturn(this, (RDPSnapshotService.__proto__ || Object.getPrototypeOf(RDPSnapshotService)).call(this));
+
+    _this.client = client;
+    _this.snapshots = [];
+
+    _this.hooks = {
+      create: [],
+      remove: []
+    };
+
+    return _this;
+  }
+
+  _createClass(RDPSnapshotService, [{
+    key: 'create',
+    value: function create() {
+      snapshotCounter += 1;
+      var s = new RDPSnapshot();
+      this.snapshots.push(s);
+      this.dispatchHook('create', s);
+      return s;
+    }
+  }, {
+    key: 'remove',
+    value: function remove(id) {
+      this.dispatchHook('remove');
+    }
+  }, {
+    key: 'total',
+    value: function total() {
+      return this.snapshots.length;
+    }
+  }]);
+
+  return RDPSnapshotService;
+}(_Hookable3.default);
+
+exports.default = RDPSnapshotService;
+
+},{"./Hookable":1}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _Hookable2 = require('./Hookable');
 
 var _Hookable3 = _interopRequireDefault(_Hookable2);
@@ -151,7 +231,7 @@ var RDPToolbar = function (_Hookable) {
       return console.log('fullscreen');
     });
     _this.buttons.snapshot.on('click', function () {
-      return console.log('make a snapshot');
+      return _this.client.snapshots.create();
     });
     _this.buttons.control.on('toggle', function (toggled) {
       return console.log('control is toggled to ' + toggled);
@@ -171,7 +251,7 @@ var RDPToolbar = function (_Hookable) {
 
 exports.default = RDPToolbar;
 
-},{"./Hookable":1,"./RDPToolbarButton":3}],3:[function(require,module,exports){
+},{"./Hookable":1,"./RDPToolbarButton":4}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -262,8 +342,23 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 
     _classCallCheck(this, RDPSnapshotButton);
 
-    return _possibleConstructorReturn(this, (RDPSnapshotButton.__proto__ || Object.getPrototypeOf(RDPSnapshotButton)).call(this, element, conf));
+    var _this2 = _possibleConstructorReturn(this, (RDPSnapshotButton.__proto__ || Object.getPrototypeOf(RDPSnapshotButton)).call(this, element, conf));
+
+    _this2.$ = _this2.$.parent();
+    return _this2;
   }
+
+  _createClass(RDPSnapshotButton, [{
+    key: 'update',
+    value: function update() {
+      var total = this.client.snapshots.total();
+      this.$.find('.button-badge').text(total);
+
+      if (total <= 3) {
+        this.$.find('.ss-v-e-' + total).addClass('in');
+      }
+    }
+  }]);
 
   return RDPSnapshotButton;
 }(RDPToolbarButton);
@@ -271,7 +366,7 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 exports.RDPToolbarButton = RDPToolbarButton;
 exports.RDPSnapshotButton = RDPSnapshotButton;
 
-},{"./Hookable":1}],4:[function(require,module,exports){
+},{"./Hookable":1}],5:[function(require,module,exports){
 'use strict';
 
 var _Hookable2 = require('./Hookable');
@@ -281,6 +376,10 @@ var _Hookable3 = _interopRequireDefault(_Hookable2);
 var _RDPToolbar = require('./RDPToolbar');
 
 var _RDPToolbar2 = _interopRequireDefault(_RDPToolbar);
+
+var _RDPSnapshotService = require('./RDPSnapshotService');
+
+var _RDPSnapshotService2 = _interopRequireDefault(_RDPSnapshotService);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -301,7 +400,14 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
+    _this.snapshots = new _RDPSnapshotService2.default(_this);
     _this.toolbar = new _RDPToolbar2.default(_this);
+
+    // bind snapshot interactions
+    _this.snapshots.on('create', function (snapshot) {
+      _this.toolbar.buttons.snapshot.update();
+    });
+
     return _this;
   }
 
@@ -318,7 +424,7 @@ $(function () {
   }
 });
 
-},{"./Hookable":1,"./RDPToolbar":2}]},{},[4])
+},{"./Hookable":1,"./RDPSnapshotService":2,"./RDPToolbar":3}]},{},[5])
 
 
 //# sourceMappingURL=rdp.js.map
