@@ -128,19 +128,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// general index counter for snapshots, used for making id's
-var snapshotCounter = 0;
+var Snapshot = function Snapshot(id) {
+  _classCallCheck(this, Snapshot);
 
-// defines a snapshot
-
-var RDPSnapshot = function RDPSnapshot() {
-  _classCallCheck(this, RDPSnapshot);
-
-  this.id = snapshotCounter;
+  this.id = 0;
 };
-
-// exports the service for importing externally
-
 
 var RDPSnapshotService = function (_Hookable) {
   _inherits(RDPSnapshotService, _Hookable);
@@ -152,6 +144,7 @@ var RDPSnapshotService = function (_Hookable) {
 
     _this.client = client;
     _this.snapshots = [];
+    _this.count = 0;
 
     _this.hooks = {
       create: [],
@@ -164,16 +157,15 @@ var RDPSnapshotService = function (_Hookable) {
   _createClass(RDPSnapshotService, [{
     key: 'create',
     value: function create() {
-      snapshotCounter += 1;
-      var s = new RDPSnapshot();
+      var s = new Snapshot(this.count);
       this.snapshots.push(s);
+      this.count++;
       this.dispatchHook('create', s);
-      return s;
     }
   }, {
     key: 'remove',
-    value: function remove(id) {
-      this.dispatchHook('remove');
+    value: function remove() {
+      this.dispatchHook('remove', {});
     }
   }, {
     key: 'total',
@@ -351,12 +343,19 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
   _createClass(RDPSnapshotButton, [{
     key: 'update',
     value: function update() {
+      var _this3 = this;
+
       var total = this.client.snapshots.total();
       this.$.find('.button-badge').text(total);
 
       if (total <= 3) {
         this.$.find('.ss-v-e-' + total).addClass('in');
       }
+
+      this.$.find('button').addClass('shutter-in');
+      setTimeout(function () {
+        return _this3.$.find('button').removeClass('shutter-in');
+      }, 1500);
     }
   }]);
 
