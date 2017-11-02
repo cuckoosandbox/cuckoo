@@ -116,17 +116,51 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Hookable2 = require('./Hookable');
+var _Hookable3 = require('./Hookable');
 
-var _Hookable3 = _interopRequireDefault(_Hookable2);
+var _Hookable4 = _interopRequireDefault(_Hookable3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var SnapshotBar = function (_Hookable) {
+  _inherits(SnapshotBar, _Hookable);
+
+  function SnapshotBar(el, service) {
+    _classCallCheck(this, SnapshotBar);
+
+    var _this = _possibleConstructorReturn(this, (SnapshotBar.__proto__ || Object.getPrototypeOf(SnapshotBar)).call(this));
+
+    _this.$ = el;
+    _this.service = service;
+    _this.hooks = {
+      'added': [],
+      'removed': []
+    };
+
+    return _this;
+  }
+
+  // adds an item to the bar
+
+
+  _createClass(SnapshotBar, [{
+    key: 'add',
+    value: function add(s) {
+      var template = '\n      <li data-snapshot-id="' + s.id + '">\n        <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>\n        <div class="rdp-snapshots--controls">\n          <a href="#"><i class="fa fa-remove"></i></a>\n        </div>\n      </li>\n    ';
+
+      // append this to the list
+      this.$.prepend(template);
+    }
+  }]);
+
+  return SnapshotBar;
+}(_Hookable4.default);
 
 var Snapshot = function Snapshot(id) {
   _classCallCheck(this, Snapshot);
@@ -134,24 +168,25 @@ var Snapshot = function Snapshot(id) {
   this.id = 0;
 };
 
-var RDPSnapshotService = function (_Hookable) {
-  _inherits(RDPSnapshotService, _Hookable);
+var RDPSnapshotService = function (_Hookable2) {
+  _inherits(RDPSnapshotService, _Hookable2);
 
   function RDPSnapshotService(client) {
     _classCallCheck(this, RDPSnapshotService);
 
-    var _this = _possibleConstructorReturn(this, (RDPSnapshotService.__proto__ || Object.getPrototypeOf(RDPSnapshotService)).call(this));
+    var _this2 = _possibleConstructorReturn(this, (RDPSnapshotService.__proto__ || Object.getPrototypeOf(RDPSnapshotService)).call(this));
 
-    _this.client = client;
-    _this.snapshots = [];
-    _this.count = 0;
+    _this2.client = client;
+    _this2.snapshots = [];
+    _this2.bar = new SnapshotBar(_this2.client.$.find('#rdp-snapshot-collection'), _this2);
+    _this2.count = 0;
 
-    _this.hooks = {
+    _this2.hooks = {
       create: [],
       remove: []
     };
 
-    return _this;
+    return _this2;
   }
 
   _createClass(RDPSnapshotService, [{
@@ -160,6 +195,7 @@ var RDPSnapshotService = function (_Hookable) {
       var s = new Snapshot(this.count);
       this.snapshots.push(s);
       this.count++;
+      this.bar.add(s);
       this.dispatchHook('create', s);
     }
   }, {
@@ -175,7 +211,7 @@ var RDPSnapshotService = function (_Hookable) {
   }]);
 
   return RDPSnapshotService;
-}(_Hookable3.default);
+}(_Hookable4.default);
 
 exports.default = RDPSnapshotService;
 
