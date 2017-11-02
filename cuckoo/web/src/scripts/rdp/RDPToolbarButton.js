@@ -11,7 +11,7 @@ class RDPToolbarButton extends Hookable {
     this.client = conf.client;
     this.holdToggle = conf.holdToggle || false;
     this.toggled = this.$.hasClass('active');
-    this.disabled = !!this.$.attr('disabled');
+    this.isDisabled = !!this.$.attr('disabled');
 
     this.hooks = {
       click: [],
@@ -42,6 +42,7 @@ class RDPToolbarButton extends Hookable {
       this.$.prop('disabled', disable);
     }
 
+    this.disabled = this.$.prop('disabled');
     this.dispatchHook('disabled');
   }
 
@@ -68,6 +69,18 @@ class RDPSnapshotButton extends RDPToolbarButton {
     this.$.find('button').addClass('shutter-in');
     setTimeout(() => this.$.find('button').removeClass('shutter-in'), 1500);
 
+  }
+
+  // litte changes in the disable method for this button, as the $ is not a button.
+  disable(disable) {
+    if(disable === undefined) {
+      this.$.find('button').prop('disabled', !!this.disabled);
+    } else {
+      this.$.find('button').prop('disabled', disable);
+    }
+
+    this.isDisabled = this.$.find('button').prop('disabled');
+    this.dispatchHook('disabled', this.isDisabled);
   }
 
 }

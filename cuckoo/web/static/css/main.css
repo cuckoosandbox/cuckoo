@@ -10668,6 +10668,34 @@ body.night .app-message {
   font-size: 12px;
 }
 
+@-webkit-keyframes SnapshotShutter {
+  0% {
+    background-color: #6297F8;
+  }
+  25% {
+    background-color: #fff;
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    background-color: #6297F8;
+    box-shadow: 0px 2px 0px #456aae;
+  }
+}
+
+@keyframes SnapshotShutter {
+  0% {
+    background-color: #6297F8;
+  }
+  25% {
+    background-color: #fff;
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    background-color: #6297F8;
+    box-shadow: 0px 2px 0px #456aae;
+  }
+}
+
 .rdp-toolbar button {
   -webkit-appearance: none;
   padding: 7px 5px 5px;
@@ -10852,7 +10880,7 @@ body.night .app-message {
 .rdp-toolbar > .button-fill .button-badge {
   position: absolute;
   z-index: 3;
-  top: -5px;
+  top: -13px;
   right: -5px;
   text-align: center;
   min-width: 20px;
@@ -10908,6 +10936,16 @@ body.night .app-message {
 
 .rdp-toolbar button:last-child {
   margin-bottom: 0;
+}
+
+.rdp-toolbar button.shutter-in {
+  -webkit-animation: SnapshotShutter;
+          animation: SnapshotShutter;
+  -webkit-animation-duration: 1500ms;
+          animation-duration: 1500ms;
+  -webkit-animation-iteration-count: 1;
+          animation-iteration-count: 1;
+  pointer-events: none;
 }
 
 .rdp-credits {
