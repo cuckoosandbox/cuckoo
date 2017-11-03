@@ -13,8 +13,8 @@ export const config = {
   },
   DEFAULTS: {
     PERIOD: 'week',
-    DATE: '2017-05-01',
-    TIME: 10,
+    DATE: false,
+    TIME: false,
     SYNC_MODE: true
   }
 }

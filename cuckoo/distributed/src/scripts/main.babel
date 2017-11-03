@@ -57,6 +57,12 @@ $(function() {
     let time = toolbar.find('select[name="toolbar-time"]');
     let toggle = $('#app-header input#sync-widgets');
 
+    // assign presets
+    if(config.DEFAULTS.TIME) time.val(config.DEFAULTS.TIME);
+    if(config.DEFAULTS.PERIOD) {
+      period.filter(`[value=${config.DEFAULTS.PERIOD}]`).prop('checked', true);
+    }
+
     let emitChange = (params) => UI.dispatchEvent('sync.change', {
       date: params.date || date.val(),
       period: params.period || period.val(),
@@ -75,7 +81,7 @@ $(function() {
     date.datepicker({
       dateFormat: 'yy-mm-dd',
       maxDate: new Date()
-    }).datepicker('setDate', new Date());
+    }).datepicker('setDate', config.DEFAULTS.DATE ? new Date(config.DEFAULTS.DATE) : new Date());
 
     // bind the listeners
     date.on('change', e => {
