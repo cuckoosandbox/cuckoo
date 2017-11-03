@@ -2312,6 +2312,7 @@ body {
     padding-bottom: 0;
     font-size: 14px;
     opacity: 0;
+    height: auto;
     pointer-events: none; }
     .mode-sync #app-header .widget-toolbar {
       opacity: 1;
@@ -2380,7 +2381,7 @@ body {
   animation: cssload-roto 2.65s infinite linear; }
 
 .grid-stack-item-content {
-  padding: 0px 7px 7px 7px !important; }
+  padding: 0px 7px 0px 7px !important; }
 
 .widget {
   position: relative;

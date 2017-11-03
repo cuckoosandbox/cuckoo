@@ -9,12 +9,12 @@ const widget = fabricate('memory_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 6,
+    height: 5,
     x: 0,
     y: 0
   },
 
-  chartHeight: 270,
+  chartHeight: 200,
 
   // chart configuration
   chart: {
