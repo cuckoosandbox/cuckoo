@@ -10,6 +10,12 @@ export const config = {
   API_BASE: 'api/stats',
   API_MOCK_INCLUDE: {
     nodes: mock.nodes
+  },
+  DEFAULTS: {
+    PERIOD: 'week',
+    DATE: '2017-05-01',
+    TIME: 10,
+    SYNC_MODE: true
   }
 }
 
