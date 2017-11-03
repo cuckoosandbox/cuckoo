@@ -2480,7 +2480,9 @@ body {
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
     padding: 0 15px 5px 15px;
-    transition: opacity 250ms ease-in-out; }
+    height: 28px;
+    overflow: hidden;
+    transition: opacity 250ms ease-in-out, height 250ms ease-in-out; }
     .widget-toolbar > ul {
       align-items: center; }
       .widget-toolbar > ul > li {
@@ -2535,7 +2537,9 @@ body {
         .widget-toolbar .time-selector select + span {
           position: relative; }
     .mode-sync .widget .widget-toolbar {
-      opacity: .5; }
+      opacity: 0; }
+    .widget-toolbar.hidden {
+      height: 0; }
   .widget-node-status {
     justify-content: center; }
     .widget-node-status > li {

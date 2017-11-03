@@ -21,16 +21,15 @@ $(function() {
       SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
     });
 
-    widget.on('changed', params => {
-      if(widget._synced) {
-        console.log('will sync up');
-      } else {
-        console.log('will not sync up');
-      }
-    });
-
     widget.on('synced', is => {
       $(widget.template).find('.widget-toolbar input, .widget-toolbar select').prop('disabled', is);
+      if(is === true) {
+        // hide toolbar
+        $(widget.template).find('.widget-toolbar').addClass('hidden');
+      } else {
+        // show toolbar
+        $(widget.template).find('.widget-toolbar').removeClass('hidden');
+      }
     });
 
   });

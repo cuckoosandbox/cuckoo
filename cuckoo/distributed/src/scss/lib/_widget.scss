@@ -164,7 +164,10 @@
     font-size: 12px;
     border-bottom: 1px solid #C9D7DB;
     padding: 0 15px 5px 15px;
-    transition: opacity 250ms ease-in-out;
+    height: 28px;
+    overflow: hidden;
+    transition: opacity 250ms ease-in-out,
+                height 250ms ease-in-out;
 
     & > ul {
       @extend %flex-list;
@@ -260,8 +263,12 @@
 
     .widget & {
       .mode-sync & {
-        opacity: .5;
+        opacity: 0;
       }
+    }
+
+    &.hidden {
+      height: 0;
     }
 
   }
