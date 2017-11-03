@@ -10920,6 +10920,22 @@ body.night .app-message {
   top: 2px;
 }
 
+.rdp-toolbar button:before {
+  content: attr(data-hotkey);
+  position: absolute;
+  width: 16px;
+  height: 20px;
+  bottom: -2px;
+  right: 0;
+  font-size: 12px;
+  font-weight: 900;
+  background-color: #ccc;
+  color: #444;
+  border-bottom: 2px solid #999;
+  border-radius: 5px 0 5px 0;
+  padding-top: 2px;
+}
+
 .rdp-toolbar button:after {
   content: attr(name);
   pointer-events: none;
