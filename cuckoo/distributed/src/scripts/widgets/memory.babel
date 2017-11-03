@@ -1,6 +1,5 @@
 import { transformators } from '../lib/StatsAPI';
 import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
-import mock from '../sample-data/example-reply.json';
 
 // fabricate a widget
 const widget = fabricate('memory_usage', {
@@ -33,7 +32,11 @@ const widget = fabricate('memory_usage', {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: false
+            beginAtZero: true,
+            suggestedMax: 100,
+            callback: function(label, index, labels) {
+              return label + '%';
+            }
           }
         }],
         xAxes: [{

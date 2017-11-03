@@ -38,7 +38,11 @@ const widget = fabricate('cpu_usage', {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: true
+            beginAtZero: true,
+            suggestedMax: 100,
+            callback: function(label, index, labels) {
+              return label + '%';
+            }
           }
         }],
         xAxes: [{
