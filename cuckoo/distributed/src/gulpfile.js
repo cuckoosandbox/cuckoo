@@ -26,6 +26,9 @@ var babelify   = require('babelify');
 var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
 var concat     = require('gulp-concat');
+var cleanCSS   = require('gulp-clean-css');
+var uglify     = require('gulp-uglify');
+var pump       = require('pump');
 
 // scss packages as node wrappers for sass.includePaths
 var bourbon    = require('bourbon');
@@ -117,6 +120,29 @@ gulp.task('watch', function() {
   gulp.watch('./scripts/**/*.babel', ['babel']);
   gulp.watch('./scss/**/*.scss', ['sass']);
 });
+
+gulp.task('minify-css', function() {
+
+  gulp.src('../static/css/*.css')
+    .pipe(cleanCSS())
+    .pipe(gulp.dest('../static/css'));
+
+});
+
+gulp.task('minify-js', function(cb) {
+
+  pump([
+    gulp.src('../static/js/*.js'),
+    uglify(),
+    gulp.dest('../static/js')
+  ], cb);
+
+});
+
+/*
+  Compress all the sources in a single task
+ */
+gulp.task('compress', ['minify-css','minify-js']);
 
 // default task: 'gulp'
 gulp.task('default', ['watch']);
