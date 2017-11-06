@@ -1,6 +1,10 @@
 import Hookable from './Hookable';
 import { RDPToolbarButton, RDPSnapshotButton } from './RDPToolbarButton';
 
+function cmdKeyPressed(e) {
+  return e.ctrlKey || e.metaKey || e.shiftKey || e.altKey;
+}
+
 // RDPClient.RDPToolbar
 export default class RDPToolbar extends Hookable {
   constructor(client) {
@@ -22,6 +26,37 @@ export default class RDPToolbar extends Hookable {
     this.buttons.control.on('toggle', toggled => console.log(`control is toggled to ${toggled}`));
     this.buttons.reboot.on('click', () => console.log('reboot the system'));
     this.buttons.close.on('click', () => console.log('closing this session.'));
+
+    $('body').on('keydown', e => {
+
+      // prevent triggering when in ctrl/alt/shift key modes, usually reserved for browser actions or
+      // computer UX.
+      if(cmdKeyPressed(e)) return;
+
+      switch(e.keyCode) {
+        case 83:
+          this.buttons.snapshot.dispatchHook('click');
+          this.buttons.snapshot.blink();
+        break;
+        case 70:
+          this.buttons.fullscreen.dispatchHook('click');
+          this.buttons.fullscreen.blink();
+        break;
+        case 67:
+          this.buttons.control.dispatchHook('toggle');
+          this.buttons.control.blink();
+        break;
+        case 82:
+          this.buttons.reboot.dispatchHook('click');
+          this.buttons.reboot.blink();
+        break;
+        case 81:
+          this.buttons.close.dispatchHook('click');
+          this.buttons.close.blink();
+        break;
+      }
+
+    });
 
   }
 }

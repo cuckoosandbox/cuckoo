@@ -267,7 +267,7 @@ $RDP_APP_CREDIT_BGC: #383838;
       // handle a shutter animation for nice-eys.
       &.shutter-in {
         animation: SnapshotShutter;
-        animation-duration: 1500ms;
+        animation-duration: 1s;
         animation-iteration-count: 1;
         pointer-events: none;
       }

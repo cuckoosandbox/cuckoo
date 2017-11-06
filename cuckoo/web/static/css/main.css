@@ -10969,8 +10969,8 @@ body.night .app-message {
 .rdp-toolbar button.shutter-in {
   -webkit-animation: SnapshotShutter;
           animation: SnapshotShutter;
-  -webkit-animation-duration: 1500ms;
-          animation-duration: 1500ms;
+  -webkit-animation-duration: 1s;
+          animation-duration: 1s;
   -webkit-animation-iteration-count: 1;
           animation-iteration-count: 1;
   pointer-events: none;

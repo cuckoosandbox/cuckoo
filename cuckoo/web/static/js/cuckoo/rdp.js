@@ -256,7 +256,12 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+function cmdKeyPressed(e) {
+  return e.ctrlKey || e.metaKey || e.shiftKey || e.altKey;
+}
+
 // RDPClient.RDPToolbar
+
 var RDPToolbar = function (_Hookable) {
   _inherits(RDPToolbar, _Hookable);
 
@@ -289,6 +294,36 @@ var RDPToolbar = function (_Hookable) {
     });
     _this.buttons.close.on('click', function () {
       return console.log('closing this session.');
+    });
+
+    $('body').on('keydown', function (e) {
+
+      // prevent triggering when in ctrl/alt/shift key modes, usually reserved for browser actions or
+      // computer UX.
+      if (cmdKeyPressed(e)) return;
+
+      switch (e.keyCode) {
+        case 83:
+          _this.buttons.snapshot.dispatchHook('click');
+          _this.buttons.snapshot.blink();
+          break;
+        case 70:
+          _this.buttons.fullscreen.dispatchHook('click');
+          _this.buttons.fullscreen.blink();
+          break;
+        case 67:
+          _this.buttons.control.dispatchHook('toggle');
+          _this.buttons.control.blink();
+          break;
+        case 82:
+          _this.buttons.reboot.dispatchHook('click');
+          _this.buttons.reboot.blink();
+          break;
+        case 81:
+          _this.buttons.close.dispatchHook('click');
+          _this.buttons.close.blink();
+          break;
+      }
     });
 
     return _this;
@@ -374,6 +409,19 @@ var RDPToolbarButton = function (_Hookable) {
       this.disabled = this.$.prop('disabled');
       this.dispatchHook('disabled');
     }
+
+    // a 'blink' effect to emulate a press visually
+
+  }, {
+    key: 'blink',
+    value: function blink() {
+      var _this2 = this;
+
+      this.$.addClass('active');
+      setTimeout(function () {
+        return _this2.$.removeClass('active');
+      }, 150);
+    }
   }]);
 
   return RDPToolbarButton;
@@ -391,16 +439,16 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 
     _classCallCheck(this, RDPSnapshotButton);
 
-    var _this2 = _possibleConstructorReturn(this, (RDPSnapshotButton.__proto__ || Object.getPrototypeOf(RDPSnapshotButton)).call(this, element, conf));
+    var _this3 = _possibleConstructorReturn(this, (RDPSnapshotButton.__proto__ || Object.getPrototypeOf(RDPSnapshotButton)).call(this, element, conf));
 
-    _this2.$ = _this2.$.parent();
-    return _this2;
+    _this3.$ = _this3.$.parent();
+    return _this3;
   }
 
   _createClass(RDPSnapshotButton, [{
     key: 'update',
     value: function update() {
-      var _this3 = this;
+      var _this4 = this;
 
       var isRemoved = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
@@ -416,7 +464,7 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 
         this.$.find('button').addClass('shutter-in');
         setTimeout(function () {
-          return _this3.$.find('button').removeClass('shutter-in');
+          return _this4.$.find('button').removeClass('shutter-in');
         }, 1500);
       } else {
 

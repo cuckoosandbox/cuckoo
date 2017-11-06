@@ -46,6 +46,12 @@ class RDPToolbarButton extends Hookable {
     this.dispatchHook('disabled');
   }
 
+  // a 'blink' effect to emulate a press visually
+  blink() {
+    this.$.addClass('active');
+    setTimeout(() => this.$.removeClass('active'), 150);
+  }
+
 }
 
 // variety: snapshot button, contains some controls for the graphical
