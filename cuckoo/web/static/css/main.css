@@ -10696,7 +10696,7 @@ body.night .app-message {
   }
 }
 
-.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button[value="submit"], .rdp-toolbar button {
+.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button:not([value="cancel"]), .rdp-toolbar button {
   -webkit-appearance: none;
   padding: 7px 5px 5px;
   border: 0;
@@ -10711,18 +10711,18 @@ body.night .app-message {
   transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
 }
 
-.rdp-dialog__options button[value="cancel"]:hover, .rdp__error section > a:hover, .rdp__error--buttons > a:hover, .rdp-dialog__options button[value="submit"]:hover, .rdp-toolbar button:hover {
+.rdp-dialog__options button[value="cancel"]:hover, .rdp__error section > a:hover, .rdp__error--buttons > a:hover, .rdp-dialog__options button:hover:not([value="cancel"]), .rdp-toolbar button:hover {
   background-color: #72a1f9;
 }
 
-.rdp-dialog__options button.active[value="cancel"], .rdp__error section > a.active, .rdp__error--buttons > a.active, .rdp-dialog__options button.active[value="submit"], .rdp-toolbar button.active, .rdp-dialog__options button[value="cancel"]:active, .rdp__error section > a:active, .rdp__error--buttons > a:active, .rdp-dialog__options button[value="submit"]:active, .rdp-toolbar button:active {
+.rdp-dialog__options button.active[value="cancel"], .rdp__error section > a.active, .rdp__error--buttons > a.active, .rdp-dialog__options button.active:not([value="cancel"]), .rdp-toolbar button.active, .rdp-dialog__options button[value="cancel"]:active, .rdp__error section > a:active, .rdp__error--buttons > a:active, .rdp-dialog__options button:active:not([value="cancel"]), .rdp-toolbar button:active {
   background-color: #354A71;
   box-shadow: inset 0px 2px 0px #101622, 0px 1px 0px #495c7f;
   color: #fff;
   text-shadow: 0px 1px 0px #101622;
 }
 
-.rdp-dialog__options button.disabled[value="cancel"], .rdp__error section > a.disabled, .rdp__error--buttons > a.disabled, .rdp-dialog__options button.disabled[value="submit"], .rdp-toolbar button.disabled, .rdp-dialog__options button[disabled][value="cancel"], .rdp__error section > a[disabled], .rdp__error--buttons > a[disabled], .rdp-dialog__options button[disabled][value="submit"], .rdp-toolbar button[disabled] {
+.rdp-dialog__options button.disabled[value="cancel"], .rdp__error section > a.disabled, .rdp__error--buttons > a.disabled, .rdp-dialog__options button.disabled:not([value="cancel"]), .rdp-toolbar button.disabled, .rdp-dialog__options button[disabled][value="cancel"], .rdp__error section > a[disabled], .rdp__error--buttons > a[disabled], .rdp-dialog__options button[disabled]:not([value="cancel"]), .rdp-toolbar button[disabled] {
   background-color: #6D6D6D;
   color: #7c7c7c;
   text-shadow: 0px -2px 0px #4c4c4c;
@@ -10730,11 +10730,11 @@ body.night .app-message {
   pointer-events: none;
 }
 
-.rdp-dialog__options button[value="cancel"]:focus, .rdp__error section > a:focus, .rdp__error--buttons > a:focus, .rdp-dialog__options button[value="submit"]:focus, .rdp-toolbar button:focus {
+.rdp-dialog__options button[value="cancel"]:focus, .rdp__error section > a:focus, .rdp__error--buttons > a:focus, .rdp-dialog__options button:focus:not([value="cancel"]), .rdp-toolbar button:focus {
   outline: none;
 }
 
-.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button[value="submit"] {
+.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button:not([value="cancel"]) {
   font-size: 16px;
   text-shadow: 0px 1px 0px #354A71;
   color: #fff;
