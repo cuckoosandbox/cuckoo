@@ -72,6 +72,28 @@ $RDP_APP_CREDIT_BGC: #383838;
   text-shadow: 0px 1px 0px $RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC;
   color: #fff;
   font-weight: 500;
+  font-size: 700;
+  padding: 8px 15px;
+}
+
+%rdp-cancel-button {
+  @extend %rdp-regular-button;
+  background-color: tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  text-shadow: 0px 1px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  color: #fff;
+  font-weight: 500;
+
+  &:hover {
+    background-color: tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%);
+  }
+
+  &:active {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+    box-shadow: inset 0px 2px 0px shade(tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%), 70%),
+                0px 1px 0px tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 10%);
+  }
+
 }
 
 .rdp {
@@ -87,6 +109,7 @@ $RDP_APP_CREDIT_BGC: #383838;
     padding-top: 50px;
 
     &__display {
+      position: relative;
       display: flex;
       flex-direction: column;
       flex-basis: 100%;
@@ -119,6 +142,13 @@ $RDP_APP_CREDIT_BGC: #383838;
       position: relative;
       flex-basis: 100%;
       background-color: $RDP_APP_VIEWPORT_BGC;
+
+      img {
+        position: absolute;
+        width: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+      }
     }
 
   }
@@ -552,6 +582,53 @@ $RDP_APP_CREDIT_BGC: #383838;
       background-size: cover;
       opacity: .2;
       z-index: 1;
+    }
+
+  }
+
+  // dialog styles
+  &-dialog {
+
+    width: 100%;
+    height: calc(100% - 66px);
+    background-color: rgba(0,0,0,.7);
+    padding: 0;
+    margin: 0;
+    border: 0;
+    top: 66px;
+
+    &__body {
+      position: absolute;
+      color: #fff;
+      text-align: center;
+      width: 90%;
+      left: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &__title {
+      font-size: 24px;
+      font-weight: 300;
+
+      strong {
+        font-weight: 500;
+      }
+    }
+
+    &__text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 50px;
+    }
+
+    &__options {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      button { margin: 0 12px; }
+      button[value="submit"] { @extend %rdp-regular-button; }
+      button[value="cancel"] { @extend %rdp-cancel-button; }
     }
 
   }

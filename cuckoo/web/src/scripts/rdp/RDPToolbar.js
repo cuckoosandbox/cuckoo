@@ -30,7 +30,7 @@ export default class RDPToolbar extends Hookable {
     $('body').on('keydown', e => {
 
       // prevent triggering when in ctrl/alt/shift key modes, usually reserved for browser actions or
-      // computer UX.
+      // OS UX, semantically that should never break so we should prevent it, as well.
       if(cmdKeyPressed(e)) return;
 
       switch(e.keyCode) {
@@ -43,8 +43,7 @@ export default class RDPToolbar extends Hookable {
           this.buttons.fullscreen.blink();
         break;
         case 67:
-          this.buttons.control.dispatchHook('toggle');
-          this.buttons.control.blink();
+          this.buttons.control.$.trigger('mousedown');
         break;
         case 82:
           this.buttons.reboot.dispatchHook('click');
