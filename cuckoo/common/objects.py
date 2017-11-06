@@ -308,7 +308,7 @@ class File(object):
 
         return "", ""
 
-    def get_yara(self, category="binaries"):
+    def get_yara(self, category="binaries", externals=None):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
@@ -327,8 +327,8 @@ class File(object):
             )
             return []
 
-        results = []
-        for match in File.yara_rules[category].match(self.file_path):
+        results, rule = [], File.yara_rules[category]
+        for match in rule.match(self.file_path, externals=externals):
             strings, offsets = set(), {}
             for _, key, value in match.strings:
                 strings.add(base64.b64encode(value))
@@ -415,6 +415,18 @@ class Archive(object):
         filepath = tempfile.mktemp()
         shutil.copyfileobj(self.z.open(filename), open(filepath, "wb"))
         return File(filepath, temporary=True)
+
+class Buffer(object):
+    """A brief wrapper around string buffers for quick Yara rule matching."""
+
+    def __init__(self, buffer):
+        self.buffer = buffer
+
+    def get_yara_quick(self, category, externals=None):
+        results, rule = [], File.yara_rules[category]
+        for match in rule.match(data=self.buffer, externals=externals):
+            results.append(match.rule)
+        return results
 
 class YaraMatch(object):
     def __init__(self, match, category=None):

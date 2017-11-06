@@ -390,7 +390,7 @@ class RunSignatures(object):
         if not supported_version(cls.version, sig.minimum, sig.maximum):
             log.debug(
                 "You are running a version of Cuckoo that's not compatible "
-                "with this signature (either it's too old or too new): "
+                "with this Signature (either it's too old or too new): "
                 "cuckoo=%s signature=%s minversion=%s maxversion=%s",
                 cls.version, sig.name, sig.minimum, sig.maximum
             )

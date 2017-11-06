@@ -81,6 +81,7 @@ class TestWebInterface(object):
     def test_summary_office2(self, p, request):
         s = Static()
         s.set_task({
+            "id": 1,
             "category": "file",
             "package": "doc",
             "target": "createproc1.docm",

@@ -240,6 +240,7 @@ class TestProcessing(object):
     def test_office(self):
         s = Static()
         s.set_task({
+            "id": 1,
             "category": "file",
             "package": "doc",
             "target": "createproc1.docm",

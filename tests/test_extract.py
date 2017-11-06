@@ -9,14 +9,16 @@ from cuckoo.common.abstracts import Extractor
 from cuckoo.common.scripting import Scripting
 from cuckoo.common.shellcode import shikata
 from cuckoo.core.extract import ExtractManager
+from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
-from cuckoo.core.startup import init_yara
+from cuckoo.processing.static import Static
 
 def test_basics():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     mkdir(cwd(analysis=1))
+    init_yara()
 
     em = ExtractManager(1)
     em.write_extracted("foo", "bar")
@@ -35,8 +37,53 @@ def test_basics():
     filepath = cwd("extracted", "0.ps1", analysis=1)
     assert open(filepath, "rb").read() == "foobar"
 
-@mock.patch("cuckoo.core.extract.Extractor.__subclasses__")
-def test_ident_shellcode(p):
+    em.push_command_line(
+        "powershell -e %s" % "world!".encode("utf-16le").encode("base64")
+    )
+    filepath = cwd("extracted", "1.ps1", analysis=1)
+    assert open(filepath, "rb").read() == "world!"
+
+def test_push_script_recursive():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    mkdir(cwd(analysis=1))
+
+    open(cwd("yara", "office", "ole.yar"), "wb").write("""
+        rule OleInside {
+            strings:
+                $s1 = "Win32_Process"
+            condition:
+                filename matches /word\/vbaProject.bin/ and $s1
+        }
+    """)
+    init_yara()
+
+    s = Static()
+    s.file_path = "tests/files/createproc1.docm"
+    s.set_task({
+        "id": 1,
+        "category": "file",
+        "target": s.file_path,
+        "package": "doc",
+    })
+    s.run()
+
+    assert ExtractManager.for_task(1).results()[0]["yara"] == [{
+        "name": "OleInside",
+        "meta": {
+            "description": "(no description)",
+        },
+        "offsets": {
+            "s1": [
+                (3933, 0),
+            ],
+        },
+        "strings": [
+            "Win32_Process".encode("base64").strip(),
+        ],
+    }]
+
+def test_ident_shellcode():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
@@ -60,7 +107,7 @@ rule Shellcode1 {
                 "".join(chr(int(x, 16)) for x in sc[2:-1].split(","))
             )
 
-    p.return_value = Shellcode1,
+    ExtractManager.init_once()
 
     sc = shikata(open("tests/files/shellcode/shikata/1.bin", "rb").read())
     sc = ",".join("0x%02x" % ord(ch) for ch in sc)

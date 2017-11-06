@@ -21,6 +21,7 @@ from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
 )
+from cuckoo.core.extract import ExtractManager
 from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.plugins import RunSignatures
@@ -195,13 +196,15 @@ def init_modules():
             else:
                 log.debug("\t |-- %s", entry.__name__)
 
-    # Initialize the RunSignatures module with all available Signatures.
+    # Initialize the RunSignatures module with all available Signatures and
+    # the ExtractManager with all available Extractors.
     RunSignatures.init_once()
+    ExtractManager.init_once()
 
 def init_yara():
     """Initialize & load/compile Yara rules."""
     categories = (
-        "binaries", "urls", "memory", "scripts", "shellcode",
+        "binaries", "urls", "memory", "scripts", "shellcode", "office",
     )
     log.debug("Initializing Yara...")
     for category in categories:
@@ -233,8 +236,16 @@ def init_yara():
                 rules["rule_%s_%d" % (category, len(rules))] = filepath
                 indexed.append(filename)
 
+        # Need to define each external variable that will be used in the
+        # future. Otherwise Yara will complain.
+        externals = {
+            "filename": "",
+        }
+
         try:
-            File.yara_rules[category] = yara.compile(filepaths=rules)
+            File.yara_rules[category] = yara.compile(
+                filepaths=rules, externals=externals
+            )
         except yara.Error as e:
             raise CuckooStartupError(
                 "There was a syntax error in one or more Yara rules: %s" % e

@@ -7,7 +7,9 @@ import bs4
 import ctypes
 import datetime
 import logging
+import olefile
 import oletools.olevba
+import oletools.oleobj
 import os
 import peepdf.JSAnalysis
 import peepdf.PDFCore
@@ -16,6 +18,7 @@ import peutils
 import re
 import struct
 import zipfile
+import zlib
 
 try:
     import M2Crypto
@@ -36,6 +39,7 @@ from cuckoo.common.objects import Archive, File
 from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
+from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, dispatch
 
 from elftools.common.exceptions import ELFError
@@ -466,16 +470,19 @@ class OfficeDocument(object):
     ]
 
     eps_comments = "\\(([\\w\\s]+)\\)"
+    ole_magic = "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, task_id):
         self.filepath = filepath
         self.files = {}
+        self.task_id = task_id
+        self.ex = ExtractManager.for_task(self.task_id)
 
     def get_macros(self):
         """Get embedded Macros if this is an Office document."""
         try:
             p = oletools.olevba.VBA_Parser(self.filepath)
-        except TypeError:
+        except (TypeError, oletools.olevba.FileOpenError, zlib.error):
             return
 
         # We're not interested in plaintext.
@@ -527,12 +534,44 @@ class OfficeDocument(object):
                 ret.extend(re.findall(self.eps_comments, content))
         return ret
 
+    def extract_lnk(self):
+        """Extract some information from Encapsulated Post Script files."""
+        ret = []
+        for filename, content in self.files.items():
+            if not content.startswith(self.ole_magic):
+                continue
+
+            ole = olefile.olefile.OleFileIO(content)
+            for stream in ole.listdir():
+                if stream[-1] != "\x01Ole10Native":
+                    continue
+
+                content = ole.openstream(stream).read()
+                stream = oletools.oleobj.OleNativeStream(content)
+
+                info = LnkShortcut(data=stream.data).run()
+                self.ex.push_blob_noyara(stream.data, "lnk", info)
+                self.ex.push_command_line(
+                    "%s %s" % (info["basepath"], info["cmdline"])
+                )
+
+                ret.append({
+                    "filename": stream.filename.decode("latin-1"),
+                    "src_path": stream.src_path.decode("latin-1"),
+                    "temp_path": stream.temp_path.decode("latin-1"),
+                    "lnk": info,
+                })
+        return ret
+
     def run(self):
         self.unpack_docx()
+
+        self.ex.peek_office(self.files)
 
         return {
             "macros": list(self.get_macros()),
             "eps": self.extract_eps(),
+            "lnk": self.extract_lnk(),
         }
 
 class PdfDocument(object):
@@ -723,8 +762,9 @@ class LnkShortcut(object):
         "offline", "not_indexed", "encrypted",
     ]
 
-    def __init__(self, filepath):
+    def __init__(self, filepath=None, data=None):
         self.filepath = filepath
+        self.buf = data
 
     def read_uint16(self, offset):
         return struct.unpack("H", self.buf[offset:offset+2])[0]
@@ -741,7 +781,10 @@ class LnkShortcut(object):
         return offset + 2 + length, ret
 
     def run(self):
-        self.buf = buf = open(self.filepath, "rb").read()
+        if not self.buf and self.filepath:
+            self.buf = open(self.filepath, "rb").read()
+
+        buf = self.buf
         if len(buf) < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
             return
@@ -1049,7 +1092,7 @@ class Static(Processing):
             static["wsf"] = WindowsScriptFile(f.file_path).run()
 
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
-            static["office"] = OfficeDocument(f.file_path).run()
+            static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
 
         if package == "pdf" or ext == "pdf":
             static["pdf"] = dispatch(

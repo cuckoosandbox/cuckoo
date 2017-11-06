@@ -192,7 +192,7 @@ do_setup(
         "httpreplay>=0.2.1, <0.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
-        "oletools==0.42",
+        "oletools==0.51",
         "peepdf==0.3.6",
         "pefile2==1.2.11",
         "pillow==3.2",
