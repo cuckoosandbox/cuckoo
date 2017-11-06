@@ -128,6 +128,117 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+function parseFragment(fragment) {
+  if (!fragment.length) return false;
+  var result = $.parseHTML(fragment.html());
+  $(result).attr('id', $(fragment).attr('id'));
+  return $(result);
+}
+
+var DialogInteractionScheme = function (_Hookable) {
+  _inherits(DialogInteractionScheme, _Hookable);
+
+  function DialogInteractionScheme(dialog) {
+    var interactions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck(this, DialogInteractionScheme);
+
+    var _this = _possibleConstructorReturn(this, (DialogInteractionScheme.__proto__ || Object.getPrototypeOf(DialogInteractionScheme)).call(this));
+
+    _this.dialog = dialog;
+    _this.interactions = interactions;
+
+    var form = _this.dialog.base.find('form');
+
+    // respond with an interaction according to the button clicked
+    // button[value]
+    _this.dialog.base.find('button').on('click', function (e) {
+      var answer = $(e.currentTarget).val();
+      if (_this.interactions[answer]) {
+        form.submit(function () {
+          return _this.interactions[answer](_this.dialog);
+        });
+      }
+    });
+
+    // prevent the form from submitting when a button has been clicked
+    form.bind('submit', function (e) {
+      e.preventDefault();
+    });
+
+    return _this;
+  }
+
+  return DialogInteractionScheme;
+}(_Hookable4.default);
+
+var RDPDialog = function (_Hookable2) {
+  _inherits(RDPDialog, _Hookable2);
+
+  function RDPDialog(client) {
+    var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck(this, RDPDialog);
+
+    var _this2 = _possibleConstructorReturn(this, (RDPDialog.__proto__ || Object.getPrototypeOf(RDPDialog)).call(this));
+
+    _this2.client = client;
+    _this2.base = conf.el;
+    _this2.interaction = null;
+    _this2.dialogs = conf.dialogs || {};
+    return _this2;
+  }
+
+  _createClass(RDPDialog, [{
+    key: 'render',
+    value: function render(d) {
+      var dialog = this.dialogs[d];
+      if (dialog) {
+        var ctx = parseFragment(dialog.template);
+        this.base.find('.rdp-dialog__body').append(ctx);
+        this.interactions = new DialogInteractionScheme(this, dialog.interactions);
+        this.open();
+      }
+    }
+  }, {
+    key: 'open',
+    value: function open() {
+      this.base.prop('open', true);
+    }
+  }, {
+    key: 'close',
+    value: function close() {
+      this.base.prop('open', false);
+      this.base.find('.rdp-dialog__body').empty();
+    }
+  }]);
+
+  return RDPDialog;
+}(_Hookable4.default);
+
+exports.default = RDPDialog;
+
+},{"./Hookable":1}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Hookable3 = require('./Hookable');
+
+var _Hookable4 = _interopRequireDefault(_Hookable3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var SnapshotBar = function (_Hookable) {
   _inherits(SnapshotBar, _Hookable);
 
@@ -235,7 +346,7 @@ var RDPSnapshotService = function (_Hookable2) {
 
 exports.default = RDPSnapshotService;
 
-},{"./Hookable":1}],3:[function(require,module,exports){
+},{"./Hookable":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -289,11 +400,13 @@ var RDPToolbar = function (_Hookable) {
     _this.buttons.control.on('toggle', function (toggled) {
       return console.log('control is toggled to ' + toggled);
     });
+
     _this.buttons.reboot.on('click', function () {
-      return console.log('reboot the system');
+      _this.client.dialog.render('reboot');
     });
+
     _this.buttons.close.on('click', function () {
-      return console.log('closing this session.');
+      _this.client.dialog.render('close');
     });
 
     $('body').on('keydown', function (e) {
@@ -333,7 +446,7 @@ var RDPToolbar = function (_Hookable) {
 
 exports.default = RDPToolbar;
 
-},{"./Hookable":1,"./RDPToolbarButton":4}],4:[function(require,module,exports){
+},{"./Hookable":1,"./RDPToolbarButton":5}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -499,7 +612,7 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 exports.RDPToolbarButton = RDPToolbarButton;
 exports.RDPSnapshotButton = RDPSnapshotButton;
 
-},{"./Hookable":1}],5:[function(require,module,exports){
+},{"./Hookable":1}],6:[function(require,module,exports){
 'use strict';
 
 var _Hookable2 = require('./Hookable');
@@ -513,6 +626,10 @@ var _RDPToolbar2 = _interopRequireDefault(_RDPToolbar);
 var _RDPSnapshotService = require('./RDPSnapshotService');
 
 var _RDPSnapshotService2 = _interopRequireDefault(_RDPSnapshotService);
+
+var _RDPDialog = require('./RDPDialog');
+
+var _RDPDialog2 = _interopRequireDefault(_RDPDialog);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -536,6 +653,38 @@ var RDPClient = function (_Hookable) {
     _this.snapshots = new _RDPSnapshotService2.default(_this);
     _this.toolbar = new _RDPToolbar2.default(_this);
 
+    _this.dialog = new _RDPDialog2.default(_this, {
+      el: el.find('#rdp-dialog'),
+      dialogs: {
+        reboot: {
+          template: $('template#rdp-dialog-reboot'),
+          interactions: {
+            cancel: function cancel(dialog) {
+              console.log('Will not reboot.');
+              dialog.close();
+            },
+            proceed: function proceed(dialog) {
+              console.log('Will reboot.');
+              dialog.close();
+            }
+          }
+        },
+        close: {
+          template: $('template#rdp-dialog-close'),
+          interactions: {
+            cancel: function cancel(dialog) {
+              console.log('Will not close');
+              dialog.close();
+            },
+            proceed: function proceed(dialog) {
+              console.log('Will close');
+              dialog.close();
+            }
+          }
+        }
+      }
+    });
+
     // bind snapshot interactions
     _this.snapshots.on('create', function (snapshot) {
       _this.toolbar.buttons.snapshot.update();
@@ -557,11 +706,10 @@ var RDPClient = function (_Hookable) {
 $(function () {
   if ($("#rdp-client").length) {
     var rdpClient = new RDPClient($("#rdp-client"));
-    console.log(rdpClient);
   }
 });
 
-},{"./Hookable":1,"./RDPSnapshotService":2,"./RDPToolbar":3}]},{},[5])
+},{"./Hookable":1,"./RDPDialog":2,"./RDPSnapshotService":3,"./RDPToolbar":4}]},{},[6])
 
 
 //# sourceMappingURL=rdp.js.map

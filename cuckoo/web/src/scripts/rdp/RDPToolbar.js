@@ -24,8 +24,14 @@ export default class RDPToolbar extends Hookable {
     this.buttons.fullscreen.on('click', () => console.log('fullscreen'));
     this.buttons.snapshot.on('click', () => this.client.snapshots.create());
     this.buttons.control.on('toggle', toggled => console.log(`control is toggled to ${toggled}`));
-    this.buttons.reboot.on('click', () => console.log('reboot the system'));
-    this.buttons.close.on('click', () => console.log('closing this session.'));
+
+    this.buttons.reboot.on('click', () => {
+      this.client.dialog.render('reboot');
+    });
+
+    this.buttons.close.on('click', () => {
+      this.client.dialog.render('close');
+    });
 
     $('body').on('keydown', e => {
 

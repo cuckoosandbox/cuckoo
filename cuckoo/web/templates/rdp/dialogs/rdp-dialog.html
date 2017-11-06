@@ -1,10 +1,23 @@
-<dialog class="rdp-dialog" id="rdp-dialog-reboot" open>
-  <div class="rdp-dialog__body">
-    <h4 class="rdp-dialog__title">Are you sure you want to <strong>reboot</strong>?</h4>
-    <p class="rdp-dialog__text">Your current changes will be lost.</p>
-    <form class="rdp-dialog__options">
-      <button name="dialog-answer" value="cancel" type="submit">Cancel</button>
-      <button name="dialog-answer" value="submit" type="submit">Reboot</button>
-    </form>
-  </div>
+<dialog class="rdp-dialog" id="rdp-dialog">
+  <div class="rdp-dialog__body"></div>
 </dialog>
+
+<!-- html for the reboot dialog  -->
+<template id="rdp-dialog-reboot">
+  <h4 class="rdp-dialog__title">Are you sure you want to <strong>reboot</strong>?</h4>
+  <p class="rdp-dialog__text">Your current changes will be lost.</p>
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="submit">Cancel</button>
+    <button value="proceed" type="submit">Reboot</button>
+  </form>
+</template>
+
+<!-- html for the close dialog  -->
+<template id="rdp-dialog-close">
+  <h4 class="rdp-dialog__title">Are you sure you want to <strong>close</strong>?</h4>
+  <p class="rdp-dialog__text">Your current changes will be lost.</p>
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="cancel">Cancel</button>
+    <button value="proceed" type="submit">Close</button>
+  </form>
+</template>

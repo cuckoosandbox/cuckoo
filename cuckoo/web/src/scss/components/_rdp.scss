@@ -626,9 +626,11 @@ $RDP_APP_CREDIT_BGC: #383838;
       display: flex;
       justify-content: center;
       align-items: center;
-      button { margin: 0 12px; }
-      button[value="submit"] { @extend %rdp-regular-button; }
-      button[value="cancel"] { @extend %rdp-cancel-button; }
+      button {
+        margin: 0 12px;
+        &:not([value="cancel"]) { @extend %rdp-regular-button; }
+        &[value="cancel"] { @extend %rdp-cancel-button; }
+      }
     }
 
   }
