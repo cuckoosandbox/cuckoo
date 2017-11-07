@@ -11144,41 +11144,98 @@ body.night .app-message {
   top: -1px;
 }
 
-.rdp-snapshots--controls {
-  position: absolute;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  right: -8px;
-  height: 100%;
-  top: 0;
+.rdp-snapshot-selection {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
-.rdp-snapshots--controls a {
+.rdp-snapshot-selection *, .rdp-snapshot-selection *:before, .rdp-snapshot-selection *:after {
+  -webkit-transition: all 200ms linear;
+  transition: all 200ms linear;
+}
+
+.rdp-snapshot-selection > li {
   display: inline-block;
-  background-color: #000;
-  border: 1px solid #fff;
-  color: #fff;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 12px;
-  text-align: center;
-  margin: 5px 0;
+  margin: 0 15px 50px;
 }
 
-.rdp-snapshots--controls a .fa, .rdp-snapshots--controls a .custom-select:after, .rdp-snapshots--controls a .dns-badge__content:before, .rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots--controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots--controls a div:before, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before, .rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span, .rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots--controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a
-.list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before {
+.rdp-snapshot-selection input[type="checkbox"] {
+  display: none;
+}
+
+.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image {
+  background-color: #6297F8;
+  border: 2px solid #5888df;
+}
+
+.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image img {
+  opacity: 1;
+}
+
+.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image:before {
+  background-color: #fff;
+  border: 0;
+}
+
+.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image:after {
+  -webkit-transform: scale(1);
+          transform: scale(1);
+}
+
+.rdp-snapshot-selection .snapshot-selection-image {
   position: relative;
-  top: -1px;
+  display: block;
+  width: 350px;
+  border: 2px solid #fff;
+  border-radius: 16px;
+  padding: 5px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image img {
+  width: 100%;
+  border-radius: 8px;
+  opacity: .75;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #fff;
+  background-color: #000;
+  z-index: 2;
+  left: 50%;
+  margin-left: -16px;
+  border-radius: 50%;
+  bottom: -16px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background-color: #6297F8;
+  left: 50%;
+  bottom: -11px;
+  margin-left: -11px;
+  border-radius: 50%;
+  z-index: 3;
+  -webkit-transform: scale(0);
+          transform: scale(0);
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:hover {
+  cursor: pointer;
+  background-color: rgba(98, 151, 248, 0.2);
 }
 
 .rdp__error {
