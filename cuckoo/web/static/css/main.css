@@ -10838,6 +10838,15 @@ body.night .app-message {
   top: 50%;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
+  -webkit-transition: -webkit-filter 1s ease-out;
+  transition: -webkit-filter 1s ease-out;
+  transition: filter 1s ease-out;
+  transition: filter 1s ease-out, -webkit-filter 1s ease-out;
+}
+
+.dialog-active .rdp-app__viewport img {
+  -webkit-filter: blur(10px);
+          filter: blur(10px);
 }
 
 .rdp-toolbar {

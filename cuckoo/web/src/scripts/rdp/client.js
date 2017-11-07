@@ -12,6 +12,7 @@ class RDPClient extends Hookable {
     this.snapshots = new RDPSnapshotService(this);
     this.toolbar = new RDPToolbar(this);
 
+    // defines the UI dialogs
     this.dialog = new RDPDialog(this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
@@ -37,6 +38,22 @@ class RDPClient extends Hookable {
             },
             proceed: dialog => {
               console.log('Will close');
+              dialog.close();
+            }
+          }
+        },
+        snapshots: {
+          template: $("template#rdp-dialog-snapshots"),
+          model: {
+            total: () => this.snapshots.total()
+          },
+          interactions: {
+            cancel: dialog => {
+              console.log('Will not include selected snapshots.');
+              dialog.close();
+            },
+            proceed: dialog => {
+              console.log('Will include selected snapshots.');
               dialog.close();
             }
           }
