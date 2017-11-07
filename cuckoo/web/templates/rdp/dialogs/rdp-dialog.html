@@ -17,7 +17,17 @@
   <h4 class="rdp-dialog__title">Are you sure you want to <strong>close</strong>?</h4>
   <p class="rdp-dialog__text">Your current changes will be lost.</p>
   <form class="rdp-dialog__options">
-    <button value="cancel" type="cancel">Cancel</button>
+    <button value="cancel" type="submit">Cancel</button>
     <button value="proceed" type="submit">Close</button>
+  </form>
+</template>
+
+<!-- html for the snapshots dialog  -->
+<template id="rdp-dialog-snapshots">
+  <h4 class="rdp-dialog__title">You made <strong data-model="total"></strong> manual snapshots during this session</h4>
+  <p class="rdp-dialog__text">Please select the ones to include in the analysis.</p>
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="submit">Skip and close</button>
+    <button value="proceed" type="submit">Include <span data-model="selected">0</span> snapshot and close.</button>
   </form>
 </template>

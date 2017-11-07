@@ -29,8 +29,14 @@ export default class RDPToolbar extends Hookable {
       this.client.dialog.render('reboot');
     });
 
+    // if we have snapshots, show the snapshots dialog, elsely show the default
+    // close dialog.
     this.buttons.close.on('click', () => {
-      this.client.dialog.render('close');
+      if(this.client.snapshots.total() > 0) {
+        this.client.dialog.render('snapshots');
+      } else {
+        this.client.dialog.render('close');
+      }
     });
 
     $('body').on('keydown', e => {

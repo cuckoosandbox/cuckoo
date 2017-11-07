@@ -116,17 +116,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Hookable3 = require('./Hookable');
-
-var _Hookable4 = _interopRequireDefault(_Hookable3);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function parseFragment(fragment) {
   if (!fragment.length) return false;
@@ -135,58 +125,61 @@ function parseFragment(fragment) {
   return $(result);
 }
 
-var DialogInteractionScheme = function (_Hookable) {
-  _inherits(DialogInteractionScheme, _Hookable);
+function resolveModel(model) {
+  var thisArg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-  function DialogInteractionScheme(dialog) {
-    var interactions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-    _classCallCheck(this, DialogInteractionScheme);
-
-    var _this = _possibleConstructorReturn(this, (DialogInteractionScheme.__proto__ || Object.getPrototypeOf(DialogInteractionScheme)).call(this));
-
-    _this.dialog = dialog;
-    _this.interactions = interactions;
-
-    var form = _this.dialog.base.find('form');
-
-    // respond with an interaction according to the button clicked
-    // button[value]
-    _this.dialog.base.find('button').on('click', function (e) {
-      var answer = $(e.currentTarget).val();
-      if (_this.interactions[answer]) {
-        form.submit(function () {
-          return _this.interactions[answer](_this.dialog);
-        });
-      }
-    });
-
-    // prevent the form from submitting when a button has been clicked
-    form.bind('submit', function (e) {
-      e.preventDefault();
-    });
-
-    return _this;
+  var resolved = {};
+  for (var m in model) {
+    if (model[m] instanceof Function) {
+      resolved[m] = model[m].call(thisArg || window);
+    } else {
+      resolved[m] = model[m];
+    }
   }
+  return resolved;
+}
 
-  return DialogInteractionScheme;
-}(_Hookable4.default);
+var DialogInteractionScheme = function DialogInteractionScheme(dialogs) {
+  var _this = this;
 
-var RDPDialog = function (_Hookable2) {
-  _inherits(RDPDialog, _Hookable2);
+  var dialog = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+  _classCallCheck(this, DialogInteractionScheme);
+
+  this.parent = dialogs;
+  this.dialog = dialog;
+  this.interactions = dialog.interactions || {};
+  this.model = resolveModel(dialog.model || {});
+
+  var form = this.parent.base.find('form');
+
+  // respond with an interaction according to the button clicked
+  // button[value]
+  this.parent.base.find('button').on('click', function (e) {
+    var answer = $(e.currentTarget).val();
+    if (_this.interactions[answer]) {
+      form.submit(function () {
+        return _this.interactions[answer](_this.parent);
+      });
+    }
+  });
+
+  // prevent the form from submitting when a button has been clicked
+  form.bind('submit', function (e) {
+    e.preventDefault();
+  });
+};
+
+var RDPDialog = function () {
   function RDPDialog(client) {
     var conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, RDPDialog);
 
-    var _this2 = _possibleConstructorReturn(this, (RDPDialog.__proto__ || Object.getPrototypeOf(RDPDialog)).call(this));
-
-    _this2.client = client;
-    _this2.base = conf.el;
-    _this2.interaction = null;
-    _this2.dialogs = conf.dialogs || {};
-    return _this2;
+    this.client = client;
+    this.base = conf.el;
+    this.interaction = null;
+    this.dialogs = conf.dialogs || {};
   }
 
   _createClass(RDPDialog, [{
@@ -196,29 +189,39 @@ var RDPDialog = function (_Hookable2) {
       if (dialog) {
         var ctx = parseFragment(dialog.template);
         this.base.find('.rdp-dialog__body').append(ctx);
-        this.interactions = new DialogInteractionScheme(this, dialog.interactions);
+        this.interaction = new DialogInteractionScheme(this, dialog);
+        this._injectModel(this.interaction.model);
         this.open();
       }
     }
   }, {
     key: 'open',
     value: function open() {
+      this.client.$.addClass('dialog-active');
       this.base.prop('open', true);
     }
   }, {
     key: 'close',
     value: function close() {
+      this.client.$.removeClass('dialog-active');
       this.base.prop('open', false);
       this.base.find('.rdp-dialog__body').empty();
+    }
+  }, {
+    key: '_injectModel',
+    value: function _injectModel(model) {
+      for (var m in model) {
+        this.base.find('*[data-model=\'' + m + '\']').text(model[m]);
+      }
     }
   }]);
 
   return RDPDialog;
-}(_Hookable4.default);
+}();
 
 exports.default = RDPDialog;
 
-},{"./Hookable":1}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -405,8 +408,14 @@ var RDPToolbar = function (_Hookable) {
       _this.client.dialog.render('reboot');
     });
 
+    // if we have snapshots, show the snapshots dialog, elsely show the default
+    // close dialog.
     _this.buttons.close.on('click', function () {
-      _this.client.dialog.render('close');
+      if (_this.client.snapshots.total() > 0) {
+        _this.client.dialog.render('snapshots');
+      } else {
+        _this.client.dialog.render('close');
+      }
     });
 
     $('body').on('keydown', function (e) {
@@ -653,6 +662,7 @@ var RDPClient = function (_Hookable) {
     _this.snapshots = new _RDPSnapshotService2.default(_this);
     _this.toolbar = new _RDPToolbar2.default(_this);
 
+    // defines the UI dialogs
     _this.dialog = new _RDPDialog2.default(_this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
@@ -678,6 +688,24 @@ var RDPClient = function (_Hookable) {
             },
             proceed: function proceed(dialog) {
               console.log('Will close');
+              dialog.close();
+            }
+          }
+        },
+        snapshots: {
+          template: $("template#rdp-dialog-snapshots"),
+          model: {
+            total: function total() {
+              return _this.snapshots.total();
+            }
+          },
+          interactions: {
+            cancel: function cancel(dialog) {
+              console.log('Will not include selected snapshots.');
+              dialog.close();
+            },
+            proceed: function proceed(dialog) {
+              console.log('Will include selected snapshots.');
               dialog.close();
             }
           }

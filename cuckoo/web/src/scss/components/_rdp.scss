@@ -148,6 +148,11 @@ $RDP_APP_CREDIT_BGC: #383838;
         width: 100%;
         top: 50%;
         transform: translateY(-50%);
+        transition: filter 1s ease-out;
+
+        .dialog-active & {
+          filter: blur(10px);
+        }
       }
     }
 
