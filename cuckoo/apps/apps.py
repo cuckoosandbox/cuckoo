@@ -484,8 +484,7 @@ def migrate_cwd():
         if filename.startswith("index_") and filename.endswith(".yar"):
             os.remove(cwd("yara", filename))
 
-    # Create the new $CWD/pidfiles/ & $CWD/stuff/ directories.
-    mkdir(cwd("pidfiles"))
+    # Create new directories if not present yet.
     mkdir(cwd("stuff"))
     mkdir(cwd("yara", "office"))
 

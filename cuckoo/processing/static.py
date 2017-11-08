@@ -475,8 +475,7 @@ class OfficeDocument(object):
     def __init__(self, filepath, task_id):
         self.filepath = filepath
         self.files = {}
-        self.task_id = task_id
-        self.ex = ExtractManager.for_task(self.task_id)
+        self.ex = ExtractManager.for_task(task_id)
 
     def get_macros(self):
         """Get embedded Macros if this is an Office document."""

@@ -34,7 +34,7 @@ from cuckoo.core.startup import (
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    Pidfile
+    Pidfile, mkdir
 )
 
 log = logging.getLogger("cuckoo")
@@ -107,7 +107,9 @@ def cuckoo_init(level, ctx, cfg=None):
     init_console_logging(level)
 
     # Only one Cuckoo process should exist per CWD. Run this check before any
-    # files are possibly modified.
+    # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
+    # its CWD migration rules only kick in after the pidfile check.
+    mkdir(cwd("pidfiles"))
     pidfile = Pidfile("cuckoo")
     if pidfile.exists():
         log.error(red("Cuckoo is already running. PID: %s"), pidfile.pid)

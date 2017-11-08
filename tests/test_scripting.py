@@ -260,8 +260,6 @@ class TestScripting(object):
         }
 
     def test_cmd_fullpath(self):
-        import logging
-        logging.basicConfig(level=logging.DEBUG)
         obj = self.scr.parse_command(
             "C:\\\\Windows\\\\System32\\\\cmd.exe /k ping 8.8.8.8"
         )
