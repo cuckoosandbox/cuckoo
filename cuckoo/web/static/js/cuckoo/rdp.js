@@ -179,12 +179,18 @@ var RDPDialog = function () {
     this.client = client;
     this.base = conf.el;
     this.interaction = null;
+    this.activeModel = null;
+    this.open = this.base.prop('open');
     this.dialogs = conf.dialogs || {};
   }
 
   _createClass(RDPDialog, [{
     key: 'render',
     value: function render(d) {
+
+      // don't render if a dialog is already open
+      if (this.open) return;
+
       var dialog = this.dialogs[d];
       if (dialog) {
         var ctx = parseFragment(dialog.template);
@@ -194,25 +200,44 @@ var RDPDialog = function () {
         this.open();
       }
     }
+
+    // opens the dialog
+
   }, {
     key: 'open',
     value: function open() {
       this.client.$.addClass('dialog-active');
       this.base.prop('open', true);
     }
+
+    // closes the current dialog
+
   }, {
     key: 'close',
     value: function close() {
       this.client.$.removeClass('dialog-active');
       this.base.prop('open', false);
       this.base.find('.rdp-dialog__body').empty();
+      this.activeModel = null;
+      this.interaction = null;
     }
+
+    // injects the model (if it has a model) into the dialog.
+
   }, {
     key: '_injectModel',
     value: function _injectModel(model) {
-      for (var m in model) {
-        this.base.find('*[data-model=\'' + m + '\']').text(model[m]);
+      if (model) this.activeModel = model;
+      if (this.activeModel) {
+        for (var m in this.activeModel) {
+          this.base.find('*[data-model=\'' + m + '\']').text(model[m]);
+        }
       }
+    }
+  }, {
+    key: 'update',
+    value: function update() {
+      this._injectModel();
     }
   }]);
 

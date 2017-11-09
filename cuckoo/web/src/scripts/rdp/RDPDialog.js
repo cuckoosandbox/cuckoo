@@ -51,10 +51,16 @@ export default class RDPDialog {
     this.client = client;
     this.base = conf.el;
     this.interaction = null;
+    this.activeModel = null;
+    this.open = this.base.prop('open');
     this.dialogs = conf.dialogs || {};
   }
 
   render(d) {
+
+    // don't render if a dialog is already open
+    if(this.open) return;
+
     let dialog = this.dialogs[d];
     if(dialog) {
       let ctx = parseFragment(dialog.template);
@@ -65,21 +71,33 @@ export default class RDPDialog {
     }
   }
 
+  // opens the dialog
   open() {
     this.client.$.addClass('dialog-active');
     this.base.prop('open', true);
   }
 
+  // closes the current dialog
   close() {
     this.client.$.removeClass('dialog-active');
     this.base.prop('open', false);
     this.base.find('.rdp-dialog__body').empty();
+    this.activeModel = null;
+    this.interaction = null;
   }
 
+  // injects the model (if it has a model) into the dialog.
   _injectModel(model) {
-    for(let m in model) {
-      this.base.find(`*[data-model='${m}']`).text(model[m]);
+    if(model) this.activeModel = model;
+    if(this.activeModel) {
+      for(let m in this.activeModel) {
+        this.base.find(`*[data-model='${m}']`).text(model[m]);
+      }
     }
+  }
+
+  update() {
+    this._injectModel();
   }
 
 }
