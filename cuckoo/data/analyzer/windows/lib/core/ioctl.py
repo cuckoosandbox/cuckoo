@@ -24,9 +24,6 @@ class Ioctl(object):
         self.pipepath = pipepath
 
     def invoke(self, ctlcode, value, outlength=0x1000):
-        # TODO Enable the kernel drivers.
-        return
-
         device_handle = KERNEL32.CreateFileA(
             "\\\\.\\%s" % self.pipepath, GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE, None, OPEN_EXISTING, 0, None
@@ -67,6 +64,7 @@ class Zer0m0nIoctl(Ioctl):
         "channel",
         "dumpmem",
         "yarald",
+        "getpids",
     ]
 
     def invoke(self, action, buf):
@@ -91,5 +89,9 @@ class Zer0m0nIoctl(Ioctl):
 
     def yarald(self, rulepath):
         return self.invoke("yarald", open(rulepath, "rb").read())
+
+    def getpids(self):
+        pids = self.invoke("getpids", "pids") or ""
+        return struct.unpack("I"*(len(pids)/4), pids)
 
 zer0m0n = Zer0m0nIoctl(driver_name)
