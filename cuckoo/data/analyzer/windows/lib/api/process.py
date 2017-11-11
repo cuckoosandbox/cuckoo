@@ -237,19 +237,6 @@ class Process(object):
 
         is32bit = self.is32bit(path=path)
 
-        if not dll:
-            if is32bit:
-                dll = "monitor-x86.dll"
-            else:
-                dll = "monitor-x64.dll"
-
-        dllpath = os.path.abspath(os.path.join("bin", dll))
-
-        if not os.path.exists(dllpath):
-            log.warning("No valid DLL specified to be injected, "
-                        "injection aborted.")
-            return False
-
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
                 inject_is32bit = self.is32bit(pid=int(source))
@@ -296,6 +283,23 @@ class Process(object):
 
         # Report this PID to the kernel driver (if present).
         zer0m0n.addpid(self.pid)
+
+        # With .NET for AnyCPU target, a 32-bit PE file can start a 64-bit process.
+        # Recheck the process bitness here after startup to make sure injection works.
+        is32bit = self.is32bit(self.pid)
+
+        if not dll:
+            if is32bit:
+                dll = "monitor-x86.dll"
+            else:
+                dll = "monitor-x64.dll"
+
+        dllpath = os.path.abspath(os.path.join("bin", dll))
+        
+        if not os.path.exists(dllpath):
+            log.warning("No valid DLL specified to be injected, "
+                        "injection aborted.")
+            return False
 
         if is32bit:
             inject_exe = os.path.join("bin", "inject-x86.exe")
