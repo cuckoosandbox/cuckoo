@@ -246,6 +246,7 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
 992d0ae2a222ea4465633ab0fb2dc6ec9dac5181 agent/agent.py
 41ab395d14ea3902e099e1e78dc654e1b24a7da5 analyzer/windows/analyzer.py
 0000000000000000000000000000000000000000 analyzer/windows/lib/api/dse.py
+0788076d5f1d4333f4de3ba4f4d44a77eecf0d95 analyzer/windows/lib/api/process.py
 58c7825bbf290e356d7740b8742e933f44b1f365 analyzer/windows/lib/common/abstracts.py
 ef54d877bf8d348b2c99bd38814152f81d282570 analyzer/windows/lib/common/decide.py
 b580676d8a3119508cfab933adb95929648674b4 analyzer/windows/lib/core/ioctl.py
