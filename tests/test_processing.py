@@ -36,6 +36,7 @@ from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
 from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
+from cuckoo.processing.suricata import Suricata
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
@@ -1297,3 +1298,32 @@ def test_wsf_language():
     wsf.decode = mock.MagicMock(return_value="codehere")
     assert wsf.run() == ["codehere"]
     wsf.decode.assert_called_once()
+
+class TestSuricata(object):
+    @mock.patch("subprocess.check_call")
+    def test_path(self, p):
+        set_cwd(tempfile.mkdtemp(prefix="."))
+        cuckoo_create()
+        mkdir(cwd(analysis=1))
+
+        def create():
+            mkdir(cwd("suricata", "files", analysis=1))
+
+            f = open(cwd("suricata", "files", "file.1", analysis=1), "wb")
+            f.write("a")
+            f = open(cwd("suricata", "eve.json", analysis=1), "wb")
+            f.write("")
+            f = open(cwd("suricata", "files-json.log", analysis=1), "wb")
+            f.write(json.dumps({
+                "id": 1,
+                "size": 1,
+                "filename": "a.txt",
+            }))
+
+        open(cwd("dump.pcap", analysis=1), "wb").write("pcap")
+
+        s = Suricata()
+        s.set_path(cwd(analysis=1))
+        s.set_options({})
+        s.process_pcap_binary = create
+        s.run()
