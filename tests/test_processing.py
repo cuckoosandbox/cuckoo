@@ -153,6 +153,56 @@ class TestProcessing(object):
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
+    def test_pdf_stringjs(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf1-stringjs.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf1-stringjs.pdf"
+        r = s.run()["pdf"][12]
+        assert "app.alert({" in r["javascript"][0]["orig_code"]
+
+    def test_pdf_ignorefake(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "fakepdf.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/fakepdf.pdf"
+        r = s.run()
+        assert "pdf" not in r
+
+    @mock.patch("cuckoo.processing.static.dispatch")
+    def test_pdf_workercrash(self, md):
+        set_cwd(tempfile.mkdtemp())
+        md.return_value = None
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.pdf"
+        r = s.run()
+        assert r["pdf"] == []
+
     def test_phishing0_pdf(self):
         set_cwd(tempfile.mkdtemp())
 

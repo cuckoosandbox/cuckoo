@@ -630,6 +630,17 @@ class PdfDocument(object):
 
         ref = obj.object.elements["/JS"]
 
+        if isinstance(ref, peepdf.PDFCore.PDFString):
+            return {
+                "orig_code": "".join(ref.getJSCode()),
+                "beautified": jsbeautify("".join(ref.getJSCode())),
+                "urls": []
+            }
+
+        elif not isinstance(ref, peepdf.PDFCore.PDFReference):
+            log.warning("PDFObject: can't follow type %s", ref)
+            return
+
         if ref.id not in f.body[version].objects:
             log.warning("PDFObject: Reference is broken, can't follow")
             return
@@ -688,7 +699,7 @@ class PdfDocument(object):
             return action.value
 
         if isinstance(action, peepdf.PDFCore.PDFReference):
-            referenced = f.body[version].objects[action.id]
+            referenced = f.body[version].objects.get(action.id)
             if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
                 obj = referenced.object
                 if isinstance(obj, peepdf.PDFCore.PDFDictionary):
@@ -707,7 +718,6 @@ class PdfDocument(object):
             return
 
         ret = []
-
         for version in xrange(f.updates + 1):
             md = f.getBasicMetadata(version)
             row = {
@@ -1095,10 +1105,11 @@ class Static(Processing):
             static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
 
         if package == "pdf" or ext == "pdf":
-            static["pdf"] = dispatch(
-                _pdf_worker, (f.file_path,),
-                timeout=self.options.pdf_timeout
-            )
+            if f.get_content_type() == "application/pdf":
+                static["pdf"] = dispatch(
+                    _pdf_worker, (f.file_path,),
+                    timeout=self.options.pdf_timeout
+                ) or []
 
         if package == "generic" or ext == "lnk":
             static["lnk"] = LnkShortcut(f.file_path).run()
