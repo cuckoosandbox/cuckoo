@@ -138,7 +138,7 @@ class StapParser(object):
             yield {
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
-                "return_value": retval, "status": ecode,
+                "return_value": retval, "status": ecode, "category" : "default",
                 "type": "apicall", "raw": line,
             }
 
