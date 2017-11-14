@@ -149,7 +149,7 @@ class StapParser(object):
             args = args.lstrip(", ")
             delim = self.get_delim(args)
             arg, _, args = args.partition(delim)
-            p_args["p%u" % n_args] = self.parse_arg(arg)
+            p_args["p%u" % n_args] = repr(self.parse_arg(arg))
             n_args += 1
 
         return p_args
