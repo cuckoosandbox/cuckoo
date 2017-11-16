@@ -116,6 +116,12 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _Hookable = require('./Hookable');
+
+var _Hookable2 = _interopRequireDefault(_Hookable);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function parseFragment(fragment) {
@@ -151,7 +157,8 @@ var DialogInteractionScheme = function DialogInteractionScheme(dialogs) {
   this.interactions = dialog.interactions || {};
   this.model = resolveModel(dialog.model || {});
 
-  var form = this.parent.base.find('form');
+  var form = this.parent.base.find('form.rdp-dialog__options');
+  console.log(form);
 
   // respond with an interaction according to the button clicked
   // button[value]
@@ -180,8 +187,8 @@ var RDPDialog = function () {
     this.base = conf.el;
     this.interaction = null;
     this.activeModel = null;
-    this.open = this.base.prop('open');
     this.dialogs = conf.dialogs || {};
+    this.isOpen = this.base.prop('open');
   }
 
   _createClass(RDPDialog, [{
@@ -189,7 +196,7 @@ var RDPDialog = function () {
     value: function render(d) {
 
       // don't render if a dialog is already open
-      if (this.open) return;
+      if (this.isOpen) return;
 
       var dialog = this.dialogs[d];
       if (dialog) {
@@ -198,6 +205,9 @@ var RDPDialog = function () {
         this.interaction = new DialogInteractionScheme(this, dialog);
         this._injectModel(this.interaction.model);
         this.open();
+
+        // runs a callback after render for anything related.
+        if (dialog.render) dialog.render(this, this.interaction);
       }
     }
 
@@ -206,8 +216,11 @@ var RDPDialog = function () {
   }, {
     key: 'open',
     value: function open() {
-      this.client.$.addClass('dialog-active');
-      this.base.prop('open', true);
+      if (!this.isOpen) {
+        this.client.$.addClass('dialog-active');
+        this.base.prop('open', true);
+        this.isOpen = true;
+      }
     }
 
     // closes the current dialog
@@ -220,6 +233,7 @@ var RDPDialog = function () {
       this.base.find('.rdp-dialog__body').empty();
       this.activeModel = null;
       this.interaction = null;
+      this.isOpen = false;
     }
 
     // injects the model (if it has a model) into the dialog.
@@ -246,18 +260,19 @@ var RDPDialog = function () {
 
 exports.default = RDPDialog;
 
-},{}],3:[function(require,module,exports){
+},{"./Hookable":1}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RDPSnapshotSelector = exports.RDPSnapshotService = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Hookable3 = require('./Hookable');
+var _Hookable4 = require('./Hookable');
 
-var _Hookable4 = _interopRequireDefault(_Hookable3);
+var _Hookable5 = _interopRequireDefault(_Hookable4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -309,7 +324,7 @@ var SnapshotBar = function (_Hookable) {
   }]);
 
   return SnapshotBar;
-}(_Hookable4.default);
+}(_Hookable5.default);
 
 var Snapshot = function Snapshot(id) {
   _classCallCheck(this, Snapshot);
@@ -370,9 +385,41 @@ var RDPSnapshotService = function (_Hookable2) {
   }]);
 
   return RDPSnapshotService;
-}(_Hookable4.default);
+}(_Hookable5.default);
 
-exports.default = RDPSnapshotService;
+// a class for handling the selection, for now somewhat specific maybe
+// but this will work for now.
+
+
+var RDPSnapshotSelector = function (_Hookable3) {
+  _inherits(RDPSnapshotSelector, _Hookable3);
+
+  function RDPSnapshotSelector(el) {
+    _classCallCheck(this, RDPSnapshotSelector);
+
+    var _this4 = _possibleConstructorReturn(this, (RDPSnapshotSelector.__proto__ || Object.getPrototypeOf(RDPSnapshotSelector)).call(this));
+
+    _this4.el = el; // should be a form
+    _this4.snapshots = [];
+    _this4.selected = [];
+
+    _this4.hooks = {
+      submit: []
+    };
+
+    _this4.el.on('submit', function (e) {
+      e.preventDefault();
+      _this4.dispatchHook('submit', _this4.selected);
+    });
+
+    return _this4;
+  }
+
+  return RDPSnapshotSelector;
+}(_Hookable5.default);
+
+exports.RDPSnapshotService = RDPSnapshotService;
+exports.RDPSnapshotSelector = RDPSnapshotSelector;
 
 },{"./Hookable":1}],4:[function(require,module,exports){
 'use strict';
@@ -413,7 +460,7 @@ var RDPToolbar = function (_Hookable) {
 
     _this.buttons = {
       fullscreen: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="fullscreen"]'), { client: client }),
-      snapshot: new _RDPToolbarButton.RDPSnapshotButton(client.$.find('button[name="snapshot"]'), { client: client }),
+      snapshot: new _RDPToolbarButton.RDPSnapshotButton(client.$.find('button[name="screenshot"]'), { client: client }),
       control: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="control"]'), { client: client, holdToggle: true }),
       reboot: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="reboot"]'), { client: client }),
       close: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="close"]'), { client: client })
@@ -659,8 +706,6 @@ var _RDPToolbar2 = _interopRequireDefault(_RDPToolbar);
 
 var _RDPSnapshotService = require('./RDPSnapshotService');
 
-var _RDPSnapshotService2 = _interopRequireDefault(_RDPSnapshotService);
-
 var _RDPDialog = require('./RDPDialog');
 
 var _RDPDialog2 = _interopRequireDefault(_RDPDialog);
@@ -684,7 +729,7 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
-    _this.snapshots = new _RDPSnapshotService2.default(_this);
+    _this.snapshots = new _RDPSnapshotService.RDPSnapshotService(_this);
     _this.toolbar = new _RDPToolbar2.default(_this);
 
     // defines the UI dialogs
@@ -730,9 +775,19 @@ var RDPClient = function (_Hookable) {
               dialog.close();
             },
             proceed: function proceed(dialog) {
-              console.log('Will include selected snapshots.');
-              dialog.close();
+              console.log(dialog.base.find('form#snapshot-selection-form'));
+              // dialog.close();
             }
+          },
+          render: function render(dialog, interaction) {
+
+            var selector = new _RDPSnapshotService.RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'));
+
+            selector.on('submit', function (data) {
+              console.log('The selection is ... insert here, whatever.');
+            });
+
+            console.log(selector);
           }
         }
       }

@@ -1,6 +1,6 @@
 import Hookable from './Hookable';
 import RDPToolbar from './RDPToolbar';
-import RDPSnapshotService from './RDPSnapshotService';
+import { RDPSnapshotService, RDPSnapshotSelector } from './RDPSnapshotService';
 import RDPDialog from './RDPDialog';
 
 // RDP Client wrapper for collecting all sub classes that belong to this interface
@@ -53,9 +53,19 @@ class RDPClient extends Hookable {
               dialog.close();
             },
             proceed: dialog => {
-              console.log('Will include selected snapshots.');
-              dialog.close();
+              console.log(dialog.base.find('form#snapshot-selection-form'));
+              // dialog.close();
             }
+          },
+          render: (dialog, interaction) => {
+            
+            let selector = new RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'));
+
+            selector.on('submit', data => {
+              console.log('The selection is ... insert here, whatever.');
+            });
+
+            console.log(selector);
           }
         }
       }
