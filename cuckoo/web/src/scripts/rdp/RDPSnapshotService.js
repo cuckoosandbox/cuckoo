@@ -31,6 +31,9 @@ class SnapshotBar extends Hookable {
 
     template.find('a[href="snapshot:remove"]').bind('click', e => {
       e.preventDefault();
+
+      if(this.service.locked) return;
+
       this.service.remove(template.data('snapshotId'));
       template.remove();
       this.dispatchHook('removed');
@@ -53,6 +56,7 @@ class RDPSnapshotService extends Hookable {
     this.snapshots = [];
     this.bar = new SnapshotBar(this.client.$.find('#rdp-snapshot-collection'), this);
     this.count = 0;
+    this.locked = false;
 
     this.hooks = {
       create: [],
@@ -62,6 +66,9 @@ class RDPSnapshotService extends Hookable {
   }
 
   create() {
+
+    if(this.locked) return;
+
     let s = new Snapshot(this.count);
     this.snapshots.push(s);
     this.count = this.count+1;
@@ -70,6 +77,7 @@ class RDPSnapshotService extends Hookable {
   }
 
   remove(id) {
+
     let pos = false;
 
     this.snapshots.forEach((snapshot, index) => {
@@ -85,6 +93,16 @@ class RDPSnapshotService extends Hookable {
 
   total() {
     return this.snapshots.length;
+  }
+
+  lock(isLocked = undefined) {
+    if(isLocked === undefined) {
+      // toggle if no property had been given
+      this.locked = !!this.locked;
+    } else {
+      this.locked = isLocked;
+    }
+    
   }
 
 }

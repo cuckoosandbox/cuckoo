@@ -220,6 +220,10 @@ var RDPDialog = function () {
         this.client.$.addClass('dialog-active');
         this.base.prop('open', true);
         this.isOpen = true;
+
+        // lock interface components whilst the dialog is open.
+        this.client.toolbar.disable();
+        this.client.snapshots.lock(true);
       }
     }
 
@@ -235,6 +239,10 @@ var RDPDialog = function () {
       this.interaction = null;
       this.selector = null;
       this.isOpen = false;
+
+      // re-enable other interface components again when closing
+      this.client.toolbar.enable();
+      this.client.snapshots.lock(false);
     }
 
     // injects the model (if it has a model) into the dialog.
@@ -317,6 +325,9 @@ var SnapshotBar = function (_Hookable) {
 
       template.find('a[href="snapshot:remove"]').bind('click', function (e) {
         e.preventDefault();
+
+        if (_this2.service.locked) return;
+
         _this2.service.remove(template.data('snapshotId'));
         template.remove();
         _this2.dispatchHook('removed');
@@ -345,6 +356,7 @@ var RDPSnapshotService = function (_Hookable2) {
     _this3.snapshots = [];
     _this3.bar = new SnapshotBar(_this3.client.$.find('#rdp-snapshot-collection'), _this3);
     _this3.count = 0;
+    _this3.locked = false;
 
     _this3.hooks = {
       create: [],
@@ -357,6 +369,9 @@ var RDPSnapshotService = function (_Hookable2) {
   _createClass(RDPSnapshotService, [{
     key: 'create',
     value: function create() {
+
+      if (this.locked) return;
+
       var s = new Snapshot(this.count);
       this.snapshots.push(s);
       this.count = this.count + 1;
@@ -366,6 +381,7 @@ var RDPSnapshotService = function (_Hookable2) {
   }, {
     key: 'remove',
     value: function remove(id) {
+
       var pos = false;
 
       this.snapshots.forEach(function (snapshot, index) {
@@ -382,6 +398,18 @@ var RDPSnapshotService = function (_Hookable2) {
     key: 'total',
     value: function total() {
       return this.snapshots.length;
+    }
+  }, {
+    key: 'lock',
+    value: function lock() {
+      var isLocked = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+      if (isLocked === undefined) {
+        // toggle if no property had been given
+        this.locked = !!this.locked;
+      } else {
+        this.locked = isLocked;
+      }
     }
   }]);
 
@@ -474,6 +502,8 @@ exports.RDPSnapshotSelector = RDPSnapshotSelector;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Hookable2 = require('./Hookable');
 
@@ -568,6 +598,30 @@ var RDPToolbar = function (_Hookable) {
 
     return _this;
   }
+
+  // lock the entire toolbar with one method calling
+  // button.disable(true).
+
+
+  _createClass(RDPToolbar, [{
+    key: 'disable',
+    value: function disable() {
+      for (var button in this.buttons) {
+        this.buttons[button].disable(true);
+      }
+    }
+
+    // unlock the entire toolbar with one method calling
+    // button.disable(false).
+
+  }, {
+    key: 'enable',
+    value: function enable() {
+      for (var button in this.buttons) {
+        this.buttons[button].disable(false);
+      }
+    }
+  }]);
 
   return RDPToolbar;
 }(_Hookable3.default);
