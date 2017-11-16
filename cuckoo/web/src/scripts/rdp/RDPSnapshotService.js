@@ -45,7 +45,7 @@ class Snapshot {
   }
 }
 
-export default class RDPSnapshotService extends Hookable {
+class RDPSnapshotService extends Hookable {
   constructor(client) {
     super();
 
@@ -88,3 +88,30 @@ export default class RDPSnapshotService extends Hookable {
   }
 
 }
+
+// a class for handling the selection, for now somewhat specific maybe
+// but this will work for now.
+class RDPSnapshotSelector extends Hookable {
+
+  constructor(el) {
+
+    super();
+
+    this.el        = el; // should be a form
+    this.snapshots = [];
+    this.selected  = [];
+
+    this.hooks = {
+      submit: []
+    };
+
+    this.el.on('submit', e => {
+      e.preventDefault();
+      this.dispatchHook('submit', this.selected);
+    });
+
+  }
+
+}
+
+export { RDPSnapshotService, RDPSnapshotSelector };

@@ -1,3 +1,5 @@
+import Hookable from './Hookable';
+
 function parseFragment(fragment) {
   if(!fragment.length) return false;
   let result = $.parseHTML(fragment.html());
@@ -26,7 +28,8 @@ class DialogInteractionScheme {
     this.interactions = dialog.interactions || {};
     this.model = resolveModel(dialog.model || {});
 
-    let form = this.parent.base.find('form');
+    let form = this.parent.base.find('form.rdp-dialog__options');
+    console.log(form);
 
     // respond with an interaction according to the button clicked
     // button[value]
@@ -47,19 +50,22 @@ class DialogInteractionScheme {
 }
 
 export default class RDPDialog {
+
   constructor(client, conf = {}) {
+
     this.client = client;
     this.base = conf.el;
     this.interaction = null;
     this.activeModel = null;
-    this.open = this.base.prop('open');
     this.dialogs = conf.dialogs || {};
+    this.isOpen = this.base.prop('open');
+
   }
 
   render(d) {
 
     // don't render if a dialog is already open
-    if(this.open) return;
+    if(this.isOpen) return;
 
     let dialog = this.dialogs[d];
     if(dialog) {
@@ -68,13 +74,20 @@ export default class RDPDialog {
       this.interaction = new DialogInteractionScheme(this, dialog);
       this._injectModel(this.interaction.model);
       this.open();
+
+      // runs a callback after render for anything related.
+      if(dialog.render) dialog.render(this, this.interaction);
     }
+
   }
 
   // opens the dialog
   open() {
-    this.client.$.addClass('dialog-active');
-    this.base.prop('open', true);
+    if(!this.isOpen) {
+      this.client.$.addClass('dialog-active');
+      this.base.prop('open', true);
+      this.isOpen = true;
+    }
   }
 
   // closes the current dialog
@@ -84,6 +97,7 @@ export default class RDPDialog {
     this.base.find('.rdp-dialog__body').empty();
     this.activeModel = null;
     this.interaction = null;
+    this.isOpen = false;
   }
 
   // injects the model (if it has a model) into the dialog.

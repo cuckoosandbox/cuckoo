@@ -15,7 +15,7 @@ export default class RDPToolbar extends Hookable {
 
     this.buttons = {
       fullscreen: new RDPToolbarButton(client.$.find('button[name="fullscreen"]'), { client }),
-      snapshot: new RDPSnapshotButton(client.$.find('button[name="snapshot"]'), { client }),
+      snapshot: new RDPSnapshotButton(client.$.find('button[name="screenshot"]'), { client }),
       control: new RDPToolbarButton(client.$.find('button[name="control"]'), { client, holdToggle: true }),
       reboot: new RDPToolbarButton(client.$.find('button[name="reboot"]'), { client }),
       close: new RDPToolbarButton(client.$.find('button[name="close"]'), { client })
