@@ -3,7 +3,6 @@ import Hookable from './Hookable';
 function parseFragment(fragment) {
   if(!fragment.length) return false;
   let result = $.parseHTML(fragment.html());
-  $(result).attr('id', $(fragment).attr('id'));
   return $(result);
 }
 
@@ -29,7 +28,6 @@ class DialogInteractionScheme {
     this.model = resolveModel(dialog.model || {});
 
     let form = this.parent.base.find('form.rdp-dialog__options');
-    console.log(form);
 
     // respond with an interaction according to the button clicked
     // button[value]
@@ -59,6 +57,8 @@ export default class RDPDialog {
     this.activeModel = null;
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
+
+    this.selector = null;
 
   }
 
@@ -97,6 +97,7 @@ export default class RDPDialog {
     this.base.find('.rdp-dialog__body').empty();
     this.activeModel = null;
     this.interaction = null;
+    this.selector = null;
     this.isOpen = false;
   }
 

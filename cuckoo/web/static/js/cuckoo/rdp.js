@@ -127,7 +127,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function parseFragment(fragment) {
   if (!fragment.length) return false;
   var result = $.parseHTML(fragment.html());
-  $(result).attr('id', $(fragment).attr('id'));
   return $(result);
 }
 
@@ -158,7 +157,6 @@ var DialogInteractionScheme = function DialogInteractionScheme(dialogs) {
   this.model = resolveModel(dialog.model || {});
 
   var form = this.parent.base.find('form.rdp-dialog__options');
-  console.log(form);
 
   // respond with an interaction according to the button clicked
   // button[value]
@@ -189,6 +187,8 @@ var RDPDialog = function () {
     this.activeModel = null;
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
+
+    this.selector = null;
   }
 
   _createClass(RDPDialog, [{
@@ -233,6 +233,7 @@ var RDPDialog = function () {
       this.base.find('.rdp-dialog__body').empty();
       this.activeModel = null;
       this.interaction = null;
+      this.selector = null;
       this.isOpen = false;
     }
 
@@ -394,7 +395,7 @@ var RDPSnapshotService = function (_Hookable2) {
 var RDPSnapshotSelector = function (_Hookable3) {
   _inherits(RDPSnapshotSelector, _Hookable3);
 
-  function RDPSnapshotSelector(el) {
+  function RDPSnapshotSelector(el, service) {
     _classCallCheck(this, RDPSnapshotSelector);
 
     var _this4 = _possibleConstructorReturn(this, (RDPSnapshotSelector.__proto__ || Object.getPrototypeOf(RDPSnapshotSelector)).call(this));
@@ -402,18 +403,64 @@ var RDPSnapshotSelector = function (_Hookable3) {
     _this4.el = el; // should be a form
     _this4.snapshots = [];
     _this4.selected = [];
+    _this4.service = service || null;
 
     _this4.hooks = {
-      submit: []
+      submit: [],
+      selected: [],
+      deselected: []
     };
 
-    _this4.el.on('submit', function (e) {
-      e.preventDefault();
-      _this4.dispatchHook('submit', _this4.selected);
+    _this4.populate(function () {
+
+      _this4.el.on('submit', function (e) {
+        e.preventDefault();
+        _this4.dispatchHook('submit', _this4.selected);
+      });
+
+      _this4.el.find('input[type="checkbox"]').bind('change', function (e) {
+        var t = $(e.currentTarget);
+        if (t.is(':checked')) {
+          _this4.dispatchHook('selected');
+        } else {
+          _this4.dispatchHook('deselected');
+        }
+      });
+
+      _this4.on('selected', function () {
+        return _this4.selected.push({});
+      });
+      _this4.on('deselected', function () {
+        return _this4.selected.pop();
+      });
     });
 
     return _this4;
   }
+
+  // populates the selection list
+
+
+  _createClass(RDPSnapshotSelector, [{
+    key: 'populate',
+    value: function populate() {
+      var done = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
+
+      if (!this.service) return done();
+
+      for (var s in this.service.snapshots) {
+
+        var snapshot = this.service.snapshots[s];
+
+        var template = $('\n        <li>\n          <label for="snapshot-' + snapshot.id + '">\n            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-' + snapshot.id + '" />\n            <span class="snapshot-selection-image">\n              <img src="/static/graphic/screenshot-sample.png" alt="snapshot-' + snapshot.id + '" />\n            </span>\n          </label>\n        </li>\n      ');
+
+        this.el.find('ul').append(template);
+      }
+
+      return done();
+    }
+  }]);
 
   return RDPSnapshotSelector;
 }(_Hookable5.default);
@@ -775,19 +822,25 @@ var RDPClient = function (_Hookable) {
               dialog.close();
             },
             proceed: function proceed(dialog) {
-              console.log(dialog.base.find('form#snapshot-selection-form'));
-              // dialog.close();
+              // just trigger the form to submit, the event is catched in the render hook
+              dialog.selector.el.submit();
             }
           },
           render: function render(dialog, interaction) {
 
-            var selector = new _RDPSnapshotService.RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'));
+            dialog.selector = new _RDPSnapshotService.RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'), _this.snapshots);
 
-            selector.on('submit', function (data) {
+            var updateSelected = function updateSelected() {
+              return dialog.base.find('span[data-model="selected"]').text(dialog.selector.selected.length);
+            };
+
+            dialog.selector.on('submit', function (data) {
               console.log('The selection is ... insert here, whatever.');
+              dialog.close();
             });
 
-            console.log(selector);
+            dialog.selector.on('selected', updateSelected);
+            dialog.selector.on('deselected', updateSelected);
           }
         }
       }
