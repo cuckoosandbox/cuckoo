@@ -70,4 +70,17 @@ export default class RDPToolbar extends Hookable {
     });
 
   }
+
+  // lock the entire toolbar with one method calling
+  // button.disable(true).
+  disable() {
+    for(let button in this.buttons) this.buttons[button].disable(true);
+  }
+
+  // unlock the entire toolbar with one method calling
+  // button.disable(false).
+  enable() {
+    for(let button in this.buttons) this.buttons[button].disable(false);
+  }
+
 }

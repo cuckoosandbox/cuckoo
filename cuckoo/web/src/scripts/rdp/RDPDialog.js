@@ -87,6 +87,10 @@ export default class RDPDialog {
       this.client.$.addClass('dialog-active');
       this.base.prop('open', true);
       this.isOpen = true;
+
+      // lock interface components whilst the dialog is open.
+      this.client.toolbar.disable();
+      this.client.snapshots.lock(true);
     }
   }
 
@@ -99,6 +103,10 @@ export default class RDPDialog {
     this.interaction = null;
     this.selector = null;
     this.isOpen = false;
+
+    // re-enable other interface components again when closing
+    this.client.toolbar.enable();
+    this.client.snapshots.lock(false);
   }
 
   // injects the model (if it has a model) into the dialog.
