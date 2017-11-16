@@ -93,22 +93,69 @@ class RDPSnapshotService extends Hookable {
 // but this will work for now.
 class RDPSnapshotSelector extends Hookable {
 
-  constructor(el) {
+  constructor(el, service) {
 
     super();
 
     this.el        = el; // should be a form
     this.snapshots = [];
     this.selected  = [];
+    this.service   = service || null;
 
     this.hooks = {
-      submit: []
+      submit: [],
+      selected: [],
+      deselected: []
     };
 
-    this.el.on('submit', e => {
-      e.preventDefault();
-      this.dispatchHook('submit', this.selected);
+    this.populate(() => {
+
+      this.el.on('submit', e => {
+        e.preventDefault();
+        this.dispatchHook('submit', this.selected);
+      });
+
+      this.el.find('input[type="checkbox"]').bind('change', e => {
+        let t = $(e.currentTarget);
+        if(t.is(':checked')) {
+          this.dispatchHook('selected');
+        } else {
+          this.dispatchHook('deselected');
+        }
+      });
+
+      this.on('selected', () => this.selected.push({}));
+      this.on('deselected', () => this.selected.pop());
+
     });
+
+  }
+
+  // populates the selection list
+  populate(done = function(){}) {
+
+    if(!this.service) return done();
+
+    for(let s in this.service.snapshots) {
+
+      let snapshot = this.service.snapshots[s];
+
+      let template = $(`
+        <li>
+          <label for="snapshot-${snapshot.id}">
+            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-${snapshot.id}" />
+            <span class="snapshot-selection-image">
+              <img src="/static/graphic/screenshot-sample.png" alt="snapshot-${snapshot.id}" />
+            </span>
+          </label>
+        </li>
+      `);
+
+      this.el.find('ul').append(template);
+
+    }
+
+    return done();
 
   }
 

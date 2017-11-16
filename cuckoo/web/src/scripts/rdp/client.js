@@ -53,19 +53,24 @@ class RDPClient extends Hookable {
               dialog.close();
             },
             proceed: dialog => {
-              console.log(dialog.base.find('form#snapshot-selection-form'));
-              // dialog.close();
+              // just trigger the form to submit, the event is catched in the render hook
+              dialog.selector.el.submit();
             }
           },
           render: (dialog, interaction) => {
-            
-            let selector = new RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'));
 
-            selector.on('submit', data => {
+            dialog.selector = new RDPSnapshotSelector(dialog.base.find('form#snapshot-selection-form'), this.snapshots);
+
+            let updateSelected = () => dialog.base.find('span[data-model="selected"]').text(dialog.selector.selected.length);
+
+            dialog.selector.on('submit', data => {
               console.log('The selection is ... insert here, whatever.');
+              dialog.close();
             });
 
-            console.log(selector);
+            dialog.selector.on('selected', updateSelected);
+            dialog.selector.on('deselected', updateSelected);
+
           }
         }
       }
