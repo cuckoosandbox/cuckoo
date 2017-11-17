@@ -265,6 +265,7 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
     run(
         s.iptables, action, "INPUT", "--source", vm_ip, "-j", "DROP"
     )
+    run(s.iptables, action, "OUTPUT", "--source", vm_ip, "-j", "DROP")
 
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""
