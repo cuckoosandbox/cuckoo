@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -39,8 +39,7 @@ def scheduler():
             q = Task.query.filter_by(status=Task.PENDING)
             tasks = q.limit(settings.threshold).all()
             for task in tasks:
-                task.status = Task.ASSIGNED
-                task.node_id = node.id
+                task.assign_node(node.id)
 
             if tasks:
                 log.debug("Assigned %d tasks to %s", len(tasks), node.name)

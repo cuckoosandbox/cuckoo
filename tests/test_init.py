@@ -55,6 +55,10 @@ class TestInit(object):
 
         os.environ["VIRTUAL_ENV"] = venv
 
+    def test_venv_new_unicode(self):
+        set_cwd(tempfile.mkdtemp(u"a\u202eb"))
+        write_supervisor_conf(None)
+
     def test_cuckoo_init(self):
         """Tests that 'cuckoo init' works with a new CWD."""
         with pytest.raises(SystemExit):
@@ -63,13 +67,14 @@ class TestInit(object):
                 standalone_mode=False
             )
 
-        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
         assert os.path.exists(os.path.join(cwd(), "conf"))
+        assert os.path.exists(os.path.join(cwd(), "log"))
+        assert os.path.exists(os.path.join(cwd(), "pidfiles", ".gitignore"))
+        assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         assert os.path.exists(os.path.join(cwd(), "storage"))
         assert os.path.exists(os.path.join(cwd(), "storage", "binaries"))
         assert os.path.exists(os.path.join(cwd(), "storage", "analyses"))
         assert os.path.exists(os.path.join(cwd(), "storage", "baseline"))
-        assert os.path.exists(os.path.join(cwd(), "log"))
 
     def test_cuckoo_init_main(self):
         """Tests that 'cuckoo' works with a new CWD."""
@@ -77,7 +82,7 @@ class TestInit(object):
             ("--cwd", cwd(), "--nolog"),
             standalone_mode=False
         )
-        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
+        assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
 
     @mock.patch("cuckoo.main.load_signatures")
     def test_cuckoo_init_main_nosigs(self, p):
@@ -86,7 +91,7 @@ class TestInit(object):
             ("--cwd", cwd(), "--nolog"),
             standalone_mode=False
         )
-        assert os.path.exists(os.path.join(cwd(), "mitm.py"))
+        assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         p.assert_not_called()
 
     def test_cuckoo_init_no_resultserver(self):
@@ -335,6 +340,7 @@ def test_all_config_written():
 
     class LookupDict(dict):
         parents = []
+
         def __getitem__(self, key):
             lookups.append(":".join(self.parents + [key]))
             return dict.__getitem__(key)

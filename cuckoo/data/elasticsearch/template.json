@@ -87,6 +87,31 @@
                     "type": "date"
                 }
             }
+        },
+        "irma": {
+            "dynamic_templates": [
+                {
+                    "notanalyzed": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "type": "string",
+                            "doc_values": "True"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ],
+            "properties": {
+                "timestamp_first_scan": {
+                    "format": "epoch_millis",
+                    "type": "date"
+                },
+                "timestamp_last_scan": {
+                    "format": "epoch_millis",
+                    "type": "date"
+                }
+            }
         }
     }
 }

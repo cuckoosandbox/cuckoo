@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -34,6 +34,10 @@ def test_extract():
     open(b, "wb").write("b")
     t.add(b, "community-master/data/monitor/b.txt")
 
+    y = tempfile.mktemp()
+    open(y, "wb").write("y")
+    t.add(y, "community-master/data/yara/binaries/y.yar")
+
     c = tempfile.mktemp()
     open(c, "wb").write("c")
     t.add(c, "community-master/agent/c.txt")
@@ -55,6 +59,7 @@ def test_extract():
 
     assert open(cwd("signatures", "a.txt"), "rb").read() == "a"
     assert open(cwd("monitor", "b.txt"), "rb").read() == "b"
+    assert open(cwd("yara", "binaries", "y.yar"), "rb").read() == "y"
     assert open(cwd("agent", "c.txt"), "rb").read() == "c"
     assert open(cwd("analyzer", "dir1", "d.txt"), "rb").read() == "d"
     assert open(cwd("analyzer", "dir2", "dir3", "e.txt"), "rb").read() == "e"

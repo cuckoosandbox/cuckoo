@@ -60,14 +60,14 @@ def convert_to_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
 
-def validate_hash(hash):
-    """Validates a hash by length and contents"""
-    if len(hash) not in (32, 40, 64, 128):
-        return
+def validate_hash(h):
+    """Validates a hash by length and contents."""
+    if len(h) not in (32, 40, 64, 128):
+        return False
 
-    return "".join(ch for ch in hash if re.match("\\w", ch))
+    return bool(re.match("[0-9a-fA-F]*$", h))
 
-def validate_url(url):
+def validate_url(url, allow_invalid=False):
     """Validates an URL using Django's built-in URL validator"""
     val = URLValidator(schemes=["http", "https"])
 
@@ -76,6 +76,13 @@ def validate_url(url):
         return url
     except:
         pass
+
+    if allow_invalid and "://" in url:
+        parts = url.split("://")
+        # In case of "http://https://example.com" this will take the
+        # "https://" part and not the "http://" part.
+        if parts[-2] == "http" or parts[-2] == "https":
+            return "%s://%s" % (parts[-2], parts[-1])
 
     try:
         val("http://%s" % url)

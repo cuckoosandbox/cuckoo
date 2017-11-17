@@ -7,9 +7,8 @@ import ConfigParser
 import click
 import os
 import logging
-import sys
+import re
 
-from cuckoo.common.colors import red
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import parse_bool
@@ -18,13 +17,6 @@ from cuckoo.misc import cwd
 log = logging.getLogger(__name__)
 
 _cache = {}
-
-def log_error(message, *args):
-    """Prints to stderr if no logging has been initialized yet."""
-    if not logging.getLogger().handlers:
-        print>>sys.stderr, red("Configuration error: " + message % args)
-    else:
-        log.error(message, *args)
 
 class Type(object):
     """Base Class for Type Definitions"""
@@ -133,7 +125,7 @@ class Boolean(Type):
         try:
             return parse_bool(value)
         except:
-            log_error("Incorrect Boolean %s", value)
+            log.error("Incorrect Boolean %s", value)
 
     def check(self, value):
         try:
@@ -153,7 +145,7 @@ class UUID(Type):
             c = click.UUID(value)
             return str(c)
         except:
-            log_error("Incorrect UUID %s", value)
+            log.error("Incorrect UUID %s", value)
 
     def check(self, value):
         """Checks if the value is of type UUID."""
@@ -176,6 +168,9 @@ class List(Type):
         super(List, self).__init__(default)
 
     def parse(self, value):
+        if value is None:
+            return []
+
         try:
             ret = []
 
@@ -184,7 +179,7 @@ class List(Type):
                     ret.append(self.subclass().parse(entry))
                 return ret
 
-            for entry in value.split(self.sep):
+            for entry in re.split("[%s]" % self.sep, value):
                 if self.strip:
                     entry = entry.strip()
                     if not entry:
@@ -193,7 +188,7 @@ class List(Type):
                 ret.append(self.subclass().parse(entry))
             return ret
         except:
-            log_error("Incorrect list: %s", value)
+            log.error("Incorrect list: %s", value)
 
     def check(self, value):
         try:
@@ -203,7 +198,7 @@ class List(Type):
             return False
 
     def emit(self, value):
-        return (", " if self.sep == "," else self.sep).join(value)
+        return (", " if self.sep[0] == "," else self.sep[0]).join(value or "")
 
 class Config(object):
     """Configuration file parser."""
@@ -279,7 +274,8 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
-                "options": String(),
+                "options": List(String, None, ",\\s"),
+                "osprofile": String(required=False),
             },
             "__star__": ("virtualbox", "machines"),
         },
@@ -300,7 +296,7 @@ class Config(object):
                 ),
                 "port_base": Int(50000),
                 "script": Path(
-                    "mitm.py",
+                    "stuff/mitm.py",
                     exists=False, writable=False, readable=True
                 ),
                 "certificate": Path(
@@ -343,6 +339,7 @@ class Config(object):
                 "emulator_port": Int(5554),
                 "resultserver_ip": String("10.0.2.2"),
                 "resultserver_port": Int(2042),
+                "osprofile": String(required=False),
             },
             "__star__": ("avd", "machines"),
         },
@@ -364,6 +361,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("esx", "machines"),
         },
@@ -382,6 +380,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("kvm", "machines"),
         },
@@ -480,7 +479,7 @@ class Config(object):
             },
             "mask": {
                 "enabled": Boolean(False),
-                "pid_generic": String(),
+                "pid_generic": List(String, None),
             },
         },
         "physical": {
@@ -500,6 +499,7 @@ class Config(object):
                 "label": String("physical1"),
                 "platform": String("windows"),
                 "ip": String("192.168.56.101"),
+                "osprofile": String(required=False),
             },
             "__star__": ("physical", "machines"),
         },
@@ -531,6 +531,9 @@ class Config(object):
             },
             "dumptls": {
                 "enabled": Boolean(True),
+            },
+            "extracted": {
+                "enabled": Boolean(True, required=False),
             },
             "googleplay": {
                 "enabled": Boolean(False),
@@ -645,7 +648,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String(),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.2"),
                     "interface": String("qemubr"),
@@ -654,6 +659,7 @@ class Config(object):
                     "tags": String("debian_wheezy,64_bit"),
                     "kernel": String(),
                     "initrd": String(),
+                    "osprofile": String(required=False),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
@@ -661,7 +667,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("mipsel"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.3"),
                     "interface": String("qemubr"),
@@ -671,6 +679,7 @@ class Config(object):
                     "kernel": String(
                         "{imagepath}/vmlinux-3.16.0-4-4kc-malta-mipsel"
                     ),
+                    "osprofile": String(""),
                 }, {
                     "__section__": "vm3",
                     "label": String("vm3"),
@@ -678,7 +687,9 @@ class Config(object):
                         "/home/rep/vms/qvm_wheezy64_1.qcow2",
                         exists=True, writable=False, readable=True
                     ),
+                    "snapshot": String(required=False),
                     "arch": String("arm"),
+                    "enable_kvm": Boolean(False),
                     "platform": String("linux"),
                     "ip": String("192.168.55.4"),
                     "interface": String("qemubr"),
@@ -689,6 +700,7 @@ class Config(object):
                     "initrd": String(
                         "{imagepath}/initrd-3.2.0-4-versatile-arm"
                     ),
+                    "osprofile": String(""),
                 },
             ],
             "__star__": ("qemu", "machines"),
@@ -816,6 +828,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("vmware", "machines"),
         },
@@ -839,6 +852,7 @@ class Config(object):
                 "resultserver_ip": String(required=False),
                 "resultserver_port": Int(required=False),
                 "tags": String(required=False),
+                "osprofile": String(required=False),
             },
             "__star__": ("vsphere", "machines"),
         },
@@ -860,6 +874,7 @@ class Config(object):
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
                 "tags": String(),
+                "osprofile": String(required=False),
             },
             "__star__": ("xenserver", "machines"),
         },
@@ -869,7 +884,7 @@ class Config(object):
         """Get types for a section entry."""
         section_types = get_section_types(file_name, section)
         if not section_types and not loose:
-            log_error(
+            log.error(
                 "Config section %s:%s not found!", file_name, section
             )
             if strict:
@@ -912,7 +927,7 @@ class Config(object):
             )
 
         if file_name not in self.configuration and not loose:
-            log_error("Unknown config file %s.conf", file_name)
+            log.error("Unknown config file %s.conf", file_name)
             return
 
         for section in config.sections():
@@ -926,10 +941,22 @@ class Config(object):
             try:
                 items = config.items(section)
             except ConfigParser.InterpolationMissingOptionError as e:
-                log_error("Missing environment variable(s): %s", e)
+                log.error("Missing environment variable(s): %s", e)
                 raise CuckooConfigurationError(
                     "Missing environment variable: %s" % e
                 )
+            except ValueError as e:
+                if e.message == "incomplete format key":
+                    raise CuckooConfigurationError(
+                        "One of the fields that you've filled out in "
+                        "$CWD/conf/%s contains the sequence '%(' which is "
+                        "interpreted as environment variable sequence, e.g., "
+                        "'%(PGPASSWORD)s' would locate a PostgreSQL "
+                        "password. Please update the field to correctly "
+                        "state the environment variable or change it in a "
+                        "way that '%(' is no longer in the variable."
+                    )
+                raise
 
             for name, raw_value in items:
                 if name in self.env_keys:
@@ -962,7 +989,7 @@ class Config(object):
                     value = types[name].parse(raw_value)
                 else:
                     if not loose:
-                        log_error(
+                        log.error(
                             "Type of config parameter %s:%s:%s not found! "
                             "This may indicate that you've incorrectly filled "
                             "out the Cuckoo configuration, please double "

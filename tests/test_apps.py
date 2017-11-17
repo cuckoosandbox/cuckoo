@@ -2,25 +2,31 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import hashlib
 import json
 import logging
 import mock
 import os
 import pytest
 import shutil
+import sys
 import tempfile
 
+import cuckoo
+
 from cuckoo.apps.apps import (
-    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
+    process, process_task, cuckoo_clean, process_task_range, cuckoo_machine,
+    migrate_cwd
 )
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
-from cuckoo.main import main, cuckoo_create
-from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
+from cuckoo.core.startup import init_logfile, init_console_logging, init_yara
+from cuckoo.main import main, cuckoo_create, cuckoo_init
+from cuckoo.misc import set_cwd, decide_cwd, cwd, mkdir, is_linux
+from tests.utils import chdir
 
 db = Database()
 
@@ -49,6 +55,16 @@ class TestAppsWithCWD(object):
         mkdir(cwd("monitor", open(cwd("monitor", "latest")).read().strip()))
         main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
         q.assert_called_once()
+
+    @mock.patch("cuckoo.main.load_signatures")
+    @mock.patch("cuckoo.main.log")
+    def test_main_exception(self, p, q):
+        q.side_effect = Exception("this is a test")
+        with pytest.raises(SystemExit):
+            main.main(
+                ("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False
+            )
+        p.exception.assert_called_once()
 
     def test_api(self):
         with mock.patch("cuckoo.main.cuckoo_api") as p:
@@ -121,24 +137,26 @@ class TestAppsWithCWD(object):
         out, _ = capsys.readouterr()
         assert "Aborting Cuckoo DNS Serve" in out
 
-    def test_web(self):
+    @mock.patch("django.core.management.execute_from_command_line")
+    def test_web_noargs(self, p):
         curdir = os.getcwd()
 
-        s = "django.core.management.execute_from_command_line"
-        with mock.patch(s) as p:
-            p.return_value = None
-            main.main(("--cwd", cwd(), "web"), standalone_mode=False)
-            p.assert_called_once_with(
-                ("cuckoo", "runserver", "localhost:8000")
-            )
+        main.main(("--cwd", cwd(), "web"), standalone_mode=False)
+        p.assert_called_once_with(
+            ("cuckoo", "runserver", "localhost:8000")
+        )
 
-        with mock.patch(s) as p:
-            p.return_value = None
-            main.main(
-                ("--cwd", cwd(), "web", "foo", "bar"),
-                standalone_mode=False
-            )
-            p.assert_called_once_with(("cuckoo", "foo", "bar"))
+        os.chdir(curdir)
+
+    @mock.patch("django.core.management.execute_from_command_line")
+    def test_web_args(self, p):
+        curdir = os.getcwd()
+
+        main.main(
+            ("--cwd", cwd(), "web", "foo", "bar"),
+            standalone_mode=False
+        )
+        p.assert_called_once_with(("cuckoo", "foo", "bar"))
 
         os.chdir(curdir)
 
@@ -246,7 +264,7 @@ class TestProcessingTasks(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
-        index_yara()
+        init_yara()
 
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_task_range")
@@ -382,29 +400,6 @@ class TestProcessingTasks(object):
         p.return_value.view_task.assert_any_call(3)
         p.return_value.view_task.assert_any_call(42)
 
-    @mock.patch("cuckoo.apps.apps.process_task")
-    def test_process_task_range_multi(self, p):
-        mkdir(cwd(analysis=1234))
-        mkdir(cwd(analysis=2345))
-        process_task_range("1234,2345")
-        assert p.call_count == 2
-        p.assert_any_call({
-            "id": 1234,
-            "category": "file",
-            "target": "",
-            "options": {},
-            "package": None,
-            "custom": None,
-        })
-        p.assert_any_call({
-            "id": 2345,
-            "category": "file",
-            "target": "",
-            "options": {},
-            "package": None,
-            "custom": None,
-        })
-
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_tasks")
     def test_process_many(self, p, q):
@@ -452,7 +447,6 @@ class TestProcessingTasks(object):
     def test_empty_reprocess(self):
         db.connect()
         mkdir(cwd(analysis=1))
-        logging.basicConfig(level=logging.DEBUG)
         process_task_range("1")
         assert os.path.exists(cwd("reports", "report.json", analysis=1))
         obj = json.load(open(cwd("reports", "report.json", analysis=1), "rb"))
@@ -540,7 +534,7 @@ def test_clean_dropdb(p):
     p.return_value.drop.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
-@mock.patch("cuckoo.apps.apps.pymongo")
+@mock.patch("cuckoo.apps.apps.mongo")
 def test_clean_dropmongo(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -554,8 +548,10 @@ def test_clean_dropmongo(p, q):
     })
 
     cuckoo_clean()
-    p.MongoClient.assert_called_once_with("host", 13337)
-    p.MongoClient.return_value.drop_database.assert_called_once_with("cuckoo")
+    p.init.assert_called_once_with()
+    p.connect.assert_called_once_with()
+    p.drop.assert_called_once_with()
+    p.close.assert_called_once_with()
 
 @mock.patch("cuckoo.apps.apps.Database")
 def test_clean_keepdirs(p):
@@ -626,3 +622,179 @@ def test_config_load_once():
         assert p.return_value.read.call_count == 2
         p.return_value.read.assert_any_call(cwd("conf", "processing.conf"))
         p.return_value.read.assert_any_call(cwd("conf", "reporting.conf"))
+
+class TestMigrateCWD(object):
+    @mock.patch("shutil.copy")
+    def test_up_to_date(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        migrate_cwd()
+        p.assert_not_called()
+
+    @mock.patch("cuckoo.apps.apps.log")
+    @mock.patch("shutil.copy")
+    def test_modified_file(self, p, q):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        open(cwd("agent", "agent.py"), "wb").write("newer agent")
+        with pytest.raises(SystemExit):
+            migrate_cwd()
+        assert q.error.call_count == 2
+        assert "One or more files" in q.error.call_args_list[0][0][0]
+        assert q.warning.call_args_list[1][0][1] == "agent/agent.py"
+        p.assert_not_called()
+
+    @mock.patch("shutil.copy")
+    def test_missing_file(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        # We're going to restore a file that has been removed by the user for
+        # one reason or the other, namely, web/local_settings.py.
+        os.unlink(cwd("web", "local_settings.py"))
+
+        migrate_cwd()
+        p.assert_called_once_with(
+            cwd("..", "data", "web/local_settings.py", private=True),
+            cwd("web/local_settings.py")
+        )
+
+    @mock.patch("cuckoo.apps.apps.hashlib")
+    @mock.patch("shutil.copy")
+    def test_outdated_file(self, p, q):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        # We're going to pretend like web/local_settings.py is outdated by
+        # replacing its sha1 by that of its initial version.
+        our_buf = open(cwd("web", "local_settings.py"), "rb").read()
+
+        def our_sha1(buf):
+            class obj(object):
+                def hexdigest(self):
+                    return "d90bb80df2ed51d393823438f1975c1075523ec8"
+            return obj() if buf == our_buf else hashlib.sha1(buf)
+
+        q.sha1.side_effect = our_sha1
+        migrate_cwd()
+        p.assert_called_once_with(
+            cwd("..", "data", "web/local_settings.py", private=True),
+            cwd("web/local_settings.py")
+        )
+
+    @mock.patch("cuckoo.apps.apps.hashlib")
+    def test_deleted_file(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        def our_sha1(buf):
+            class obj(object):
+                def hexdigest(self):
+                    return "4989ba7ce0dc38709dd125d6c4fac5852914f0c7"
+            return obj() if buf == "yes!" else hashlib.sha1(buf)
+
+        p.sha1.side_effect = our_sha1
+
+        open(cwd("analyzer/windows/lib/common/errors.py"), "wb").write("yes!")
+        assert os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
+        migrate_cwd()
+        assert not os.path.exists(cwd("analyzer/windows/lib/common/errors.py"))
+
+    def test_new_directory(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        shutil.rmtree(cwd("yara", "scripts"))
+        shutil.rmtree(cwd("yara", "shellcode"))
+        shutil.rmtree(cwd("stuff"))
+        shutil.rmtree(cwd("whitelist"))
+        open(cwd("yara", "index_binaries.yar"), "wb").write("hello")
+        migrate_cwd()
+        # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
+        assert os.path.exists(cwd("yara", "scripts", ".gitignore"))
+        assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
+        # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
+        assert os.path.exists(cwd("stuff"))
+        assert os.path.exists(cwd("whitelist"))
+        assert open(cwd("whitelist", "domain.txt"), "rb").read().strip() == (
+            "# You can add whitelisted domains here."
+        )
+        assert not os.path.exists(cwd("yara", "index_binaries.yar"))
+
+    def test_using_community(self):
+        def h(filepath):
+            return hashlib.sha1(open(filepath, "rb").read()).hexdigest()
+
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        filepath = cwd("signatures", "__init__.py")
+        # Old Community version.
+        shutil.copy("tests/files/sig-init-old.py", filepath)
+        assert h(filepath) == "033e19e4fea1989680f4af19b904448347dd9589"
+        migrate_cwd()
+        assert h(filepath) == "eaffef3b08fd1069ba2d3c977015b598fa150941"
+
+    def test_current_community(self):
+        set_cwd(tempfile.mktemp())
+        shutil.copytree(os.path.expanduser("~/.cuckoo"), cwd())
+        open(cwd(".cwd"), "wb").write("somethingelse")
+        migrate_cwd()
+
+class TestCommunitySuggestion(object):
+    @property
+    def ctx(self):
+        class context(object):
+            log = False
+        return context
+
+    @mock.patch("cuckoo.main.green")
+    def test_default_cwd(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        with chdir(cwd()):
+            decide_cwd(".")
+            cuckoo_init(logging.INFO, self.ctx)
+            p.assert_called_once_with("cuckoo community")
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with("cuckoo --cwd %s community" % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd_with_space(self, p):
+        set_cwd(tempfile.mkdtemp("foo bar"))
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_hardcoded_cwd_with_quote(self, p):
+        set_cwd(tempfile.mkdtemp("foo ' bar"))
+        cuckoo_create()
+        decide_cwd(cwd())
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
+
+    @mock.patch("cuckoo.main.green")
+    def test_has_signatures(self, p):
+        set_cwd(tempfile.mkdtemp())
+        sys.modules.pop("signatures", None)
+        sys.modules.pop("signatures.android", None)
+        sys.modules.pop("signatures.cross", None)
+        sys.modules.pop("signatures.darwin", None)
+        sys.modules.pop("signatures.extractor", None)
+        sys.modules.pop("signatures.linux", None)
+        sys.modules.pop("signatures.network", None)
+        sys.modules.pop("signatures.windows", None)
+        cuckoo_create()
+        shutil.copy(
+            "tests/files/enumplugins/sig1.py",
+            cwd("signatures", "windows", "foobar.py")
+        )
+        cuckoo.signatures = []
+        cuckoo_init(logging.INFO, self.ctx)
+        p.assert_not_called()

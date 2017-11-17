@@ -1,0 +1,399 @@
+.grid-stack-item-content {
+  padding: 0px 7px 0px 7px !important;
+}
+
+// widget definition
+.widget {
+
+  position: relative;
+  min-height: 100%;
+  background-color: #FFF;
+  border: 2px solid rgba(#98AFB6, .5);
+  border-radius: 12px;
+  box-shadow: 0px 4px 8px shade(#3f444c, 17%);
+
+  // grid spacer
+  &-grid {
+    margin-top: 15px;
+  }
+
+  &-handle {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 19px;
+    border-radius: 0px 0px 4px 4px;
+    background-color: #CBD7DA;
+    left: 50%;
+    top: 0;
+    margin-left: -21px;
+    z-index: 1;
+
+    // cursor changes
+    cursor: grab;
+    cursor: -webkit-grab;
+
+    &:active {
+      cursor: grabbing;
+      cursor: -webkit-grabbing;
+    }
+
+    &:before,
+    &:after {
+      content: "";
+      width: 30px;
+      height: 3px;
+      background-color: #88A0A6;
+      margin: 2px 0;
+      border-radius: 10px;
+    }
+
+  }
+
+  &-title {
+
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border: 2px solid #C9D7DB;
+    border-width: 0 2px 2px 0;
+    background-color: #DAE6E9;
+    display: inline-block;
+    padding: 10px;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #596B70;
+    }
+
+  }
+
+  &-controls {
+    @extend %flex-list;
+    padding: 15px 15px 0 0;
+
+    & > li:not(:last-child) {
+      margin-right: 15px;
+    }
+
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+
+    .widget-controls {
+      margin-left: auto;
+
+      // set a transition on an svg property of the icons
+      .svg-icon {
+        transition: fill 150ms linear;
+      }
+
+      a:hover {
+        // change the svg fill with plain css :D
+        .svg-icon {
+          fill: shade(#CBD7DA, 30%);
+        }
+      }
+
+    }
+  }
+
+  &-content {
+
+    padding: 15px;
+
+    & > .widget-content-copy {
+
+      color: #999;
+
+      &.center {
+        text-align: center;
+      }
+
+      &.message-error {
+        font-weight: 500;
+        color: #EF2D56;
+      }
+
+      &.message-success {
+        font-weight: 500;
+        color: #23CE6B;
+      }
+
+    }
+  }
+
+  &-loader {
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -72px;
+    margin-left: -72px;
+    width: 144px;
+    height: 144px;
+
+    & > div {
+      @extend %roto-loader;
+      margin-top: 0;
+      margin-left: 0;
+      left: 0;
+    }
+
+    .loader-text {
+      position: absolute;
+      width: 300px;
+      left: 50%;
+      margin-left: -150px;
+      text-align: center;
+      bottom: -40px;
+      font-size: 13px;
+      padding: 5px;
+    }
+
+  }
+
+  &-toolbar {
+
+    font-size: 12px;
+    border-bottom: 1px solid #C9D7DB;
+    padding: 0 15px 5px 15px;
+    height: 28px;
+    overflow: hidden;
+    transition: opacity 250ms ease-in-out,
+                height 250ms ease-in-out;
+
+    & > ul {
+      @extend %flex-list;
+      align-items: center;
+      // justify-content: center;
+
+      & > li {
+        margin: 0 7px;
+        &:first-child { margin-left: 0; }
+        &:last-child { margin-right: 0; }
+
+        &.title {
+          font-weight: 700;
+          color: shade(#C9D7DB, 20%);
+        }
+
+        &.period-selector {
+          margin-right: 0;
+        }
+
+        input[type="radio"] {
+          display: none;
+
+          & + span:hover {
+            cursor: pointer;
+          }
+
+          &:checked + span {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: #ccc;
+            font-weight: 700;
+          }
+        }
+
+        label + input[type="text"] {
+          margin-left: 3px;
+        }
+
+        &.right {
+          margin-left: auto;
+        }
+
+      }
+    }
+
+    .control-nodes {
+      display: none;
+      &.has-nodes {
+        display: block;
+      }
+    }
+
+    .date-selector {
+
+      margin-left: 0;
+      margin-right: 0;
+
+      label {
+        svg {
+          position: relative;
+          top: 2px;
+        }
+      }
+
+      input {
+        position: relative;
+        top: -1px;
+        width: 75px;
+      }
+    }
+
+    .time-selector {
+
+      margin-left: 0;
+
+      select {
+        -webkit-appearance: none;
+        position: relative;
+        border-left: 0;
+        border-radius: 0;
+        width: auto;
+        padding: 2px 5px;
+        text-align: center;
+
+        & + span {
+          position: relative;
+        }
+      }
+
+    }
+
+    .widget & {
+      .mode-sync & {
+        opacity: 0;
+      }
+    }
+
+    &.hidden {
+      height: 0;
+    }
+
+  }
+
+  &-node-status {
+
+    @extend %flex-list;
+    justify-content: center;
+
+    & > li {
+
+      padding: 7px 10px 8px 10px;
+      margin: 7px;
+      border: 1px solid rgba(#98AFB6, .5);
+      border-radius: 50px;
+
+      h4 {
+        margin: 0;
+        font-weight: 400;
+
+        span {
+          vertical-align: middle;
+          margin-right: 3px;
+        }
+      }
+
+      span {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-color: #EF2D56;
+        vertical-align: middle;
+        border-radius: 50%;
+        border: 1px solid shade(#EF2D56, 10%);
+
+        &.online {
+          background-color: #23CE6B;
+          border-color: shade(#23CE6B, 10%);
+        }
+      }
+
+    }
+  }
+
+  &-priority-list {
+    position: relative;
+    @extend %flex-list;
+
+    & > li {
+      flex-basis: 100%;
+      background-color: #DAE6E9;
+      border: 1px solid #C9D7DB;
+      border-radius: 4px;
+      text-align: center;
+      margin: 0 7px;
+      padding: 5px 0;
+
+      h4 {
+        display: inline-block;
+        margin: 0;
+        background-color: #fff;
+        width: 32px;
+        height: 32px;
+        padding-top: 6px;
+        font-weight: 500;
+        color: #999;
+        border-radius: 16px;
+        border: 1px solid #C9D7DB;
+      }
+    }
+  }
+
+  &-no-data {
+    display: none;
+    position: absolute;
+    width: calc(100% - 30px);
+    height: calc(100% - 110px);
+    top: 95px;
+    left: 15px;
+    border-radius: 6px;
+
+    svg {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -10px;
+      margin-left: -32px;
+      width: 64px;
+      height: 64px;
+
+      .IconCross {
+        fill: #ccc;
+      }
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+    }
+  }
+
+  &-resize {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover {
+      cursor: nwse-resize;
+    }
+  }
+
+}
+
+/*
+  Holds the big jumbo grid with reserved spots for at least two highlighted
+  elements. Idea is that one can swap regular grids to this field as well.
+ */
+.jumbo-grid {
+  background-color: #fff;
+  height: 400px;
+  padding: 15px;
+  border-bottom: 2px solid rgba(#98AFB6, .5);
+}

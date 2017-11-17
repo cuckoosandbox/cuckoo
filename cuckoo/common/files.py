@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -99,7 +98,6 @@ class Files(Storage):
         @param content: the content of this file
         @param path: directory path to store the file
         """
-        # Create temporary directory path.
         if path:
             target_path = path
         else:
@@ -129,7 +127,6 @@ class Files(Storage):
         @param path: directory path to store the file
         @return: full path to the temporary file
         """
-        # Create temporary directory path.
         if path:
             target_path = path
         else:
@@ -137,6 +134,8 @@ class Files(Storage):
 
         if not os.path.exists(target_path):
             os.mkdir(target_path)
+
+        filename = Storage.get_filename_from_path(filename)
 
         dirpath = tempfile.mkdtemp(dir=target_path)
         Files.create(dirpath, filename, content)
@@ -150,10 +149,10 @@ class Files(Storage):
         filepath = os.path.join(root, filename)
         with open(filepath, "wb") as f:
             if hasattr(content, "read"):
-                chunk = content.read(1024)
+                chunk = content.read(1024 * 1024)
                 while chunk:
                     f.write(chunk)
-                    chunk = content.read(1024)
+                    chunk = content.read(1024 * 1024)
             else:
                 f.write(content)
         return filepath

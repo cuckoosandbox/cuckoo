@@ -1,0 +1,38 @@
+<!-- Widget -->
+<div class="grid-stack-item-content">
+
+  <div class="widget" role="widget">
+
+    <!-- Header -->
+    <header class="widget-header" role="heading">
+      <div class="widget-title" role="title">
+        <h3>Disk usage</h3>
+      </div>
+      {% include 'partials/widget-controls.html' %}
+    </header>
+
+    <!-- Handle -->
+    <a class="widget-handle" role="command"></a>
+
+    <!-- Toolbar -->
+    {% include 'partials/widget-toolbar.html' %}
+
+    <!-- Body -->
+    <section class="widget-content">
+
+      <!-- Chart -->
+      <div class="widget-chart">
+        <canvas height="120"></canvas>
+      </div>
+
+    </section>
+
+    <!-- Loader -->
+    {% include 'partials/widget-loader.html' %}
+
+    <!-- No data -->
+    {% include 'partials/widget-no-data.html' %}
+
+  </div>
+
+</div>

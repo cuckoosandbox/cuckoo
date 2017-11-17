@@ -11,6 +11,7 @@ import os
 from cuckoo.common.abstracts import Processing, BehaviorHandler
 from cuckoo.common.config import config
 from cuckoo.core.database import Database
+from cuckoo.core.extract import ExtractManager
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
@@ -210,6 +211,21 @@ class ActionInformation(BehaviorHandler):
         for action in set(self.actions):
             Database().add_error("", self.analysis.task["id"], action)
 
+class ExtractScripts(BehaviorHandler):
+    """Extracts embedded scripts in command-line parameters."""
+    key = "extracted"
+    event_types = ["process"]
+
+    def __init__(self, *args, **kwargs):
+        super(ExtractScripts, self).__init__(*args, **kwargs)
+        self.ex = ExtractManager.for_task(self.analysis.task["id"])
+
+    def handle_event(self, process):
+        self.ex.push_command_line(process["command_line"])
+
+    def run(self):
+        pass
+
 class BehaviorAnalysis(Processing):
     """Behavior Analyzer.
 
@@ -286,6 +302,9 @@ class BehaviorAnalysis(Processing):
 
             # User feedback action information.
             ActionInformation(self),
+
+            # Extracts embedded scripts in the command-line.
+            ExtractScripts(self),
         ]
 
         # doesn't really work if there's no task, let's rely on the file name for now

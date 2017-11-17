@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import mock
 import pytest
 import subprocess
@@ -12,22 +13,23 @@ from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
     CuckooDependencyError, CuckooMissingMachineError
 )
-from cuckoo.common.files import Folders
+from cuckoo.common.files import Folders, Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.init import write_cuckoo_conf
+from cuckoo.core.log import task_log_start, task_log_stop
+from cuckoo.core.startup import init_logging
 from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, mkdir
 
 db = Database()
 
 class TestVirtualbox(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
-        Folders.create(cwd(), "conf")
-        write_cuckoo_conf()
+        cuckoo_create()
 
         with mock.patch("cuckoo.common.abstracts.Database") as p:
             p.return_value = mock.MagicMock()
@@ -167,6 +169,7 @@ class TestVirtualbox(object):
         self.m.stop = mock.MagicMock()
         p.return_value.returncode = 1
         p.return_value.communicate.return_value = "out", "err"
+
         class machine1(object):
             label = "machine1"
             snapshot = None
@@ -201,6 +204,7 @@ class TestVirtualbox(object):
         self.m._status = mock.MagicMock(return_value="poweroff")
         p.return_value.returncode = 0
         p.return_value.communicate.return_value = "", ""
+
         class machine1(object):
             label = "machine1"
             snapshot = None
@@ -263,7 +267,7 @@ class TestVirtualbox(object):
     def test_start_no_snapshot(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -300,7 +304,7 @@ class TestVirtualbox(object):
     def test_start_with_snapshot(self):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -328,7 +332,7 @@ class TestVirtualbox(object):
     def test_start_restore_currentsnapshot_error(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -352,7 +356,7 @@ class TestVirtualbox(object):
     def test_start_restore_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -375,7 +379,7 @@ class TestVirtualbox(object):
     def test_start_startvm_oserror(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -405,7 +409,7 @@ class TestVirtualbox(object):
     def test_start_restore_with_snapshot_error(self):
         class machine_with_snapshot(object):
             snapshot = "snapshot"
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_with_snapshot()
@@ -590,6 +594,23 @@ class TestVirtualbox(object):
 
         # TODO Properly handle "vboxmanage -v" returning an error status code.
 
+    def test_dump_memory_unicode(self):
+        p1 = mock.MagicMock()
+        p1.communicate.return_value = "5.0.28r111378", ""
+        p1.returncode = 0
+
+        p2 = mock.MagicMock()
+        p2.wait.return_value = None
+
+        mkdir(cwd(analysis=1))
+        task_log_start(1)
+        init_logging(logging.DEBUG)
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.side_effect = p1, p2
+            self.m.dump_memory("label", u"mem\u202eory.dmp")
+        task_log_stop(1)
+
 class TestBrokenMachine(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
@@ -606,7 +627,7 @@ class TestBrokenMachine(object):
     def test_missing_snapshot(self):
         class machine_no_snapshot(object):
             snapshot = None
-            options = {}
+            options = []
 
         self.m._status = mock.MagicMock(return_value=self.m.POWEROFF)
         self.m.db.view_machine_by_label.return_value = machine_no_snapshot()
@@ -625,8 +646,8 @@ class TestBrokenMachine(object):
 
         p.assert_called_once_with(
             [
-               config("virtualbox:virtualbox:path"),
-               "snapshot", "label", "restorecurrent"
+                config("virtualbox:virtualbox:path"),
+                "snapshot", "label", "restorecurrent"
             ],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
@@ -661,7 +682,7 @@ class TestVirtualboxInitialize(object):
         assert m.label == "cuckoo1"
         assert m.interface == "vboxnet0"
         assert m.ip == "192.168.56.101"
-        assert m.options is None
+        assert m.options == []
         assert m.platform == "windows"
         assert m.resultserver_ip == "127.0.0.1"
         assert m.resultserver_port == 3000

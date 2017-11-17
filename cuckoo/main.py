@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import sys
-import traceback
 
 import cuckoo
 
@@ -17,7 +16,7 @@ from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task_range,
     cuckoo_rooter, cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
     cuckoo_clean, cuckoo_dnsserve, cuckoo_machine, import_cuckoo,
-    migrate_database
+    migrate_database, migrate_cwd
 )
 from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -34,7 +33,8 @@ from cuckoo.core.startup import (
     init_routing
 )
 from cuckoo.misc import (
-    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
+    Pidfile, mkdir
 )
 
 log = logging.getLogger("cuckoo")
@@ -98,22 +98,36 @@ def cuckoo_init(level, ctx, cfg=None):
     if not os.path.exists(cwd(".cwd")):
         sys.exit(
             "No proper Cuckoo Working Directory was identified, did you pass "
-            "along the correct directory?"
+            "along the correct directory? For new installations please use a "
+            "non-existant directory to build up the CWD! You can craft a CWD "
+            "manually, but keep in mind that the CWD layout may change along "
+            "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
         )
 
-    # Determine if any CWD updates are required.
-    current = open(cwd(".cwd"), "rb").read()
-    latest = open(cwd(".cwd", private=True), "rb").read()
-    if current != latest:
-        pass
+    init_console_logging(level)
+
+    # Only one Cuckoo process should exist per CWD. Run this check before any
+    # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
+    # its CWD migration rules only kick in after the pidfile check.
+    mkdir(cwd("pidfiles"))
+    pidfile = Pidfile("cuckoo")
+    if pidfile.exists():
+        log.error(red("Cuckoo is already running. PID: %s"), pidfile.pid)
+        sys.exit(1)
+
+    pidfile.create()
 
     check_configs()
     check_version()
 
-    if ctx.log:
-        init_logging(level)
-    else:
-        init_console_logging(level)
+    ctx.log and init_logging(level)
+
+    # Determine if any CWD updates are required and if so, do them.
+    current = open(cwd(".cwd"), "rb").read().strip()
+    latest = open(cwd(".cwd", private=True), "rb").read().strip()
+    if current != latest:
+        migrate_cwd()
+        open(cwd(".cwd"), "wb").write(latest)
 
     Database().connect()
 
@@ -122,10 +136,38 @@ def cuckoo_init(level, ctx, cfg=None):
 
     init_modules()
     init_tasks()
-    init_yara(True)
+    init_yara()
     init_binaries()
     init_rooter()
     init_routing()
+
+    signatures = 0
+    for sig in cuckoo.signatures:
+        if not sig.enabled:
+            continue
+        signatures += 1
+
+    if not signatures:
+        log.warning(
+            "It appears that you haven't loaded any Cuckoo Signatures. "
+            "Signatures are highly recommended and improve & enrich the "
+            "information extracted during an analysis. They also make up "
+            "for the analysis score that you see in the Web Interface - so, "
+            "pretty important!"
+        )
+        log.warning(
+            "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
+            "rules, and more goodies by running the following command:"
+        )
+        raw = cwd(raw=True)
+        if raw == "." or raw == "~/.cuckoo":
+            command = "cuckoo community"
+        elif " " in raw or "'" in raw:
+            command = 'cuckoo --cwd "%s" community' % raw
+        else:
+            command = "cuckoo --cwd %s community" % raw
+
+        log.info("$ %s", green(command))
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
@@ -137,6 +179,8 @@ def cuckoo_main(max_analysis_count=0):
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
+
+    Pidfile("cuckoo").remove()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
@@ -186,19 +230,16 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         cuckoo_init(level, ctx)
         cuckoo_main(maxcount)
     except CuckooCriticalError as e:
-        message = red("{0}: {1}".format(e.__class__.__name__, e))
-        if len(log.handlers):
-            log.critical(message)
-        else:
-            sys.stderr.write("{0}\n".format(message))
+        log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
         if e.code:
             print e
-    except:
+    except Exception as e:
         # Deal with an unhandled exception.
-        message = exception_message()
-        print message, traceback.format_exc()
+        sys.stderr.write(exception_message())
+        log.exception(red("{0}: {1}".format(e.__class__.__name__, e)))
+        sys.exit(1)
 
 @main.command()
 @click.pass_context
@@ -222,10 +263,13 @@ def init(ctx, conf):
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing files")
 @click.option("-b", "--branch", default="master", help="Specify a different community branch rather than master")
 @click.option("--file", "--filepath", type=click.Path(exists=True), help="Specify a local copy of a community .tar.gz file")
-def community(force, branch, filepath):
+@click.pass_context
+def community(ctx, force, branch, filepath):
     """Fetch supplies from the Cuckoo Community."""
+    init_console_logging(level=ctx.parent.level)
     try:
         fetch_community(force=force, branch=branch, filepath=filepath)
+        log.info("Finished fetching & extracting the community files!")
     except KeyboardInterrupt:
         print(yellow("Aborting fetching of the Cuckoo Community resources.."))
 
@@ -295,6 +339,15 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
+        pidfile = Pidfile(instance)
+        if pidfile.exists():
+            log.error(red(
+                "Cuckoo process instance '%s' already exists. PID: %s\n"
+            ), instance, pidfile.pid)
+            sys.exit(1)
+
+        pidfile.create()
+
         init_logfile("process-%s.json" % instance)
 
     Database().connect()
@@ -302,9 +355,17 @@ def process(ctx, instance, report, maxcount):
     # Load additional Signatures.
     load_signatures()
 
-    # Initialize all modules & Yara rules.
-    init_modules()
-    init_yara(False)
+    try:
+        # Initialize all modules & Yara rules.
+        init_modules()
+        init_yara()
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
     try:
         # Regenerate one or more reports.
@@ -322,16 +383,18 @@ def process(ctx, instance, report, maxcount):
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
 
+    if instance:
+        Pidfile(instance).remove()
+
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)
 @click.option("-g", "--group", default="cuckoo", help="Unix socket group")
-@click.option("--ifconfig", type=click.Path(exists=True), default="/sbin/ifconfig", help="Path to ifconfig(8)")
 @click.option("--service", type=click.Path(exists=True), default="/usr/sbin/service", help="Path to service(8) for invoking OpenVPN")
 @click.option("--iptables", type=click.Path(exists=True), default="/sbin/iptables", help="Path to iptables(8)")
 @click.option("--ip", type=click.Path(exists=True), default="/sbin/ip", help="Path to ip(8)")
 @click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
-def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
+def rooter(ctx, socket, group, service, iptables, ip, sudo):
     """Instantiates the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
@@ -339,7 +402,6 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
         args = [
             "sudo", sys.argv[0], "rooter", socket,
             "--group", group,
-            "--ifconfig", ifconfig,
             "--service", service,
             "--iptables", iptables,
             "--ip", ip,
@@ -354,7 +416,7 @@ def rooter(ctx, socket, group, ifconfig, service, iptables, ip, sudo):
             pass
     else:
         try:
-            cuckoo_rooter(socket, group, ifconfig, service, iptables, ip)
+            cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
 
@@ -406,14 +468,36 @@ def api(ctx, host, port, uwsgi, nginx):
 @click.option("-p", "--port", default=53, help="UDP port to bind to for the DNS server")
 @click.option("--nxdomain", help="IP address to return instead of NXDOMAIN")
 @click.option("--hardcode", help="Hardcoded IP address to return instead of actually doing DNS lookups")
+@click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
-def dnsserve(ctx, host, port, nxdomain, hardcode):
+def dnsserve(ctx, host, port, nxdomain, hardcode, sudo):
     """Custom DNS server."""
     init_console_logging(ctx.parent.level)
-    try:
-        cuckoo_dnsserve(host, port, nxdomain, hardcode)
-    except KeyboardInterrupt:
-        print(red("Aborting Cuckoo DNS Serve.."))
+
+    if sudo:
+        args = [
+            "sudo", sys.argv[0], "dnsserve",
+            "--host", host, "--port", "%d" % port,
+        ]
+
+        if ctx.parent.level == logging.DEBUG:
+            args.insert(2, "--debug")
+
+        if nxdomain:
+            args.extend(("--nxdomain", nxdomain))
+
+        if hardcode:
+            args.extend(("--hardcode", hardcode))
+
+        try:
+            subprocess.call(args)
+        except KeyboardInterrupt:
+            pass
+    else:
+        try:
+            cuckoo_dnsserve(host, port, nxdomain, hardcode)
+        except KeyboardInterrupt:
+            print(red("Aborting Cuckoo DNS Serve.."))
 
 @main.command()
 @click.argument("args", nargs=-1)
@@ -458,6 +542,8 @@ def web(ctx, args, host, port, uwsgi, nginx):
         print "    # Cuckoo Web Interface"
         print "    location / {"
         print "        client_max_body_size 1G;"
+        print "        proxy_redirect off;"
+        print "        proxy_set_header X-Forwarded-Proto $scheme;"
         print "        uwsgi_pass  _uwsgi_cuckoo_web;"
         print "        include     uwsgi_params;"
         print "    }"
@@ -467,6 +553,7 @@ def web(ctx, args, host, port, uwsgi, nginx):
     # Switch to cuckoo/web and add the current path to sys.path as the Web
     # Interface is using local imports here and there.
     # TODO Rename local imports to either cuckoo.web.* or relative imports.
+    sys.argv[0] = os.path.abspath(sys.argv[0])
     os.chdir(os.path.join(cuckoo.__path__[0], "web"))
     sys.path.insert(0, ".")
 
@@ -482,12 +569,19 @@ def web(ctx, args, host, port, uwsgi, nginx):
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
-    if not args:
+    try:
         execute_from_command_line(
             ("cuckoo", "runserver", "%s:%d" % (host, port))
+            if not args else
+            ("cuckoo",) + args
         )
-    else:
-        execute_from_command_line(("cuckoo",) + args)
+    except CuckooCriticalError as e:
+        message = red("{0}: {1}".format(e.__class__.__name__, e))
+        if len(log.handlers):
+            log.critical(message)
+        else:
+            sys.stderr.write("{0}\n".format(message))
+        sys.exit(1)
 
 @main.command()
 @click.argument("vmname")
@@ -539,10 +633,10 @@ def import_(ctx, mode, path):
     print yellow("You are importing an existing Cuckoo setup. Please")
     print yellow("understand that, depending on the mode taken, if ")
     print yellow("you remove the old Cuckoo setup after this import ")
-    print yellow("you may still"), red("loose ALL of your data!")
+    print yellow("you may still"), red("lose ALL of your data!")
     print
     print yellow("Additionally, database migrations will be performed ")
-    print yellow("in-place. You won't be able to use your old Cuckoo ")
+    print yellow("in-place*. You won't be able to use your old Cuckoo ")
     print yellow("setup anymore afterwards! However, we'll provide ")
     print yellow("you with the option to create a SQL backup beforehand.")
     print
@@ -550,6 +644,9 @@ def import_(ctx, mode, path):
     print red("corrupt your new setup: its SQL, MongoDB, and ")
     print red("ElasticSearch database may be dropped and, in 'symlink'")
     print red("mode, the analyses removed.")
+    print
+    print yellow("*: Except for sqlite3 databases in combination with")
+    print yellow("   the import 'copy' approach.")
     print
 
     value = click.confirm(

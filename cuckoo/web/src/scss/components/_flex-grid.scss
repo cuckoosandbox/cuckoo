@@ -4,12 +4,14 @@
 	flex-direction: column;
 
 	width: 100vw;
-	height: -webkit-calc(100vh - 80px);
+	height: calc(100vh - 50px);
 
 	font-family: "Roboto", sans-serif;
 
 	&.include-footer {
 		height: -webkit-calc(100vh - 140px);
+		height: -moz-calc(100vh - 140px);
+		height: calc(100vh - 140px);
 	}
 
 	&__header {
@@ -92,6 +94,7 @@
 	&__body {
 		display: flex;
 		flex-basis: 100%;
+		overflow: auto;
 
 		&.background-grey {
 			background-color: #f5f5f5;
@@ -156,6 +159,7 @@
 		background-color: #F5F5F5;
 		border-right: 1px solid #CFCFCF;
 		overflow-y: auto;
+		overflow-x: hidden;
 
 		@include cuckoo-theme('cyborg') {
 			background-color: $cyborg_background_color;

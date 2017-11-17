@@ -1,0 +1,91 @@
+const noop = () => true;
+
+/*
+  Utility class for stopping and running loaders for a widget
+
+  utilisation:
+
+    loader.start() => starts/shows this loader
+    loader.stop() => stops/hides this loader
+    loader.on(started|stopped, fn) => describes a callback for a defined event
+    loader._dispatchEvent(event, data) => triggers above event cycles
+
+    loader.el = $(jQuery) element with the loader element
+    loader.widget = the DraggableUIWidget this loader corresponds to
+    loader.events = contains the loader event cycles
+
+ */
+export default class WidgetLoader {
+
+  constructor(el, widget, text = null) {
+
+    this.el     = el;
+    this.widget = widget;
+
+    // hide the element on init
+    this.el.hide();
+
+    this.events = {
+      started: [],
+      stopped: []
+    }
+
+    if(text) {
+      this.text(text);
+    }
+
+    // we should not worry about starting/stopping loaders inside the widgets,
+    // so I simply hook them directly to the api instance events for that widget
+    // to stop-and-start them in the correct situation only - not caring about
+    // anything else that relates to a widget.
+    this.widget.api.on('request', () => {
+      this.start();
+    });
+
+    this.widget.api.on('receive', () => {
+      this.stop();
+    });
+
+    this.widget.api.on('error', () => {
+      this.stop();
+    });
+  }
+
+  start() {
+    this.el.fadeIn(800, () => {
+      this._dispatchEvent('started');
+    });
+
+    return this;
+  }
+
+  stop() {
+    this.el.fadeOut(800, () => {
+      this._dispatchEvent('stopped');
+    });
+
+    return this;
+  }
+
+  // basic events for capturing some hooks of this class
+  on(evt, cb = noop) {
+    if(this.events[evt]) {
+      this.events[evt].push(cb);
+    }
+
+    return this;
+  }
+
+  _dispatchEvent(evt, data) {
+    if(this.events[evt]) {
+      this.events[evt].forEach(cb => cb.apply(this, data));
+    }
+
+    return this;
+  }
+
+  text(message) {
+    this.el.find('.loader-text').text(message);
+  }
+
+}

@@ -34,8 +34,9 @@ if __name__ == "__main__":
         print "Usage: python %s <branch> <hash>" % sys.argv[0]
         exit(1)
 
-    if not os.path.exists("cuckoo/data/monitor/%s" % hash_):
-        os.mkdir("cuckoo/data/monitor/%s" % hash_)
+    monitor = "cuckoo/data/monitor/%s" % hash_
+    if not os.path.exists(monitor):
+        os.mkdir(monitor)
 
     print "Fetching Cuckoo Community archive, this may take a little while."
     r = urllib2.urlopen(URL % branch).read()
@@ -48,9 +49,7 @@ if __name__ == "__main__":
     for info in t.getmembers():
         if info.name.startswith("%s/data/monitor/%s/" % (root, hash_)):
             print "Extracting..", info.name
-            filepath = os.path.join("cuckoo/data/monitor/%s/%s" % (
-                hash_, os.path.basename(info.name)
-            ))
+            filepath = "%s/%s" % (monitor, os.path.basename(info.name))
             open(filepath, "wb").write(t.extractfile(info).read())
 
     print "You're good to go now!"

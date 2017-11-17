@@ -5,7 +5,6 @@
 import mock
 import os.path
 
-from lib.api.dse import Capcom
 from lib.core.driver import Driver
 
 @mock.patch("os.path.exists")
@@ -20,23 +19,3 @@ def test_copy_driver(p, q):
     p.assert_called_once_with(
         "bin\\foo-x64.sys", "%s\\sysnative\\drivers\\bar.sys" % sysroot
     )
-
-class TestCapcom(object):
-    @mock.patch("platform.machine")
-    def setup(self, p):
-        p.return_value = "amd64"
-        self.c = Capcom()
-
-    def test_is64bit(self):
-        # Ensure that the above works.
-        assert self.c.is_64bit is True
-
-    def test_primitives(self):
-        sc = self.c.arch.get_MmGetSystemRoutineAddress().encode("hex")
-        assert sc == "48890df1ffffffc3"
-
-        sc = self.c.arch.read32(0x1122334455667788).encode("hex")
-        assert sc == "48b88877665544332211488b00488905e4ffffffc3"
-
-        sc = self.c.arch.write32(0x1122334455667788, 0x42424242).encode("hex")
-        assert sc == "48b88877665544332211c70042424242c3"

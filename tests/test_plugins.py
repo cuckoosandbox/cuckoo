@@ -53,6 +53,7 @@ def test_load_signatures():
     assert "signatures.sig3" in names
 
     # Ensure that the Signatures are loaded in the RunSignatures object.
+    RunSignatures.init_once()
     rs, names = RunSignatures({}), []
     for sig in rs.signatures:
         names.append(sig.__class__.__name__)

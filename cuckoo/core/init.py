@@ -33,7 +33,7 @@ def write_supervisor_conf(username):
             "username": username,
             "cuckoo_path": cuckoo_path,
             "python_path": python_path,
-        }).rstrip() + "\n")
+        }).rstrip().encode("utf8") + "\n")
 
 def write_cuckoo_conf(cfg=None):
     if cfg is None:

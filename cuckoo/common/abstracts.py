@@ -607,6 +607,7 @@ class Processing(object):
         self.baseline_path = ""
         self.logs_path = ""
         self.task = None
+        self.machine = None
         self.options = None
         self.results = {}
 
@@ -626,6 +627,10 @@ class Processing(object):
         """
         self.task = task
 
+    def set_machine(self, machine):
+        """Add machine information."""
+        self.machine = machine
+
     def set_baseline(self, baseline_path):
         """Set the path to the baseline directory."""
         self.baseline_path = baseline_path
@@ -641,6 +646,7 @@ class Processing(object):
                                                        "binary"))
         self.dropped_path = os.path.join(self.analysis_path, "files")
         self.dropped_meta_path = os.path.join(self.analysis_path, "files.json")
+        self.extracted_path = os.path.join(self.analysis_path, "extracted")
         self.package_files = os.path.join(self.analysis_path, "package_files")
         self.buffer_path = os.path.join(self.analysis_path, "buffer")
         self.logs_path = os.path.join(self.analysis_path, "logs")
@@ -873,6 +879,18 @@ class Signature(object):
                                  regex=regex,
                                  all=all)
 
+    def check_command_line(self, pattern, regex=False, all=False):
+        """Checks for a command line being opened.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: boolean with the result of the check.
+        """
+        return self._check_value(pattern=pattern,
+                                 subject=self.get_summary("command_line"),
+                                 regex=regex,
+                                 all=all)
+
     def check_key(self, pattern, regex=False, actions=None, pid=None,
                   all=False):
         """Checks for a registry key being accessed.
@@ -1092,11 +1110,27 @@ class Signature(object):
 
     def mark_config(self, config):
         """Mark configuration from this malware family."""
-        mark = {
+        url = config.get("url", [])
+        if isinstance(url, basestring):
+            url = [url]
+
+        cnc = config.get("cnc", [])
+        if isinstance(cnc, basestring):
+            cnc = [cnc]
+
+        if "family" not in config:
+            raise CuckooCriticalError("Invalid call to mark_config().")
+
+        self.marks.append({
             "type": "config",
-            "config": config,
-        }
-        self.marks.append(mark)
+            "config": {
+                "family": config["family"],
+                "url": url,
+                "cnc": cnc,
+                "key": config.get("key"),
+                "type": config.get("type"),
+            },
+        })
 
     def mark(self, **kwargs):
         """Mark arbitrary data."""
@@ -1153,6 +1187,11 @@ class Signature(object):
           extracted: an extracted PE image from a process memory dump
           procmem: a process memory dump
           dropped: a dropped file
+        """
+
+    def on_extract(self, match):
+        """Called on an Extracted match.
+        @param match: extracted match information
         """
 
     def on_complete(self):
@@ -1258,3 +1297,38 @@ class ProtocolHandler(object):
 
     def close(self):
         pass
+
+class Extractor(object):
+    """One piece in a series of recursive extractors & unpackers."""
+    yara_rules = []
+    # Minimum and maximum supported version in Cuckoo.
+    minimum = None
+    maximum = None
+
+    @classmethod
+    def init_once(cls):
+        pass
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def handle_yara(self, filepath, match):
+        raise NotImplementedError
+
+    def push_command_line(self, cmdline):
+        self.parent.push_command_line(cmdline)
+
+    def push_script(self, process, command):
+        self.parent.push_script(process, command)
+
+    def push_script_recursive(self, command):
+        self.parent.push_script_recursive(command)
+
+    def push_shellcode(self, sc):
+        self.parent.push_shellcode(sc)
+
+    def push_blob(self, blob, category, externals, info=None):
+        self.parent.push_blob(blob, category, externals, info)
+
+    def push_blob_noyara(self, blob, category, info=None):
+        self.parent.push_blob_noyara(blob, category, info)

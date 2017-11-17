@@ -1,12 +1,11 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 
 from cuckoo.misc import cwd
-from cuckoo.web.bin.utils import json_error_response, json_fatal_response, file_response, api_get
+from cuckoo.web.utils import json_error_response, file_response, api_get
 
 class PcapApi:
     @api_get

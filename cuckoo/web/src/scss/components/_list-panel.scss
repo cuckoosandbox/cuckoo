@@ -1,0 +1,137 @@
+/*
+	This is a panel that is able to select multiple or 
+	single items in that list, a javascript controller
+	picks up on this selection and delivers methods for 
+	handling the selected values.
+
+	external prerequisites (may be unified / customised in the future):
+	- bootstrap component .panel
+	- bootstrap component .list-group
+ */
+
+.list-panel {
+
+	.panel-title {
+
+		// correctly align button container in the title
+		.pull-right { margin-top: -6px; }
+
+		.button {
+			@extend .button--sm;
+			display: inline-block;
+		}
+
+	}
+
+	.panel-body {
+		padding: 0;
+	}
+
+	.list-group-item {
+		.item-label {
+			display: inline-block;
+			width: 100px;
+			font-weight: 500;
+			color: $cuckoo-secundary-color;
+			text-align: right;
+			margin-right: 10px;
+		}
+	}
+
+	.list-group-option {
+
+		display: block;
+		font-weight: 400;
+		margin: 0;
+
+		&:hover {
+			cursor: pointer;
+		}
+
+		input[type="radio"],
+		input[type="checkbox"] {
+			display: none;
+
+			& + span:before {
+				@extend .fa;
+				color: $cuckoo-secundary-color;
+				width: 25px;
+				content: "\f096";
+			}
+
+			&:checked + span:before {
+				content: "\f14a";
+			}
+		}
+
+	}
+
+	// add some support for the page switcher module
+	// in this grouped list element
+	&.page-switcher {
+		// set the active page visual effect
+		.page-switcher__nav {
+			& > .button:not(.active) {
+				@extend .button.inversed;
+			}
+		}
+
+	}
+
+	// fixup for highlightjs
+	pre code.hljs {
+		border-bottom-left-radius: 4px;
+		border-bottom-right-radius: 4px;
+	}
+
+	// widget version of the list-panel
+	&__widget {
+		@extend .list-panel;
+
+		.panel-heading {
+			text-align: center;
+			padding: 20px 0 10px 0;
+			span {
+				display: block;
+				color: $cuckoo-secundary-color;
+				text-transform: uppercase;
+				font-size: .8em;
+			}
+		}
+
+		.list-group-item {
+			padding: 20px 0 0 0;
+
+			.item-label {
+				display: block;
+				width: 100%;
+				text-align: left;
+				padding: 0 10px;
+				margin-bottom: 10px;
+			}
+
+			p {
+				background-color: #f5f5f5;
+				border-top: 1px solid #ccc;
+				padding: 5px 10px;
+				margin: 0;
+				font-size: 12px;
+			}
+
+			& > ul {
+				padding: 0;
+				list-style: none;
+
+				& > li {
+					background-color: #f5f5f5;
+					border-top: 1px solid #ccc;
+					padding: 5px 10px;
+					font-size: 12px;
+				}
+			}
+
+		}
+
+	}
+
+}

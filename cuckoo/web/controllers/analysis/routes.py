@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
 from cuckoo.core.database import Database
 from cuckoo.web.controllers.analysis.export.export import ExportController
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.utils import view_error, render_template
 
 class AnalysisRoutes:
     @staticmethod
@@ -25,11 +25,13 @@ class AnalysisRoutes:
         pages = {
             "summary": "summary/index",
             "static": "static/index",
+            "extracted": "extracted/index",
             "behavior": "behavior/index",
             "network": "network/index",
             "misp": "misp/index",
             "dropped_files": "dropped/dropped_files",
             "dropped_buffers": "dropped/dropped_buffers",
+            "memory": "memory/index",
             "procmemory": "procmemory/index",
             "options": "options/index",
             "feedback": "feedback/index"

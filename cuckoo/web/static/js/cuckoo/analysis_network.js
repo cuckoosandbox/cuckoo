@@ -181,7 +181,8 @@ var HexView = function () {
 
             var displayBody,
                 outputMode,
-                content = this.raw;
+                content = this.raw,
+                textArea = true;
 
             var body = this.displayBody;
             var output = this.displayOutput;
@@ -198,7 +199,7 @@ var HexView = function () {
                 // this.container.removeClass('empty-body');
             }
 
-            this.container.empty().text(content);
+            this.container.empty().text(HexView.unescapeHTML(content));
         }
     }], [{
         key: 'renderHex',
@@ -258,6 +259,14 @@ var HexView = function () {
             } else {
                 HexView.persistProperty('locked', false);
             }
+        }
+
+        // http://stackoverflow.com/questions/22279231/using-js-jquery-how-can-i-unescape-html-and-put-quotes-back-in-the-str
+
+    }, {
+        key: 'unescapeHTML',
+        value: function unescapeHTML(safe) {
+            return safe.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
         }
     }]);
 
@@ -383,6 +392,8 @@ var RequestDisplay = function () {
             }, {
                 container: '[data-draw="source"]'
             }).initialise();
+
+            console.log(this.hex_view);
 
             self.open();
         }
@@ -555,162 +566,6 @@ var PacketDisplay = function () {
     return PacketDisplay;
 }();
 
-/*
-    class PageSwitcher
-    - a class that handles 'tabbed' navigation
-    - primarily [now] used at the network analysis page as proof of concept
-    - this class will be traversible and highly configurable using hooks (will improve overall page performance)
-    - this technique might open a few windows on asynchronous page loading, which I will highly recommend for this page
-    - also in mind to do this all using Handlebars, which works overall nice with these kind of pages, but that'll 
-      require some back-end logistics for getting its required data. but this needs to be discussed at some point.
-      Overall thing is: This page is excrumentially slow, due to ALL the data that is present in the html on load of this
-      page, which makes it perform really bad. See webconsole's Profile Check for a lookup.
-    - For now I'll try what I can do to optimize this page by de-initializing modules that are not visible.
- */
-
-
-var PageSwitcher = function () {
-    function PageSwitcher(options) {
-        _classCallCheck(this, PageSwitcher);
-
-        this.nav = options.nav;
-        this.container = options.container;
-
-        this.pages = [];
-
-        this.events = $.extend({
-            transition: function transition() {},
-            beforeTransition: function beforeTransition() {},
-            afterTransition: function afterTransition() {}
-        }, options.events ? options.events : {});
-
-        this.initialise();
-    }
-
-    /*
-        Called on instance construction
-     */
-
-
-    _createClass(PageSwitcher, [{
-        key: 'initialise',
-        value: function initialise() {
-
-            var _this = this;
-
-            this.indexPages();
-
-            this.nav.children('a').bind('click', function (e) {
-                e.preventDefault();
-                _this._beforeTransition($(this));
-            });
-        }
-
-        /*
-            Creates a short summary about the pages and their names
-         */
-
-    }, {
-        key: 'indexPages',
-        value: function indexPages() {
-            var _this = this;
-            this.container.children('div').each(function () {
-                _this.pages.push({
-                    name: $(this).attr('id'),
-                    el: $(this),
-                    initialised: false
-                });
-            });
-        }
-
-        /*
-            Prepares a transition
-            - a transition is traversing from page A to page B
-         */
-
-    }, {
-        key: '_beforeTransition',
-        value: function _beforeTransition(el) {
-
-            var name = el.attr('href').replace('#', '');
-            var targetPage;
-
-            if (this.exists(name)) {
-                this.nav.children('a').removeClass('active');
-                this.container.children('div').removeClass('active');
-
-                targetPage = this.getPage(name);
-
-                this.events.beforeTransition.apply(this, [name, targetPage]);
-                this._transition(targetPage, el);
-            } else {
-                this._afterTransition();
-            }
-        }
-
-        /*
-            Executes the transition
-         */
-
-    }, {
-        key: '_transition',
-        value: function _transition(page, link) {
-            page.el.addClass('active');
-            link.addClass('active');
-            this.events.transition.apply(this, [page, link]);
-            this._afterTransition(page);
-        }
-
-        /*
-            Finishes the transition
-         */
-
-    }, {
-        key: '_afterTransition',
-        value: function _afterTransition(page) {
-            this.events.afterTransition.apply(this, [page]);
-        }
-
-        /*
-            returns a page by name
-         */
-
-    }, {
-        key: 'getPage',
-        value: function getPage(name) {
-            return this.pages.filter(function (element) {
-                return element.name == name;
-            })[0];
-        }
-
-        /*
-            quick-validates if a page exists
-         */
-
-    }, {
-        key: 'exists',
-        value: function exists(name) {
-            return this.getPage(name) !== undefined;
-        }
-
-        /*
-            public method for transitioning programatically
-         */
-
-    }, {
-        key: 'transition',
-        value: function transition(name) {
-            if (this.exists(name)) {
-                this._beforeTransition(this.nav.children('[href=' + name + ']'));
-            } else {
-                return false;
-            }
-        }
-    }]);
-
-    return PageSwitcher;
-}();
-
 // TCP/UTP packet displays
 
 
@@ -719,6 +574,7 @@ $(function () {
     // some info about alteration in layout type
     var fixed_layouts = ['network-analysis-tcp', 'network-analysis-udp'];
 
+    // custom page-switcher implementation with callbacks
     var network_nav = new PageSwitcher({
         nav: $('.network-analysis-groups'),
         container: $('.network-analysis-pages'),
@@ -745,12 +601,14 @@ $(function () {
     network_nav.transition('network-analysis-http');
 
     if ($("#network-analysis-tcp").length) {
+
         var packet_display_tcp = new PacketDisplay($("#network-analysis-tcp"), {
             skip_empty: true
         });
     }
 
     if ($("#network-analysis-udp").length) {
+
         var packet_display_udp = new PacketDisplay($('#network-analysis-udp'), {
             skip_empty: true
         });

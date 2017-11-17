@@ -9,7 +9,7 @@ import tempfile
 
 from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
-    config2
+    config2, List, String, _cache
 )
 from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
@@ -1049,6 +1049,84 @@ interface = eth0
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
 
+def test_migration_200_201():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "memory.conf", """
+[mask]
+pid_generic =
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.0", "2.0.1")
+    assert cfg["memory"]["mask"]["pid_generic"] == []
+
+def test_migration_201_202():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "virtualbox.conf", """
+[virtualbox]
+machines = cuckoo1, cuckoo2
+[cuckoo1]
+platform = windows
+[cuckoo2]
+platform = windows
+""")
+    # Except for virtualbox.
+    machineries = (
+        "avd", "esx", "kvm", "physical", "qemu",
+        "vmware", "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        Files.create(
+            cwd("conf"), "%s.conf" % machinery,
+            "[%s]\nmachines =" % machinery
+        )
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.1", "2.0.2")
+    assert cfg["virtualbox"]["cuckoo1"]["osprofile"] is None
+    assert cfg["virtualbox"]["cuckoo2"]["osprofile"] is None
+
+def test_migration_203_204():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "processing.conf", """
+[dumptls]
+enabled = on
+""")
+    Files.create(cwd("conf"), "qemu.conf", """
+[qemu]
+machines = ubuntu32, ubuntu64
+[ubuntu32]
+arch = x86
+[ubuntu64]
+arch = x64
+    """)
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.3", "2.0.4")
+    assert cfg["processing"]["extracted"]["enabled"] is True
+    # Except for qemu.
+    machineries = (
+        "avd", "esx", "kvm", "physical", "virtualbox",
+        "vmware", "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        Files.create(
+            cwd("conf"), "%s.conf" % machinery, "[%s]\nmachines =" % machinery
+        )
+    assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
+    assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
+
+def test_migration_204_205():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+script = mitm.py
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.4", "2.0.5")
+    assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None
@@ -1078,7 +1156,7 @@ class FullMigration(object):
         )
 
         for machinery in machineries:
-            for machine in config("%s:%s:machines" % (machinery, machinery)):
+            for machine in cfg[machinery][machinery]["machines"]:
                 assert machine in cfg[machinery]
                 type_ = Config.configuration[machinery]["*"]
                 if isinstance(type_, (tuple, list)):
@@ -1087,7 +1165,7 @@ class FullMigration(object):
                 for key, value in cfg[machinery][machine].items():
                     assert value == type_[key].parse(value)
 
-        for vpn in config("routing:vpn:vpns"):
+        for vpn in cfg["routing"]["vpn"]["vpns"]:
             assert vpn in cfg["routing"]
             type_ = Config.configuration["routing"]["*"]
             if isinstance(type_, (tuple, list)):
@@ -1114,6 +1192,18 @@ class TestFullMigration120(FullMigration):
     DIRPATH = "tests/files/conf/120_plain"
     VERSION = "1.2"
 
+class TestFullMigration120Production(FullMigration):
+    DIRPATH = "tests/files/conf/120_5vms"
+    VERSION = "1.2"
+
+    def test_vms_count(self):
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
+        assert cfg["virtualbox"]["virtualbox"]["mode"] == "headless"
+        assert len(cfg["virtualbox"]["virtualbox"]["machines"]) == 5
+        assert cfg["virtualbox"]["cuckoo3"]["ip"] == "192.168.56.103"
+        assert cfg["virtualbox"]["cuckoo3"]["osprofile"] is None
+
 class TestFullMigration20c1(FullMigration):
     DIRPATH = "tests/files/conf/20c1_plain"
     VERSION = "2.0-rc1"
@@ -1134,6 +1224,35 @@ def test_cast():
     assert cast("cuckoo:cuckoo:machinery", "1") == "1"
 
     assert cast("cuckoo:cuckoo:freespace", "1234") == 1234
+
+    assert cast("virtualbox:cuckoo1:options", "") == []
+    assert cast("virtualbox:cuckoo1:options", "a b c") == ["a", "b", "c"]
+    assert cast("virtualbox:cuckoo1:options", "a, b c") == ["a", "b", "c"]
+
+    assert cast("memory:mask:pid_generic", "") == []
+    assert cast("memory:mask:pid_generic", "1, 2, 3") == ["1", "2", "3"]
+
+def test_list_split():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config("virtualbox:cuckoo1:options") == []
+
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "virtualbox": {
+            "cuckoo1": {
+                "options": ["noagent", "nictrace"],
+            },
+        },
+    })
+    assert config("virtualbox:cuckoo1:options") == [
+        "noagent", "nictrace",
+    ]
+
+@mock.patch("cuckoo.common.config.log")
+def test_list_default_none(p):
+    List(String, None, ",")
+    p.error.assert_not_called()
 
 def test_path():
     assert Path(allow_empty=True).check("") is True
@@ -1283,15 +1402,33 @@ def test_config2_liststar():
     cuckoo_create()
     assert config2("qemu", "vm1").interface == "qemubr"
 
-@mock.patch("cuckoo.common.config.log_error")
+@mock.patch("cuckoo.common.config.log")
 def test_no_superfluous_conf(p):
     """Tests that upon CWD creation no superfluous configuration values are
     writted out (which may happen after a configuration migration)."""
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
     Config.from_confdir(cwd("conf"))
-    p.assert_not_called()
+    p.error.assert_not_called()
 
 def test_faq():
     assert faq("hehe").startswith("http")
     assert faq("hehe").endswith("#hehe")
+
+def test_incomplete_envvar():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "database": {
+                "connection": "%(",
+            },
+        },
+    })
+
+    # Clear cache.
+    for key in _cache.keys():
+        del _cache[key]
+
+    with pytest.raises(CuckooConfigurationError) as e:
+        config("cuckoo:database:connection")
+    e.match("One of the fields")

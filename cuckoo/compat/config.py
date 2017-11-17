@@ -4,9 +4,6 @@
 
 from cuckoo.common.config import cast
 
-def _040_041(c):
-    return c
-
 def _041_042(c):
     c["cuckoo"]["cuckoo"]["analysis_size_limit"] = 104857600
     c["virtualbox"]["virtualbox"]["timeout"] = 300
@@ -241,9 +238,6 @@ def _060_100(c):
 
 def _100_110(c):
     c["cuckoo"]["cuckoo"]["tmppath"] = "/tmp"
-    return c
-
-def _110_111(c):
     return c
 
 def _111_120(c):
@@ -576,6 +570,19 @@ def _20c2_200(c):
     for vm in c["qemu"]:
         if "kernel_path" in c["qemu"][vm]:
             c["qemu"][vm]["kernel"] = c["qemu"][vm].pop("kernel_path")
+    if c["qemu"]["qemu"]["machines"] == ["vm1", "vm2"]:
+        c["qemu"]["qemu"]["machines"].append("vm3")
+        c["qemu"]["vm3"] = {
+            "label": "vm3",
+            "image": "/home/rep/vms/qvm_wheezy64_1.qcow2",
+            "arch": "arm",
+            "platform": "linux",
+            "ip": "192.168.55.4",
+            "interface": "qemubr",
+            "tags": "debian_wheezy,arm",
+            "kernel": "{imagepath}/vmlinuz-3.2.0-4-versatile-arm",
+            "initrd": "{imagepath}/initrd-3.2.0-4-versatile-arm",
+        }
     c["reporting"]["elasticsearch"]["hosts"] = cast(
         "reporting:elasticsearch:hosts",
         c["reporting"]["elasticsearch"]["hosts"]
@@ -599,7 +606,7 @@ def _20c2_200(c):
         new_item = old_item.replace("-", "_")
         c["reporting"]["mattermost"][new_item] = cast(
             "reporting:mattermost:%s" % new_item,
-            c["reporting"]["mattermost"].pop(old_item, None)
+            c["reporting"]["mattermost"].pop(old_item, False)
         )
 
     c["reporting"]["moloch"]["insecure"] = False
@@ -659,28 +666,60 @@ def _20c2_200(c):
     c["vsphere"]["vsphere"]["unverified_ssl"] = False
     return c
 
-def _20dev(c):
+def _200_201(c):
+    c["memory"]["mask"]["pid_generic"] = cast(
+        "memory:mask:pid_generic", c["memory"]["mask"]["pid_generic"]
+    )
+    return c
+
+def _201_202(c):
+    machineries = (
+        "virtualbox", "avd", "esx", "kvm", "physical", "qemu", "vmware",
+        "vsphere", "xenserver",
+    )
+    for machinery in machineries:
+        for machine in c[machinery][machinery]["machines"]:
+            c[machinery][machine]["osprofile"] = None
+    return c
+
+def _203_204(c):
+    c["processing"]["extracted"] = {
+        "enabled": True,
+    }
+    for machine in c["qemu"]["qemu"]["machines"]:
+        c["qemu"][machine]["snapshot"] = None
+        c["qemu"][machine]["enable_kvm"] = False
+    return c
+
+def _204_205(c):
+    if c["auxiliary"]["mitm"]["script"] == "mitm.py":
+        c["auxiliary"]["mitm"]["script"] = "stuff/mitm.py"
     return c
 
 migrations = {
-    "0.4.0": ("0.4.1", _040_041),
+    "0.4.0": ("0.4.1", None),
     "0.4.1": ("0.4.2", _041_042),
     "0.4.2": ("0.5.0", _042_050),
     "0.5.0": ("0.6.0", _050_060),
     "0.6.0": ("1.0.0", _060_100),
     "1.0.0": ("1.1.0", _100_110),
-    "1.1.0": ("1.1.1", _110_111),
+    "1.1.0": ("1.1.1", None),
     "1.1.1": ("1.2.0", _111_120),
     "1.2.0": ("2.0-rc1", _120_20c1),
     "2.0-rc1": ("2.0-rc2", _20c1_20c2),
     "2.0-rc2": ("2.0.0", _20c2_200),
+    "2.0.0": ("2.0.1", _200_201),
+    "2.0.1": ("2.0.2", _201_202),
+    "2.0.2": ("2.0.3", None),
+    "2.0.3": ("2.0.4", _203_204),
+    "2.0.4": ("2.0.5", _204_205),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.
     # TODO Most likely we'll have to work out some tweaks in the migrations.
     # TODO Provide the option to push out feedback to the Core Developers if
     # an exception occurs during the configuration migration phase.
-    "2.0-dev": ("1.2.0", _20dev),
+    "2.0-dev": ("1.2.0", None),
 }
 
 # Mapping from actual version numbers to "full" / beautified version numbers.
@@ -693,5 +732,5 @@ def migrate(c, current, to=None):
     """Upgrade the configuration 'c' from 'current' to 'to'."""
     while current != to and mapping.get(current, current) in migrations:
         current, migration = migrations[mapping.get(current, current)]
-        c = migration(c)
+        c = migration(c) if migration else c
     return c

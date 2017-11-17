@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load analysis_tags %}
@@ -10,33 +9,41 @@
 
             <header class="cuckoo-analysis__header">
                 <h1>Network Analysis</h1>
+                {% if report.analysis.network.pcap_id %}
                 <div class="header-right valign-bottom">
                     <a href="{% url "analysis.views.file" "pcap" report.analysis.network.pcap_id %}" title="Download pcap file"><i class="fa fa-download"></i> Download pcap</a>
                 </div>
+                {% endif %}
             </header>
+
+            {% if not report.analysis.network.pcap_id %}
+            <div class="container-fluid">
+                <p>No PCAP file was identified while processing the analysis.
+                Did you setup your Cuckoo instance correctly? Please also
+                check the logs of the Cuckoo daemon.</p>
+            </div>
+            {% else %}
 
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-12 network-analysis-menu">
-
-                    	   <div class="grouped-buttons__bordered network-analysis-groups">
-                                <a href="network-analysis-hosts" data-total="{{ report.analysis.network.hosts|length }}">Hosts <span class="button-badge">{{ report.analysis.network.hosts|length }}</span></a>
-                                <a href="network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
-                                <a href="network-analysis-tcp" data-total="{{ report.analysis.network.tcp|length }}">TCP <span class="button-badge">{{ report.analysis.network.tcp|length }}</span></a>
-                                <a href="network-analysis-udp" data-total="{{ report.analysis.network.udp|length }}">UDP <span class="button-badge">{{ report.analysis.network.udp|length }}</span></a>
-                                <a href="network-analysis-http" class="active" data-total="{% if report.analysis.network.http_ex %}{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}{% else %}{{ report.analysis.network.http|length }}{% endif %}">
-                                    {% if report.analysis.network.http_ex %}
-                                        HTTP(S) <span class="button-badge">{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}</span>
-                                    {% else %}
-                                        HTTP <span class="button-badge">{{ report.analysis.network.http|length }}</span>
-                                    {% endif %}
-                                </a>
-                                <a href="network-analysis-icmp" data-total="0">ICMP <span class="button-badge">{{ report.analysis.network.icmp|length }}</span></a>
-                                <a href="network-analysis-irc" data-total="0">IRC <span class="button-badge">{{ report.analysis.network.irc|length }}</span></a>
-                                <a href="network-analysis-suricata" class="no-badge">Suricata</a>
-                                <a href="network-analysis-snort" class="no-badge">Snort</a>
-                           </div>
-
+                	   <div class="grouped-buttons__bordered network-analysis-groups">
+                            <a href="network-analysis-hosts" data-total="{{ report.analysis.network.hosts|length }}">Hosts <span class="button-badge">{{ report.analysis.network.hosts|length }}</span></a>
+                            <a href="network-analysis-dns" data-total="{{ report.analysis.network.dns|length }}">DNS <span class="button-badge">{{ report.analysis.network.dns|length }}</span></a>
+                            <a href="network-analysis-tcp" data-total="{{ report.analysis.network.tcp|length }}">TCP <span class="button-badge">{{ report.analysis.network.tcp|length }}</span></a>
+                            <a href="network-analysis-udp" data-total="{{ report.analysis.network.udp|length }}">UDP <span class="button-badge">{{ report.analysis.network.udp|length }}</span></a>
+                            <a href="network-analysis-http" class="active" data-total="{% if report.analysis.network.http_ex or report.analysis.network.https_ex %}{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}{% else %}{{ report.analysis.network.http|length }}{% endif %}">
+                                {% if report.analysis.network.http_ex or report.analysis.network.https_ex %}
+                                    HTTP(S) <span class="button-badge">{{ report.analysis.network.http_ex|add:report.analysis.network.https_ex|length }}</span>
+                                {% else %}
+                                    HTTP <span class="button-badge">{{ report.analysis.network.http|length }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="network-analysis-icmp" data-total="0">ICMP <span class="button-badge">{{ report.analysis.network.icmp|length }}</span></a>
+                            <a href="network-analysis-irc" data-total="0">IRC <span class="button-badge">{{ report.analysis.network.irc|length }}</span></a>
+                            <a href="network-analysis-suricata" class="no-badge">Suricata</a>
+                            <a href="network-analysis-snort" class="no-badge">Snort</a>
+                       </div>
                     </div>
 
                     <div class="col-md-12 network-analysis-pages">
@@ -53,6 +60,8 @@
 
                 </div>
             </div>
+
+            {% endif %}
 
             <!-- footer replacement to avoid double scrollbars -->
             <footer class="flex-grid__footer spread-alignment">

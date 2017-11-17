@@ -1,0 +1,585 @@
+import StatsAPI from './StatsAPI';
+import WidgetLoader from './WidgetLoader';
+import { config } from '../config';
+
+// placeholder empty function => true
+let noop = () => true;
+
+const COLOR_LIB = [
+  '#4D4D4D',
+  '#5DA5DA',
+  '#FAA43A',
+  '#60BD68',
+  '#F17CB0',
+  '#B2912F',
+  '#B276B2',
+  '#DECF3F',
+  '#F15854'
+]
+
+function parseFragment(fragment) {
+  let result = $.parseHTML(fragment.html());
+  $(result).attr('id', $(fragment).attr('id'));
+  fragment.remove();
+  return $(result).eq(result.length-1);
+}
+
+function initializeToolbar(widget) {
+
+  // verify the existence of a toolbar and a widget before proceeding
+  if(!widget) return false;
+  if(!$(widget.template).find('.widget-toolbar').length) return false;
+  let toolbar = $(widget.template).find('.widget-toolbar');
+
+  // chart rerender hook
+  let rerender = () => {
+    if(widget.chart) widget.chart.destroy();
+    widget.pull();
+  }
+
+  // unique-ify all the elements
+  toolbar.find('#toolbar-date, #toolbar-period-day, #toolbar-period-hour, #toolbar-period-week, #toolbar-filter-nodes, #toolbar-time').each(function() {
+
+    let curID = $(this).attr('id');
+    let tID = curID.replace('toolbar-',`${widget.name}-`);
+
+    if(toolbar.find(`label[for="${curID}"]`)) {
+      toolbar.find(`label[for="${curID}"]`).attr('for', tID);
+    }
+
+    $(this).attr('id', tID);
+
+  });
+
+  // initialize datepicker
+  toolbar.find('[data-datepicker]').datepicker({
+    dateFormat: 'yy-mm-dd',
+    maxDate: new Date()
+  }).datepicker('setDate', config.DEFAULTS.DATE ? new Date(config.DEFAULTS.DATE) : new Date());
+
+  let toolbarDate = toolbar.find('input[name="toolbar-date"]');
+  let toolbarPeriod = toolbar.find('input[name="toolbar-period"]');
+  let toolbarTime = toolbar.find('select[name="toolbar-time"]');
+
+  toolbarDate.on('change', e => {
+    if(widget._synced) return false;
+    let t = $(e.currentTarget);
+    let val = t.val()
+    widget.api.date(t.val());
+    rerender();
+  });
+
+  toolbarPeriod.on('change', e => {
+    if(widget._synced) return false;
+    widget.api.period($(e.currentTarget).val());
+    rerender();
+  });
+
+  toolbarTime.on('change', e => {
+    if(widget._synced) return false;
+    widget.api.time($(e.currentTarget).val());
+    rerender();
+  });
+
+  widget.api.on('receive', data => {
+
+    if(data.original.nodes && !widget.hasNodes) {
+
+      let select = toolbar.find('select[name="toolbar-node"]');
+
+      // sort on order and append to select
+      data.original.nodes.sort((a, b) => {
+        if(a < b) return -1;
+        if(a > b) return 1;
+        return 0;
+      }).forEach(node => {
+        select.append(`<option value="${node}">${node}</option>`);
+      });
+
+      // display the node controls
+      toolbar.find('.control-nodes').addClass('has-nodes');
+
+      // bind a change event to that same select to respond to it.
+      select.bind('change', e => {
+        if(widget._synced) return false;
+        widget.api.node(select.val());
+        rerender();
+      });
+
+      widget.hasNodes = true;
+
+    }
+
+  });
+
+}
+
+/*
+  Defines a simple widget - tries to correspond to the Gridstack API
+  - every widget has an API instance to control itself from within. That means
+    that if 1 call is busy being executed, it will not stop the other charts from
+    rendering their own data.
+ */
+class DraggableZWidget {
+
+  constructor(name, config) {
+
+    this.name = name || 'widget';
+    this.template = config.template || false;
+    this.elementId = config.elementId || undefined;
+    this.initialized = false;
+    this._synced = false;
+
+    this.widgetLayout = $.extend({
+      el: null,
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+      id: null
+    }, config.widgetLayout || {});
+
+    this.events = {
+      render: [],
+      received: [],
+      loading: [],
+      loaded: [],
+      changed: [],
+      synced: []
+    };
+
+    // extend the users set of actions versus a default implemented few
+    this.actions = $.extend({
+      refresh: function() {
+        this.pull();
+      }
+    }, config.actions || {});
+
+    // api-specific
+    this.api = new StatsAPI(config.api || {});
+
+    // chartjs-specific
+    this.chart = null;
+
+    this.chartHeight = config.chartHeight || false;
+    this.chartScrollable = config.chartScrollable || false;
+
+    this.chartOptions = $.extend({
+      type: 'line',
+      data: {},
+      options: {}
+    }, config.chart || {});
+
+    // configure the widget loader
+    this.loaderText = config.loaderText || 'Fetching data';
+    this.loader = new WidgetLoader($(this.template).find('.widget-loader'), this, this.loaderText || null);
+
+    // wire all the implemented services
+    if(this.template) {
+      return this._start();
+    } else {
+      return this;
+    }
+
+  }
+
+  // injects a grid widget to the frontend
+  inject(grid) {
+
+    let widget, template;
+
+    if(this.template) {
+      template = $(this.template);
+
+      // set html in grid
+      grid.container.append(template);
+
+      // append the attributes
+      template.attr('data-gs-width', this.widgetLayout.width);
+      template.attr('data-gs-height', this.widgetLayout.height);
+      template.attr('data-gs-x', this.widgetLayout.x);
+      template.attr('data-gs-y', this.widgetLayout.y);
+      template.attr('data-gs-no-resize', true);
+      template.attr('id', this.elementId);
+
+      widget = grid.makeWidget(`#${this.elementId}`);
+
+      this.dispatchEvent('render', this, () => {
+        this.initialized = true;
+      });
+
+      // create dead simple action listeners
+      for(let a in this.actions) {
+        $(this.template).find(`a[href="widget:${a}"]`).bind('click', e => {
+          e.preventDefault();
+          if(this.actions[a] instanceof Function) this.actions[a].apply(this, e);
+        });
+      }
+
+    } else {
+
+      // we have no template?
+
+    }
+
+  }
+
+  // event trigger
+  on(evt, cb = noop) {
+
+    let add = (evt,cb) => this.events[evt].push(cb);
+
+    if(cb instanceof Array) {
+      cb.forEach(cba => add(evt, cba));
+    } else {
+      if(this.events[evt]) {
+        add(evt, cb)
+      }
+    }
+
+    return this;
+  }
+
+  dispatchEvent(evt, data = {}, cb = noop) {
+    if(this.events[evt]) {
+      this.events[evt].forEach(callback => {
+        if(callback instanceof Function) {
+          callback.call(this, data);
+          cb();
+        }
+      });
+    }
+
+    return this;
+  }
+
+  pull() {
+    return this.api.fetch();
+  }
+
+  // chainable configuration method for parsing html on
+  // the fly. This function is called upon initialization and should not
+  // be called afterwards. It will create html on the fly from a string
+  // and can populate variable stuff handlebars-style.
+  context(scope, content) {
+    return this._start();
+  }
+
+  // starts drawing the chart into widget-chart
+  createChart() {
+
+    let c,
+        ctx = this.template.find('.widget-chart canvas');
+
+    let create = () => {
+      c = new Chart(ctx[0], this.chartOptions);
+      $(this.template).data('chart', c);
+      this.chart = c;
+    }
+
+    if(ctx.length) {
+
+      if(this.chartHeight) {
+        ctx[0].height = this.chartHeight;
+      }
+
+      // merges chart layout configuration into the dataset configuration
+      if(this.chartOptions.dataLayout) {
+
+        // in case we get an array, it will be dataset-specific, on order.
+        if(this.chartOptions.dataLayout instanceof Array) {
+          this.chartOptions.data.datasets.forEach((dataset, i) => {
+            if(this.chartOptions.dataLayout[i]) {
+              for(let prop in this.chartOptions.dataLayout[i]) {
+                dataset[prop] = this.chartOptions.dataLayout[i][prop];
+              }
+            }
+          });
+        }
+
+        // 'each' dataset inherits these options
+        if(this.chartOptions.dataLayout instanceof Object) {
+          this.chartOptions.data.datasets.forEach(dataset => {
+            for(let prop in this.chartOptions.dataLayout) {
+              dataset[prop] = this.chartOptions.dataLayout[prop];
+            }
+          });
+        }
+
+      }
+
+      this.chartOptions.data.datasets.forEach((dataset, i) => {
+        dataset.backgroundColor = dataset.backgroundColor || COLOR_LIB[i];
+        dataset.borderColor = dataset.borderColor || COLOR_LIB[i];
+        dataset.fill = dataset.fill || false;
+      });
+
+      // transform the axes if a config has been given, but makes sure it extends properly
+      // onto any existing options in the widget specs. Follows instructions of Ricardo
+      // in the README_API.txt documentation.
+
+      if(this.chartOptions.data.config) {
+
+        let c = this.chartOptions.data.config;
+
+        // define the y axes
+        for(let y in this.chartOptions.options.scales.yAxes) {
+          let yo = this.chartOptions.options.scales.yAxes[y];
+          if(!yo.ticks) yo.ticks = {}; // prep
+          if(c.max_points) yo.maxTicksLimit = c.max_points;
+          // if(c.max) yo.ticks.max = c.max; // stripped out for convenience, imho rounding the max UP by the framework is OK. using this property renders the graph a bit ugly and weird.
+        }
+
+      }
+
+      if(this.chartOptions.data.labels.length == 0) {
+        $(this.template).find('.widget-chart').fadeOut(500, () => {
+          $(this.template).find('.widget-no-data').fadeIn(500);
+        });
+      } else {
+        $(this.template).find('.widget-no-data').fadeOut(500, () => {
+          $(this.template).find('.widget-chart').fadeIn(500, create);
+        });
+      }
+
+    }
+
+  }
+
+  // internal working-togethers
+  _start() {
+
+    let iv = null;
+    let messages = [
+      this.loaderText,
+      'still loading...',
+      'a moment now, still...',
+      'crunching afk brb',
+      'this sure is a hell of a JSON',
+      'ok almost there...',
+      'I am still working!',
+      'I need a little longer...',
+      'Nothing broke, just doing my thing.'
+    ]
+
+    // after we pulled, start drawing the canvas
+    this.api.on('request', () => $(this.template).find('.widget-no-data').fadeOut(500));
+    this.api.on('receive', res => this.chartOptions.data = res.data);
+
+    this.loader.on('started', () => {
+      iv = setInterval(() => {
+        this.loader.text(messages[Math.floor(Math.random() * messages.length)]);
+      }, 5000);
+    });
+
+    this.loader.on('stopped', () => {
+      if(iv) clearInterval(iv);
+      this.createChart();
+    });
+
+    if(!this.initialized) this._persistPresets();
+    this.pull();
+
+    return this;
+  }
+
+  synced(is) {
+    if(is === undefined) {
+      // toggle if undefined
+      this._synced = !this._synced;
+    } else {
+      // set to 'is' value
+      this._synced = is;
+    }
+
+    this.dispatchEvent('synced', this._synced);
+  }
+
+  _persistPresets() {
+
+    let defaults = config.DEFAULTS;
+
+    if(defaults.PERIOD) {
+      this.api.period(defaults.PERIOD);
+      $(this.template).find(`.widget-toolbar input[value=${defaults.PERIOD}]`).prop('checked', true);
+    }
+
+    if(defaults.TIME) {
+      this.api.time(defaults.TIME);
+      $(this.template).find('.widget-toolbar select[name=toolbar-time]').val(defaults.TIME);
+    }
+
+    if(defaults.DATE) {
+      this.api.date(defaults.DATE);
+      $(this.template).find('.widget-toolbar input[name="toolbar-date"]').val(defaults.DATE);
+    }
+
+  }
+
+}
+
+/*
+  class DraggableUI
+    - controls draggable grids
+ */
+class DraggableZ {
+
+  constructor(context, widgets) {
+    this.ctx = $(context);
+    this.grid = null;
+    this.widgets = [];
+    this.sync = false;
+    this.events = {
+      'sync.on': [],
+      'sync.off': [],
+      'sync.change': []
+    };
+    return this.initialise(widgets);
+  }
+
+  initialise(prefabWidgets) {
+
+    this.ctx.gridstack({
+      animate: true,
+      disableResize: true,
+      cellHeight: 50,
+      draggable: {
+        handle: '.widget-handle',
+        appendTo: 'body',
+        scroll: false
+      }
+    });
+
+    // apply initialized grid api to the controller
+    // class.
+    this.grid = this.ctx.data('gridstack');
+
+    if(prefabWidgets) {
+      this.prefabricated(prefabWidgets);
+    }
+
+    return this;
+
+  }
+
+  widget(name, options) {
+
+    let widget;
+
+    if(options.template.length && options.template) {
+      options.template = parseFragment(options.template);
+    }
+
+    if(name) {
+      this.widgets[name] = widget = new DraggableZWidget(name, options);
+    } else {
+      console.log('A name has to be given.');
+    }
+
+    return widget;
+
+  }
+
+  widgetFabricated(widget) {
+    if(!widget instanceof DraggableZWidget) {
+      console.log('A widget has to be an instance of DraggableUIWidget [use DraggableUI.fabricate(name,options)]');
+    } else {
+      this.widgets[widget.name] = widget;
+    }
+    return this;
+  }
+
+  prefabricated(widgets) {
+    if(!widgets instanceof Array) {
+      console.log('`widgets` has to be of type Array');
+    } else {
+      widgets.forEach(widget => this.widgetFabricated(widget));
+    }
+
+    this.draw();
+  }
+
+  draw() {
+
+    let gs = this.grid;
+
+    // renders all the defined widgets to the grid
+    for(let w in this.widgets) {
+      gs.batchUpdate();
+      let widget = this.widgets[w];
+      widget.inject(gs);
+      gs.commit();
+    }
+
+    return this;
+  }
+
+  // toggle synchronization to on, this will set each parameter the same for each widget
+  toggleSync() {
+    this.sync = true;
+  }
+
+  // event trigger
+  on(evt, cb = noop) {
+
+    let add = (evt,cb) => this.events[evt].push(cb);
+
+    if(cb instanceof Array) {
+      cb.forEach(cba => add(evt, cba));
+    } else {
+      if(this.events[evt]) {
+        add(evt, cb)
+      }
+    }
+
+    return this;
+  }
+
+  dispatchEvent(evt, data = {}, cb = noop) {
+    if(this.events[evt]) {
+      this.events[evt].forEach(callback => {
+        if(callback instanceof Function) {
+          callback.call(this, data);
+          cb();
+        }
+      });
+    }
+
+    return this;
+  }
+
+}
+
+// utility function for defining widgets outside
+// of the interface container. usefull for ripping apart
+// widget-specific code and organize modularity. duplicates
+// the method with changes, but can be injected in an instance.
+function fabricate(name, options) {
+
+  let widget;
+
+  // check for the template
+  if(options.template && options.template.length) {
+    options.template = parseFragment(options.template);
+  }
+
+  if(name) {
+    widget = new DraggableZWidget(name, options);
+  } else {
+    console.log('A name has to be given.');
+  }
+
+  return widget;
+
+}
+
+// export the DraggableZ
+export default DraggableZ;
+
+// export utilities
+export {
+  DraggableZWidget,
+  parseFragment,
+  fabricate,
+  initializeToolbar
+};

@@ -6,6 +6,7 @@ import io
 import json
 import mock
 import os
+import pytest
 import responses
 import tempfile
 import zipfile
@@ -30,6 +31,10 @@ class TestSubmitManager(object):
         })
 
         db.connect()
+        db.add_machine(
+            "cuckoo1", "cuckoo2", "1.2.3.4", "windows", None, None, "int0",
+            None, "5.6.7.8", 2042
+        )
         self.submit_manager = SubmitManager()
 
     def test_pre_file(self):
@@ -53,7 +58,8 @@ class TestSubmitManager(object):
         assert self.submit_manager.pre(submit_type="strings", data=[
             "http://theguardian.com/",
             "https://news.ycombinator.com/",
-            "google.com",
+            # Any trailing whitespaces should be stripped.
+            "google.com \t",
         ]) == 1
 
         submit = db.view_submit(1)
@@ -120,6 +126,26 @@ class TestSubmitManager(object):
         assert t.options == {
             "procmemdump": "yes",
             "route": "internet",
+        }
+
+    def test_submit_url2(self):
+        assert self.submit_manager.pre(
+            "strings", ["http://google.com"]
+        ) == 1
+        config = json.load(open("tests/files/submit/url2.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target == "http://google.com"
+        assert t.package == "ie"
+        assert t.timeout == 120
+        assert t.category == "url"
+        assert t.status == "pending"
+        assert not t.enforce_timeout
+        assert not t.memory
+        assert not t.machine
+        assert t.options == {
+            "procmemdump": "yes",
+            "route": "vpn0",
         }
 
     def test_submit_file1(self):
@@ -210,7 +236,7 @@ class TestSubmitManager(object):
         assert t.timeout == 120
         assert t.category == "archive"
         assert t.status == "pending"
-        assert t.machine == "cuckoo1"
+        assert t.machine == "cuckoo2"
         assert not t.enforce_timeout
         assert not t.memory
         assert t.options == {
@@ -266,6 +292,42 @@ class TestSubmitManager(object):
             "filename": "files/pdf0.pdf",
         }
         assert len(zipfile.ZipFile(t.target).read("files/pdf0.pdf")) == 680
+
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    def test_submit_arc4(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "rar_plain.rar",
+            "data": open("tests/files/rar_plain.rar", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/arc4.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("rar_plain.rar")
+        assert t.options == {
+            "route": "none",
+            "procmemdump": "yes",
+            "filename": "bar.txt",
+        }
+        assert len(zipfile.ZipFile(t.target).read("bar.txt")) == 12
+
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    def test_submit_arc5(self):
+        assert self.submit_manager.pre("files", [{
+            "name": "rar_plain_rar.rar",
+            "data": open("tests/files/rar_plain_rar.rar", "rb").read(),
+        }]) == 1
+
+        config = json.load(open("tests/files/submit/arc5.json", "rb"))
+        assert self.submit_manager.submit(1, config) == [1]
+        t = db.view_task(1)
+        assert t.target.endswith("rar_plain.rar")
+        assert t.options == {
+            "route": "none",
+            "procmemdump": "yes",
+            "filename": "bar.txt",
+        }
+        assert len(zipfile.ZipFile(t.target).read("bar.txt")) == 12
 
     def test_pre_options(self):
         assert self.submit_manager.pre(
@@ -340,6 +402,14 @@ def test_option_translations_from():
         "network-routing": "foobar",
     }, {}) == {
         "route": "foobar",
+    }
+
+    assert sm.translate_options_from({}, {
+        "enable-injection": False,
+        "key": "value",
+    }) == {
+        "free": "yes",
+        "key": "value",
     }
 
 def test_option_translations_to():

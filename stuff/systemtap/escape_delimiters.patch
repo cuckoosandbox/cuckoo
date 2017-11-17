@@ -1,0 +1,61 @@
+Index: tapset/uconversions.stp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- tapset/uconversions.stp	(revision df8ae714d682904f8f7aaaeca32b96ba3a602a47)
++++ tapset/uconversions.stp	(revision )
+@@ -95,7 +95,7 @@
+  * returned as a string, without double quotes.
+  */
+ function user_string_quoted:string (addr:long) {
+-  try { return string_quoted(user_string(addr)) } catch { return sprintf("0x%x", addr) }
++  try { return cuckoo_escape_delimiters(string_quoted(user_string(addr))) } catch { return sprintf("0x%x", addr) }
+ }
+
+
+@@ -359,7 +359,7 @@
+  * and UTF-32 decoding as per @user_string_utf32.
+  */
+ function user_string_quoted_utf32:string (addr:long) {
+-  try { return string_quoted(user_string_utf32(addr)) } catch { return sprintf("0x%x", addr) }
++  try { return cuckoo_escape_delimiters(string_quoted(user_string_utf32(addr))) } catch { return sprintf("0x%x", addr) }
+ }
+
+
+@@ -439,7 +439,7 @@
+  * and UTF-16 decoding as per @user_string_utf16.
+  */
+ function user_string_quoted_utf16:string (addr:long) {
+-  try { return string_quoted(user_string_utf16(addr)) } catch { return sprintf("0x%x", addr) }
++  try { return cuckoo_escape_delimiters(string_quoted(user_string_utf16(addr))) } catch { return sprintf("0x%x", addr) }
+ }
+
+
+@@ -967,7 +967,11 @@
+  * the given address, the address itself is returned as a string, without
+  * double quotes.
+  */
+-function user_buffer_quoted:string (addr:long, inlen:long, outlen:long)
++function user_buffer_quoted:string (addr:long, inlen:long, outlen:long) {
++  return cuckoo_escape_delimiters(user_buffer_quoted_wrapped(addr, inlen, outlen))
++}
++
++function user_buffer_quoted_wrapped:string (addr:long, inlen:long, outlen:long)
+ %{
+   size_t outlen = (size_t)clamp_t(int, STAP_ARG_outlen, 0, MAXSTRINGLEN);
+   if (outlen == 0)
+@@ -1002,3 +1006,13 @@
+     STAP_ERROR("Unable to access user space data at 0x%lx",
+ 	       (unsigned long)(void *)(uintptr_t)STAP_ARG_addr);
+ %}
++
++function cuckoo_escape_delimiters:string (str:string) {
++  str = str_replace(str, "[", "\\x5b")
++  str = str_replace(str, "]", "\\x5d")
++  str = str_replace(str, "{", "\\x7b")
++  str = str_replace(str, "}", "\\x7d")
++  str = str_replace(str, "\\\"", "\\x22")
++  str = str_replace(str, ",", "\\x2c")
++  return str
++}

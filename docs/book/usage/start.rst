@@ -77,6 +77,8 @@ Now Cuckoo is ready to run and it's waiting for submissions.
 The ``--debug`` and ``--quiet`` flags increase and decrease the logging
 verbosity for the ``cuckoo`` command or any of its subcommands.
 
+.. _cuckoo_background:
+
 Cuckoo in the background
 ========================
 

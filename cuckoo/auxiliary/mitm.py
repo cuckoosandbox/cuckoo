@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -22,7 +21,7 @@ class MITM(Auxiliary):
     def start(self):
         mitmdump = self.options.get("mitmdump", "/usr/local/bin/mitmdump")
         port_base = int(self.options.get("port_base", 50000))
-        script = cwd(self.options.get("script", "mitm.py"))
+        script = cwd(self.options.get("script", "stuff/mitm.py"))
         certificate = self.options.get("certificate", "bin/cert.p12")
 
         outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")

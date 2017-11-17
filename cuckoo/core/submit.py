@@ -20,6 +20,11 @@ log = logging.getLogger(__name__)
 db = Database()
 
 class SubmitManager(object):
+    known_web_options = [
+        "enable-injection", "enforce-timeout", "full-memory-dump",
+        "process-memory-dump", "simulated-human-interaction",
+    ]
+
     def _handle_string(self, submit, tmppath, line):
         if not line:
             return
@@ -65,8 +70,17 @@ class SubmitManager(object):
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
 
-        if entry.get("network-routing"):
+        # VPN takes precedence over the network-routing option (this should
+        # actually be resolved in the frontend, though).
+        if entry.get("vpn"):
+            ret["route"] = entry["vpn"]
+        elif entry.get("network-routing"):
             ret["route"] = entry["network-routing"]
+
+        # Propagate any additional manually set key/value pairs.
+        for key, value in options.items():
+            if key not in self.known_web_options:
+                ret[key] = value
 
         return ret
 
@@ -109,7 +123,7 @@ class SubmitManager(object):
 
         if submit_type == "strings":
             for line in data:
-                self._handle_string(submit_data, path_tmp, line)
+                self._handle_string(submit_data, path_tmp, line.strip())
 
         if submit_type == "files":
             for entry in data:
@@ -180,6 +194,8 @@ class SubmitManager(object):
         ret = []
         submit = db.view_submit(submit_id)
 
+        machines = {}
+
         for entry in config["file_selection"]:
             # Merge the global & per-file analysis options.
             info = copy.deepcopy(config["global"])
@@ -187,6 +203,17 @@ class SubmitManager(object):
             info.update(entry.get("options", {}))
             options = copy.deepcopy(config["global"]["options"])
             options.update(entry.get("options", {}).get("options", {}))
+
+            machine = info.get("machine")
+            if machine:
+                if machine not in machines:
+                    m = db.view_machine(machine)
+                    # TODO Add error handling for missing machine entry.
+                    machines[machine] = m.label if m else None
+
+                machine = machines[machine]
+            else:
+                machine = None
 
             kw = {
                 "package": info.get("package"),
@@ -197,7 +224,7 @@ class SubmitManager(object):
                 "tags": info.get("tags"),
                 "memory": options.get("full-memory-dump"),
                 "enforce_timeout": options.get("enforce-timeout"),
-                "machine": info.get("machine"),
+                "machine": machine,
                 "platform": info.get("platform"),
                 "options": self.translate_options_from(info, options),
                 "submit_id": submit_id,
@@ -234,7 +261,8 @@ class SubmitManager(object):
                     continue
 
                 arc = sflock.zipify(sflock.unpack(
-                    info["arcname"], contents=open(arcpath, "rb").read()
+                    contents=open(arcpath, "rb").read(),
+                    filename=info["arcname"]
                 ))
 
                 # Create a .zip archive out of this container.
@@ -257,7 +285,9 @@ class SubmitManager(object):
                     continue
 
                 content = sflock.unpack(arcpath).read(info["extrpath"][:-1])
-                subarc = sflock.unpack(info["extrpath"][-2], contents=content)
+                subarc = sflock.unpack(
+                    contents=content, filename=info["extrpath"][-2]
+                )
 
                 # Write intermediate .zip archive file.
                 arcpath = Files.temp_named_put(

@@ -3,21 +3,23 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
-import pytest
+import os.path
 import shutil
 import struct
 import tempfile
 
 from cuckoo.common.abstracts import Signature
-from cuckoo.common.objects import Dictionary, File
+from cuckoo.common.objects import Dictionary
+from cuckoo.common.scripting import Scripting
 from cuckoo.core.database import Database
+from cuckoo.core.extract import ExtractManager
 from cuckoo.core.plugins import RunSignatures, RunProcessing
-from cuckoo.core.startup import init_yara, init_modules, HAVE_YARA
+from cuckoo.core.startup import init_yara, init_modules
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
 
 def test_signature_version():
-    rs = RunSignatures({})
+    rs = RunSignatures
 
     class sig_normal(object):
         name = "sig_normal"
@@ -56,20 +58,20 @@ def test_signature_version():
     rs.version = "2.1.0"
     assert not rs.check_signature_version(sig_obsolete)
 
-def test_should_enable_signature():
-    rs = RunSignatures({})
+def test_should_load_signature():
+    rs = RunSignatures
     rs.version = "2.0.0"
 
     class sig_not_enabled(object):
         enabled = False
 
-    assert not rs.should_enable_signature(sig_not_enabled)
+    assert not rs.should_load_signature(sig_not_enabled)
 
     class sig_empty_name(object):
         enabled = True
         name = None
 
-    assert not rs.should_enable_signature(sig_empty_name)
+    assert not rs.should_load_signature(sig_empty_name)
 
     class sig_enable_false(object):
         enabled = True
@@ -80,7 +82,7 @@ def test_should_enable_signature():
         def enable(self):
             return False
 
-    assert not rs.should_enable_signature(sig_enable_false())
+    assert not rs.should_load_signature(sig_enable_false())
 
     class sig_enable_true(object):
         enabled = True
@@ -92,25 +94,69 @@ def test_should_enable_signature():
         def enable(self):
             return True
 
-    assert rs.should_enable_signature(sig_enable_true())
+    assert rs.should_load_signature(sig_enable_true())
+
+def test_should_enable_signature_empty_platform():
+    rs = RunSignatures({})
 
     class sig_empty_platform(object):
-        enabled = True
-        name = "empty_platform"
-        minimum = "2.0.0"
-        maximum = None
         platform = None
 
     assert rs.should_enable_signature(sig_empty_platform())
 
     class sig_other_platform(object):
-        enabled = True
-        name = "other_platform"
-        minimum = "2.0.0"
-        maximum = None
         platform = "nope"
 
     assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert rs.should_enable_signature(sig_windows_platform())
+
+def test_should_enable_signature_linux_platform():
+    rs = RunSignatures({
+        "info": {
+            "platform": "linux",
+        },
+    })
+
+    class sig_empty_platform(object):
+        platform = None
+
+    assert rs.should_enable_signature(sig_empty_platform())
+
+    class sig_other_platform(object):
+        platform = "nope"
+
+    assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert not rs.should_enable_signature(sig_windows_platform())
+
+def test_should_enable_signature_windows_platform():
+    rs = RunSignatures({
+        "info": {
+            "platform": "windows",
+        },
+    })
+
+    class sig_empty_platform(object):
+        platform = None
+
+    assert rs.should_enable_signature(sig_empty_platform())
+
+    class sig_other_platform(object):
+        platform = "nope"
+
+    assert not rs.should_enable_signature(sig_other_platform())
+
+    class sig_windows_platform(object):
+        platform = "windows"
+
+    assert rs.should_enable_signature(sig_windows_platform())
 
 def test_signature_order():
     class sig(object):
@@ -118,6 +164,7 @@ def test_signature_order():
         minimum = "2.0.0"
         maximum = None
         platform = "windows"
+        marks = []
 
         def __init__(self, caller):
             pass
@@ -136,6 +183,7 @@ def test_signature_order():
 
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig1, sig2, sig3
+        RunSignatures.init_once()
         rs = RunSignatures({})
 
     assert isinstance(rs.signatures[0], sig2)
@@ -160,6 +208,7 @@ class test_call_signature():
 
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig,
+        RunSignatures.init_once()
         rs = RunSignatures({})
 
     s1 = rs.signatures[0]
@@ -201,6 +250,7 @@ def test_signature_severity(p):
         name = "foobar"
         matched = True
         severity = 42
+        marks = []
 
         def init(self):
             pass
@@ -220,9 +270,41 @@ def test_signature_severity(p):
         "signature": "foobar", "severity": 42,
     }
 
-@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
+def test_mark_config():
+    class sig(Signature):
+        name = "foobar"
+
+        def on_complete(self):
+            self.mark_config({
+                "family": "foobar",
+                "cnc": "thisiscnc.com",
+                "url": [
+                    "url1", "url2",
+                ],
+            })
+            return True
+
+    rs = RunSignatures({
+        "metadata": {},
+    })
+    rs.signatures = sig(rs),
+    rs.run()
+    assert rs.results["metadata"] == {
+        "cfgextr": [{
+            "family": "foobar",
+            "cnc": [
+                "thisiscnc.com",
+            ],
+            "url": [
+                "url1", "url2",
+            ],
+            "key": None,
+            "type": None,
+        }],
+    }
+
 def test_on_yara():
-    set_cwd(tempfile.mkdtemp())
+    set_cwd(os.path.realpath(tempfile.mkdtemp()))
     cuckoo_create()
     init_modules()
 
@@ -230,7 +312,7 @@ def test_on_yara():
         cwd("yara", "binaries", "vmdetect.yar"),
         cwd("yara", "memory", "vmdetect.yar")
     )
-    init_yara(True)
+    init_yara()
 
     mkdir(cwd(analysis=1))
     open(cwd("binary", analysis=1), "wb").write("\x0f\x3f\x07\x0b")
@@ -280,6 +362,9 @@ def test_on_yara():
         def on_complete(self):
             pass
 
+        def on_extract(self):
+            pass
+
         on_yara = mock.MagicMock()
 
     rs = RunSignatures(results)
@@ -297,6 +382,93 @@ def test_on_yara():
     sig1.on_yara.assert_any_call(
         "procmem", cwd("memory", "1-0.dmp", analysis=1), mock.ANY
     )
-    assert sig1.on_yara.call_args_list[0][0][2]["offsets"] == {
+    ym = sig1.on_yara.call_args_list[0][0][2]
+    assert ym.offsets == {
         "virtualpc": [(0, 0)],
     }
+    assert ym.string("virtualpc", 0) == "\x0f\x3f\x07\x0b"
+
+def test_on_extract():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    init_modules()
+
+    Database().connect()
+    mkdir(cwd(analysis=2))
+
+    cmd = Scripting().parse_command("cmd.exe /c ping 1.2.3.4")
+
+    ex = ExtractManager.for_task(2)
+    ex.push_script({
+        "pid": 1,
+        "first_seen": 2,
+    }, cmd)
+
+    results = RunProcessing(task=Dictionary({
+        "id": 2,
+        "category": "file",
+        "target": __file__,
+    })).run()
+
+    assert results["extracted"] == [{
+        "category": "script",
+        "pid": 1,
+        "first_seen": 2,
+        "program": "cmd",
+        "script": cwd("extracted", "0.bat", analysis=2),
+        "yara": [],
+    }]
+
+    class sig1(object):
+        name = "sig1"
+
+        @property
+        def matched(self):
+            return False
+
+        @matched.setter
+        def matched(self, value):
+            pass
+
+        def init(self):
+            pass
+
+        def on_signature(self):
+            pass
+
+        def on_complete(self):
+            pass
+
+        def on_yara(self):
+            pass
+
+        on_extract = mock.MagicMock()
+
+    rs = RunSignatures(results)
+
+    rs.signatures = sig1(),
+    rs.run()
+
+    sig1.on_extract.assert_called_once()
+    em = sig1.on_extract.call_args_list[0][0][0]
+    assert em.category == "script"
+
+class TestSignatureMethods(object):
+    def report(self, obj):
+        class caller(object):
+            results = obj
+
+        return Signature(caller())
+
+    def test_check_command_line(self):
+        r = self.report({
+            "behavior": {
+                "summary": {
+                    "command_line": [
+                        "foo", "bar", "foobar",
+                    ],
+                },
+            },
+        })
+        r.check_command_line("foo") == "foo"
+        r.check_command_line("ar$", regex=True) == "bar"

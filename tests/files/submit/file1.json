@@ -27,7 +27,6 @@
                 "available_vpns": [],
                 "machine": null,
                 "options": {
-                    "enable-services": false,
                     "enforce-timeout": true,
                     "full-memory-dump": false,
                     "enable-injection": true,
@@ -52,7 +51,6 @@
         "machine": "",
         "network-routing": "internet",
         "options": {
-            "enable-services": false,
             "enforce-timeout": false,
             "full-memory-dump": false,
             "enable-injection": true,

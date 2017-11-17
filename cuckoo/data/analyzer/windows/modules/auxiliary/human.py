@@ -4,23 +4,19 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import random
+import re
 import logging
 import threading
-from ctypes import WINFUNCTYPE, POINTER, sizeof
-from ctypes import c_bool, c_int, create_unicode_buffer, c_void_p
 
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import (
-    KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK,
-    SW_SHOW, WM_SYSCOMMAND, SC_CLOSE, INPUT_KEYBOARD, KEYEVENTF_KEYUP,
-    VK_MENU, VK_LMENU, VK_RETURN, VK_RIGHT, VK_TAB, VK_R, KEYEVENTF_EXTENDEDKEY,
-    KEYEVENTF_KEYUP, EnumWindowsProc, EnumChildProc
+    KERNEL32, USER32, SHELL32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK,
+    SW_SHOW, WM_SYSCOMMAND, SC_CLOSE, KEYEVENTF_KEYUP, KEYEVENTF_EXTENDEDKEY,
+    VK_LMENU, VK_RETURN, VK_RIGHT, VK_TAB, VK_R, WM_CLOSE,
+    EnumWindowsProc, EnumChildProc, create_unicode_buffer
 )
 
 log = logging.getLogger(__name__)
-
-EnumWindowsProc = WINFUNCTYPE(c_bool, c_void_p, c_void_p)
-EnumChildProc = WINFUNCTYPE(c_bool, c_void_p, c_void_p)
 
 RESOLUTION = {
     "x": USER32.GetSystemMetrics(0),
@@ -85,12 +81,24 @@ def foreach_child(hwnd, lparam):
                     if btn in textval:
                         break
                 else:
-                    log.info("Found button \"%s\", clicking it" % text.value)
+                    log.info("Found button %r, clicking it" % text.value)
                     USER32.SetForegroundWindow(hwnd)
                     KERNEL32.Sleep(1000)
                     USER32.SendMessageW(hwnd, BM_CLICK, 0, 0)
 
     # Recursively search for childs (USER32.EnumChildWindows).
+    return True
+
+# Callback procedure invoked for every enumerated window.
+# Purpose is to close any office window
+def get_office_window(hwnd, lparam):
+    if USER32.IsWindowVisible(hwnd):
+        text = create_unicode_buffer(1024)
+        USER32.GetWindowTextW(hwnd, text, 1024)
+        # TODO Would " - Microsoft (Word|Excel|PowerPoint)$" be better?
+        if re.search("- (Microsoft|Word|Excel|PowerPoint)", text.value):
+            USER32.SendNotifyMessageW(hwnd, WM_CLOSE, None, None)
+            log.info("Closed Office window.")
     return True
 
 # Callback procedure invoked for every enumerated window.
@@ -170,6 +178,8 @@ class Human(threading.Thread, Auxiliary):
         self.do_run = False
 
     def run(self):
+        seconds = 0
+
         # Global disable flag.
         if "human" in self.options:
             self.do_move_mouse = int(self.options["human"])
@@ -209,6 +219,9 @@ class Human(threading.Thread, Auxiliary):
                 SHELL32.ShellExecuteA(hwnd, "open", app, "", "", SW_SHOW)
 
         while self.do_run:
+            if seconds and not seconds % 60:
+                USER32.EnumWindows(EnumWindowsProc(get_office_window), 0)
+
             if self.do_click_mouse:
                 click_mouse()
 
@@ -222,6 +235,7 @@ class Human(threading.Thread, Auxiliary):
                 USER32.EnumWindows(EnumWindowsProc(foreach_window), 0)
 
             KERNEL32.Sleep(1000)
+            seconds += 1
 
     @staticmethod
     def handle_32770(frameHandle):

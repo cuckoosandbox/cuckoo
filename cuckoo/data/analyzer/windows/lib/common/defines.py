@@ -18,6 +18,7 @@ DWORD     = c_ulong
 LONG      = c_ulong
 LPBYTE    = POINTER(c_ubyte)
 LPTSTR    = POINTER(c_char)
+PWSTR     = c_wchar_p
 HANDLE    = c_void_p
 PVOID     = c_void_p
 LPVOID    = c_void_p
@@ -85,6 +86,7 @@ FILE_ATTRIBUTE_HIDDEN     = 0x00000002
 
 SW_SHOW                   = 0x00000005
 
+WM_CLOSE                  = 0x00000010
 WM_GETTEXT                = 0x0000000D
 WM_GETTEXTLENGTH          = 0x0000000E
 WM_SYSCOMMAND             = 0x00000112

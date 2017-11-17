@@ -1,0 +1,97 @@
+import { transformators, dateLabelFormat } from '../lib/StatsAPI';
+import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
+
+function formatBytes(a,b){if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]}
+
+// fabricate a widget
+const widget = fabricate('disk_usage', {
+
+  template: $("#widget--disk-usage"),
+  elementId: $("#widget--disk-usage").attr('id'),
+
+  widgetLayout: {
+    width: 4,
+    height: 5,
+    x: 8,
+    y: 0
+  },
+
+  chartHeight: 200,
+
+  // chart configuration
+  chart: {
+    type: 'line',
+    // chart styles
+    dataLayout: {
+      borderWidth: 1,
+      pointRadius: 1
+    },
+    options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false,
+            callback: function(label, index, labels) {
+              return formatBytes(label);
+            }
+          }
+          // scaleLabel: {
+          //   display: true,
+          //   labelString: '1k = 1000'
+          // }
+        }],
+        xAxes: [{
+          ticks: {
+            type: 'time',
+            maxTicksLimit: 10
+          }
+        }]
+      }
+    }
+  },
+
+  // api configuration
+  api: {
+    params: {
+      include: 'disk_usage'
+    },
+    transform: function(res, params, silent) {
+
+      let selected = res.disk_usage[params.period];
+
+      let result = {
+        datasets: [],
+        labels: []
+      };
+
+      for(let node in res.disk_usage[params.period]) {
+        let s = res.disk_usage[params.period][node];
+        if(s.points.analyses_used) {
+          result.labels = s.points.analyses_used.map(point => dateLabelFormat(point.datetime, params.period));
+          result.datasets.push({
+            label: node,
+            data: s.points.analyses_used.map(point => point.value)
+          });
+        }
+      }
+
+      return result;
+    }
+  }
+
+}).on('render', function() {
+
+  initializeToolbar(this);
+
+});
+
+export default widget;

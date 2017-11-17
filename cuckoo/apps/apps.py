@@ -4,10 +4,10 @@
 
 import datetime
 import fnmatch
+import hashlib
 import io
 import logging
 import os.path
-import pymongo
 import random
 import requests
 import shutil
@@ -22,6 +22,7 @@ from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
     CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
+from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
@@ -41,6 +42,7 @@ def fetch_community(branch="master", force=False, filepath=None):
     if filepath:
         buf = open(filepath, "rb").read()
     else:
+        log.info("Downloading.. %s", URL % branch)
         r = requests.get(URL % branch)
         if r.status_code != 200:
             raise CuckooOperationalError(
@@ -55,6 +57,7 @@ def fetch_community(branch="master", force=False, filepath=None):
     folders = {
         "modules/signatures": "signatures",
         "data/monitor": "monitor",
+        "data/yara": "yara",
         "agent": "agent",
         "analyzer": "analyzer",
     }
@@ -79,9 +82,9 @@ def fetch_community(branch="master", force=False, filepath=None):
 
             # TODO Ask for confirmation as we used to do.
             if os.path.exists(filepath) and not force:
-                log.info(
+                log.debug(
                     "Not overwriting file which already exists: %s",
-                    member.name
+                    member.name[len(name_start)+1:]
                 )
                 continue
 
@@ -89,6 +92,10 @@ def fetch_community(branch="master", force=False, filepath=None):
                 t.makelink(member, filepath)
                 continue
 
+            if not os.path.exists(os.path.dirname(filepath)):
+                os.makedirs(os.path.dirname(filepath))
+
+            log.debug("Extracted %s..", member.name[len(name_start)+1:])
             open(filepath, "wb").write(t.extractfile(member).read())
 
 def enumerate_files(path, pattern):
@@ -343,18 +350,14 @@ def cuckoo_clean():
                     "the connectivity, apply all migrations if needed or purge "
                     "it manually. Error description: %s", e)
 
-    # Check if MongoDB reporting is enabled and drop that if it is.
-    # TODO Move to the MongoDB abstract.
-    if config("reporting:mongodb:enabled"):
-        host = config("reporting:mongodb:host")
-        port = config("reporting:mongodb:port")
-        mdb = config("reporting:mongodb:db")
+    # Check if MongoDB reporting is enabled and drop the database if it is.
+    if mongo.init():
         try:
-            conn = pymongo.MongoClient(host, port)
-            conn.drop_database(mdb)
-            conn.close()
-        except:
-            log.warning("Unable to drop MongoDB database: %s", mdb)
+            mongo.connect()
+            mongo.drop()
+            mongo.close()
+        except Exception as e:
+            log.warning("Unable to drop MongoDB database: %s", e)
 
     # Check if ElasticSearch reporting is enabled and drop its data if it is.
     if elastic.init():
@@ -466,3 +469,98 @@ def migrate_database(revision="head"):
     except subprocess.CalledProcessError:
         return False
     return True
+
+def migrate_cwd():
+    log.warning(
+        "This is the first time you're running Cuckoo after updating your "
+        "local version of Cuckoo. We're going to update files in your CWD "
+        "that require updating. Note that we'll first ensure that no custom "
+        "patches have been applied by you before applying any modifications "
+        "of our own."
+    )
+
+    # Remove now-obsolete index_*.yar files.
+    for filename in os.listdir(cwd("yara")):
+        if filename.startswith("index_") and filename.endswith(".yar"):
+            os.remove(cwd("yara", filename))
+
+    # Create new directories if not present yet.
+    mkdir(cwd("stuff"))
+    mkdir(cwd("yara", "office"))
+
+    # Create the new $CWD/whitelist/ directory.
+    if not os.path.exists(cwd("whitelist")):
+        shutil.copytree(
+            cwd("..", "data", "whitelist", private=True), cwd("whitelist")
+        )
+
+    hashes = {}
+    for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):
+        if not line.strip() or line.startswith("#"):
+            continue
+        hash_, filename = line.split()
+        hashes[filename] = hashes.get(filename, []) + [hash_]
+
+    modified, outdated, deleted = [], [], []
+    for filename, hashes in hashes.items():
+        if not os.path.exists(cwd(filename)):
+            if hashes[-1] != "0"*40:
+                outdated.append(filename)
+            continue
+        hash_ = hashlib.sha1(open(cwd(filename), "rb").read()).hexdigest()
+        if hash_ not in hashes:
+            modified.append(filename)
+        elif hashes[-1] == "0"*40:
+            deleted.append(filename)
+        elif hash_ != hashes[-1]:
+            outdated.append(filename)
+
+    if modified:
+        log.error(
+            "One or more files in the CWD have been modified outside of "
+            "regular Cuckoo usage. Due to these changes Cuckoo isn't able to "
+            "automatically upgrade your setup."
+        )
+
+        for filename in sorted(modified):
+            log.warning("Modified file: %s (=> %s)", filename, cwd(filename))
+
+        log.error("Moving forward you have two options:")
+        log.warning(
+            "1) You make a backup of the affected files, remove their "
+            "presence in the CWD (yes, actually 'rm -f' the file), and "
+            "re-run Cuckoo to automatically restore the new version of the "
+            "file. Afterwards you'll be able to re-apply any changes as you "
+            "like."
+        )
+        log.warning(
+            "2) You revert back to the version of Cuckoo you were on "
+            "previously and accept that manual changes that have not been "
+            "merged upstream require additional maintenance that you'll "
+            "pick up at a later point in time."
+        )
+
+        sys.exit(1)
+
+    for filename in sorted(deleted):
+        log.debug("Deleted %s", filename)
+        os.unlink(cwd(filename))
+
+    for filename in sorted(outdated):
+        filepath = cwd("..", "data", filename, private=True)
+        if not os.path.exists(filepath):
+            log.debug(
+                "Failed to upgrade file not shipped with this release: %s",
+                filename
+            )
+            continue
+
+        log.debug("Upgraded %s", filename)
+        if not os.path.exists(os.path.dirname(cwd(filename))):
+            os.makedirs(os.path.dirname(cwd(filename)))
+        shutil.copy(filepath, cwd(filename))
+
+    log.info(
+        "Automated migration of your CWD was successful! Continuing "
+        "execution of Cuckoo as expected."
+    )

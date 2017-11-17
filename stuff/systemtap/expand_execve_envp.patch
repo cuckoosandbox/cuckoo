@@ -1,0 +1,43 @@
+Index: stuff/systemtap/sysc_execve.stp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- stuff/systemtap/sysc_execve.stp	(date 1508829789000)
++++ stuff/systemtap/sysc_execve.stp	(revision )
+@@ -33,7 +33,7 @@
+ 	__argv = @choose_defined($__argv, $argv)
+ 	args = __get_argv(__argv, 0)
+ 	__envp = @choose_defined($__envp, $envp)
+-	env_str = __count_envp(__envp)
++	env_str = __get_argv(__envp, 0)
+ 	@_SYSCALL_EXECVE_ARGSTR
+ }
+ probe dw_syscall.execve.return = kernel.function("sys_execve").return
+@@ -57,7 +57,7 @@
+ 	__argv = @choose_defined($__argv, $argv)
+ 	args = __get_compat_argv(__argv, 0)
+ 	__envp = @choose_defined($__envp, $envp)
+-	env_str = __count_compat_envp(__envp)
++	env_str = __get_compat_argv(__envp, 0)
+ 	@_SYSCALL_EXECVE_ARGSTR
+ }
+ probe syscall.compat_execve.return =
+@@ -75,7 +75,7 @@
+ 	asmlinkage()
+ 	filename = user_string_quoted(pointer_arg(1))
+ 	args = __get_argv(pointer_arg(2), 0)
+-	env_str = __count_envp(pointer_arg(3))
++	env_str = __get_argv(pointer_arg(3), 0)
+ 	@_SYSCALL_EXECVE_ARGSTR
+ }
+ probe nd_syscall.execve.return = kprobe.function("sys_execve").return
+@@ -97,7 +97,7 @@
+ 	asmlinkage()
+ 	filename = user_string_quoted(pointer_arg(1))
+ 	args = __get_compat_argv(pointer_arg(2), 0)
+-	env_str = __count_compat_envp(pointer_arg(3))
++	env_str = __get_compat_argv(pointer_arg(3), 0)
+ 	@_SYSCALL_EXECVE_ARGSTR
+ }
+ probe nd_syscall.compat_execve.return =

@@ -6,11 +6,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Loader = function () {
     function Loader(el) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
         _classCallCheck(this, Loader);
 
         this.el = el ? el : $('.loading');
         this.message = '';
         this.loading = false;
+        this.options = $.extend({
+            animate: false,
+            duration: 200
+        }, options);
     }
 
     _createClass(Loader, [{
@@ -19,14 +25,27 @@ var Loader = function () {
             if (msg) this.message = msg;
             this.setText();
             this.loading = true;
-            this.el.show();
+
+            if (this.options.animate) {
+                this.el.slideDown(this.options.duration);
+            } else {
+                this.el.show();
+            }
         }
     }, {
         key: 'stop',
         value: function stop() {
+            var cb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
             this.clearText();
             this.loading = false;
-            this.el.hide();
+
+            if (this.options.animate) {
+                this.el.slideUp(this.options.duration, cb);
+            } else {
+                this.el.hide();
+                cb();
+            }
         }
     }, {
         key: 'toggle',

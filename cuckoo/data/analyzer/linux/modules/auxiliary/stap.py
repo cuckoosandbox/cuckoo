@@ -1,12 +1,11 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os
 import subprocess
 import time
-import logging
-import platform
 
 from lib.common.abstracts import Auxiliary
 from lib.common.results import NetlogFile
@@ -16,11 +15,11 @@ log = logging.getLogger(__name__)
 
 class STAP(Auxiliary):
     """system-wide syscall trace with stap."""
-    priority = -10 # low prio to wrap tightly around the analysis
+    priority = -10  # low prio to wrap tightly around the analysis
 
     def __init__(self):
         self.config = Config(cfg="analysis.conf")
-        self.fallback_strace = False
+        self.proc = None
 
     def start(self):
         # helper function locating the stap module
@@ -29,54 +28,38 @@ class STAP(Auxiliary):
             if only_stap: return os.path.join(p, only_stap[0])
             return False
 
-        # highest priority: if the vm config specifies the path
-        if self.config.get("analyzer_stap_path", None) and os.path.exists(self.config.get("analyzer_stap_path")):
-            path = self.config.get("analyzer_lkm_path")
-        # next: if a module was uploaded with the analyzer for our platform
-        elif os.path.exists(platform.machine()) and has_stap(platform.machine()):
-            path = has_stap(platform.machine())
-        # next: default path inside the machine
+        path_cfg = self.config.get("analyzer_stap_path", None)
+        if path_cfg and os.path.exists(path_cfg):
+            path = path_cfg
         elif os.path.exists("/root/.cuckoo") and has_stap("/root/.cuckoo"):
             path = has_stap("/root/.cuckoo")
-        # next: generic module uploaded with the analyzer (single arch setup maybe?)
-        elif has_stap("."):
-            path = has_stap(".")
         else:
-            # we can't find the stap module, fallback to strace
-            log.warning("Could not find STAP LKM, falling back to strace.")
-            return self.start_strace()
+            log.warning("Could not find STAP LKM, aborting systemtap analysis.")
+            return False
 
         stap_start = time.time()
-        stderrfd = open("stap.stderr", "wb")
-        self.proc = subprocess.Popen(["staprun", "-v", "-x", str(os.getpid()), "-o", "stap.log", path], stderr=stderrfd)
+        self.proc = subprocess.Popen([
+            "staprun", "-vv",
+            "-x", str(os.getpid()),
+            "-o", "stap.log",
+            path,
+        ], stderr=subprocess.PIPE)
 
-        # read from stderr until the tap script is compiled
-        # while True:
-        #     if not self.proc.poll() is None:
-        #         break
-        #     line = self.proc.stderr.readline()
-        #     print "DBG LINE", line
-        #     if "Pass 5: starting run." in line:
-        #         break
+        while "systemtap_module_init() returned 0" not in self.proc.stderr.readline():
+            pass
 
-        time.sleep(10)
         stap_stop = time.time()
         log.info("STAP aux module startup took %.2f seconds" % (stap_stop - stap_start))
         return True
 
-    def start_strace(self):
-        try: os.mkdir("strace")
-        except: pass # don't worry, it exists
-
-        stderrfd = open("strace/strace.stderr", "wb")
-        self.proc = subprocess.Popen(["strace", "-ff", "-o", "strace/straced", "-p", str(os.getpid())], stderr=stderrfd)
-        self.fallback_strace = True
-        return True
-
-    def get_pids(self):
-        if self.fallback_strace:
-            return [self.proc.pid, ]
-        return []
+    @staticmethod
+    def _upload_file(local, remote):
+        if os.path.exists(local):
+            nf = NetlogFile(remote)
+            with open(local, "rb") as f:
+                for chunk in f:
+                    nf.sock.sendall(chunk)  # dirty direct send, no reconnecting
+            nf.close()
 
     def stop(self):
         try:
@@ -86,31 +69,4 @@ class STAP(Auxiliary):
         except Exception as e:
             log.warning("Exception killing stap: %s", e)
 
-        if os.path.exists("stap.log"):
-            # now upload the logfile
-            nf = NetlogFile("logs/all.stap")
-
-            fd = open("stap.log", "rb")
-            for chunk in fd:
-                nf.sock.sendall(chunk) # dirty direct send, no reconnecting
-
-            fd.close()
-            nf.close()
-
-        # in case we fell back to strace
-        if os.path.exists("strace"):
-            for fn in os.listdir("strace"):
-                # we don't need the logs from the analyzer python process itself
-                if fn == "straced.%u" % os.getpid(): continue
-
-                fp = os.path.join("strace", fn)
-
-                # now upload the logfile
-                nf = NetlogFile("logs/%s" % fn)
-
-                fd = open(fp, "rb")
-                for chunk in fd:
-                    nf.sock.sendall(chunk) # dirty direct send, no reconnecting
-
-                fd.close()
-                nf.close()
+        self._upload_file("stap.log", "logs/all.stap")

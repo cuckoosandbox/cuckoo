@@ -26,6 +26,9 @@ to download and install the proper packages according to your Python version.
 .. _`official website`: http://www.python.org/getit/
 .. _`Python Pillow`: https://python-pillow.org/
 
+
+*NOTE*: Physical machinery is currently not supported by the new cuckoo agent.  Please use the old cuckoo agent for physical machinery in the meantime.
+
 Additional Software
 ===================
 

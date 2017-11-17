@@ -54,7 +54,7 @@ class AnalysisInterface {
 
 		var self    = this;
 		var context = getModuleContext();
-			
+
 		if(context == 'index') {
 			this.dndupload = createDnDUpload(this.options.dndupload);
 			this.dndupload.draw();
@@ -62,7 +62,7 @@ class AnalysisInterface {
 
 		if(context == 'pre') {
 			this.filetree = createFileTree(this.options.container.querySelector('#filetree'), this.options.filetree);
-			
+
 			this.filetree.loaded = function() {
 				self.form = createForm(self.options.form);
 			}
@@ -97,6 +97,8 @@ class AnalysisInterface {
 			if(item.children) {
 				delete item.children;
 			}
+
+			item.filename = CuckooWeb.unescapeHTML(item.filename);
 
 			return item;
 

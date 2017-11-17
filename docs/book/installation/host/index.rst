@@ -10,8 +10,7 @@ documentation.
 
     requirements
     installation
-    routing
     cwd
     configuration
-    monitoring
+    routing
     configuration_android

@@ -122,6 +122,8 @@ var AnalysisInterface = function () {
 					delete item.children;
 				}
 
+				item.filename = CuckooWeb.unescapeHTML(item.filename);
+
 				return item;
 			});
 
@@ -317,7 +319,7 @@ var Uploader = function () {
                 if (_self.options.ajax) {
 
                     var event = document.createEvent("HTMLEvents");
-                    event.initEvent("submit", true, false);
+                    event.initEvent("submit", true, true);
                     _self._selectors["form"].dispatchEvent(event);
                     _self._change_callback(_self, holder);
                 } else {
@@ -327,12 +329,11 @@ var Uploader = function () {
             });
 
             // do our own thing when the form is submitted
-            _self._selectors["form"].addEventListener('submit', function (e) {
 
-                e.preventDefault();
+            $(_self._selectors["form"]).bind('submit', function (event) {
 
                 if (_self.options.ajax) {
-                    e.preventDefault();
+                    event.preventDefault();
                     this._process_files();
                 }
             }.bind(this));
@@ -438,8 +439,6 @@ var Uploader = function () {
             var _self = this;
             var xhr = new XMLHttpRequest();
 
-            // this.display_text("Uploading");
-
             formdata["type"] = "files";
 
             xhr.open('POST', this.endpoint);
@@ -465,7 +464,7 @@ var Uploader = function () {
                             _self._success_callback(xhr, document.querySelector("div#" + _self._selectors["uid"]));
                         }, 600);
                     } else if (xhr.status == 0) {} else {
-                        _self.display_text("Error: http.status = " + xhr.status + " OR response.status not OK");
+                        // _self.display_text(`Error: http.status = ${xhr.status} OR response.status not OK`);
                         _self._error_callback(_self, document.querySelector("div#" + _self._selectors["uid"]));
                     }
                 }
@@ -487,19 +486,6 @@ var Uploader = function () {
             }
 
             xhr.send(formdata);
-        }
-
-        /**
-         * Changes the text displayed to the user
-         * @return
-         */
-
-    }, {
-        key: "display_text",
-        value: function display_text(text) {
-            return;
-            var info = $(this._selectors["form"].querySelector("label#info"));
-            info.html(text);
         }
 
         /**
@@ -622,7 +608,7 @@ function getItemName(item) {
 	if (this.options.config.nameKey) {
 		name = item[this.options.config.nameKey];
 	}
-	return name;
+	return CuckooWeb.escapeHTML(name);
 }
 
 function createSelectable(item, name, text) {
@@ -714,8 +700,14 @@ function build(items, parent) {
 		item.filetree = {
 			index: itemIndex,
 			is_directory: isDirectory(item),
+			is_package: false,
 			el: null
 		};
+
+		if (!item.preview) {
+			item.filetree.is_directory = false;
+			item.filetree.is_package = true;
+		}
 
 		if (isDirectory.call(this, item)) {
 			folder = createFolder(item, this);
@@ -786,7 +778,7 @@ function bubbleSelection(arr, checked) {
 	});
 }
 
-// bubbles up a selection, works kind of the same as 
+// bubbles up a selection, works kind of the same as
 // bubbleSelection, but then the other direction around.
 function bubbleItemParentsUp(item, cb) {
 
@@ -971,7 +963,7 @@ var FileTree = function () {
 		// tiny configuration handlers
 		this.interactionHandlers = {
 			expandAllFolders: function expandAllFolders() {
-				$(this.el).find('[data-type="folder"]').parent().addClass('expanded');
+				$(this.el).find('[data-type="folder"]').parent().not('.skip-auto-expand').addClass('expanded');
 				this.update();
 			},
 			collapseAllFolders: function collapseAllFolders() {
@@ -1191,7 +1183,7 @@ var FileTree = function () {
 
 			var self = this;
 
-			if (item.filetree.is_directory) return;
+			if (item.type === 'directory') return;
 
 			var html = detailTemplate({
 				item: item
@@ -1299,11 +1291,11 @@ var FileTree = function () {
 
 				item.options = diff(item.changed_properties, item.per_file_options);
 
-				// deletes all filetree specific properties from this item 
+				// deletes all filetree specific properties from this item
 				// (the properties that are sent out as JSON)
 				if (item.filetree) delete item.filetree;
 
-				// if(item.changed_properties) 
+				// if(item.changed_properties)
 				// 	delete item.changed_properties;
 
 				if (item.parent) delete item.parent;
@@ -2380,7 +2372,6 @@ var default_analysis_options = {
 	'machine': 'default',
 	'network-routing': 'internet',
 	'options': {
-		'enable-services': true,
 		'enforce-timeout': false,
 		'full-memory-dump': false,
 		'enable-injection': true,
@@ -2414,18 +2405,12 @@ var submission_options = [{
 	name: 'simulated-human-interaction',
 	label: 'Enable Simulated Human Interaction',
 	selected: true
-}
-// {
-// 	name: 'enable-services',
-// 	label: 'Enable Services',
-// 	description: 'Enable simulated environment specified in the auxiliary configuration.'
-// }
-];
+}];
 
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'jar', 'js', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'hta', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
@@ -2511,6 +2496,7 @@ $(function () {
 
 							// machine guess: package options
 							// - also preselects the package field if available
+
 							if (item.package) {
 								item.per_file_options['package'] = item.package;
 								if (default_package_selection_options.indexOf(item.package) == -1) {
@@ -2556,19 +2542,42 @@ $(function () {
 							controller.detailView(self);
 						});
 
+						// make sure the filename is escaped to prevent XSS attacks
+						this.filename = CuckooWeb.escapeHTML(this.filename);
+
 						return el;
 					},
 
 					folder: function folder(el, controller) {
 
+						var self = this;
 						var _$d = $(el).find('div');
 						var size = FileTree.Label('size', FileTree.humanizeBytes(FileTree.folderSize(this)));
+						var archive, info;
 
 						if (this.type === 'container') {
 							_$d.addClass('archive-container');
 						}
 
 						_$d.append(size);
+
+						if (!this.preview) {
+							// _$d.find('strong').addClass('skip-auto-expand');
+							_$d.parent().addClass('skip-auto-expand');
+							archive = FileTree.Label('archive', 'Archive');
+
+							if (this.type !== 'directory') {
+								info = FileTree.Label('info', '<i class="fa fa-info-circle"></i>', 'a');
+								_$d.prepend(info);
+
+								// makes info circle clickable
+								$(info).on('click', function (e) {
+									e.stopImmediatePropagation();
+									controller.detailView(self);
+								});
+							}
+							_$d.append(archive);
+						}
 
 						return el;
 					}
@@ -2635,6 +2644,7 @@ $(function () {
 											default: item.per_file_options['package'],
 											options: default_package_selection_options
 										}).on('change', function (value) {
+
 											item.per_file_options['package'] = value;
 											if (value == 'default') value = null;
 											setFieldValue.call(this, value);
@@ -2752,8 +2762,13 @@ $(function () {
 						default: default_analysis_options['package'],
 						options: default_package_selection_options
 					}).on('change', function (value) {
-						if (value == 'default') value = null;
-						setFieldValue.call(this, value);
+
+						// sets all items to the correct value of package, this does
+						// not seem to work correctly, so this basically forces the
+						// correct value.
+						analysis_ui.filetree.each(function (item) {
+							item.per_file_options.package = value;
+						});
 					});
 
 					var priority = new this.TopSelect({
@@ -2791,15 +2806,16 @@ $(function () {
 					form.draw();
 
 					// this gets fired EVERY time one of the fields
-					// insdie the form gets updated. it sends 
-					// back an object with all the current values of 
+					// insdie the form gets updated. it sends
+					// back an object with all the current values of
 					// the form instance.
 					form.on('change', function (values) {
 
 						function compareAndOverwrite(item) {
 
+							// makes only exception rule for 'package'
 							for (var val in values) {
-								if (item.changed_properties && item.changed_properties.indexOf(val) == -1) {
+								if (item.changed_properties && item.changed_properties.indexOf(val) == -1 && val !== 'package') {
 									item.per_file_options[val] = values[val];
 								}
 							}
@@ -2862,12 +2878,17 @@ $(function () {
 
 			e.preventDefault();
 
-			// $(".page-freeze").addClass('in');
-			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
-
 			var json = analysis_ui.getData({
 				'submit_id': window.submit_id
 			}, true);
+
+			if (!JSON.parse(json).file_selection.length) {
+				alert('Please select some files first.');
+				return;
+			}
+
+			// $(".page-freeze").addClass('in');
+			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
 
 			if (debugging) {
 				console.log(JSON.parse(json));

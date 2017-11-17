@@ -1,0 +1,11 @@
+#!/bin/sh
+# Setup as follows (from the Git repository root):
+# $ ln -s $PWD/stuff/git-pre-commit $PWD/.git/hooks/pre-commit
+set -e
+
+if git diff --cached cuckoo/web/src|grep -e '\+.*console.log'; then
+    echo
+    echo ">>> \033[0;31mGet rid of above console.log statement(s) before committing!\033[0m"
+    echo
+    exit 1
+fi

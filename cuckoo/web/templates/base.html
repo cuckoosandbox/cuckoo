@@ -1,6 +1,16 @@
 {%include "header.html" %}
 <div class="app">
 	{% autoescape on %}
+
+	<div class="app-message hidden" data-message="browser-recommendation">
+		<h5><i class="fa fa-warning"></i> Browser recommendation</h5>
+		<p>Hello, we noticed that you are using <span class="browser"></span>. For the best performance of this application, we recommend to use <a href="https://www.google.com/chrome/browser/desktop/index.html" title="Chrome" target="_blank">Chrome</a>, <a href="https://www.mozilla.org/nl/firefox/new/" title="Firefox" target="_blank">Firefox</a> or any browser that supports <a href="https://webkit.org/" title="WebKit" target="_blank">WebKit</a>.</p>
+		<div class="clearfix">
+			<a href="#dismiss" class="button pull-left">Dismiss</a>
+			<a href="#hide" class="button inversed pull-right">Don't show again</a>
+		</div>
+	</div>
+
 	{% block content %}{% endblock %}
 	{% endautoescape %}
 </div>

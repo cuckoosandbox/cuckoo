@@ -1,57 +1,40 @@
-# Ignore Cuckoo Database
-db/cuckoo.db
-
-# Ignore Cuckoo logs
-log/*.log
-
-# Ignore Cuckoo analyses
-storage/*
-
-# Ignore Python byte code
+# Python byte code
 *.pyc
 
-# Ignore certificates
+# Certificates
 *.pem
 *.cert
 
-# Ignore .map files (css/js debugging)
+# .map files (css/js debugging)
 *.map
 
-# Ignore OS generated files
+# OS generated files
 .DS_Store*
 .AppleDouble
 ehthumbs.db
 Icon?
 Thumbs.db
-.cache
-Cuckoo.egg-info/
 
-# Ignore development files
+# Development files
 docs/book/_build/
 .idea/
 .project
 .pydevproject
 
-# Ignore Django secret_key
-web/web/secret_key.py
-
-# Ignore yara rules
-data/yara/index_*.yar
-
-# Ignore venv
-venv
-
 # Python package stuff
+.eggs/
+.cache
+Cuckoo.egg-info/
+venv
 lib/python2.7/
 build/
 dist/
 local/
-cuckoo/data-private/.cwd
-.eggs/
+
+# Cuckoo package stuff
+cuckoo/private/.cwd
 
 # Frontend compilation services
 node_modules/
 bower_components/
 .sass-cache/
-
-cuckoo/web/manage.py
