@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 class CuckooFeedback(object):
     """Contacts Cuckoo HQ with feedback & optional analysis dump."""
-    endpoint = "https://cuckoo.sh/feedback/api/submit/"
+    endpoint = "https://feedback.cuckoosandbox.org/api/submit/"
     exc_whitelist = (
         CuckooFeedbackError,
     )
@@ -100,11 +100,10 @@ class CuckooFeedback(object):
         return self.send_feedback(feedback)
 
     def send_form(self, task_id=None, name=None, email=None, message=None,
-                  company=None, json_report=False, analysis=False,
-                  memdump=False, automated=False):
+                  company=None, json_report=False, memdump=False):
         feedback = CuckooFeedbackObject(
             name=name, company=company, email=email,
-            message=message, automated=automated
+            message=message, automated=False
         )
 
         if json_report:
@@ -114,8 +113,6 @@ class CuckooFeedback(object):
                 )
 
             feedback.include_report_web(task_id)
-
-        if analysis:
             feedback.include_analysis(memdump=memdump)
 
         return self.send_feedback(feedback)
@@ -135,7 +132,7 @@ class CuckooFeedback(object):
 
         try:
             r = requests.post(
-                url=self.endpoint,
+                self.endpoint,
                 data={
                     "feedback": json.dumps(feedback.to_dict()),
                 },
@@ -255,7 +252,8 @@ class CuckooFeedbackObject(object):
                 "analysis path doesn't exist."
             )
 
-        # TODO Support for also including memory dumps (should we?)
+        # TODO Support for also including memory dumps (should we?) and/or
+        # behavioral logs or at least something like matched signatures.
         self.gather_export_files(self.report.info["analysis_path"])
 
     def add_error(self, error):
@@ -284,12 +282,14 @@ class CuckooFeedbackObject(object):
         return True
 
     def to_dict(self):
-        data = {
+        return {
+            "version": version,
             "errors": self.errors,
             "traceback": self.traceback,
             "contact": self.contact,
             "automated": self.automated,
             "message": self.message,
+            "info": self.info,
             "cuckoo": {
                 "cwd": cwd(),
                 "app": os.environ.get("CUCKOO_APP"),
@@ -297,20 +297,13 @@ class CuckooFeedbackObject(object):
             },
         }
 
-        if self.info:
-            data["info"] = self.info
-
-        if self.export:
-            data["export"] = self.export
-
-        return data
-
     def to_files(self):
         buf = io.BytesIO()
         z = zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED)
         for filename, filepath in self.export:
             z.write(filepath, filename)
         z.close()
+        buf.seek(0)
         return {
             "file": buf,
         }

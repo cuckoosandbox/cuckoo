@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ KERNEL32 = windll.kernel32
 ADVAPI32 = windll.advapi32
 USER32   = windll.user32
 SHELL32  = windll.shell32
+PSAPI    = windll.psapi
 
 BYTE      = c_ubyte
 WORD      = c_ushort
@@ -104,6 +105,20 @@ VK_R                      = 0x00000052
 KEYEVENTF_EXTENDEDKEY     = 0x00000001
 KEYEVENTF_KEYUP           = 0x00000002
 
+GENERIC_READ              = 0x80000000
+GENERIC_WRITE             = 0x40000000
+GENERIC_EXECUTE           = 0x20000000
+GENERIC_ALL               = 0x10000000
+
+FILE_SHARE_READ           = 0x00000001
+FILE_SHARE_WRITE          = 0x00000002
+FILE_SHARE_DELETE         = 0x00000004
+
+CREATE_NEW                = 1
+CREATE_ALWAYS             = 2
+OPEN_EXISTING             = 3
+OPEN_ALWAYS               = 4
+TRUNCATE_EXISTING         = 5
 
 class STARTUPINFO(Structure):
     _fields_ = [
@@ -218,3 +233,12 @@ class INPUT(Structure):
         ("ki", KEYBDINPUT),
     ]
 
+class UNICODE_STRING(Structure):
+    _fields_ = [
+        ("Length", c_ushort),
+        ("MaximumLength", c_ushort),
+        ("Buffer", c_wchar_p),
+    ]
+
+EnumWindowsProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
+EnumChildProc = WINFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))

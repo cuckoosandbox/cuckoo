@@ -2,108 +2,153 @@
 {% load staticfiles %}
 {% block content %}
 
-    {% if report.estimate_hour and report.estimate_day %}
-        <div class="alert alert-info" style="text-align: center;font-size: 22px;">
-            Estimating ~<b>{{ report.estimate_hour }}</b> analysis per hour, <b>{{ report.estimate_day }}</b> per day.
-        </div>
-    {% endif %}
+<div id="cuckoo-dashboard" class="hidden"></div>
 
-    <div class="row">
-        <div class="col-xs-6">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_tasks }}</h1>
-                Total tasks
-            </div>
-        </div>
-        <div class="col-xs-6">
-            <div class="jumbotron" style="text-align: center;">
-                <h1>{{ report.total_samples }}</h1>
-                Total samples
-            </div>
-        </div>
+<div class="flex-grid__horizontal--grow dashboard">
+    <div class="flex-grid__column dashboard__left">
+        <h2 class="dashboard__col-title">Insights</h2>
 
-        <div class="col-xs-4">
-            <div class="panel panel-primary">
-                <div class="panel-heading">States</div>
-                <table class="table table-striped" style="table-layout: fixed;">
-                    <thead>
-                    <tr>
-                        <th>State</th>
-                        <th>Count</th>
-                    </tr>
-                    </thead>
+        <div class="dashboard-module" data-dashboard-module="installation">
+            <header class="dashboard-module__header">
+                <h4>Cuckoo Installation</h4>
+            </header>
+            <section class="dashboard-module__body">
+                <table class="simple">
                     <tbody>
-                    {% for state, count in report.states_count.items %}
                         <tr>
-                            <td>{{ state }}</td>
-                            <td>{{ count }}</td>
+                            <td>Version</td>
+                            <td>{{ report.version }}</td>
                         </tr>
-                    {% endfor %}
                     </tbody>
                 </table>
-            </div>
+            </section>
+            <footer class="dashboard-module__footer">
+                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Upgrade your Cuckoo installation</a></p>
+            </footer>
         </div>
+
+        <div class="dashboard-module">
+            <header class="dashboard-module__header">
+                <h4>Usage statistics</h4>
+            </header>
+            <section class="dashboard-module__body">
+                <table class="simple">
+                    <tbody data-populate="statistics">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            <footer class="dashboard-module__footer">
+                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Manage Cuckoo processes</a></p>
+            </footer>
+        </div>
+
+    </div>
+    <div class="flex-grid__column dashboard__right">
+
+        <h2 class="dashboard__col-title">Cuckoo</h2>
+
+        <div class="dashboard-module__lg" data-dashboard-module="upload">
+            <div class="dashboard-module__body omni-uploader">
+
+                <div class="dashboard-module__body--left">
+                    <div class="uploader-area" id="dashboard-submit"></div>
+                    <div class="hidden csrf_placeholder" id="analysis_token">{% csrf_token %}</div>
+                </div>
+
+                <div class="dashboard-module__body--right">
+                    <div class="uploader-area" id="dashboard-import"></div>
+                    <div class="hidden csrf_placeholder" id="import_token">{% csrf_token %}</div>
+                </div>
+
+            </div>  
+
+            <div class="dashboard-module__footer">
+                <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into one of the above fields or click the icon to select a file.</p>
+            </div>
+
+        </div>
+
+        <div class="dashboard-module" data-dashboard-module="system">
+            <header class="dashboard-module__header">
+                <h4>System info</h4>
+            </header>
+            <section class="dashboard-module__body free-disk-space">
+
+                <h5>Free disk space</h5>
+                <div class="free-disk-space__chart">
+                    <canvas></canvas>
+                    <div class="free-disk-space__legend">
+                        <p><strong data-populate="free-disk-space"></strong></p>
+                        <p data-populate="total-disk-space"></p>
+                    </div>
+                </div>
+
+            </section>
+            <footer class="dashboard-module__footer">
+                <p><i class="fa fa-info-circle"></i> How to: <a href="#">Configure Cuckoo system options</a></p>
+            </footer>
+        </div>
+
     </div>
 
-    <div class="row" id="stats">
-        <script src="{% static "js/cuckoo/plots.js" %}"></script>
-        <script>
-            $(document).ready(function(){
-                function cb(data){
-                    data = data.data;
-                    var draw = true;
-                    var chart_data = [];
-                    var def = {
-                        "analysis": "rgb(51,122,183)",
-                        "failed": "rgba(237,81,81,0.2)"
-                    };
+</div>
 
-                    ["analysis", "failed"].forEach(function(type){
-                        var _data = {
-                            "x": [],
-                            "y": [],
-                            "type": "bar",
-                            "name": type.capitalize(),
-                            "marker": {
-                                color: def[type],
-                                opacity: 0.1,
-                                line: {
-                                    color: 'rbg(8,48,107)',
-                                    width: 1
-                                }
-                            }
-                        };
+<div class="flex-grid__horizontal--grow dashboard bottom">
 
-                        // Only show the graph when data of more than 2 months
-                        // is present, to prevent drawing useless graphs
-                        if(data[type].length <= 2){
-                            draw = false;
-                        }
+    <div class="flex-grid__column" id="dashboard-tables">
 
-                        data[type].forEach(function(month){
-                            var _month_human = month["month_human"].substring(0,3);
-                            var _year = month["year"].toString().substring(2);
+        <h2 class="dashboard__col-title">Recent analyses</h2>
 
-                            _data.x.push(_month_human + "\'" + _year);
-                            _data.y.push(month["num"]);
-                        });
+        <!-- recent analyses -->
+        <div class="dashboard-module__lg" data-dashboard-module="processes">
+            <header class="dashboard-module__header">
 
-                        chart_data.push(_data);
-                    });
+                <div class="flex-tabs__tabs dashboard-module__tabs">
 
-                    var selector = $(".row").first();
-                    if(draw){
-                        selector.append('<div style="height:400px;" id="chart_analysis_count" class="col-xs-4">');
-                        selector.append('</div>');
+                    <!-- <a href="#" class="flex-tabs__tab active">Analyses</a>
+                    <a href="#" class="flex-tabs__tab">Tasks</a>
+                    <a href="#" class="flex-tabs__tab">Failed</a> -->
 
-                        var chart_analysis_count = new BarChart("chart_analysis_count", true);
-                        chart_analysis_count.draw(chart_data, "Analysis per month");
-                    }
-                }
+                    <div class="flex-tabs__tab--right">
+                        <div class="custom-select" data-custom="select">
+                            <span>Show: </span>
+                            <select data-select="limit">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3" selected="selected">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
 
-                CuckooWeb.api_post("/analysis/api/tasks/stats/", {}, cb);
-            });
-        </script>
+                </div>
+
+            </header>
+            <section class="dashboard-module__body">
+                <div class="dashboard-module__body--left" data-populate="dashboard-table-recent">
+                </div>
+
+                <!--
+                <div class="dashboard-module__body--right" data-populate="dashboard-table-pending">
+                </div>
+                -->
+            </section>
+
+            <footer class="dashboard-module__footer">
+                <p><a href="/analysis/">Show all recent analyses</a></p>
+            </footer>
+
+        </div>
+
     </div>
+
+</div>
 
 {% endblock %}

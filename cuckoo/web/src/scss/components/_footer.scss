@@ -5,7 +5,7 @@
  */
 
 // footer
-footer {
+footer:not(.dashboard-module__footer) {
     background: #292727;
     margin: 0;
     padding: 20px 0 15px;

@@ -45,6 +45,7 @@
             "package": "doc",
             "password": null,
             "relapath": "oledata.mso",
+            "relaname": "oledata.mso",
             "selected": true,
             "size": 234898,
             "type": "container"

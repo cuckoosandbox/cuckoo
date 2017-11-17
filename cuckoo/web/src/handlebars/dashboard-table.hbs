@@ -1,0 +1,35 @@
+<table class="cuckoo-table">
+
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>File</th>
+            <th>Package</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {{#each entries}}
+
+            <tr>
+                <td>{{id}}</td>
+                <td>{{added_on}}</td>
+                <td>{{target}}</td>
+                <td>{{package}}</td>
+                <td><span class="badge">{{score}} / 10</span></td>
+            </tr>
+
+        {{/each}}
+
+        {{#if lessEntries}}
+            <tr class="less-entries">
+                <td colspan="5"><span class="badge">No more results</span></td>
+            </tr>
+        {{/if}}
+
+    </tbody>
+
+</table>

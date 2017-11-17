@@ -2,30 +2,39 @@
 {% load staticfiles %}
 {% block content %}
 
-<div id="page_error" class="row">
-    <div class="error">
-        <div class="error-code m-b-10 m-t-20">
-            {% if code %}
-                {{ code }} <i class="fa fa-warning"></i>
-            {% else %}
-                Error <i class="fa fa-warning"></i>
-            {% endif %}
-        </div>
+<main class="flex-grid include-footer app-error">
+	<section class="flex-grid__body--center background-grey">
 
-        <div class="error-desc">
-            {% if error %}
-                {{error}}
-            {% else %}
-                Sorry, but the page you are looking for was either not found or encountered an error.
-            {% endif %}
+		<div class="flex-grid__align-horizontal flex-grid__align-vertical">
+			
+			<header class="app-error__header">
+				<h5>error</h5>
+				{% if code %}
+					<h1>{{code}}</h1>
+				{% endif %}
+			</header>
+			<div class="app-error__balloon">
+				<p class="app-error__message">
+					{% if error %}
+		                {{error}}
+		            {% else %}
+		                Sorry, but the page you are looking for was either not found or encountered an error.
+		            {% endif %}
+				</p>
+				<nav class="clearfix app-error__nav">
+					<div class="pull-left">
+						<a href="http://docs.cuckoosandbox.org/" target="_blank" class="button"><i class="fa fa-external-link"></i> Documentation</a>
+						<a href="#" class="button" data-toggle="modal" data-target="#modal_feedback"><i class="fa fa-paper-plane"></i> Send feedback</a>
+					</div>
+					<div class="pull-right">
+						<a href="/" class="button inversed">Take me back</a>
+					</div>
+				</nav>
+			</div>
 
-            <div>
-                <a class=" login-detail-panel-button btn" href="{% url "dashboard" %}">
-                <i class="fa fa-arrow-left"></i>
-                    Go back to Homepage
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+		</div>
+
+	</section>
+</main>
+
 {% endblock %}

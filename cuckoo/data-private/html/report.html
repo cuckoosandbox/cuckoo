@@ -1,6 +1,7 @@
 <!--
   Cuckoo Sandbox - Automated Malware Analysis
-  Copyright (C) 2010-2017 Cuckoo Foundation.
+  Copyright (C) 2012-2013 Claudio Guarnieri.
+  Copyright (C) 2014-2017 Cuckoo Foundation.
   http://www.cuckoosandbox.org
 
   This file is part of Cuckoo.
@@ -21,15 +22,37 @@
 
 <html>
 	<head>
-		{{ head }}
-
+        <meta charset="UTF-8">
+        <title>Cuckoo Report #{{ task.id }} - filename</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Cuckoo Sandbox Analysis Report">
+        <meta name="author" content="Cuckoo Sandbox">
         <style>
+            /* IMAGES */
+            {{ images|safe }}
+
+            /* CSS */
+            {{ css|safe }}
+
+            /* FONTS */
+            {% for font in fonts %}
+            @font-face {
+                font-family: '{{ font.family }}';
+                src: {{ font.url|safe }};
+                font-weight: {{ font.weight }};
+                font-style: {{ font.style }};
+            }
+            {% endfor %}
+
             div.img-cuckoo{
                 width: 122px;
                 height: 40px;
                 background-size: contain;
             }
         </style>
+        <script>
+            {{ scripts|safe }}
+        </script>
 	</head>
 
 	<body>
@@ -43,8 +66,9 @@
 				</div>
 				<h1>Analysis report summary</h1>
 				<div class="main-header-right">
-					<time datetime="{{ constants["date_now"].strftime("%Y-%m-%d, %H:%M") }}">
-                        <i class="fa fa-clock-o"></i> {{ constants["date_now"].strftime("%Y/%m/%d %H:%M") }}
+					<time datetime="{{ date.strftime("%Y-%m-%d, %H:%M") }}">
+                        <i class="fa fa-clock-o"></i>
+                        {{ date.strftime("%Y/%m/%d %H:%M") }}
                     </time>
 				</div>
 			</header>
@@ -56,28 +80,51 @@
 				<div class="block block-summary">
 
 					<header class="block-header">
-						<h4><i class="fa fa-file-o"></i> Summary - <em>{{results.target.file.name}}</em></h4>
+						<h4><i class="fa fa-file-o"></i> Summary -
+                        {% if results.target %}
+                            {% if results.target.category == "file" %}
+                            <em>{{ results.target.file.name }}</em>
+                            {% elif results.target.category == "archive" %}
+                            <em>{{ results.target.file.name }} @ {{ results.target.archive.name }} </em>
+                            {% elif results.target.category == "url" %}
+                            <em>{{ results.target.url }}</em>
+                            {% endif %}
+                        {% endif %}
+                        </h4>
 					</header>
 
 					<section class="block-section">
 						<!-- file info -->
+                        {% if results.target %}
 						<div class="block-section-col">
+                            {% if results.target.category == "file" %}
 							<h5>File info</h5>
 							<ul class="list-reset key-value-list">
-								<li><strong>name: </strong> {{results.target.file.name}}</li>
-								<li><strong>type: </strong> {{results.target.file.type}}</li>
-								<li><strong>size: </strong> {{results.target.file.size}} bytes</li>
+								<li><strong>name: </strong> {{ results.target.file.name }}</li>
+								<li><strong>type: </strong> {{ results.target.file.type }}</li>
+								<li><strong>size: </strong> {{ results.target.file.size }} bytes</li>
 							</ul>
+                            {% elif results.target.category == "archive" %}
+							<h5>Archive's file info</h5>
+							<ul class="list-reset key-value-list">
+								<li><strong>name: </strong> {{ results.target.file.name }}</li>
+								<li><strong>type: </strong> {{ results.target.file.type }}</li>
+								<li><strong>size: </strong> {{ results.target.file.size }} bytes</li>
+							</ul>
+                            {% endif %}
 						</div>
 
 						<!-- checksum hashes -->
+                        {% if results.target.category == "file" or results.target.category == "archive" %}
 						<div class="block-section-col">
 							<h5>Checksums</h5>
 							<ul class="list-reset list-checksums">
-								<li><span class="label">SHA1</span> {{results.target.file.sha1}}</li>
-								<li><span class="label">MD5</span> {{results.target.file.md5}}</li>
+								<li><span class="label">SHA1</span> {{ results.target.file.sha1 }}</li>
+								<li><span class="label">MD5</span> {{ results.target.file.md5 }}</li>
 							</ul>
 						</div>
+                        {% endif %}
+                        {% endif %}
 					</section>
 					<!-- <footer class="block-footer"></footer> -->
 				</div>
@@ -93,54 +140,50 @@
 						<ul class="list-reset list-status">
 							<!-- <li><p>Some non-status signature</p></li> -->
 
-                            {% if signatures %}
-                                {% for severity, _signatures in signatures.iteritems() %}
-                                    {% if severity == 1 %}
+                            {% if results.signatures %}
+                                {% for sig in results.signatures|sort(attribute='severity') %}
+                                    {% if sig.severity == 1 %}
                                         {% set label = "info" %}
-                                    {% elif severity == 2 %}
+                                    {% elif sig.severity == 2 %}
                                         {% set label = "warning" %}
-                                    {% elif severity == 3 %}
+                                    {% elif sig.severity >= 3 %}
                                         {% set label = "danger" %}
                                     {% else %}
                                         {% set label = "info" %}
                                     {% endif %}
 
-                                    <li class="list-status-separator {{ label }}">{{ label.capitalize() }} messages</li>
+                                    <li class="{{ label }}" data-signature="{{ sig.name }}" data-init="collapse">
+                                        {% set sig_template_mapping = {
+                                            "creates_doc": "creates_ioc.html",
+                                            "creates_exe": "creates_ioc.html",
+                                            "suspicious_process": "creates_ioc.html",
+                                            "persistence_autorun": "creates_ioc.html",
+                                            "antivirus_virustotal": "antivirus_virustotal.html"
+                                            }
+                                        %}
 
-                                    {% for sig in _signatures %}
-                                        <li class="{{ label }}" data-signature="{{ sig.name }}" data-init="collapse">
-                                            {% set sig_template_mapping = {
-                                                "creates_doc": "creates_ioc.html",
-                                                "creates_exe": "creates_ioc.html",
-                                                "suspicious_process": "creates_ioc.html",
-                                                "persistence_autorun": "creates_ioc.html",
-                                                "antivirus_virustotal": "antivirus_virustotal.html"
-                                                }
-                                            %}
+                                        {% if sig.markcount >= 1 and sig.name in sig_template_mapping %}
+                                            {% set collapse_toggle = true %}
+                                        {% else %}
+                                            {% set collapse_toggle = false %}
+                                        {% endif %}
 
-                                            {% if sig.markcount >= 1 and sig.name in sig_template_mapping %}
-                                                {% set collapse_toggle = true %}
-                                            {% else %}
-                                                {% set collapse_toggle = false %}
-                                            {% endif %}
+                                        {% if sig.markcount > 1 %}
+                                            {% set event = "events" %}
+                                        {% else %}
+                                            {% set event = "event" %}
+                                        {% endif %}
 
-                                            {% if sig.markcount > 1 %}
-                                                {% set event = "events" %}
-                                            {% else %}
-                                                {% set event = "event" %}
-                                            {% endif %}
+                                        <p>{{ sig.description }} <small>{{ sig.markcount }} {{ event }}</small>
+                                        {% if collapse_toggle %}
+                                            <a href="#" class="collapse-toggle"><i class="fa"></i></a>
+                                        {% endif %}
+                                        </p>
 
-                                            <p>{{ sig.description }} <small>{{ sig.markcount }} {{ event }}</small>
-                                            {% if collapse_toggle %}
-                                                <a href="#" class="collapse-toggle"><i class="fa"></i></a>
-                                            {% endif %}
-                                            </p>
-
-                                            {% if sig.name in sig_template_mapping %}
-                                                {% include "sections/signatures/" + sig_template_mapping[sig.name] %}
-                                            {% endif %}
-                                        </li>
-                                    {% endfor %}
+                                        {% if sig.name in sig_template_mapping %}
+                                            {% include "sections/signatures/" + sig_template_mapping[sig.name] %}
+                                        {% endif %}
+                                    </li>
                                 {% endfor %}
                             {% else %}
                                 <li class="list-status-separator info">No signatures</li>
@@ -149,8 +192,8 @@
 					</section>
 				</div>
 
+                <!-- screenshots -->
                 {% if screenshots %}
-                    <!-- screenshots -->
                     <style>
                         {% for shot in screenshots %}
                             {{ shot.css }}
@@ -165,20 +208,21 @@
                         <section class="block-section screenshots">
                         {% for shot in screenshots %}
                             <div class="image">
-                                <div class="img-{{ shot.selector }}" id="img-shot-{{ shot.id }}"></div>
-                                <p>{{ shot.name }}.jpg</p>
+                                <div class="img-{{ shot.selector }}" id="img-{{ shot.selector }}"></div>
+                                <p>{{ shot.name }}</p>
                             </div>
                         {% endfor %}
                         </section>
                     </div>
                 {% endif %}
 
-				<!-- processes summary -->
+				<!-- processes summary
 				<div class="block block-processes">
 					<header class="block-header">
 						<h4><i class="fa fa-cogs"></i> Processes <small>(truncated results)</small></h4>
 					</header>
 
+                    {#
                     {% for behavior, procs in behavioral.iteritems() %}
                         <section class="block-section no-padding process-view open" data-init="collapse">
                             <header class="process-view-header">
@@ -203,7 +247,9 @@
                             {% endfor %}
                         </section>
                     {% endfor %}
+                    #}
 				</div>
+                -->
 
                 {% if results.procmemory %}
                     {% if results.procmemory[0].urls %}
@@ -223,6 +269,7 @@
                     {% endif %}
                 {% endif %}
 
+                {% if results.network %}
                 {% if results.network.dns or results.network.hosts %}
                     <!-- network -->
                     <div class="block block-network">
@@ -292,6 +339,7 @@
                             </section>
                         {% endif %}
                     </div>
+                {% endif %}
                 {% endif %}
 			</div>
 

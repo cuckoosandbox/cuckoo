@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import jinja2
 import mock
 import os
 import pytest
@@ -10,7 +11,7 @@ import tempfile
 
 import cuckoo
 
-from cuckoo.common.config import config
+from cuckoo.common.config import config, Config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Folders, Files
 from cuckoo.common.utils import Singleton
@@ -153,6 +154,9 @@ class TestInit(object):
             "cuckoo.cuckoo.version_check = no"
         )
 
+        # Create a new CWD as Files.temp_put() indexes - or tries to - the
+        # original cuckoo.conf (even though it doesn't exist yet).
+        set_cwd(tempfile.mkdtemp())
         with pytest.raises(SystemExit):
             main.main(
                 ("--cwd", cwd(), "init", "--conf", filepath),
@@ -160,6 +164,42 @@ class TestInit(object):
             )
 
         assert config("cuckoo:cuckoo:version_check") is False
+
+    def test_init_star_existing(self):
+        cuckoo_create(cfg={
+            "virtualbox": {
+                "cuckoo1": {
+                    "ip": "192.168.56.102",
+                },
+            },
+        })
+        assert config("virtualbox:cuckoo1:ip") == "192.168.56.102"
+
+    def test_init_star_multiple(self):
+        cuckoo_create(cfg={
+            "virtualbox": {
+                "virtualbox": {
+                    "machines": [
+                        "cuckoo2", "cuckoo3",
+                    ],
+                },
+                "cuckoo2": {
+                    "ip": "192.168.56.102",
+                },
+                "cuckoo3": {
+                    "ip": "192.168.56.103",
+                },
+                "notexistingvm": {
+                    "ip": "1.2.3.4",
+                },
+            },
+        })
+        assert config("virtualbox:virtualbox:machines") == [
+            "cuckoo2", "cuckoo3"
+        ]
+        assert config("virtualbox:cuckoo2:ip") == "192.168.56.102"
+        assert config("virtualbox:cuckoo3:ip") == "192.168.56.103"
+        assert config("virtualbox:notexistingvm:ip") is None
 
 class TestWriteCuckooConfiguration(object):
     def setup(self):
@@ -173,7 +213,7 @@ class TestWriteCuckooConfiguration(object):
         self.h.stop()
 
     def render(self):
-        return self.p.Environment.return_value.from_string.return_value.render
+        return self.p.Template.return_value.render
 
     def value(self, s):
         return self.render().call_args[0][0]["config"](s)
@@ -216,7 +256,7 @@ class TestWriteCuckooConfiguration(object):
         assert self.rawvalue("routing:vpn0:name") == "vpn0"
         assert self.value("virtualbox:cuckoo1:ip") == "192.168.56.101"
         assert self.value("avd:cuckoo1:platform") == "android"
-        assert self.value("esx:analysis1:ip") == "192.168.122.105"
+        assert self.value("esx:analysis1:ip") == "192.168.122.101"
         assert self.value("physical:physical1:label") == "physical1"
         assert self.value("qemu:vm1:label") == "vm1"
         assert self.value("vmware:cuckoo1:vmx_path") == "../cuckoo1/cuckoo1.vmx"
@@ -279,3 +319,55 @@ class TestWriteCuckooConfiguration(object):
 
         assert self.value("virtualbox:a:ip") == "1.2.3.4"
         assert self.rawvalue("virtualbox:a:ip") == "1.2.3.4"
+
+def test_all_config_written():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    cfg = Config.from_confdir(cwd("conf"))
+
+    # This one is extra, ignore.
+    cfg["virtualbox"].pop("honeyd", None)
+
+    set_cwd(tempfile.mkdtemp())
+    mkdir(cwd("conf"))
+
+    lookups = []
+
+    class LookupDict(dict):
+        parents = []
+        def __getitem__(self, key):
+            lookups.append(":".join(self.parents + [key]))
+            return dict.__getitem__(key)
+
+    class Template(jinja2.Template):
+        def render(self, kw):
+            orig_config = kw["config"]
+
+            def lookup_config(s):
+                # For some reason this is called multiple times (?).
+                if s not in lookups:
+                    lookups.append(s)
+                return orig_config(s)
+
+            kw["config"] = lookup_config
+
+            for key, value in kw.items():
+                if key == "config":
+                    continue
+
+                for key2, value2 in value.items():
+                    value[key2] = LookupDict(value2)
+                    value[key2].parents = [key, key2]
+
+            return jinja2.Template.render(self, kw)
+
+    with mock.patch("cuckoo.core.init.jinja2") as p:
+        p.Template = Template
+        write_cuckoo_conf(cfg)
+
+    for key, value in cfg.items():
+        for key2, value2 in value.items():
+            for key3, value3 in value2.items():
+                assert "%s:%s:%s" % (key, key2, key3) in lookups
+
+    assert sorted(lookups) == sorted(set(lookups))

@@ -1,0 +1,253 @@
+.app-nav {
+	
+	// maintain the fixed top nav layout
+	position: fixed;
+	display: flex;
+	width: 100%;
+	height: 50px;
+	top: 0;
+	z-index: 5;
+
+	padding: 0 30px;
+	background-color: #222;
+	border-bottom: 1px solid #111;
+
+	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+	.logo {
+		padding: 7px 0 12px 0;
+		margin-right: 20px;
+		& > img { 
+			width: 90px; 
+			margin-top: 4px;
+		}
+	}
+
+	a:hover,
+	a:focus,
+	a:active {
+		text-decoration: none;
+	}
+
+	&__nav {
+		display: flex;
+		align-self: stretch;
+		align-items: stretch;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+
+		& > li {
+			display: flex;
+		}
+
+		&--primary {
+
+			@extend .app-nav__nav;
+
+			& > li {
+
+				align-items: center;
+
+				& > a {
+					color: #ddd !important;
+					font-weight: 700;
+					font-size: 18px;
+					margin: 0 10px;
+					vertical-align: middle;
+
+					.fa {
+						font-size: 0.9em;
+						margin-right: 5px
+					}
+
+					&:hover {
+						text-decoration: none !important;
+					}
+				}
+
+				&.active > a {
+					color: #3678b0 !important;
+
+				}
+
+			}
+
+		}
+
+		&--right {
+
+			@extend .app-nav__nav;
+			margin-left: auto;
+
+			& > li {
+				align-items: center;
+				padding: 0 10px;
+
+				.fa {
+					font-size: 24px;
+					color: #777;
+				}
+
+				.button {
+					color: #fff;
+					border-color: #777;
+
+					&:hover {
+						background-color: #777;
+						color: #fff;
+					}
+				}
+
+				&:last-child {
+					padding-right: 0;
+				}
+			}
+
+		}
+
+		.app-nav__dropdown {
+			right: 0;
+			margin-right: -12px;
+		}
+
+	}
+
+	&__dropdown {
+
+		display: none;
+		position: absolute;
+		top: 57px;
+		width: 200px;
+		height: auto;
+		background-color: #fff;
+		border: 2px solid #DFDFDF;
+		border-radius: 4px;
+		box-shadow: 0px 2px 4px rgba(0,0,0,.05);
+		margin-top: 15px;
+
+		&.in {
+			display: block;
+		}
+
+		&:after,
+		&:before {
+			bottom: 100%;
+			left: 100%;
+			border: solid transparent;
+			content: " ";
+			height: 0;
+			width: 0;
+			position: absolute;
+			pointer-events: none;
+		}
+
+		&:after {
+			border-color: rgba(255, 255, 255, 0);
+			border-bottom-color: #ffffff;
+			border-width: 10px;
+			margin-left: -33px;
+		}
+
+		&:before {
+			border-color: rgba(223, 223, 223, 0);
+			border-bottom-color: #DFDFDF;
+			border-width: 13px;
+			margin-left: -36px;
+		}
+
+		&--parent {
+			position: relative;
+		}
+
+		h5 {
+			text-align: center;
+			color: #A7A7A7;
+			text-transform: uppercase;
+			font-weight: 700;
+			font-size: 12px;
+		}
+
+		.theme-selection {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			border-top: 2px solid #DFDFDF;
+			overflow: hidden;
+
+			li {
+				flex-basis: 100%;
+				border-right: 2px solid #DFDFDF;
+
+				a {
+					display: block;
+					text-align: center;
+					padding: 10px 0;
+					font-weight: 600;
+
+					&.active {
+						background: #6297F8;
+						box-shadow: inset 0 1px 4px 0 #4677D1;
+						color: #fff;
+					}
+				}
+
+				&:last-child {
+					border-right: 0;
+					a { border-bottom-right-radius: 4px; }
+				}
+				&:first-child > a {
+					border-bottom-left-radius: 4px;
+				}
+			}
+		}
+
+	}
+
+	@include cuckoo-theme('cyborg') {
+
+		.app-nav__dropdown {
+			background-color: $cyborg_background_color;
+			border-color: $cyborg_border_color;
+
+			&:after { border-bottom-color: $cyborg_background_color; }
+			&:before { border-bottom-color: $cyborg_border_color; }
+
+			.theme-selection {
+				border-color: $cyborg_border_color;
+				li { border-color: $cyborg_border_color; }
+			}
+
+			.active {
+				background-color: $cyborg_secundary_color;
+				box-shadow: none;
+				color: #444;
+			}
+		}
+
+	}
+
+	// night theme for the navbar
+	@include cuckoo-theme('night') {
+
+		.app-nav__dropdown {
+			background-color: #313131;
+			border-color: darken($night_border_color, 5);
+
+			&:after { border-bottom-color: #313131; }
+			&:before { border-bottom-color: darken($night_border_color, 5); }
+
+			.theme-selection {
+				border-color: darken($night_border_color, 5);
+				li { border-color: darken($night_border_color, 5); }
+			}
+
+			.active {
+				background-color: $night_panel_color;
+				box-shadow: none;
+			}
+		}
+
+	}
+
+}

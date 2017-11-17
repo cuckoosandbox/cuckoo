@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import pytest
 import shutil
 import sys
 import tempfile
@@ -9,6 +10,8 @@ import tempfile
 import cuckoo
 
 from cuckoo.common.abstracts import Signature
+from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Files
 from cuckoo.core.plugins import RunSignatures, enumerate_plugins
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import load_signatures, set_cwd, cwd
@@ -61,3 +64,11 @@ def test_libvirt_loaded():
     """KVM is a subclass of LibVirtMachine, which is now autoloaded as well."""
     assert "virtualbox" in cuckoo.machinery.plugins
     assert "kvm" in cuckoo.machinery.plugins
+
+def test_invalid_plugin():
+    dirpath = tempfile.mkdtemp()
+    Files.create(dirpath, "foo.py", "import foobarnotexist")
+
+    with pytest.raises(CuckooOperationalError) as e:
+        enumerate_plugins(dirpath, "enumplugins", globals(), Signature, {})
+    e.match("Unable to load the Cuckoo plugin")

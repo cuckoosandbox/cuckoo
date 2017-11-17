@@ -15,21 +15,31 @@
 // general css on the body and the html
 html { background: #1c1c1c; }
 body { 
-	padding-top: 70px; 
+	padding-top: 50px;
+}
+
+body {
+	font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
 
-body#analysis { padding-top: 30px; }
+/* note to self: this is very hacky and I need to pick this up later */
+body[id^="analysis"] { padding-top: 50px; }
+body[id^="submission/"] { padding-top: 50px; }
 
-body[id^="submission/"] { padding-top: 41px; }
+// hides the footer when it needs to be hidden
 body[id="submission/pre"],
 body[id="submission/index"],
 body[id="submission/post"],
-body[id="analysis"] {
+body[id^="analysis"]:not([id="#analysis.views.pending"]) {
 	footer:not(.flex-grid__footer), 
 	#footer-extra {
 		display: none;
 	}
+}
+
+body#analysis {
+	overflow: hidden;
 }
 
 // layout utils
@@ -38,6 +48,7 @@ body[id="analysis"] {
 @import "layout/badges";
 
 // components
+@import "components/app-nav";
 @import "components/buttons";
 @import "components/analysis-sidebar";
 @import "components/cuckoo-analysis";
@@ -56,12 +67,14 @@ body[id="analysis"] {
 @import "components/errors";
 @import "components/footer";
 @import "components/table";
-
+@import "components/network-display";
+@import "components/flex-tabs";
 @import "components/flex-grid";
 @import "components/cuckoo-filetree";
 @import "components/flex-form";
 @import "components/breadcrumbs";
 @import "components/page-freeze";
+@import "components/dashboard";
 
 // custom plugin css overrides
 @import "plugins/jstree";

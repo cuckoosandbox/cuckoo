@@ -146,7 +146,7 @@ class TestFeedback(object):
         assert feedback.send_feedback(cf) == 1
 
         p.post.assert_called_once_with(
-            url=feedback.endpoint,
+            feedback.endpoint,
             data={
                 "feedback": mock.ANY,
             },

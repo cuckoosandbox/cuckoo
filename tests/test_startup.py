@@ -3,6 +3,8 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import logging
+import os
 import pytest
 import responses
 import tempfile
@@ -11,11 +13,52 @@ from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
 from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.core.database import Database
 from cuckoo.core.startup import (
-    init_modules, check_version, init_rooter, init_routing
+    init_modules, check_version, init_rooter, init_routing, init_yara,
+    init_console_logging, HAVE_YARA, init_tasks, init_binaries
 )
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, load_signatures
+from cuckoo.misc import set_cwd, load_signatures, cwd
+
+def test_init_tasks():
+    def init(reschedule):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "reschedule": reschedule,
+                },
+            },
+        })
+        Database().connect()
+
+        statuses = (
+            "pending", "running", "completed", "reported"
+        )
+
+        tasks = []
+        for status in statuses:
+            task_id = Database().add_path(__file__)
+            Database().set_status(task_id, status)
+            tasks.append(task_id)
+
+        init_tasks()
+
+    init(True)
+    assert Database().view_task(1).status == "pending"
+    assert Database().view_task(2).status == "recovered"
+    assert Database().view_task(3).status == "completed"
+    assert Database().view_task(4).status == "reported"
+    assert Database().view_task(5).status == "pending"
+    assert Database().view_task(6) is None
+
+    init(False)
+    assert Database().view_task(1).status == "pending"
+    assert Database().view_task(2).status == "failed_analysis"
+    assert Database().view_task(3).status == "completed"
+    assert Database().view_task(4).status == "reported"
+    assert Database().view_task(5) is None
 
 @mock.patch("cuckoo.reporting.elasticsearch.elastic")
 @mock.patch("cuckoo.reporting.mongodb.mongo")
@@ -111,6 +154,23 @@ def test_version_20rc1(capsys):
     assert "You're good to go" in out
 
 @responses.activate
+def test_version_20rc1_noupd(capsys):
+    set_cwd(tempfile.mkdtemp())
+    responses.add(
+        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        status=200, json={
+            "error": False,
+            "current": "2.0-rc1",
+            "response": "NO_UPDATES",
+        }
+    )
+
+    check_version()
+    out, err = capsys.readouterr()
+    assert "Checking for" in out
+    assert "You're good to go" in out
+
+@responses.activate
 def test_version_newer(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
@@ -186,6 +246,30 @@ def test_version_respnotjson(capsys):
     out, err = capsys.readouterr()
     assert "Checking for" in out
     assert "Error checking for" in out
+
+class TestInitBinaries(object):
+    def test_success(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        open(cwd("monitor", "latest"), "wb").write("A"*40)
+        os.mkdir(cwd("monitor", "A"*40))
+        init_binaries()
+
+    def test_invalid_hash(self):
+        open(cwd("monitor", "latest"), "wb").write("B"*40)
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
+
+    def test_empty_latest(self):
+        open(cwd("monitor", "latest"), "wb").write("")
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
+
+    def test_latest_not_directory(self):
+        os.unlink(cwd("monitor", "latest"))
+        os.mkdir(cwd("monitor", "latest"))
+        with pytest.raises(CuckooStartupError):
+            init_binaries()
 
 @mock.patch("cuckoo.core.startup.socket")
 def test_init_rooter_no(p):
@@ -335,7 +419,6 @@ def test_init_routing_unknown(p):
         init_routing()
     e.match("is it supposed to be a VPN")
 
-"""TODO Enable when merging the Config changes.
 @mock.patch("cuckoo.core.startup.rooter")
 def test_init_routing_vpndisabled(p):
     set_cwd(tempfile.mkdtemp())
@@ -359,7 +442,42 @@ def test_init_routing_vpndisabled(p):
     with pytest.raises(CuckooStartupError) as e:
         init_routing()
     e.match("VPNs have not been enabled")
-"""
+
+@mock.patch("cuckoo.core.startup.rooter")
+def test_init_routing_vpns(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "routing": {
+            "vpn": {
+                "enabled": True,
+                "vpns": [
+                    "1", "2",
+                ],
+            },
+            "1": {
+                "name": "1",
+                "interface": "tun1",
+                "rt_table": "main",
+            },
+            "2": {
+                "name": "2",
+                "interface": "tun2",
+                "rt_table": "main",
+            },
+        },
+    })
+    init_routing()
+    assert p.call_count == 12
+    p.assert_any_call("nic_available", "tun1")
+    p.assert_any_call("rt_available", "main")
+    p.assert_any_call("nic_available", "tun2")
+    p.assert_any_call("disable_nat", "tun1")
+    p.assert_any_call("disable_nat", "tun2")
+    p.assert_any_call("enable_nat", "tun1")
+    p.assert_any_call("enable_nat", "tun2")
+    p.assert_any_call("flush_rttable", "main")
+    p.assert_any_call("init_rttable", "main", "tun1")
+    p.assert_any_call("init_rttable", "main", "tun2")
 
 @mock.patch("cuckoo.core.startup.rooter")
 def test_init_routing_internet_exc(p):
@@ -429,3 +547,70 @@ def test_init_routing_tor_inetsim_noint(p):
 
     init_routing()
     p.assert_not_called()
+
+@pytest.mark.skipif(HAVE_YARA, reason="Tests not having Yara available")
+@mock.patch("cuckoo.core.startup.log")
+def test_no_init_yara(p):
+    init_yara(None)
+    p.warning.assert_called_once()
+
+@pytest.mark.skipif(not HAVE_YARA, reason="Unittest requires Yara")
+class TestYaraIntegration(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+    def count(self, dirpath):
+        ret = 0
+        for name in os.listdir(dirpath):
+            if name.endswith((".yar", ".yara")):
+                ret += 1
+        return ret
+
+    def test_default(self):
+        # Will change when we start shipping more Yara rules by default.
+        assert self.count(cwd("yara", "binaries")) == 3
+        assert not self.count(cwd("yara", "urls"))
+        assert not self.count(cwd("yara", "memory"))
+
+        init_yara(True)
+
+        assert os.path.exists(cwd("yara", "index_binaries.yar"))
+        assert os.path.exists(cwd("yara", "index_urls.yar"))
+        assert os.path.exists(cwd("yara", "index_memory.yar"))
+
+        buf = open(cwd("yara", "index_binaries.yar"), "rb").read().split("\n")
+        assert 'include "%s"' % cwd("yara", "binaries", "embedded.yar") in buf
+
+    def test_noinit(self):
+        # This happens in case "cuckoo process" is invoked without having run
+        # the Cuckoo daemon (i.e., without having generated the index rules).
+        with pytest.raises(CuckooStartupError) as e:
+            init_yara(False)
+        e.match("before being able to run")
+
+    def test_invalid_rule(self):
+        # TODO Cuckoo could help figuring out which Yara rule is the culprit,
+        # but on the other hand, where's the fun in that?
+        with pytest.raises(CuckooStartupError) as e:
+            open(cwd("yara", "binaries", "invld.yar"), "wb").write("rule")
+            init_yara(True)
+        e.match("(unexpected _RULE_|unexpected \\$end)")
+
+    def test_unreferenced_variable(self):
+        # TODO This is probably a bit too harsh. Is it possible to suppress
+        # such errors? Would the "error_on_warning" flag help here (we used
+        # this flag in the past, btw)? Answer to the last question: probably
+        # not provided it raises a SyntaxError rather than a WarningError (?).
+        with pytest.raises(CuckooStartupError) as e:
+            open(cwd("yara", "binaries", "invld.yar"), "wb").write("""
+                rule a {
+                    strings:
+                      $s1 = "foo"
+                      $s2 = "bar"
+                    condition:
+                      $s1
+                }
+            """)
+            init_yara(True)
+        e.match("unreferenced string")

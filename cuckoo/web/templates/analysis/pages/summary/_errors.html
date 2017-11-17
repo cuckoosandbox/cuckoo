@@ -2,13 +2,13 @@
 	<h4><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>  Errors</h4>
 
 		{% for action in report.analysis.debug.action %}
-		    {% if action == "host2guest_routing" %}
+		    {% if action == "vmrouting" %}
             <div class="troubleshoot">
-                <p>It appears that this Virtual Machine hasn't been configured properly as the Cuckoo Host wasn't able to the connect to the Guest. There could be a few reasons for this:</p>
+                <p>It appears that this Virtual Machine hasn't been configured properly as the Cuckoo Host wasn't able to the connect to the Guest or the other way around (i.e., Guest wasn't able to contact the Cuckoo Host). There could be a few reasons for this:</p>
                 <ul>
-                    <li>The IP address of the VM has been configured incorrectly. Please verify that the VM has a static IP address, that it matches the one in the Cuckoo configuration, and that the configured network interface exists and is up. Also, in case of VirtualBox, did you configure the network interface to be a "Host-Only interface"?</li>
-                    <li>Please check that there are no firewalls in-place that hinder the communication between your Host and Guest.</li>
-                    <li>If you've triple-checked the above, then please contact us. Just below the errors you'll find a "Send Feedback" button.</li>
+                    <li><p>The IP address of the VM has been configured incorrectly. Please verify that the VM has a static IP address, that it matches the one in the Cuckoo configuration, and that the configured network interface exists and is up. Also, in case of VirtualBox, did you configure the network interface to be a "Host-Only interface"?</p></li>
+                    <li><p>Please check that there are no firewalls in-place that hinder the communication between your Host and Guest.</p></li>
+                    <li><p>If you've triple-checked the above and are still experiencing issues, then please contact us. Just below the errors you'll find a <a href="#modal_feedback" data-toggle="modal">Send Feedback</a> button to do so.</p></li>
                 </ul>
             </div>
             {% endif %}

@@ -42,6 +42,7 @@
             "package": "dll",
             "password": null,
             "relapath": null,
+            "relaname": null,
             "selected": true,
             "size": 8016,
             "type": "file"

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -11,17 +11,24 @@ import socket
 
 from distutils.version import StrictVersion
 
+try:
+    import yara
+    HAVE_YARA = True
+except ImportError:
+    HAVE_YARA = False
+
 import cuckoo
 
 from cuckoo.common.colors import red, green, yellow
-from cuckoo.common.config import Config, config
+from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
 )
 from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
-from cuckoo.core.rooter import rooter, vpns
+from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd, version
 
 log = logging.getLogger(__name__)
@@ -111,8 +118,10 @@ def check_version():
         print(yellow(" Response: %s" % r))
         return
 
+    rc1_responses = "NEW_VERSION", "NO_UPDATES"
+
     # Deprecated response.
-    if r.get("response") == "NEW_VERSION" and r.get("current") == "2.0-rc1":
+    if r.get("response") in rc1_responses and r.get("current") == "2.0-rc1":
         print(green(" You're good to go!"))
         return
 
@@ -148,11 +157,10 @@ def init_logfile(logfile):
 def init_tasks():
     """Check tasks and reschedule uncompleted ones."""
     db = Database()
-    cfg = Config()
 
     log.debug("Checking for locked tasks..")
     for task in db.list_tasks(status=TASK_RUNNING):
-        if cfg.cuckoo.reschedule:
+        if config("cuckoo:cuckoo:reschedule"):
             task_id = db.reschedule(task.id)
             log.info(
                 "Rescheduled task with ID %s and target %s: task #%s",
@@ -160,7 +168,10 @@ def init_tasks():
             )
         else:
             db.set_status(task.id, TASK_FAILED_ANALYSIS)
-            log.info("Updated running task ID {0} status to failed_analysis".format(task.id))
+            log.info(
+                "Updated running task ID %s status to failed_analysis",
+                task.id
+            )
 
     log.debug("Checking for pending service tasks..")
     for task in db.list_tasks(status=TASK_PENDING, category="service"):
@@ -190,81 +201,83 @@ def init_modules():
             else:
                 log.debug("\t |-- %s", entry.__name__)
 
-def init_yara():
+def index_yara():
     """Generates index for yara signatures."""
     log.debug("Initializing Yara...")
 
-    # We divide yara rules in three categories.
-    categories = ["binaries", "urls", "memory"]
-    generated = []
-
-    # Loop through all categories.
-    for category in categories:
+    indexed = []
+    for category in ("binaries", "urls", "memory"):
         # Check if there is a directory for the given category.
-        category_root = cwd("yara", category)
-        if not os.path.exists(category_root):
+        dirpath = cwd("yara", category)
+        if not os.path.exists(dirpath):
             continue
 
-        # Check if the directory contains any rules.
-        signatures = []
-        for entry in os.listdir(category_root):
-            if entry.endswith((".yar", ".yara")):
-                signatures.append(os.path.join(category_root, entry))
+        # Populate the index Yara file for this category.
+        with open(cwd("yara", "index_%s.yar" % category), "wb") as f:
+            for entry in os.listdir(dirpath):
+                if entry.endswith((".yar", ".yara")):
+                    f.write("include \"%s\"\n" % os.path.join(dirpath, entry))
+                    indexed.append((category, entry))
 
-        if not signatures:
-            continue
-
-        # Generate path for the category's index file.
-        index_name = "index_{0}.yar".format(category)
-        index_path = cwd("yara", index_name)
-
-        # Create index file and populate it.
-        with open(index_path, "w") as index_handle:
-            for signature in signatures:
-                index_handle.write("include \"{0}\"\n".format(signature))
-
-        generated.append(index_name)
-
-    for entry in generated:
-        if entry == generated[-1]:
-            log.debug("\t `-- %s", entry)
+    indexed = sorted(indexed)
+    for category, entry in indexed:
+        if (category, entry) == indexed[-1]:
+            log.debug("\t `-- %s %s", category, entry)
         else:
-            log.debug("\t |-- %s", entry)
+            log.debug("\t |-- %s %s", category, entry)
+
+def init_yara(index):
+    """Initialize & load/compile Yara rules."""
+    if not HAVE_YARA:
+        log.warning("Unable to import yara (please compile from sources)")
+        return
+
+    if index:
+        index_yara()
+
+    for category in ("binaries", "urls", "memory"):
+        rulepath = cwd("yara", "index_%s.yar" % category)
+        if not os.path.exists(rulepath) and not index:
+            raise CuckooStartupError(
+                "You must run the Cuckoo daemon before being able to run "
+                "this utility, as otherwise any potentially available Yara "
+                "rules will not be taken into account (yes, also if you "
+                "didn't configure any Yara rules)!"
+            )
+
+        try:
+            File.yara_rules[category] = yara.compile(rulepath)
+        except yara.Error as e:
+            raise CuckooStartupError(
+                "There was a syntax error in one or more Yara rules: %s" % e
+            )
 
 def init_binaries():
     """Inform the user about the need to periodically look for new analyzer
     binaries. These include the Windows monitor etc."""
+    def throw():
+        raise CuckooStartupError(
+            "The binaries used for Windows analysis are updated regularly, "
+            "independently from the release line. It appears that you're "
+            "not up-to-date. This may happen when you've just installed the "
+            "latest development version of Cuckoo or when you've updated "
+            "to the latest Cuckoo. In order to get up-to-date, please run "
+            "the following command: `cuckoo community`."
+        )
+
     dirpath = cwd("monitor", "latest")
 
-    # Checks whether the "latest" symlink is available as well as whether
-    # it points to an existing directory.
-    if not os.path.exists(dirpath):
-        raise CuckooStartupError(
-            "The binaries used for Windows analysis are updated regularly, "
-            "independently from the release line. It appears that you're "
-            "not up-to-date. This may happen when you've just installed the "
-            "latest development version of Cuckoo or when you've updated "
-            "to the latest Cuckoo. In order to get up-to-date, please run "
-            "the following command: `cuckoo community`."
-        )
-
-    # If "latest" is a file and not a symbolic link, check if its destination
-    # directory is available.
-    if os.path.isfile(dirpath):
+    # If "latest" is a symbolic link, check that it exists.
+    if os.path.islink(dirpath):
+        if not os.path.exists(dirpath):
+            throw()
+    # If "latest" is a file, check that it contains a legitimate hash.
+    elif os.path.isfile(dirpath):
         monitor = os.path.basename(open(dirpath, "rb").read().strip())
-        dirpath = cwd("monitor", monitor)
+        if not monitor or not os.path.isdir(cwd("monitor", monitor)):
+            throw()
     else:
-        dirpath = None
-
-    if dirpath and not os.path.isdir(dirpath):
-        raise CuckooStartupError(
-            "The binaries used for Windows analysis are updated regularly, "
-            "independently from the release line. It appears that you're "
-            "not up-to-date. This may happen when you've just installed the "
-            "latest development version of Cuckoo or when you've updated "
-            "to the latest Cuckoo. In order to get up-to-date, please run "
-            "the following command: `cuckoo community`."
-        )
+        throw()
 
 def init_rooter():
     """If required, check if the rooter is running and if we can connect
@@ -318,24 +331,13 @@ def init_rooter():
 
 def init_routing():
     """Initialize and check whether the routing information is correct."""
-    cfg = Config("routing")
     interfaces = set()
 
-    # Check whether all VPNs exist if configured and make their configuration
-    # available through the vpns variable. Also enable NAT on each interface.
-    if cfg.vpn.enabled:
-        for name in cfg.vpn.vpns.split(","):
-            name = name.strip()
-            if not name:
-                continue
-
-            if not hasattr(cfg, name):
-                raise CuckooStartupError(
-                    "Could not find VPN configuration for %s" % name
-                )
-
-            entry = cfg.get(name)
-
+    # Check if all configured VPNs exist and are up and enable NAT on
+    # each VPN interface.
+    if config("routing:vpn:enabled"):
+        for name in config("routing:vpn:vpns"):
+            entry = config2("routing", name)
             if not rooter("nic_available", entry.interface):
                 raise CuckooStartupError(
                     "The network interface that has been configured for "
@@ -348,14 +350,13 @@ def init_routing():
                     "VPN %s is not available." % entry.name
                 )
 
-            vpns[entry.name] = entry
             interfaces.add((entry.rt_table, entry.interface))
 
     standard_routes = "none", "drop", "internet", "inetsim", "tor"
 
     # Check whether the default VPN exists if specified.
     if config("routing:routing:route") not in standard_routes:
-        if config("routing:routing:route") not in vpns:
+        if config("routing:routing:route") not in config("routing:vpn:vpns"):
             raise CuckooStartupError(
                 "The default routing target (%s) has not been configured in "
                 "routing.conf, is it supposed to be a VPN?" %

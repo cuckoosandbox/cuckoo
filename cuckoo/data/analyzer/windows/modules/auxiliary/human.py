@@ -1,17 +1,21 @@
-#!/usr/bin/env python
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import random
 import logging
-from threading import Thread
+import threading
 from ctypes import WINFUNCTYPE, POINTER, sizeof
 from ctypes import c_bool, c_int, create_unicode_buffer, c_void_p
 
 from lib.common.abstracts import Auxiliary
-from lib.common.defines import *
+from lib.common.defines import (
+    KERNEL32, USER32, WM_GETTEXT, WM_GETTEXTLENGTH, BM_CLICK,
+    SW_SHOW, WM_SYSCOMMAND, SC_CLOSE, INPUT_KEYBOARD, KEYEVENTF_KEYUP,
+    VK_MENU, VK_LMENU, VK_RETURN, VK_RIGHT, VK_TAB, VK_R, KEYEVENTF_EXTENDEDKEY,
+    KEYEVENTF_KEYUP, EnumWindowsProc, EnumChildProc
+)
 
 log = logging.getLogger(__name__)
 
@@ -154,11 +158,11 @@ def change_windows():
     # Release ALT
     USER32.keybd_event(VK_LMENU, 0x0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 
-class Human(Auxiliary, Thread):
+class Human(threading.Thread, Auxiliary):
     """Human after all"""
 
     def __init__(self, options={}, analyzer=None):
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         Auxiliary.__init__(self, options, analyzer)
         self.do_run = True
 

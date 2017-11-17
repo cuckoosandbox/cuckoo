@@ -1,0 +1,69 @@
+{
+    "file_selection": [
+        {
+            "changed_properties": [
+                "package",
+                "network-routing"
+            ],
+            "duplicate": false,
+            "extrpath": [],
+            "filename": "msgbox.exe",
+            "finger": {
+                "magic": "PE32 executable (GUI) Intel 80386 (stripped to external PDB), for MS Windows",
+                "magic_human": "PE32 executable (GUI) Intel 80386 (stripped to external PDB) (for MS Windows)",
+                "mime": "application/x-dosexec",
+                "mime_human": "dosexec"
+            },
+            "options": {
+                "available_machines": [
+                    {
+                        "name": "default",
+                        "value": null
+                    },
+                    {
+                        "name": "cuckoo1",
+                        "value": "cuckoo1"
+                    }
+                ],
+                "available_vpns": [],
+                "machine": "",
+                "network-routing": "tor",
+                "options": {
+                    "enable-injection": true,
+                    "enforce-timeout": false,
+                    "full-memory-dump": false,
+                    "process-memory-dump": true,
+                    "simulated-human-interaction": true
+                },
+                "package": "exe",
+                "priority": 2,
+                "routing": "none",
+                "timeout": "",
+                "vpn": ""
+            },
+            "package": "exe",
+            "password": null,
+            "relapath": null,
+            "relaname": null,
+            "selected": true,
+            "size": 2048,
+            "type": "file"
+        }
+    ],
+    "global": {
+        "machine": "",
+        "network-routing": "none",
+        "options": {
+            "enable-injection": true,
+            "enforce-timeout": false,
+            "full-memory-dump": false,
+            "process-memory-dump": true,
+            "simulated-human-interaction": true
+        },
+        "package": "",
+        "priority": 2,
+        "timeout": "",
+        "vpn": ""
+    },
+    "submit_id": 3
+}

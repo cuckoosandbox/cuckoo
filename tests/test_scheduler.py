@@ -10,8 +10,9 @@ import tempfile
 
 from cuckoo.common.abstracts import Dictionary
 from cuckoo.common.files import Folders
+from cuckoo.core.database import Database
 from cuckoo.core.log import task_log_stop
-from cuckoo.core.scheduler import AnalysisManager
+from cuckoo.core.scheduler import AnalysisManager, Scheduler, cuckoo
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
 
@@ -222,7 +223,6 @@ def test_route_internet_unroute(p):
     p.assert_any_call("forward_disable", "vboxnet0", "nic0int", "1.2.3.4")
     p.assert_any_call("srcroute_disable", "nic0rt", "1.2.3.4")
 
-"""TODO Once a configuration writing tweak for "*" entries has been done.
 @mock.patch("cuckoo.core.scheduler.rooter")
 def test_route_vpn(p):
     am = am_init({
@@ -249,8 +249,76 @@ def test_route_vpn(p):
     assert am.interface == "tun1"
     assert am.rt_table == "tun1rt"
     assert p.call_count == 3
-    p.assert_any_call("nic_available", "nic0int")
-    p.assert_any_call("forward_enable", "vboxnet0", "nic0int", "1.2.3.4")
-    p.assert_any_call("srcroute_enable", "nic0rt", "1.2.3.4")
-    am.db.set_route.assert_called_once_with(1234, "internet")
-"""
+    p.assert_any_call("nic_available", "tun1")
+    p.assert_any_call("forward_enable", "vboxnet0", "tun1", "1.2.3.4")
+    p.assert_any_call("srcroute_enable", "tun1rt", "1.2.3.4")
+    am.db.set_route.assert_called_once_with(1234, "vpn1")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_scheduler_initialize(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "machinery": "machin3",
+            },
+        },
+        "routing": {
+            "routing": {
+                "internet": "intern0t",
+            },
+            "vpn": {
+                "enabled": True,
+                "vpns": [
+                    "a",
+                ],
+            },
+            "a": {
+                "name": "a",
+                "interface": "vpnint0",
+            },
+        },
+    })
+    Database().connect()
+    s = Scheduler()
+
+    m = mock.MagicMock()
+    m.return_value.machines.return_value = [
+        Dictionary(name="cuckoo1", interface="int1", ip="1.2.3.4"),
+        Dictionary(name="cuckoo2", interface="int2", ip="5.6.7.8"),
+    ]
+
+    with mock.patch.dict(cuckoo.machinery.plugins, {"machin3": m}):
+        s.initialize()
+
+    m.return_value.initialize.assert_called_once_with("machin3")
+    assert p.call_count == 4
+    p.assert_any_call("forward_disable", "int1", "vpnint0", "1.2.3.4")
+    p.assert_any_call("forward_disable", "int2", "vpnint0", "5.6.7.8")
+    p.assert_any_call("forward_disable", "int1", "intern0t", "1.2.3.4")
+    p.assert_any_call("forward_disable", "int2", "intern0t", "5.6.7.8")
+
+@mock.patch("cuckoo.core.scheduler.rooter")
+def test_scheduler_initialize_novpn(p):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "machinery": "machin3",
+            },
+        },
+    })
+    Database().connect()
+    s = Scheduler()
+
+    m = mock.MagicMock()
+    m.return_value.machines.return_value = [
+        Dictionary(name="cuckoo1", interface="int1", ip="1.2.3.4"),
+        Dictionary(name="cuckoo2", interface="int2", ip="5.6.7.8"),
+    ]
+
+    with mock.patch.dict(cuckoo.machinery.plugins, {"machin3": m}):
+        s.initialize()
+
+    m.return_value.initialize.assert_called_once_with("machin3")
+    p.assert_not_called()

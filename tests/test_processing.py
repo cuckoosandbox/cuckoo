@@ -4,27 +4,42 @@
 
 import dpkt
 import mock
+import json
 import os.path
 import pytest
 import shutil
 import tempfile
 
+from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.files import Files
+from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
 from cuckoo.processing.debug import Debug
+from cuckoo.processing.droidmon import Droidmon
 from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
 from cuckoo.processing.platform.windows import RebootReconstructor
+from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static
+from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
+from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
 db = Database()
 
 class TestProcessing(object):
+    def test_init(self):
+        p = Processing()
+        p.set_options({
+            "foo": "bar",
+        })
+        assert p.options["foo"] == "bar"
+        assert p.options.foo == "bar"
+
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
 
@@ -32,23 +47,70 @@ class TestProcessing(object):
         db.add_url("http://google.com/")
         db.add_error("foo", 1)
         db.add_error("bar", 1)
+        db.add_error("bar", 1)
 
         d = Debug()
-        d.task = {
+        d.task = Dictionary({
             "id": 1,
-        }
+        })
+        # Note that the according exception doesn't show up provided we didn't
+        # configure the DatabaseHandler logging handler with our temporary
+        # database here.
         d.log_path = "nothing_to_see_here"
         d.cuckoolog_path = "neither here"
         d.mitmerr_path = "no no no"
 
         results = d.run()
         assert len(list(results["errors"])) == len(results["errors"])
-        assert results["errors"] == ["foo", "bar"]
-        assert results["action"] == []
+        assert len(results["errors"]) == 3
+        assert results["errors"][:2] == ["foo", "bar"]
+        assert results["action"] == ["vmrouting"]
 
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
-        assert results["action"] == ["thisisanaction"]
+        assert results["action"] == ["vmrouting", "thisisanaction"]
+
+    def test_droidmon_url(self):
+        d = Droidmon()
+        d.set_task({
+            "category": "url",
+        })
+        assert d.run() == {}
+
+    def test_droidmon_file(self):
+        d = Droidmon()
+        d.set_task({
+            "category": "file",
+        })
+        filepath = Files.temp_named_put("", "droidmon.log")
+        d.logs_path = os.path.dirname(filepath)
+        # Ensure there is data available and none of it is a set().
+        assert d.run() != {}
+        assert json.loads(json.dumps(d.run())) == d.run()
+
+    def test_static_none(self):
+        s = Static()
+        s.set_task({
+            "category": "none",
+        })
+        assert s.run() is None
+
+    def test_archive_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "archive",
+            "package": "pdf",
+            "options": {
+                "filename": "files/pdf0.pdf",
+            },
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.zip"
+        assert "%48%65" in s.run()["pdf"][0]["javascript"][0]["orig_code"]
 
     def test_pdf(self):
         set_cwd(tempfile.mkdtemp())
@@ -65,6 +127,26 @@ class TestProcessing(object):
         s.file_path = "tests/files/pdf0.pdf"
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
+
+    @mock.patch("cuckoo.processing.static.dispatch")
+    def test_pdf_mock(self, p):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.pdf"
+        p.return_value = ["hello"]
+        assert s.run()["pdf"] == ["hello"]
+        p.assert_called_once_with(
+            mock.ANY, ("tests/files/pdf0.pdf",), timeout=30
+        )
 
     def test_pdf_metadata(self):
         set_cwd(tempfile.mkdtemp())
@@ -106,6 +188,58 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    def test_procmon(self):
+        p = Procmon()
+        p.logs_path = "tests/files/"
+        a, b = list(p.run()), list(p.run())
+        assert a == b
+        assert a == [{
+            "Detail": "Thread ID: 1328",
+            "Operation": "Thread Create",
+            "PID": "4",
+            "Path": None,
+            "ProcessIndex": "5",
+            "Process_Name": "System",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0645467 AM",
+        }, {
+            "Detail": "Offset: 11,264, Length: 512, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1068",
+            "Path": "C:\\Windows\\System32\\wow64cpu.dll",
+            "ProcessIndex": "3",
+            "Process_Name": "python.exe",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0645804 AM",
+        }, {
+            "Detail": "Offset: 5,286,912, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0651960 AM",
+        }, {
+            "Detail": "Offset: 5,213,184, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0653377 AM",
+        }, {
+            "Detail": "Offset: 5,176,320, Length: 16,384, I/O Flags: Non-cached, Paging I/O, Synchronous Paging I/O, Priority: Normal",
+            "Operation": "ReadFile",
+            "PID": "1304",
+            "Path": "C:\\Windows\\System32\\shell32.dll",
+            "ProcessIndex": "7",
+            "Process_Name": "Explorer.EXE",
+            "Result": "SUCCESS",
+            "Time_of_Day": "12:57:15.0654481 AM",
+        }]
 
     def test_strings(self):
         s = Strings()
@@ -177,6 +311,78 @@ class TestProcessing(object):
         )
         assert os.path.exists(shotpath)
         os.unlink(shotpath)
+
+    def test_targetinfo(self):
+        ti = TargetInfo()
+        ti.file_path = __file__
+        ti.set_task({
+            "category": "file",
+            "target": __file__,
+        })
+        obj = ti.run()
+        assert obj["category"] == "file"
+        assert os.path.basename(obj["file"]["name"]) == "test_processing.py"
+
+        ti = TargetInfo()
+        ti.file_path = "tests/files/pdf0.zip"
+        ti.set_task({
+            "category": "archive",
+            "target": "tests/files/pdf0.zip",
+            "options": {
+                "filename": "files/pdf0.pdf",
+            },
+        })
+        obj = ti.run()
+        assert obj["category"] == "archive"
+        assert os.path.basename(obj["archive"]["name"]) == "pdf0.zip"
+        assert obj["filename"] == "files/pdf0.pdf"
+        assert obj["human"] == "files/pdf0.pdf @ pdf0.zip"
+        assert obj["file"]["name"] == "pdf0.pdf"
+        assert obj["file"]["size"] == 680
+
+        ti = TargetInfo()
+        ti.file_path = __file__
+        ti.set_task({
+            "category": "url",
+            "target": "http://google.com",
+        })
+        assert ti.run() == {
+            "category": "url",
+            "url": "http://google.com",
+        }
+
+    def test_targetinfo_empty(self):
+        ti = TargetInfo()
+        ti.file_path = "file404"
+        ti.set_task({
+            "category": "file",
+            "target": "file404",
+        })
+        obj = ti.run()
+        assert obj["category"] == "file"
+        assert obj["file"] == {
+            "name": "file404", "path": None, "yara": [],
+        }
+
+        ti = TargetInfo()
+        ti.file_path = "file404"
+        ti.set_task({
+            "category": "archive",
+            "target": "file404",
+            "options": {
+                "filename": "files/pdf0.pdf",
+            },
+        })
+        obj = ti.run()
+        assert obj["category"] == "archive"
+        assert obj["filename"] == "files/pdf0.pdf"
+        assert obj["human"] == "files/pdf0.pdf @ file404"
+        assert obj["archive"] == {
+            "name": "file404",
+        }
+        assert obj["file"] == {
+            "name": "pdf0.pdf",
+        }
 
     @mock.patch("cuckoo.processing.screenshots.subprocess")
     @mock.patch("cuckoo.processing.screenshots.log")
@@ -406,7 +612,7 @@ class TestPcap(object):
         assert destinations == expected_dst
 
     def test_network_icmp(self):
-        expected_types = {0:4, 8:4}
+        expected_types = {0: 4, 8: 4}
         expected_src = ["192.168.56.110", "149.210.181.54"]
         expected_dst = ["149.210.181.54", "192.168.56.110"]
         expected_mes = ["abcdefghijklmnopqrstuvwabcdefghi"]*8
@@ -474,9 +680,11 @@ class TestPcap(object):
         assert expected_types == types
 
 class TestPcapAdditional(object):
-    def test_resolve_dns(self):
+    @mock.patch("cuckoo.processing.network.resolve")
+    def test_resolve_dns(self, p):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        p.return_value = "1.2.3.4"
         assert Pcap(None, {})._dns_gethostbyname("google.com") != ""
 
     def test_icmp_ignore_resultserver(self):
@@ -539,16 +747,37 @@ class TestPcapAdditional(object):
 
 class TestPcap2(object):
     def test_smtp_ex(self):
-        pcap = Pcap2("tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp())
-        data = pcap.run()
+        obj = Pcap2(
+            "tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp()
+        ).run()
 
-        assert len(data["smtp_ex"]) == 1
-        assert data["smtp_ex"][0]["req"]["username"] == "galunt"
-        assert data["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
-        assert data["smtp_ex"][0]["req"]["mail_to"] == ['xxxxxx.xxxx@xxxxx.com']
-        assert data["smtp_ex"][0]["req"]["mail_from"] == ['xxxxxx@xxxxx.co.uk']
-        assert len(data["smtp_ex"][0]["req"]["headers"]) == 10
-        assert data["smtp_ex"][0]["resp"]["banner"] == "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+        assert len(obj["smtp_ex"]) == 1
+        assert obj["smtp_ex"][0]["req"]["username"] == "galunt"
+        assert obj["smtp_ex"][0]["req"]["password"] == "V1v1tr0n"
+        assert obj["smtp_ex"][0]["req"]["mail_to"] == [
+            "xxxxxx.xxxx@xxxxx.com",
+        ]
+        assert obj["smtp_ex"][0]["req"]["mail_from"] == [
+            "xxxxxx@xxxxx.co.uk",
+        ]
+        assert len(obj["smtp_ex"][0]["req"]["headers"]) == 10
+        assert obj["smtp_ex"][0]["resp"]["banner"] == (
+            "220 smtp006.mail.xxx.xxxxx.com ESMTP\r\n"
+        )
+
+    def test_http_status(self):
+        obj = Pcap2(
+            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+        ).run()
+        assert len(obj["http_ex"]) == 1
+        assert not obj["https_ex"]
+        assert obj["http_ex"][0]["status"] == 301
+
+    def test_http_nostatus(self):
+        obj = Pcap2(
+            "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
+        ).run()
+        assert len(obj["http_ex"]) == 1
 
 def test_parse_cmdline():
     rb = RebootReconstructor()
@@ -558,3 +787,11 @@ def test_parse_cmdline():
     assert rb.parse_cmdline(u"stuff.exe \u4404\u73a8 \uecbc\uee9e") == (
         "stuff.exe", [u"\u4404\u73a8", u"\uecbc\uee9e"]
     )
+
+def test_wsf_language():
+    wsf = WindowsScriptFile(Files.temp_put(
+        "<script language='JScript.Encode'></script>"
+    ))
+    wsf.decode = mock.MagicMock(return_value="codehere")
+    assert wsf.run() == ["codehere"]
+    wsf.decode.assert_called_once()

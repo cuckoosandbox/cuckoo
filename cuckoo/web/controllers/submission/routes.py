@@ -108,7 +108,7 @@ class SubmissionRoutes(object):
         submit_id = Database().add_submit(None, None, None)
         task_ids = []
 
-        for analysis in request.FILES.getlist("analyses"):
+        for analysis in request.FILES.values():
             if not analysis.size:
                 continue
 

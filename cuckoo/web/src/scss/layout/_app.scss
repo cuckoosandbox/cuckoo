@@ -1,14 +1,16 @@
 /* 
-   Copyright (C) 2016 Cuckoo Foundation.
+   Copyright (C) 2016-2017 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
 
 .app {
-    padding: 30px;
+    // padding: 30px;
     
-    #analysis &,
-    [id^="submission/"] & {
+    [id^="analysis"] &,
+    [id^="submission/"] &,
+    [id="dashboard"] &,
+    [id="dashboard.views.index"] & {
         padding: 0;
     }
 }
@@ -78,8 +80,8 @@ td {
 }
 
 table>tbody>tr>td{
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 table#network_dns>tbody>tr>td:nth-child(2)>a{
@@ -92,3 +94,99 @@ section#screenshots .minified{
     max-height: 278px;
 }
 
+#recent table tr td:first-child, #recent table tr td:nth-child(2){
+    word-wrap: break-word;
+}
+
+// import page
+body[id="analysis/import"] {
+
+    .btn-file {
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-file input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        font-size: 999px;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        background: red;
+        cursor: inherit;
+        display: block;
+    }
+    
+}
+
+// feedback modal
+#modal_feedback {
+
+    .panel-footer {
+
+        margin-bottom: -14px;
+
+        .btn-close {
+            float: left;
+            margin-right: 10px;
+        }
+
+        .btn-success {
+            float: right;
+            margin-left: 10px;
+        }
+
+        span {
+            display: block;
+            text-align: center;
+            padding: 0 5px;
+            color: grey;
+        }
+
+    }    
+
+}
+
+// custom select
+.custom-select {
+
+    display: inline-block;
+
+    select {
+        -webkit-appearance: none;
+        background-color: transparent;
+        border: 0;
+        padding: 0 5px 0 10px;
+        text-align: center;
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    & > span {
+        display: inline-block;
+    }
+
+    &:after {
+        @extend .fa;
+        content: "\f0d7";
+        display: inline-block;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    @include cuckoo-theme('night') {
+        select { background-color: transparent; }
+    }
+
+    @include cuckoo-theme('cyborg') {
+        select { background-color: transparent; }
+    }
+
+}

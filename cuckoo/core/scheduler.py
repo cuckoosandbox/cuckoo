@@ -13,6 +13,7 @@ import Queue
 import cuckoo
 
 from cuckoo.common.config import Config, emit_options, config
+from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooGuestError, CuckooOperationalError,
     CuckooMachineSnapshotError, CuckooCriticalError, CuckooGuestCriticalTimeout
@@ -25,8 +26,8 @@ from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
 from cuckoo.core.resultserver import ResultServer
-from cuckoo.core.rooter import rooter, vpns
-from cuckoo.misc import cwd, version
+from cuckoo.core.rooter import rooter
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -260,9 +261,9 @@ class AnalysisManager(threading.Thread):
             else:
                 self.interface = config("routing:routing:internet")
                 self.rt_table = config("routing:routing:rt_table")
-        elif self.route in vpns:
-            self.interface = vpns[self.route].interface
-            self.rt_table = vpns[self.route].rt_table
+        elif self.route in config("routing:vpn:vpns"):
+            self.interface = config("routing:%s:interface" % self.route)
+            self.rt_table = config("routing:%s:rt_table" % self.route)
         else:
             log.warning(
                 "Unknown network routing destination specified, ignoring "
@@ -524,12 +525,21 @@ class AnalysisManager(threading.Thread):
         except CuckooGuestCriticalTimeout as e:
             if not unlocked:
                 machine_lock.release()
-            log.error("Error from the Cuckoo Guest: %s", e, extra={
-                "error_action": "host2guest_routing",
-                "action": "guest.handle",
-                "status": "error",
-                "task_id": self.task.id,
-            })
+            log.error(
+                "Error from machine '%s': it appears that this Virtual "
+                "Machine hasn't been configured properly as the Cuckoo Host "
+                "wasn't able to connect to the Guest. There could be a few "
+                "reasons for this, please refer to our documentation on the "
+                "matter: %s",
+                self.machine.name,
+                faq("troubleshooting-vm-network-configuration"),
+                extra={
+                    "error_action": "vmrouting",
+                    "action": "guest.handle",
+                    "status": "error",
+                    "task_id": self.task.id,
+                }
+            )
         except CuckooGuestError as e:
             if not unlocked:
                 machine_lock.release()
@@ -809,8 +819,6 @@ class Scheduler(object):
                         "increase throughput and stability. Please read the "
                         "documentation about the `Processing Utility`.")
 
-        routing_cfg = Config("routing")
-
         # Drop all existing packet forwarding rules for each VM. Just in case
         # Cuckoo was terminated for some reason and various forwarding rules
         # have thus not been dropped yet.
@@ -825,16 +833,19 @@ class Scheduler(object):
                 continue
 
             # Drop forwarding rule to each VPN.
-            for vpn in vpns.values():
-                rooter(
-                    "forward_disable", machine.interface,
-                    vpn.interface, machine.ip
-                )
+            if config("routing:vpn:enabled"):
+                for vpn in config("routing:vpn:vpns"):
+                    rooter(
+                        "forward_disable", machine.interface,
+                        config("routing:%s:interface" % vpn), machine.ip
+                    )
 
             # Drop forwarding rule to the internet / dirty line.
-            if routing_cfg.routing.internet != "none":
-                rooter("forward_disable", machine.interface,
-                       routing_cfg.routing.internet, machine.ip)
+            if config("routing:routing:internet") != "none":
+                rooter(
+                    "forward_disable", machine.interface,
+                    config("routing:routing:internet"), machine.ip
+                )
 
     def stop(self):
         """Stop scheduler."""

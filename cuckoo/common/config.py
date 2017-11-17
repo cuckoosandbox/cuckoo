@@ -358,7 +358,7 @@ class Config(object):
                 "__section__": "analysis1",
                 "label": String("cuckoo1"),
                 "platform": String("windows"),
-                "ip": String("192.168.122.105"),
+                "ip": String("192.168.122.101"),
                 "snapshot": String("clean_snapshot"),
                 "interface": String(),
                 "resultserver_ip": String(),
@@ -376,7 +376,7 @@ class Config(object):
                 "__section__": "cuckoo1",
                 "label": String("cuckoo1"),
                 "platform": String("windows"),
-                "ip": String("192.168.122.105"),
+                "ip": String("192.168.122.101"),
                 "snapshot": String(),
                 "interface": String(),
                 "resultserver_ip": String(),
@@ -556,6 +556,7 @@ class Config(object):
                 "enabled": Boolean(True),
                 "idapro": Boolean(False),
                 "extract_img": Boolean(True),
+                "extract_dll": Boolean(False),
                 "dump_delete": Boolean(False),
             },
             "procmon": {
@@ -701,8 +702,10 @@ class Config(object):
                 "indent": Int(4),
                 "calls": Boolean(True),
             },
-            "reporthtml": {
+            "singlefile": {
                 "enabled": Boolean(False),
+                "html": Boolean(False),
+                "pdf": Boolean(False),
             },
             "misp": {
                 "enabled": Boolean(False),
@@ -723,6 +726,7 @@ class Config(object):
             "elasticsearch": {
                 "enabled": Boolean(False),
                 "hosts": List(String, "127.0.0.1"),
+                "timeout": Int(300),
                 "calls": Boolean(False),
                 "index": String("cuckoo"),
                 "index_time_pattern": String("yearly"),
@@ -830,7 +834,7 @@ class Config(object):
                 "label": String("cuckoo1"),
                 "platform": String("windows"),
                 "snapshot": String("snapshot_name"),
-                "ip": String("192.168.1.100"),
+                "ip": String("192.168.122.101"),
                 "interface": String(),
                 "resultserver_ip": String(required=False),
                 "resultserver_port": Int(required=False),
@@ -863,16 +867,8 @@ class Config(object):
 
     def get_section_types(self, file_name, section, strict=False, loose=False):
         """Get types for a section entry."""
-        if section in self.configuration.get(file_name, {}):
-            types = self.configuration[file_name][section]
-        elif "*" in self.configuration.get(file_name, {}):
-            types = self.configuration[file_name]["*"]
-            # If multiple default values have been provided, pick one.
-            if isinstance(types, (tuple, list)):
-                types = types[0]
-        elif loose:
-            types = {}
-        else:
+        section_types = get_section_types(file_name, section)
+        if not section_types and not loose:
             log_error(
                 "Config section %s:%s not found!", file_name, section
             )
@@ -881,7 +877,7 @@ class Config(object):
                     "Config section %s:%s not found!", file_name, section
                 )
             return
-        return types
+        return section_types
 
     def __init__(self, file_name="cuckoo", cfg=None, strict=False,
                  loose=False, raw=False):
@@ -1006,7 +1002,9 @@ class Config(object):
             ret[config_name] = {}
             for section, values in cfg.sections.items():
                 ret[config_name][section] = {}
-                types = cfg.get_section_types(config_name, section) or {}
+                types = cfg.get_section_types(
+                    config_name, section, loose=loose
+                ) or {}
                 for key, value in values.items():
                     if sanitize and key in types and types[key].sanitize:
                         value = "*"*8
@@ -1080,15 +1078,36 @@ def config(s, cfg=None, strict=False, raw=False, loose=False, check=False):
 
     return value
 
+def get_section_types(file_name, section, strict=False):
+    if section in Config.configuration.get(file_name, {}):
+        return Config.configuration[file_name][section]
+
+    if "__star__" not in Config.configuration.get(file_name, {}):
+        return {}
+
+    if strict:
+        section_, key = Config.configuration[file_name]["__star__"]
+        if section not in config("%s:%s:%s" % (file_name, section_, key)):
+            return {}
+
+    if "*" in Config.configuration.get(file_name, {}):
+        section_types = Config.configuration[file_name]["*"]
+        # If multiple default values have been provided, pick one.
+        if isinstance(section_types, (tuple, list)):
+            section_types = section_types[0]
+        return section_types
+    return {}
+
 def config2(file_name, section):
-    if section not in Config.configuration[file_name]:
+    keys = get_section_types(file_name, section, strict=True)
+    if not keys:
         raise CuckooConfigurationError(
-            "No such configuration section exists: %s!%s" %
+            "No such configuration section exists: %s:%s" %
             (file_name, section)
         )
 
-    ret = {}
-    for key in Config.configuration[file_name][section]:
+    ret = Dictionary()
+    for key in keys:
         if key == "__star__" or key == "*":
             continue
         ret[key] = config("%s:%s:%s" % (file_name, section, key))
@@ -1100,8 +1119,7 @@ def cast(s, value):
         raise RuntimeError("Invalid configuration entry: %s" % s)
 
     file_name, section, key = s.split(":")
-
-    type_ = Config.configuration.get(file_name, {}).get(section, {}).get(key)
+    type_ = get_section_types(file_name, section).get(key)
     if type_ is None:
         raise CuckooConfigurationError(
             "No such configuration value exists: %s" % s

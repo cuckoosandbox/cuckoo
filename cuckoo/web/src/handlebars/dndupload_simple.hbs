@@ -1,0 +1,14 @@
+<div class="dndupload__simple" id="{{uid}}">
+	<form id="uploader" action="{{formAction}}" method="post" enctype="multipart/form-data">
+
+		<input type="file" name="{{inputName}}[]" id="file" class="holder_input" data-multiple-caption="{count} files selected" multiple="" />
+
+		<h5>{{title}}</h5>
+		
+        {{#if html}}
+        	{{{html}}}
+        {{/if}}
+
+		<progress id="uploadprogress" min="0" max="100" value="0">0</progress>
+	</form>
+</div>

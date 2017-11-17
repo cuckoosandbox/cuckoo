@@ -6,10 +6,10 @@
 from ctypes import wintypes, POINTER
 
 from lib.common.defines import ADVAPI32, KERNEL32, SE_PRIVILEGE_ENABLED
-from lib.common.defines import LUID, TOKEN_PRIVILEGES, PROCESS_ALL_ACCESS
+from lib.common.defines import LUID, TOKEN_PRIVILEGES
 from lib.common.defines import TOKEN_ALL_ACCESS, LUID_AND_ATTRIBUTES
 
-def grant_debug_privilege(pid=None):
+def grant_privilege(privilege):
     """Grant debug privileges.
     @param pid: PID.
     @return: operation status.
@@ -29,13 +29,7 @@ def grant_debug_privilege(pid=None):
                                                POINTER(TOKEN_PRIVILEGES),
                                                POINTER(wintypes.DWORD))
 
-    if pid is None:
-        h_process = KERNEL32.GetCurrentProcess()
-    else:
-        h_process = KERNEL32.OpenProcess(PROCESS_ALL_ACCESS, False, pid)
-
-    if not h_process:
-        return False
+    h_process = KERNEL32.GetCurrentProcess()
 
     h_current_token = wintypes.HANDLE()
     if not ADVAPI32.OpenProcessToken(h_process,
@@ -44,9 +38,7 @@ def grant_debug_privilege(pid=None):
         return False
 
     se_original_luid = LUID()
-    if not ADVAPI32.LookupPrivilegeValueW(None,
-                                          "SeDebugPrivilege",
-                                          se_original_luid):
+    if not ADVAPI32.LookupPrivilegeValueW(None, privilege, se_original_luid):
         return False
 
     luid_attributes = LUID_AND_ATTRIBUTES()

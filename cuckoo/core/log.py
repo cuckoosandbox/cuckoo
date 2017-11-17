@@ -28,6 +28,7 @@ class DatabaseHandler(logging.Handler):
     """
 
     def emit(self, record):
+        # TODO Should this also attempt to guess the task ID from _tasks?
         if hasattr(record, "task_id"):
             Database().add_error(
                 self.format(record), int(record.task_id),

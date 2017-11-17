@@ -13,8 +13,9 @@ This chapter explains how to use Cuckoo.
     web
     api
     dist
+    utilities
+    rooter
+    feedback
     packages
     results
     clean
-    utilities
-    rooter

@@ -1,0 +1,86 @@
+{% load analysis_tags %}
+<section id="file">
+    <h4><span class="glyphicon glyphicon-file" aria-hidden="true"></span> Archive
+        <i>{{ report.analysis.target.human }}</i>
+    </h4>
+
+    <div class="panel panel-default">
+        <div class="panel-heading" style="height: 40px;">
+            <h4 class="panel-title">
+                Summary
+                {% if report.analysis.target.file_id %}
+                <div class="btn-group pull-right">
+                    <a class="btn btn-default btn-xs"
+                        href="{% url "analysis.views.file" "sample" report.analysis.target.file_id %}">
+                        <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download
+                    </a>
+                    <a class="btn btn-default btn-xs"
+                        href="{% url "submission/resubmit" report.analysis.info.id %}">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Resubmit sample
+                    </a>
+                </div>
+                {% endif %}
+            </h4>
+        </div>
+        <table class="table table-striped">
+            <tr>
+                <th class="text-right">Size</th>
+                <td>{{ report.analysis.target.file.size | sizeof_fmt }}</td>
+            </tr>
+            <tr>
+                <th class="text-right">Type</th>
+                <td>{{ report.analysis.target.file.type }}</td>
+            </tr>
+            <tr>
+                <th class="text-right">MD5</th>
+                <td class="break-everywhere"><tt>{{ report.analysis.target.file.md5 }}</tt></td>
+            </tr>
+            <tr>
+                <th class="text-right">SHA1</th>
+                <td class="break-everywhere"><tt>{{ report.analysis.target.file.sha1 }}</tt></td>
+            </tr>
+            <tr>
+                <th class="text-right">SHA256</th>
+                <td class="break-everywhere"><tt>{{ report.analysis.target.file.sha256 }}</tt></td>
+            </tr>
+            <tr>
+                <th class="text-right">SHA512</th>
+                <td class="break-everywhere">
+                    <button class="btn btn-primary btn-xs" type="button" data-toggle="collapse"
+                            data-target="#collapse-sha512" aria-expanded="false" aria-controls="collapseExample">
+                        Show SHA512
+                    </button>
+                    <div class="collapse" id="collapse-sha512"><tt>{{ report.analysis.target.file.sha512 }}</tt></div>
+                </td>
+            </tr>
+            <tr>
+                <th class="text-right">CRC32</th>
+                <td><tt>{{ report.analysis.target.file.crc32 }}</tt></td>
+            </tr>
+            <tr>
+                <th class="text-right">ssdeep</th>
+                <td class="break-everywhere"><tt>{{ report.analysis.target.file.ssdeep }}</tt></td>
+            </tr>
+            {% if report.analysis.static.pdb_path %}
+                <tr>
+                    <th class="text-right">PDB Path</th>
+                    <td>{{ report.analysis.static.pdb_path }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th class="text-right">Yara</th>
+                <td>
+                    {% if report.analysis.target.file.yara %}
+                        <ul style="margin-bottom: 0;">
+                            {% for sign in report.analysis.target.file.yara %}
+                                <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        None matched
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+</section>

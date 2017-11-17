@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,13 +10,18 @@ import tempfile
 from cuckoo.common.config import config, Config
 from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
-    CuckooDependencyError
+    CuckooDependencyError, CuckooMissingMachineError
 )
 from cuckoo.common.files import Folders
+from cuckoo.common.objects import Dictionary
+from cuckoo.core.database import Database
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.machinery.esx import ESX
 from cuckoo.machinery.virtualbox import VirtualBox
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd
+
+db = Database()
 
 class TestVirtualbox(object):
     def setup(self):
@@ -124,6 +129,89 @@ class TestVirtualbox(object):
         p.call_args_list[0] = (
             config("virtualbox:virtualbox:path"),
             "showvminfo", "label", "--machinereadable"
+        )
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_vminfo_missing_machine(self, p):
+        stderr = (
+            "VBoxManage: error: Could not find a registered machine named 'vmname'\n"
+            "VBoxManage: error: Details: code VBOX_E_OBJECT_NOT_FOUND (0x80bb0001), component VirtualBox, interface IVirtualBox, callee nsISupports\n"
+            "VBoxManage: error: Context: \"FindMachine(Bstr(VMNameOrUuid).raw(), machine.asOutParam())\" at line 2611 of file VBoxManageInfo.cpp\n"
+        )
+
+        p.return_value.returncode = 1
+        p.return_value.communicate.return_value = "out", stderr
+        with pytest.raises(CuckooMissingMachineError) as e:
+            self.m.vminfo("vmname", None)
+        e.match("Please create one or more")
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_initialize_snapshot_fail(self, p):
+        self.m.set_options(Dictionary({
+            "virtualbox": Dictionary({
+                "machines": ["machine1"],
+                "path": __file__,
+                "mode": "headless",
+            }),
+            "machine1": Dictionary({
+                "label": "machine1",
+                "platform": "windows",
+                "ip": "192.168.56.101",
+                "tags": "",
+                "resultserver_port": 2042,
+            }),
+        }))
+        self.m._list = mock.MagicMock(return_value=[
+            "machine1",
+        ])
+        self.m.stop = mock.MagicMock()
+        p.return_value.returncode = 1
+        p.return_value.communicate.return_value = "out", "err"
+        class machine1(object):
+            label = "machine1"
+            snapshot = None
+
+        self.m.machines = mock.MagicMock(return_value=[
+            machine1(),
+        ])
+        with pytest.raises(CuckooMachineError) as e:
+            self.m.initialize("virtualbox")
+        e.match("trying to restore the snapshot")
+
+    @mock.patch("cuckoo.machinery.virtualbox.Popen")
+    def test_initialize_success(self, p):
+        self.m.set_options(Dictionary({
+            "virtualbox": Dictionary({
+                "machines": ["machine1"],
+                "path": __file__,
+                "mode": "headless",
+            }),
+            "machine1": Dictionary({
+                "label": "machine1",
+                "platform": "windows",
+                "ip": "192.168.56.101",
+                "tags": "",
+                "resultserver_port": 2042,
+            }),
+        }))
+        self.m._list = mock.MagicMock(return_value=[
+            "machine1",
+        ])
+        self.m.stop = mock.MagicMock()
+        self.m._status = mock.MagicMock(return_value="poweroff")
+        p.return_value.returncode = 0
+        p.return_value.communicate.return_value = "", ""
+        class machine1(object):
+            label = "machine1"
+            snapshot = None
+
+        self.m.machines = mock.MagicMock(return_value=[
+            machine1(),
+        ])
+        self.m.initialize("virtualbox")
+        p.assert_called_once_with(
+            [__file__, "snapshot", "machine1", "restorecurrent"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
     def test_list_success(self):
@@ -366,6 +454,11 @@ class TestVirtualbox(object):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
         )
 
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            self.m._status.return_value = self.m.SAVED
+            self.m.stop("label")
+            p.assert_not_called()
+
     def test_stop_failure(self):
         self.m._status = mock.MagicMock(return_value=self.m.RUNNING)
         self.m._wait_status = mock.MagicMock(return_value=None)
@@ -542,3 +635,74 @@ def test_esx_not_installed():
     with pytest.raises(CuckooDependencyError) as e:
         ESX()
     e.match("libvirt package has not")
+
+class TestVirtualboxInitialize(object):
+    def test_initialize_global(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "machinery": "virtualbox",
+                },
+                # This unittest will actually start the ResultServer.
+                "resultserver": {
+                    "ip": "127.0.0.1",
+                    "port": 3000,
+                },
+            },
+        })
+        db.connect()
+
+        self.m = VirtualBox()
+        self.m.set_options(Config("virtualbox"))
+        self.m._initialize("virtualbox")
+
+        m, = db.list_machines()
+        assert m.label == "cuckoo1"
+        assert m.interface == "vboxnet0"
+        assert m.ip == "192.168.56.101"
+        assert m.options is None
+        assert m.platform == "windows"
+        assert m.resultserver_ip == "127.0.0.1"
+        assert m.resultserver_port == 3000
+        assert m.tags == []
+
+    def test_initialize_specific(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "machinery": "virtualbox",
+                },
+            },
+            "virtualbox": {
+                "cuckoo1": {
+                    "label": "kookoo1",
+                    "platform": "foobar",
+                    "snapshot": "snapshot1",
+                    "interface": "foo0",
+                    "ip": "1.2.3.5",
+                    "resultserver_ip": "1.2.3.4",
+                    "resultserver_port": 1234,
+                    # TODO Turn tags into a list.
+                    "tags": "tag1,tag2",
+                },
+            },
+        })
+        db.connect()
+
+        self.m = VirtualBox()
+        self.m.set_options(Config("virtualbox"))
+        self.m._initialize("virtualbox")
+
+        m, = db.list_machines()
+        assert m.label == "kookoo1"
+        assert m.platform == "foobar"
+        assert m.snapshot == "snapshot1"
+        assert m.interface == "foo0"
+        assert m.ip == "1.2.3.5"
+        assert m.resultserver_ip == "1.2.3.4"
+        assert m.resultserver_port == 1234
+        assert sorted((t.name for t in m.tags)) == [
+            "tag1", "tag2"
+        ]

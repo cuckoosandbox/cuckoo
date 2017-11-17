@@ -3,17 +3,30 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import os.path
+import pytest
 import responses
 import tempfile
 
+from cuckoo.common.abstracts import Report
+from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.files import Folders
 from cuckoo.core.init import write_cuckoo_conf
 from cuckoo.core.plugins import RunReporting
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd, is_linux
 from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
 from cuckoo.reporting.mongodb import MongoDB
+from cuckoo.reporting.singlefile import SingleFile
+
+def test_init():
+    p = Report()
+    p.set_options({
+        "rep": "ort",
+    })
+    assert p.options["rep"] == "ort"
+    assert p.options.rep == "ort"
 
 def task(task_id, options, conf, results, filename="a.txt"):
     Folders.create(cwd(), ["conf", "storage"])
@@ -313,3 +326,81 @@ def test_feedback_enabled(p, q):
     })
     q.assert_called_once()
     p.return_value.send_feedback.assert_called_once()
+
+def test_empty_html():
+    set_cwd(tempfile.mkdtemp())
+
+    conf = {
+        "singlefile": {
+            "enabled": True,
+            "html": True,
+        },
+    }
+    task(1, {}, conf, {})
+    assert os.path.exists(cwd("reports", "report.html", analysis=1))
+
+if is_linux():
+    def test_empty_pdf_linux():
+        set_cwd(tempfile.mkdtemp())
+
+        conf = {
+            "singlefile": {
+                "enabled": True,
+                "html": False,
+                "pdf": True,
+            },
+        }
+        task(1, {}, conf, {})
+        assert os.path.exists(cwd("reports", "report.pdf", analysis=1))
+else:
+    def test_empty_pdf_windows():
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "singlefile": {
+                    "enabled": True,
+                    "html": False,
+                    "pdf": True,
+                },
+            },
+        })
+        sf = SingleFile()
+        sf.set_path(cwd(analysis=1))
+        sf.set_options({
+            "html": True,
+            "pdf": True,
+        })
+        sf.set_task({
+            "id": 1,
+            "target": "1.py",
+        })
+        with pytest.raises(CuckooReportError) as e:
+            sf.run({})
+        e.match("weasyprint library hasn't been installed")
+
+class TestSingleFile(object):
+    def setup(self):
+        set_cwd(tempfile.mkdtemp())
+        self.r = SingleFile()
+        self.r.set_options({
+            "html": True,
+            "pdf": False,
+        })
+
+    def test_combine_images(self):
+        assert len(self.r.combine_images().split("\n")) == 1
+
+    def test_combine_screenshots(self):
+        assert len(self.r.combine_screenshots({
+            "screenshots": [{
+                "path": "tests/files/sample_analysis_storage/shots/0001.jpg",
+            }],
+        })) == 1
+
+    def test_combine_js(self):
+        lines = self.r.combine_js().split("\n")
+        assert "jQuery v2.2.4" in lines[0]
+        assert "Stupid jQuery table plugin" in lines[2]
+
+    def test_index_fonts(self):
+        assert len(self.r.index_fonts()) == 5

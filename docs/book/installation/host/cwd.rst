@@ -1,6 +1,8 @@
-=====================================
-Cuckoo Working Directory Installation
-=====================================
+.. _CWD:
+
+========================
+Cuckoo Working Directory
+========================
 
 .. versionadded:: 2.0.0
 
@@ -8,7 +10,7 @@ A new concept is the ``Cuckoo Working Directory``. From this point forward all
 configurable components, generated data, and results of Cuckoo will be stored
 in this directory. These files include but are not limited to the following:
 
-* **Configuration**
+* Configuration
 * Cuckoo Signatures
 * Cuckoo Analyzer
 * Cuckoo Agent
@@ -27,7 +29,7 @@ hurdles.
 Configuration
 =============
 
-If you have ever updated your Cuckoo setup to the latest version, you have run
+If you have ever updated your Cuckoo setup to a later version, you have run
 into the issue where you had to make a backup of your configuration, update
 your Cuckoo instance, and either restore your configuration or re-apply it
 completely.
@@ -38,7 +40,7 @@ nightmare.
 The first time you run ``Cuckoo`` a ``CWD`` checkout will be created for you
 automatically, this pretty much goes as follows::
 
-    $ cuckoo
+    $ cuckoo -d
 
             _       _                   _             _              _            _
             /\ \     /\_\               /\ \           /\_\           /\ \         /\ \
@@ -82,7 +84,7 @@ to upgrade Cuckoo without having to touch the ``CWD``. (Of course if an update
 is installed that requires an updated Configuration then Cuckoo will guide the
 user through it - instead of overwriting the Configuration files itself).
 
-CWD Path
+CWD path
 ========
 
 Even though the ``CWD`` defaults to ``~/.cuckoo`` this path is completely

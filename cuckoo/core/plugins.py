@@ -13,9 +13,8 @@ import cuckoo
 from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
-    CuckooDependencyError, CuckooDisableModule
+    CuckooDependencyError, CuckooDisableModule, CuckooOperationalError
 )
-from cuckoo.common.objects import Dictionary
 from cuckoo.common.utils import supported_version
 from cuckoo.misc import cwd, version
 
@@ -35,7 +34,15 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     for fname in os.listdir(dirpath):
         if fname.endswith(".py") and not fname.startswith("__init__"):
             module_name, _ = os.path.splitext(fname)
-            importlib.import_module("%s.%s" % (module_prefix, module_name))
+            try:
+                importlib.import_module(
+                    "%s.%s" % (module_prefix, module_name)
+                )
+            except ImportError as e:
+                raise CuckooOperationalError(
+                    "Unable to load the Cuckoo plugin at %s: %s. Please "
+                    "review its contents and/or validity!" % (fname, e)
+                )
 
     subclasses = class_.__subclasses__()[:]
 
@@ -66,7 +73,7 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
             ret[plugin.__module__.split(".")[-1]] = plugin
         return ret
 
-    return plugins
+    return sorted(plugins, key=lambda x: x.__name__.lower())
 
 class RunAuxiliary(object):
     """Auxiliary modules manager."""
@@ -93,7 +100,7 @@ class RunAuxiliary(object):
                 module_name = module_name.rsplit(".", 1)[1]
 
             try:
-                options = Dictionary(config2("auxiliary", module_name))
+                options = config2("auxiliary", module_name)
             except CuckooConfigurationError:
                 log.debug(
                     "Auxiliary module %s not found in configuration file",
@@ -199,7 +206,7 @@ class RunProcessing(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = Dictionary(config2("processing", module_name))
+            options = config2("processing", module_name)
         except CuckooConfigurationError:
             log.debug(
                 "Processing module %s not found in configuration file",
@@ -408,6 +415,34 @@ class RunSignatures(object):
                 if self.call_signature(sig, sig.on_call, call, proc) is False:
                     self.api_sigs[call["api"]].remove(sig)
 
+    def process_yara_matches(self):
+        """Yields any Yara matches to each signature."""
+        def loop_yara(category, filepath, matches):
+            for match in matches:
+                for sig in self.signatures:
+                    self.call_signature(
+                        sig, sig.on_yara, category, filepath, match
+                    )
+
+        target = self.results.get("target", {})
+        if target.get("category") == "file" and target.get("file"):
+            loop_yara(
+                "sample",
+                self.results["target"]["file"]["path"],
+                self.results["target"]["file"]["yara"]
+            )
+
+        for procmem in self.results.get("procmemory", []):
+            # Yara matches on extracted PE files from process memory dumps.
+            for extr in procmem.get("extracted", []):
+                loop_yara("extracted", extr["path"], extr["yara"])
+
+            # Yara rules on the process memory dump itself.
+            loop_yara("procmem", procmem["file"], procmem["yara"])
+
+        for dropped in self.results.get("dropped", []):
+            loop_yara("dropped", dropped["path"], dropped["yara"])
+
     def run(self):
         """Run signatures."""
         # Allow signatures to initialize themselves.
@@ -425,6 +460,9 @@ class RunSignatures(object):
                 self.call_signature(sig, sig.on_process, proc)
 
             self.yield_calls(proc)
+
+        # Iterate through all Yara matches.
+        self.process_yara_matches()
 
         # Yield completion events to each signature.
         for sig in self.signatures:
@@ -485,7 +523,7 @@ class RunReporting(object):
             module_name = module_name.rsplit(".", 1)[1]
 
         try:
-            options = Dictionary(config2("reporting", module_name))
+            options = config2("reporting", module_name)
         except CuckooConfigurationError:
             log.debug(
                 "Reporting module %s not found in configuration file",

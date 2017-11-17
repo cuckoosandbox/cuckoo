@@ -1,10 +1,8 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
 # Copyright (C) 2012 JoseMi Holguin (@j0sm1)
+# Copyright (C) 2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
-"""IRC Protocol"""
 
 import cStringIO
 import re
@@ -19,20 +17,21 @@ class ircMessage(object):
     """IRC Protocol Request."""
 
     # Client commands
-    __methods_client = dict.fromkeys(( "PASS", "JOIN", "USER", "OPER", "MODE", "SERVICE", "QUIT", "SQUIT",
-        "PART", "TOPIC", "NAMES", "LIST", "INVITE",
-        "KICK", "PRIVMSG", "NOTICE", "MOTD", "LUSERS", "VERSION", "STATS", "LINKS", "TIME", "CONNECT",
-        "TRACE", "ADMIN", "INFO", "SERVLIST",
-        "SQUERY", "WHO", "WHOIS", "WHOWAS", "KILL", "PING", "PONG", "ERROR", "AWAY", "REHASH", "DIE", "RESTART",
-        "SUMMON", "USERS", "WALLOPS",
-        "USERHOST", "NICK", "ISON"
+    __methods_client = dict.fromkeys((
+        "PASS", "JOIN", "USER", "OPER", "MODE", "SERVICE", "QUIT", "SQUIT",
+        "PART", "TOPIC", "NAMES", "LIST", "INVITE", "KICK", "PRIVMSG",
+        "NOTICE", "MOTD", "LUSERS", "VERSION", "STATS", "LINKS", "TIME",
+        "CONNECT", "TRACE", "ADMIN", "INFO", "SERVLIST", "SQUERY", "WHO",
+        "WHOIS", "WHOWAS", "KILL", "PING", "PONG", "ERROR", "AWAY", "REHASH",
+        "DIE", "RESTART", "SUMMON", "USERS", "WALLOPS", "USERHOST", "NICK",
+        "ISON"
     ))
 
     def __init__(self):
         self._messages = []
-        # Server commandis : prefix - command - params 
+        # Server commandis : prefix - command - params
         self._sc = {}
-        # Client commands : command - params 
+        # Client commands : command - params
         self._cc = {}
 
     def _unpack(self, buf):
@@ -50,7 +49,9 @@ class ircMessage(object):
             if not re.match("^:", element) is None:
                 command = "([a-zA-Z]+|[0-9]{3})"
                 params = "(\x20.+)"
-                irc_server_msg = re.findall("(^:[\w+.{}!@|()]+\x20)"+command+params,element)
+                irc_server_msg = re.findall(
+                    "(^:[\w+.{}!@|()]+\x20)" + command + params, element
+                )
                 if irc_server_msg:
                     self._sc["prefix"] = convert_to_printable(irc_server_msg[0][0].strip())
                     self._sc["command"] = convert_to_printable(irc_server_msg[0][1].strip())
@@ -58,13 +59,15 @@ class ircMessage(object):
                     self._sc["type"] = "server"
                     self._messages.append(dict(self._sc))
             else:
-                irc_client_msg = re.findall("([a-zA-Z]+\x20)(.+[\x0a\0x0d])",element)
+                irc_client_msg = re.findall(
+                    "([a-zA-Z]+\x20)(.+[\x0a\0x0d])", element
+                )
                 if irc_client_msg and irc_client_msg[0][0].strip() in self.__methods_client:
                     self._cc["command"] = convert_to_printable(irc_client_msg[0][0].strip())
                     self._cc["params"] = convert_to_printable(irc_client_msg[0][1].strip())
                     self._cc["type"] = "client"
                     self._messages.append(dict(self._cc))
-    
+
     def getClientMessages(self, buf):
         """Get irc client commands of tcp streams.
         @buf: list of messages

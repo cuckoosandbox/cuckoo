@@ -11,7 +11,8 @@ Cuckoo relies on a couple of main configuration files:
 * :ref:`processing_conf`: for enabling and configuring processing modules.
 * :ref:`reporting_conf`: for enabling or disabling report formats.
 
-To get Cuckoo working you have to at the very least edit :ref:`auxiliary_conf`:, :ref:`cuckoo_conf` and :ref:`machinery_conf`.
+To get Cuckoo working you should at the very least edit :ref:`cuckoo_conf` and
+:ref:`machinery_conf`.
 
 .. _cuckoo_conf:
 

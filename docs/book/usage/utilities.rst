@@ -38,25 +38,27 @@ Cuckoo's web interface. This tool is described in :doc:`web`.
 Processing Utility
 ==================
 
-.. versionchanged:: 2.0-rc2
-    We used to have longstanding issues with ``./utils/process.py`` randomly
-    freezing up and ``./utils/process2.py`` only being able to handle
-    PostgreSQL-based databases. These two commands have now been merged into
-    one Cuckoo App and no longer show signs of said issues or limitations.
+.. versionchanged:: 2.0.0
+   We used to have longstanding issues with ``./utils/process.py`` randomly
+   freezing up and ``./utils/process2.py`` only being able to handle
+   PostgreSQL-based databases. These two commands have now been merged into
+   one Cuckoo App and no longer show signs of said issues or limitations.
 
 For bigger Cuckoo setups it is recommended to separate the results processing
-from the Cuckoo analyses. It is also possible to re-generate a Cuckoo report,
-this is mostly used while developing and debugging Cuckoo Signatures.
+from the Cuckoo analyses due to performance issues (with multiple threads &
+the `Python GIL`_). Using ``cuckoo process`` it is also possible to
+re-generate Cuckoo reports, this is mostly used while developing and debugging
+Cuckoo Processing modules, Cuckoo Signatures, and Cuckoo Reporting modules.
 
-In order to do results processing in a separate process one has to disable the
-``process_results`` configuration item in ``$CWD/conf/cuckoo.conf`` by setting
-the value to ``off``. Then a Cuckoo Processing instance has to be started,
-this can be done as follows::
+In order to do results processing in one or more separate process(es) one has
+to disable the ``process_results`` configuration item in
+``$CWD/conf/cuckoo.conf`` by setting the value to ``off``. Then a Cuckoo
+Processing instance has to be started, this can be done as follows::
 
     $ cuckoo process instance1
 
 If one Cuckoo Processing instance is not enough to handle all the incoming
-analyses, simply create a second, third, or fourth instance::
+analyses, simply create a second, third, and possibly more instances::
 
     $ cuckoo process instance2
 
@@ -65,21 +67,28 @@ switch::
 
     $ cuckoo process -r 1
 
+It is also possible to re-generate multiple or a range of Cuckoo reports at
+once. The following will reprocess tasks ``1``, ``2``, ``5``, ``6``, ``7``,
+``8``, ``9``, ``10``::
+
+    $ cuckoo process -r 1,2,5-10
+
 For more information see also the help on this ``Cuckoo App``::
 
     $ cuckoo process --help
     Usage: cuckoo process [OPTIONS] [INSTANCE]
 
-    Process raw task data into reports.
+      Process raw task data into reports.
 
     Options:
-    -r, --report INTEGER    Re-generate a report
-    -m, --maxcount INTEGER  Maximum number of analyses to process
-    -d, --debug             Enable verbose logging
-    -q, --quiet             Only log warnings and critical messages
-    --help                  Show this message and exit.
+      -r, --report TEXT       Re-generate one or more reports
+      -m, --maxcount INTEGER  Maximum number of analyses to process
+      --help                  Show this message and exit.
 
-    In automated mode an instance name is required!
+In automated mode an instance name is required (e.g., ``instance1``) as seen
+in the examples earlier above!
+
+.. _`Python GIL`: https://wiki.python.org/moin/GlobalInterpreterLock
 
 Community Download Utility
 ==========================
@@ -99,27 +108,28 @@ For more usage see as follows::
     $ cuckoo community --help
     Usage: cuckoo community [OPTIONS]
 
-    Utility to fetch supplies from the Cuckoo Community.
+      Utility to fetch supplies from the Cuckoo Community.
 
     Options:
-    -f, --force              Overwrite existing files
-    -b, --branch TEXT        Specify a different community branch rather than
-                             master
-    --file, --filepath PATH  Specify a local copy of a community .tar.gz file
-    --help                   Show this message and exit.
+      -f, --force              Overwrite existing files
+      -b, --branch TEXT        Specify a different community branch rather than
+                               master
+      --file, --filepath PATH  Specify a local copy of a community .tar.gz file
+      --help                   Show this message and exit.
 
 .. _`Cuckoo Community Repository`: https://github.com/cuckoosandbox/community
 
 Database migration utility
 ==========================
 
-.. deprecated:: 2.0-rc2
-    This will be ported into a Cuckoo App in an upcoming update.
+.. versionchanged:: 2.0.0
+   This used to be a special process, but has since been integrated properly
+   as a Cuckoo App.
 
-This utility is developed to migrate your data between Cuckoo's release. It's
-developed on top of the `Alembic`_ framework and it should provide data
-migration for both SQL database and Mongo database.
-This tool is already described in :doc:`../installation/upgrade`.
+This utility helps migrating your data between Cuckoo releases. It's developed
+on top of the `Alembic`_ framework and it should provide data migration for
+both SQL database and Mongo database. This tool is already described
+in :doc:`../installation/upgrade`.
 
 .. _`Alembic`: http://alembic.readthedocs.org/en/latest/
 
@@ -131,25 +141,13 @@ Stats utility
     also be retrieved through both the Cuckoo API as well as the Cuckoo Web
     Interface.
 
-This is a really simple utility which prints some statistics about processed
-samples::
-
-    $ ./utils/stats.py
-
-    1 samples in db
-    1 tasks in db
-    pending 0 tasks
-    running 0 tasks
-    completed 0 tasks
-    recovered 0 tasks
-    reported 1 tasks
-    failed_analysis 0 tasks
-    failed_processing 0 tasks
-    roughly 32 tasks an hour
-    roughly 778 tasks a day
-
 Machine utility
 ===============
+
+.. versionchanged:: 2.0.0
+   This used to be a standalone and hacky script directly modifying the Cuckoo
+   configuration. It's now much better integrated and will be able to somewhat
+   properly interact with Cuckoo.
 
 The machine ``Cuckoo App`` is designed to help you automatize the
 configuration of virtual machines in Cuckoo. It takes a list of machine
@@ -161,16 +159,16 @@ Following are the available options::
     Usage: cuckoo machine [OPTIONS] VMNAME [IP]
 
     Options:
-    --debug              Enable verbose logging
-    --add                Add a Virtual Machine
-    --delete             Delete a Virtual Machine
-    --platform TEXT      Guest Operating System
-    --options TEXT       Machine options
-    --tags TEXT          Tags for this Virtual Machine
-    --interface TEXT     Sniffer interface for this Virtual Machine
-    --snapshot TEXT      Specific Virtual Machine Snapshot to use
-    --resultserver TEXT  IP:Port of the Result Server
-    --help               Show this message and exit.
+      --debug              Enable verbose logging
+      --add                Add a Virtual Machine
+      --delete             Delete a Virtual Machine
+      --platform TEXT      Guest Operating System
+      --options TEXT       Machine options
+      --tags TEXT          Tags for this Virtual Machine
+      --interface TEXT     Sniffer interface for this Virtual Machine
+      --snapshot TEXT      Specific Virtual Machine Snapshot to use
+      --resultserver TEXT  IP:Port of the Result Server
+      --help               Show this message and exit.
 
 As an example, a machine may be added to Cuckoo's configuration as follows::
 
@@ -184,7 +182,7 @@ This tool is described in :doc:`dist`.
 Mac OS X Bootstrap scripts
 ==========================
 
-.. deprecated:: 2.0-rc2
+.. deprecated:: 2.0.0
     These files will be moved elsewhere in an upcoming update and so should
     any documentation that references these scripts.
 
@@ -197,56 +195,13 @@ look at them and configure them for your needs.
 SMTP Sinkhole
 =============
 
-.. deprecated:: 2.0-rc2
-    Whether this will be integrated as a Cuckoo App has yet to be determined.
-
-The smtp_sinkhole.py utility is designed to provide an easy to use SMTP sinkhole
-to catch all the emails going out of virtual machines network.
-This is typically used to dump all emails when you run an analysis of sample
-used for spam purposes. You can use it also to prevent sending spam on
-internet.
-Following are the available options::
-
-    $ ./utils/smtp_sinkhole.py -h
-    usage: smtp_sinkhole.py [host [port]]
-
-    SMTP Sinkhole
-
-    positional arguments:
-      host
-      port
-
-    optional arguments:
-      -h, --help  show this help message and exit
-      --dir DIR   Directory used to dump emails.
-
-By default, if you run it without arguments, it will listen for incoming mails
-on localhost port 1025.
-Yoy can bind it on different address and port, as in the following example::
-
-    $ ./utils/smtp_sinkhole.py 192.168.56.1 1025
-
-If you want to save the dumped emails to disk, just use the *--dir* argument and
-specify an existent directory where save them, as in the following example::
-
-    $ ./utils/smtp_sinkhole.py --dir /home/dumpmail
-
-You have to use iptables to route all mails generated from your analysis virtual
-machine network to the sinkhole script, for example if 192.168.56.0/24 is the
-address of your virtual network and smtp_sinkhole.py is listening on
-192.168.56.1 port 1025 you can use the following command::
-
-    $ sudo iptables -t nat -A PREROUTING -i vboxnet0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 1025
+.. deprecated:: 2.0.0
+    This script has been removed since this functionality should be
+    implemented properly using a Postfix setup.
 
 Setup script
 ============
 
-.. deprecated:: 2.0-rc2
-    This script requires a major rewrite given it operates on the legacy
-    variant of Cuckoo.
-
-Cuckoo setup script is a tool to setup a whole Cuckoo environment on a Debian
-based OS (i.e. Ubuntu or Debian).
-Actually it is a working in progress, but it is suggested to give it a try!
-It is located in *utils/setup.sh* and it is configured by some constants, so
-you should edit it if you want to customize the behaviour.
+.. deprecated:: 2.0.0
+    This script has been replaced by a similar but much more powerful
+    SaltStack state.

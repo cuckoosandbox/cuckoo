@@ -2,24 +2,27 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import fnmatch
+import io
 import logging
 import os.path
 import pymongo
 import random
 import requests
 import shutil
-import StringIO
+import subprocess
 import sys
 import tarfile
 import time
 
 from cuckoo.common.colors import bold, red, yellow
 from cuckoo.common.config import config, emit_options, Config
+from cuckoo.common.elastic import elastic
 from cuckoo.common.exceptions import (
-    CuckooOperationalError, CuckooDatabaseError,  CuckooDependencyError
+    CuckooOperationalError, CuckooDatabaseError, CuckooDependencyError
 )
-from cuckoo.common.objects import File
+from cuckoo.common.objects import Dictionary, File
 from cuckoo.common.utils import to_unicode
 from cuckoo.core.database import (
     Database, TASK_FAILED_PROCESSING, TASK_REPORTED
@@ -47,7 +50,7 @@ def fetch_community(branch="master", force=False, filepath=None):
 
         buf = r.content
 
-    t = tarfile.TarFile.open(fileobj=StringIO.StringIO(buf), mode="r:gz")
+    t = tarfile.TarFile.open(fileobj=io.BytesIO(buf), mode="r:gz")
 
     folders = {
         "modules/signatures": "signatures",
@@ -294,7 +297,7 @@ def process_task_range(tasks):
             task = task.to_dict()
 
         if os.path.isdir(cwd(analysis=task_id)):
-            process_task(task)
+            process_task(Dictionary(task))
 
 def process_tasks(instance, maxcount):
     count = 0
@@ -341,6 +344,7 @@ def cuckoo_clean():
                     "it manually. Error description: %s", e)
 
     # Check if MongoDB reporting is enabled and drop that if it is.
+    # TODO Move to the MongoDB abstract.
     if config("reporting:mongodb:enabled"):
         host = config("reporting:mongodb:host")
         port = config("reporting:mongodb:port")
@@ -351,6 +355,28 @@ def cuckoo_clean():
             conn.close()
         except:
             log.warning("Unable to drop MongoDB database: %s", mdb)
+
+    # Check if ElasticSearch reporting is enabled and drop its data if it is.
+    if elastic.init():
+        elastic.connect()
+
+        # TODO This should be moved to the elastic abstract.
+        # TODO We should also drop historic data, i.e., from pervious days,
+        # months, and years.
+        date_index = datetime.datetime.utcnow().strftime({
+            "yearly": "%Y",
+            "monthly": "%Y-%m",
+            "daily": "%Y-%m-%d",
+        }[elastic.index_time_pattern])
+        dated_index = "%s-%s" % (elastic.index, date_index)
+
+        elastic.client.indices.delete(
+            index=dated_index, ignore=[400, 404]
+        )
+
+        template_name = "%s_template" % dated_index
+        if elastic.client.indices.exists_template(template_name):
+            elastic.client.indices.delete_template(template_name)
 
     # Paths to clean.
     paths = [
@@ -430,3 +456,13 @@ def cuckoo_machine(vmname, action, ip, platform, options, tags,
         cfg[machinery].pop(vmname)
 
     write_cuckoo_conf(cfg=cfg)
+
+def migrate_database(revision="head"):
+    args = [
+        "alembic", "-x", "cwd=%s" % cwd(), "upgrade", revision,
+    ]
+    try:
+        subprocess.check_call(args, cwd=cwd("db_migration", private=True))
+    except subprocess.CalledProcessError:
+        return False
+    return True

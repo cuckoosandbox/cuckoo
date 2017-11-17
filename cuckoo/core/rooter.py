@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,8 +14,6 @@ from cuckoo.common.config import config
 log = logging.getLogger(__name__)
 unixpath = tempfile.mktemp()
 lock = threading.Lock()
-
-vpns = {}
 
 def rooter(command, *args, **kwargs):
     if not os.path.exists(config("cuckoo:cuckoo:rooter")):

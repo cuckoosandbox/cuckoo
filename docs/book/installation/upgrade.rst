@@ -1,85 +1,107 @@
-===============================
-Upgrade from a previous release
-===============================
+=================================
+Upgrading from a previous release
+=================================
+
+.. versionadded:: 2.0.0
+   Automatically upgrade from an older Cuckoo setup into a new one by
+   importing the old setup.
+
+This document describes the process of *importing* an older Cuckoo setup in
+order to upgrade your Cuckoo to the latest and greatest version. This
+importing process is possible for **Cuckoo 0.6 and upwards**. Naturally it
+doesn't re-apply any **custom code changes** that you applied to your old
+setup, but it does migrate your database, configuration, and analyses to the
+new version (in a best-effort manner).
+
+Now, in order to upgrade your setup, you'll simply have to perform the
+following steps:
+
+1. Come up with a :ref:`CWD` for the new setup (although the default one
+   should work just fine, assuming it doesn't exist yet).
+2. Optionally create a backup of your data (Cuckoo will also offer to do this
+   for you before doing the actual setup import).
+3. Run the ``cuckoo import`` command.
+
+The cuckoo import command
+=========================
+
+The ``cuckoo import`` App performs a number of steps in order to import an
+older setup. Previously we had manual steps for performing a database
+migration, these have been integrated in the import process as well.
+
+The usage of ``cuckoo import`` is as follows::
+
+    $ cuckoo import --help
+    Usage: cuckoo import [OPTIONS] PATH
+
+      Imports an older Cuckoo setup into a new CWD. The old setup should be
+      identified by PATH and the new CWD may be specified with the --cwd
+      parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo".
+
+    Options:
+      --copy     Copy all existing analyses to the new CWD (default)
+      --move     Move all existing analyses to the new CWD
+      --symlink  Symlink all existing analyses to the new CWD
+      --help  Show this message and exit.
+
+As per the limited usage documentation of this command, there is an input and
+an output directory and a couple of different *modes*. The rest is done by
+``cuckoo import`` according to best-practice manners.
+
+The three different modes are best described as follows. Keep in mind that
+these modes only inform the importing process on what to do with the existing
+analyses - these modes do not apply to any used databases or other data.
+
+* ``copy``: **Copies** all the analyses from the old setup to the new CWD. In
+  this mode the old ``storage/`` folder will be copied to ``$CWD/storage/``.
+  The ``copy`` mode is useful if you want to maintain a backup of the old
+  setup and its analyses, allowing one to restore it with the appropriate SQL
+  backup. *Note that this mode will double the size of your existing analyses
+  directory as it does a full copy*.
+* ``move``: **Moves** all the analyses from the old setup to the new CWD. In
+  this mode the old ``storage/`` folder is moved to ``$CWD/storage/``. After
+  the import process you won't have a backup of your old data anymore, but you
+  will be able to reference to it in the new CWD / setup.
+* ``symlink``: Creates a **symbolic link** from each analysis in the old
+  setup, i.e., ``storage/analyses/XYZ``, to the new CWD, i.e.,
+  ``$CWD/storage/XYZ``. This method is the most desired (as you'll be able to
+  access the existing analyses in both the old setup as well as the new CWD),
+  but doesn't work on Windows.
+
+The default mode is ``copy`` due to its feature of remaining available on
+both the old setup as well as the new CWD as well as being cross-platform
+(i.e., ``symlink`` mode isn't supported on Windows). After reading this
+documentation one may opt to go for ``symlink`` or ``move`` mode on
+non-Windows systems and ``move`` mode on Windows systems, though.
+
+Following are the steps taken by Cuckoo when performing an import:
+
+* The user has to accept a non-binding EULA-like agreement that (just kidding)
+  attempts to inform him or her regarding the implications of importing an
+  older setup.
+* The version of the old Cuckoo setup is identified.
+* It is ensured that the new CWD does **not** already exist.
+* The old Cuckoo Configuration is read, **migrated**, and then validated to be
+  fit for usage with the new Cuckoo version, i.e., you can configure a Cuckoo
+  0.6 setup and migrate it all the way to the latest version and it will
+  simply work.
+* The new CWD is created and it is configured with the migrated configuration.
+* The user is prompted to *optionally* create a SQL database backup. On
+  Linux-based systems this should work out of the box (and you'll get a hard
+  error otherwise), but due to issues with ``$PATH`` this may require manually
+  fixing up the command on Windows & Mac OS X systems.
+* After the ability to create a SQL database backup, the **database schema**
+  is **migrated** to the latest version **in-place**, i.e., you will not be
+  able to use your old Cuckoo setup with this database anymore (hence the
+  backup).
+* Any and all existing analyses are imported to the new CWD using the ``mode``
+  as specified, or if it has not been specified, the default ``copy`` method.
+
+You are now the happy owner of an up-to-date Cuckoo setup. Please inform us of
+any feedback that you may have through one of the various communication
+channels that we've put in-place.
 
 .. warning::
-    These upgrade and migration instructions are outdated since 2.0-rc2 and
-    will be updated in a future Cuckoo update together with a Cuckoo App for
-    migration.
-
-Cuckoo Sandbox grows really fast and in every release new features are added and
-some others are fixed or removed.
-There are two ways to upgrade your Cuckoo: start from scratch or migrate your
-"old" setup (migration is supported only starting from Cuckoo 0.6).
-The suggested way to upgrade Cuckoo is to start from a fresh setup because it's
-easier and faster than migrate your old setup.
-
-Upgrade starting from scratch
-=============================
-
-To start from scratch you have to perform a fresh setup as described in :doc:`index`.
-The following steps are suggested:
-
-1. Backup your installation.
-2. Read the documentation shipped with the new release.
-3. Make sure to have installed all required dependencies, otherwise install them.
-4. Do a Cuckoo fresh installation of the Host components.
-5. Reconfigure Cuckoo as explained in this book (copying old configuration files
-   is not safe because options can change between releases).
-6. If you are using an external database instead of the default or you are using
-   the MongoDb reporting module is suggested to start all databases from scratch,
-   due to possible schema changes between Cuckoo releases.
-7. Test it!
-
-If something goes wrong you probably failed to do some steps during the fresh
-installation or reconfiguration. Check again the procedure explained in this
-book.
-
-It's not recommended to rewrite an old Cuckoo installation with the latest
-release files, as it might raise some problems because:
-
-* You are overwriting Python source files (.py) but Python bytecode files (.pyc)
-  are still in place.
-* There are configuration files changes across the two versions, check our
-  CHANGELOG file for added or removed configuration options.
-* The part of Cuckoo which runs inside guests (agent.py) may change.
-* If you are using an external database like the reporting module for MongoDb a
-  change in the data schema may corrupt your database.
-
-Migrate your Cuckoo
-===================
-
-Data migration is shipped starting from Cuckoo 1.1 and supports migration
-starting from Cuckoo 0.6.
-If your Cuckoo release is older than 0.6 you can't migrate your data.
-
-The following steps are suggested as requirement to migrate your data:
-
-1. Backup your installation.
-2. Read the documentation shipped with the new release.
-3. Make sure to have installed all required dependencies, otherwise install them.
-4. Download and extract the latest Cuckoo.
-5. Reconfigure Cuckoo as explained in this book (copying old configuration files
-   is not safe because options can change between releases), and update agent in
-   your virtual machines.
-6. Copy from your backup "storage" and "db" folders. (Reports and analyses
-   already present in "storage" folder will keep the old format.)
-
-Now setup Alembic (the framework used for migrations) and dateutil with::
-
-    pip install alembic python-dateutil
-
-Enter the alembic migration directory in "utils/db_migration" with::
-
-    cd utils/db_migration
-
-Before starting the migration script you must set your database connection in "cuckoo.conf"
-if you are using a custom one. Alembic migration script will use the database
-connection parameters configured in cuckoo.conf.
-
-Again, please remember to backup before launching migration tool! A wrong
-configuration may corrupt your data, backup should save kittens!
-
-Run the database migrations with::
-
-    alembic upgrade head
+   One should **not** clean the old Cuckoo setup after the import. By
+   attempting to do so you may loose the existing analyses (if ``symlink``
+   mode is used) and the SQL, MongoDB, and ElasticSearch databases.

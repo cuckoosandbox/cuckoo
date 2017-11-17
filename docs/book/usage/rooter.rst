@@ -25,10 +25,10 @@ Its usage is as follows::
       --service PATH    Path to service(8) for invoking OpenVPN
       --iptables PATH   Path to iptables(8)
       --ip PATH         Path to ip(8)
-      -v, --verbose
+      --sudo            Request superuser privileges
       --help            Show this message and exit.
 
-By default the ``rooter`` will default to enabling the ``cuckoo`` user as
+By default the ``rooter`` will default to ``chown``'ing the ``cuckoo`` user as
 user and group for the UNIX socket, as recommended when :ref:`installing`.
 If you're running Cuckoo under a user other than ``cuckoo``, you will have to
 specify this to the ``rooter`` as follows::
@@ -57,10 +57,10 @@ To resolve this one simply has to execute the ``cuckoo`` binary from the
 
 Alternatively one may use the ``--sudo`` flag which will call ``sudo`` on the
 correct ``cuckoo`` binary with all the provided flags. In turn the user will
-have to enter his or her password and, assuming the user is in sudoers, the
-Cuckoo Rooter will be started properly, e.g.::
+have to enter his or her password and, assuming all is fine, the Cuckoo Rooter
+will be started properly, e.g.::
 
-    (venv)$ cuckoo rooter -v --sudo
+    (venv)$ cuckoo rooter --sudo
 
 .. _cuckoo_rooter_usage:
 

@@ -4,22 +4,174 @@
    see the file 'docs/LICENSE' for copying permission.
  */
 
-#page_error {
+.app-error {
 
-	.error {
-		margin: 0 auto;
-    	text-align: center;	
+	&__header {
+		text-align: center;
+		text-shadow: 0px 1px 0px #fff;
+		color: #D0011B;
+		margin-bottom: 25px;
+
+		h1, h5 {
+			margin: 0;
+		}
+
+		h1 {
+			font-size: 118px;
+			font-weight: 200;
+		}
+
+		h5 {
+			font-size: 18px;
+			text-transform: uppercase;
+			font-weight: 900;
+		}
+
 	}
 
-	.error-code {
-		bottom: 60%;
-	    font-size: 96px;
-	    line-height: 100px;	
+	&__balloon {
+
+		position: relative;
+		border: 1px solid #DFDFDF;
+		background-color: #fff;
+		width: 500px;	
+		padding: 25px;
+		box-shadow: 0px 2px 4px rgba(178,178,178, .13);
+		border-radius: 8px;
+
+		// awesome css arrow, maybe i should construct a mixin out of this for
+		// multi-purpose arrow-ing
+		&:after,
+		&:before {
+			bottom: 100%;
+			left: 50%;
+			border: solid transparent;
+			content: " ";
+			height: 0;
+			width: 0;
+			position: absolute;
+			pointer-events: none;
+		}
+
+		&:after {
+			border-color: rgba(255, 255, 255, 0);
+			border-bottom-color: #FFF;
+			border-width: 13px;
+			margin-left: -13px;
+		}
+
+		&:before {
+			border-color: rgba(223, 223, 223, 0);
+			border-bottom-color: #DFDFDF;
+			border-width: 14px;
+			margin-left: -14px;
+		}
+
 	}
 
-	.error-desc { font-size: 12px; }
-	.m-b-10 { margin-bottom: 10px !important; }
-	.m-b-20 { margin-bottom: 20px !important; }
-	.m-t-20 { margin-top: 20px !important; }
+	&__message {
+		font-size: 18px;
+		font-weight: 500;
+		color: #818181;
+		border-bottom: 1px solid #dfdfdf;
+		padding-bottom: 20px;
+		margin-bottom: 20px;
+	}
+
+	// theme for cyborg
+	@include cuckoo-theme('cyborg') {
+
+		&__header {
+			text-shadow: none;
+			color: #d22f43;
+		}
+
+		&__balloon {
+			@extend %cyborg-heading;
+
+			&:after {
+				border-bottom-color: #284F60;
+			}
+
+			&:before {
+				border-bottom-color: #2b5a6a;
+			}
+
+			.button {
+
+				color: $cyborg_secundary_color;
+
+				&:not(.inversed) {
+					@extend .outline;
+					border-color: $cyborg_secundary_color;
+
+					&:hover {
+						background-color: $cyborg_secundary_color;
+						color: #2b5a6a;
+					}
+				}
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+		}
+
+		&__message {
+			color: $cyborg_text_color;
+			border-bottom-color: #51666B;
+		}
+
+	}
+
+	// theme for night
+	@include cuckoo-theme('night') {
+
+		&__header {
+			text-shadow: none;
+			color: #d22f43;
+		}
+
+		&__balloon {
+
+			background-color: $night_panel_color;
+			border-color: #21282f;
+			box-shadow: 0px 2px 4px rgba(26,31,35,1);
+
+			&:after {
+				border-bottom-color: $night_panel_color;
+			}
+
+			&:before {
+				border-bottom-color: #21282f;				
+			}
+
+			.button {
+
+				color: $night_text_color;
+
+				&:not(.inversed) {
+					@extend .outline;
+					border-color: $night_text_color;
+
+					&:hover {
+						background-color: $night_text_color;
+						color: $night_accent_color;
+					}
+				}
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+
+		}
+
+		&__message {
+			color: $night_text_color;
+			border-bottom-color: #2a3e53;
+		}
+
+	}
 
 }

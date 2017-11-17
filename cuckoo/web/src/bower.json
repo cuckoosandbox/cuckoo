@@ -19,6 +19,12 @@
     "handlebars": "^3.0.0",
     "font-roboto": "^0.0.2",
     "string": "stringjs#^3.3.3",
-    "moment": "^2.17.1"
+    "moment": "^2.17.1",
+    "chart.js": "^2.5.0",
+    "bootstrap": "^3.3.7",
+    "js-cookie": "^2.1.4",
+    "datatables": "^1.10.13",
+    "highlight": "^9.10.0",
+    "jquery-ui": "^1.12.1"
   }
 }

@@ -4,15 +4,19 @@
 	flex-direction: column;
 
 	width: 100vw;
-	height: -webkit-calc(100vh - 41px);
+	height: -webkit-calc(100vh - 80px);
 
 	font-family: "Roboto", sans-serif;
 
+	&.include-footer {
+		height: -webkit-calc(100vh - 140px);
+	}
+
 	&__header {
 		padding: 15px 20px;
-		border-bottom: 1pxs solid #EEEEEE;
+		border-bottom: 1px solid #EEEEEE;
 		
-		& > h3 {
+		h3 {
 			font-size: 20px;
 			font-weight: 400;
 			color: #999999;
@@ -79,6 +83,10 @@
 			border-bottom: 1px solid #071D25;
 		}
 
+		@include cuckoo-theme('night') {
+			border-bottom: 1px solid #5E5A62;
+		}
+
 	}
 
 	&__body {
@@ -137,6 +145,7 @@
 
 		&.spread-alignment {
 			justify-content: space-between;
+			padding: 20px 30px 15px;
 		}
 
 	}
@@ -174,6 +183,7 @@
 	&__column {
 
 		flex-basis: 100%;
+		overflow: hidden;
 
 		&.one-third {
 			flex-basis: percentage(1/3);
@@ -182,6 +192,57 @@
 			flex-basis: percentage(2/3);
 		}
 
+		&--fixed {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		&.scrollable {
+			overflow-y: auto;
+		}
+
+	}
+
+	&__horizontal {
+		@extend .flex-grid;
+		flex-direction: row;
+
+		.flex-grid__column {
+			margin: 0 15px;
+
+			// utilities for fixed-width containers, they won't grow and won't
+			// shrink because of their contents, which can be nice sometimes.
+			&--xs {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 150px;
+			}
+
+			&--sm {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 250px;
+			}
+
+			&--md {
+				@extend .flex-grid__column;
+				@extend .flex-grid__column--fixed;
+				flex-basis: 400px;	
+			}
+		}
+
+		// utility class for 'auto'-ing the height
+		&--grow {
+			@extend .flex-grid__horizontal;
+			height: auto;
+		}
+	}
+
+	&__fluid {
+		// enable equally distributed widths to be aligned perfect
+		height: auto;
+		width: calc(100% + 30px);
+		margin-left: -15px;
 	}
 
 }
@@ -250,4 +311,14 @@
 		& > * { border-color: $cyborg_secundary_color; }
 	}
 
+}
+
+/*
+	Flex utility: flex-distribute
+	distributes items in a simple flex-layout container
+ */
+.flex-distribute {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }

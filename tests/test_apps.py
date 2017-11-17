@@ -13,13 +13,12 @@ import tempfile
 from cuckoo.apps.apps import (
     process, process_task, cuckoo_clean, process_task_range, cuckoo_machine
 )
-from cuckoo.apps.migrate import import_legacy_analyses
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.log import logger
-from cuckoo.core.startup import init_logfile, init_console_logging
+from cuckoo.core.startup import init_logfile, init_console_logging, index_yara
 from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir, is_windows, is_linux
 
@@ -34,57 +33,6 @@ def test_init(p):
             standalone_mode=False
         )
     p.assert_not_called()
-
-def init_legacy_analyses():
-    set_cwd(tempfile.mkdtemp())
-    cuckoo_create()
-
-    dirpath = tempfile.mkdtemp()
-    mkdir(dirpath, "storage")
-    mkdir(dirpath, "storage", "analyses")
-
-    mkdir(dirpath, "storage", "analyses", "1")
-    mkdir(dirpath, "storage", "analyses", "1", "logs")
-    Files.create(
-        (dirpath, "storage", "analyses", "1", "logs"), "a.txt", "a"
-    )
-    mkdir(dirpath, "storage", "analyses", "1", "reports")
-    Files.create(
-        (dirpath, "storage", "analyses", "1", "reports"), "b.txt", "b"
-    )
-
-    mkdir(dirpath, "storage", "analyses", "2")
-    Files.create((dirpath, "storage", "analyses", "2"), "cuckoo.log", "log")
-
-    Files.create((dirpath, "storage", "analyses"), "latest", "last!!1")
-    return dirpath
-
-def test_import_legacy_analyses():
-    with pytest.raises(RuntimeError) as e:
-        import_legacy_analyses(None, mode="notamode")
-    e.match("mode should be either")
-
-    dirpath = init_legacy_analyses()
-    assert sorted(import_legacy_analyses(dirpath, mode="copy")) == [1, 2]
-    assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
-    assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
-    assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
-    assert not os.path.exists(cwd(analysis="latest"))
-
-    if not is_windows():
-        assert not os.path.islink(cwd(analysis=1))
-        assert not os.path.islink(cwd(analysis=2))
-
-    dirpath = init_legacy_analyses()
-    assert sorted(import_legacy_analyses(dirpath, mode="symlink")) == [1, 2]
-    assert open(cwd("logs", "a.txt", analysis=1), "rb").read() == "a"
-    assert open(cwd("reports", "b.txt", analysis=1), "rb").read() == "b"
-    assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
-    assert not os.path.exists(cwd(analysis="latest"))
-
-    if not is_windows():
-        assert os.path.islink(cwd(analysis=1))
-        assert os.path.islink(cwd(analysis=2))
 
 class TestAppsWithCWD(object):
     def setup(self):
@@ -228,19 +176,35 @@ class TestAppsWithCWD(object):
             config("virtualbox:cuckoo1:label", strict=True)
         e.match("No such configuration value exists")
 
-    def test_import(self):
-        with mock.patch("cuckoo.main.import_cuckoo") as p:
-            p.return_value = None
-            dirpath = tempfile.mkdtemp()
+    @mock.patch("click.confirm")
+    @mock.patch("cuckoo.main.import_cuckoo")
+    def test_import_confirm(self, p, q, capsys):
+        p.return_value = None
+        q.return_value = True
+        dirpath = tempfile.mkdtemp()
+        main.main(
+            ("--cwd", cwd(), "import", dirpath),
+            standalone_mode=False
+        )
+        p.assert_called_once_with(None, "copy", dirpath)
+        out, err = capsys.readouterr()
+        assert "understand that, depending on the mode" in out
+
+    @mock.patch("click.confirm")
+    def test_import_noconfirm(self, p, capsys):
+        p.return_value = False
+        with pytest.raises(SystemExit) as e:
             main.main(
-                ("--cwd", cwd(), "import", dirpath),
+                ("--cwd", cwd(), "import", tempfile.mkdtemp()),
                 standalone_mode=False
             )
-            p.assert_called_once_with(None, dirpath, False, None)
+        e.match("Aborting operation")
 
+    @mock.patch("click.confirm")
     @mock.patch("cuckoo.main.import_cuckoo")
-    def test_import_abort(self, p, capsys):
+    def test_import_abort(self, p, q, capsys):
         p.side_effect = KeyboardInterrupt
+        q.return_value = True
         main.main(
             ("--cwd", cwd(), "import", tempfile.mkdtemp()),
             standalone_mode=False
@@ -282,6 +246,7 @@ class TestProcessingTasks(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        index_yara()
 
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.process_task_range")
@@ -483,6 +448,15 @@ class TestProcessingTasks(object):
             standalone_mode=False
         )
         p.assert_called_once()
+
+    def test_empty_reprocess(self):
+        db.connect()
+        mkdir(cwd(analysis=1))
+        logging.basicConfig(level=logging.DEBUG)
+        process_task_range("1")
+        assert os.path.exists(cwd("reports", "report.json", analysis=1))
+        obj = json.load(open(cwd("reports", "report.json", analysis=1), "rb"))
+        assert "contact back" in obj["debug"]["errors"][0]
 
 @mock.patch("cuckoo.apps.apps.RunProcessing")
 @mock.patch("cuckoo.apps.apps.RunSignatures")

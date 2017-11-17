@@ -73,13 +73,13 @@ def validate_url(url):
 
     try:
         val(url)
-        return True
+        return url
     except:
         pass
 
     try:
         val("http://%s" % url)
-        return True
+        return "http://%s" % url
     except:
         pass
 
@@ -329,10 +329,16 @@ def supported_version(version, minimum, maximum):
 
     return True
 
-def is_list_of_strings(l):
+def list_of(l, cls):
     if not isinstance(l, (tuple, list)):
         return False
     for value in l:
-        if not isinstance(value, basestring):
+        if not isinstance(value, cls):
             return False
     return True
+
+def list_of_ints(l):
+    return list_of(l, (int, long))
+
+def list_of_strings(l):
+    return list_of(l, basestring)

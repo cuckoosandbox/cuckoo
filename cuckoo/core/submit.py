@@ -44,7 +44,7 @@ class SubmitManager(object):
         if validate_url(line):
             submit["data"].append({
                 "type": "url",
-                "data": line
+                "data": validate_url(line),
             })
             return
 
@@ -52,7 +52,7 @@ class SubmitManager(object):
             "'%s' was neither a valid hash or url" % line
         )
 
-    def translate_options_from(self, options):
+    def translate_options_from(self, entry, options):
         """Translates from Web Interface options to Cuckoo database options."""
         ret = {}
 
@@ -64,6 +64,9 @@ class SubmitManager(object):
 
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
+
+        if entry.get("network-routing"):
+            ret["route"] = entry["network-routing"]
 
         return ret
 
@@ -79,6 +82,9 @@ class SubmitManager(object):
 
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True
+
+        if options.get("route"):
+            ret["network-routing"] = options["route"]
 
         return ret
 
@@ -135,7 +141,8 @@ class SubmitManager(object):
                 filepath = os.path.join(submit.tmp_path, filename)
 
                 unpacked = sflock.unpack(
-                    filepath=filepath, password=password, duplicates=duplicates
+                    filepath=filepath, password=password,
+                    duplicates=duplicates
                 )
 
                 if astree:
@@ -188,11 +195,11 @@ class SubmitManager(object):
                 "custom": info.get("custom"),
                 "owner": info.get("owner"),
                 "tags": info.get("tags"),
-                "memory": info.get("memory"),
+                "memory": options.get("full-memory-dump"),
                 "enforce_timeout": options.get("enforce-timeout"),
                 "machine": info.get("machine"),
                 "platform": info.get("platform"),
-                "options": self.translate_options_from(options),
+                "options": self.translate_options_from(info, options),
                 "submit_id": submit_id,
             }
 
@@ -236,7 +243,7 @@ class SubmitManager(object):
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath, filename=info["filename"], **kw
+                    file_path=arcpath, filename=info["relaname"], **kw
                 ))
             else:
                 arcpath = os.path.join(
@@ -259,7 +266,7 @@ class SubmitManager(object):
                 )
 
                 ret.append(db.add_archive(
-                    file_path=arcpath, filename=info["filename"], **kw
+                    file_path=arcpath, filename=info["relaname"], **kw
                 ))
 
         return ret

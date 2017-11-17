@@ -1,4 +1,4 @@
-body[data-theme="cyborg"],
+bade[data-theme="cyborg"],
 body.cyborg {
 
 	color: #d7d7d7;
@@ -27,9 +27,6 @@ body.cyborg {
 	.dns_badge {
 	    background-color: #3b3b3b;
 	    color: #bcbcbc;
-	}
-	.badge{
-	    border-radius: 0px;
 	}
 	pre {
 	    background-color: #434343;
@@ -1842,7 +1839,7 @@ body.cyborg {
 	}
 
 	.jstree-grid-midwrapper {
-	    background: url("/static/img/theme_cyborg/table_bg_22px.png");
+	    background: url("/static/images/theme_cyborg/table_bg_22px.png");
 	    background-position-y: 3px;
 	}
 
@@ -1864,7 +1861,7 @@ body.cyborg {
 	}
 
 	table > tbody > tr:nth-child(even){
-	    background-color: #0b1d21 !important;
+	    background-color: #0b1d21;
 	}
 
 	.network_http_request>.panel{

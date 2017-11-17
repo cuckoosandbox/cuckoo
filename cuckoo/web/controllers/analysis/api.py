@@ -18,16 +18,16 @@ from wsgiref.util import FileWrapper
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
 from cuckoo.common.mongo import mongo
-from cuckoo.common.utils import is_list_of_strings
+from cuckoo.common.utils import list_of_strings, list_of_ints
 from cuckoo.core.database import (
     Database, Task, TASK_RUNNING, TASK_REPORTED, TASK_COMPLETED
 )
 from cuckoo.core.feedback import CuckooFeedback
 from cuckoo.misc import cwd
 from cuckoo.web.bin.utils import (
-    api_post, api_get, file_response, json_error_response, json_fatal_response
+    api_post, api_get, file_response, json_error_response,
+    json_fatal_response, normalize_task
 )
-from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 db = Database()
 
@@ -78,20 +78,25 @@ class AnalysisApi(object):
     @api_get
     def task_info(request, task_id):
         try:
-            data = AnalysisController.task_info(task_id)
-            return JsonResponse({"status": True, "data": data}, safe=False)
+            return JsonResponse({
+                "status": True,
+                "data": {
+                    # TODO Test correctness of the following.
+                    "task": normalize_task(db.view_task(task_id)),
+                },
+            }, safe=False)
         except Exception as e:
             return json_error_response(str(e))
 
     @api_post
     def tasks_info(request, body):
         task_ids = body.get("task_ids", [])
+        if not list_of_ints(task_ids):
+            return json_error_response("Invalid task IDs given!")
+
         data = {}
-
-        for task_id in task_ids:
-            task_info = AnalysisController.task_info(task_id)
-            data[task_info["task"]["id"]] = task_info["task"]
-
+        for task in db.view_tasks(task_ids):
+            data[task.id] = normalize_task(task.to_dict())
         return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_get
@@ -266,12 +271,12 @@ class AnalysisApi(object):
         filters = {}
 
         if cats:
-            if not is_list_of_strings(cats):
+            if not list_of_strings(cats):
                 return json_error_response("invalid categories")
             filters["info.category"] = {"$in": cats}
 
         if packs:
-            if not is_list_of_strings(packs):
+            if not list_of_strings(packs):
                 return json_error_response("invalid packages")
             filters["info.package"] = {"$in": packs}
 
@@ -322,14 +327,17 @@ class AnalysisApi(object):
 
             category = info.get("category")
             if category == "file":
-                f = row["target"]["file"]
+                f = row.get("target", {}).get("file", {})
                 if f.get("name"):
                     target = os.path.basename(f["name"])
                 else:
                     target = None
-                md5 = f.get("md5")
+                md5 = f.get("md5") or "-"
             elif category == "url":
                 target = row["target"]["url"]
+                md5 = "-"
+            elif category == "archive":
+                target = row["target"]["human"]
                 md5 = "-"
             else:
                 target = None
@@ -414,56 +422,6 @@ class AnalysisApi(object):
         return JsonResponse({"status": True, "data": data}, safe=False)
 
     @api_post
-    def behavior_get_processes(request, body):
-        task_id = body.get("task_id", None)
-        if not task_id:
-            return json_error_response("missing task_id")
-
-        try:
-            data = AnalysisController.behavior_get_processes(task_id)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
-    def behavior_get_watchers(request, body):
-        task_id = body.get("task_id", None)
-        pid = body.get("pid", None)
-
-        if not task_id or not pid:
-            return json_error_response("missing task_id or pid")
-
-        try:
-            data = AnalysisController.behavior_get_watchers(
-                task_id=task_id,
-                pid=pid)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
-    def behavior_get_watcher(request, body):
-        task_id = body.get("task_id", None)
-        pid = body.get("pid", None)
-        watcher = body.get("watcher", None)
-        limit = body.get("limit", None)
-        offset = body.get("offset", None)
-
-        if not task_id or not watcher or not pid:
-            return json_error_response("missing task_id, watcher, and/or pid")
-
-        try:
-            data = AnalysisController.behavior_get_watcher(
-                task_id=task_id,
-                pid=pid,
-                watcher=watcher,
-                limit=limit,
-                offset=offset)
-            return JsonResponse({"status": True, "data": data}, safe=False)
-        except Exception as e:
-            return json_error_response(str(e))
-
-    @api_post
     def feedback_send(request, body):
         f = CuckooFeedback()
 
@@ -479,8 +437,7 @@ class AnalysisApi(object):
                 email=body.get("email"),
                 message=body.get("message"),
                 json_report=body.get("include_analysis", False),
-                memdump=body.get("include_memdump", False),
-                automated=False
+                memdump=body.get("include_memdump", False)
             )
         except CuckooFeedbackError as e:
             return json_error_response(str(e))

@@ -1,0 +1,100 @@
+/*
+	Custom utility for tabs, as the bootstrap tabs are stupid.
+	These tabs allow to have tabs without implementing the functionality,
+	so 'tabs' can be anything. 
+ */
+.flex-tabs {
+
+	&__tabs {
+		display: inline-flex;
+	}
+
+	&__tab {
+		background-color: #fff;
+		border: 1px solid #E3E3E3;
+		border-bottom: 0;
+		border-radius: 4px 4px 0 0;
+		font-size: 12px;
+		margin: 0 7px;
+		padding: 5px;
+
+		.btn {
+			padding: 2px 5px;
+			font-weight: 700;
+			color: #6297F8;
+
+			&.active {
+				background-color: #6297F8;
+				color: #fff;
+			}
+
+			&:not(.active):hover {
+				background-color: #F0F0F0;
+			}
+		}
+
+		@include cuckoo-theme('cyborg') {
+			background-color: $cyborg_panel_color;
+			border-color: $cyborg_border_color;
+
+			.btn {
+				color: $cyborg_text_color;
+
+				&.active {
+					background-color: $cyborg_primary_color;
+					color: $cyborg_secundary_color;
+				}
+
+				&:not(.active):hover {
+					background-color: rgba($cyborg_primary_color, .5);
+				}
+			}
+		}
+
+		@include cuckoo-theme('night') {
+
+			.btn {
+				color: $night_text_color;
+
+				&.active {
+					background-color: $night_primary_color;
+					color: $night_text_color;
+				}
+
+				&:not(.active):hover {
+					background-color: rgba($night_primary_color, .5);
+				}
+			}
+
+		}
+
+		&--right {
+			@extend .flex-tabs__tab;
+			margin-left: auto !important; // forces the element to the right
+		}
+
+	}
+
+	&__tab-group {
+		display: flex;
+
+		.flex-tabs__tab {
+
+			margin: 0;
+			border-right-width: 0;
+			border-radius: 0;
+
+			&:first-child {
+				border-top-left-radius: 4px;
+			}
+
+			&:last-child {
+				border-top-right-radius: 4px;
+				border-right-width: 1px;
+			}
+
+		}
+
+	}
+
+}

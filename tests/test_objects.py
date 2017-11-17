@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,11 +8,14 @@ import pytest
 import re
 import tempfile
 
-from cuckoo.common.objects import Dictionary, File, URL_REGEX
+from cuckoo.common.files import Files
+from cuckoo.common.objects import Dictionary, File, Archive, URL_REGEX
+from cuckoo.core.startup import init_yara, HAVE_YARA
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
 from cuckoo.processing.static import PortableExecutable
 
-class TestDictionary:
+class TestDictionary(object):
     def setup_method(self, method):
         self.d = Dictionary()
 
@@ -26,7 +29,7 @@ class TestDictionary:
         with pytest.raises(AttributeError):
             self.d.b.a
 
-class TestFile:
+class TestFile(object):
     def setup(self):
         # File() will invoke cwd(), so any CWD is required.
         set_cwd(tempfile.mkdtemp())
@@ -108,3 +111,107 @@ def test_m2crypto():
     sig0 = pe.run()["signature"][0]
     assert sig0["organization"] == "Microsoft Corporation"
     assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
+
+@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
+def test_yara_offsets():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    init_yara(True)
+
+    buf = (
+        # The SSEXY payload as per vmdetect.yar
+        "66 0F 70 ?? ?? 66 0F DB ?? ?? ?? ?? "
+        "?? 66 0F DB ?? ?? ?? ?? ?? 66 0F EF "
+        # A VirtualBox MAC address.
+        "30 38 2d 30 30 2d 32 37"
+    )
+    filepath = Files.temp_put(
+        "A"*64 + buf.replace("??", "00").replace(" ", "").decode("hex")
+    )
+    assert File(filepath).get_yara() == [{
+        "meta": {
+            "description": "Possibly employs anti-virtualization techniques",
+            "author": "nex"
+        },
+        "name": "vmdetect",
+        "offsets": {
+            "ssexy": [
+                (64, 1),
+            ],
+            "virtualbox_mac_1a": [
+                (88, 0),
+            ],
+        },
+        "strings": [
+            "MDgtMDAtMjc=",
+            "Zg9wAABmD9sAAAAAAGYP2wAAAAAAZg/v",
+        ],
+    }]
+
+def test_get_urls():
+    filepath = Files.temp_put("""
+http://google.com
+google.com/foobar
+thisisnotadomain
+https://1.2.3.4:9001/hello
+    """)
+    assert sorted(File(filepath).get_urls()) == [
+        # TODO Why does this not work properly at my own machine?
+        "http://google.com",
+        "https://1.2.3.4:9001/hello",
+    ]
+
+class TestArchive(object):
+    def test_get_file(self):
+        a = Archive("tests/files/pdf0.zip")
+        assert a.get_file("files/pdf0.pdf").get_size() == 680
+
+    def test_not_temporary_file(self):
+        f = File("tests/files/pdf0.pdf")
+        assert os.path.exists("tests/files/pdf0.pdf")
+        del f
+        assert os.path.exists("tests/files/pdf0.pdf")
+
+    def test_temporary_file(self):
+        a = Archive("tests/files/pdf0.zip")
+        f = a.get_file("files/pdf0.pdf")
+        filepath = f.file_path
+        assert f.get_size() == 680
+        assert os.path.exists(filepath)
+        del f
+        assert not os.path.exists(filepath)
+
+class TestPubPrivKeys(object):
+    def test_no_keys(self):
+        assert File("tests/files/pdf0.pdf").get_keys() == []
+
+    def test_pub_key(self):
+        buf = open("tests/files/pdf0.pdf", "rb").read()
+        filepath = Files.temp_put((
+            buf +
+            "-----BEGIN PUBLIC KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END PUBLIC KEY-----" +
+            buf
+        ))
+        assert File(filepath).get_keys() == [
+            "-----BEGIN PUBLIC KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END PUBLIC KEY-----"
+        ]
+
+    def test_private_key(self):
+        buf = open("tests/files/pdf0.pdf", "rb").read()
+        filepath = Files.temp_put((
+            buf +
+            "-----BEGIN RSA PRIVATE KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END RSA PRIVATE KEY-----" +
+            buf
+        ))
+        assert File(filepath).get_keys() == [
+            "-----BEGIN RSA PRIVATE KEY-----\n"
+            "HELLOWORLD\n"
+            "-----END RSA PRIVATE KEY-----"
+        ]

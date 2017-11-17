@@ -157,13 +157,365 @@ $(function() {
 
 // back-to-top replacement for the analysis pages
 $(function() {
-
     $("#analysis .flex-grid__footer .logo a").bind('click', function(e) {
         e.preventDefault();
         $(this).parents('.flex-nav__body').scrollTop(0);
     });
+});
 
-})
+// primary navigation things
+$(function() {
+
+    function theme_switch(theme) {
+        Cookies("theme", theme, {expires: 365 * 10});
+        $('body').removeClass('cyborg night');
+        $('body').addClass(theme);
+        $(".app-nav__dropdown").removeClass('in');
+    }
+
+    $("#select-theme").bind('click', function(e) {
+        e.preventDefault();
+        $(this).parent().find('.app-nav__dropdown').toggleClass('in');
+    });
+
+    $(".theme-selection a").bind('click', function(e) { 
+        e.preventDefault();
+        // set active class
+        $(".theme-selection a").removeClass('active');
+        $(this).addClass('active');
+        // toggle theme
+        var theme = $(this).attr("href").split(':')[1];
+        // if(theme == 'default') theme ='';
+        theme_switch(theme);
+    });
+
+    // close the theme dropdown on body click
+    $('body').bind('click', function(e) {
+        if($(e.target).parents('.app-nav__dropdown--parent').length == 0) {
+            $(".app-nav__dropdown").removeClass('in');
+        }
+    });
+
+});
+
+// utility class for controlling the dashboard
+// table views
+class DashboardTable {
+
+    // constructs the dashboardtable class
+    constructor(el, options) {
+
+        this.options = $.extend({
+            limit: 3,
+            afterLoad: function() {},
+            afterRender: function() {}
+        }, options);
+
+        this.el = el;
+        this.limitSelect = this.el.find('[data-select="limit"]');
+
+        this.initialise();
+
+    }
+
+    initialise() {
+
+        var _this = this;
+
+        this.limitSelect.bind('change', function() {
+            var value = $(this).val();
+            _this.changeLimit(value);
+        });
+
+        this.load();
+
+    }
+
+    changeLimit(val) {
+        this.options.limit = val;
+        this.load();
+    }
+
+    load() {
+
+        var _this = this;
+        var limit = parseInt(this.options.limit);
+
+        $.ajax({
+            type: "POST",
+            url: "/analysis/api/tasks/recent/",
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                cats: [],
+                limit: isNaN(limit) ? 3 : limit,
+                offset: 0,
+                packs: [],
+                score: ""
+            }),
+            success: function(response) {
+
+            	if(response.tasks && $.isArray(response.tasks)) {
+
+            		response = response.tasks.map(function(item) {
+	                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+	                    return item;
+	                });
+
+            	} else {
+
+            		response = [];
+
+            	}
+
+                _this.afterLoad(response);
+            }
+        });
+
+    }
+
+    afterLoad(data) {
+
+        var limit = parseInt(this.options.limit);
+
+        var completed_table = this.generateTable(data.filter(function(item) {
+            return item.status === 'reported';
+        }).slice(0,limit));
+
+        var pending_table = this.generateTable(data.filter(function(item) {
+            return item.status === 'pending';
+        }).slice(0,limit));
+
+        this.el.find("[data-populate='dashboard-table-recent']").html(completed_table);
+        this.el.find("[data-populate='dashboard-table-pending']").html(pending_table);
+
+        this.options.afterRender({
+            $recent: this.el.find("[data-populate='dashboard-table-recent']"),
+            $pending: this.el.find("[data-populate='dashboard-table-pending']")
+        });
+
+    }
+
+    generateTable(data) {
+
+        var limit = this.options.limit;
+
+        return HANDLEBARS_TEMPLATES['dashboard-table']({
+            entries: data,
+            lessEntries: (data.length < limit)
+        });
+
+    }
+
+    // generates a simple table <tbody> output
+    // following an object
+    static simpleTable(keys) {
+
+        var rows = $('<div />');
+
+        for(var key in keys) {
+            var val = keys[key];
+            var $tr = $("<tr />");
+            $tr.append(`<td>${key}</td>`);
+            $tr.append(`<td>${val}</td>`);
+            rows.append($tr);
+        }
+
+        return rows.html();
+
+    }
+
+}
+
+// dashboard code - gets replaced later into a seperate file
+$(function() {
+
+    /* ====================
+    CHART
+    ==================== */
+
+    // disable nasty iframes from Chart (?)
+    Chart.defaults.global.responsive = false;
+
+    function createChart(data) {
+
+        var chart,
+            chartCanvas = $('.free-disk-space__chart > canvas')[0],
+            ds_total = data.total,
+            ds_free = data.free,
+            ds_used = data.used,
+            percent_free = 100 / ds_total * ds_free,
+            percent_used = 100 / ds_total * ds_used,
+            human_free = CuckooWeb.human_size(ds_free),
+            human_total = CuckooWeb.human_size(ds_total);
+
+        if(chartCanvas) {
+
+            chart = new Chart(chartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        "Free",
+                        "Used"
+                    ],
+                    datasets: [
+                        {
+                            data: [percent_free, percent_used], // <== this has to come somewhere from a script
+                            backgroundColor: [
+                                "#52B3D9",
+                                "#BE234A"
+                            ]
+                        }
+                    ]
+                },
+                options: {
+                    cutoutPercentage: 70,
+                    legend: { 
+                        // we use a custom legend featuring more awesomeness
+                        display: false 
+                    },
+                    tooltips: { 
+                        // tooltips are for 1996
+                        enabled: false 
+                    }
+                }
+            });
+
+        }
+
+        return {
+            free: human_free,
+            total: human_total
+        }
+
+    }
+
+    /* ====================
+    OMNI-UPLOADER - uses DnDUpload
+    ==================== */
+    if($(".omni-uploader").length && window.DnDUpload) {
+
+        // submit uploader
+        var submit_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-submit',
+            endpoint: '/submit/api/presubmit/',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+            ajax: true,
+            templateData: {
+                title: 'Submit a file for Analysis',
+                html: `<i class="fa fa-upload"></i>\n${$("#analysis_token").html()}`
+            },
+            dragstart: function(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function(data, holder) {
+
+                setTimeout(function() {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function(uploader, holder) {
+                $(holder).addClass('dropped');
+            }
+        });
+
+        submit_uploader.draw(); 
+
+        // import uploader
+
+        var import_uploader = new DnDUpload.Uploader({
+            target: 'div#dashboard-import',
+            endpoint: '',
+            template: HANDLEBARS_TEMPLATES['dndupload_simple'],
+
+            // disables ajax functionality
+            ajax: false,
+
+            templateData: {
+                title: 'Submit a file to import',
+                html: `<i class="fa fa-upload"></i>\n${$('#import_token').html()}\n<input type="hidden" name="category" type="text" value="file">\n`,
+                // sets form action for submitting the files to (form action=".. etc")
+                formAction: '/analysis/import/',
+                inputName: 'analyses'
+            },
+            dragstart: function(uploader, holder) {
+                $(holder).removeClass('dropped');
+                $(holder).addClass('dragging');
+            },
+            dragend: function(uploader, holder) {
+                $(holder).removeClass('dragging');
+            },
+            drop: function(uploader, holder) {
+                $(holder).addClass('dropped');
+            },
+            success: function(data, holder) {
+                setTimeout(function() {
+                    window.location.href = data.responseURL;
+                }, 1000);
+            },
+            change: function(uploader, holder, files) {
+                $(holder).addClass('dropped');
+            }
+        });
+
+        import_uploader.draw();
+
+    }
+
+    // dashboard components
+    if($("#cuckoo-dashboard").length) {
+
+        var dashboard_table = new DashboardTable($("#dashboard-tables"), {
+            limit: 3,
+            limitOptions: [1,2,3,5,10,20,50,100],
+
+            afterRender: function(elements) {
+
+                elements.$recent.find('tr').bind('click', function(e) {
+                    var id = $(this).find('td:first-child').text();
+                    window.location = `/analysis/${id}/summary/`;
+                });
+
+            }
+        });
+
+        // // retrieve general info about cuckoo
+        $.get('/cuckoo/api/status', function(data) {
+
+            // populate tasks information
+            var tasks_info = DashboardTable.simpleTable(data.data.tasks);
+            $('[data-populate="statistics"]').html(tasks_info);
+
+            // populate free disk space unit
+            var disk_space = createChart(data.data.diskspace.analyses);
+            $('[data-populate="free-disk-space"]').text(disk_space.free);
+            $('[data-populate="total-disk-space"]').text(disk_space.total);
+
+        });
+
+
+    }
+
+});
+
+// focus fix on analysis page
+$(function() {
+
+    if($("body#analysis").length) {
+        $(".cuckoo-analysis").focus();
+        $("#analysis-nav, #primary-nav").bind('click', function() {
+            $(".cuckoo-analysis").focus();            
+        });
+    }
+
+});
 
 function alertbox(msg, context, attr_id){
     if(context) { context = `alert-${context}`; }

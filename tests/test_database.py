@@ -10,6 +10,7 @@ import tempfile
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from cuckoo.core.database import Database, Task, AlembicVersion, SCHEMA_VERSION
+from cuckoo.core.startup import index_yara
 from cuckoo.distributed.app import create_app
 from cuckoo.distributed.misc import settings
 from cuckoo.main import main, cuckoo_create
@@ -161,16 +162,25 @@ class DatabaseEngine(object):
         assert e2.message == "message2"
         assert e2.action == "actionhere"
 
+    def test_view_tasks(self):
+        t1 = self.d.add_path(__file__)
+        t2 = self.d.add_url("http://google.com/")
+        tasks = self.d.view_tasks([t1, t2])
+        assert tasks[0].to_dict() == self.d.view_task(t1).to_dict()
+        assert tasks[1].to_dict() == self.d.view_task(t2).to_dict()
+
 class TestConnectOnce(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
+        index_yara()
 
     @mock.patch("cuckoo.main.Database")
     @mock.patch("cuckoo.apps.apps.Database")
     @mock.patch("cuckoo.apps.apps.process")
     def test_process_task(self, q, p1, p2):
         mkdir(cwd(analysis=1))
+        p1.return_value.view_task.return_value = {}
         main.main(
             ("--cwd", cwd(), "process", "-r", "1"),
             standalone_mode=False

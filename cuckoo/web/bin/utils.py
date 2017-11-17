@@ -120,3 +120,16 @@ def dropped_filepath(task_id, sha1):
     for dropped in record["dropped"]:
         if dropped["sha1"] == sha1:
             return dropped["path"]
+
+def normalize_task(task):
+    if task["category"] == "file":
+        task["target"] = os.path.basename(task["target"])
+    elif task["category"] == "url":
+        if task["target"].startswith(("http://", "https://")):
+            task["target"] = "hxxp" + task["target"][4:]
+    elif task["category"] == "archive":
+        task["target"] = "%s @ %s" % (
+            task["options"]["filename"],
+            os.path.basename(task["target"])
+        )
+    return task

@@ -5,7 +5,7 @@
 
     <div class="flex-nav">
         {% include "analysis/pages/nav-sidebar.html" %}
-        <section class="flex-nav__body cuckoo-analysis">
+        <section class="flex-nav__body cuckoo-analysis" tabindex="0">
 
             <!-- common analysis page header -->
             <header class="page-header cuckoo-analysis__header">
@@ -32,6 +32,8 @@
                         
                         {% if report.analysis.info.category == "file" and report.analysis.target %}
                             {% include "analysis/pages/summary/_file.html" %}
+                        {% elif report.analysis.info.category == "archive" and report.analysis.target %}
+                            {% include "analysis/pages/summary/_archive.html" %}
                         {% elif report.analysis.info.category == "url" %}
                             {% include "analysis/pages/summary/_url.html" %}
                         {% endif %}
@@ -93,25 +95,7 @@
                     <div class="clearfix">
                         <div class="col-xs-8">{% include "analysis/pages/network/_dns.html" %}</div>
                         <div class="col-xs-4">{% include "analysis/pages/network/_hosts.html" %}</div>
-                        <script>
-                            $(document).ready(function () {
-                                setTimeout(function () {
-                                    ["network_hosts", "network_dns"].forEach(function (x) {
-                                        $('#' + x).DataTable({
-                                            responsive: true,
-                                            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                                            "pageLength": 10,
-                                            "language": {
-                                                "lengthMenu": "Show _MENU_ results",
-                                                "zeroRecords": "No results",
-                                                "info": "_PAGE_/_PAGES_"
-                                            }
-                                        });
-                                    });                                }, 200);
-                            });
-                        </script>
                     </div>
-                    <!-- Commented out the "summary" section. {# <div class="col-md-12">{% include "analysis/pages/summary/_summary.html" %}</div> #} -->
                 </div>
             </div>
 

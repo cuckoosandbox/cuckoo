@@ -21,9 +21,8 @@ guide, so please refer to the official documentation.
     For Windows 7 you will have to disable User Access Control.
 
     .. versionchanged:: 2.0-rc2
-
-        We used to suggest Windows XP as a guest VM but nowadays a 64-bit
-        Windows 7 machine yields much better results.
+       We used to suggest Windows XP as a guest VM but nowadays a 64-bit
+       Windows 7 machine yields much better results.
 
 .. note::
 

@@ -186,4 +186,4 @@ def test_elastic_connect_enabled(p):
     e = Elastic()
     e.init()
     e.connect()
-    p.Elasticsearch.assert_called_once_with(["127.0.0.1"])
+    p.Elasticsearch.assert_called_once_with(["127.0.0.1"], timeout=300)

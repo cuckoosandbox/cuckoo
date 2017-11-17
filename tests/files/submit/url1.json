@@ -41,6 +41,7 @@
             },
             "package": "ie",
             "relapath": "",
+            "relaname": "",
             "selected": true,
             "size": 0,
             "type": "url"

@@ -11,6 +11,7 @@ from cuckoo.common.config import (
     Config, parse_options, emit_options, config, cast, Path, read_kv_conf,
     config2
 )
+from cuckoo.common.constants import faq
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooStartupError
 )
@@ -907,6 +908,8 @@ def test_migration_20c2_200():
     Files.create(cwd("conf"), "auxiliary.conf", """
 [mitm]
 script = data/mitm.py
+[sniffer]
+tcpdump = foobar
 """)
     Files.create(cwd("conf"), "cuckoo.conf", """
 [cuckoo]
@@ -924,8 +927,11 @@ analysis_size_limit = 104857600
 """)
     Files.create(cwd("conf"), "processing.conf", """
 [network]
-whitelist-dns = wow
+whitelist-dns = yes
 allowed-dns = 8.8.8.8
+[procmemory]
+enabled = yes
+extract_img = yes
 [virustotal]
 enabled = yes
 key = a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088
@@ -958,6 +964,8 @@ enabled = no
 [jsondump]
 indent = 8
 encoding = utf8
+[reporthtml]
+enabled = yes
 """)
     Files.create(cwd("conf"), "vpn.conf", """
 [vpn]
@@ -994,7 +1002,8 @@ interface = eth0
     assert cfg["cuckoo"]["resultserver"]["upload_max_size"] == 128*1024*1024
     assert "whitelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
-    assert cfg["processing"]["network"]["whitelist_dns"] == "wow"
+    assert cfg["processing"]["network"]["whitelist_dns"] is True
+    assert cfg["processing"]["procmemory"]["extract_dll"] is False
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["processing"]["virustotal"]["enabled"] is False
     assert cfg["reporting"]["elasticsearch"]["hosts"] == [
@@ -1013,6 +1022,10 @@ interface = eth0
     assert cfg["reporting"]["moloch"]["insecure"] is False
     assert cfg["reporting"]["mongodb"]["username"] is None
     assert cfg["reporting"]["mongodb"]["password"] is None
+    assert cfg["reporting"]["singlefile"]["enabled"] is True
+    assert cfg["reporting"]["singlefile"]["html"] is True
+    assert cfg["reporting"]["singlefile"]["pdf"] is False
+    assert "reporthtml" not in cfg["reporting"]
     assert cfg["routing"]["routing"]["route"] == "foo"
     assert cfg["routing"]["routing"]["internet"] == "bar"
     assert cfg["routing"]["routing"]["rt_table"] == "main"
@@ -1036,47 +1049,78 @@ interface = eth0
     assert cfg["vsphere"]["vsphere"]["unverified_ssl"] is False
     assert "vpn" not in cfg
 
-def test_full_migration_040():
-    cfg = Config.from_confdir("tests/files/conf/040_plain", loose=True)
-    cfg = migrate(cfg, "0.4")
+class FullMigration(object):
+    DIRPATH = None
+    VERSION = None
 
-    # Ensure that all values exist and that have the correct types.
-    for filename, sections in Config.configuration.items():
-        assert filename in cfg
-        for section, entries in sections.items():
-            # We check machines and VPNs manually later on.
-            if section == "*" or section == "__star__":
-                continue
+    def test_full_migration(self):
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
 
-            assert section in cfg[filename]
-            for key, value in entries.items():
-                assert key in cfg[filename][section]
-                actual_value = cfg[filename][section][key]
-                assert actual_value == value.parse(actual_value)
+        # Ensure that all values exist and that have the correct types.
+        for filename, sections in Config.configuration.items():
+            assert filename in cfg
+            for section, entries in sections.items():
+                # We check machines and VPNs manually later on.
+                if section == "*" or section == "__star__":
+                    continue
 
-    machineries = (
-        "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
-        "vmware", "vsphere", "xenserver",
-    )
+                assert section in cfg[filename]
+                for key, value in entries.items():
+                    if key not in cfg[filename][section]:
+                        continue
+                    actual_value = cfg[filename][section][key]
+                    assert actual_value == value.parse(actual_value)
 
-    for machinery in machineries:
-        for machine in config("%s:%s:machines" % (machinery, machinery)):
-            assert machine in cfg[machinery]
-            type_ = Config.configuration[machinery]["*"]
+        machineries = (
+            "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
+            "vmware", "vsphere", "xenserver",
+        )
+
+        for machinery in machineries:
+            for machine in config("%s:%s:machines" % (machinery, machinery)):
+                assert machine in cfg[machinery]
+                type_ = Config.configuration[machinery]["*"]
+                if isinstance(type_, (tuple, list)):
+                    type_ = type_[0]
+
+                for key, value in cfg[machinery][machine].items():
+                    assert value == type_[key].parse(value)
+
+        for vpn in config("routing:vpn:vpns"):
+            assert vpn in cfg["routing"]
+            type_ = Config.configuration["routing"]["*"]
             if isinstance(type_, (tuple, list)):
                 type_ = type_[0]
 
-            for key, value in cfg[machinery][machine].items():
+            for key, value in cfg["routing"][vpn].items():
                 assert value == type_[key].parse(value)
 
-    for vpn in config("routing:vpn:vpns"):
-        assert vpn in cfg["routing"]
-        type_ = Config.configuration["routing"]["*"]
-        if isinstance(type_, (tuple, list)):
-            type_ = type_[0]
+    def test_write_configuration(self):
+        set_cwd(tempfile.mkdtemp())
+        cfg = Config.from_confdir(self.DIRPATH, loose=True)
+        cfg = migrate(cfg, self.VERSION)
+        cuckoo_create(cfg=cfg)
 
-        for key, value in cfg["routing"][vpn].items():
-            assert value == type_[key].parse(value)
+class TestFullMigration040(FullMigration):
+    DIRPATH = "tests/files/conf/040_plain"
+    VERSION = "0.4"
+
+class TestFullMigration110(FullMigration):
+    DIRPATH = "tests/files/conf/110_plain"
+    VERSION = "1.1"
+
+class TestFullMigration120(FullMigration):
+    DIRPATH = "tests/files/conf/120_plain"
+    VERSION = "1.2"
+
+class TestFullMigration20c1(FullMigration):
+    DIRPATH = "tests/files/conf/20c1_plain"
+    VERSION = "2.0-rc1"
+
+class TestFullMigration20c2(FullMigration):
+    DIRPATH = "tests/files/conf/20c2_plain"
+    VERSION = "2.0-rc2"
 
 def test_cast():
     assert cast("cuckoo:cuckoo:version_check", "1") is True
@@ -1110,6 +1154,44 @@ class TestKvConf(object):
             "auxiliary": {
                 "sniffer": {
                     "enabled": False,
+                },
+            },
+        }
+
+    def test_star_existing(self):
+        filepath = Files.temp_put("""
+        virtualbox.cuckoo1.resultserver_port = 1234
+        """)
+        assert read_kv_conf(filepath) == {
+            "virtualbox": {
+                "cuckoo1": {
+                    "resultserver_port": 1234,
+                },
+            },
+        }
+
+    def test_star_new(self):
+        filepath = Files.temp_put("""
+        virtualbox.virtualbox.machines = cuckoo2, cuckoo3
+        virtualbox.cuckoo2.ip = 192.168.56.102
+        virtualbox.cuckoo3.ip = 192.168.56.103
+        virtualbox.notexistingvm.ip = 1.2.3.4
+        """)
+        assert read_kv_conf(filepath) == {
+            "virtualbox": {
+                "virtualbox": {
+                    "machines": [
+                        "cuckoo2", "cuckoo3",
+                    ],
+                },
+                "cuckoo2": {
+                    "ip": "192.168.56.102",
+                },
+                "cuckoo3": {
+                    "ip": "192.168.56.103",
+                },
+                "notexistingvm": {
+                    "ip": "1.2.3.4",
                 },
             },
         }
@@ -1157,6 +1239,50 @@ def test_config2_custom():
         "scan": False,
     }
 
+def test_config2_vpns():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "routing": {
+            "vpn": {
+                "vpns": [
+                    "a", "b",
+                ],
+            },
+            "a": {
+                "name": "name_a",
+                "description": "desc_a",
+            },
+            "b": {
+                "name": "name_b",
+                "description": "desc_b",
+            },
+        },
+    })
+    assert config2("routing", "vpn") == {
+        "enabled": False,
+        "vpns": [
+            "a", "b",
+        ],
+    }
+    assert config2("routing", "a") == {
+        "__section__": None,
+        "name": "name_a",
+        "description": "desc_a",
+        "interface": None,
+        "rt_table": None,
+    }
+    with pytest.raises(CuckooConfigurationError) as e:
+        config2("routing", "c")
+    e.match("No such configuration section exists")
+
+    assert config2("routing", "a").name == "name_a"
+    assert config2("routing", "a").interface is None
+
+def test_config2_liststar():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert config2("qemu", "vm1").interface == "qemubr"
+
 @mock.patch("cuckoo.common.config.log_error")
 def test_no_superfluous_conf(p):
     """Tests that upon CWD creation no superfluous configuration values are
@@ -1165,3 +1291,7 @@ def test_no_superfluous_conf(p):
     cuckoo_create()
     Config.from_confdir(cwd("conf"))
     p.assert_not_called()
+
+def test_faq():
+    assert faq("hehe").startswith("http")
+    assert faq("hehe").endswith("#hehe")

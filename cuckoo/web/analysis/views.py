@@ -3,14 +3,11 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import io
 import json
 import os
 import pymongo
 import re
-import sflock
 import urllib
-import zipfile
 
 from bson.objectid import ObjectId
 
@@ -21,26 +18,22 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
 
-from cuckoo.core.database import Database, TASK_PENDING, TASK_COMPLETED
+from cuckoo.core.database import Database, TASK_PENDING
+from cuckoo.common.config import config
 from cuckoo.common.elastic import elastic
-from cuckoo.common.files import Files
 from cuckoo.common.mongo import mongo
-from cuckoo.common.utils import json_default
 from cuckoo.misc import cwd
 from cuckoo.processing import network
-from cuckoo.web.bin.utils import view_error, render_template
+from cuckoo.web.bin.utils import view_error, render_template, normalize_task
 
 results_db = mongo.db
 fs = mongo.grid
 
 @require_safe
 def pending(request):
-    db = Database()
-    tasks = db.list_tasks(status=TASK_PENDING)
-
     pending = []
-    for task in tasks:
-        pending.append(task.to_dict())
+    for task in Database().list_tasks(status=TASK_PENDING, limit=500):
+        pending.append(normalize_task(task.to_dict()))
 
     return render_template(request, "analysis/pending.html", **{
         "tasks": pending,
@@ -236,7 +229,7 @@ def file(request, category, object_id, fetch="fetch"):
 
         response = HttpResponse(file_item.read(), content_type=content_type)
 
-        if fetch is not "nofetch":
+        if fetch != "nofetch":
             response["Content-Disposition"] = "attachment; filename=%s" % file_name
 
         return response
@@ -388,6 +381,21 @@ def remove(request, task_id):
 
         # Delete screenshots.
         for shot in analysis["shots"]:
+            if isinstance(shot, dict):
+                if "small" in shot:
+                    if results_db.analysis.find({
+                        "shots": ObjectId(shot["small"]),
+                    }).count() == 1:
+                        fs.delete(ObjectId(shot["small"]))
+
+                if "original" in shot:
+                    if results_db.analysis.find({
+                        "shots": ObjectId(shot["original"]),
+                    }).count() == 1:
+                        fs.delete(ObjectId(shot["original"]))
+
+                continue
+
             if results_db.analysis.find({"shots": ObjectId(shot)}).count() == 1:
                 fs.delete(ObjectId(shot))
 

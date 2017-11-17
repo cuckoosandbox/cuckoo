@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -31,7 +31,7 @@ except:
     HAVE_PYV8 = False
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.objects import File
+from cuckoo.common.objects import Archive, File
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.compat import magic
 from cuckoo.misc import cwd, dispatch
@@ -595,8 +595,6 @@ def _pdf_worker(filepath):
 
 class Static(Processing):
     """Static analysis."""
-    PUBKEY_RE = "(-----BEGIN PUBLIC KEY-----[a-zA-Z0-9\\n\\+/]+-----END PUBLIC KEY-----)"
-    PRIVKEY_RE = "(-----BEGIN RSA PRIVATE KEY-----[a-zA-Z0-9\\n\\+/]+-----END RSA PRIVATE KEY-----)"
 
     office_ext = [
         "doc", "docm", "dotm", "docx", "ppt", "pptm", "pptx", "potm",
@@ -610,40 +608,44 @@ class Static(Processing):
         self.key = "static"
         static = {}
 
-        # Does the target file still exist?
-        if self.task["category"] != "file" or \
-                not os.path.exists(self.file_path):
+        if self.task["category"] == "file":
+            if not os.path.exists(self.file_path):
+                return
+
+            f = File(self.file_path)
+            filename = os.path.basename(self.task["target"])
+        elif self.task["category"] == "archive":
+            if not os.path.exists(self.file_path):
+                return
+
+            f = Archive(self.file_path).get_file(
+                self.task["options"]["filename"]
+            )
+            filename = os.path.basename(self.task["options"]["filename"])
+        else:
             return
 
-        package = self.task.get("package")
-
-        if self.task["category"] == "file":
-            ext = os.path.splitext(self.task["target"])[1].lstrip(".").lower()
+        if filename:
+            ext = filename.split(os.path.extsep)[-1].lower()
         else:
             ext = None
 
-        if ext == "exe" or "PE32" in File(self.file_path).get_type():
-            static.update(PortableExecutable(self.file_path).run())
-            static["keys"] = self._get_keys()
+        package = self.task.get("package")
+
+        if package == "exe" or ext == "exe" or "PE32" in f.get_type():
+            static.update(PortableExecutable(f.file_path).run())
+            static["keys"] = f.get_keys()
 
         if package == "wsf" or ext == "wsf":
-            static["wsf"] = WindowsScriptFile(self.file_path).run()
+            static["wsf"] = WindowsScriptFile(f.file_path).run()
 
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
-            static["office"] = OfficeDocument(self.file_path).run()
+            static["office"] = OfficeDocument(f.file_path).run()
 
         if package == "pdf" or ext == "pdf":
-            timeout = int(self.options.get("pdf_timeout", 60))
             static["pdf"] = dispatch(
-                _pdf_worker, (self.file_path,), timeout=timeout
+                _pdf_worker, (f.file_path,),
+                timeout=self.options.pdf_timeout
             )
 
         return static
-
-    def _get_keys(self):
-        """Get any embedded plaintext public and/or private keys."""
-        buf = open(self.file_path).read()
-        ret = set()
-        ret.update(re.findall(self.PUBKEY_RE, buf))
-        ret.update(re.findall(self.PRIVKEY_RE, buf))
-        return list(ret)

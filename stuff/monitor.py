@@ -5,9 +5,9 @@
 
 import io
 import os
-import requests
 import sys
 import tarfile
+import urllib2
 
 URL = "https://github.com/cuckoosandbox/community/archive/%s.tar.gz"
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         os.mkdir("cuckoo/data/monitor/%s" % hash_)
 
     print "Fetching Cuckoo Community archive, this may take a little while."
-    r = requests.get(URL % branch)
-    t = tarfile.TarFile.open(fileobj=io.BytesIO(r.content), mode="r:gz")
+    r = urllib2.urlopen(URL % branch).read()
+    t = tarfile.TarFile.open(fileobj=io.BytesIO(r), mode="r:gz")
 
     # Root directory name.
     root = t.next().name.split("/")[0]

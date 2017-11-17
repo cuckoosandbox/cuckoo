@@ -6,6 +6,7 @@
 import os
 import setuptools
 import sys
+import traceback
 
 # Update the MANIFEST.in file to include the one monitor version that is
 # actively shipped for this distribution and exclude all the other monitors
@@ -63,7 +64,37 @@ install_requires = []
 if os.path.exists("/usr/bin/swig"):
     install_requires.append("m2crypto==0.24.0")
 
-setuptools.setup(
+def do_setup(**kwargs):
+    try:
+        setuptools.setup(**kwargs)
+    except (SystemExit, Exception) as e:
+        print "\x1b[31m"
+        print "The following error has occurred while trying to install Cuckoo!"
+        print "\x1b[0m"
+        print traceback.format_exc(),
+        print "\x1b[31m"
+        print "Make sure that you've installed all requirements for Cuckoo "
+        print "to be installed properly! Please refer to our documentation: "
+        print "https://cuckoo.sh/docs/installation/host/requirements.html"
+        print "\x1b[33m"
+        print "Once you have triple checked that all dependencies have been "
+        print "installed but Cuckoo still fails, please feel free to reach "
+        print "out to us on IRC / email / Github!"
+        print "\x1b[0m"
+
+        if isinstance(e, ValueError) and "jpeg is required" in e.message:
+            print "  This particular error may be resolved as follows:"
+            print "      sudo apt-get install libjpeg-dev"
+
+        if isinstance(e, ValueError) and "zlib is required" in e.message:
+            print "  This particular error may be resolved as follows:"
+            print "      sudo apt-get install zlib1g-dev"
+
+        if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
+            print "  This particular error *may* be resolved as follows:"
+            print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+
+do_setup(
     name="Cuckoo",
     version="2.0.0",
     author="Stichting Cuckoo Foundation",
@@ -100,28 +131,27 @@ setuptools.setup(
     install_requires=[
         "alembic==0.8.8",
         "androguard==3.0",
-        "beautifulsoup4==4.4.1",
+        "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
         "click==6.6",
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "elasticsearch==2.2.0",
+        "elasticsearch==5.3.0",
         "flask==0.10.1",
         "flask-sqlalchemy==2.1",
-        "httpreplay==0.1.19",
+        "httpreplay==0.2",
         "jinja2==2.8",
         "jsbeautifier==1.6.2",
-        "lxml==3.6.0",
         "oletools==0.42",
-        "peepdf==0.3.2",
+        "peepdf==0.3.4",
         "pefile2==1.2.11",
         "pillow==3.2",
         "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "sflock==0.2.5",
+        "sflock>=0.2.0, <0.3",
         "sqlalchemy==1.0.8",
         "wakeonlan==0.2.2",
     ] + install_requires,
@@ -142,6 +172,9 @@ setuptools.setup(
         ],
         "postgresql": [
             "psycopg2==2.6.2",
+        ],
+        "weasyprint": [
+            "weasyprint==0.36",
         ],
     },
     setup_requires=[

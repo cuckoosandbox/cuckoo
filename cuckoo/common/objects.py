@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import androguard
+import base64
 import binascii
 import hashlib
 import logging
@@ -11,22 +12,18 @@ import mmap
 import os
 import pefile
 import re
+import shutil
+import tempfile
+import zipfile
 
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.compat import magic
-from cuckoo.misc import cwd
 
 try:
     import pydeep
     HAVE_PYDEEP = True
 except ImportError:
     HAVE_PYDEEP = False
-
-try:
-    import yara
-    HAVE_YARA = True
-except ImportError:
-    HAVE_YARA = False
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +46,18 @@ URL_REGEX = (
     "(/[\\(\\)a-zA-Z0-9_:%?=/\\.-]*)?"
 )
 
+PUBPRIVKEY = (
+    "("
+    "(?:-----BEGIN PUBLIC KEY-----"
+    "[a-zA-Z0-9\\n\\+/]+"
+    "-----END PUBLIC KEY-----)"
+    "|"
+    "(?:-----BEGIN RSA PRIVATE KEY-----"
+    "[a-zA-Z0-9\\n\\+/]+"
+    "-----END RSA PRIVATE KEY-----)"
+    ")"
+)
+
 class Dictionary(dict):
     """Cuckoo custom dict."""
 
@@ -67,26 +76,18 @@ class URL:
 
 class File(object):
     """Basic file object class with all useful utilities."""
-
-    # To be substituted with a category.
-    YARA_RULEPATH = None
-
-    # static fields which indicate whether the user has been
-    # notified about missing dependencies already
-    notified_yara = False
-
     # Given that ssdeep hashes are not really used much in practice we're just
     # going to disable its warning by default for now.
     notified_pydeep = True
 
-    # The yara rules should not change during one session of processing tasks,
-    # thus we can cache them. If they are updated, one should restart Cuckoo
-    # or the processing tasks.
+    # The yara rules should not change during one Cuckoo run and as such we're
+    # caching 'em. This dictionary is filled during init_yara().
     yara_rules = {}
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, temporary=False):
         """@param file_path: file path."""
         self.file_path = file_path
+        self.temporary = temporary
 
         # these will be populated when first accessed
         self._file_data = None
@@ -96,9 +97,8 @@ class File(object):
         self._sha256 = None
         self._sha512 = None
 
-        # During class initialization cwd is not yet set.
-        if not File.YARA_RULEPATH:
-            File.YARA_RULEPATH = cwd("yara", "index_%s.yar")
+    def __del__(self):
+        self.temporary and os.unlink(self.file_path)
 
     def get_name(self):
         """Get file name.
@@ -308,87 +308,51 @@ class File(object):
 
         return "", ""
 
-    def _yara_encode_string(self, s):
-        # Beware, spaghetti code ahead.
-        try:
-            new = s.encode("utf-8")
-        except UnicodeDecodeError:
-            s = s.lstrip("uU").encode("hex").upper()
-            s = " ".join(s[i:i+2] for i in range(0, len(s), 2))
-            new = "{ %s }" % s
-
-        return new
-
-    def _yara_matches_177(self, matches):
-        """Extract matches from the Yara output for version 1.7.7."""
-        ret = []
-        for _, rule_matches in matches.items():
-            for match in rule_matches:
-                strings = set()
-
-                for s in match["strings"]:
-                    strings.add(self._yara_encode_string(s["data"]))
-
-                ret.append({
-                    "name": match["rule"],
-                    "meta": match["meta"],
-                    "strings": list(strings),
-                })
-
-        return ret
-
     def get_yara(self, category="binaries"):
         """Get Yara signatures matches.
         @return: matched Yara signatures.
         """
-        results = []
-
-        if not HAVE_YARA:
-            if not File.notified_yara:
-                File.notified_yara = True
-                log.warning("Unable to import yara (please compile from sources)")
-            return results
-
-        # Compile the Yara rules only the first time.
+        # This only happens if Yara is missing (which is reported at startup).
         if category not in File.yara_rules:
-            rulepath = self.YARA_RULEPATH % category
-            if not os.path.exists(rulepath):
-                log.warning("The specified rule file at %s doesn't exist, "
-                            "skip", rulepath)
-                return results
-
-            try:
-                File.yara_rules[category] = yara.compile(rulepath)
-            except:
-                log.exception("Error compiling the Yara rules.")
-                return
+            return []
 
         if not os.path.getsize(self.file_path):
-            return results
+            return []
 
-        try:
-            matches = File.yara_rules[category].match(self.file_path)
+        results = []
+        for match in File.yara_rules[category].match(self.file_path):
+            strings, offsets = set(), {}
+            for _, key, value in match.strings:
+                strings.add(base64.b64encode(value))
+                offsets[key.lstrip("$")] = []
 
-            if getattr(yara, "__version__", None) == "1.7.7":
-                return self._yara_matches_177(matches)
+            strings = sorted(strings)
+            for offset, key, value in match.strings:
+                offsets[key.lstrip("$")].append(
+                    (offset, strings.index(base64.b64encode(value)))
+                )
 
-            results = []
-
-            for match in matches:
-                strings = set()
-                for s in match.strings:
-                    strings.add(self._yara_encode_string(s[2]))
-
-                results.append({
-                    "name": match.rule,
-                    "meta": match.meta,
-                    "strings": list(strings),
-                })
-
-        except Exception as e:
-            log.exception("Unable to match Yara signatures: %s", e)
+            results.append({
+                "name": match.rule,
+                "meta": match.meta,
+                "strings": strings,
+                "offsets": offsets,
+            })
 
         return results
+
+    def mmap(self, fileno):
+        if hasattr(mmap, "PROT_READ"):
+            access = mmap.PROT_READ
+        elif hasattr(mmap, "ACCESS_READ"):
+            access = mmap.ACCESS_READ
+        else:
+            log.warning(
+                "Regexing through a file is not supported on your OS!"
+            )
+            return
+
+        return mmap.mmap(fileno, 0, access=access)
 
     def get_urls(self):
         """Extract all URLs embedded in this file through a simple regex."""
@@ -396,15 +360,19 @@ class File(object):
             return []
 
         # http://stackoverflow.com/a/454589
-        urls = set()
-        f = open(self.file_path, "rb")
-        m = mmap.mmap(f.fileno(), 0, access=mmap.PROT_READ)
-
-        for url in re.findall(URL_REGEX, m):
+        urls, f = set(), open(self.file_path, "rb")
+        for url in re.findall(URL_REGEX, self.mmap(f.fileno())):
             if not is_whitelisted_domain(url[1]):
                 urls.add("".join(url))
-
         return list(urls)
+
+    def get_keys(self):
+        """Get any embedded plaintext public and/or private keys."""
+        if not os.path.getsize(self.file_path):
+            return []
+
+        f = open(self.file_path, "rb")
+        return list(set(re.findall(PUBPRIVKEY, self.mmap(f.fileno()))))
 
     def get_all(self):
         """Get all information available.
@@ -424,3 +392,13 @@ class File(object):
         infos["yara"] = self.get_yara()
         infos["urls"] = self.get_urls()
         return infos
+
+class Archive(object):
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.z = zipfile.ZipFile(filepath)
+
+    def get_file(self, filename):
+        filepath = tempfile.mktemp()
+        shutil.copyfileobj(self.z.open(filename), open(filepath, "wb"))
+        return File(filepath, temporary=True)

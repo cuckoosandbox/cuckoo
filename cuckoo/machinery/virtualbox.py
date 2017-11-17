@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2011-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,8 +9,10 @@ import subprocess
 import time
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import (
-    CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError
+    CuckooCriticalError, CuckooMachineError, CuckooMachineSnapshotError,
+    CuckooMissingMachineError
 )
 from cuckoo.misc import Popen
 
@@ -38,9 +40,10 @@ class VirtualBox(Machinery):
 
         if not os.path.exists(self.options.virtualbox.path):
             raise CuckooCriticalError(
-                "VirtualBox VBoxManage not found at specified path \"%s\" "
-                "(as specified in virtualbox.conf)" %
-                self.options.virtualbox.path
+                "VirtualBox' VBoxManage not found at specified path \"%s\" "
+                "(as specified in virtualbox.conf). Did you properly install "
+                "VirtualBox and configure Cuckoo to use it?"
+                % self.options.virtualbox.path
             )
 
         if self.options.virtualbox.mode not in ("gui", "headless"):
@@ -53,33 +56,32 @@ class VirtualBox(Machinery):
 
         super(VirtualBox, self)._initialize_check()
 
-    def start(self, label, task):
-        """Start a virtual machine.
-        @param label: virtual machine name.
-        @param task: task object.
-        @raise CuckooMachineError: if unable to start.
-        """
-        log.debug("Starting vm %s" % label)
+        # Restore each virtual machine to its snapshot. This will crash early
+        # for users that don't have proper snapshots in-place, which is good.
+        # TODO This should be ported to all machinery engines.
+        machines = self._list()
+        for machine in self.machines():
+            if machine.label not in machines:
+                continue
 
-        if self._status(label) == self.RUNNING:
-            raise CuckooMachineError(
-                "Trying to start an already started vm %s" % label
-            )
+            self.restore(machine.label, machine)
 
-        machine = self.db.view_machine_by_label(label)
+    def restore(self, label, machine):
+        """Restore a VM to its snapshot."""
         args = [
             self.options.virtualbox.path, "snapshot", label
         ]
 
         if machine.snapshot:
             log.debug(
-                "Using snapshot %s for virtual machine %s",
-                machine.snapshot, label
+                "Restoring virtual machine %s to %s",
+                label, machine.snapshot
             )
             args.extend(["restore", machine.snapshot])
         else:
             log.debug(
-                "Using current snapshot for virtual machine %s", label
+                "Restoring virtual machine %s to its current snapshot",
+                label
             )
             args.append("restorecurrent")
 
@@ -94,8 +96,26 @@ class VirtualBox(Machinery):
         except OSError as e:
             raise CuckooMachineSnapshotError(
                 "VBoxManage failed trying to restore the snapshot of "
-                "machine: %s" % e
+                "machine '%s' (this most likely means there is no snapshot, "
+                "please refer to our documentation for more information on "
+                "how to setup a snapshot for your VM): %s" % (label, e)
             )
+
+    def start(self, label, task):
+        """Start a virtual machine.
+        @param label: virtual machine name.
+        @param task: task object.
+        @raise CuckooMachineError: if unable to start.
+        """
+        log.debug("Starting vm %s", label)
+
+        if self._status(label) == self.RUNNING:
+            raise CuckooMachineError(
+                "Trying to start an already started VM: %s" % label
+            )
+
+        machine = self.db.view_machine_by_label(label)
+        self.restore(label, machine)
 
         self._wait_status(label, self.SAVED)
 
@@ -164,12 +184,20 @@ class VirtualBox(Machinery):
         """
         log.debug("Stopping vm %s" % label)
 
-        if self._status(label) in [self.POWEROFF, self.ABORTED]:
+        status = self._status(label)
+
+        # The VM has already been restored, don't shut it down again. This
+        # appears to be a VirtualBox-specific state though, hence we handle
+        # it here rather than in Machinery._initialize_check().
+        if status == self.SAVED:
+            return
+
+        if status == self.POWEROFF or status == self.ABORTED:
             raise CuckooMachineError(
-                "Trying to stop an already stopped vm %s" % label
+                "Trying to stop an already stopped VM: %s" % label
             )
 
-        vm_state_timeout = int(self.options_globals.timeouts.vm_state)
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
 
         try:
             args = [
@@ -250,6 +278,13 @@ class VirtualBox(Machinery):
             output, err = proc.communicate()
 
             if proc.returncode != 0:
+                if "VBOX_E_OBJECT_NOT_FOUND" in err:
+                    raise CuckooMissingMachineError(
+                        "The virtual machine '%s' doesn't exist! Please "
+                        "create one or more Cuckoo analysis VMs and properly "
+                        "fill out the Cuckoo configuration!" % label
+                    )
+
                 # It's quite common for virtualbox crap utility to exit with:
                 # VBoxManage: error: Details: code E_ACCESSDENIED (0x80070005)
                 # So we just log to debug this.
@@ -279,10 +314,7 @@ class VirtualBox(Machinery):
         @param label: virtual machine name.
         @return: status string.
         """
-        log.debug("Getting status for %s" % label)
         status = self.vminfo(label, "VMState")
-        log.debug("Machine %s status %s" % (label, status))
-
         if status is False:
             status = self.ERROR
 

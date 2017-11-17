@@ -8,8 +8,17 @@ import subprocess
 import tempfile
 
 from cuckoo.auxiliary.sniffer import Sniffer
+from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import set_cwd, cwd, getuser, is_windows
+
+def test_init():
+    a = Auxiliary()
+    a.set_options({
+        "aux": "iliary",
+    })
+    assert a.options["aux"] == "iliary"
+    assert a.options.aux == "iliary"
 
 class BasePopen(object):
     pid = 0x4141

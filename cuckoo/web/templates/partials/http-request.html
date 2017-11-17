@@ -1,0 +1,54 @@
+<div class="network-display__request" data-protocol="{{ http.protocol }}" data-index="{{ forloop.counter0 }}">
+    <a class="network-display__request-summary" href="#">
+        <span class="method">{{ http.method }}</span>
+        <i class="fa fa-long-arrow-right"></i>
+        <span class="status-code--success">{{ http.status }}</span>
+        <span class="url">{{ http.protocol }}://{{http.host}}{{http.uri}}</span>
+        <i class="fa fa-chevron-right align-right"></i>
+    </a>
+    <section class="network-display__request-details">
+
+        <div class="detail-field-group">
+            <div class="detail-field">
+                <header class="detail-field__header"><i class="fa fa-long-arrow-right"></i> REQUEST</header>
+                <section class="detail-field__body">
+                    <div class="hidden removable" data-contents="request-headers">{{ http.request }}</div>
+                    <div class="hidden removable" data-draw="request-headers"></div>
+                </section>
+            </div>
+            <div class="detail-field">
+                <header class="detail-field__header"><i class="fa fa-long-arrow-left"></i> RESPONSE</header>
+                <section class="detail-field__body">
+                    <div class="hidden removable" data-contents="response-headers">{{ http.response }}</div>
+                    <div class="hidden removable" data-draw="response-headers"></div>
+                </section>
+            </div>
+        </div>
+
+        <div class="detail-field">
+            <header class="detail-field__header with-tabs">
+                <i class="fa fa-file-o"></i> BODY
+                <nav class="flex-tabs__tabs">
+                    <div class="flex-tabs__tab tab-display">
+                        <a href="display:request" class="btn btn-sm">request</a>
+                        <a href="display:response" class="btn btn-sm active">response</a>
+                    </div>
+                    <div class="flex-tabs__tab tab-output">
+                        <a href="output:plaintext" class="btn btn-sm">plaintext</a>
+                        <a href="output:hex" class="btn btn-sm active">hex</a>
+                    </div>
+                    <div class="flex-tabs__tab tab-mode">
+                        <a href="mode:16" class="btn btn-sm active">16 bytes</a>
+                        <a href="mode:32" class="btn btn-sm">32 bytes</a>
+                        <a href="mode:48" class="btn btn-sm">48 bytes</a>
+                        <a href="mode:64" class="btn btn-sm">64 bytes</a>
+                    </div>
+                </nav>
+            </header>
+            <section class="detail-field__body">
+                <pre data-draw="source"></pre>
+            </section>
+        </div>
+
+    </section>
+</div>

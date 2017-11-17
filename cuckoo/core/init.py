@@ -54,7 +54,9 @@ def write_cuckoo_conf(cfg=None):
 
             for entry in entries:
                 real_section = entry.get("__section__", section)
-                cfg[filename][real_section] = cfg[filename].get(section, {})
+                entries = cfg[filename].get(section, {})
+                entries.update(cfg[filename].get(real_section, {}))
+                cfg[filename][real_section] = entries
                 raw[filename][real_section] = {}
                 for key, value in entry.items():
                     if key == "__section__":
@@ -74,12 +76,12 @@ def write_cuckoo_conf(cfg=None):
                     )
 
                 if isinstance(sections["*"], (tuple, list)):
-                    section = sections["*"][0]
+                    section_types = sections["*"][0]
                 else:
-                    section = sections["*"]
+                    section_types = sections["*"]
 
                 raw[filename][entry] = {}
-                for key, value in section.items():
+                for key, value in section_types.items():
                     if key == "__section__":
                         continue
 
@@ -96,7 +98,7 @@ def write_cuckoo_conf(cfg=None):
 
     raw["config"] = _config
     for filename in os.listdir(cwd("cwd", "conf", private=True)):
-        template = jinja2.Environment().from_string(
+        template = jinja2.Template(
             open(cwd("cwd", "conf", filename, private=True), "rb").read()
         )
         open(cwd("conf", filename), "wb").write(

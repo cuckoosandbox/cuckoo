@@ -10,7 +10,7 @@ import time
 
 import xml.etree.ElementTree as ET
 
-from cuckoo.common.config import Config
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -52,7 +52,7 @@ class Auxiliary(object):
         self.guest_manager = guest_manager
 
     def set_options(self, options):
-        self.options = options
+        self.options = Dictionary(options)
 
     def start(self):
         raise NotImplementedError
@@ -69,10 +69,7 @@ class Machinery(object):
     LABEL = "label"
 
     def __init__(self):
-        self.module_name = ""
         self.options = None
-        self.options_globals = Config()
-        # Database pointer.
         self.db = Database()
 
         # Machine table is cleaned to be filled from configuration file
@@ -103,74 +100,47 @@ class Machinery(object):
         # Run initialization checks.
         self._initialize_check()
 
-    def _get_resultserver_port(self):
-        """Returns the ResultServer port."""
-        # Avoid import recursion issues by importing ResultServer here.
-        from cuckoo.core.resultserver import ResultServer
-        return ResultServer().port
-
     def _initialize(self, module_name):
         """Read configuration.
         @param module_name: module name.
         """
-        self.module_name = module_name
-        mmanager_opts = self.options.get(module_name)
+        machinery = self.options.get(module_name)
+        for vmname in machinery["machines"]:
+            options = self.options.get(vmname)
 
-        for machine_id in mmanager_opts["machines"]:
-            try:
-                machine_opts = self.options.get(machine_id)
-                machine = Dictionary()
-                machine.id = machine_id
-                machine.label = machine_opts[self.LABEL]
-                machine.platform = machine_opts["platform"]
-                machine.options = machine_opts.get("options", "")
-                machine.tags = machine_opts.get("tags")
-                machine.ip = machine_opts["ip"]
+            # If configured, use specific network interface for this
+            # machine, else use the default value.
+            if options.get("interface"):
+                interface = options["interface"]
+            else:
+                interface = machinery.get("interface")
 
-                # If configured, use specific network interface for this
-                # machine, else use the default value.
-                if machine_opts.get("interface"):
-                    machine.interface = machine_opts["interface"]
-                else:
-                    machine.interface = mmanager_opts.get("interface")
+            if options.get("resultserver_ip"):
+                ip = options["resultserver_ip"]
+            else:
+                ip = config("cuckoo:resultserver:ip")
 
-                # If configured, use specific snapshot name, else leave it
-                # empty and use default behaviour.
-                machine.snapshot = machine_opts.get("snapshot")
+            if options.get("resultserver_port"):
+                port = options["resultserver_port"]
+            else:
+                # The ResultServer port might have been dynamically changed,
+                # get it from the ResultServer singleton. Also avoid import
+                # recursion issues by importing ResultServer here.
+                from cuckoo.core.resultserver import ResultServer
+                port = ResultServer().port
 
-                # If configured, use specific resultserver IP and port,
-                # else use the default value.
-                opt_resultserver = self.options_globals.resultserver
-
-                # the resultserver port might have been dynamically changed
-                #  -> get the current one from the resultserver singleton
-                opt_resultserver.port = self._get_resultserver_port()
-
-                ip = machine_opts.get("resultserver_ip", opt_resultserver.ip)
-                port = machine_opts.get("resultserver_port", opt_resultserver.port)
-
-                machine.resultserver_ip = ip
-                machine.resultserver_port = port
-
-                # Strip parameters.
-                for key, value in machine.items():
-                    if value and isinstance(value, basestring):
-                        machine[key] = value.strip()
-
-                self.db.add_machine(name=machine.id,
-                                    label=machine.label,
-                                    ip=machine.ip,
-                                    platform=machine.platform,
-                                    options=machine.options,
-                                    tags=machine.tags,
-                                    interface=machine.interface,
-                                    snapshot=machine.snapshot,
-                                    resultserver_ip=ip,
-                                    resultserver_port=port)
-            except (AttributeError, CuckooOperationalError) as e:
-                log.warning("Configuration details about machine %s "
-                            "are missing: %s", machine_id, e)
-                continue
+            self.db.add_machine(
+                name=vmname,
+                label=options[self.LABEL],
+                ip=options.ip,
+                platform=options.platform,
+                options=options.get("options", ""),
+                tags=options.tags,
+                interface=interface,
+                snapshot=options.snapshot,
+                resultserver_ip=ip,
+                resultserver_port=port
+            )
 
     def _initialize_check(self):
         """Runs checks against virtualization software when a machine manager
@@ -197,15 +167,17 @@ class Machinery(object):
             try:
                 self.stop(machine.label)
             except CuckooMachineError as e:
-                msg = "Please update your configuration. Unable to shut " \
-                      "'{0}' down or find the machine in its proper state:" \
-                      " {1}".format(machine.label, e)
-                raise CuckooCriticalError(msg)
+                raise CuckooCriticalError(
+                    "Please update your configuration. Unable to shut '%s' "
+                    "down or find the machine in its proper state: %s" %
+                    (machine.label, e)
+                )
 
-        if not self.options_globals.timeouts.vm_state:
-            raise CuckooCriticalError("Virtual machine state change timeout "
-                                      "setting not found, please add it to "
-                                      "the config file.")
+        if not config("cuckoo:timeouts:vm_state"):
+            raise CuckooCriticalError(
+                "Virtual machine state change timeout has not been set "
+                "properly, please update it to be non-null."
+            )
 
     def machines(self):
         """List virtual machines.
@@ -309,7 +281,7 @@ class Machinery(object):
         while current not in states:
             log.debug("Waiting %i cuckooseconds for machine %s to switch "
                       "to status %s", waitme, label, states)
-            if waitme > int(self.options_globals.timeouts.vm_state):
+            if waitme > config("cuckoo:timeouts:vm_state"):
                 raise CuckooMachineError(
                     "Timeout hit while for machine %s to change status" % label
                 )
@@ -643,10 +615,10 @@ class Processing(object):
         pass
 
     def set_options(self, options):
-        """Set report options.
-        @param options: report options dict.
+        """Set processing options.
+        @param options: processing options dict.
         """
-        self.options = options
+        self.options = Dictionary(options)
 
     def set_task(self, task):
         """Add task information.
@@ -1118,6 +1090,14 @@ class Signature(object):
         mark.update(kwargs)
         self.marks.append(mark)
 
+    def mark_config(self, config):
+        """Mark configuration from this malware family."""
+        mark = {
+            "type": "config",
+            "config": config,
+        }
+        self.marks.append(mark)
+
     def mark(self, **kwargs):
         """Mark arbitrary data."""
         mark = {
@@ -1161,6 +1141,18 @@ class Signature(object):
         Can be used for cleanup of flags, re-activation of the signature, etc.
 
         @param process: dictionary describing this process
+        """
+
+    def on_yara(self, category, filepath, match):
+        """Called on YARA match.
+        @param category: yara match category
+        @param filepath: path to the file that matched
+        @param match: yara match information
+
+        The Yara match category can be one of the following.
+          extracted: an extracted PE image from a process memory dump
+          procmem: a process memory dump
+          dropped: a dropped file
         """
 
     def on_complete(self):
@@ -1212,7 +1204,7 @@ class Report(object):
         """Set report options.
         @param options: report options dict.
         """
-        self.options = options
+        self.options = Dictionary(options)
 
     def set_task(self, task):
         """Add task information.

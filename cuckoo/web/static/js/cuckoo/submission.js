@@ -24,6 +24,10 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// temporary fix for accessing DnDUpload from exterbal modules
+// as import doesn't work in the old js files
+window.DnDUpload = DnDUpload;
+
 var DEFAULT_ANALYSIS_CONFIG = {
 	container: null,
 	filetree: FileTree.DEFAULT_FILETREE_CONFIG,
@@ -172,12 +176,15 @@ var DEFAULT_UPLOADER_CONFIG = {
     target: null,
     endpoint: null,
     template: null,
+    ajax: true,
+    templateData: {},
     dragstart: function dragstart() {},
     dragend: function dragend() {},
     drop: function drop() {},
     error: function error() {},
     success: function success() {},
-    progress: function progress() {}
+    progress: function progress() {},
+    change: function change() {}
 };
 
 var Uploader = function () {
@@ -185,7 +192,23 @@ var Uploader = function () {
         _classCallCheck(this, Uploader);
 
         var _self = this;
-        this.options = $.extend(options, DEFAULT_UPLOADER_CONFIG);
+
+        this.options = $.extend({
+
+            target: null,
+            endpoint: null,
+            template: null,
+            ajax: true,
+            templateData: {},
+            dragstart: function dragstart() {},
+            dragend: function dragend() {},
+            drop: function drop() {},
+            error: function error() {},
+            success: function success() {},
+            progress: function progress() {},
+            change: function change() {}
+
+        }, options);
 
         this.endpoint = this.options.endpoint;
         this._success_callback = this.options.success;
@@ -195,6 +218,7 @@ var Uploader = function () {
         this._dragend_callback = this.options.dragend;
         this._drop_callback = this.options.drop;
         this._error_callback = this.options.error;
+        this._change_callback = this.options.change;
 
         this._selectors = {
             "uid": "dndupload_" + Uploader.generateUUID(),
@@ -216,17 +240,21 @@ var Uploader = function () {
     _createClass(Uploader, [{
         key: "draw",
         value: function draw() {
+
             $(this._selectors["target"]).empty();
 
-            var html = "\n            <div class=\"dndupload\" id=\"" + this._selectors["uid"] + "\">\n                <form id=\"uploader\" action=\"/submit/api/presubmit\" method=\"POST\" enctype=\"multipart/form-data\">\n                    <div id=\"container\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"43\" viewBox=\"0 0 50 43\">\n                            <path d=\"M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z\"/>\n                        </svg>\n    \n                        <input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\">\n                        <label for=\"file\" id=\"info\">\n                            <strong>Choose files</strong>\n                            <span class=\"box__dragndrop\"> or drag them here</span>.\n                        </label>\n    \n                        <button type=\"submit\" class=\"holder_button\">Upload</button>\n    \n                        <progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n                    </div>\n                </form>\n            </div>\n\n            <p id=\"filereader\">File API &amp; FileReader API not supported</p>\n            <p id=\"formdata\">XHR2's FormData is not supported</p>\n            <p id=\"progress\">XHR2's upload progress isn't supported</p>\n        ";
+            var html = "\n            <div class=\"dndupload\" id=\"" + this._selectors["uid"] + "\">\n                <form id=\"uploader\" action=\"/submit/api/presubmit\" method=\"POST\" enctype=\"multipart/form-data\">\n                    <div id=\"container\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"43\" viewBox=\"0 0 50 43\">\n                            <path d=\"M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z\"/>\n                        </svg>\n    \n                        <input type=\"file\" name=\"files[]\" id=\"file\" class=\"holder_input\" data-multiple-caption=\"{count} files selected\" multiple=\"\">\n                        <label for=\"file\" id=\"info\">\n                            <strong>Choose files</strong>\n                            <span class=\"box__dragndrop\"> or drag them here</span>.\n                        </label>\n    \n                        <button type=\"submit\" class=\"holder_button\">Upload</button>\n    \n                        <progress id=\"uploadprogress\" min=\"0\" max=\"100\" value=\"0\">0</progress>\n                    </div>\n                </form>\n            </div>\n        ";
 
             if (this.options.template) {
-
                 this._usesTemplate = true;
 
-                var html = this.options.template({
-                    uid: this._selectors["uid"]
-                });
+                this.options.templateData.uid = this._selectors["uid"];
+
+                if (!this.options.templateData['inputName']) {
+                    this.options.templateData.inputName = 'files';
+                }
+
+                var html = this.options.template(this.options.templateData);
             }
 
             $(this._selectors["target"]).append(html);
@@ -248,6 +276,7 @@ var Uploader = function () {
             // _self._selectors to avoid global namespace pollution.
             _self._selectors["holder"] = holder;
             _self._selectors["progress"] = document.querySelector(_self._selectors["target"]).querySelector("progress#uploadprogress");
+
             _self._selectors["upload"] = holder.querySelector("upload");
             _self._selectors["form"] = holder.querySelector("form#uploader");
 
@@ -267,25 +296,45 @@ var Uploader = function () {
             };
 
             "filereader formdata progress".split(" ").forEach(function (api) {
+
                 if (_self._selectors["tests"][api] === false) {
+                    if (!_self._selectors["support"][api]) return;
                     _self._selectors["support"][api].className = "fail";
                 } else {
+                    if (!_self._selectors["support"][api]) return;
                     _self._selectors["support"][api].className = "hidden";
                 }
             });
 
             // listen for changes on the input tag. If a user choose a file manually; fire the
             // form submit programmatically
+
             _self._selectors["holder"].querySelector('input[type="file"]').addEventListener("change", function (e) {
-                var event = document.createEvent("HTMLEvents");
-                event.initEvent("submit", true, false);
-                _self._selectors["form"].dispatchEvent(event);
+
+                // console.log(_self);
+                // return;
+
+                if (_self.options.ajax) {
+
+                    var event = document.createEvent("HTMLEvents");
+                    event.initEvent("submit", true, false);
+                    _self._selectors["form"].dispatchEvent(event);
+                    _self._change_callback(_self, holder);
+                } else {
+
+                    $(_self._selectors["form"]).submit();
+                }
             });
 
             // do our own thing when the form is submitted
             _self._selectors["form"].addEventListener('submit', function (e) {
+
                 e.preventDefault();
-                this._process_files();
+
+                if (_self.options.ajax) {
+                    e.preventDefault();
+                    this._process_files();
+                }
             }.bind(this));
 
             // test for drag&drop
@@ -317,14 +366,33 @@ var Uploader = function () {
                 // process the files on drop
                 holder.querySelector("form#uploader").ondrop = function (e) {
                     this.className = "";
-                    e.preventDefault();
-                    _self._drop_callback(_self, holder);
-                    _self._process_files(e.dataTransfer.files);
+
+                    if (_self.options.ajax) {
+
+                        e.preventDefault();
+                        var dropCallbackOutput = _self._drop_callback(_self, holder);
+
+                        // if this callback returns 'false', don't process the file directly. This 
+                        // controls auto-uploading from the configuration. Developer can now
+                        // embed an upload-trigger himself, if wanted.
+                        if (dropCallbackOutput === false) return;
+
+                        _self._process_files(e.dataTransfer.files);
+                    } else {
+
+                        if (e.dataTransfer.files) {
+                            _self._selectors["holder"].querySelector('input[type="file"]').files = e.dataTransfer.files;
+                        }
+                    }
                 };
             } else {
+
                 this._selectors["upload"].className = "hidden";
                 this._selectors["upload"].querySelector("input").onchange = function () {
-                    _self._process_files(this.files);
+
+                    if (_self.options.ajax) {
+                        _self._process_files(this.files);
+                    }
                 };
             }
 
@@ -572,6 +640,11 @@ function createSelectable(item, name, text) {
 	_$l.setAttribute('data-index', item.filetree.index);
 	_$c.setAttribute('value', item.filetree.index);
 
+	// deselect duplicates if they're selected.
+	if (item.duplicate) {
+		item.selected = false;
+	}
+
 	if (item.selected) {
 		_$c.setAttribute('checked', true);
 	}
@@ -719,7 +792,7 @@ function bubbleItemParentsUp(item, cb) {
 
 	function iterate(item) {
 
-		cb(item);
+		if (cb) cb(item);
 
 		if (item && item.parent) {
 			iterate(item.parent);
@@ -769,6 +842,7 @@ function parentSelectedState(item, checked) {
 			$(item.filetree.el).find('label:first').addClass('has-selected-child');
 		});
 	} else {
+
 		bubbleItemParentsUp(item.parent, function (item) {
 
 			var has_selected_child = false;
@@ -932,6 +1006,7 @@ var FileTree = function () {
 			};
 
 			this.construct();
+
 			if (this.options.events.ready) this.options.events.ready.call(this);
 			if (this.options.config.autoExpand) this.interactionHandlers.expandAllFolders.call(this);
 		}
@@ -948,15 +1023,15 @@ var FileTree = function () {
 			var html = build.call(this, this.data.children, document.createElement('ul'));
 			this.el.appendChild(html);
 
+			this.connectListeners();
+			this.update();
+			this.selectionView();
+
 			this.each(function (item) {
 				if (item.parent) {
 					parentSelectedState(item, item.selected);
 				}
 			});
-
-			this.connectListeners();
-			this.update();
-			this.selectionView();
 		}
 
 		// binds event (click) listeners
@@ -1594,6 +1669,7 @@ var SimpleSelect = function (_UserInputController) {
 		var _this = _possibleConstructorReturn(this, (SimpleSelect.__proto__ || Object.getPrototypeOf(SimpleSelect)).call(this, config));
 
 		_this.options = config.options;
+
 		_this.initialise();
 		return _this;
 	}
@@ -1646,6 +1722,7 @@ var TopSelect = function (_UserInputController2) {
 		_this2.options = _this2.config.options;
 		_this2.extra_select = _this2.config.extra_select;
 		_this2.units = _this2.config.units;
+
 		_this2.initialise();
 		return _this2;
 	}
@@ -1670,6 +1747,7 @@ var TopSelect = function (_UserInputController2) {
 			}
 
 			if (this.default) {
+
 				this.options.forEach(function (opt) {
 
 					if (opt.value == self.default) {
@@ -1678,6 +1756,11 @@ var TopSelect = function (_UserInputController2) {
 						snapped = true;
 					}
 				});
+
+				if (!snapped) {
+					self.setValue(self.default);
+					$(self.view.html).find('.manual-input > input').val(self.getValue());
+				}
 			}
 
 			// controller configures the view
@@ -2425,8 +2508,6 @@ $(function () {
 
 							item.per_file_options = $.extend(new Object(), default_analysis_options);
 							item.changed_properties = [];
-
-							console.log(item.per_file_options);
 
 							// machine guess: package options
 							// - also preselects the package field if available
