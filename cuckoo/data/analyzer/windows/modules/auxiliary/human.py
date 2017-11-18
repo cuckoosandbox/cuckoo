@@ -131,8 +131,8 @@ def foreach_window(hwnd, lparam):
             else:
                 log.error("No specific handler found for %s", classname.value.lower())
 
-        else:
-            USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
+        
+        USER32.EnumChildWindows(hwnd, EnumChildProc(foreach_child), 0)
     return True
 
 def move_mouse():
@@ -190,7 +190,7 @@ class Human(threading.Thread, Auxiliary):
             self.do_move_mouse = True
             self.do_click_mouse = True
             self.do_click_buttons = True
-            self.do_change_windows = True
+            self.do_change_windows = False
 
         # Per-feature enable or disable flag.
         if "human.move_mouse" in self.options:
@@ -242,8 +242,16 @@ class Human(threading.Thread, Auxiliary):
         """
           Handle IE11's "View Downloads" window
         """
+        text = create_unicode_buffer(1024)
+        USER32.GetWindowTextW(frameHandle, text, 1024)
+
+        if text.value.strip().lower() != "view downloads - internet explorer":
+            log.warn("Unexpected window title: %s" % (text.value))
+            return
+
         log.debug("Setting %s as foreground window", frameHandle)
         USER32.SetForegroundWindow(frameHandle)
+
         # Press RIGHT + ENTER to run the file
         log.debug("Sending RIGHT + ENTER...")
         USER32.keybd_event(VK_RIGHT, 0x4D, KEYEVENTF_EXTENDEDKEY | 0, 0)
