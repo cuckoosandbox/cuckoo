@@ -21,6 +21,8 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name="analysis/compare/both"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),
+    # TODO Get rid of this magic routing again as it's only complicating the URL routing.
+    url(r"^(?P<task_id>\d+)/(?P<page>summary)$", AnalysisRoutes.detail, name="analysis"),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name="analysis"),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name="api"),
     url(r"^latest/$", views.latest_report),

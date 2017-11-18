@@ -1,0 +1,76 @@
+/* Copyright (C) 2015-2017 Cuckoo Foundation.
+ # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
+ # See the file 'docs/LICENSE' for copying permission.
+ #
+ # Based on the Systemtap "strace.stp" example, adapted to our needs
+ */
+
+/* configuration options; set these with stap -G */
+global timestamp = 1     /* -Gtimestamp=0 means don't print a syscall timestamp */
+
+global thread_argstr%
+global thread_scname%
+global thread_time%
+
+global syscalls_nonreturn
+probe begin  {
+    /* list those syscalls that never .return */
+    syscalls_nonreturn["exit"] = 1
+    syscalls_nonreturn["exit_group"] = 1
+}
+
+probe nd_syscall.* {
+    if (pid() == target()) next         # skip our own helper process
+    if (!target_set_pid(pid())) next    # skip unrelated processes
+
+    t = tid()
+
+    /* last syscall that could've returned didn't */
+    if (thread_argstr[t] != "")
+        report(thread_scname[t], thread_argstr[t], "")
+
+    thread_argstr[t] = argstr
+    thread_scname[t] = name
+    if (timestamp)
+        thread_time[t] = gettimeofday_us()
+
+    if (name in syscalls_nonreturn)
+        report(name, argstr, "")
+}
+
+probe nd_syscall.*.return {
+    if (pid() == target()) next         # skip our own helper process
+    if (!target_set_pid(pid())) next    # skip unrelated processes
+
+    report(name, thread_argstr[tid()], retstr)
+}
+
+function report(syscall_name, syscall_argstr, syscall_retstr) {
+    t = tid()
+
+    if (timestamp) {
+        then = thread_time[t]
+
+        if (timestamp)
+            prefix = sprintf("%s.%06d ", ctime(then / 1000000), then % 1000000)
+
+        delete thread_time[t]
+    }
+
+    /* add a thread-id string in lots of cases, except if
+       stap strace.stp -c SINGLE_THREADED_CMD */
+    if (tid() != target()) {
+        prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
+    }
+
+    syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
+    syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
+
+    if (syscall_retstr == "")
+        printf("%s%s(%s)\n", prefix, syscall_name, syscall_argstr)
+    else
+        printf("%s%s(%s) = %s\n", prefix, syscall_name, syscall_argstr, syscall_retstr)
+
+    delete thread_argstr[t]
+    delete thread_scname[t]
+}

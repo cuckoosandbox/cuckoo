@@ -94,6 +94,14 @@ class IE(Package):
                 "CheckExeSignatures": "no",
             },
         ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Associations",
+            {
+                # Disable "Publisher could not be verified"
+                "LowRiskFileTypes": ".exe;.bat"
+            }
+        ]
     ]
 
     def setup_proxy(self, proxy_host):
@@ -117,7 +125,7 @@ class IE(Package):
 
         # If it's a HTML file, force an extension, or otherwise Internet
         # Explorer will open it as a text file or something else non-html.
-        if os.path.exists(target) and not target.endswith((".htm", ".html")):
+        if os.path.exists(target) and not target.endswith((".htm", ".html", ".mht", ".mhtml")):
             os.rename(target, target + ".html")
             target += ".html"
             log.info("Submitted file is missing extension, adding .html")

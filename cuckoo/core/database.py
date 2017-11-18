@@ -69,6 +69,16 @@ class JsonType(TypeDecorator):
     def process_result_value(self, value, dialect):
         return json.loads(value)
 
+class JsonTypeList255(TypeDecorator):
+    """Custom JSON type."""
+    impl = String(255)
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        return json.loads(value) if value else []
+
 class Machine(Base):
     """Configured virtual machines to be used as guests."""
     __tablename__ = "machines"
@@ -80,7 +90,7 @@ class Machine(Base):
     platform = Column(String(255), nullable=False)
     tags = relationship("Tag", secondary=machines_tags, single_parent=True,
                         backref="machine")
-    options = Column(String(255), nullable=True)
+    options = Column(JsonTypeList255(), nullable=True)
     interface = Column(String(255), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
@@ -245,17 +255,15 @@ class Sample(Base):
         return json.dumps(self.to_dict())
 
     def __init__(self, md5, crc32, sha1, sha256, sha512,
-                 file_size, file_type=None, ssdeep=None):
+                 file_size, file_type, ssdeep):
         self.md5 = md5
         self.sha1 = sha1
         self.crc32 = crc32
         self.sha256 = sha256
         self.sha512 = sha512
         self.file_size = file_size
-        if file_type:
-            self.file_type = file_type
-        if ssdeep:
-            self.ssdeep = ssdeep
+        self.file_type = file_type
+        self.ssdeep = ssdeep
 
 class Error(Base):
     """Analysis errors."""
@@ -564,6 +572,11 @@ class Database(object):
         @param resultserver_ip: IP address of the Result Server
         @param resultserver_port: port of the Result Server
         """
+        if options is None:
+            options = []
+        if not isinstance(options, (tuple, list)):
+            options = options.split()
+
         session = self.Session()
         machine = Machine(name=name,
                           label=label,
@@ -1411,7 +1424,7 @@ class Database(object):
             ).filter(Task.id.in_(task_ids)).order_by(Task.id).all()
         except SQLAlchemyError as e:
             log.debug("Database error viewing tasks: {0}".format(e))
-            return None
+            return []
         else:
             for task in tasks:
                 session.expunge(task)

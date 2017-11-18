@@ -53,13 +53,15 @@ Following is the list of existing packages in alphabetical order:
 
 * ``ie``: used to analyze **Internet Explorer**'s behavior when opening the given URL or HTML file.
 
-* ``js``: used to run and analyze **Javascript** files (e.g., those found in attachments of emails).
-
 * ``jar``: used to analyze **Java JAR** containers.
 
     **Options**:
 
     * ``class``: specify the path of the class to be executed. If none is specified, Cuckoo will try to execute the main function specified in the Jar's MANIFEST file.
+
+* ``js``: used to run and analyze **Javascript** files (e.g., those found in attachments of emails).
+
+* ``hta``: used to run and analyze **HTML Application** files.
 
 * ``msi``: used to run and analyze **MSI windows installer**.
 

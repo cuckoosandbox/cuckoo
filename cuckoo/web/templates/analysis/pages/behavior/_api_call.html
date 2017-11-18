@@ -1,45 +1,46 @@
 {% load analysis_tags %}
+<td class="date-api">
+  <p>{{call.api}}</p>
+  <time>{{call.time}}</time>
+  {% if pid %}
+    <a href="#" class="call-link" data-pid="{{pid}}" data-cid="{{cid}}">
+      <span class="glyphicon glyphicon-circle-arrow-right"></span>
+    </a>
+  {% endif %}
+</td>
 <td>
-    {{call.time}}<br/>
-    <strong>{{call.api}}</strong>
-    {% if pid %}
+  {% for key, value in call.arguments.items %}
+    {% if value|is_dict %}
+      {% for k, v in value.items %}
+        <span class="grey">{{key}}.{{k}}:</span>
+        <span class="mono">{{v}}</span>
         <br />
-        <a href="#" class="call-link" data-pid="{{pid}}" data-cid="{{cid}}">
-            <span class="glyphicon glyphicon-circle-arrow-right"></span>
-        </a>
+      {% endfor %}
+    {% else %}
+      <span class="grey">{{key}}:</span>
+      {% if key in call.raw %}
+        {% for v in value|ensurelist %}
+          <pre>{{v}}</pre>
+        {% endfor %}
+      {% else %}
+        {% for v in value|ensurelist %}
+          <span class="mono">{{v}}</span>
+        {% endfor %}
+      {% endif %}
+      {% if key in call.flags %}
+        <span class="grey">({{ call.flags|get_item:key|ensurelist|join:", " }})</span>
+      {% endif %}
+      <br />
     {% endif %}
-</td>
-<td style="word-wrap: break-word;">
-    {% for key, value in call.arguments.items %}
-        {% if value|is_dict %}
-            {% for k, v in value.items %}
-                <span class="gray">{{key}}.{{k}}:</span>
-                <span class="mono">{{v}}</span>
-                <br />
-            {% endfor %}
-        {% else %}
-            <span class="gray">{{key}}:</span>
-            {% if key in call.raw %}
-                {% for v in value|ensurelist %}
-                    <pre>{{v}}</pre>
-                {% endfor %}
-            {% else %}
-                {% for v in value|ensurelist %}
-                    <span class="mono">{{v}}</span>
-                {% endfor %}
-            {% endif %}
-            {% if key in call.flags %}
-                <span class="gray">({{ call.flags|get_item:key|ensurelist|join:", " }})</span>
-            {% endif %}
-            <br />
-        {% endif %}
-    {% endfor %}
+  {% endfor %}
 </td>
 <td>
-    {% if call.status %}
+    {% if call.status == true %}
         success
-    {% else %}
+    {% elif call.status == false %}
         failed
+    {% elif call.status %}
+        {{ call.status }}
     {% endif %}
 </td>
 <td><span class="mono">{{call.return_value}}</span></td>

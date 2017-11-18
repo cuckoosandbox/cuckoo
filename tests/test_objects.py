@@ -9,10 +9,12 @@ import re
 import tempfile
 
 from cuckoo.common.files import Files
-from cuckoo.common.objects import Dictionary, File, Archive, URL_REGEX
-from cuckoo.core.startup import init_yara, HAVE_YARA
+from cuckoo.common.objects import (
+    Dictionary, File, Archive, Buffer, YaraMatch, URL_REGEX
+)
+from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, cwd
 from cuckoo.processing.static import PortableExecutable
 
 class TestDictionary(object):
@@ -112,12 +114,10 @@ def test_m2crypto():
     assert sig0["organization"] == "Microsoft Corporation"
     assert sig0["sha1"] == "9e95c625d81b2ba9c72fd70275c3699613af61e3"
 
-@pytest.mark.skipif(not HAVE_YARA, reason="Yara has not been installed")
 def test_yara_offsets():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
-
-    init_yara(True)
+    init_yara()
 
     buf = (
         # The SSEXY payload as per vmdetect.yar
@@ -148,6 +148,52 @@ def test_yara_offsets():
             "Zg9wAABmD9sAAAAAAGYP2wAAAAAAZg/v",
         ],
     }]
+
+def test_yara_no_description():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    open(cwd("yara", "binaries", "empty.yara"), "wb").write("""
+        rule EmptyRule {
+            condition:
+                1
+        }
+        rule DescrRule {
+            meta:
+                description = "this is description"
+            condition:
+                1
+        }
+    """)
+    init_yara()
+    a, b = File(Files.temp_put("hello")).get_yara()
+    assert a["name"] == "EmptyRule"
+    assert a["meta"] == {
+        "description": "(no description)",
+    }
+    assert b["name"] == "DescrRule"
+    assert b["meta"] == {
+        "description": "this is description",
+    }
+
+def test_yara_externals():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    open(cwd("yara", "office", "external.yara"), "wb").write("""
+        rule ExternalRule {
+            condition:
+                filename matches /document.xml/
+        }
+    """)
+    init_yara()
+
+    assert not File(Files.temp_put("")).get_yara("office")
+    assert not File(Files.temp_put("hello")).get_yara("office", {
+        "filename": "hello.jpg",
+    })
+    a, = File(Files.temp_put("hello")).get_yara("office", {
+        "filename": "document.xml",
+    })
+    assert a["name"] == "ExternalRule"
 
 def test_get_urls():
     filepath = Files.temp_put("""
@@ -182,6 +228,20 @@ class TestArchive(object):
         del f
         assert not os.path.exists(filepath)
 
+class TestBuffer(object):
+    def test_yara_quick(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        buf = (
+            # The SSEXY payload as per vmdetect.yar
+            "66 0F 70 ?? ?? 66 0F DB ?? ?? ?? ?? "
+            "?? 66 0F DB ?? ?? ?? ?? ?? 66 0F EF "
+        )
+        contents = "A"*64 + buf.replace("??", "00").replace(" ", "").decode("hex")
+        assert Buffer(contents).get_yara_quick("binaries") == ["vmdetect"]
+
 class TestPubPrivKeys(object):
     def test_no_keys(self):
         assert File("tests/files/pdf0.pdf").get_keys() == []
@@ -215,3 +275,45 @@ class TestPubPrivKeys(object):
             "HELLOWORLD\n"
             "-----END RSA PRIVATE KEY-----"
         ]
+
+class TestYaraMatch(object):
+    def test_basics(self):
+        ym = YaraMatch({
+            "name": "foo",
+            "meta": {},
+            "offsets": {
+                "a": [
+                    (1, 0),
+                ],
+            },
+            "strings": [
+                "bar".encode("base64"),
+            ],
+        })
+        assert ym.string("a", 0) == "bar"
+        assert ym.string("a") == "bar"
+
+    def test_multiple(self):
+        ym = YaraMatch({
+            "name": "foo",
+            "meta": {},
+            "offsets": {
+                "a": [
+                    (1, 0),
+                    (2, 2),
+                ],
+                "b": [
+                    (3, 1),
+                ],
+            },
+            "strings": [
+                "bar".encode("base64"),
+                "baz".encode("base64"),
+                "foo".encode("base64"),
+            ],
+        })
+        assert ym.string("a", 0) == "bar"
+        assert ym.string("a", 1) == "foo"
+        assert ym.string("b", 0) == "baz"
+        assert ym.strings("a") == ["bar", "foo"]
+        assert ym.strings("b") == ["baz"]

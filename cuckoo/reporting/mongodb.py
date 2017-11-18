@@ -31,7 +31,7 @@ class MongoDB(Report):
         cls.fs = mongo.grid
 
         # Set MongoDB schema version.
-        if "cuckoo_schema" in mongo.db.collection_names():
+        if "cuckoo_schema" in mongo.collection_names:
             version = mongo.db.cuckoo_schema.find_one()["version"]
             if version != cls.SCHEMA_VERSION:
                 raise CuckooReportError(
@@ -155,6 +155,19 @@ class MongoDB(Report):
                 new_dropped.append(new_drop)
 
         report["dropped"] = new_dropped
+
+        new_extracted = []
+        if "extracted" in report:
+            for extracted in report["extracted"]:
+                new_extr = dict(extracted)
+                extr = File(extracted[extracted["category"]])
+                if extr.valid():
+                    extr_id = self.store_file(extr)
+                    new_extr["object_id"] = extr_id
+
+                new_extracted.append(new_extr)
+
+        report["extracted"] = new_extracted
 
         # Add screenshots.
         report["shots"] = []

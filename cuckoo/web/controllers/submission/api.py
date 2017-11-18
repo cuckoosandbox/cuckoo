@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.config import config
 from cuckoo.core.submit import SubmitManager
-from cuckoo.web.bin.utils import api_post, JsonSerialize, json_error_response
+from cuckoo.web.utils import api_post, JsonSerialize, json_error_response
 
 submit_manager = SubmitManager()
 
@@ -37,7 +37,6 @@ def defaults():
             "vpns": vpns,
         },
         "options": {
-            "enable-services": False,
             "enforce-timeout": False,
             "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
             "enable-injection": True,

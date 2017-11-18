@@ -1,0 +1,46 @@
+import mock from './sample-data/example-reply.json';
+
+let appurl = () => `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+// automatic debug detection
+const _debug = window.location.href.indexOf('#debug') > -1;
+
+/*
+  Global configuration parameters
+ */
+const config = {
+  API_HOST: appurl(),
+  API_BASE: 'api/stats',
+  API_MOCK_INCLUDE: {
+    nodes: mock.nodes
+  },
+  DEFAULTS: {
+    PERIOD: 'week',
+    DATE: false,
+    TIME: false,
+    SYNC_MODE: true
+  }
+}
+
+if(_debug) {
+
+  config.DEFAULTS = {
+    PERIOD: 'week',
+    DATE: '2017-05-01',
+    TIME: false,
+    SYNC_MODE: false
+  }
+
+   console.log('%c=========================================== Cuckoo Boiler Room: ============================================', 'color: blue');
+  console.info('%cYou run this application currently in debug mode. To view in production mode, remove `#debug` from the url.', 'color: blue');
+   console.log('%c============================================================================================================', 'color: blue');
+}
+
+/*
+  Export utility functions
+ */
+export {
+  appurl,
+  config,
+  _debug as debug
+};

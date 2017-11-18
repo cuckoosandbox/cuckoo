@@ -1,0 +1,39 @@
+.app-message {
+	position: fixed;
+	bottom: 25px;
+	left: 25px;
+
+	width: 400px;
+	height: auto;
+	background-color: #222;
+	border-radius: 4px;
+	color: #fff;
+	padding: 15px;
+
+	z-index: 1000;
+
+	& > h5 {
+		margin-top: 0;
+		.fa {
+			margin-right: 10px;
+		}
+	}
+
+	& > p {
+		margin-bottom: 15px;
+
+		a {
+			color: #6297F8;
+			font-weight: 700;
+		}
+	}
+
+	@include cuckoo-theme('cyborg') {
+		border: 2px solid #999;
+	}
+
+	@include cuckoo-theme('night') {
+		background-color: #000;
+		border: 2px solid #999;
+	}
+}

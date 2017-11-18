@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="charset" content="utf-8" />
+    <link href="/static/css/main.css" rel="stylesheet" />
+    <title>Cuckoo Distributed</title>
+  </head>
+  <body>
+
+    <!-- main application wrapper -->
+    <main role="application">
+
+      <!-- application header -->
+      <header id="app-header" role="banner">
+        <a href="/" class="logo" title="Click our awesome logo to refresh this page">
+          <img src="/static/images/cuckoo_inverse.png" alt="Cuckoo Sandbox" />
+        </a>
+        <div role="heading">
+          <h1>Boiler Room <small role="complementary">Cuckoo Sandbox performance monitor v1.1</small></h1>
+        </div>
+        <div class="right">
+          {% include 'partials/widget-toolbar.html' %}
+          <label class="sync-toggle" for="sync-widgets">
+            <input type="checkbox" name="sync-widgets" id="sync-widgets" />
+            <span></span>
+          </label>
+        </div>
+      </header>
+
+      <!-- main application body  -->
+      <section role="main">
+
+        <!-- grid: jumbo block for big items that needs attention -->
+        <!-- <div class="grid-stack jumbo-grid" role="grid" id="jumbo-grid"></div> -->
+
+        <!-- grid: sub-grid with all other kinds of charts -->
+        <div class="grid-stack widget-grid" role="grid" id="grid"></div>
+
+      </section>
+
+      <template id="widget--tasks">{% include 'widgets/tasks.html' %}</template>
+      <template id="widget--running-vms">{% include 'widgets/running_vms.html' %}</template>
+      <template id="widget--cpu-usage">{% include 'widgets/cpu-usage.html' %}</template>
+      <template id="widget--disk-usage">{% include 'widgets/disk-usage.html' %}</template>
+      <template id="widget--memory-usage">{% include 'widgets/memory-usage.html' %}</template>
+      <template id="widget--amount-prio-queued">{% include 'widgets/amount-prio-queued.html' %}</template>
+      <template id="widget--active-processes">{% include 'widgets/active-processes.html' %}</template>
+
+    </main>
+
+    <!-- temporary workaround: direct node_modules includes (routed with Flask) -->
+    <script src="/static/js/lib.js"></script>
+    <script src="/static/js/main.js"></script>
+  </body>
+</html>

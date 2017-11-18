@@ -24,7 +24,7 @@ from cuckoo.core.database import (
 )
 from cuckoo.core.feedback import CuckooFeedback
 from cuckoo.misc import cwd
-from cuckoo.web.bin.utils import (
+from cuckoo.web.utils import (
     api_post, api_get, file_response, json_error_response,
     json_fatal_response, normalize_task
 )
@@ -337,7 +337,7 @@ class AnalysisApi(object):
                 target = row["target"]["url"]
                 md5 = "-"
             elif category == "archive":
-                target = row["target"]["human"]
+                target = row.get("target", {}).get("human", "-")
                 md5 = "-"
             else:
                 target = None

@@ -1,0 +1,72 @@
+import { transformators, dateLabelFormat } from '../lib/StatsAPI';
+import { fabricate, colors, initializeToolbar } from '../lib/DraggableZ';
+
+// fabricate a widget
+const widget = fabricate('cpu_usage', {
+
+  template: $("#widget--cpu-usage"),
+  elementId: $("#widget--cpu-usage").attr('id'),
+
+  widgetLayout: {
+    width: 4,
+    height: 5,
+    x: 4,
+    y: 0
+  },
+
+  chartHeight: 200,
+
+  // chart styles
+  dataLayout: {
+    borderWidth: 1,
+    pointRadius: 1
+  },
+
+  // chart configuration
+  chart: {
+    type: 'line',
+    options: {
+      responsive: true,
+      color: colors,
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true,
+            suggestedMax: 100,
+            callback: function(label, index, labels) {
+              return label + '%';
+            }
+          }
+        }],
+        xAxes: [{
+          ticks: {
+            type: 'time',
+            maxTicksLimit: 10
+          }
+        }]
+      }
+    }
+  },
+
+  // api configuration
+  api: {
+    params: {
+      include: 'cpu_usage'
+    },
+    transform: transformators.nodeResponseBreakdown
+  }
+
+}).on('render', function() {
+
+  initializeToolbar(this);
+
+});
+
+export default widget;

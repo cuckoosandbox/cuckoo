@@ -2,7 +2,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import dpkt
+import hashlib
 import mock
 import json
 import os.path
@@ -11,16 +13,24 @@ import shutil
 import tempfile
 
 from cuckoo.common.abstracts import Processing
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import (
+    CuckooProcessingError, CuckooOperationalError
+)
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
+from cuckoo.core.plugins import RunProcessing
+from cuckoo.core.startup import init_console_logging, init_yara
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
-from cuckoo.processing.behavior import ProcessTree, BehaviorAnalysis
+from cuckoo.processing.behavior import (
+    ProcessTree, ExtractScripts, BehaviorAnalysis
+)
 from cuckoo.processing.debug import Debug
 from cuckoo.processing.droidmon import Droidmon
-from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis
+from cuckoo.processing.extracted import Extracted
+from cuckoo.processing.memory import Memory, VolatilityManager, s as obj_s
+from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
@@ -28,6 +38,12 @@ from cuckoo.processing.static import Static, WindowsScriptFile
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
+
+try:
+    from cuckoo.processing.memory import obj as vol_obj, exc as vol_exc
+    HAVE_VOLATILITY = True
+except ImportError:
+    HAVE_VOLATILITY = False
 
 db = Database()
 
@@ -42,6 +58,8 @@ class TestProcessing(object):
 
     def test_debug(self):
         set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_console_logging()
 
         db.connect(dsn="sqlite:///:memory:")
         db.add_url("http://google.com/")
@@ -69,6 +87,12 @@ class TestProcessing(object):
         db.add_error("err", 1, "thisisanaction")
         results = d.run()
         assert results["action"] == ["vmrouting", "thisisanaction"]
+        assert len(results["errors"]) == 4
+
+        db.add_error("", 1, "onlyaction")
+        results = d.run()
+        assert len(results["action"]) == 3
+        assert len(results["errors"]) == 4
 
     def test_droidmon_url(self):
         d = Droidmon()
@@ -128,6 +152,21 @@ class TestProcessing(object):
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
+    def test_phishing0_pdf(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "phishing0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/phishing0.pdf"
+        assert "googleattachmentsigned" in s.run()["pdf"][0]["urls"][0]
+
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
         set_cwd(tempfile.mkdtemp())
@@ -174,11 +213,34 @@ class TestProcessing(object):
             "title": "This is a test PDF file",
             "urls": [],
             "version": 1,
+            "openaction": None,
+            "attachments": [],
         }
+
+    def test_pdf_attach(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf_attach.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf_attach.pdf"
+        obj, = s.run()["pdf"]
+        assert len(obj["javascript"]) == 1
+        assert "exportDataObject" in obj["javascript"][0]["orig_code"]
+        assert len(obj["attachments"]) == 1
+        assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
+        assert "kkkllsslll" in obj["openaction"]
 
     def test_office(self):
         s = Static()
         s.set_task({
+            "id": 1,
             "category": "file",
             "package": "doc",
             "target": "createproc1.docm",
@@ -188,6 +250,37 @@ class TestProcessing(object):
         assert "ThisDocument" in r["macros"][0]["orig_code"]
         assert "Sub AutoOpen" in r["macros"][1]["orig_code"]
         assert 'process.Create("notepad.exe"' in r["macros"][1]["orig_code"]
+
+    def test_lnk1(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "generic",
+            "target": "lnk_1.lnk",
+        })
+        s.file_path = "tests/files/lnk_1.lnk"
+        obj = s.run()["lnk"]
+        assert obj["basepath"] == "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+        assert obj["flags"] == {
+            "cmdline": True, "description": True, "icon": True,
+            "references": True, "relapath": True, "shellidlist": True,
+            "workingdir": False,
+        }
+        assert obj["description"] == "windows photo viewer"
+        assert "shell32.dll" in obj["icon"]
+        assert "powershell.exe" in obj["relapath"]
+        assert "-NoProfile" in obj["cmdline"]
+        assert "eABlACIA" in obj["cmdline"]
+
+    def test_lnk2(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "generic",
+            "target": "lnk_2.lnk",
+        })
+        s.file_path = "tests/files/lnk_2.lnk"
+        assert "elf" not in s.run()
 
     def test_procmon(self):
         p = Procmon()
@@ -312,7 +405,23 @@ class TestProcessing(object):
         assert os.path.exists(shotpath)
         os.unlink(shotpath)
 
+    @mock.patch("cuckoo.processing.screenshots.PIL.Image")
+    def test_screenshot_truncated(self, p):
+        s = Screenshots()
+        s.shots_path = os.path.join(
+            "tests", "files", "sample_analysis_storage", "shots"
+        )
+        s.set_options({})
+        p.open.return_value.save.side_effect = IOError(
+            "image file is truncated (42 bytes not processed)"
+        )
+        assert s.run() == []
+
     def test_targetinfo(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
         ti = TargetInfo()
         ti.file_path = __file__
         ti.set_task({
@@ -429,6 +538,173 @@ class TestProcessing(object):
             v.run()
         e.match("Unsupported task category")
 
+@pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
+class TestVolatility(object):
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_no_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+        m = Memory()
+        m.memory_path = None
+        assert m.run() is None
+        p.error.assert_called_once()
+        assert "dump not found" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_invalid_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+        m = Memory()
+        m.memory_path = "notafile"
+        assert m.run() is None
+        p.error.assert_called_once()
+        assert "dump not found" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.log")
+    def test_empty_mempath(self, p):
+        set_cwd(tempfile.mkdtemp())
+        m = Memory()
+        m.memory_path = Files.temp_put("")
+        assert m.run() is None
+        p.error.assert_called_once()
+        assert "dump empty" in p.error.call_args_list[0][0][0]
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_global_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({})
+        m.run()
+        p.assert_called_once_with(filepath, "profile0")
+
+    @mock.patch("cuckoo.processing.memory.VolatilityManager")
+    def test_vm_osprofile(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "basic": {
+                    "guest_profile": "profile0",
+                },
+            },
+        })
+        filepath = Files.temp_named_put("notempty", "memory.dmp")
+        m = Memory()
+        m.set_path(os.path.dirname(filepath))
+        m.set_machine({
+            "osprofile": "profile1",
+        })
+        m.run()
+        p.assert_called_once_with(filepath, "profile1")
+
+    def test_empty_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, None).run()
+        e.match("no OS profile has been defined")
+
+    def test_invalid_profile(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "invalid_profile").run()
+        e.match("does not exist!")
+
+    @mock.patch("volatility.utils.load_as")
+    @mock.patch("volatility.plugins.filescan.PSScan")
+    def test_wrong_profile(self, p, q):
+        q.side_effect = vol_exc.AddrSpaceError()
+        q.side_effect.append_reason(
+            "hello", "No suitable address space mapping found"
+        )
+        p.return_value.calculate.return_value = []
+        with pytest.raises(CuckooOperationalError) as e:
+            VolatilityManager(None, "WinXPSP2x86").run()
+        e.match("An incorrect OS has been specified")
+
+    @mock.patch("volatility.utils.load_as")
+    def test_plugin_enabled(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "memory": {
+                "pslist": {
+                    "enabled": True,
+                },
+                "psxview": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        p.return_value = 12345
+        m = VolatilityManager(None, "WinXPSP2x86")
+        assert m.vol.addr_space == 12345
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is True
+        assert m.enabled("netscan", ["vista", "win7"]) is False
+
+        m = VolatilityManager(None, "Win7SP1x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is True
+
+        m = VolatilityManager(None, "Win10x64")
+        assert m.enabled("pslist", []) is True
+        assert m.enabled("psxview", []) is False
+        assert m.enabled("sockscan", ["winxp"]) is False
+        assert m.enabled("netscan", ["vista", "win7"]) is False
+
+    def test_s(self):
+        assert obj_s(1) == "1"
+        assert obj_s("foo") == "foo"
+        assert obj_s(vol_obj.NoneObject()) is None
+
+class TestProcessingMachineInfo(object):
+    def test_machine_info_empty(self):
+        set_cwd(tempfile.mkdtemp())
+        rp = RunProcessing({
+            "id": 1,
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {}
+
+    def test_machine_info_cuckoo1(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo1",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine["name"] == "cuckoo1"
+        assert rp.machine["label"] == "cuckoo1"
+        assert rp.machine["ip"] == "192.168.56.101"
+
+    def test_machine_info_cuckoo2(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+
+        rp = RunProcessing({
+            "id": 1,
+            "guest": {
+                "manager": "VirtualBox",
+                "name": "cuckoo2",
+            },
+        })
+        rp.populate_machine_info()
+        assert rp.machine == {
+            "name": "cuckoo2",
+        }
+
 class TestBehavior(object):
     def test_process_tree_regular(self):
         pt = ProcessTree(None)
@@ -467,7 +743,7 @@ class TestBehavior(object):
     def test_process_tree_pid_reuse(self):
         pt = ProcessTree(None)
 
-        # Parent PID of the initial malicious process (pid=2624) is later on
+        # Parent PID of the initial malicious process (pid=2104) is later on
         # created again, confusing our earlier code and therefore not
         # displaying any of the malicious processes in our Web Interface.
         l = [
@@ -507,6 +783,9 @@ class TestBehavior(object):
 
         ba = BehaviorAnalysis()
         ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
 
         mkdir(cwd(analysis=1))
         mkdir(cwd("logs", analysis=1))
@@ -524,9 +803,161 @@ class TestBehavior(object):
             cwd("logs", "2.txt", analysis=1),
         ]
 
+    def test_extract_scripts(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        mkdir(cwd(analysis=1))
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        es = ExtractScripts(ba)
+        es.handle_event({
+            "command_line": "cmd.exe /c ping 1.2.3.4",
+            "first_seen": 1,
+            "pid": 1234,
+        })
+        es.handle_event({
+            "command_line": (
+                "powershell.exe -e "
+                "ZQBjAGgAbwAgACIAUgBlAGMAdQByAHMAaQB2AGUAIgA="
+            ),
+            "first_seen": 2,
+            "pid": 1235,
+        })
+        assert es.run() is None
+
+        e = Extracted()
+        e.set_task(Dictionary({
+            "id": 1,
+        }))
+        out = e.run()
+        assert out == [{
+            "category": "script",
+            "first_seen": 1,
+            "pid": 1234,
+            "program": "cmd",
+            "script": cwd("extracted", "0.bat", analysis=1),
+            "yara": [],
+        }, {
+            "category": "script",
+            "first_seen": 2,
+            "pid": 1235,
+            "program": "powershell",
+            "script": cwd("extracted", "1.ps1", analysis=1),
+            "yara": [],
+        }]
+        assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
+        assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+
+    def test_stap_log(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        mkdir(cwd(analysis=1))
+        mkdir(cwd("logs", analysis=1))
+        shutil.copy(
+            "tests/files/log_full.stap", cwd("logs", "all.stap", analysis=1)
+        )
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        assert ba.run() == {
+            "generic": [{
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "process_path": None,
+                "summary": {},
+            }, {
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
+                "pid": 821,
+                "ppid": 820,
+                "process_name": "bash",
+                "process_path": None,
+                "summary": {},
+            }, {
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                "pid": 822,
+                "ppid": 821,
+                "process_name": "ls",
+                "process_path": None,
+                "summary": {},
+            }],
+            "processes": [{
+                "calls": [],
+                "command_line": "/bin/sh /tmp/execve.sh",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "type": "process"
+            }, {
+                "calls": [],
+                "command_line": (
+                    "/bin/bash -c python -c 'import subprocess; "
+                    "subprocess.call([\"/bin/ls\", \"/hax\"])'"
+                ),
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
+                "pid": 821,
+                "ppid": 820,
+                "process_name": "bash",
+                "type": "process"
+            }, {
+                "calls": [],
+                "command_line": "/bin/ls /hax",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                "pid": 822,
+                "ppid": 821,
+                "process_name": "ls",
+                "type": "process"
+            }],
+            "processtree": [{
+                "children": [{
+                    "children": [{
+                        "children": [],
+                        "command_line": "/bin/ls /hax",
+                        "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
+                        "pid": 822,
+                        "ppid": 821,
+                        "process_name": "ls",
+                        "track": True
+                    }],
+                    "command_line": (
+                        "/bin/bash -c python -c 'import subprocess; "
+                        "subprocess.call([\"/bin/ls\", \"/hax\"])'"
+                    ),
+                    "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
+                    "pid": 821,
+                    "ppid": 820,
+                    "process_name": "bash",
+                    "track": True
+                }],
+                "command_line": "/bin/sh /tmp/execve.sh",
+                "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
+                "pid": 820,
+                "ppid": 819,
+                "process_name": "sh",
+                "track": True
+            }],
+        }
+
 class TestPcap(object):
     @classmethod
     def setup_class(cls):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
         cls.pcap = Pcap("tests/files/pcap/mixed-traffic.pcap", {}).run()
 
     def test_dns_server_list(self):
@@ -745,6 +1176,42 @@ class TestPcapAdditional(object):
         na.run()
         assert os.path.exists(cwd("dump_sorted.pcap", analysis=1))
 
+    def test_duplicate_dns_requests(self):
+        results = Pcap(
+            "tests/files/pcap/duplicate-dns-requests.pcap", {}
+        ).run()
+        assert len(results["dns"]) == 1
+        assert results["dns"][0] == {
+            "type": "A",
+            "request": "hanxi88.f3322.net",
+            "answers": [{
+                "data": "192.168.3.253",
+                "type": "A"
+            }],
+        }
+
+    @mock.patch("cuckoo.processing.network.log")
+    def test_empty_pcap(self, p):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "processing": {
+                    "sort_pcap": True,
+                },
+            },
+        })
+
+        mkdir(cwd(analysis=1))
+        shutil.copy(
+            "tests/files/pcap/empty.pcap", cwd("dump.pcap", analysis=1)
+        )
+
+        na = NetworkAnalysis()
+        na.set_path(cwd(analysis=1))
+        na.set_options({})
+        na.run()
+        p.warning.assert_not_called()
+
 class TestPcap2(object):
     def test_smtp_ex(self):
         obj = Pcap2(
@@ -778,6 +1245,41 @@ class TestPcap2(object):
             "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
         ).run()
         assert len(obj["http_ex"]) == 1
+
+@mock.patch("os.remove")
+def test_sort_pcap_rm_temp(p):
+    filepath = tempfile.mktemp()
+    sort_pcap("tests/files/pcap/smtp.pcap", filepath)
+    p.assert_called_once()
+    assert p.call_args[0][0].startswith(tempfile.gettempdir())
+
+def test_sort_pcap():
+    f = lambda x: os.path.join("tests", "files", "pcap", x)
+    h = lambda x: hashlib.sha1(open(x, "rb").read()).hexdigest()
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("smtp.pcap"), filepath)
+    assert h(filepath) == "c99b74eaca15d792049e8f75a4bfe6c1c416c26b"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("duplicate-dns-requests.pcap"), filepath)
+    assert h(filepath) == "4859334accbee12858621cca39564fdbce9ae605"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("mixed-traffic.pcap"), filepath)
+    assert h(filepath) == "8d92880f9f356d5bdfd04e24541f614f275b02e0"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("not-http.pcap"), filepath)
+    assert h(filepath) == "340e6c442619de912253d956b499e428164e8cdd"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("status-code.pcap"), filepath)
+    assert h(filepath) == "106dc235ef82ff844b7025339c2713aad752037e"
+
+    filepath = tempfile.mktemp()
+    sort_pcap(f("used_dns_server.pcap"), filepath)
+    assert h(filepath) == "782b766b99998fd8cbbe400b7c419abfe645b50d"
 
 def test_parse_cmdline():
     rb = RebootReconstructor()

@@ -4,13 +4,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
+import hashlib
+import logging
 import os
-import sys
+import pkgutil
 import socket
 import struct
-import pkgutil
-import logging
-import hashlib
+import sys
 import threading
 import traceback
 import urllib
@@ -21,9 +21,9 @@ import zipfile
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import SHUTDOWN_MUTEX
+from lib.common.decide import dump_memory
 from lib.common.defines import KERNEL32
-from lib.common.exceptions import CuckooError, CuckooPackageError
-from lib.common.exceptions import CuckooDisableModule
+from lib.common.exceptions import CuckooError, CuckooDisableModule
 from lib.common.hashing import hash_file
 from lib.common.rand import random_string
 from lib.common.results import upload_to_host
@@ -63,7 +63,7 @@ class Files(object):
         if filepath.lower() not in self.files:
             log.info(
                 "Added new file to list with pid %s and path %s",
-                pid, filepath
+                pid, filepath.encode("utf8")
             )
             self.files[filepath.lower()] = []
             self.files_orig[filepath.lower()] = filepath
@@ -73,7 +73,7 @@ class Files(object):
     def dump_file(self, filepath):
         """Dump a file to the host."""
         if not os.path.isfile(filepath):
-            log.warning("File at path \"%r\" does not exist, skip.", filepath)
+            log.warning("File at path %r does not exist, skip.", filepath)
             return False
 
         # Check whether we've already dumped this file - in that case skip it.
@@ -312,9 +312,11 @@ class CommandPipeHandler(object):
         self.analyzer.files.add_file(data.decode("utf8"), self.pid)
 
     def _handle_file_del(self, data):
-        """Notification of a file being removed - we have to dump it before
-        it's being removed."""
-        self.analyzer.files.delete_file(data.decode("utf8"), self.pid)
+        """Notification of a file being removed (if it exists) - we have to
+        dump it before it's being removed."""
+        filepath = data.decode("utf8")
+        if os.path.exists(filepath):
+            self.analyzer.files.delete_file(filepath, self.pid)
 
     def _handle_file_move(self, data):
         """A file is being moved - track these changes."""
@@ -335,7 +337,7 @@ class CommandPipeHandler(object):
             return
 
         if self.analyzer.config.options.get("procmemdump"):
-            Process(pid=int(data)).dump_memory()
+            dump_memory(int(data))
 
     def _handle_dumpmem(self, data):
         """Dump the memory of a process as it is right now."""
@@ -343,7 +345,7 @@ class CommandPipeHandler(object):
             log.warning("Received DUMPMEM command with an incorrect argument.")
             return
 
-        Process(pid=int(data)).dump_memory()
+        dump_memory(int(data))
 
     def _handle_dumpreqs(self, data):
         if not data.isdigit():
@@ -434,6 +436,13 @@ class Analyzer(object):
 
         self.reboot = []
 
+    def get_pipe_path(self, name):
+        """Returns \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
+        version = sys.getwindowsversion()
+        if version.major == 5 and version.minor == 1:
+            return "\\\\.\\PIPE\\%s" % name
+        return "\\??\\PIPE\\%s" % name
+
     def prepare(self):
         """Prepare env for analysis."""
         # Get SeDebugPrivilege for the Python process. It will be needed in
@@ -459,13 +468,12 @@ class Analyzer(object):
         self.default_dll = self.config.options.get("dll")
 
         # If a pipe name has not set, then generate a random one.
-        if "pipe" in self.config.options:
-            self.config.pipe = "\\??\\PIPE\\%s" % self.config.options["pipe"]
-        else:
-            self.config.pipe = "\\??\\PIPE\\%s" % random_string(16, 32)
+        self.config.pipe = self.get_pipe_path(
+            self.config.options.get("pipe", random_string(16, 32))
+        )
 
         # Generate a random name for the logging pipe server.
-        self.config.logpipe = "\\??\\PIPE\\%s" % random_string(16, 32)
+        self.config.logpipe = self.get_pipe_path(random_string(16, 32))
 
         # Initialize and start the Command Handler pipe server. This is going
         # to be used for communicating with the monitored processes.
@@ -634,6 +642,9 @@ class Analyzer(object):
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
 
+        # Initialize zer0m0n with our compiled Yara rules.
+        zer0m0n.yarald("bin/rules.yarac")
+
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         pids = self.package.start(self.target)
@@ -675,6 +686,9 @@ class Analyzer(object):
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
                 if pid_check:
+                    # We also track the PIDs provided by zer0m0n.
+                    self.process_list.add_pids(zer0m0n.getpids())
+
                     for pid in self.process_list.pids:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)

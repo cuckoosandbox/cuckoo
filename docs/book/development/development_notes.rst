@@ -19,26 +19,18 @@ milestones in time.
 Release Versioning
 ==================
 
-Cuckoo releases are named using three numbers separated by dots, such as 1.2.3,
-where the first number is the release, the second number is the major version,
-the third number is the bugfix version.
-The testing stage from git ends with "-beta" and development stage with "-dev".
-
-    .. warning::
-
-        If you are using a "beta" or "dev" stage, please consider that it's not
-        meant to be an official release, therefore we don't guarantee its functioning
-        and we don't generally provide support.
-        If you think you encountered a bug there, make sure that the nature of the
-        problem is not related to your own misconfiguration and collect all the details
-        to be notified to our developers. Make sure to specify which exact version you
-        are using, eventually with your current git commit id.
+At the moment we utilize three types of releases:
+* 1.2.3, an official release, preferably accompanied by a blogpost
+* 1.2.4a1, an alpha release that showcases functionality that will be present
+  in the upcoming release
+* 1.2.3.1, a hotfix release, meant to fix critical issues, usually found in
+  the latest official release
 
 Ticketing system
 ================
 
-To submit bug reports or feature requests, please use GitHub's `Issue`_ tracking
-system.
+To submit bug reports or feature requests, please use GitHub's `Issue`_
+tracking system.
 
 .. _`Issue`: https://github.com/cuckoosandbox/cuckoo/issues
 

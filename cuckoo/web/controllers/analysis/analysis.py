@@ -2,14 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import collections
-import os
 import pymongo
 
 from django.http import Http404
 
 from cuckoo.common.mongo import mongo
-from cuckoo.core.database import Database, TASK_PENDING
+from cuckoo.core.database import Database
 
 db = Database()
 

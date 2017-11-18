@@ -250,7 +250,7 @@ $(function() {
 
     var simplifier;
 
-    if($("#toggle-simplified").length) { 
+    if($("#toggle-simplified").length) {
         simplifier = window.simplifier = new SummarySimplifier($("#toggle-simplified"));
     }
 
@@ -270,4 +270,4 @@ $(function() {
         }
     }
 
-}); 
+});

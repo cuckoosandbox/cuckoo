@@ -305,15 +305,22 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
 **POST /tasks/create/submit**
 
-Adds one or more files and/or files embedded in archives to the list of
-pending tasks. Returns the submit ID as well as the task IDs of the newly
-created task(s).
+Adds one or more files and/or files embedded in archives *or* a newline
+separated list of URLs/hashes to the list of pending tasks. Returns the
+submit ID as well as the task IDs of the newly created task(s).
 
 **Example request**.
 
 .. code-block:: bash
 
+    # Submit two executables.
     curl http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
+
+    # Submit http://google.com
+    curl http://localhost:8090/tasks/create/submit -F strings=google.com
+
+    # Submit http://google.com & http://facebook.com
+    curl http://localhost:8090/tasks/create/submit -F strings=$'google.com\nfacebook.com'
 
 **Example request using Python**.
 
@@ -321,6 +328,7 @@ created task(s).
 
     import requests
 
+    # Submit one or more files.
     r = requests.post("http://localhost:8090/tasks/create/submit", files=[
         ("files", open("1.exe", "rb")),
         ("files", open("2.exe", "rb")),
@@ -334,7 +342,16 @@ created task(s).
 
     # Add your code to error checking on "errors".
 
-**Example response**.
+    # Submit one or more URLs or hashes.
+    urls = [
+        "google.com", "facebook.com", "cuckoosandbox.org",
+    ]
+    r = requests.post(
+        "http://localhost:8090/tasks/create/submit",
+        data={"strings": "\n".join(urls)}
+    )
+
+**Example response** from the executable submission.
 
 .. code-block:: json
 
@@ -347,7 +364,8 @@ created task(s).
 **Form parameters**:
 
 * ``file`` *(optional)* - backwards compatibility with naming scheme for :ref:`tasks_create_file`
-* ``files`` *(required)* - sample(s) to inspect and add to our pending queue
+* ``files`` *(optional)* - sample(s) to inspect and add to our pending queue
+* ``strings`` *(optional)* - newline separated list of URLs and/or hashes (to be obtained using your VirusTotal API key)
 * ``timeout`` *(optional)* *(int)* - analysis timeout (in seconds)
 * ``priority`` *(optional)* *(int)* - priority to assign to the task (1-3)
 * ``options`` *(optional)* - options to pass to the analysis package

@@ -5,13 +5,12 @@
 import io
 import json
 import os.path
-import shutil
 import tempfile
 import time
 import werkzeug
 
 from cuckoo.apps import api
-from cuckoo.common.files import Folders, Files
+from cuckoo.common.files import Files, temppath
 from cuckoo.core.database import Database, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd
@@ -52,6 +51,12 @@ class TestAPI(object):
         assert len(r["tasks"]) == 2
         assert r["tasks"][0]["id"] == 2
         assert r["tasks"][1]["id"] == 3
+
+    def test_list_tasks_unicode(self):
+        assert self.create_task(u"\u202e.jpg") == 1
+        r = json.loads(self.app.get("/tasks/list").data)
+        assert len(r["tasks"]) == 1
+        assert r["tasks"][0]["target"].endswith(u"\u202e.jpg")
 
     def test_create_task(self):
         assert self.create_task() == 1
@@ -291,6 +296,28 @@ class TestAPI(object):
 
     def test_exit(self):
         assert self.app.get("/exit").status_code == 403
+
+    def test_create_file_abs(self):
+        filepath = os.path.join(temppath(), "foobar.txt")
+        r = self.app.post("/tasks/create/file", data={
+            "file": werkzeug.FileStorage(io.BytesIO("foobar"), filepath),
+        })
+        t = db.view_task(json.loads(r.data)["task_id"])
+        assert open(t.target, "rb").read() == "foobar"
+        assert t.target != filepath
+        assert t.target.endswith("foobar.txt")
+
+    def test_create_submit_abs(self):
+        filepath = os.path.join(temppath(), "foobar.bat")
+        r = self.app.post("/tasks/create/submit", data={
+            "file": werkzeug.FileStorage(io.BytesIO("foobar"), filepath),
+        })
+        task_ids = json.loads(r.data)["task_ids"]
+        assert len(task_ids) == 1
+        t = db.view_task(task_ids[0])
+        assert open(t.target, "rb").read() == "foobar"
+        assert t.target != filepath
+        assert t.target.endswith("foobar.bat")
 
     def create_task(self, filename="a.js", content="eval('alert(1)')"):
         r = self.app.post("/tasks/create/file", data={

@@ -1,0 +1,214 @@
+/*
+  SVGLoader 0.1
+
+  * dependencies: jQuery
+
+  - finds all occurences of `[data-svg-src]`
+  - tries to load that svg
+    - if sucessfull, injects that svg code after the placeholder
+    - if unsuccessfull, handles that with caution and allows a custom callback
+      for when it's very wishable to handle that error on the frontend (such as
+      a respectable substitution fallback or whatever)
+  - respects some configurables:
+
+    - width: the width of the svg
+      { width: Number } OR `<data-svg-w />`
+
+    - height: the height of the svg
+      { height: Number } OR `<data-svg-h />`
+
+    - clickable: if the svg should be wrapped in an <a> tag
+      { clickable: Boolean }
+
+    - class: additional css class
+      { class: String }]
+
+    - can be run multiple times for different use cases that uses different configurations
+    - is a chainable utility with optional callbacks for each step in the program:
+      SVGLoader.load().loaded().done().failed()
+
+  ### it still should:
+
+  - detect live browser support for SVG and allow for a fallback for this browser,
+    so that can be handled automatically. but not important for now.
+
+  usage:
+
+    ``` /main.js
+
+    import SVGLoader from './lib/SVGLoader';
+
+    SVGLoader.loadPlaceholders('[data-svg-src]', {
+      width: 16,
+      height: 16,
+      clickable: false,
+      class: 'my-class'
+    }).then(result => {
+      // any loaded single svg is passed here as jQuery object
+    }).done(results => {
+      // all loaded svg's are passed here as jQuery iterable
+    }).failed(err => {
+      // any errors for svg requests can be processed here
+    });
+
+    ```
+
+ */
+
+const _defaults = {
+  width: 16,
+  height: 16,
+  clickable: false,
+  class: false
+}
+
+// cache utilities
+const _cached = [];
+let _inCache = (path) => _cached.filter(item => item.path === path);
+let _cache = (path, content) => {
+  if(_inCache(path).length === 0) {
+    _cached.push({path:path,content:content})
+  }
+}
+
+// syntactical pleasure: noop is an empty function :D
+const noop = new Function();
+
+// populates the svg, any rendering specific stuff
+// is done here
+function populate(result, options) {
+
+  let width  = result.placeholder.attr('data-svg-w') || options.width;
+  let height = result.placeholder.attr('data-svg-h') || options.height;
+
+  result.svg.attr({
+    width: width,
+    height: height
+  });
+
+  result.placeholder.after(result.svg);
+
+  // if these are 'buttons' (in the context way, they could be part of some
+  // interaction), wrap these in an <a> tag.
+  if(options.clickable) {
+    result.svg.wrap('<a />');
+  }
+
+  // add a class if given in the configuration
+  if(options.class) {
+    result.svg.addClass(options.class);
+  }
+
+  result.placeholder.remove();
+  return result.svg;
+}
+
+// load path with a promise
+function load(path, placeholder) {
+  return new Promise((resolve, reject) => {
+
+    let cachedPath = _inCache(path);
+
+    if(cachedPath.length) {
+      resolve({
+        svg: cachedPath[0].content,
+        placeholder: $(placeholder),
+        path: path
+      });
+      return;
+    }
+
+    $.get(path).done(function(response) {
+
+      let data = {
+        svg: $(response).find('svg'),
+        placeholder: $(placeholder),
+        path: path
+      };
+      _cache(data.path, data.svg);
+      resolve(data);
+
+    }).fail(function(err, xhr) {
+      reject({
+        err: err,
+        xhr: xhr,
+        path: path,
+        placeholder: placeholder
+      });
+    });
+  });
+}
+
+/*
+  Utility for fetching SVG's
+ */
+class SVGLoader {
+
+  static loadPlaceholders(el, config = {}) {
+
+    let options  = $.extend(_defaults, config);
+    let promises = [];
+    let loaded   = [];
+    let selector;
+
+    if(!(el instanceof jQuery)) {
+      selector = $(el);
+    } else {
+      selector = el;
+    }
+
+    let chain = {
+      _success: noop,
+      _failed: noop,
+      _done: noop
+    }
+
+    // preflight all results
+    selector.each((i, placeholder) => {
+      let src = $(placeholder).data('svgSrc');
+      promises.push(load(src, placeholder));
+    });
+
+    // load + parse and fire the chained callbacks
+    Promise.all(promises).then(results => {
+      for(var r in results) {
+        let parsed = populate(results[r], options)
+        loaded.push(parsed);
+        chain._success(parsed);
+        _cache(results[r].path, parsed);
+      }
+      chain._done(loaded);
+    }).catch(err => {
+      chain._failed(err);
+    });
+
+    // callback chain for the actions:
+    // `loaded`: 1 svg is done loading
+    // `failed`: 1 svg failed loading
+    // `done`: all svg's have done loading
+    let chainable = {
+      loaded: fn => {
+        chain._success = fn;
+        return chainable;
+      },
+      failed: fn => {
+        chain._failed = fn;
+        return chainable;
+      },
+      done: fn => {
+        chain._done = fn;
+        return chainable;
+      }
+    }
+
+    return chainable;
+
+  }
+
+}
+
+// export the class when requested as `import SVGLoader`
+export default SVGLoader;
+
+// export meta properties on the SVGLoader namespace
+export { _defaults, _cached };

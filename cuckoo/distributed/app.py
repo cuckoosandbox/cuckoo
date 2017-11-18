@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2015 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,9 +9,14 @@ import sys
 from cuckoo.distributed.db import db, AlembicVersion
 from cuckoo.distributed.misc import settings, init_settings
 from cuckoo.distributed.views import blueprints
+from cuckoo.misc import cwd
 
 def create_app():
-    app = flask.Flask("Distributed Cuckoo")
+    app = flask.Flask(
+        "Distributed Cuckoo",
+        template_folder=cwd("..", "distributed", "templates", private=True),
+        static_folder=cwd("..", "distributed", "static", private=True),
+    )
 
     init_settings()
     app.config.from_object(settings)

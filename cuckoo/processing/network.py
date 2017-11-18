@@ -1,14 +1,17 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import collections
 import dpkt
 import hashlib
+import heapq
 import httpreplay
 import httpreplay.cut
-import logging
+import itertools
 import json
+import logging
 import os
 import re
 import socket
@@ -19,24 +22,18 @@ import urlparse
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import config
 from cuckoo.common.dns import resolve
+from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.misc import cwd
 
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
 
-# Imports for the batch sort.
-# http://stackoverflow.com/questions/10665925/how-to-sort-huge-files-with-python
-# http://code.activestate.com/recipes/576755/
-import heapq
-from itertools import islice
-from collections import namedtuple
-
-Keyed = namedtuple("Keyed", ["key", "obj"])
-Packet = namedtuple("Packet", ["raw", "ts"])
+Keyed = collections.namedtuple("Keyed", ["key", "obj"])
+Packet = collections.namedtuple("Packet", ["raw", "ts"])
 
 log = logging.getLogger(__name__)
 
@@ -86,8 +83,6 @@ class Pcap(object):
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
-        # List containing all whitelist entries.
-        self.whitelist = self._build_whitelist()
         # List for holding whitelisted IP-s according to DNS responses
         self.whitelist_ips = []
         # state of whitelisting
@@ -97,20 +92,13 @@ class Pcap(object):
         # List of all used DNS servers
         self.dns_servers = []
 
-    def _build_whitelist(self):
-        result = []
-        whitelist_path = cwd("whitelist", "domain.txt", private=True)
-        for line in open(whitelist_path, "rb"):
-            result.append(line.strip())
-        return result
-
     def _is_whitelisted(self, conn, hostname):
         """Checks if whitelisting conditions are met"""
-        # is whitelistng enabled ?
+        # Is whitelistng enabled?
         if not self.whitelist_enabled:
             return False
 
-        # is DNS recording coming from allowed NS server
+        # Is DNS recording coming from allowed NS server.
         if not self.known_dns:
             pass
         elif (conn.get("src") in self.known_dns or
@@ -119,8 +107,8 @@ class Pcap(object):
         else:
             return False
 
-        # is hostname whitelisted
-        if hostname not in self.whitelist:
+        # Is hostname whitelisted.
+        if not is_whitelisted_domain(hostname):
             return False
 
         return True
@@ -420,8 +408,16 @@ class Pcap(object):
             if reqtuple not in self.dns_requests:
                 self.dns_requests[reqtuple] = query
             else:
-                new_answers = set((i["type"], i["data"]) for i in query["answers"]) - self.dns_answers
-                self.dns_requests[reqtuple]["answers"] += [dict(type=i[0], data=i[1]) for i in new_answers]
+                new_answers = set(
+                    (i["type"], i["data"]) for i in query["answers"]
+                )
+                for type_, data in new_answers - self.dns_answers:
+                    entry = {
+                        "type": type_,
+                        "data": data,
+                    }
+                    if entry not in self.dns_requests[reqtuple]["answers"]:
+                        self.dns_requests[reqtuple]["answers"].append(entry)
 
         return True
 
@@ -877,11 +873,13 @@ class NetworkAnalysis(Processing):
         sorted_path = self.pcap_path.replace("dump.", "dump_sorted.")
         if config("cuckoo:processing:sort_pcap"):
             sort_pcap(self.pcap_path, sorted_path)
-            pcap_path = sorted_path
 
             # Sorted PCAP file hash.
             if os.path.exists(sorted_path):
                 results["sorted_pcap_sha256"] = File(sorted_path).get_sha256()
+                pcap_path = sorted_path
+            else:
+                pcap_path = self.pcap_path
         else:
             pcap_path = self.pcap_path
 
@@ -935,21 +933,17 @@ def conn_from_flowtuple(ft):
 # input_iterator should be a class that also supports writing so we can use
 # it for the temp files
 # this code is mostly taken from some SO post, can't remember the url though
-def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None):
+def batch_sort(input_iterator, output_path, output_class):
     """batch sort helper with temporary files, supports sorting large stuff"""
-    if not output_class:
-        output_class = input_iterator.__class__
-
     chunks = []
     try:
         while True:
-            current_chunk = list(islice(input_iterator, buffer_size))
+            current_chunk = list(itertools.islice(input_iterator, 32000))
             if not current_chunk:
                 break
 
             current_chunk.sort()
-            fd, filepath = tempfile.mkstemp()
-            os.close(fd)
+            filepath = tempfile.mktemp()
             output_chunk = output_class(filepath)
             chunks.append(output_chunk)
 
@@ -963,11 +957,9 @@ def batch_sort(input_iterator, output_path, buffer_size=32000, output_class=None
         output_file.close()
     finally:
         for chunk in chunks:
-            try:
-                chunk.close()
-                os.remove(chunk.name)
-            except Exception:
-                pass
+            chunk.close()
+            os.remove(chunk.name)
+        input_iterator.close()
 
 class SortCap(object):
     """SortCap is a wrapper around the packet lib (dpkt) that allows us to sort pcaps
@@ -975,6 +967,7 @@ class SortCap(object):
 
     def __init__(self, path, linktype=1):
         self.name = path
+        self.f = None
         self.linktype = linktype
         self.fd = None
         self.ctr = 0  # counter to pass through packets without flow info (non-IP)
@@ -982,20 +975,21 @@ class SortCap(object):
 
     def write(self, p):
         if not self.fd:
-            self.fd = dpkt.pcap.Writer(open(self.name, "wb"), linktype=self.linktype)
+            self.f = open(self.name, "wb")
+            self.fd = dpkt.pcap.Writer(self.f, linktype=self.linktype)
         self.fd.writepkt(p.raw, p.ts)
 
     def __iter__(self):
         if not self.fd:
-            self.fd = dpkt.pcap.Reader(open(self.name, "rb"))
+            self.f = open(self.name, "rb")
+            self.fd = dpkt.pcap.Reader(self.f)
             self.fditer = iter(self.fd)
             self.linktype = self.fd.datalink()
         return self
 
     def close(self):
-        if self.fd:
-            self.fd.close()
-            self.fd = None
+        self.f and self.f.close()
+        self.fd = None
 
     def next(self):
         rp = next(self.fditer)
@@ -1021,7 +1015,9 @@ class SortCap(object):
 def sort_pcap(inpath, outpath):
     """Use SortCap class together with batch_sort to sort a pcap"""
     inc = SortCap(inpath)
-    batch_sort(inc, outpath, output_class=lambda path: SortCap(path, linktype=inc.linktype))
+    batch_sort(
+        inc, outpath, lambda path: SortCap(path, linktype=inc.linktype)
+    )
     return 0
 
 def flowtuple_from_raw(raw, linktype=1):

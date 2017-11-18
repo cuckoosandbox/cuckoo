@@ -13,6 +13,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{% url "analysis" report.analysis.info.id "extracted" %}">
+                        <i class="glyphicon glyphicon-search"></i>Extracted Artifacts
+                    </a>
+                </li>
+                <li>
                     <a href="{% url "analysis" report.analysis.info.id "behavior" %}">
                         <i class="glyphicon glyphicon-search"></i>Behavioral Analysis
                         {% if report.analysis.behavior %}

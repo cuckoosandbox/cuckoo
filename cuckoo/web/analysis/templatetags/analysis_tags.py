@@ -117,3 +117,11 @@ def process_name(pid, analysis):
 @register.filter("config")
 def _config(s):
     return config(s) or ""
+
+@register.filter
+def pdf_urls(pdf):
+    ret = []
+    for version in pdf:
+        for url in version["urls"]:
+            ret.append((url, version["version"]))
+    return ret

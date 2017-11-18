@@ -47,15 +47,19 @@ class Screenshots(Processing):
             shot_path = os.path.join(self.shots_path, shot_file)
             shot_file_name, shot_file_ext = os.path.splitext(shot_file)
 
-            im = PIL.Image.open(shot_path)
-            im.thumbnail((320, 320), PIL.Image.ANTIALIAS)
-
             shot_file_name_resized = "%s_%s.jpg" % (shot_file_name, "small")
             shot_path_resized = os.path.join(
                 self.shots_path, shot_file_name_resized
             )
 
-            im.save(shot_path_resized, "JPEG")
+            try:
+                im = PIL.Image.open(shot_path)
+                im.thumbnail((320, 320), PIL.Image.ANTIALIAS)
+                im.save(shot_path_resized, "JPEG")
+            except IOError as e:
+                if "image file is truncated" in e.message:
+                    continue
+                raise
 
             shot_entry = {
                 "path": shot_path,

@@ -1,0 +1,151 @@
+import SVGLoader from './lib/SVGLoader';
+import DraggableZ from './lib/DraggableZ';
+import widgets from './widgets';
+import { config } from './config';
+
+// chart.js defaults
+if(Chart) {
+  Chart.defaults.global.defaultFontFamily   = "'Roboto','Helvetica Neue','Arial', sans-serif";
+  Chart.defaults.global.responsive = true;
+  Chart.defaults.global.maintainAspectRatio = false;
+}
+
+$(function() {
+
+  SVGLoader.loadPlaceholders($('*[data-svg-src]'));
+
+  // global callbacks
+  widgets.forEach(widget => {
+
+    widget.on('render', () => {
+      SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
+    });
+
+    widget.on('synced', is => {
+      $(widget.template).find('.widget-toolbar input, .widget-toolbar select').prop('disabled', is);
+      if(is === true) {
+        // hide toolbar
+        $(widget.template).find('.widget-toolbar').addClass('hidden');
+      } else {
+        // show toolbar
+        $(widget.template).find('.widget-toolbar').removeClass('hidden');
+      }
+    });
+
+  });
+
+  // grid
+  const UI = new DraggableZ($("#grid"), widgets);
+
+  // handles a sync toggle
+  function handleSyncToggle() {
+    let toggle = $(this);
+    if(toggle.is(':checked')) {
+      UI.dispatchEvent('sync.on');
+    } else {
+      UI.dispatchEvent('sync.off');
+    }
+  }
+
+  // scoped function for initializing the header behavior
+  function initializeHeaderToolbar() {
+
+    let toolbar = $("#app-header .widget-toolbar");
+    let date = toolbar.find('input#toolbar-date');
+    let period = toolbar.find('input[name="toolbar-period"]');
+    let time = toolbar.find('select[name="toolbar-time"]');
+    let toggle = $('#app-header input#sync-widgets');
+
+    // assign presets
+    if(config.DEFAULTS.TIME) time.val(config.DEFAULTS.TIME);
+    if(config.DEFAULTS.PERIOD) {
+      period.filter(`[value=${config.DEFAULTS.PERIOD}]`).prop('checked', true);
+    }
+
+    let emitChange = (params) => UI.dispatchEvent('sync.change', {
+      date: params.date || date.val(),
+      period: params.period || period.val(),
+      time: params.time || time.val()
+    });
+
+    // binds the sync toggle handle to the toggle, and to the handler
+    // once for initialization
+    toggle.on('change', handleSyncToggle);
+    if(config.DEFAULTS.SYNC_MODE) {
+      toggle.prop('checked', config.DEFAULTS.SYNC_MODE);
+      toggle.trigger('change');
+    }
+
+    // initialize the date picker
+    date.datepicker({
+      dateFormat: 'yy-mm-dd',
+      maxDate: new Date()
+    }).datepicker('setDate', config.DEFAULTS.DATE ? new Date(config.DEFAULTS.DATE) : new Date());
+
+    // bind the listeners
+    date.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.date($(e.currentTarget).val()).fetch();
+      });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        date: $(e.currentTarget).val()
+      });
+    });
+
+    period.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.period($(e.currentTarget).val()).fetch();
+      });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        period: $(e.currentTarget).val()
+      });
+    });
+
+    time.on('change', e => {
+      widgets.forEach(widget => {
+        if(!widget._synced) return;
+        widget.api.time($(e.currentTarget).val()).fetch();
+      });
+      // emit a change.sync event to persist widget UI externally
+      emitChange({
+        time: $(e.currentTarget).val()
+      });
+    });
+
+  }
+
+  UI.on('sync.on', () => {
+    $('body').addClass('mode-sync');
+    $("#app-header .widget-toolbar input, #app-header .widget-toolbar select").prop('disabled', false);
+    widgets.forEach(widget => widget.synced(true));
+  });
+
+  UI.on('sync.off', () => {
+    $('body').removeClass('mode-sync');
+    widgets.forEach(widget => widget.synced(false));
+    $("#app-header .widget-toolbar input, #app-header .widget-toolbar select").prop('disabled', true);
+  });
+
+  // listens to a change in sync mode and sync up the ui per widget to correspond
+  // with the data it's displaying
+  UI.on('sync.change', params => {
+    widgets.forEach(widget => {
+      if(!widget._synced) return;
+      // set date
+      $(widget.template).find('.widget-toolbar input[name="toolbar-date"]').val(params.date);
+      // unset period radio
+      $(widget.template).find('.widget-toolbar input[name="toolbar-period"]').prop('checked', false);
+      // set period radio
+      $(widget.template).find(`.widget-toolbar input[name="toolbar-period"][value="${params.period}"]`).prop('checked', true);
+      // set time select value
+      $(widget.template).find('.widget-toolbar select[name="toolbar-time"]').val(params.time);
+    });
+  });
+
+  initializeHeaderToolbar();
+
+});

@@ -6,8 +6,8 @@
 import datetime
 import hashlib
 import io
+import multiprocessing
 import os
-import sflock
 import socket
 import tarfile
 import zipfile
@@ -21,7 +21,7 @@ from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
-from cuckoo.misc import cwd, version, decide_cwd
+from cuckoo.misc import cwd, version, decide_cwd, Pidfile
 
 db = Database()
 sm = SubmitManager()
@@ -232,10 +232,6 @@ def tasks_list(limit=None, offset=None):
 
     for row in tasks:
         task = row.to_dict(dt=True)
-
-        # Sanitize the target in case it contains non-ASCII characters as we
-        # can't pass along an encoding to flask's jsonify().
-        task["target"] = task["target"].decode("latin-1")
 
         task["guest"] = {}
         if row.guest:
@@ -554,11 +550,18 @@ def cuckoo_status():
             values[key.strip()] = value.replace("kB", "").strip()
 
         if "MemAvailable" in values and "MemTotal" in values:
-            memory = 100.0 * int(values["MemFree"]) / int(values["MemTotal"])
+            memavail = int(values["MemAvailable"])
+            memtotal = int(values["MemTotal"])
+            memory = 100 - 100.0 * memavail / memtotal
         else:
-            memory = None
+            memory = memavail = memtotal = None
     else:
-        memory = None
+        memory = memavail = memtotal = None
+
+    try:
+        cpu_core_count = multiprocessing.cpu_count()
+    except NotImplementedError:
+        cpu_core_count = None
 
     response = dict(
         version=version,
@@ -576,7 +579,11 @@ def cuckoo_status():
         ),
         diskspace=diskspace,
         cpuload=cpuload,
+        cpu_count=cpu_core_count,
         memory=memory,
+        memavail=memavail,
+        memtotal=memtotal,
+        processes=Pidfile.get_active_pids()
     )
 
     return jsonify(response)

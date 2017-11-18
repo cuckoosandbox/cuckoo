@@ -32,12 +32,16 @@
 						{{#if this.filetree.is_directory}}
 							<i class="fa fa-folder-o"></i>
 						{{else}}
-							<i class="fa fa-file-o"></i>
-						{{/if}}	
+							{{#if this.filetree.is_package}}
+								<i class="fa fa-file-archive-o"></i>
+							{{else}}
+								<i class="fa fa-file-o"></i>
+							{{/if}}
+						{{/if}}
 						{{#if this.fname_short}}
-							{{this.fname_short}}
+							{{{this.fname_short}}}
 						{{else}}
-							{{this.filename}}
+							{{{this.filename}}}
 						{{/if}}
 					</strong>
 					{{#unless this.filetree.is_directory}}

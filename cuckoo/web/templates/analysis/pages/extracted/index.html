@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+<div class="flex-nav">
+    {% include "analysis/pages/nav-sidebar.html" %}
+    <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+
+        <header class="page-header cuckoo-analysis__header">
+            <h1>Extracted Artifacts</h1>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12 page-switcher extracted-switcher">
+                    <nav class="page-switcher__nav grouped-buttons__bordered">
+                    {% for extr in report.analysis.extracted %}
+                        <a href="extracted_{{ forloop.counter }}" {% if forloop.first %} class="active"{% endif %} data-toggle="tab">
+                          #{{ forloop.counter }} {{ extr.category }} / {{ extr.program }}
+                        </a>
+                    {% endfor %}
+                    </nav>
+                    <div class="page-switcher__pages">
+                    {% for extr in report.analysis.extracted %}
+                        <div id="extracted_{{ forloop.counter }}" class="extracted-page {% if forloop.first %}active{% endif %}">
+                          <div class="panel panel-default list-panel" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Extracted</h3>
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <span class="item-label">Category:</span> {{ extr.category }}
+                                </li>
+                                <li class="list-group-item">
+                                    <span class="item-label">Yara:</span>
+                                    {% if extr.yara %}
+                                        <ul style="margin-bottom: 0;">
+                                        {% for sign in extr.yara %}
+                                            <li>{{ sign.name }} - {{ sign.meta.description }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    None matched
+                                    {% endif %}
+                                </li>
+                                {% if extr.program %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Program:</span> {{ extr.program }}
+                                </li>
+                                {% endif %}
+                                {% if extr.first_seen %}
+                                <li class="list-group-item">
+                                    <span class="item-label">First seen:</span> <span data-transform="date">{{ extr.first_seen }}</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                          </div>
+                          <div class="powershell-preview">
+                              <i class="fa fa-spinner fa-spin fa-fw"></i> Loading script...
+                          </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer replacement to avoid double scrollbars -->
+        <footer class="flex-grid__footer center-left">
+            <p class="footnote">
+                &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+            </p>
+            <div class="logo">
+                <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                <a href="#">Back to Top</a>
+            </div>
+        </footer>
+
+    </section>
+</div>
+
+{% endblock %}

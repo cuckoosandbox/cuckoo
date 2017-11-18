@@ -116,7 +116,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         """Return state for this IP's task."""
         x = self.analysistasks.get(ip)
         if not x:
-            log.critical("ResultServer unable to map ip to context: %s.", ip)
+            log.debug("ResultServer unable to map ip to context: %s.", ip)
             return None, None
 
         return x
@@ -303,7 +303,7 @@ class ResultHandler(SocketServer.BaseRequestHandler):
         self.rawlogfd.write(self.startbuf)
 
     def create_folders(self):
-        folders = "shots", "files", "logs", "buffer"
+        folders = "shots", "files", "logs", "buffer", "extracted"
 
         try:
             Folders.create(self.storagepath, folders)

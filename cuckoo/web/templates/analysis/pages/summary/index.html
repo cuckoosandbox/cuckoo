@@ -9,7 +9,7 @@
 
             <!-- common analysis page header -->
             <header class="page-header cuckoo-analysis__header">
-                <h2><i class="fa fa-home"></i> Summary </h2>
+                <h1>Summary </h1>
                 {% if report.analysis.target.category == "file" %}
                 <div class="header-right">
                     <span class="file-name"><i class="fa fa-file-o"></i>
@@ -75,6 +75,57 @@
 
                         <hr>
 
+                        {% if report.analysis.metadata and report.analysis.metadata.cfgextr %}
+                        <h4><i class="fa fa-bug"></i> Malware Configuration</h4>
+
+                        {% for cfgextr in report.analysis.metadata.cfgextr %}
+
+                        <div class="panel panel-default list-panel__widget">
+                            <div class="panel-heading">
+                                <span>family</span>
+                                <h3 class="panel-title">{{ cfgextr.family }}</h3>
+                            </div>
+                            <ul class="list-group">
+                                {% if cfgextr.cnc %}
+                                <li class="list-group-item">
+                                    <span class="item-label">CnC</span>
+                                    <ul>
+                                        {% for url in cfgextr.cnc %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.url %}
+                                <li class="list-group-item">
+                                    <span class="item-label">URLs</span>
+                                    <ul>
+                                        {% for url in cfgextr.url %}
+                                        <li>{{ url }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.key %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Encryption key</span>
+                                    <p>{{ cfgextr.key }}</p>
+                                </li>
+                                {% endif %}
+                                {% if cfgextr.type %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Package / Type</span>
+                                    <p>{{ cfgextr.type }}</p>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        {% endfor %}
+
+                        <hr>
+                        {% endif %}
+
                         <h4><span class="glyphicon glyphicon-send" aria-hidden="true"></span> Feedback</h4>
 
                         <p style="font-size: 11px;">
@@ -92,11 +143,14 @@
                     <div class="col-md-12">{% include "analysis/pages/summary/_info.html" %}</div>
                     <div class="col-md-12">{% include "analysis/pages/summary/_signatures.html" %}</div>
                     <div class="col-md-12">{% include "analysis/pages/summary/_screenshots.html" %}</div>
+
                     <div class="clearfix">
-                        <div class="col-xs-8">{% include "analysis/pages/network/_dns.html" %}</div>
-                        <div class="col-xs-4">{% include "analysis/pages/network/_hosts.html" %}</div>
+                        <div class="col-lg-9 col-md-8 col-sm-12">{% include "analysis/pages/network/_dns.html" %}</div>
+                        <div class="col-lg-3 col-md-4 col-sm-12">{% include "analysis/pages/network/_hosts.html" %}</div>
                     </div>
+
                 </div>
+
             </div>
 
             <!-- footer replacement to avoid double scrollbars -->
