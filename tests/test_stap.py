@@ -5,6 +5,19 @@
 import datetime
 
 from cuckoo.processing.platform.linux import StapParser, LinuxSystemTap
+from cuckoo.processing.behavior import BehaviorAnalysis
+
+def test_stap_behavior():
+    lst = LinuxSystemTap(BehaviorAnalysis())
+    lst.parse("tests/files/log_full.stap")
+    assert(len(lst.processes) == 3)
+    assert(len(lst.forkmap) == 3)
+
+def test_stap_behavior_fork():
+    lst = LinuxSystemTap(BehaviorAnalysis())
+    lst.parse("tests/files/log_fork.stap")
+    assert(len(lst.processes) == 2)
+    assert(len(lst.forkmap) == 3)
 
 def test_staplog():
     assert list(StapParser(open("tests/files/log.stap"))) == [{
@@ -22,6 +35,7 @@ def test_staplog():
                 "PWD=/root"
             ],
         },
+	"category": "default",
         "instruction_pointer": "b774dcf9",
         "pid": 680,
         "process_name": "python",
@@ -35,6 +49,7 @@ def test_staplog():
         "arguments": {
             "p0": "0x0"
         },
+	"category": "default",
         "instruction_pointer": "b77825f7",
         "pid": 680,
         "process_name": "sh",
@@ -49,6 +64,7 @@ def test_staplog():
             "p0": "/etc/ld.so.nohwcap",
             "p1": "F_OK"
         },
+	"category": "default",
         "instruction_pointer": "b77838c1",
         "pid": 680,
         "process_name": "sh",
@@ -67,6 +83,7 @@ def test_staplog():
             "p4": "-1",
             "p5": "0",
         },
+	"category": "default",
         "instruction_pointer": "b7783970",
         "pid": 680,
         "process_name": "sh",
@@ -82,6 +99,7 @@ def test_staplog():
             "p1": "h3ll0 w0rld!\n",
             "p2": "13",
         },
+	"category": "default",
         "instruction_pointer": "b7768cf9",
         "pid": 681,
         "process_name": "helloworld.sh",
@@ -97,6 +115,7 @@ def test_staplog():
             "p1": "0x800665c0",
             "p2": "8192",
         },
+	"category": "default",
         "instruction_pointer": "b7768cf9",
         "pid": 681,
         "process_name": "helloworld.sh",
@@ -110,6 +129,7 @@ def test_staplog():
         "arguments": {
             "p0": "0"
         },
+	"category": "default",
         "instruction_pointer": "b7768cf9",
         "pid": 681,
         "process_name": "helloworld.sh",
@@ -126,6 +146,7 @@ def test_staplog():
             "p2": "0x0",
             "p3": "0x0",
         },
+	"category": "default",
         "instruction_pointer": "b7769cf9",
         "pid": 680,
         "process_name": "sh",
@@ -137,6 +158,7 @@ def test_staplog():
     }, {
         "api": "sigreturn",
         "arguments": {},
+	"category": "default",
         "instruction_pointer": "b7769cf9",
         "pid": 680,
         "process_name": "sh",
@@ -150,6 +172,7 @@ def test_staplog():
         "arguments": {
             "p0": "0"
         },
+	"category": "default",
         "instruction_pointer": "b7769cf9",
         "pid": 680,
         "process_name": "sh",
@@ -165,6 +188,7 @@ def test_staplog():
             "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
             "p2": "41",
         },
+	"category": "default",
         "instruction_pointer": "80dbdde",
         "pid": 704,
         "process_name": "busybox-i686",
@@ -180,6 +204,7 @@ def test_staplog():
             "p1": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
             "p2": "480",
         },
+	"category": "default",
         "instruction_pointer": "80dbdde",
         "pid": 668,
         "process_name": "busybox-i686",
@@ -195,6 +220,7 @@ def test_staplog():
             "p1": ["sh", "-c", "/tmp/comma,sh"],
             "p2": ["COMMA_IN_ARRAY=it,works", "HOME=/root"],
         },
+	"category": "default",
         "instruction_pointer": "b774dcf9",
         "pid": 680,
         "process_name": "python",
@@ -210,6 +236,7 @@ def test_staplog():
             "p1": ["sh", "-c", "/tmp/bracket]sh"],
             "p2": ["LANGUAGE=en_US:en", "HOME=/root"],
         },
+	"category": "default",
         "instruction_pointer": "b774dcf9",
         "pid": 680,
         "process_name": "python",
@@ -233,6 +260,7 @@ def test_staplog():
                 "useable": "1",
             },
         },
+	"category": "default",
         "instruction_pointer": "b77b5a21",
         "pid": 818,
         "process_name": "sh",
@@ -261,6 +289,7 @@ def test_staplog():
             "p2": "0x0",
             "p3": "8",
         },
+	"category": "default",
         "instruction_pointer": "7f30ca2448ee",
         "pid": 900,
         "process_name": "sh",
@@ -286,6 +315,7 @@ def test_staplog():
                 "uptime": "-1217188199"
             },
         },
+	"category": "default",
         "instruction_pointer": "b7728cf9",
         "pid": 821,
         "process_name": "bash",

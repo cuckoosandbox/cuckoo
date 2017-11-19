@@ -86,6 +86,10 @@ some options (in this case a command line argument for the malware)::
 
     $ cuckoo submit --platform windows /path/to/binary
 
+*Example*: submit a local binary to be run via the Tor route::
+
+    $ cuckoo submit --options route=tor /path/to/binary
+
 *Example*: submit a local binary and take a full memory dump of the analysis machine::
 
     $ cuckoo submit --memory /path/to/binary

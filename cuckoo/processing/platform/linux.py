@@ -78,7 +78,7 @@ class LinuxSystemTap(BehaviorHandler):
         return self.processes
 
     def pre_hook(self, syscall):
-        if syscall["api"] == "clone":
+        if syscall["api"] == "clone" or syscall["api"] == "fork":
             self.forkmap[int(syscall["return_value"])] = syscall["pid"]
 
     def post_hook(self, syscall):
@@ -138,7 +138,7 @@ class StapParser(object):
             yield {
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
-                "return_value": retval, "status": ecode,
+                "return_value": retval, "status": ecode, "category" : "default",
                 "type": "apicall", "raw": line,
             }
 
