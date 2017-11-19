@@ -5,6 +5,19 @@
 import datetime
 
 from cuckoo.processing.platform.linux import StapParser, LinuxSystemTap
+from cuckoo.processing.behavior import BehaviorAnalysis
+
+def test_stap_behavior():
+    lst = LinuxSystemTap(BehaviorAnalysis())
+    lst.parse("tests/files/log_full.stap")
+    assert(len(lst.processes) == 3)
+    assert(len(lst.forkmap) == 3)
+
+def test_stap_behavior_fork():
+    lst = LinuxSystemTap(BehaviorAnalysis())
+    lst.parse("tests/files/log_fork.stap")
+    assert(len(lst.processes) == 2)
+    assert(len(lst.forkmap) == 2)
 
 def test_staplog():
     assert list(StapParser(open("tests/files/log.stap"))) == [{
