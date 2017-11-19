@@ -17,7 +17,7 @@ def test_stap_behavior_fork():
     lst = LinuxSystemTap(BehaviorAnalysis())
     lst.parse("tests/files/log_fork.stap")
     assert(len(lst.processes) == 2)
-    assert(len(lst.forkmap) == 2)
+    assert(len(lst.forkmap) == 3)
 
 def test_staplog():
     assert list(StapParser(open("tests/files/log.stap"))) == [{
