@@ -27,6 +27,9 @@ have ``tap`` prefix::
     $ sudo ip link set dev tap_debian_x64 up
     $ sudo ip link set dev br0 up
 
+The following instructions are only for x32/x64 ubuntu 17.04 linux guests
+=========================================================================
+
 ** Note if you run cuckoo with with no cuckoo user, replace cuckoo after -u to
 your user **
 
@@ -35,8 +38,6 @@ Add agent to autorun, the easier way is to add it to crontab::
     $ sudo crontab -e
     @reboot python path_to_agent.py
 
-The following instructions are only for x32/x64 ubuntu 17.04 linux guests
-=========================================================================
 
 Install dependencies inside of the virtual machine::
 
@@ -88,6 +89,10 @@ The ``stap_.ko`` file should be placed in /root/.cuckoo::
 Disable firewall inside of the vm, if exists::
 
     $ sudo ufw disable
+    
+Disable NTP inside of the vm:
+    
+    $ sudo timedatectl set-ntp
 
 Optional - preinstalled remove software and configurations::
     
