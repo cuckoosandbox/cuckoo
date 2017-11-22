@@ -253,6 +253,11 @@ class Config(object):
                 "critical": Int(60),
                 "vm_state": Int(60),
             },
+            "remotecontrol": {
+                "enabled": Boolean(False),
+                "guacd_host": String("localhost"),
+                "guacd_port": Int(4822),
+            },
         },
         "virtualbox": {
             "virtualbox": {

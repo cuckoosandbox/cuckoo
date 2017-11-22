@@ -694,6 +694,11 @@ def _203_204(c):
 def _204_205(c):
     if c["auxiliary"]["mitm"]["script"] == "mitm.py":
         c["auxiliary"]["mitm"]["script"] = "stuff/mitm.py"
+
+    c["cuckoo"]["remotecontrol"]["enabled"] = False
+    c["cuckoo"]["remotecontrol"]["guacd_host"] = "localhost"
+    c["cuckoo"]["remotecontrol"]["guacd_host"] = 4822
+
     return c
 
 migrations = {
