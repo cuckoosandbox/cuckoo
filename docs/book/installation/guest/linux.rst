@@ -1,5 +1,5 @@
 ==========================
-Installing the Linux guest
+Installing the Linux host
 ==========================
 
 Install dependencies on host::
@@ -52,7 +52,7 @@ Install kernel debugging symbols::
       #deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
       deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
       deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
-      EOF
+    EOF
 
     $ sudo apt-get update
     $ sudo apt-get install linux-image-$(uname -r)-dbgsym
@@ -88,3 +88,8 @@ The ``stap_.ko`` file should be placed in /root/.cuckoo::
 Disable firewall inside of the vm, if exists::
 
     $ sudo ufw disable
+
+Optional - preinstalled remove software and configurations::
+    
+    $ sudo apt-get purge update-notifier update-manager update-manager-core ubuntu-release-upgrader-core  whoopsie  ntpdate cups-daemon avahi-autoipd avahi-daemon avahi-utils account-plugin-salut libnss-mdns telepathy-salut
+    
