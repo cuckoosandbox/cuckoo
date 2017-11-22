@@ -92,7 +92,7 @@ Disable firewall inside of the vm, if exists::
     
 Disable NTP inside of the vm:
     
-    $ sudo timedatectl set-ntp
+    $ sudo timedatectl set-ntp off
 
 Optional - preinstalled remove software and configurations::
     
