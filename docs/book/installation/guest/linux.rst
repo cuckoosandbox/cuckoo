@@ -41,13 +41,13 @@ Add agent to autorun, the easier way is to add it to crontab::
 
 Install dependencies inside of the virtual machine::
 
-    $ sudo apt-get install systemtap gcc linux-headers-$(uname -r)
+    $ sudo apt-get install systemtap gcc linux-headers-$(uname -r) patch
 
 Install kernel debugging symbols::
 
     $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
 
-    $ codename=$(lsb_release -c | awk  '{print $2}')
+    $ codename=$(lsb_release -c -s)
     $ sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
       deb http://ddebs.ubuntu.com/ ${codename}          main restricted universe multiverse
       #deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
