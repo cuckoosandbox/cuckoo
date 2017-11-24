@@ -699,6 +699,9 @@ def _204_205(c):
     c["cuckoo"]["remotecontrol"]["guacd_host"] = "localhost"
     c["cuckoo"]["remotecontrol"]["guacd_port"] = 4822
 
+    for machine in c["virtualbox"]["virtualbox"]["machines"]:
+        c["virtualbox"][machine]["controlport"] = "default"
+
     return c
 
 migrations = {

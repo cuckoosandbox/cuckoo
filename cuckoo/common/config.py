@@ -281,6 +281,7 @@ class Config(object):
                 "tags": String(),
                 "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
+                "controlport": String("default"),
             },
             "__star__": ("virtualbox", "machines"),
         },
