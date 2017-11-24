@@ -818,7 +818,12 @@ class LnkShortcut(object):
                 ret["attrs"].append(self.attrs[x])
 
         offset = 78 + self.read_uint16(76)
-        off = LnkEntry.from_buffer_copy(buf[offset:offset+28])
+        if len(buf) >= offset + 28:
+            off = LnkEntry.from_buffer_copy(buf[offset:offset + 28])
+        else:
+            log.warning("Provided .lnk file is corrupted or incomplete.")
+            return
+
 
         # Local volume.
         if off.volume_flags & 1:
