@@ -697,7 +697,7 @@ def _204_205(c):
 
     c["cuckoo"]["remotecontrol"]["enabled"] = False
     c["cuckoo"]["remotecontrol"]["guacd_host"] = "localhost"
-    c["cuckoo"]["remotecontrol"]["guacd_host"] = 4822
+    c["cuckoo"]["remotecontrol"]["guacd_port"] = 4822
 
     return c
 
