@@ -1123,6 +1123,9 @@ def test_migration_204_205():
 [mitm]
 script = mitm.py
 """)
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[remotecontrol]
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.4", "2.0.5")
 
