@@ -379,3 +379,83 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
             )
+
+    def enable_remote_control(self, label):
+        try:
+            proc = self._toggle_remote_control(label, "on")
+
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control: %d" % proc.returncode)
+                return False
+
+            port = "default"  # TODO: get from config
+            self._set_vrde_ports(label, port)
+
+            ports = self.vminfo(label, "vrdeports")
+            log.info(
+                "Successfully enabled remote control for virtual machine "
+                "with label %s on port(s) %s" % (label, ports)
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to enable remote control: %s" % e
+            )
+
+    def disable_remote_control(self, label):
+        try:
+            proc = self._toggle_remote_control(label, "off")
+
+            if proc.returncode != 0:
+                log.error(
+                    "VBoxManage returned non-zero value while "
+                    "disabling remote control: %d" % proc.returncode
+                )
+                return False
+
+            log.info(
+                "Successfully disabled remote control for virtual machine "
+                "with label %s" % label
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to disable remote control: %s" % e
+            )
+
+    def _toggle_remote_control(self, label, val):
+        args = [
+            self.options.virtualbox.path, "modifyvm", label,
+            "--vrde", val
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+        _, _ = proc.communicate()
+
+        return proc
+
+    def _set_vrde_ports(self, label, ports):
+        args = [
+            self.options.virtualbox.path, "modifyvm", label,
+            "--vrdeport", ports
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+        _, _ = proc.communicate()
+
+        if proc.returncode != 0:
+            log.error(
+                "VboxManage returned non-zero return status while"
+                "setting remote control ports: %d" % proc.returncode
+            )
+            return False
+
+        log.info(
+            "Successfully set remote control ports for virtual machine "
+            "with label %s: %s" % (label, ports)
+        )
+
+        return proc
