@@ -265,6 +265,20 @@ class Machinery(object):
         """
         raise NotImplementedError
 
+    def enable_remote_control(self, label):
+        """Enable remote control interface (RDP/VNC/SSH)
+        @param label: machine name.
+        @return: port used for this machine.
+        """
+        raise NotImplementedError
+
+    def disable_remote_control(self, label):
+        """Disable remote control interface (RDP/VNC/SSH)
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
     def _wait_status(self, label, *states):
         """Waits for a vm status.
         @param label: virtual machine name.
