@@ -448,7 +448,7 @@ class VirtualBox(Machinery):
 
         if proc.returncode != 0:
             log.error(
-                "VboxManage returned non-zero return status while"
+                "VboxManage returned non-zero return status while "
                 "setting remote control ports: %d" % proc.returncode
             )
             return False
