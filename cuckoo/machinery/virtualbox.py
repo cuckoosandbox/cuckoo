@@ -389,7 +389,7 @@ class VirtualBox(Machinery):
                           "remote control: %d" % proc.returncode)
                 return False
 
-            port = "default"  # TODO: get from config
+            port = getattr(self.options, label)["controlport"]
             self._set_vrde_ports(label, port)
 
             ports = self.vminfo(label, "vrdeports")
