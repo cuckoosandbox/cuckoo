@@ -129,18 +129,44 @@ class BehaviorReconstructor(object):
     """Reconstructs the behavior of behavioral API logs."""
     def __init__(self):
         self.files = {}
+        self.sockets = {}
+
 
     def process_apicall(self, event):
         fn = getattr(self, "_api_%s" % event["api"], None)
         if fn is not None:
             ret = fn(
-                event["return_value"], event["arguments"], event.get("flags")
+                event["return_value"], event["arguments"], event.get("status")
             )
             return ret or []
         return []
 
-    def _api_open(self, ret, arguments, flags):
+    def _api_open(self, return_value, arguments, status):
+        self.files[return_value] = arguments["path"]
         return single("files_opened",(arguments["path"]))
+
+    def _api_write(self, return_value, arguments, status):
+        if arguments["fd"] in self.files :
+            return single("files_writen",(self.files[arguments["fd"]]))
+
+    def _api_read(self, return_value, arguments, status):
+        if arguments["fd"] in self.files :
+            return single("files_read",(self.files[arguments["fd"]]))
+
+    def _api_close(self, return_value, arguments, status):
+        if arguments["fd"] in self.files: self.files.pop(arguments["fd"], None)
+        if arguments["fd"] in self.sockets: self.sockets.pop(arguments["fd"], None)
+
+    def _api_stat(self, return_value, arguments, status):
+        return single("file_exists",(arguments["path"]))
+
+    def _api_connect(self, return_value, arguments, flags):
+        return single("connects_ip", (arguments["addr"]))
+
+    def _api_socket(self, return_value, arguments, flags):
+        self.sockets[return_value] = arguments
+        return single("socket", (arguments["addr"]))
+
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
@@ -259,6 +285,7 @@ class StapParser(object):
     post_parse_creat = post_parse_default_file
     post_parse_chmode = post_parse_default_file
     post_parse_chdir = post_parse_default_file
+    post_parse_stat = post_parse_default_file
 
     def post_parse_chown(self, event):
         event["category"] = "file"
