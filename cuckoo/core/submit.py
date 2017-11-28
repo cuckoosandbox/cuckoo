@@ -70,6 +70,10 @@ class SubmitManager(object):
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
 
+        # TODO: implement this in web frontend
+        # if options.get("enable-remote-control"):
+        ret["remotecontrol"] = "yes"
+
         # VPN takes precedence over the network-routing option (this should
         # actually be resolved in the frontend, though).
         if entry.get("vpn"):
