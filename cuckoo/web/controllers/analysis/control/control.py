@@ -54,10 +54,13 @@ class AnalysisControlController:
                 pending_read_request.clear()
 
                 while True:
-                    content = guac.receive()
-                    if content:
-                        yield content
-                    else:
+                    try:
+                        content = guac.receive()
+                        if content:
+                            yield content
+                        else:
+                            break
+                    except Exception:
                         break
 
                     if pending_read_request.is_set():
