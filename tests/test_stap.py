@@ -82,9 +82,9 @@ def test_staplog():
     }, {
         "api": "write",
         "arguments": {
-            "p0": "1",
-            "p1": "h3ll0 w0rld!\n",
-            "p2": "13",
+            "fd": "1",
+            "buffer": "h3ll0 w0rld!\n",
+            "count": "13",
         },
         "instruction_pointer": "b7768cf9",
         "pid": 681,
@@ -92,15 +92,15 @@ def test_staplog():
         "raw": "Mon Jun 19 16:58:32 2017.036988 helloworld.sh@b7768cf9[681] write(1, \"h3ll0 w0rld!\\n\", 13) = 13\n",
         "return_value": "13",
         "status": "",
-        "category": "default",
+        "category": "file",
         "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 36988),
         "type": "apicall",
     }, {
         "api": "read",
         "arguments": {
-            "p0": "10",
-            "p1": "0x800665c0",
-            "p2": "8192",
+            "fd": "10",
+            "buffer": "0x800665c0",
+            "count": "8192",
         },
         "instruction_pointer": "b7768cf9",
         "pid": 681,
@@ -108,7 +108,7 @@ def test_staplog():
         "raw": "Mon Jun 19 16:58:32 2017.037596 helloworld.sh@b7768cf9[681] read(10, 0x800665c0, 8192) = 0\n",
         "return_value": "0",
         "status": "",
-        "category": "default",
+        "category": "file",
         "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 37596),
         "type": "apicall",
     }, {
@@ -171,9 +171,9 @@ def test_staplog():
     }, {
         "api": "write",
         "arguments": {
-            "p0": "2",
-            "p1": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
-            "p2": "41",
+            "fd": "2",
+            "buffer": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
+            "count": "41",
         },
         "instruction_pointer": "80dbdde",
         "pid": 704,
@@ -181,15 +181,15 @@ def test_staplog():
         "raw": "Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, \"BusyBox v1.16.0 \\x282010-02-06 04:51:36 CST\\x29\", 41) = 41\n",
         "return_value": "41",
         "status": "",
-        "category": "default",
+        "category": "file",
         "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
         "type": "apicall",
     }, {
         "api": "write",
         "arguments": {
-            "p0": "2",
-            "p1": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
-            "p2": "480",
+            "fd": "2",
+            "buffer": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
+            "count": "480",
         },
         "instruction_pointer": "80dbdde",
         "pid": 668,
@@ -197,7 +197,7 @@ def test_staplog():
         "raw": "Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, \"Copyright \\x28C\\x29 1998-2009 Erik Andersen\\x2c Rob La\", 480) = 480\n",
         "return_value": "480",
         "status": "",
-        "category": "default",
+        "category": "file",
         "time": datetime.datetime(2017, 6, 22, 10, 22, 6, 766807),
         "type": "apicall",
     }, {
@@ -259,8 +259,8 @@ def test_staplog():
     }, {
         "api": "rt_sigaction",
         "arguments": {
-            "p0": "SIGCHLD",
-            "p1": [
+            "signal": "SIGCHLD",
+            "act": [
                 "0x55644b6bf5a0",
                 "SA_RESTORER",
                 "0x7f30ca2447f0",
@@ -273,7 +273,7 @@ def test_staplog():
                     "SIGSYS]"
                 ],
             ],
-            "p2": "0x0",
+            "oldact": "0x0",
             "p3": "8",
         },
         "instruction_pointer": "7f30ca2448ee",

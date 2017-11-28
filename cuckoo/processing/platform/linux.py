@@ -132,15 +132,16 @@ class StapParser(object):
 
             pname, ip, pid, fn, args, _, retval, ecode = parts
             arguments = self.parse_args(args)
-
             pid = int(pid) if pid.isdigit() else -1
 
-            yield {
+            event = {
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode, "category" : "default",
                 "type": "apicall", "raw": line,
             }
+            getattr(self,"post_parse_%s" % fn, lambda event: None)(event)
+            yield event
 
     def parse_args(self, args):
         p_args, n_args = {}, 0
@@ -204,3 +205,55 @@ class StapParser(object):
 
     def is_string(self, arg):
         return arg.startswith("\"") and arg.endswith("\"")
+
+    def rename_args(self, args, mapping):
+        for key,newKey in mapping.items():
+            if args.get(key):
+                args[newKey] = args[key]
+                del args[key]
+
+    def post_parse_rt_sigaction(self, event):
+        self.rename_args(event["arguments"],
+            {"p0" : "signal", "p1" : "act", "p2" : "oldact"})
+
+    def post_parse_default_file(self, event):
+        event["category"] = "file"
+        self.rename_args(event["arguments"],
+            {"p0" : "path", "p1" : "mode", "p2" : "flags"})
+    post_parse_open = post_parse_default_file
+    post_parse_creat = post_parse_default_file
+    post_parse_chmode = post_parse_default_file
+    post_parse_chdir = post_parse_default_file
+
+    def post_parse_chown(self, event):
+        event["category"] = "file"
+        self.rename_args(event["arguments"],
+            {"p0" : "path", "p1" : "owner", "p2" : "group"})
+
+    def post_parse_write(self, event):
+        event["category"] = "file"
+        self.rename_args(event["arguments"],
+            {"p0" : "fd", "p1" : "buffer", "p2" : "count"})
+    post_parse_read = post_parse_write
+    post_parse_close = post_parse_write
+
+    def post_parse_socket(self, event):
+        event["category"] = "network"
+        self.rename_args(event["arguments"],
+            {"p0" : "domain", "p1" : "type", "p2" : "protocol"})
+
+    def post_parse_getsockopt(self, event):
+        event["category"] = "network"
+        self.rename_args(event["arguments"],
+            {"p0" : "sockfd", "p1" : "level", "p2" : "optname", "p3" : "optval", "p3" : "optlen"})
+    post_parse_setsockopt = post_parse_getsockopt
+
+    def post_parse_accept(self, event):
+        event["category"] = "network"
+        self.rename_args(event["arguments"],
+            {"p0" : "sockfd", "p1" : "addr", "p2" : "addrlen", "p3" : "flags"})
+    post_parse_accept4 = post_parse_accept
+    post_parse_connect = post_parse_accept
+    post_parse_bind = post_parse_accept
+    post_parse_getsockname = post_parse_accept
+    post_parse_getpeername = post_parse_accept
