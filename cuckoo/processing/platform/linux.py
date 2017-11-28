@@ -72,7 +72,8 @@ class LinuxSystemTap(BehaviorHandler):
                     "command_line": "",
                     "calls": calls,
                 })
-
+                self.behavior[pid] = BehaviorReconstructor()
+            self.behavior[pid].process_apicall(syscall)
             self.post_hook(syscall)
 
         return self.processes
@@ -106,6 +107,29 @@ class LinuxSystemTap(BehaviorHandler):
 
         self.processes.sort(key=lambda process: process["first_seen"])
         return self.processes
+
+def single(key, value):
+    return [(key, value)]
+
+def multiple(*l):
+    return l
+
+class BehaviorReconstructor(object):  
+    """Reconstructs the behavior of behavioral API logs."""
+    def __init__(self):
+        self.files = {}
+
+    def process_apicall(self, event):
+        fn = getattr(self, "_api_%s" % event["api"], None)
+        if fn is not None:
+            ret = fn(
+                event["return_value"], event["arguments"], event.get("flags")
+            )
+            return ret or []
+        return []
+
+    def _api_open(self, ret, arguments, flags):
+        single("files_opened",(arguments["path"]))
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
