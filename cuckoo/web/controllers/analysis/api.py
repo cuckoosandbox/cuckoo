@@ -342,18 +342,18 @@ class AnalysisApi(object):
             else:
                 target = None
                 md5 = "-"
-				
-			if not tasks.get(info["id"],{}):
-				tasks[info["id"]] = {
-					"id": info["id"],
-					"target": target,
-					"md5": md5,
-					"category": category,
-					"added_on": info.get("added"),
-					"completed_on": info.get("ended"),
-					"status": "reported",
-					"score": info.get("score"),
-				}
+            
+            if not tasks.get(info["id"],{}):
+                tasks[info["id"]] = {
+                    "id": info["id"],
+                    "target": target,
+                    "md5": md5,
+                    "category": category,
+                    "added_on": info.get("added"),
+                    "completed_on": info.get("ended"),
+                    "status": "reported",
+                    "score": info.get("score"),
+                }
 
         return JsonResponse({
             "tasks": sorted(
