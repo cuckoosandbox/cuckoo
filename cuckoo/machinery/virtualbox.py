@@ -422,6 +422,10 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to disable remote control: %s" % e
             )
 
+    def get_remote_control_params(self, label):
+        # port = self.vminfo(label, "vrdeport")
+        return "rdp", "127.0.0.1", 3389
+
     def _toggle_remote_control(self, label, val):
         args = [
             self.options.virtualbox.path, "modifyvm", label,

@@ -266,16 +266,23 @@ class Machinery(object):
         raise NotImplementedError
 
     def enable_remote_control(self, label):
-        """Enable remote control interface (RDP/VNC/SSH)
+        """Enable remote control interface (RDP/VNC/SSH).
         @param label: machine name.
-        @return: port used for this machine.
+        @return: None
         """
         raise NotImplementedError
 
     def disable_remote_control(self, label):
-        """Disable remote control interface (RDP/VNC/SSH)
+        """Disable remote control interface (RDP/VNC/SSH).
         @param label: machine name.
         @return: None
+        """
+        raise NotImplementedError
+
+    def get_remote_control_params(self, label):
+        """Return connection details for remote control.
+        @param label: machine name.
+        @return: tuple of (protocol, ip, port)
         """
         raise NotImplementedError
 
