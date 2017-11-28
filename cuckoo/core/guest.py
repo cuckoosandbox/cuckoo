@@ -500,6 +500,10 @@ class GuestManager(object):
             }
             self.post("/store", files=files, data=data)
 
+        log.info("Uploaded analyzer... HANGING")
+        while True:
+            pass
+
         if "execpy" in features:
             data = {
                 "filepath": "%s/analyzer.py" % self.analyzer_path,
