@@ -40,6 +40,7 @@ class LinuxSystemTap(BehaviorHandler):
 
         self.processes = []
         self.forkmap = {}
+        self.behavior = {}
         self.matched = False
 
     def handles_path(self, path):
@@ -63,7 +64,7 @@ class LinuxSystemTap(BehaviorHandler):
             if self.is_newpid(pid):
                 p_pid = self.forkmap.get(pid, -1)
                 calls = FilteredProcessLog(parser, pid=pid)
-                self.processes.append({
+                process = {
                     "type": "process",
                     "pid": pid,
                     "ppid": p_pid,
@@ -71,12 +72,22 @@ class LinuxSystemTap(BehaviorHandler):
                     "first_seen": syscall["time"],
                     "command_line": "",
                     "calls": calls,
-                })
+                }
+                self.processes.append(process)
                 self.behavior[pid] = BehaviorReconstructor()
-            self.behavior[pid].process_apicall(syscall)
+                yield process
+            
+            for category, arg in self.behavior[pid].process_apicall(syscall):    
+                yield {
+                        "type": "generic",
+                        "pid": pid,
+                        "category": category,
+                        "value": arg,
+                    }
+
+            
             self.post_hook(syscall)
 
-        return self.processes
 
     def pre_hook(self, syscall):
         if syscall["api"] == "clone" or syscall["api"] == "fork":
@@ -129,7 +140,7 @@ class BehaviorReconstructor(object):
         return []
 
     def _api_open(self, ret, arguments, flags):
-        single("files_opened",(arguments["path"]))
+        return single("files_opened",(arguments["path"]))
 
 class StapParser(object):
     """Handle .stap logs from the Linux analyzer."""
