@@ -75,10 +75,10 @@ class ExtractManager(object):
         open(filepath, "wb").write(payload)
         return filepath
 
-    def push_command_line(self, cmdline):
+    def push_command_line(self, cmdline, process=None):
         command = Scripting().parse_command(cmdline)
         if command and command.get_script():
-            self.push_script(None, command)
+            self.push_script(process, command)
 
     def push_script(self, process, command):
         filepath = self.write_extracted(

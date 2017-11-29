@@ -221,7 +221,7 @@ class ExtractScripts(BehaviorHandler):
         self.ex = ExtractManager.for_task(self.analysis.task["id"])
 
     def handle_event(self, process):
-        self.ex.push_command_line(process["command_line"])
+        self.ex.push_command_line(process["command_line"], process)
 
     def run(self):
         pass

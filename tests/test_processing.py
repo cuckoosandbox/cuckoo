@@ -12,13 +12,14 @@ import pytest
 import shutil
 import tempfile
 
-from cuckoo.common.abstracts import Processing
+from cuckoo.common.abstracts import Processing, Extractor
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
 )
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
+from cuckoo.core.extract import ExtractManager
 from cuckoo.core.plugins import RunProcessing
 from cuckoo.core.startup import init_console_logging, init_yara
 from cuckoo.main import cuckoo_create
@@ -289,6 +290,10 @@ class TestProcessing(object):
         assert "kkkllsslll" in obj["openaction"]
 
     def test_office(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
         s = Static()
         s.set_task({
             "id": 1,
@@ -1377,3 +1382,46 @@ class TestSuricata(object):
         s.set_options({})
         s.process_pcap_binary = create
         s.run()
+
+def test_static_extracted():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "processing": {
+            "analysisinfo": {
+                "enabled": False,
+            },
+            "debug": {
+                "enabled": False,
+            }
+        },
+    })
+    mkdir(cwd(analysis=1))
+    shutil.copy("tests/files/createproc1.docm", cwd("binary", analysis=1))
+
+    open(cwd("yara", "office", "ole.yar"), "wb").write("""
+        rule OleInside {
+            strings:
+                $s1 = "Win32_Process"
+            condition:
+                filename matches /word\/vbaProject.bin/ and $s1
+        }
+    """)
+    init_yara()
+
+    class OleInsideExtractor(Extractor):
+        def handle_yara(self, filepath, match):
+            return (
+                match.category == "office" and
+                match.yara[0].name == "OleInside"
+            )
+
+    ExtractManager._instances = {}
+    ExtractManager.extractors = OleInsideExtractor,
+
+    results = RunProcessing(Dictionary({
+        "id": 1,
+        "category": "file",
+        "target": "tests/files/createproc1.docm",
+    })).run()
+
+    assert len(results["extracted"]) == 1

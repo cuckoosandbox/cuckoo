@@ -7,6 +7,7 @@ from cuckoo.core.extract import ExtractManager
 
 class Extracted(Processing):
     key = "extracted"
+    order = 3
 
     def run(self):
         return ExtractManager.for_task(self.task.id).results()

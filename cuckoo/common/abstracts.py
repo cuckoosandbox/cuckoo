@@ -1315,8 +1315,8 @@ class Extractor(object):
     def handle_yara(self, filepath, match):
         raise NotImplementedError
 
-    def push_command_line(self, cmdline):
-        self.parent.push_command_line(cmdline)
+    def push_command_line(self, cmdline, process=None):
+        self.parent.push_command_line(cmdline, process)
 
     def push_script(self, process, command):
         self.parent.push_script(process, command)
