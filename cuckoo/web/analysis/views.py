@@ -57,7 +57,8 @@ def chunk(request, task_id, pid, pagenum):
         {
             "behavior.processes.pid": 1,
             "behavior.processes.calls": 1
-        }
+        },
+        sort=[("_id", pymongo.DESCENDING)]
     )
 
     if not record:
@@ -102,7 +103,8 @@ def filtered_chunk(request, task_id, pid, category):
         {
             "behavior.processes.pid": 1,
             "behavior.processes.calls": 1,
-        }
+        },
+        sort=[("_id", pymongo.DESCENDING)]
     )
 
     if not record:
@@ -147,7 +149,8 @@ def search_behavior(request, task_id):
     record = results_db.analysis.find_one(
         {
             "info.id": int(task_id),
-        }
+        },
+        sort=[("_id", pymongo.DESCENDING)]
     )
 
     # Loop through every process
