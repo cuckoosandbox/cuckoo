@@ -75,7 +75,7 @@ class LinuxSystemTap(BehaviorHandler):
                 }
                 self.processes.append(process)
                 self.behavior[pid] = BehaviorReconstructor()
-                yield process
+                #yield process
             
             for category, arg in self.behavior[pid].process_apicall(syscall):    
                 yield {
@@ -85,8 +85,9 @@ class LinuxSystemTap(BehaviorHandler):
                         "value": arg,
                     }
 
-            
-            self.post_hook(syscall)
+            p = self.post_hook(syscall)
+            if not p == None:
+                yield p
 
 
     def pre_hook(self, syscall):
@@ -96,13 +97,13 @@ class LinuxSystemTap(BehaviorHandler):
     def post_hook(self, syscall):
         if syscall["api"] == "execve":
             pid = self.get_proc(syscall["pid"])
-
             # only update proc info after first succesful execve in this pid
             if not syscall["return_value"] and not pid["command_line"]:
                 pid["process_name"] = os.path.basename(
                     str(syscall["arguments"]["p0"])
                 )
                 pid["command_line"] = " ".join(syscall["arguments"]["p1"])
+                return pid;
 
     def get_proc(self, pid):
         for process in self.processes:
@@ -165,7 +166,7 @@ class BehaviorReconstructor(object):
 
     def _api_socket(self, return_value, arguments, flags):
         self.sockets[return_value] = arguments
-        return single("socket", (arguments["addr"]))
+        return single("socket", (arguments["type"]))
 
 
 class StapParser(object):
