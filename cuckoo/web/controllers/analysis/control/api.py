@@ -2,17 +2,26 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from cuckoo.core.database import Database
 from cuckoo.web.controllers.analysis.control.control import AnalysisControlController
 from cuckoo.web.utils import csrf_exempt
 from django.http import HttpResponse
+
+db = Database()
 
 
 class ControlApi:
     @staticmethod
     @csrf_exempt
     def tunnel(request, task_id):
-        qs = request.META['QUERY_STRING']
+        task = db.view_task(task_id)
+        if not task:
+            return HttpResponse(status=404)
 
+        if task.options.get("remotecontrol") != "yes":
+            return HttpResponse(status=403)
+
+        qs = request.META['QUERY_STRING']
         if qs == 'connect':
             return AnalysisControlController.do_connect(int(task_id))
         else:
