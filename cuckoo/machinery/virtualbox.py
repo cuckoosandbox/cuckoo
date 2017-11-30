@@ -382,8 +382,7 @@ class VirtualBox(Machinery):
 
     def enable_remote_control(self, label):
         try:
-            proc = self._toggle_remote_control(label, "on")
-
+            proc = self._set_flag(label, "vrde", "on")
             if proc.returncode != 0:
                 log.error("VBoxManage returned non-zero value while enabling "
                           "remote control: %d" % proc.returncode)
@@ -404,8 +403,7 @@ class VirtualBox(Machinery):
 
     def disable_remote_control(self, label):
         try:
-            proc = self._toggle_remote_control(label, "off")
-
+            proc = self._set_flag(label, "vrde", "off")
             if proc.returncode != 0:
                 log.error(
                     "VBoxManage returned non-zero value while "
@@ -426,30 +424,8 @@ class VirtualBox(Machinery):
         # port = self.vminfo(label, "vrdeport")
         return "rdp", "127.0.0.1", 3389
 
-    def _toggle_remote_control(self, label, val):
-        args = [
-            self.options.virtualbox.path, "modifyvm", label,
-            "--vrde", val
-        ]
-        proc = Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            close_fds=True
-        )
-        _, _ = proc.communicate()
-
-        return proc
-
     def _set_vrde_ports(self, label, ports):
-        args = [
-            self.options.virtualbox.path, "modifyvm", label,
-            "--vrdeport", ports
-        ]
-        proc = Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            close_fds=True
-        )
-        _, _ = proc.communicate()
-
+        proc = self._set_flag(label, "vrdeport", ports)
         if proc.returncode != 0:
             log.error(
                 "VboxManage returned non-zero return status while "
@@ -461,5 +437,18 @@ class VirtualBox(Machinery):
             "Successfully set remote control ports for virtual machine "
             "with label %s: %s" % (label, ports)
         )
+
+        return proc
+
+    def _set_flag(self, label, key, val):
+        args = [
+            self.options.virtualbox.path, "modifyvm", label,
+            "--%s" % key, val
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+        _, _ = proc.communicate()
 
         return proc
