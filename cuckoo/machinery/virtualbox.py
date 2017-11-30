@@ -388,6 +388,12 @@ class VirtualBox(Machinery):
                           "remote control: %d" % proc.returncode)
                 return False
 
+            proc = self._set_flag(label, "vrdemulticon", "on")
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control multicon: %d" % proc.returncode)
+                return False
+
             port = getattr(self.options, label)["controlport"]
             self._set_vrde_ports(label, port)
 
