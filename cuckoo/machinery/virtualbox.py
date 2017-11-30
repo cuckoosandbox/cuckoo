@@ -119,6 +119,9 @@ class VirtualBox(Machinery):
 
         self._wait_status(label, self.SAVED)
 
+        if self.remote_control:
+            self._enable_remote_control(label)
+
         try:
             args = [
                 self.options.virtualbox.path, "startvm", label,
@@ -381,6 +384,9 @@ class VirtualBox(Machinery):
             )
 
     def enable_remote_control(self, label):
+        self.remote_control = True
+
+    def _enable_remote_control(self, label):
         try:
             proc = self._set_flag(label, "vrde", "on")
             if proc.returncode != 0:
