@@ -7,13 +7,48 @@ import datetime
 from cuckoo.processing.platform.linux import StapParser, LinuxSystemTap
 from cuckoo.processing.behavior import BehaviorAnalysis
 
-def test_stapbehavior():
+def test_stap_behavior():
     ba = BehaviorAnalysis()
     systemTap = LinuxSystemTap(ba)
-    result = list(systemTap.parse("tests/files/log_full.stap"))
-    assert not result == []
+    result = list(systemTap.parse("tests/files/log_fork.stap"))
+    assert result == list([{'calls': [],
+    'command_line': '/tmp/wget',
+    'first_seen': datetime.datetime(2017, 11, 17, 6, 57, 11, 420041),
+    'pid': 1523,
+    'ppid': 1522,
+    'process_name': 'wget',
+    'type': 'process'},
+    {'category': 'files_opened',
+        'pid': 1523,
+        'type': 'generic',
+        'value': '/etc/rc.d/rc.local'},
+    {'category': 'files_opened',
+        'pid': 1523,
+        'type': 'generic',
+        'value': '/etc/rc.conf'},
+    {'category': 'socket', 'pid': 1523, 'type': 'generic', 'value': 'SOCK_DGRAM'},
+    {'category': 'connects_ip',
+        'pid': 1523,
+        'type': 'generic',
+        'value': ['AF_INET', '8.8.8.8', '53']},
+    {'category': 'files_opened',
+        'pid': 1523,
+        'type': 'generic',
+        'value': '/proc/net/route'},
+    {'category': 'files_read',
+        'pid': 1523,
+        'type': 'generic',
+        'value': '/proc/net/route'}])
 
-def test_staplog():
+
+def test_stap_forks():
+    ba = BehaviorAnalysis()
+    systemTap = LinuxSystemTap(ba)
+    result = list(systemTap.parse("tests/files/log_fork.stap"))
+    assert len(systemTap.forkmap) == 3
+    assert len(systemTap.forkmap) == len(systemTap.processes)
+
+def test_stap_log():
     assert list(StapParser(open("tests/files/log.stap"))) == [{
         "api": "execve",
         "arguments": {
