@@ -878,6 +878,31 @@ class Config(object):
             },
             "__star__": ("xenserver", "machines"),
         },
+        "virtualbox_websrv": {
+            "virtualbox_websrv": {
+                "mode": String("headless"),
+                "url": String("https://virtualbox-webservice:18083"),
+                "user": String("username_goes_here"),
+                "password": String("password_goes_here", sanitize=True),
+                "interface": String("eth0"),
+                "machines": List(String, "cuckoo1"),
+                "remote_storage": Path("/tmp/cuckoo-storage"),
+            },
+            "*": {
+                "__section__": "cuckoo1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String("192.168.56.101"),
+                "snapshot": String(),
+                "interface": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "tags": String(),
+                "options": List(String, None, ",\\s"),
+                "osprofile": String(required=False),
+            },
+            "__star__": ("virtualbox_websrv", "machines"),
+        }
     }
 
     def get_section_types(self, file_name, section, strict=False, loose=False):

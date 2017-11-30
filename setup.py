@@ -203,6 +203,7 @@ do_setup(
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
+        "remotevbox==0.1.2.4",
         "sflock>=0.2.15, <0.3",
         "sqlalchemy==1.0.8",
         "unicorn==1.0.1",
