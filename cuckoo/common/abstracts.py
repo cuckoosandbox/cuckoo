@@ -71,6 +71,7 @@ class Machinery(object):
     def __init__(self):
         self.options = None
         self.db = Database()
+        self.remote_control = False
 
         # Machine table is cleaned to be filled from configuration file
         # at each start.
