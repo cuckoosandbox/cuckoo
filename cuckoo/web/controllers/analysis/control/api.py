@@ -14,7 +14,7 @@ class ControlApi:
     @staticmethod
     @csrf_exempt
     def tunnel(request, task_id):
-        task = db.view_task(task_id)
+        task = db.view_task(int(task_id))
         if not task:
             return HttpResponse(status=404)
 
@@ -23,7 +23,7 @@ class ControlApi:
 
         qs = request.META['QUERY_STRING']
         if qs == 'connect':
-            return AnalysisControlController.do_connect(int(task_id))
+            return AnalysisControlController.do_connect(task)
         else:
             try:
                 cmd, conn, = qs.split(':')[:2]

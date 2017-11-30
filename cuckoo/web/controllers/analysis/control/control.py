@@ -11,7 +11,6 @@ from cuckoo.core.database import Database
 from django.http import StreamingHttpResponse, HttpResponse
 from guacamole.client import GuacamoleClient
 
-db = Database()
 log = logging.getLogger(__name__)
 
 sockets = {}
@@ -23,9 +22,7 @@ pending_read_request = threading.Event()
 
 class AnalysisControlController:
     @staticmethod
-    def do_connect(task_id):
-        task = db.view_task(task_id)
-
+    def do_connect(task):
         # TODO: way to get to the actual used machinery object
         machinery = VirtualBox()  # hardcoded for virtualbox poc
         params = machinery.get_remote_control_params(task.guest.label)
