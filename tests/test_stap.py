@@ -12,33 +12,33 @@ def test_stap_behavior():
     systemTap = LinuxSystemTap(ba)
     result = list(systemTap.parse("tests/files/log_fork.stap"))
     assert result == list([{'calls': [],
-    'command_line': '/tmp/wget',
-    'first_seen': datetime.datetime(2017, 11, 17, 6, 57, 11, 420041),
-    'pid': 1523,
-    'ppid': 1522,
-    'process_name': 'wget',
-    'type': 'process'},
-    {'category': 'files_opened',
+        'command_line': '/tmp/wget',
+        'first_seen': datetime.datetime(2017, 11, 17, 6, 57, 11, 420041),
         'pid': 1523,
-        'type': 'generic',
-        'value': '/etc/rc.d/rc.local'},
-    {'category': 'files_opened',
-        'pid': 1523,
-        'type': 'generic',
-        'value': '/etc/rc.conf'},
-    {'category': 'socket', 'pid': 1523, 'type': 'generic', 'value': 'SOCK_DGRAM'},
-    {'category': 'connects_ip',
-        'pid': 1523,
-        'type': 'generic',
-        'value': ['AF_INET', '8.8.8.8', '53']},
-    {'category': 'files_opened',
-        'pid': 1523,
-        'type': 'generic',
-        'value': '/proc/net/route'},
-    {'category': 'files_read',
-        'pid': 1523,
-        'type': 'generic',
-        'value': '/proc/net/route'}])
+        'ppid': 1522,
+        'process_name': 'wget',
+        'type': 'process'},
+        {'category': 'files_opened',
+            'pid': 1523,
+            'type': 'generic',
+            'value': '/etc/rc.d/rc.local'},
+        {'category': 'files_opened',
+            'pid': 1523,
+            'type': 'generic',
+            'value': '/etc/rc.conf'},
+        {'category': 'socket', 'pid': 1523, 'type': 'generic', 'value': 'SOCK_DGRAM'},
+        {'category': 'connects_ip',
+            'pid': 1523,
+            'type': 'generic',
+            'value': ['AF_INET', '8.8.8.8', '53']},
+        {'category': 'files_opened',
+            'pid': 1523,
+            'type': 'generic',
+            'value': '/proc/net/route'},
+        {'category': 'files_read',
+            'pid': 1523,
+            'type': 'generic',
+            'value': '/proc/net/route'}])
 
 
 def test_stap_forks():
@@ -52,9 +52,9 @@ def test_stap_log():
     assert list(StapParser(open("tests/files/log.stap"))) == [{
         "api": "execve",
         "arguments": {
-            "p0": "/usr/bin/sh",
-            "p1": ["sh", "-c", "/tmp/helloworld.sh"],
-            "p2": [
+            "filename": "/usr/bin/sh",
+            "argv": ["sh", "-c", "/tmp/helloworld.sh"],
+            "envp": [
                 "LANGUAGE=en_US:en",
                 "HOME=/root",
                 "LOGNAME=root",
@@ -76,7 +76,7 @@ def test_stap_log():
     }, {
         "api": "brk",
         "arguments": {
-            "p0": "0x0"
+            "brk": "0x0"
         },
         "instruction_pointer": "b77825f7",
         "pid": 680,
@@ -90,8 +90,8 @@ def test_stap_log():
     }, {
         "api": "access",
         "arguments": {
-            "p0": "/etc/ld.so.nohwcap",
-            "p1": "F_OK"
+            "filename": "/etc/ld.so.nohwcap",
+            "mode": "F_OK"
         },
         "instruction_pointer": "b77838c1",
         "pid": 680,
@@ -125,7 +125,7 @@ def test_stap_log():
         "api": "write",
         "arguments": {
             "fd": "1",
-            "buffer": "h3ll0 w0rld!\n",
+            "buf": "h3ll0 w0rld!\n",
             "count": "13",
         },
         "instruction_pointer": "b7768cf9",
@@ -134,14 +134,14 @@ def test_stap_log():
         "raw": "Mon Jun 19 16:58:32 2017.036988 helloworld.sh@b7768cf9[681] write(1, \"h3ll0 w0rld!\\n\", 13) = 13\n",
         "return_value": "13",
         "status": "",
-        "category": "file",
+        "category": "default",
         "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 36988),
         "type": "apicall",
     }, {
         "api": "read",
         "arguments": {
             "fd": "10",
-            "buffer": "0x800665c0",
+            "buf": "0x800665c0",
             "count": "8192",
         },
         "instruction_pointer": "b7768cf9",
@@ -150,13 +150,13 @@ def test_stap_log():
         "raw": "Mon Jun 19 16:58:32 2017.037596 helloworld.sh@b7768cf9[681] read(10, 0x800665c0, 8192) = 0\n",
         "return_value": "0",
         "status": "",
-        "category": "file",
+        "category": "default",
         "time": datetime.datetime(2017, 6, 19, 16, 58, 32, 37596),
         "type": "apicall",
     }, {
         "api": "exit_group",
         "arguments": {
-            "p0": "0"
+            "error_code": "0"
         },
         "instruction_pointer": "b7768cf9",
         "pid": 681,
@@ -170,10 +170,10 @@ def test_stap_log():
     }, {
         "api": "wait4",
         "arguments": {
-            "p0": "-1",
-            "p1": "0xbfd4a134",
-            "p2": "0x0",
-            "p3": "0x0",
+            "upid": "-1",
+            "stat_addr": "0xbfd4a134",
+            "ru": "0x0",
+            "options": "0x0",
         },
         "instruction_pointer": "b7769cf9",
         "pid": 680,
@@ -199,7 +199,7 @@ def test_stap_log():
     }, {
         "api": "exit_group",
         "arguments": {
-            "p0": "0"
+            "error_code": "0"
         },
         "instruction_pointer": "b7769cf9",
         "pid": 680,
@@ -214,7 +214,7 @@ def test_stap_log():
         "api": "write",
         "arguments": {
             "fd": "2",
-            "buffer": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
+            "buf": "BusyBox v1.16.0 (2010-02-06 04:51:36 CST)",
             "count": "41",
         },
         "instruction_pointer": "80dbdde",
@@ -223,14 +223,14 @@ def test_stap_log():
         "raw": "Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, \"BusyBox v1.16.0 \\x282010-02-06 04:51:36 CST\\x29\", 41) = 41\n",
         "return_value": "41",
         "status": "",
-        "category": "file",
+        "category": "default",
         "time": datetime.datetime(2017, 6, 20, 15, 39, 30, 141870),
         "type": "apicall",
     }, {
         "api": "write",
         "arguments": {
             "fd": "2",
-            "buffer": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
+            "buf": "Copyright (C) 1998-2009 Erik Andersen, Rob La",
             "count": "480",
         },
         "instruction_pointer": "80dbdde",
@@ -239,15 +239,15 @@ def test_stap_log():
         "raw": "Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, \"Copyright \\x28C\\x29 1998-2009 Erik Andersen\\x2c Rob La\", 480) = 480\n",
         "return_value": "480",
         "status": "",
-        "category": "file",
+        "category": "default",
         "time": datetime.datetime(2017, 6, 22, 10, 22, 6, 766807),
         "type": "apicall",
     }, {
         "api": "execve",
         "arguments": {
-            "p0": "/usr/bin/sh",
-            "p1": ["sh", "-c", "/tmp/comma,sh"],
-            "p2": ["COMMA_IN_ARRAY=it,works", "HOME=/root"],
+            "filename": "/usr/bin/sh",
+            "argv": ["sh", "-c", "/tmp/comma,sh"],
+            "envp": ["COMMA_IN_ARRAY=it,works", "HOME=/root"],
         },
         "instruction_pointer": "b774dcf9",
         "pid": 680,
@@ -261,9 +261,9 @@ def test_stap_log():
     }, {
         "api": "execve",
         "arguments": {
-            "p0": "/usr/bin/sh",
-            "p1": ["sh", "-c", "/tmp/bracket]sh"],
-            "p2": ["LANGUAGE=en_US:en", "HOME=/root"],
+            "filename": "/usr/bin/sh",
+            "argv": ["sh", "-c", "/tmp/bracket]sh"],
+            "envp": ["LANGUAGE=en_US:en", "HOME=/root"],
         },
         "instruction_pointer": "b774dcf9",
         "pid": 680,
@@ -277,7 +277,7 @@ def test_stap_log():
     }, {
         "api": "set_thread_area",
         "arguments": {
-            "p0": {
+            "arch_prctl": {
                 "entry_number": "4294967295",
                 "base_addr": "3078293568",
                 "limit": "1048575",
@@ -301,7 +301,7 @@ def test_stap_log():
     }, {
         "api": "rt_sigaction",
         "arguments": {
-            "signal": "SIGCHLD",
+            "sig": "SIGCHLD",
             "act": [
                 "0x55644b6bf5a0",
                 "SA_RESTORER",
@@ -315,8 +315,8 @@ def test_stap_log():
                     "SIGSYS]"
                 ],
             ],
-            "oldact": "0x0",
-            "p3": "8",
+            "oact": "0x0",
+            "sigsetsize": "8",
         },
         "instruction_pointer": "7f30ca2448ee",
         "pid": 900,
@@ -330,7 +330,7 @@ def test_stap_log():
     }, {
         "api": "sysinfo",
         "arguments": {
-            "p0": {
+            "info": {
                 "bufferram": "3212869720",
                 "freeram": "3077782043",
                 "freeswap": "3",

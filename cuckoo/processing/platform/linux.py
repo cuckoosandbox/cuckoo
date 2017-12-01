@@ -7,6 +7,7 @@ import dateutil.parser
 import os
 import logging
 import re
+import json
 
 from cuckoo.common.abstracts import BehaviorHandler
 
@@ -101,9 +102,9 @@ class LinuxSystemTap(BehaviorHandler):
             # only update proc info after first succesful execve in this pid
             if not syscall["return_value"] and not pid["command_line"]:
                 pid["process_name"] = os.path.basename(
-                    str(syscall["arguments"]["p0"])
+                    str(syscall["arguments"]["filename"])
                 )
-                pid["command_line"] = " ".join(syscall["arguments"]["p1"])
+                pid["command_line"] = " ".join(syscall["arguments"]["argv"])
                 return pid;
 
     def get_proc(self, pid):
@@ -144,8 +145,8 @@ class BehaviorReconstructor(object):
         return []
 
     def _api_open(self, return_value, arguments, status):
-        self.files[return_value] = arguments["path"]
-        return single("files_opened",(arguments["path"]))
+        self.files[return_value] = arguments["filename"]
+        return single("files_opened",(arguments["filename"]))
 
     def _api_write(self, return_value, arguments, status):
         if arguments["fd"] in self.files :
@@ -160,10 +161,10 @@ class BehaviorReconstructor(object):
         if arguments["fd"] in self.sockets: self.sockets.pop(arguments["fd"], None)
 
     def _api_stat(self, return_value, arguments, status):
-        return single("file_exists",(arguments["path"]))
+        return single("file_exists",(arguments["filename"]))
 
     def _api_connect(self, return_value, arguments, flags):
-        return single("connects_ip", (arguments["addr"]))
+        return single("connects_ip", (arguments["uservaddr"]))
 
     def _api_socket(self, return_value, arguments, flags):
         self.sockets[return_value] = arguments
@@ -175,6 +176,9 @@ class StapParser(object):
 
     def __init__(self, fd):
         self.fd = fd
+        with open(os.path.join( os.path.dirname(__file__), "syscalls.json")) as json_file:
+            self.mappings = json.load(json_file)
+
 
     def __iter__(self):
         self.fd.seek(0)
@@ -203,7 +207,10 @@ class StapParser(object):
                 "return_value": retval, "status": ecode, "category" : "default",
                 "type": "apicall", "raw": line,
             }
-            getattr(self,"_parse_%s" % fn, lambda event: None)(event)
+            mapping = self.mappings.get("sys_%s" % fn, [])
+            if not mapping == []:
+                self.rename_args(event["arguments"], mapping)
+
             yield event
 
     def parse_args(self, args):
@@ -274,59 +281,6 @@ class StapParser(object):
         for newKey in mapping:
             key = "p%u" % n_args
             if args.get(key):
-                args[newKey] = args[key]
+                args[newKey["name"].encode('utf-8')] = args[key]
                 del args[key]
             n_args += 1
-
-    def _parse_rt_sigaction(self, event):
-        self.rename_args(event["arguments"], ["signal",  "act", "oldact"])
-
-    def _parse_default_file(self, event):
-        event["category"] = "file"
-        self.rename_args(event["arguments"], [ "path", "mode","flags"])
-    
-    _parse_open = _parse_default_file
-    _parse_creat = _parse_default_file
-    _parse_chmode = _parse_default_file
-    _parse_chdir = _parse_default_file
-    _parse_rmdir = _parse_default_file
-    _parse_mkdir = _parse_default_file
-    _parse_stat = _parse_default_file
-
-    def _parse_rename(self, event):
-        event["category"] = "file"
-        self.rename_args(event["arguments"], [ "oldname", "newname"])
-    _parse_symlink =_parse_rename
-    _parse_link =_parse_rename
-        
-    def _parse_chown(self, event):
-        event["category"] = "file"
-        self.rename_args(event["arguments"], [ "path", "owner", "group" ])
-
-    def _parse_write(self, event):
-        event["category"] = "file"
-        self.rename_args(event["arguments"], [ "fd","buffer","count" ])
-    _parse_read = _parse_write
-    _parse_close = _parse_write
-
-    def _parse_socket(self, event):
-        event["category"] = "network"
-        self.rename_args(event["arguments"], ["domain","type","protocol"])
-
-    def _parse_getsockopt(self, event):
-        event["category"] = "network"
-        self.rename_args(event["arguments"], [ "sockfd", "level", "optname", "optval", "optlen"])
-    _parse_setsockopt = _parse_getsockopt
-    
-    def _parse_listen(self, event):
-        event["category"] = "network"
-        self.rename_args(event["arguments"], [ "sockfd", "backlog" ])
-
-    def _parse_accept(self, event):
-        event["category"] = "network"
-        self.rename_args(event["arguments"], [ "sockfd", "addr", "addrlen", "flags" ])
-    _parse_accept4 = _parse_accept
-    _parse_connect = _parse_accept
-    _parse_bind = _parse_accept
-    _parse_getsockname = _parse_accept
-    _parse_getpeername = _parse_accept
