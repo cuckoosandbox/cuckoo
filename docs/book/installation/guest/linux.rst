@@ -27,7 +27,7 @@ have ``tap`` prefix::
     $ sudo ip link set dev tap_debian_x64 up
     $ sudo ip link set dev br0 up
 
-The following instructions are only for x32/x64 ubuntu 17.04 linux guests
+The following instructions are only for x32/x64/arm ubuntu 17.04 linux guests
 =========================================================================
 
 ** Note if you run cuckoo with with no cuckoo user, replace cuckoo after -u to
