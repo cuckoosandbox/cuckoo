@@ -10,6 +10,7 @@ import re
 import json
 
 from cuckoo.common.abstracts import BehaviorHandler
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -181,7 +182,7 @@ class StapParser(object):
 
     def __init__(self, fd):
         self.fd = fd
-        with open(os.path.join( os.path.dirname(__file__), "syscalls.json")) as json_file:
+        with open(cwd("systemtap", "mappings.json", private=True)) as json_file:
             self.mappings = json.load(json_file)
 
 

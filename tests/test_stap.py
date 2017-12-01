@@ -30,7 +30,7 @@ def test_stap_behavior():
         {'category': 'connects_ip',
             'pid': 1523,
             'type': 'generic',
-            'value': ['AF_INET', '8.8.8.8', '53']},
+            'value': "['AF_INET', '8.8.8.8', '53']"},
         {'category': 'files_opened',
             'pid': 1523,
             'type': 'generic',
