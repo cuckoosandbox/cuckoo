@@ -91,7 +91,8 @@ class LinuxSystemTap(BehaviorHandler):
 
 
     def pre_hook(self, syscall):
-        if syscall["api"] == "clone" or syscall["api"] == "fork":
+        fn = syscall["api"]
+        if fn == "clone" or fn == "fork" or fn == "vfork":
             self.forkmap[int(syscall["return_value"])] = syscall["pid"]
 
     def post_hook(self, syscall):
