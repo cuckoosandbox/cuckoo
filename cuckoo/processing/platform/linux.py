@@ -145,8 +145,11 @@ class BehaviorReconstructor(object):
         return []
 
     def _api_open(self, return_value, arguments, status):
-        self.files[return_value] = arguments["filename"]
-        return single("files_opened",(arguments["filename"]))
+        if return_value >= 0:
+            self.files[return_value] = arguments["filename"]
+            return single("files_opened", arguments["filename"])
+        else:
+            return single("file_failed", arguments["filename"])
 
     def _api_write(self, return_value, arguments, status):
         if arguments["fd"] in self.files :
@@ -157,14 +160,16 @@ class BehaviorReconstructor(object):
             return single("files_read",(self.files[arguments["fd"]]))
 
     def _api_close(self, return_value, arguments, status):
-        if arguments["fd"] in self.files: self.files.pop(arguments["fd"], None)
-        if arguments["fd"] in self.sockets: self.sockets.pop(arguments["fd"], None)
+        if arguments["fd"] in self.files:
+            self.files.pop(arguments["fd"], None)
+        if arguments["fd"] in self.sockets:
+            self.sockets.pop(arguments["fd"], None)
 
     def _api_stat(self, return_value, arguments, status):
         return single("file_exists",(arguments["filename"]))
 
     def _api_connect(self, return_value, arguments, flags):
-        return single("connects_ip", (arguments["uservaddr"]))
+        return single("connects_ip", repr(arguments["uservaddr"]))
 
     def _api_socket(self, return_value, arguments, flags):
         self.sockets[return_value] = arguments
