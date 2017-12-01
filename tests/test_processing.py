@@ -12,6 +12,9 @@ import pytest
 import shutil
 import tempfile
 
+
+from collections import defaultdict
+
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
@@ -871,31 +874,36 @@ class TestBehavior(object):
         ba.set_task({
             "id": 1,
         })
-
-        assert ba.run() == {
-            "generic": [{
+        result = ba.run()
+        # ugly; but the summary field is too long to be tested like this
+        result["generic"][0]["summary"] = []
+        result["generic"][1]["summary"] = []
+        result["generic"][2]["summary"] = []
+        result["processtree"][0]["summary"] = []
+        
+        assert result["generic"] == [{
                 "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
                 "pid": 820,
                 "ppid": 819,
                 "process_name": "sh",
                 "process_path": None,
-                "summary": {},
+                "summary": [],
             }, {
                 "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 619135),
                 "pid": 821,
                 "ppid": 820,
                 "process_name": "bash",
                 "process_path": None,
-                "summary": {},
+                "summary":  [],
             }, {
                 "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 646318),
                 "pid": 822,
                 "ppid": 821,
                 "process_name": "ls",
                 "process_path": None,
-                "summary": {},
-            }],
-            "processes": [{
+                "summary": [],
+            }]
+        assert result["processes"] == [{
                 "calls": [],
                 "command_line": "/bin/sh /tmp/execve.sh",
                 "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
@@ -922,8 +930,8 @@ class TestBehavior(object):
                 "ppid": 821,
                 "process_name": "ls",
                 "type": "process"
-            }],
-            "processtree": [{
+            }]
+        assert result["processtree"] == [{
                 "children": [{
                     "children": [{
                         "children": [],
@@ -949,9 +957,9 @@ class TestBehavior(object):
                 "pid": 820,
                 "ppid": 819,
                 "process_name": "sh",
-                "track": True
-            }],
-        }
+                "track": True,
+                "summary": []
+            }]
 
 class TestPcap(object):
     @classmethod
