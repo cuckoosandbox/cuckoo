@@ -12,19 +12,19 @@ as root::
     Get list of virtual machines to configure interface per vm from conf/qemu.conf
 
     Example:
-        machines = debian_x32, debian_x64, debian_arm, debian_mips, debian_mipsel
+        machines = ubuntu_x32, ubuntu_x64, ubuntu_arm, ubuntu_mips, ubuntu_mipsel
 
 You should preconfigure network interface for all of them, they all should
 have ``tap`` prefix::
 
-    $ sudo tunctl -b -u cuckoo -t tap_debian_x32
-    $ sudo ip link set tap_debian_x32 master br0
-    $ sudo ip link set dev tap_debian_x32 up
+    $ sudo tunctl -b -u cuckoo -t tap_ubuntu_x32
+    $ sudo ip link set tap_ubuntu_x32 master br0
+    $ sudo ip link set dev tap_ubuntu_x32 up
     $ sudo ip link set dev br0 up
 
-    $ sudo tunctl -b -u cuckoo -t tap_debian_x64
-    $ sudo ip link set tap_debian_x64 master br0
-    $ sudo ip link set dev tap_debian_x64 up
+    $ sudo tunctl -b -u cuckoo -t tap_ubuntu_x64
+    $ sudo ip link set tap_ubuntu_x64 master br0
+    $ sudo ip link set dev tap_ubuntu_x64 up
     $ sudo ip link set dev br0 up
 
 ** Note if you run cuckoo with with no cuckoo user, replace cuckoo after -u to
