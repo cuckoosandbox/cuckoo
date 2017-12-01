@@ -316,13 +316,16 @@ class AnalysisApi(object):
         # TODO Use a mongodb abstraction class once there is one.
         cursor = mongo.db.analysis.find(
             filters, ["info", "target"],
-            sort=[("info.id", pymongo.DESCENDING),("_id", pymongo.DESCENDING)]
+            sort=[
+                ("info.id", pymongo.DESCENDING),
+                ("_id", pymongo.DESCENDING),
+            ]
         ).limit(limit).skip(offset)
 
         tasks = {}
         for row in cursor:
             info = row.get("info", {})
-            if not info:
+            if not info or info["id"] in tasks:
                 continue
 
             category = info.get("category")
@@ -342,18 +345,17 @@ class AnalysisApi(object):
             else:
                 target = None
                 md5 = "-"
-            
-            if not tasks.get(info["id"],{}):
-                tasks[info["id"]] = {
-                    "id": info["id"],
-                    "target": target,
-                    "md5": md5,
-                    "category": category,
-                    "added_on": info.get("added"),
-                    "completed_on": info.get("ended"),
-                    "status": "reported",
-                    "score": info.get("score"),
-                }
+
+            tasks[info["id"]] = {
+                "id": info["id"],
+                "target": target,
+                "md5": md5,
+                "category": category,
+                "added_on": info.get("added"),
+                "completed_on": info.get("ended"),
+                "status": "reported",
+                "score": info.get("score"),
+            }
 
         return JsonResponse({
             "tasks": sorted(

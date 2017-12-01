@@ -35,7 +35,7 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile
+from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.suricata import Suricata
 from cuckoo.processing.targetinfo import TargetInfo
@@ -183,8 +183,9 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         s.file_path = "tests/files/fakepdf.pdf"
-        r = s.run()
-        assert "pdf" not in r
+        assert s.run() == {
+            "pdf": [],
+        }
 
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_workercrash(self, md):
@@ -337,6 +338,13 @@ class TestProcessing(object):
         })
         s.file_path = "tests/files/lnk_2.lnk"
         assert "elf" not in s.run()
+
+    def test_incomplete_lnk(self):
+        assert LnkShortcut(data="A"*4).run() is None
+        assert LnkShortcut(data=(
+            "".join(chr(x) for x in LnkShortcut.signature + LnkShortcut.guid) +
+            "A"*100
+        )).run() is None
 
     def test_procmon(self):
         p = Procmon()

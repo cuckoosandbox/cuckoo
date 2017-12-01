@@ -251,6 +251,7 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
 ef54d877bf8d348b2c99bd38814152f81d282570 analyzer/windows/lib/common/decide.py
 b580676d8a3119508cfab933adb95929648674b4 analyzer/windows/lib/core/ioctl.py
 931e4f3889214e0cc4973d5a63f035733a971082 analyzer/windows/lib/core/packages.py
+6e24fffbed8c8428491a557c1c59094c3b6974eb analyzer/windows/modules/auxiliary/human.py
 c52e94fe997480249187dc3a9da6676fd9a4f27a analyzer/windows/modules/auxiliary/zer0m0n.py
 86d17a162f7f96dbe5c6b8113c8ef54c40f3384d analyzer/windows/modules/packages/hwp.py
 0000000000000000000000000000000000000000 gatherer.py

@@ -637,7 +637,7 @@ class PdfDocument(object):
                 "urls": []
             }
 
-        elif not isinstance(ref, peepdf.PDFCore.PDFReference):
+        if not isinstance(ref, peepdf.PDFCore.PDFReference):
             log.warning("PDFObject: can't follow type %s", ref)
             return
 
@@ -818,12 +818,11 @@ class LnkShortcut(object):
                 ret["attrs"].append(self.attrs[x])
 
         offset = 78 + self.read_uint16(76)
-        if len(buf) >= offset + 28:
-            off = LnkEntry.from_buffer_copy(buf[offset:offset + 28])
-        else:
+        if len(buf) < offset + 28:
             log.warning("Provided .lnk file is corrupted or incomplete.")
             return
 
+        off = LnkEntry.from_buffer_copy(buf[offset:offset + 28])
 
         # Local volume.
         if off.volume_flags & 1:
@@ -936,7 +935,7 @@ class ELF(object):
                     "type": str(tag.entry.d_tag)[3:],
                     "value": self._parse_tag(tag),
                 })
-                    
+
         return dynamic_tags
 
     def _get_symbol_tables(self):
@@ -1115,6 +1114,8 @@ class Static(Processing):
                     _pdf_worker, (f.file_path,),
                     timeout=self.options.pdf_timeout
                 ) or []
+            else:
+                static["pdf"] = []
 
         if package == "generic" or ext == "lnk":
             static["lnk"] = LnkShortcut(f.file_path).run()

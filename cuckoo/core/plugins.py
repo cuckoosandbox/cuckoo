@@ -184,7 +184,7 @@ class RunProcessing(object):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
         self.machine = {}
-        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
+        self.analysis_path = cwd(analysis=task["id"])
         self.baseline_path = cwd("storage", "baseline")
 
     def process(self, module, results):
