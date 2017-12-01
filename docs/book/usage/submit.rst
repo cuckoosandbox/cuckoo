@@ -73,6 +73,10 @@ The concept of analysis packages will be dealt later in this documentation (at
 
     $ cuckoo submit --package <name of package> /path/to/binary
 
+*Example*: submit a local binary and specify a custom route::
+
+    $ cuckoo submit -o route=tor /path/to/binary
+
 *Example*: submit a local binary and specify a custom analysis package and
 some options (in this case a command line argument for the malware)::
 
