@@ -660,6 +660,7 @@ class Config(object):
                     "kernel": String(),
                     "initrd": String(),
                     "osprofile": String(required=False),
+                    "cpu": String(required=False),
                 }, {
                     "__section__": "vm2",
                     "label": String("vm2"),
