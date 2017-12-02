@@ -52,7 +52,7 @@ class ExtractManager(object):
                 ext.yara_rules = ext.yara_rules,
 
     def __del__(self):
-        del ExtractManager._instances[self.task_id]
+        ExtractManager._instances.pop(self.task_id, None)
 
     def write_extracted(self, ext, payload):
         dirpath = cwd("extracted", analysis=self.task_id)

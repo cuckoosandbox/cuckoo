@@ -8,10 +8,10 @@ import shutil
 import tempfile
 
 from cuckoo.core.extract import ExtractManager
-from cuckoo.core.startup import init_yara, init_modules
-from cuckoo.misc import set_cwd, cwd, load_signatures
+from cuckoo.core.startup import init_yara
+from cuckoo.misc import set_cwd, cwd
 from cuckoo.processing.static import Static
-from tests.utils import init_analysis
+from tests.utils import init_analysis, reload_signatures
 
 def task_id():
     task_id.current += 1
@@ -22,12 +22,13 @@ task_id.current = 0
 def setup_module():
     set_cwd(tempfile.mktemp())
     shutil.copytree(os.path.expanduser("~/.cuckoo"), cwd())
+    reload_signatures()
+    ExtractManager._instances = {}
+    ExtractManager.init_once()
 
 def init(package, *filename):
     id_ = task_id()
     init_analysis(id_, package, *filename)
-    load_signatures()
-    init_modules()
     init_yara()
 
     s = Static()
