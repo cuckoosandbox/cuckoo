@@ -137,7 +137,7 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": yara_matches,
-            category: info,
+            category: info or {},
         })
         for match in yara_matches:
             match = YaraMatch(match, category)
@@ -152,8 +152,14 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": [],
-            category: info,
+            category: info or {},
         })
+
+    def enhance(self, filepath, key, value):
+        for item in self.items:
+            if item["raw"] == filepath:
+                item[item["category"]][key] = value
+                break
 
     def peek_office(self, files):
         for filename, content in files.items():

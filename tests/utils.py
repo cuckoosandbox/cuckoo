@@ -4,6 +4,8 @@
 
 import os
 
+from cuckoo.misc import mkdir, cwd
+
 class chdir(object):
     """Temporarily change the current directory."""
 
@@ -16,3 +18,9 @@ class chdir(object):
 
     def __exit__(self, type_, value, traceback):
         os.chdir(self.origpath)
+
+def init_analysis(task_id, package, *filename):
+    """Initializes an analysis with an "encrypted" binary from tests/files/."""
+    mkdir(cwd(analysis=task_id))
+    content = open(os.path.join("tests", "files", *filename), "rb").read()
+    open(cwd("binary", analysis=task_id), "wb").write(content[::-1])

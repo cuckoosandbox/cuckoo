@@ -1332,3 +1332,6 @@ class Extractor(object):
 
     def push_blob_noyara(self, blob, category, info=None):
         self.parent.push_blob_noyara(blob, category, info)
+
+    def enhance(self, filepath, key, value):
+        self.parent.enhance(filepath, key, value)

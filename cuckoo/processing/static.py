@@ -533,35 +533,6 @@ class OfficeDocument(object):
                 ret.extend(re.findall(self.eps_comments, content))
         return ret
 
-    def extract_lnk(self):
-        """Extract some information from Encapsulated Post Script files."""
-        ret = []
-        for filename, content in self.files.items():
-            if not content.startswith(self.ole_magic):
-                continue
-
-            ole = olefile.olefile.OleFileIO(content)
-            for stream in ole.listdir():
-                if stream[-1] != "\x01Ole10Native":
-                    continue
-
-                content = ole.openstream(stream).read()
-                stream = oletools.oleobj.OleNativeStream(content)
-
-                info = LnkShortcut(data=stream.data).run()
-                self.ex.push_blob_noyara(stream.data, "lnk", info)
-                self.ex.push_command_line(
-                    "%s %s" % (info["basepath"], info["cmdline"])
-                )
-
-                ret.append({
-                    "filename": stream.filename.decode("latin-1"),
-                    "src_path": stream.src_path.decode("latin-1"),
-                    "temp_path": stream.temp_path.decode("latin-1"),
-                    "lnk": info,
-                })
-        return ret
-
     def run(self):
         self.unpack_docx()
 
@@ -570,7 +541,6 @@ class OfficeDocument(object):
         return {
             "macros": list(self.get_macros()),
             "eps": self.extract_eps(),
-            "lnk": self.extract_lnk(),
         }
 
 class PdfDocument(object):
