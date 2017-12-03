@@ -333,6 +333,27 @@ class TestProcessing(object):
         s = Static()
         s.set_task({
             "category": "file",
+            "package": "lnk",
+            "target": "lnk_2.lnk",
+        })
+        s.file_path = "tests/files/lnk_2.lnk"
+        obj = s.run()["lnk"]
+        assert obj["basepath"] == "C:\\Windows\\System32\\cmd.exe"
+        assert obj["flags"] == {
+            "cmdline": True, "description": True, "icon": True,
+            "references": True, "relapath": True, "shellidlist": True,
+            "workingdir": True,
+        }
+        assert "digitale" in obj["description"]
+        assert obj["icon"] == "C:\\Windows\\System32\\write.exe"
+        assert "cmd.exe" in obj["relapath"]
+        assert "bitsadmin.exe" in obj["cmdline"]
+        assert "/transfer" in obj["cmdline"]
+
+    def test_lnk2_generic(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
             "package": "generic",
             "target": "lnk_2.lnk",
         })
@@ -340,8 +361,8 @@ class TestProcessing(object):
         assert "elf" not in s.run()
 
     def test_incomplete_lnk(self):
-        assert LnkShortcut(data="A"*4).run() is None
-        assert LnkShortcut(data=(
+        assert LnkShortcut(Files.temp_put("A"*4)).run() is None
+        assert LnkShortcut(Files.temp_put(
             "".join(chr(x) for x in LnkShortcut.signature + LnkShortcut.guid) +
             "A"*100
         )).run() is None

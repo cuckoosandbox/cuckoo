@@ -470,7 +470,6 @@ class OfficeDocument(object):
     ]
 
     eps_comments = "\\(([\\w\\s]+)\\)"
-    ole_magic = "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
     def __init__(self, filepath, task_id):
         self.filepath = filepath
@@ -741,9 +740,8 @@ class LnkShortcut(object):
         "offline", "not_indexed", "encrypted",
     ]
 
-    def __init__(self, filepath=None, data=None):
+    def __init__(self, filepath=None):
         self.filepath = filepath
-        self.buf = data
 
     def read_uint16(self, offset):
         return struct.unpack("H", self.buf[offset:offset+2])[0]
@@ -760,10 +758,7 @@ class LnkShortcut(object):
         return offset + 2 + length, ret
 
     def run(self):
-        if not self.buf and self.filepath:
-            self.buf = open(self.filepath, "rb").read()
-
-        buf = self.buf
+        buf = self.buf = open(self.filepath, "rb").read()
         if len(buf) < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
             return
