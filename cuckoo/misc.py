@@ -119,6 +119,7 @@ def load_signatures():
     # Forward everything from lib.cuckoo to "our" cuckoo module.
     sys.modules["lib"] = types.ModuleType("lib")
     sys.modules["lib.cuckoo"] = sys.modules["cuckoo"]
+    sys.modules["lib.cuckoo.common"] = sys.modules["cuckoo.common"]
 
     # Import this here in order to avoid recursive import statements.
     from cuckoo.common.abstracts import Signature
@@ -133,7 +134,7 @@ def load_signatures():
     dont_write_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
 
-    # Trigger an import on $CWD/signatures. This will automatically import
+    # Trigger an import on $CWD/signatures/. This will automatically import
     # recursively down the various directories through the use of
     # enumerate_plugins(), which the Cuckoo Community adheres to. For this to
     # work we temporarily insert the CWD in Python's path.
