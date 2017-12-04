@@ -21,6 +21,6 @@ module.exports = function() {
 	gulp.watch('scss/**/*.scss', ['styles']);
 	gulp.watch(['scripts/**/*.js','!scripts/submission/**/*.js'], ['scripts']);
 	gulp.watch('scripts/submission/**/*.js', ['scripts-submission']);
-	gulp.watch('scripts/rdp/**/*.js', ['scripts-rdp']);
+	gulp.watch(['scripts/rdp/**/*.js', '!guac/**/*'], ['scripts-rdp']);
 	gulp.watch('handlebars/**/*.hbs', ['handlebars']);
 }
