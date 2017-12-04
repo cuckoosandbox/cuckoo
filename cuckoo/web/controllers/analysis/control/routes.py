@@ -20,6 +20,9 @@ class AnalysisControlRoutes:
             if task.options.get("remotecontrol") != "yes":
                 raise Http404("remote control was not enabled for this task")
 
+            if task.status != "running":
+                raise Http404("task is not running")
+
             data = {
                 "task": task,
             }
