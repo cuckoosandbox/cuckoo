@@ -463,4 +463,4 @@ class ExtractedMatch(object):
 
         # Raw payload.
         self.raw = match.get("raw")
-        self.payload = match[self.category]
+        self.info = match["info"]

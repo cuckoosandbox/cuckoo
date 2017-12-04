@@ -51,15 +51,15 @@ def test_docx_lnk():
         },
     }
     e1, e2, e3 = e
-    assert e1["office"] == {}
+    assert e1["info"] == {}
     assert len(e1["yara"]) == 1
     assert e2["category"] == "binaries"
-    assert e2["binaries"] == {
+    assert e2["info"] == {
         "filename": " ",
         "src_path": mock.ANY,
         "temp_path": mock.ANY,
         "lnk": mock.ANY,
     }
-    assert "http" in e2["binaries"]["lnk"]["cmdline"]
+    assert "http" in e2["info"]["lnk"]["cmdline"]
     assert len(e3["yara"]) == 1
     assert e3["yara"][0]["name"] == "PowershellDI"

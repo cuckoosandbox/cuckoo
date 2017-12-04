@@ -927,18 +927,20 @@ class TestBehavior(object):
             "first_seen": 1,
             "pid": 1234,
             "program": "cmd",
-            "script": cwd("extracted", "0.bat", analysis=1),
+            "raw": cwd("extracted", "0.bat", analysis=1),
             "yara": [],
+            "info": {},
         }, {
             "category": "script",
             "first_seen": 2,
             "pid": 1235,
             "program": "powershell",
-            "script": cwd("extracted", "1.ps1", analysis=1),
+            "raw": cwd("extracted", "1.ps1", analysis=1),
             "yara": [],
+            "info": {},
         }]
-        assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
-        assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+        assert open(out[0]["raw"], "rb").read() == "ping 1.2.3.4"
+        assert open(out[1]["raw"], "rb").read() == 'echo "Recursive"'
 
     def test_stap_log(self):
         set_cwd(tempfile.mkdtemp())

@@ -160,7 +160,7 @@ class MongoDB(Report):
         if "extracted" in report:
             for extracted in report["extracted"]:
                 new_extr = dict(extracted)
-                extr = File(extracted[extracted["category"]])
+                extr = File(extracted["raw"])
                 if extr.valid():
                     extr_id = self.store_file(extr)
                     new_extr["object_id"] = extr_id

@@ -484,7 +484,7 @@ class RunSignatures(object):
             loop_yara("dropped", dropped["path"], dropped["yara"])
 
         for extr in self.results.get("extracted", []):
-            loop_yara("extracted", extr[extr["category"]], extr["yara"])
+            loop_yara("extracted", extr["raw"], extr["yara"])
 
     def process_extracted(self):
         task_id = self.results.get("info", {}).get("id")

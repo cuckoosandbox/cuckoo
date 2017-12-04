@@ -41,7 +41,7 @@ class ExtractManager(object):
                     "compatible with this Extractor (either it's too old or "
                     "too new): cuckoo=%s extractor=%s minversion=%s "
                     "maxversion=%s",
-                    version, ext.__class__.__name__, ext.minimum, ext.maximum
+                    version, ext.__name__, ext.minimum, ext.maximum
                 )
                 continue
 
@@ -95,8 +95,9 @@ class ExtractManager(object):
             "program": command.program,
             "pid": process.get("pid"),
             "first_seen": process.get("first_seen"),
-            "script": filepath,
+            "raw": filepath,
             "yara": yara_matches,
+            "info": {},
         })
         for match in yara_matches:
             match = YaraMatch(match, "script")
@@ -119,8 +120,10 @@ class ExtractManager(object):
         self.items.append({
             "category": "shellcode",
             "raw": filepath,
-            "shellcode": "%s.txt" % filepath,
             "yara": yara_matches,
+            "info": {
+                "pretty": "%s.txt" % filepath,
+            },
         })
         for match in yara_matches:
             match = YaraMatch(match, "shellcode")
@@ -137,7 +140,7 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": yara_matches,
-            category: info or {},
+            "info": info or {},
         })
         for match in yara_matches:
             match = YaraMatch(match, category)
@@ -152,13 +155,13 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": [],
-            category: info or {},
+            "info": info or {},
         })
 
     def enhance(self, filepath, key, value):
         for item in self.items:
             if item["raw"] == filepath:
-                item[item["category"]][key] = value
+                item["info"][key] = value
                 break
 
     def peek_office(self, files):

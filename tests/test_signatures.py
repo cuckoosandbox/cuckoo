@@ -416,8 +416,9 @@ def test_on_extract():
         "pid": 1,
         "first_seen": 2,
         "program": "cmd",
-        "script": cwd("extracted", "0.bat", analysis=2),
+        "raw": cwd("extracted", "0.bat", analysis=2),
         "yara": [],
+        "info": {},
     }]
 
     class sig1(object):
