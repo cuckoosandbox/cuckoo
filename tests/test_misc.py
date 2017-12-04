@@ -13,10 +13,12 @@ import time
 
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
+from cuckoo.common.structures import Structure
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
     HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
-    Pidfile, pid_exists, Structure
+    Pidfile
 )
 
 def return_value(value):
@@ -242,58 +244,59 @@ def test_structure():
 
 def test_create_pidfile():
     set_cwd(tempfile.mkdtemp())
-    Pidfile("test1").create()
+    cuckoo_create()
 
-    pidfile = cwd("pidfiles", "test1.pid")
-    assert os.path.exists(pidfile)
-    with open(pidfile, "rb") as fp:
-        assert int(fp.read()) == os.getpid()
+    Pidfile("test1").create()
+    assert int(open(cwd("pidfiles", "test1.pid"), "rb").read()) == os.getpid()
 
 def test_remove_pidfile():
     set_cwd(tempfile.mkdtemp())
-    p = Pidfile("test2")
-    p.create()
-    pidfile = cwd("pidfiles", "test2.pid")
+    cuckoo_create()
 
-    assert os.path.exists(pidfile)
-    p.remove()
-    assert not os.path.exists(pidfile)
+    Pidfile("test2").create()
+    assert os.path.exists(cwd("pidfiles", "test2.pid"))
+
+    Pidfile("test2").remove()
+    assert not os.path.exists(cwd("pidfiles", "test2.pid"))
 
 def test_pidfile_exists_false():
     set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     assert not Pidfile("test3").exists()
 
 def test_pidfile_exists_true():
     set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
     p = Pidfile("test4")
     p.create()
-    assert p.exists() == os.getpid()
+    assert p.exists() and p.pid == os.getpid()
 
 def test_pidfile_none():
     set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
     p = Pidfile("test5")
     p.create()
-    pidfile = cwd("pidfiles", "test5.pid")
 
-    with open(pidfile, "wb") as fw:
-        fw.write("doges42")
+    open(cwd("pidfiles", "test5.pid"), "wb").write("notapid")
+    assert p.read() is None
 
-    assert p.exists() is None
+def test_proc_exists():
+    assert Pidfile("hello").proc_exists(os.getpid())
+    # Chances are possible, but slim.
+    assert not Pidfile("hello").proc_exists(13337)
 
-def test_pid_exists_true():
-    assert pid_exists(os.getpid())
-
-def test_pid_exists_false():
-    assert not pid_exists(421337)
-
-def test_pid_exists_unsupported_platform(monkeypatch):
-    monkeypatch.setattr(sys, "platform", "DogeOS")
-    assert pid_exists(os.getpid()) is None
+@mock.patch("cuckoo.misc.sys")
+def test_pid_exists_unsupported_platform(p):
+    p.platform = "DogeOS"
+    assert Pidfile("hello").proc_exists(os.getpid()) is None
 
 def test_active_pids():
     set_cwd(tempfile.mkdtemp())
-    Pidfile("test6").create()
+    cuckoo_create()
 
+    Pidfile("test6").create()
     assert Pidfile.get_active_pids() == {
         "test6": os.getpid(),
     }

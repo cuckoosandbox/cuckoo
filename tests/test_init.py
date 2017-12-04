@@ -67,13 +67,14 @@ class TestInit(object):
                 standalone_mode=False
             )
 
-        assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         assert os.path.exists(os.path.join(cwd(), "conf"))
+        assert os.path.exists(os.path.join(cwd(), "log"))
+        assert os.path.exists(os.path.join(cwd(), "pidfiles", ".gitignore"))
+        assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         assert os.path.exists(os.path.join(cwd(), "storage"))
         assert os.path.exists(os.path.join(cwd(), "storage", "binaries"))
         assert os.path.exists(os.path.join(cwd(), "storage", "analyses"))
         assert os.path.exists(os.path.join(cwd(), "storage", "baseline"))
-        assert os.path.exists(os.path.join(cwd(), "log"))
 
     def test_cuckoo_init_main(self):
         """Tests that 'cuckoo' works with a new CWD."""

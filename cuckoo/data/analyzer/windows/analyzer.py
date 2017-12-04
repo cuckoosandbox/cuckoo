@@ -21,6 +21,7 @@ import zipfile
 from lib.api.process import Process
 from lib.common.abstracts import Package, Auxiliary
 from lib.common.constants import SHUTDOWN_MUTEX
+from lib.common.decide import dump_memory
 from lib.common.defines import KERNEL32
 from lib.common.exceptions import CuckooError, CuckooDisableModule
 from lib.common.hashing import hash_file
@@ -336,7 +337,7 @@ class CommandPipeHandler(object):
             return
 
         if self.analyzer.config.options.get("procmemdump"):
-            Process(pid=int(data)).dump_memory()
+            dump_memory(int(data))
 
     def _handle_dumpmem(self, data):
         """Dump the memory of a process as it is right now."""
@@ -344,7 +345,7 @@ class CommandPipeHandler(object):
             log.warning("Received DUMPMEM command with an incorrect argument.")
             return
 
-        Process(pid=int(data)).dump_memory()
+        dump_memory(int(data))
 
     def _handle_dumpreqs(self, data):
         if not data.isdigit():
@@ -685,6 +686,9 @@ class Analyzer(object):
                 # If the process monitor is enabled we start checking whether
                 # the monitored processes are still alive.
                 if pid_check:
+                    # We also track the PIDs provided by zer0m0n.
+                    self.process_list.add_pids(zer0m0n.getpids())
+
                     for pid in self.process_list.pids:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)

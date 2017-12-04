@@ -1,5 +1,6 @@
 import StatsAPI from './StatsAPI';
 import WidgetLoader from './WidgetLoader';
+import { config } from '../config';
 
 // placeholder empty function => true
 let noop = () => true;
@@ -54,7 +55,7 @@ function initializeToolbar(widget) {
   toolbar.find('[data-datepicker]').datepicker({
     dateFormat: 'yy-mm-dd',
     maxDate: new Date()
-  }).datepicker('setDate', new Date());
+  }).datepicker('setDate', config.DEFAULTS.DATE ? new Date(config.DEFAULTS.DATE) : new Date());
 
   let toolbarDate = toolbar.find('input[name="toolbar-date"]');
   let toolbarPeriod = toolbar.find('input[name="toolbar-period"]');
@@ -376,6 +377,7 @@ class DraggableZWidget {
       this.createChart();
     });
 
+    if(!this.initialized) this._persistPresets();
     this.pull();
 
     return this;
@@ -391,6 +393,27 @@ class DraggableZWidget {
     }
 
     this.dispatchEvent('synced', this._synced);
+  }
+
+  _persistPresets() {
+
+    let defaults = config.DEFAULTS;
+
+    if(defaults.PERIOD) {
+      this.api.period(defaults.PERIOD);
+      $(this.template).find(`.widget-toolbar input[value=${defaults.PERIOD}]`).prop('checked', true);
+    }
+
+    if(defaults.TIME) {
+      this.api.time(defaults.TIME);
+      $(this.template).find('.widget-toolbar select[name=toolbar-time]').val(defaults.TIME);
+    }
+
+    if(defaults.DATE) {
+      this.api.date(defaults.DATE);
+      $(this.template).find('.widget-toolbar input[name="toolbar-date"]').val(defaults.DATE);
+    }
+
   }
 
 }

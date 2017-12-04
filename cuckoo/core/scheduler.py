@@ -460,6 +460,15 @@ class AnalysisManager(threading.Thread):
         # Generate the analysis configuration file.
         options = self.build_options()
 
+        # Check if the current task has remotecontrol
+        # enabled before starting the machine.
+        if "remotecontrol" in self.task.options:
+            try:
+                machinery.enable_remote_control(self.machine.label)
+            except NotImplementedError:
+                raise CuckooMachineError("Remote control is not implemented "
+                                         "for this machine type.")
+
         try:
             unlocked = False
             self.interface = None
@@ -609,6 +618,16 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
+            # Disable remote control after stopping the machine
+            # if it was enabled for the task.
+            if "remotecontrol" in self.task.options:
+                try:
+                    machinery.disable_remote_control(self.machine.label)
+                except NotImplementedError:
+                    raise CuckooMachineError("Remote control is not "
+                                             "implemented for this machine "
+                                             "type.")
+
             # Mark the machine in the database as stopped. Unless this machine
             # has been marked as dead, we just keep it as "started" in the
             # database so it'll not be used later on in this session.
@@ -697,16 +716,16 @@ class AnalysisManager(threading.Thread):
         try:
             self.launch_analysis()
 
-            self.db.set_status(self.task.id, TASK_COMPLETED)
-
             log.debug("Released database task #%d", self.task.id)
 
             if self.cfg.cuckoo.process_results:
-                # this updates self.task so processing gets the latest and greatest
                 self.store_task_info()
-
+                self.db.set_status(self.task.id, TASK_COMPLETED)
+                # TODO If self.process_results() is unified with apps.py's
+                # process() method, then ensure that TASK_FAILED_PROCESSING is
+                # handled correctly and not overwritten by the db.set_status()
+                # at the end of this method.
                 self.process_results()
-                self.db.set_status(self.task.id, TASK_REPORTED)
 
             # We make a symbolic link ("latest") which links to the latest
             # analysis - this is useful for debugging purposes. This is only
@@ -744,9 +763,13 @@ class AnalysisManager(threading.Thread):
                 "action": "task.stop",
                 "status": "error",
             })
-
-        task_log_stop(self.task.id)
-        active_analysis_count -= 1
+        finally:
+            if self.cfg.cuckoo.process_results:
+                self.db.set_status(self.task.id, TASK_REPORTED)
+            else:
+                self.db.set_status(self.task.id, TASK_COMPLETED)
+            task_log_stop(self.task.id)
+            active_analysis_count -= 1
 
 class Scheduler(object):
     """Tasks Scheduler.

@@ -3,14 +3,20 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import egghatch
+import logging
 import os
 
 from cuckoo.common.abstracts import Extractor
-from cuckoo.common.objects import File, YaraMatch
-from cuckoo.misc import cwd
+from cuckoo.common.objects import File, YaraMatch, Buffer
+from cuckoo.common.scripting import Scripting
+from cuckoo.common.utils import supported_version
+from cuckoo.misc import cwd, version
+
+log = logging.getLogger(__name__)
 
 class ExtractManager(object):
     _instances = {}
+    extractors = []
 
     @staticmethod
     def for_task(task_id):
@@ -22,6 +28,28 @@ class ExtractManager(object):
         self.task_id = task_id
         self.items = []
         self.payloads = {}
+
+    @classmethod
+    def init_once(cls):
+        cls.extractors = []
+
+        # Gather all up-to-date Extractors. TODO Also handle nested subclasses.
+        for ext in Extractor.__subclasses__():
+            if not supported_version(version, ext.minimum, ext.maximum):
+                log.debug(
+                    "You are running a version of Cuckoo that's not "
+                    "compatible with this Extractor (either it's too old or "
+                    "too new): cuckoo=%s extractor=%s minversion=%s "
+                    "maxversion=%s",
+                    version, ext.__class__.__name__, ext.minimum, ext.maximum
+                )
+                continue
+
+            cls.extractors.append(ext)
+
+            # Turn str/unicode into a tuple of size one.
+            if isinstance(ext.yara_rules, basestring):
+                ext.yara_rules = ext.yara_rules,
 
     def __del__(self):
         del ExtractManager._instances[self.task_id]
@@ -47,6 +75,11 @@ class ExtractManager(object):
         open(filepath, "wb").write(payload)
         return filepath
 
+    def push_command_line(self, cmdline):
+        command = Scripting().parse_command(cmdline)
+        if command and command.get_script():
+            self.push_script(None, command)
+
     def push_script(self, process, command):
         filepath = self.write_extracted(
             command.ext, command.get_script().encode("utf8")
@@ -54,18 +87,25 @@ class ExtractManager(object):
         if not filepath:
             return
 
+        process = process or {}
+
         yara_matches = File(filepath).get_yara("scripts")
         self.items.append({
             "category": "script",
             "program": command.program,
-            "pid": process["pid"],
-            "first_seen": process["first_seen"],
+            "pid": process.get("pid"),
+            "first_seen": process.get("first_seen"),
             "script": filepath,
             "yara": yara_matches,
         })
         for match in yara_matches:
             match = YaraMatch(match, "script")
             self.handle_yara(filepath, match)
+
+    def push_script_recursive(self, command):
+        self.push_script(None, command)
+        for child in command.children:
+            self.push_script_recursive(child)
 
     def push_shellcode(self, sc):
         filepath = self.write_extracted("bin", sc)
@@ -86,10 +126,45 @@ class ExtractManager(object):
             match = YaraMatch(match, "shellcode")
             self.handle_yara(filepath, match)
 
+    def push_blob(self, blob, category, externals, info=None):
+        filepath = self.write_extracted("blob", blob)
+        if not filepath:
+            return
+
+        yara_matches = File(filepath).get_yara(category, externals)
+
+        self.items.append({
+            "category": category,
+            "raw": filepath,
+            "yara": yara_matches,
+            category: info,
+        })
+        for match in yara_matches:
+            match = YaraMatch(match, category)
+            self.handle_yara(filepath, match)
+
+    def push_blob_noyara(self, blob, category, info=None):
+        filepath = self.write_extracted("blob", blob)
+        if not filepath:
+            return
+
+        self.items.append({
+            "category": category,
+            "raw": filepath,
+            "yara": [],
+            category: info,
+        })
+
+    def peek_office(self, files):
+        for filename, content in files.items():
+            externals = {
+                "filename": filename,
+            }
+            if Buffer(content).get_yara_quick("office", externals):
+                self.push_blob(content, "office", externals)
+
     def handle_yara(self, filepath, match):
-        # TODO Also handle nested subclasses.
-        for plugin in Extractor.__subclasses__():
-            # TODO Handle both str & tuple/list properly.
+        for plugin in self.extractors:
             if match.name in plugin.yara_rules:
                 plugin(self).handle_yara(filepath, match)
 

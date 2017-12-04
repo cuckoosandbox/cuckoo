@@ -7,7 +7,7 @@ import errno
 import importlib
 import logging
 import multiprocessing
-import os.path
+import os
 import pkg_resources
 import subprocess
 import sys
@@ -218,79 +218,58 @@ def drop_privileges(username):
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
 
-def pid_exists(pid):
-    """Returns True if pid exists, False if not, and None if unsupported."""
-    if is_windows():
-        from ctypes import windll, wintypes
-        dw_exit = wintypes.DWORD()
-        proc_h = windll.kernel32.OpenProcess(
-            WIN_PROCESS_QUERY_INFORMATION, 0, pid
-        )
-        windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
-        return dw_exit.value == WIN_ERR_STILL_ALIVE
-
-    if is_linux() or is_macosx():
-        # Send signal 0 to process. Exception will be thrown if it does not
-        # exist or there is no permission to send to this process. This
-        # indicates a process does exist.
-        try:
-            os.kill(pid, 0)
-        except OSError as e:
-            return e.errno == errno.EPERM
-        return True
-
 class Pidfile(object):
-    def __init__(self, name=None):
-        """Manage pidfile of given name
-        @param name: name without extension to use for file
-        """
-        self.dir = cwd("pidfiles")
-        self.name = None
-        self.pidfile_path = None
-        self.pid = None
-        if name:
-            self.set_name(name)
-
-    def set_name(self, name):
-        """Change pidfile name"""
-        if not name.endswith(".pid"):
-            name = "%s.pid" % name
+    def __init__(self, name):
+        """Manage pidfile of given name."""
         self.name = name
-        self.pidfile_path = os.path.join(self.dir, self.name)
+        self.filepath = cwd("pidfiles", "%s.pid" % name)
+        self.pid = None
 
     def create(self):
-        """Creates a file with a .pid extension containing
-        the pid of the process executing this method"""
-        if not os.path.exists(self.dir):
-            os.mkdir(self.dir)
-
-        with open(self.pidfile_path, "wb") as fw:
-            fw.write(str(os.getpid()))
+        """Creates pidfile for the current process."""
+        with open(self.filepath, "wb") as f:
+            f.write(str(os.getpid()))
 
     def remove(self):
-        """Remove pidfile of name if it exists"""
-        if os.path.exists(self.pidfile_path):
-            os.remove(self.pidfile_path)
-            return True
-        else:
-            return False
+        """Remove pidfile if it exists."""
+        if os.path.exists(self.filepath):
+            os.remove(self.filepath)
 
     def exists(self):
-        """Check if a pid file exists for the given name. Returns int PID
-        if the pidfile exists, False if not. None if invalid pidfile"""
-        if not os.path.exists(self.pidfile_path):
+        """Check if a pidfile (and its associated process) exists."""
+        if not os.path.exists(self.filepath):
             return False
-
-        return self.read()
+        return self.proc_exists(self.read())
 
     def read(self):
-        """Read PID from pidfile. Will raise IOError if pidfile does
-        not exist"""
+        """Read PID from pidfile."""
         try:
-            self.pid = int(open(self.pidfile_path, "rb").read())
+            self.pid = int(open(self.filepath, "rb").read())
         except ValueError:
             self.pid = None
         return self.pid
+
+    def proc_exists(self, pid):
+        """Returns boolean if the process exists or None when unsupported."""
+        if is_windows():
+            from ctypes import windll, wintypes
+            dw_exit = wintypes.DWORD()
+            proc_h = windll.kernel32.OpenProcess(
+                WIN_PROCESS_QUERY_INFORMATION, 0, pid
+            )
+            windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
+            windll.kernel32.CloseHandle(proc_h)
+            return dw_exit.value == WIN_ERR_STILL_ALIVE
+
+        if is_linux() or is_macosx():
+            # Send signal 0 to process. Exception will be thrown if it does
+            # not exist or there is no permission to send to this process.
+            # This indicates a process does exist.
+            try:
+                os.kill(pid, 0)
+            except OSError as e:
+                return e.errno == errno.EPERM
+            return True
 
     @staticmethod
     def get_active_pids():
@@ -298,12 +277,10 @@ class Pidfile(object):
         Key is the pidfile name and value is pid"""
         pids = {}
 
-        pidfile = Pidfile()
-        for pidf in os.listdir(pidfile.dir):
-            pidfile.set_name(pidf)
-            pid = pidfile.read()
-            if pid:
-                if pid_exists(pid):
-                    pids[pidf.split(".", 1)[0]] = pid
+        for filename in os.listdir(cwd("pidfiles")):
+            name, _ = os.path.splitext(filename)
+            pidfile = Pidfile(name)
+            if pidfile.exists():
+                pids[name] = pidfile.pid
 
         return pids

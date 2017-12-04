@@ -119,6 +119,9 @@ class VirtualBox(Machinery):
 
         self._wait_status(label, self.SAVED)
 
+        if self.remote_control:
+            self._enable_remote_control(label)
+
         try:
             args = [
                 self.options.virtualbox.path, "startvm", label,
@@ -379,3 +382,85 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
             )
+
+    def enable_remote_control(self, label):
+        self.remote_control = True
+
+    def _enable_remote_control(self, label):
+        try:
+            proc = self._set_flag(label, "vrde", "on")
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control: %d" % proc.returncode)
+                return False
+
+            proc = self._set_flag(label, "vrdemulticon", "on")
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control multicon: %d" % proc.returncode)
+                return False
+
+            port = getattr(self.options, label)["controlport"]
+            self._set_vrde_ports(label, port)
+
+            ports = self.vminfo(label, "vrdeports")
+            log.info(
+                "Successfully enabled remote control for virtual machine "
+                "with label %s on port(s) %s" % (label, ports)
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to enable remote control: %s" % e
+            )
+
+    def disable_remote_control(self, label):
+        try:
+            proc = self._set_flag(label, "vrde", "off")
+            if proc.returncode != 0:
+                log.error(
+                    "VBoxManage returned non-zero value while "
+                    "disabling remote control: %d" % proc.returncode
+                )
+                return False
+
+            log.info(
+                "Successfully disabled remote control for virtual machine "
+                "with label %s" % label
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to disable remote control: %s" % e
+            )
+
+    def get_remote_control_params(self, label):
+        # port = self.vminfo(label, "vrdeport")
+        return "rdp", "127.0.0.1", 3389
+
+    def _set_vrde_ports(self, label, ports):
+        proc = self._set_flag(label, "vrdeport", ports)
+        if proc.returncode != 0:
+            log.error(
+                "VboxManage returned non-zero return status while "
+                "setting remote control ports: %d" % proc.returncode
+            )
+            return False
+
+        log.info(
+            "Successfully set remote control ports for virtual machine "
+            "with label %s: %s" % (label, ports)
+        )
+
+        return proc
+
+    def _set_flag(self, label, key, val):
+        args = [
+            self.options.virtualbox.path, "modifyvm", label,
+            "--%s" % key, val
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+        _, _ = proc.communicate()
+
+        return proc

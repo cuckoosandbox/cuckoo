@@ -484,9 +484,9 @@ def migrate_cwd():
         if filename.startswith("index_") and filename.endswith(".yar"):
             os.remove(cwd("yara", filename))
 
-    # Create the new $CWD/stuff/ directory.
-    if not os.path.exists(cwd("stuff")):
-        mkdir(cwd("stuff"))
+    # Create new directories if not present yet.
+    mkdir(cwd("stuff"))
+    mkdir(cwd("yara", "office"))
 
     # Create the new $CWD/whitelist/ directory.
     if not os.path.exists(cwd("whitelist")):

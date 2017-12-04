@@ -253,6 +253,11 @@ class Config(object):
                 "critical": Int(60),
                 "vm_state": Int(60),
             },
+            "remotecontrol": {
+                "enabled": Boolean(False),
+                "guacd_host": String("localhost"),
+                "guacd_port": Int(4822),
+            },
         },
         "virtualbox": {
             "virtualbox": {
@@ -276,6 +281,7 @@ class Config(object):
                 "tags": String(),
                 "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
+                "controlport": String("default"),
             },
             "__star__": ("virtualbox", "machines"),
         },

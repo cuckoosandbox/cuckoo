@@ -50,12 +50,12 @@ const widget = fabricate('tasks', {
   elementId: $("#widget--tasks").attr('id'),
   widgetLayout: {
     width: 6,
-    height: 6,
+    height: 5,
     x: 0,
     y: 6
   },
 
-  chartHeight: 250,
+  chartHeight: 200,
 
   // chart configuration
   chart: {

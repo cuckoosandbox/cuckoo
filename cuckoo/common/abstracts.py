@@ -71,6 +71,7 @@ class Machinery(object):
     def __init__(self):
         self.options = None
         self.db = Database()
+        self.remote_control = False
 
         # Machine table is cleaned to be filled from configuration file
         # at each start.
@@ -262,6 +263,27 @@ class Machinery(object):
     def dump_memory(self, label, path):
         """Takes a memory dump of a machine.
         @param path: path to where to store the memory dump.
+        """
+        raise NotImplementedError
+
+    def enable_remote_control(self, label):
+        """Enable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def disable_remote_control(self, label):
+        """Disable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def get_remote_control_params(self, label):
+        """Return connection details for remote control.
+        @param label: machine name.
+        @return: tuple of (protocol, ip, port)
         """
         raise NotImplementedError
 
@@ -1301,6 +1323,9 @@ class ProtocolHandler(object):
 class Extractor(object):
     """One piece in a series of recursive extractors & unpackers."""
     yara_rules = []
+    # Minimum and maximum supported version in Cuckoo.
+    minimum = None
+    maximum = None
 
     @classmethod
     def init_once(cls):
@@ -1312,5 +1337,20 @@ class Extractor(object):
     def handle_yara(self, filepath, match):
         raise NotImplementedError
 
+    def push_command_line(self, cmdline):
+        self.parent.push_command_line(cmdline)
+
+    def push_script(self, process, command):
+        self.parent.push_script(process, command)
+
+    def push_script_recursive(self, command):
+        self.parent.push_script_recursive(command)
+
     def push_shellcode(self, sc):
         self.parent.push_shellcode(sc)
+
+    def push_blob(self, blob, category, externals, info=None):
+        self.parent.push_blob(blob, category, externals, info)
+
+    def push_blob_noyara(self, blob, category, info=None):
+        self.parent.push_blob_noyara(blob, category, info)

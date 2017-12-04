@@ -9,12 +9,12 @@ const widget = fabricate('cpu_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 6,
+    height: 5,
     x: 4,
     y: 0
   },
 
-  chartHeight: 270,
+  chartHeight: 200,
 
   // chart styles
   dataLayout: {
@@ -38,7 +38,11 @@ const widget = fabricate('cpu_usage', {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: true
+            beginAtZero: true,
+            suggestedMax: 100,
+            callback: function(label, index, labels) {
+              return label + '%';
+            }
           }
         }],
         xAxes: [{

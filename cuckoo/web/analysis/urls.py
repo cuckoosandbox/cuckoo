@@ -11,6 +11,8 @@ from cuckoo.web.controllers.analysis.compare.routes import AnalysisCompareRoutes
 from cuckoo.web.controllers.analysis.export.api import ExportApi
 from cuckoo.web.controllers.analysis.network.api import AnalysisNetworkApi
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
+from cuckoo.web.controllers.analysis.control.api import ControlApi
+from cuckoo.web.controllers.analysis.control.routes import AnalysisControlRoutes
 from cuckoo.web.controllers.submission.routes import SubmissionRoutes
 
 urlpatterns = [
@@ -18,6 +20,8 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name="analysis/redirect_default"),
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name="analysis/export"),
     url(r"^(?P<task_id>\d+)/reboot/$", SubmissionRoutes.reboot, name="analysis/reboot"),
+    url(r"^(?P<task_id>\d+)/control/$", AnalysisControlRoutes.player, name="analysis/control/player"),
+    url(r"^(?P<task_id>\d+)/control/tunnel/.*", ControlApi.tunnel, name="analysis/control/tunnel"),
     url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name="analysis/compare/both"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),

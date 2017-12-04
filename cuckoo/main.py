@@ -19,9 +19,7 @@ from cuckoo.apps import (
     migrate_database, migrate_cwd
 )
 from cuckoo.common.config import read_kv_conf
-from cuckoo.common.exceptions import (
-    CuckooCriticalError, CuckooProcessExistsError
-)
+from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.colors import yellow, red, green, bold
 from cuckoo.common.logo import logo
 from cuckoo.common.utils import exception_message
@@ -36,7 +34,7 @@ from cuckoo.core.startup import (
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    Pidfile, pid_exists
+    Pidfile, mkdir
 )
 
 log = logging.getLogger("cuckoo")
@@ -106,15 +104,18 @@ def cuckoo_init(level, ctx, cfg=None):
             "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
         )
 
-    # Only one Cuckoo process should exist per CWD.
-    # Run this check before any files are possibly modified.
-    pidf = Pidfile("cuckoo")
-    if pidf.exists() and pid_exists(pidf.pid):
-        raise CuckooProcessExistsError("", pidf.pid)
-    else:
-        pidf.create()
-
     init_console_logging(level)
+
+    # Only one Cuckoo process should exist per CWD. Run this check before any
+    # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
+    # its CWD migration rules only kick in after the pidfile check.
+    mkdir(cwd("pidfiles"))
+    pidfile = Pidfile("cuckoo")
+    if pidfile.exists():
+        log.error(red("Cuckoo is already running. PID: %s"), pidfile.pid)
+        sys.exit(1)
+
+    pidfile.create()
 
     check_configs()
     check_version()
@@ -234,10 +235,6 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     except SystemExit as e:
         if e.code:
             print e
-    except CuckooProcessExistsError as e:
-        message = "Cuckoo is already running. PID: %s\n" % e.pid
-        sys.stderr.write(red(message))
-        sys.exit(1)
     except Exception as e:
         # Deal with an unhandled exception.
         sys.stderr.write(exception_message())
@@ -342,14 +339,14 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
-        pidf = Pidfile(instance)
-        if pidf.exists() and pid_exists(pidf.pid):
-            message = "Cuckoo process instance \'%s\' already exists. " \
-                      "PID: %s\n" % (instance, pidf.pid)
-            log.error(red(message))
+        pidfile = Pidfile(instance)
+        if pidfile.exists():
+            log.error(red(
+                "Cuckoo process instance '%s' already exists. PID: %s\n"
+            ), instance, pidfile.pid)
             sys.exit(1)
-        else:
-            pidf.create()
+
+        pidfile.create()
 
         init_logfile("process-%s.json" % instance)
 

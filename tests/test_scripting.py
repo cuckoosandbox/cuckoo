@@ -20,6 +20,23 @@ class TestCmdExe(object):
         assert self.cmd.parse_command_line(
             "cmd.exe /c ping 8.8.8.8"
         ) == {
+            "remains": False,
+            "command": ["ping", "8.8.8.8"],
+        }
+
+    def test_cmd_k(self):
+        assert self.cmd.parse_command_line(
+            "cmd.exe /k ping 8.8.8.8"
+        ) == {
+            "remains": True,
+            "command": ["ping", "8.8.8.8"],
+        }
+
+    def test_cmd_k_quoted(self):
+        assert self.cmd.parse_command_line(
+            'cmd.exe "/k ping 8.8.8.8"'
+        ) == {
+            "remains": True,
             "command": ["ping", "8.8.8.8"],
         }
 
@@ -230,14 +247,29 @@ class TestScripting(object):
         assert obj.program == "cmd"
         assert obj.ext == "bat"
         assert obj.args == {
+            "remains": False,
             "command": ["ping", "8.8.8.8"],
         }
         assert not obj.children
         assert obj.astree() == {
             "args": {
+                "remains": False,
                 "command": ["ping", "8.8.8.8"],
             },
             "children": [],
+        }
+
+    def test_cmd_fullpath(self):
+        obj = self.scr.parse_command(
+            "C:\\\\Windows\\\\System32\\\\cmd.exe /k ping 8.8.8.8"
+        )
+        assert obj.program == "cmd"
+        assert obj.ext == "bat"
+        assert obj.args == {
+            "remains": True,
+            "command": [
+                "ping", "8.8.8.8",
+            ],
         }
 
     def test_cmd_cmd_cmd_ping(self):
@@ -247,29 +279,35 @@ class TestScripting(object):
         assert obj.program == "cmd"
         assert obj.ext == "bat"
         assert obj.args == {
+            "remains": False,
             "command": ["CMD.EXE", "/c", "cmd.exE", "/c", "ping", "8.8.8.8"],
         }
         assert len(obj.children) == 1
         assert obj.children[0].args == {
+            "remains": False,
             "command": ["cmd.exE", "/c", "ping", "8.8.8.8"],
         }
         assert len(obj.children[0].children) == 1
         assert obj.children[0].children[0].args == {
+            "remains": False,
             "command": ["ping", "8.8.8.8"],
         }
         assert not obj.children[0].children[0].children
         assert obj.astree() == {
             "args": {
+                "remains": False,
                 "command": [
                     "CMD.EXE", "/c", "cmd.exE", "/c", "ping", "8.8.8.8",
                 ],
             },
             "children": [{
                 "args": {
+                    "remains": False,
                     "command": ["cmd.exE", "/c", "ping", "8.8.8.8"],
                 },
                 "children": [{
                     "args": {
+                        "remains": False,
                         "command": ["ping", "8.8.8.8"],
                     },
                     "children": [],
@@ -285,6 +323,7 @@ class TestScripting(object):
         assert obj.program == "cmd"
         assert obj.ext == "bat"
         assert obj.args == {
+            "remains": False,
             "command": [
                 "powershell", "-nop", "-ep", "bypass", "-enc",
                 "ZQBjAGgAbwAgACIAUgBlAGMAdQByAHMAaQB2AGUAIgA=",

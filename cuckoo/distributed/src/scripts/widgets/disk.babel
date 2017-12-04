@@ -11,12 +11,12 @@ const widget = fabricate('disk_usage', {
 
   widgetLayout: {
     width: 4,
-    height: 6,
+    height: 5,
     x: 8,
     y: 0
   },
 
-  chartHeight: 270,
+  chartHeight: 200,
 
   // chart configuration
   chart: {

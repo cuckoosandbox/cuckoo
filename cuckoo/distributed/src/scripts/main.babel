@@ -1,6 +1,7 @@
 import SVGLoader from './lib/SVGLoader';
 import DraggableZ from './lib/DraggableZ';
 import widgets from './widgets';
+import { config } from './config';
 
 // chart.js defaults
 if(Chart) {
@@ -20,16 +21,15 @@ $(function() {
       SVGLoader.loadPlaceholders($(widget.template).find('[data-svg-src]'));
     });
 
-    widget.on('changed', params => {
-      if(widget._synced) {
-        console.log('will sync up');
-      } else {
-        console.log('will not sync up');
-      }
-    });
-
     widget.on('synced', is => {
       $(widget.template).find('.widget-toolbar input, .widget-toolbar select').prop('disabled', is);
+      if(is === true) {
+        // hide toolbar
+        $(widget.template).find('.widget-toolbar').addClass('hidden');
+      } else {
+        // show toolbar
+        $(widget.template).find('.widget-toolbar').removeClass('hidden');
+      }
     });
 
   });
@@ -38,7 +38,7 @@ $(function() {
   const UI = new DraggableZ($("#grid"), widgets);
 
   // handles a sync toggle
-  function handleSyncToggle(e) {
+  function handleSyncToggle() {
     let toggle = $(this);
     if(toggle.is(':checked')) {
       UI.dispatchEvent('sync.on');
@@ -56,6 +56,12 @@ $(function() {
     let time = toolbar.find('select[name="toolbar-time"]');
     let toggle = $('#app-header input#sync-widgets');
 
+    // assign presets
+    if(config.DEFAULTS.TIME) time.val(config.DEFAULTS.TIME);
+    if(config.DEFAULTS.PERIOD) {
+      period.filter(`[value=${config.DEFAULTS.PERIOD}]`).prop('checked', true);
+    }
+
     let emitChange = (params) => UI.dispatchEvent('sync.change', {
       date: params.date || date.val(),
       period: params.period || period.val(),
@@ -65,13 +71,16 @@ $(function() {
     // binds the sync toggle handle to the toggle, and to the handler
     // once for initialization
     toggle.on('change', handleSyncToggle);
-    handleSyncToggle();
+    if(config.DEFAULTS.SYNC_MODE) {
+      toggle.prop('checked', config.DEFAULTS.SYNC_MODE);
+      toggle.trigger('change');
+    }
 
     // initialize the date picker
     date.datepicker({
       dateFormat: 'yy-mm-dd',
       maxDate: new Date()
-    }).datepicker('setDate', new Date());
+    }).datepicker('setDate', config.DEFAULTS.DATE ? new Date(config.DEFAULTS.DATE) : new Date());
 
     // bind the listeners
     date.on('change', e => {

@@ -1123,9 +1123,25 @@ def test_migration_204_205():
 [mitm]
 script = mitm.py
 """)
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[remotecontrol]
+    """)
+    Files.create(cwd("conf"), "virtualbox.conf", """
+[virtualbox]
+machines = vbox1
+[vbox1]
+mode = headless
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.4", "2.0.5")
+
     assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
+
+    assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
+    
+    assert cfg["virtualbox"]["vbox1"]["controlport"] == "default"
 
 class FullMigration(object):
     DIRPATH = None
