@@ -7,7 +7,6 @@ import threading
 import uuid
 
 from cuckoo.machinery.virtualbox import VirtualBox
-from cuckoo.core.database import Database
 from django.http import StreamingHttpResponse, HttpResponse
 from guacamole.client import GuacamoleClient
 
