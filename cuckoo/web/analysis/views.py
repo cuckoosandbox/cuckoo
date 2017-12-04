@@ -235,7 +235,9 @@ def file(request, category, object_id, fetch="fetch"):
 
         response = HttpResponse(file_item.read(), content_type=content_type)
 
-        if fetch != "nofetch":
+        if fetch == "plaintext":
+            response["Content-Type"] = "text/plain"
+        elif fetch != "nofetch":
             response["Content-Disposition"] = (
                 "attachment; filename=%s" % file_name
             )

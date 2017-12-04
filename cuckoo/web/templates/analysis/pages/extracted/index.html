@@ -24,7 +24,7 @@
                     <div class="page-switcher__pages">
                     {% for extr in report.analysis.extracted %}
                         <div id="extracted_{{ forloop.counter }}" class="extracted-page {% if forloop.first %}active{% endif %}">
-                          <div class="panel panel-default list-panel" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id %}">
+                          <div class="panel panel-default list-panel" data-powershell-source="{% url "analysis.views.file" "extracted" extr.object_id "plaintext" %}">
                             <div class="panel-heading">
                                 <h3 class="panel-title">Extracted</h3>
                             </div>
