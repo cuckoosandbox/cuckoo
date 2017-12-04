@@ -21,7 +21,7 @@ www.w3.org
 dns.msftncsi.com
 teredo.ipv6.microsoft.com
 time.windows.com
-dns.msftncsi.com
+www.msftncsi.com
 ocsp.msocsp.com
 ocsp.omniroot.com
 crl.microsoft.com
