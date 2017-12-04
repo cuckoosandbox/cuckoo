@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import datetime
 import multiprocessing
 import os
 import socket
@@ -11,12 +12,27 @@ from django.http import JsonResponse
 from cuckoo.common.files import Files
 from cuckoo.core.database import Database
 from cuckoo.core.rooter import rooter
+from cuckoo.core.startup import check_version
 from cuckoo.misc import cwd, version
 from cuckoo.web.utils import json_fatal_response, api_get
 
 db = Database()
 
-class CuckooApi:
+updates = {}
+
+def latest_updates():
+    """Updates the latest Cuckoo version & blogposts at maximum once a day."""
+    next_check = datetime.datetime.now() - datetime.timedelta(days=1)
+    if updates and updates["timestamp"] > next_check:
+        return updates
+
+    # It is possible for check_version() to fail. In that case we'll just have
+    # Cuckoo wait another day to try again (for now anyway).
+    latest = check_version()
+    latest and updates.update(latest)
+    updates["timestamp"] = datetime.datetime.now()
+
+class CuckooApi(object):
     @api_get
     def status(request):
         """
@@ -73,6 +89,8 @@ class CuckooApi:
         else:
             memory = memavail = memtotal = None
 
+        latest_updates()
+
         data = dict(
             version=version,
             hostname=socket.gethostname(),
@@ -93,6 +111,8 @@ class CuckooApi:
             memory=memory,
             memavail=memavail,
             memtotal=memtotal,
+            latest_version=updates.get("version"),
+            blogposts=updates.get("blogposts", []),
         )
 
         return JsonResponse({"status": True, "data": data})
