@@ -4,6 +4,7 @@
 
 import logging
 import threading
+import socket
 import uuid
 
 from cuckoo.common.config import config
@@ -32,7 +33,14 @@ class AnalysisControlController:
         guacd_port = config("cuckoo:remotecontrol:guacd_port")
 
         guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
-        guac.handshake(protocol=protocol, hostname=hostname, port=port)
+        try:
+            guac.handshake(protocol=protocol, hostname=hostname, port=port)
+        except socket.error:
+            log.error(
+                "Failed to connect to guacd on %s:%d"
+                % (guacd_host, guacd_port)
+            )
+            return HttpResponse(status=500)
 
         cache_key = str(uuid.uuid4())
         with sockets_lock:
