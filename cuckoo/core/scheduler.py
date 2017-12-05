@@ -462,7 +462,8 @@ class AnalysisManager(threading.Thread):
 
         # Check if the current task has remotecontrol
         # enabled before starting the machine.
-        if "remotecontrol" in self.task.options:
+        control_enabled = config("cuckoo:remotecontrol:enabled")
+        if "remotecontrol" in self.task.options and control_enabled:
             try:
                 machinery.enable_remote_control(self.machine.label)
             except NotImplementedError:
@@ -620,7 +621,8 @@ class AnalysisManager(threading.Thread):
 
             # Disable remote control after stopping the machine
             # if it was enabled for the task.
-            if "remotecontrol" in self.task.options:
+            control_enabled = config("cuckoo:remotecontrol:enabled")
+            if "remotecontrol" in self.task.options and control_enabled:
                 try:
                     machinery.disable_remote_control(self.machine.label)
                 except NotImplementedError:
