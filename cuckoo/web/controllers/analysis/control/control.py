@@ -6,6 +6,7 @@ import logging
 import threading
 import uuid
 
+from cuckoo.common.config import config
 from cuckoo.machinery.virtualbox import VirtualBox
 from django.http import StreamingHttpResponse, HttpResponse
 from guacamole.client import GuacamoleClient
@@ -27,7 +28,10 @@ class AnalysisControlController:
         params = machinery.get_remote_control_params(task.guest.label)
         protocol, hostname, port = params
 
-        guac = GuacamoleClient("127.0.0.1", 4822, debug=False)
+        guacd_host = config("cuckoo:remotecontrol:guacd_host")
+        guacd_port = config("cuckoo:remotecontrol:guacd_port")
+
+        guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
         guac.handshake(protocol=protocol, hostname=hostname, port=port)
 
         cache_key = str(uuid.uuid4())
