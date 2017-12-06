@@ -1,12 +1,12 @@
 var gulp = require('gulp');
-var uglify = require('gulp-uglify');
+var concat = require('gulp-concat');
 
 /*
   Build the guacamole client source and export to static for inclusion.
 
   - when there is an update, drag common-js files in to the /guac folder
     and run 'gulp build-guac' to compile to static.
-    
+
  */
 
 module.exports = function() {
