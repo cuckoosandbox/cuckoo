@@ -77,7 +77,8 @@ class SubmissionRoutes(object):
                 task.target,
             ], submit_manager.translate_options_to(task.options))
         else:
-            if not os.path.exists(task.target):
+            file_path = binary_filepath(task_id) if not os.path.exists(task.target) else task.target
+            if not file_path or not os.path.exists(file_path):
                 return view_error(
                     request, "The file you're trying to resubmit "
                     "no longer exists. Please resubmit it altogether!"
