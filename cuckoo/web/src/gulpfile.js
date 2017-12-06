@@ -21,4 +21,4 @@ require('gulp-task-loader')('./tasks');
 gulp.task('default', ['bower','styles','scripts','scripts-submission','scripts-rdp','handlebars','watch']);
 
 // task for ONLY building to static
-gulp.task('build', ['bower','styles','scripts','scripts-submission','scripts-rdp','handlebars']);
+gulp.task('build', ['bower','styles','scripts','scripts-submission','scripts-rdp','handlebars','build-guac']);
