@@ -735,76 +735,114 @@ $(function() {
         // // retrieve general info about cuckoo
         $.get('/cuckoo/api/status', function(data) {
 
-            // populate tasks information
-            var tasks_info = DashboardTable.simpleTable(data.data.tasks);
-            $('[data-populate="statistics"]').html(tasks_info);
+          // ***
+          // cuckoo quickview tables
+          // ***
+          var tasks_info = DashboardTable.simpleTable(data.data.tasks);
+          $('[data-populate="statistics"]').html(tasks_info);
 
-            if(data.data.diskspace.analyses) {
-                // populate free disk space unit
-                var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
-                $('[data-populate="free-disk-space"]').text(disk_space.free);
-                $('[data-populate="total-disk-space"]').text(disk_space.total);
+          // ***
+          // cuckoo disk space usage chart
+          // ***
+          if(data.data.diskspace.analyses) {
+              // populate free disk space unit
+              var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
+              $('[data-populate="free-disk-space"]').text(disk_space.free);
+              $('[data-populate="total-disk-space"]').text(disk_space.total);
 
-            } else {
-                // show 'no data available' if this data is not available
-                $("#ds-stat").addClass('no-data');
-            }
+          } else {
+              // show 'no data available' if this data is not available
+              $("#ds-stat").addClass('no-data');
+          }
 
 
-            // cpu load chart
-            if(data.data.cpucount) {
+          // ***
+          // cuckoo cpu usage chart
+          // ***
+          if(data.data.cpucount) {
 
-                // cpu load calculation mechanism
-                var cores = data.data.cpucount;
-                var lsum = 0;
-                for(var load in data.data.cpuload) {
-                    lsum += data.data.cpuload[load];
-                }
-                var avgload = parseInt(
-                    lsum / data.data.cpuload.length * 100 / cores
-                );
-                $('[data-populate="cpu-load"]').text(`${avgload}%`);
-                $('[data-populate="total-cores"]').text(`${cores} cores`);
+              // cpu load calculation mechanism
+              var cores = data.data.cpucount;
+              var lsum = 0;
+              for(var load in data.data.cpuload) {
+                  lsum += data.data.cpuload[load];
+              }
+              var avgload = parseInt(
+                  lsum / data.data.cpuload.length * 100 / cores
+              );
+              $('[data-populate="cpu-load"]').text(`${avgload}%`);
+              $('[data-populate="total-cores"]').text(`${cores} cores`);
 
-                // populate cpu load unit
-                var cpu_load = createChart($("#cpu-stat > canvas"), {
-                    total: cores * 100,
-                    used: avgload,
-                    free: 100 - avgload,
-                });
+              // populate cpu load unit
+              var cpu_load = createChart($("#cpu-stat > canvas"), {
+                  total: cores * 100,
+                  used: avgload,
+                  free: 100 - avgload,
+              });
 
-            } else {
-                // show 'no data available' if this data is not available
-                $("#cpu-stat").addClass('no-data');
-            }
+          } else {
+              // show 'no data available' if this data is not available
+              $("#cpu-stat").addClass('no-data');
+          }
 
-            // data.data.memtotal = 11989568;
-            // data.data.memavail = 2899792;
+          // ***
+          // cuckoo memory usage chart
+          // ***
+          if(data.data.memtotal) {
 
-            // memory chart
-            if(data.data.memtotal) {
+              // memory data
+              var memoryTotal = data.data.memtotal;
+              var memoryAvail = data.data.memavail;
 
-                // memory data
-                var memoryTotal = data.data.memtotal;
-                var memoryAvail = data.data.memavail;
+              // create the memory chart
+              var memory_chart = createChart($("#memory-stat > canvas"), {
+                  total: memoryTotal,
+                  used: memoryTotal - memoryAvail,
+                  free: memoryAvail
+              }, true);
 
-                // create the memory chart
-                var memory_chart = createChart($("#memory-stat > canvas"), {
-                    total: memoryTotal,
-                    used: memoryTotal - memoryAvail,
-                    free: memoryAvail
-                }, true);
+              var memoryTotalSize = CuckooWeb.human_size(memoryTotal * 1000);
+              var memoryAvailSize = CuckooWeb.human_size(memoryAvail * 1000);
+              var memoryUsedSize = CuckooWeb.human_size((memoryTotal - memoryAvail) * 1000);
 
-                var memoryTotalSize = CuckooWeb.human_size(memoryTotal * 1000);
-                var memoryAvailSize = CuckooWeb.human_size(memoryAvail * 1000);
-                var memoryUsedSize = CuckooWeb.human_size((memoryTotal - memoryAvail) * 1000);
+              $('[data-populate="memory-used"]').text(`${memoryAvailSize}`);
+              $('[data-populate="memory-total"]').text(`${memoryTotalSize}`);
 
-                $('[data-populate="memory-used"]').text(`${memoryAvailSize}`);
-                $('[data-populate="memory-total"]').text(`${memoryTotalSize}`);
+          } else {
+              $("#memory-stat").addClass('no-data');
+          }
 
-            } else {
-                $("#memory-stat").addClass('no-data');
-            }
+          // ***
+          // cuckoo versioning block
+          // ***
+          let $versionBlock = $("[data-dashboard-module='installation']");
+
+          let vCur = data.data.version;
+          let vNew = data.data.latest_version;
+
+          // check existence and compare
+          if((vCur && vNew) && (vCur !== vNew)) {
+            // go into 'attention - you need to update' mode if we're not on the latest version
+            $versionBlock
+              .addClass('attention')
+              .find('.latest-version td:last-child')
+              .text(vNew)
+              .parents('tr').show();
+          } else {
+            // show the 'you are up to date message' when the version is the same
+            $versionBlock
+              .find('.up-to-date')
+              .show();
+          }
+
+          $versionBlock.addClass('version-loaded');
+
+          // ***
+          // cuckoo recent blogposts block
+          // ***
+          let $blogBlock = $("[data-dashboard-module='blogposts']");
+          let blogTmpl = Handlebars.compile($blogBlock.find('template#blogpost-template').html());
+          $blogBlock.find('.dashboard-module__body').html(blogTmpl({ posts: data.data.blogposts }));
 
         });
 
