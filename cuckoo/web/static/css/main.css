@@ -15733,757 +15733,1056 @@ body.night .app-message
     background-color: #f5f5f5;
 }
 
-@-webkit-keyframes SnapshotShutter {
-  0% {
-    background-color: #6297F8;
-  }
-  25% {
-    background-color: #fff;
-    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
-  }
-  100% {
-    background-color: #6297F8;
-    box-shadow: 0px 2px 0px #456aae;
-  }
+@keyframes SnapshotShutter
+{
+    0%
+    {
+        background-color: #6297f8;
+    }
+    25%
+    {
+        background-color: #fff;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, .5);
+    }
+    100%
+    {
+        background-color: #6297f8;
+        box-shadow: 0 2px 0 #456aae;
+    }
 }
 
-@keyframes SnapshotShutter {
-  0% {
-    background-color: #6297F8;
-  }
-  25% {
-    background-color: #fff;
-    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
-  }
-  100% {
-    background-color: #6297F8;
-    box-shadow: 0px 2px 0px #456aae;
-  }
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__error--buttons > a,
+.rdp-dialog__options button:not([value='cancel']),
+.rdp-toolbar button
+{
+    font-size: 44px;
+
+    padding: 7px 5px 5px;
+
+    transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+    text-decoration: none;
+
+    color: #1e3c73;
+    border: 0;
+    border-radius: 5px;
+    background-color: #6297f8;
+    box-shadow: 0 2px 0 #456aae;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
+
+    -webkit-appearance: none;
 }
 
-.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button:not([value="cancel"]), .rdp-toolbar button {
-  -webkit-appearance: none;
-  padding: 7px 5px 5px;
-  border: 0;
-  border-radius: 5px;
-  background-color: #6297F8;
-  box-shadow: 0px 2px 0px #456aae;
-  font-size: 44px;
-  color: #1E3C73;
-  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2);
-  text-decoration: none;
-  -webkit-transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
-  transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+.rdp-dialog__options button[value='cancel']:hover,
+.rdp__error section > a:hover,
+.rdp__error--buttons > a:hover,
+.rdp-dialog__options button:hover:not([value='cancel']),
+.rdp-toolbar button:hover
+{
+    background-color: #72a1f9;
 }
 
-.rdp-dialog__options button[value="cancel"]:hover, .rdp__error section > a:hover, .rdp__error--buttons > a:hover, .rdp-dialog__options button:hover:not([value="cancel"]), .rdp-toolbar button:hover {
-  background-color: #72a1f9;
+.rdp-dialog__options button.active[value='cancel'],
+.rdp__error section > a.active,
+.rdp__error--buttons > a.active,
+.rdp-dialog__options button.active:not([value='cancel']),
+.rdp-toolbar button.active,
+.rdp-dialog__options button[value='cancel']:active,
+.rdp__error section > a:active,
+.rdp__error--buttons > a:active,
+.rdp-dialog__options button:active:not([value='cancel']),
+.rdp-toolbar button:active
+{
+    color: #fff;
+    background-color: #354a71;
+    box-shadow: inset 0 2px 0 #101622, 0 1px 0 #495c7f;
+    text-shadow: 0 1px 0 #101622;
 }
 
-.rdp-dialog__options button.active[value="cancel"], .rdp__error section > a.active, .rdp__error--buttons > a.active, .rdp-dialog__options button.active:not([value="cancel"]), .rdp-toolbar button.active, .rdp-dialog__options button[value="cancel"]:active, .rdp__error section > a:active, .rdp__error--buttons > a:active, .rdp-dialog__options button:active:not([value="cancel"]), .rdp-toolbar button:active {
-  background-color: #354A71;
-  box-shadow: inset 0px 2px 0px #101622, 0px 1px 0px #495c7f;
-  color: #fff;
-  text-shadow: 0px 1px 0px #101622;
+.rdp-dialog__options button.disabled[value='cancel'],
+.rdp__error section > a.disabled,
+.rdp__error--buttons > a.disabled,
+.rdp-dialog__options button.disabled:not([value='cancel']),
+.rdp-toolbar button.disabled,
+.rdp-dialog__options button[disabled][value='cancel'],
+.rdp__error section > a[disabled],
+.rdp__error--buttons > a[disabled],
+.rdp-dialog__options button[disabled]:not([value='cancel']),
+.rdp-toolbar button[disabled]
+{
+    pointer-events: none;
+
+    color: #3e5358;
+    background-color: #4c646a;
+    box-shadow: 0 2px 0 #2e3c40;
+    text-shadow: none;
 }
 
-.rdp-dialog__options button.disabled[value="cancel"], .rdp__error section > a.disabled, .rdp__error--buttons > a.disabled, .rdp-dialog__options button.disabled:not([value="cancel"]), .rdp-toolbar button.disabled, .rdp-dialog__options button[disabled][value="cancel"], .rdp__error section > a[disabled], .rdp__error--buttons > a[disabled], .rdp-dialog__options button[disabled]:not([value="cancel"]), .rdp-toolbar button[disabled] {
-  background-color: #4C646A;
-  color: #3e5358;
-  text-shadow: none;
-  box-shadow: 0px 2px 0px #2e3c40;
-  pointer-events: none;
+.rdp-dialog__options button[value='cancel']:focus,
+.rdp__error section > a:focus,
+.rdp__error--buttons > a:focus,
+.rdp-dialog__options button:focus:not([value='cancel']),
+.rdp-toolbar button:focus
+{
+    outline: none;
 }
 
-.rdp-dialog__options button[value="cancel"]:focus, .rdp__error section > a:focus, .rdp__error--buttons > a:focus, .rdp-dialog__options button:focus:not([value="cancel"]), .rdp-toolbar button:focus {
-  outline: none;
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__error--buttons > a,
+.rdp-dialog__options button:not([value='cancel'])
+{
+    font-size: 16px;
+    font-size: 700;
+    font-weight: 500;
+
+    padding: 8px 15px;
+
+    color: #fff;
+    text-shadow: 0 1px 0 #354a71;
 }
 
-.rdp-dialog__options button[value="cancel"], .rdp__error section > a, .rdp__error--buttons > a, .rdp-dialog__options button:not([value="cancel"]) {
-  font-size: 16px;
-  text-shadow: 0px 1px 0px #354A71;
-  color: #fff;
-  font-weight: 500;
-  font-size: 700;
-  padding: 8px 15px;
+.rdp-dialog__options button[value='cancel']
+{
+    font-weight: 500;
+
+    color: #fff;
+    background-color: #829397;
+    box-shadow: 0 2px 0 #35464a;
+    text-shadow: 0 1px 0 #35464a;
 }
 
-.rdp-dialog__options button[value="cancel"] {
-  background-color: #829397;
-  box-shadow: 0px 2px 0px #35464a;
-  text-shadow: 0px 1px 0px #35464a;
-  color: #fff;
-  font-weight: 500;
+.rdp-dialog__options button[value='cancel']:hover
+{
+    background-color: #94a2a6;
 }
 
-.rdp-dialog__options button[value="cancel"]:hover {
-  background-color: #94a2a6;
+.rdp-dialog__options button[value='cancel']:active
+{
+    background-color: #4c646a;
+    box-shadow: inset 0 2px 0 #2c3132, 0 1px 0 #5e7479;
 }
 
-.rdp-dialog__options button[value="cancel"]:active {
-  background-color: #4C646A;
-  box-shadow: inset 0px 2px 0px #2c3132, 0px 1px 0px #5e7479;
+.rdp-app
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    padding-top: 50px;
 }
 
-.rdp-app {
-  position: fixed;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  padding-top: 50px;
+.rdp-app__display
+{
+    position: relative;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
 }
 
-.rdp-app__display {
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
+.rdp-app__controls
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    background-color: #15272a;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 128px;
+    flex-basis: 128px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
 }
 
-.rdp-app__controls {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -ms-flex-preferred-size: 128px;
-      flex-basis: 128px;
-  background-color: #15272A;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  -webkit-box-flex: 0;
-      -ms-flex-positive: 0;
-          flex-grow: 0;
+.rdp-app__header
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 0 30px;
+
+    background-color: #2e3a4f;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-preferred-size: 66px;
+    flex-basis: 66px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
 }
 
-.rdp-app__header {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -ms-flex-preferred-size: 66px;
-      flex-basis: 66px;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  -webkit-box-flex: 0;
-      -ms-flex-positive: 0;
-          flex-grow: 0;
-  padding: 0 30px;
-  background-color: #2E3A4F;
+.rdp-app__header--right
+{
+    margin-left: auto;
 }
 
-.rdp-app__header--right {
-  margin-left: auto;
+.rdp-app__viewport
+{
+    position: relative;
+
+    background-color: #000;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
 }
 
-.rdp-app__viewport {
-  position: relative;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
-  background-color: #000;
+.rdp-app__viewport img
+{
+    position: absolute;
+    top: 50%;
+
+    width: 100%;
+
+    transition: filter 1s ease-out;
+    transform: translateY(-50%);
 }
 
-.rdp-app__viewport img {
-  position: absolute;
-  width: 100%;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
-  -webkit-transition: -webkit-filter 1s ease-out;
-  transition: -webkit-filter 1s ease-out;
-  transition: filter 1s ease-out;
-  transition: filter 1s ease-out, -webkit-filter 1s ease-out;
+.dialog-active .rdp-app__viewport img
+{
+    filter: blur(10px);
 }
 
-.dialog-active .rdp-app__viewport img {
-  -webkit-filter: blur(10px);
-          filter: blur(10px);
-}
+.rdp-toolbar
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-y: auto;
+        flex-direction: column;
 
-.rdp-toolbar {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-preferred-size: 100%;
-      flex-basis: 100%;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  padding: 15px 20px 75px;
-  overflow-y: auto;
+    padding: 15px 20px 75px;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+    -ms-flex-direction: column;
 }
 
 .rdp-toolbar > .button-fill,
-.rdp-toolbar > button {
-  position: relative;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  -webkit-box-flex: 0;
-      -ms-flex-positive: 0;
-          flex-grow: 0;
-  margin: 25px 0;
+.rdp-toolbar > button
+{
+    position: relative;
+
+    margin: 25px 0;
+
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-toolbar > .button-fill > button
+{
+    z-index: 2;
+
+    width: 100%;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-']
+{
+    position: absolute;
+    top: 0;
+
+    width: 75px;
+    height: 3px;
+
+    transition: top 250ms linear, opacity 250ms linear;
+    pointer-events: none;
+
+    opacity: 0;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].in
+{
+    opacity: 1;
 }
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1
+{
+    z-index: 3;
+    left: 6px;
 
-.rdp-toolbar > .button-fill > button {
-  width: 100%;
-  z-index: 2;
-}
-
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"] {
-  position: absolute;
-  height: 3px;
-  top: 0;
-  opacity: 0;
-  width: 75px;
-  pointer-events: none;
-  -webkit-transition: top 250ms linear, opacity 250ms linear;
-  transition: top 250ms linear, opacity 250ms linear;
-}
-
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].in {
-  opacity: 1;
+    background-color: #d8d8d8;
 }
-
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-1 {
-  left: 6px;
-  background-color: #D8D8D8;
-  z-index: 3;
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1.in
+{
+    top: -3px;
 }
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2
+{
+    z-index: 2;
+    left: 10px;
+
+    width: 67px;
 
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-1.in {
-  top: -3px;
+    background-color: #a9a9a9;
 }
 
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-2 {
-  width: 67px;
-  left: 10px;
-  z-index: 2;
-  background-color: #A9A9A9;
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2.in
+{
+    top: -6px;
 }
 
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-2.in {
-  top: -6px;
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3
+{
+    z-index: 1;
+    left: 13px;
+
+    width: 60px;
+
+    background-color: #616060;
 }
 
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-3 {
-  width: 60px;
-  left: 13px;
-  z-index: 1;
-  background-color: #616060;
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3.in
+{
+    top: -9px;
 }
+
+.rdp-toolbar > .button-fill .button-badge
+{
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 18px;
+
+    position: absolute;
+    z-index: 3;
+    top: -13px;
+    right: -5px;
 
-.rdp-toolbar > .button-fill span[class^="ss-v-e-"].ss-v-e-3.in {
-  top: -9px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+
+    text-align: center;
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #d9c7c7;
+    border-radius: 50px;
+    background-color: #d73a3a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .75);
+}
+
+.rdp-toolbar > .button-fill .button-badge:empty
+{
+    display: none;
+}
+
+.rdp-toolbar button .fa,
+.rdp-toolbar button .custom-select:after,
+.rdp-toolbar button .dns-badge__content:before,
+.rdp-toolbar button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:after,
+.rdp-toolbar button .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-toolbar button div:before,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:after,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:before,
+.rdp-toolbar button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-toolbar button .custom-checkbox > input + span,
+.rdp-toolbar button .breadcrumbs > li:not(:last-child):after,
+.rdp-toolbar button .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: 2px;
 }
+
+.rdp-toolbar button:before
+{
+    font-size: 12px;
+    font-weight: 900;
 
-.rdp-toolbar > .button-fill .button-badge {
-  position: absolute;
-  z-index: 3;
-  top: -13px;
-  right: -5px;
-  text-align: center;
-  min-width: 20px;
-  height: 20px;
-  background-color: #D73A3A;
-  border: 1px solid #D9C7C7;
-  color: #fff;
-  text-align: center;
-  font-weight: 700;
-  font-size: 15px;
-  line-height: 18px;
-  border-radius: 50px;
-  padding: 0 5px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.75);
+    position: absolute;
+    right: 0;
+    bottom: -2px;
+
+    width: 16px;
+    height: 20px;
+    padding-top: 2px;
+
+    content: attr(data-hotkey);
+
+    color: #444;
+    border-bottom: 2px solid #999;
+    border-radius: 5px 0 5px 0;
+    background-color: #ccc;
 }
+
+.rdp-toolbar button:after
+{
+    font-size: 14px;
+    font-weight: 400;
 
-.rdp-toolbar > .button-fill .button-badge:empty {
-  display: none;
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+
+    width: 100%;
+
+    content: attr(name);
+    text-transform: capitalize;
+    pointer-events: none;
+
+    color: #fff;
+    text-shadow: none;
 }
 
-.rdp-toolbar button .fa, .rdp-toolbar button .custom-select:after, .rdp-toolbar button .dns-badge__content:before, .rdp-toolbar button .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-toolbar button .status.status-reported:before, .rdp-toolbar button .cuckoo-analysis__panel--toggle:before, .rdp-toolbar button .cuckoo-analysis__panel--toggle:after, .rdp-toolbar button .cuckoo-files ul div:before, .cuckoo-files ul .rdp-toolbar button div:before, .rdp-toolbar button .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-toolbar button .extension-select:after, .rdp-toolbar button .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-toolbar button .extension-select:before, .rdp-toolbar button .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-toolbar button .custom-checkbox > input + span, .rdp-toolbar button .breadcrumbs > li:not(:last-child):after, .rdp-toolbar button .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-toolbar button input[type="radio"] + span:before, .rdp-toolbar button .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar button input[type="radio"] + span:before, .rdp-toolbar button
-.list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-toolbar button input[type="checkbox"] + span:before, .rdp-toolbar button .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-toolbar button input[type="checkbox"] + span:before {
-  position: relative;
-  top: 2px;
+.rdp-toolbar button:active:after,
+.rdp-toolbar button.active:after
+{
+    font-weight: 700;
 }
 
-.rdp-toolbar button:before {
-  content: attr(data-hotkey);
-  position: absolute;
-  width: 16px;
-  height: 20px;
-  bottom: -2px;
-  right: 0;
-  font-size: 12px;
-  font-weight: 900;
-  background-color: #ccc;
-  color: #444;
-  border-bottom: 2px solid #999;
-  border-radius: 5px 0 5px 0;
-  padding-top: 2px;
+.rdp-toolbar button[disabled]:after,
+.rdp-toolbar button.disabled:after
+{
+    color: #4c646a;
 }
 
-.rdp-toolbar button:after {
-  content: attr(name);
-  pointer-events: none;
-  position: absolute;
-  bottom: -30px;
-  left: 0;
-  width: 100%;
-  font-size: 14px;
-  font-weight: 400;
-  text-transform: capitalize;
-  color: #fff;
-  text-shadow: none;
+.rdp-toolbar button:first-child
+{
+    margin-top: 0;
 }
+
+.rdp-toolbar button:last-child
+{
+    margin-bottom: 0;
+}
+
+.rdp-toolbar button.shutter-in
+{
+    animation: SnapshotShutter;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    pointer-events: none;
+}
 
-.rdp-toolbar button:active:after, .rdp-toolbar button.active:after {
-  font-weight: 700;
+.rdp-credits
+{
+    position: relative;
 }
+
+.rdp-credits a
+{
+    display: block;
+
+    height: 58px;
+    padding-top: 14px;
+
+    transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+    text-align: center;
 
-.rdp-toolbar button[disabled]:after, .rdp-toolbar button.disabled:after {
-  color: #4C646A;
+    background-color: #383838;
+    box-shadow: inset 0 2px 4px rgba(11, 11, 11, .8);
 }
 
-.rdp-toolbar button:first-child {
-  margin-top: 0;
+.rdp-credits a:hover
+{
+    background-color: #6297f8;
+    box-shadow: inset 0 2px 4px rgba(39, 60, 99, .8);
 }
 
-.rdp-toolbar button:last-child {
-  margin-bottom: 0;
+.rdp-credits img
+{
+    height: 32px;
 }
 
-.rdp-toolbar button.shutter-in {
-  -webkit-animation: SnapshotShutter;
-          animation: SnapshotShutter;
-  -webkit-animation-duration: 1s;
-          animation-duration: 1s;
-  -webkit-animation-iteration-count: 1;
-          animation-iteration-count: 1;
-  pointer-events: none;
+.rdp-credits:before
+{
+    position: absolute;
+    top: -25px;
+
+    width: 100%;
+    height: 25px;
+
+    content: '';
+
+    background: linear-gradient(to bottom, rgba(21, 39, 42, 0) 0%, #15272a 100%);
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
 }
+
+.rdp-title
+{
+    font-size: 20px;
+    font-weight: 400;
+
+    margin: 0;
+
+    color: #6297f8;
 
-.rdp-credits {
-  position: relative;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
 }
 
-.rdp-credits a {
-  display: block;
-  text-align: center;
-  height: 58px;
-  padding-top: 14px;
-  background-color: #383838;
-  box-shadow: inset 0px 2px 4px rgba(11, 11, 11, 0.8);
-  -webkit-transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
-  transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+.rdp-title .fa,
+.rdp-title .custom-select:after,
+.rdp-title .dns-badge__content:before,
+.rdp-title .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-title .status.status-reported:before,
+.rdp-title #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-title .status.status-reported:before,
+.rdp-title .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-title .status.status-reported:before,
+.rdp-title .cuckoo-analysis__panel--toggle:before,
+.rdp-title .cuckoo-analysis__panel--toggle:after,
+.rdp-title .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-title div:before,
+.rdp-title .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-title .extension-select:after,
+.rdp-title .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-title .extension-select:before,
+.rdp-title .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-title .custom-checkbox > input + span,
+.rdp-title .breadcrumbs > li:not(:last-child):after,
+.rdp-title .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-title input[type='radio'] + span:before,
+.rdp-title .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-title input[type='radio'] + span:before,
+.rdp-title
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-title input[type='checkbox'] + span:before,
+.rdp-title .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-title input[type='checkbox'] + span:before
+{
+    font-size: 1.4em;
+
+    position: relative;
+    top: 1px;
+
+    margin-right: 10px;
+
+    vertical-align: middle;
 }
 
-.rdp-credits a:hover {
-  background-color: #6297F8;
-  box-shadow: inset 0px 2px 4px rgba(39, 60, 99, 0.8);
+.rdp-snapshots
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-x: auto;
+
+    max-width: 500px;
+    margin: 0;
+    padding-right: 10px;
+
+    list-style: none;
+
+    -ms-flex-align: center;
+    align-items: center;
 }
 
-.rdp-credits img {
-  height: 32px;
-}
+.rdp-snapshots > li
+{
+    position: relative;
+}
 
-.rdp-credits:before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 25px;
-  top: -25px;
-  background: -webkit-linear-gradient(top, rgba(21, 39, 42, 0) 0%, #15272a 100%);
-  background: linear-gradient(to bottom, rgba(21, 39, 42, 0) 0%, #15272a 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
+.rdp-snapshots > li:not(:last-child)
+{
+    margin-right: 15px;
 }
 
-.rdp-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 400;
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
-  color: #6297F8;
+.rdp-snapshots > li figure
+{
+    overflow: hidden;
+
+    height: 53px;
+
+    border: 1px solid #88a1cb;
+    border-radius: 6px;
 }
+
+.rdp-snapshots > li figure img
+{
+    height: 100%;
 
-.rdp-title .fa, .rdp-title .custom-select:after, .rdp-title .dns-badge__content:before, .rdp-title .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-title .status.status-reported:before, .rdp-title #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-title .status.status-reported:before, .rdp-title .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-title .status.status-reported:before, .rdp-title .cuckoo-analysis__panel--toggle:before, .rdp-title .cuckoo-analysis__panel--toggle:after, .rdp-title .cuckoo-files ul div:before, .cuckoo-files ul .rdp-title div:before, .rdp-title .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-title .extension-select:after, .rdp-title .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-title .extension-select:before, .rdp-title .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-title .custom-checkbox > input + span, .rdp-title .breadcrumbs > li:not(:last-child):after, .rdp-title .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-title input[type="radio"] + span:before, .rdp-title .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-title input[type="radio"] + span:before, .rdp-title
-.list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-title input[type="checkbox"] + span:before, .rdp-title .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-title input[type="checkbox"] + span:before {
-  position: relative;
-  top: 1px;
-  vertical-align: middle;
-  font-size: 1.4em;
-  margin-right: 10px;
+    transition: opacity 100ms ease-out;
+
+    opacity: .4;
 }
 
-.rdp-snapshots {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  list-style: none;
-  margin: 0;
-  max-width: 500px;
-  overflow-x: auto;
-  padding-right: 10px;
+.rdp-snapshots > li figure:hover > img
+{
+    opacity: 1;
 }
+
+.rdp-snapshots--controls
+{
+    position: absolute;
+    top: 0;
+    right: -8px;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    height: 100%;
 
-.rdp-snapshots > li {
-  position: relative;
+    -ms-flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
 }
 
-.rdp-snapshots > li:not(:last-child) {
-  margin-right: 15px;
+.rdp-snapshots--controls a
+{
+    font-size: 12px;
+
+    display: inline-block;
+
+    width: 16px;
+    height: 16px;
+    margin: 5px 0;
+
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #88a1cb;
+    border-radius: 50%;
+    background-color: #000;
 }
 
-.rdp-snapshots > li figure {
-  height: 53px;
-  overflow: hidden;
-  border-radius: 6px;
-  border: 1px solid #88A1CB;
+.rdp-snapshots--controls a .fa,
+.rdp-snapshots--controls a .custom-select:after,
+.rdp-snapshots--controls a .dns-badge__content:before,
+.rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after,
+.rdp-snapshots--controls a .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-snapshots--controls a div:before,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before,
+.rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span,
+.rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after,
+.rdp-snapshots--controls a .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: -1px;
 }
+
+.rdp-snapshot-selection
+{
+    overflow-x: auto;
+
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+
+    list-style: none;
 
-.rdp-snapshots > li figure img {
-  height: 100%;
-  opacity: .4;
-  -webkit-transition: opacity 100ms ease-out;
-  transition: opacity 100ms ease-out;
+    white-space: nowrap;
 }
 
-.rdp-snapshots > li figure:hover > img {
-  opacity: 1;
+.rdp-snapshot-selection *,
+.rdp-snapshot-selection *:before,
+.rdp-snapshot-selection *:after
+{
+    transition: all 200ms linear;
 }
 
-.rdp-snapshots--controls {
-  position: absolute;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  right: -8px;
-  height: 100%;
-  top: 0;
+.rdp-snapshot-selection > li
+{
+    display: inline-block;
+
+    margin: 0 15px 50px;
 }
 
-.rdp-snapshots--controls a {
-  display: inline-block;
-  background-color: #000;
-  border: 1px solid #88A1CB;
-  color: #fff;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 12px;
-  text-align: center;
-  margin: 5px 0;
+.rdp-snapshot-selection input[type='checkbox']
+{
+    display: none;
 }
 
-.rdp-snapshots--controls a .fa, .rdp-snapshots--controls a .custom-select:after, .rdp-snapshots--controls a .dns-badge__content:before, .rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before, .rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after, .rdp-snapshots--controls a .cuckoo-files ul div:before, .cuckoo-files ul .rdp-snapshots--controls a div:before, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after, .rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before, .rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span, .rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after, .rdp-snapshots--controls a .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="radio"] + span:before, .rdp-snapshots--controls a
-.list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before, .rdp-snapshots--controls a .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp-snapshots--controls a input[type="checkbox"] + span:before {
-  position: relative;
-  top: -1px;
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image
+{
+    border: 2px solid #5888df;
+    background-color: #6297f8;
 }
 
-.rdp-snapshot-selection {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  list-style: none;
-  white-space: nowrap;
-  overflow-x: auto;
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image img
+{
+    opacity: 1;
 }
 
-.rdp-snapshot-selection *, .rdp-snapshot-selection *:before, .rdp-snapshot-selection *:after {
-  -webkit-transition: all 200ms linear;
-  transition: all 200ms linear;
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:before
+{
+    border: 0;
+    background-color: #fff;
 }
 
-.rdp-snapshot-selection > li {
-  display: inline-block;
-  margin: 0 15px 50px;
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:after
+{
+    transform: scale(1);
 }
+
+.rdp-snapshot-selection .snapshot-selection-image
+{
+    position: relative;
+
+    display: block;
 
-.rdp-snapshot-selection input[type="checkbox"] {
-  display: none;
+    width: 350px;
+    padding: 5px;
+
+    border: 2px solid #fff;
+    border-radius: 16px;
 }
+
+.rdp-snapshot-selection .snapshot-selection-image img
+{
+    width: 100%;
 
-.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image {
-  background-color: #6297F8;
-  border: 2px solid #5888df;
+    opacity: .75;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
 }
+
+.rdp-snapshot-selection .snapshot-selection-image:before
+{
+    position: absolute;
+    z-index: 2;
+    bottom: -16px;
+    left: 50%;
+
+    display: block;
 
-.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image img {
-  opacity: 1;
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+
+    content: '';
+
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background-color: #000;
 }
+
+.rdp-snapshot-selection .snapshot-selection-image:after
+{
+    position: absolute;
+    z-index: 3;
+    bottom: -11px;
+    left: 50%;
 
-.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image:before {
-  background-color: #fff;
-  border: 0;
+    display: block;
+
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+
+    content: '';
+    transform: scale(0);
+
+    border-radius: 50%;
+    background-color: #6297f8;
 }
+
+.rdp-snapshot-selection .snapshot-selection-image:hover
+{
+    cursor: pointer;
 
-.rdp-snapshot-selection input[type="checkbox"]:checked + .snapshot-selection-image:after {
-  -webkit-transform: scale(1);
-          transform: scale(1);
+    background-color: rgba(98, 151, 248, .2);
 }
 
-.rdp-snapshot-selection .snapshot-selection-image {
-  position: relative;
-  display: block;
-  width: 350px;
-  border: 2px solid #fff;
-  border-radius: 16px;
-  padding: 5px;
+.rdp__error
+{
+    position: relative;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
 }
 
-.rdp-snapshot-selection .snapshot-selection-image img {
-  width: 100%;
-  border-radius: 8px;
-  opacity: .75;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.rdp__error .combined-icon
+{
+    position: relative;
+
+    width: 153px;
+    height: 134px;
+    margin: 0 auto;
 }
 
-.rdp-snapshot-selection .snapshot-selection-image:before {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border: 2px solid #fff;
-  background-color: #000;
-  z-index: 2;
-  left: 50%;
-  margin-left: -16px;
-  border-radius: 50%;
-  bottom: -16px;
+.rdp__error .combined-icon .fa,
+.rdp__error .combined-icon .custom-select:after,
+.rdp__error .combined-icon .dns-badge__content:before,
+.rdp__error .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__error .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__error .combined-icon div:before,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:after,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:before,
+.rdp__error .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__error .combined-icon .custom-checkbox > input + span,
+.rdp__error .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__error .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before
+{
+    position: absolute;
 }
+
+.rdp__error .combined-icon .fa-frown-o
+{
+    font-size: 43px;
 
-.rdp-snapshot-selection .snapshot-selection-image:after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  background-color: #6297F8;
-  left: 50%;
-  bottom: -11px;
-  margin-left: -11px;
-  border-radius: 50%;
-  z-index: 3;
-  -webkit-transform: scale(0);
-          transform: scale(0);
+    top: 25px;
+    left: 58px;
+
+    color: #cc613c;
 }
+
+.rdp__error .combined-icon .fa-desktop
+{
+    font-size: 140px;
 
-.rdp-snapshot-selection .snapshot-selection-image:hover {
-  cursor: pointer;
-  background-color: rgba(98, 151, 248, 0.2);
+    color: #542f21;
 }
 
-.rdp__error {
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  margin: 0px auto;
+.rdp__error > section
+{
+    position: relative;
+    z-index: 2;
 }
 
-.rdp__error .combined-icon {
-  position: relative;
-  height: 134px;
-  width: 153px;
-  margin: 0 auto;
+.rdp__error section > p
+{
+    font-size: 24px;
+    font-weight: 300;
+
+    margin: 10px 0;
+
+    text-align: center;
+
+    color: #a6a6a6;
 }
+
+.rdp__error section > a
+{
+    top: 0;
+
+    display: block;
+
+    margin: 10px 0;
+
+    text-align: center;
 
-.rdp__error .combined-icon .fa, .rdp__error .combined-icon .custom-select:after, .rdp__error .combined-icon .dns-badge__content:before, .rdp__error .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before, .cuckoo-table#submission-task-table .rdp__error .combined-icon .status.status-reported:before, .rdp__error .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before, #submission-task-table.cuckoo-table__fullscreen .rdp__error .combined-icon .status.status-reported:before, .rdp__error .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before, .network-display__table > table#submission-task-table .rdp__error .combined-icon .status.status-reported:before, .rdp__error .combined-icon .cuckoo-analysis__panel--toggle:before, .rdp__error .combined-icon .cuckoo-analysis__panel--toggle:after, .rdp__error .combined-icon .cuckoo-files ul div:before, .cuckoo-files ul .rdp__error .combined-icon div:before, .rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:after, .cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:after, .rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:before, .cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:before, .rdp__error .combined-icon .flex-form__header .custom-checkbox > input + span, .flex-form__header .rdp__error .combined-icon .custom-checkbox > input + span, .rdp__error .combined-icon .breadcrumbs > li:not(:last-child):after, .rdp__error .combined-icon .list-panel .list-group-option input[type="radio"] + span:before, .list-panel .list-group-option .rdp__error .combined-icon input[type="radio"] + span:before, .rdp__error .combined-icon .list-panel__widget .list-group-option input[type="radio"] + span:before, .list-panel__widget .list-group-option .rdp__error .combined-icon input[type="radio"] + span:before, .rdp__error .combined-icon
-.list-panel .list-group-option input[type="checkbox"] + span:before,
-.list-panel .list-group-option .rdp__error .combined-icon input[type="checkbox"] + span:before, .rdp__error .combined-icon .list-panel__widget .list-group-option input[type="checkbox"] + span:before, .list-panel__widget .list-group-option .rdp__error .combined-icon input[type="checkbox"] + span:before {
-  position: absolute;
-}
-
-.rdp__error .combined-icon .fa-frown-o {
-  font-size: 43px;
-  left: 58px;
-  top: 25px;
-  color: #CC613C;
+    background-color: #6d6d6d;
+    box-shadow: 0 2px 0 #484848;
+    text-shadow: 0 1px 0 #3b3b3b;
 }
-
-.rdp__error .combined-icon .fa-desktop {
-  font-size: 140px;
-  color: #542F21;
-}
-
-.rdp__error > section {
-  position: relative;
-  z-index: 2;
-}
-
-.rdp__error section > p {
-  margin: 10px 0;
-  text-align: center;
-  font-size: 24px;
-  color: #A6A6A6;
-  font-weight: 300;
-}
-
-.rdp__error section > a {
-  top: 0;
-  display: block;
-  background-color: #6D6D6D;
-  text-shadow: 0px 1px 0px #3B3B3B;
-  box-shadow: 0px 2px 0px #484848;
-  margin: 10px 0;
-  text-align: center;
+
+.rdp__error--resolutions
+{
+    font-size: 16px;
+
+    position: relative;
+    top: -1px;
+
+    width: 300px;
+    margin-top: 25px;
+    padding: 20px;
+
+    color: #fff;
+    border: 1px solid #405f97;
+    border-radius: 8px;
+    background-color: #293b5c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
 }
+
+.rdp__error--resolutions:after,
+.rdp__error--resolutions:before
+{
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+
+    width: 0;
+    height: 0;
+
+    content: ' ';
+    pointer-events: none;
 
-.rdp__error--resolutions {
-  position: relative;
-  top: -1px;
-  background-color: #293b5c;
-  border: 1px solid #405f97;
-  color: #fff;
-  padding: 20px;
-  width: 300px;
-  margin-top: 25px;
-  font-size: 16px;
-  border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.rdp__error--resolutions:after, .rdp__error--resolutions:before {
-  bottom: 100%;
-  left: 50%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
+    border: solid transparent;
 }
 
-.rdp__error--resolutions:before {
-  border-color: rgba(64, 95, 151, 0);
-  border-bottom-color: #405f97;
-  border-width: 21px;
-  margin-left: -21px;
+.rdp__error--resolutions:before
+{
+    margin-left: -21px;
+
+    border-width: 21px;
+    border-color: rgba(64, 95, 151, 0);
+    border-bottom-color: #405f97;
 }
 
-.rdp__error--resolutions:after {
-  border-color: rgba(41, 59, 92, 0);
-  border-bottom-color: #293b5c;
-  border-width: 20px;
-  margin-left: -20px;
+.rdp__error--resolutions:after
+{
+    margin-left: -20px;
+
+    border-width: 20px;
+    border-color: rgba(41, 59, 92, 0);
+    border-bottom-color: #293b5c;
 }
 
-.rdp__error--resolutions ol {
-  padding: 0 17px;
-  margin: 0;
+.rdp__error--resolutions ol
+{
+    margin: 0;
+    padding: 0 17px;
 }
+
+.rdp__error--buttons
+{
+    display: -ms-flexbox;
+    display: flex;
 
-.rdp__error--buttons {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  padding: 15px 0 0 0;
+    padding: 15px 0 0 0;
+
+    -ms-flex-pack: justify;
+    justify-content: space-between;
 }
+
+.rdp__error:after
+{
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    content: '';
 
-.rdp__error:after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: url(../graphic/white-noise.gif);
-  background-size: cover;
-  opacity: .2;
-  z-index: 1;
+    opacity: .2;
+    background: url(../graphic/white-noise.gif);
+    background-size: cover;
 }
 
-.rdp-dialog {
-  width: 100%;
-  height: calc(100% - 66px);
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 0;
-  margin: 0;
-  border: 0;
-  top: 66px;
+.rdp-dialog
+{
+    top: 66px;
+
+    width: 100%;
+    height: calc(100% - 66px);
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background-color: rgba(0, 0, 0, .7);
 }
+
+.rdp-dialog__body
+{
+    position: absolute;
+    top: 50%;
+    left: 5%;
 
-.rdp-dialog__body {
-  position: absolute;
-  color: #fff;
-  text-align: center;
-  width: 90%;
-  left: 5%;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+    width: 90%;
+
+    transform: translateY(-50%);
+    text-align: center;
+
+    color: #fff;
 }
 
-.rdp-dialog__title {
-  font-size: 24px;
-  font-weight: 300;
+.rdp-dialog__title
+{
+    font-size: 24px;
+    font-weight: 300;
 }
 
-.rdp-dialog__title strong {
-  font-weight: 500;
+.rdp-dialog__title strong
+{
+    font-weight: 500;
 }
 
-.rdp-dialog__text {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 50px;
+.rdp-dialog__text
+{
+    font-size: 18px;
+    font-weight: 500;
+
+    margin-bottom: 50px;
 }
+
+.rdp-dialog__options
+{
+    display: -ms-flexbox;
+    display: flex;
 
-.rdp-dialog__options {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
-.rdp-dialog__options button {
-  margin: 0 12px;
+.rdp-dialog__options button
+{
+    margin: 0 12px;
 }
 
 /* 
