@@ -1,23 +1,20 @@
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -136,6 +133,149 @@ Guacamole.Client = function(tunnel) {
     }
 
     /**
+     * Produces an opaque representation of Guacamole.Client state which can be
+     * later imported through a call to importState(). This object is
+     * effectively an independent, compressed snapshot of protocol and display
+     * state. Invoking this function implicitly flushes the display.
+     *
+     * @param {function} callback
+     *     Callback which should be invoked once the state object is ready. The
+     *     state object will be passed to the callback as the sole parameter.
+     *     This callback may be invoked immediately, or later as the display
+     *     finishes rendering and becomes ready.
+     */
+    this.exportState = function exportState(callback) {
+
+        // Start with empty state
+        var state = {
+            'currentState' : currentState,
+            'currentTimestamp' : currentTimestamp,
+            'layers' : {}
+        };
+
+        var layersSnapshot = {};
+
+        // Make a copy of all current layers (protocol state)
+        for (var key in layers) {
+            layersSnapshot[key] = layers[key];
+        }
+
+        // Populate layers once data is available (display state, requires flush)
+        display.flush(function populateLayers() {
+
+            // Export each defined layer/buffer
+            for (var key in layersSnapshot) {
+
+                var index = parseInt(key);
+                var layer = layersSnapshot[key];
+                var canvas = layer.toCanvas();
+
+                // Store layer/buffer dimensions
+                var exportLayer = {
+                    'width'  : layer.width,
+                    'height' : layer.height
+                };
+
+                // Store layer/buffer image data, if it can be generated
+                if (layer.width && layer.height)
+                    exportLayer.url = canvas.toDataURL('image/png');
+
+                // Add layer properties if not a buffer nor the default layer
+                if (index > 0) {
+                    exportLayer.x = layer.x;
+                    exportLayer.y = layer.y;
+                    exportLayer.z = layer.z;
+                    exportLayer.alpha = layer.alpha;
+                    exportLayer.matrix = layer.matrix;
+                    exportLayer.parent = getLayerIndex(layer.parent);
+                }
+
+                // Store exported layer
+                state.layers[key] = exportLayer;
+
+            }
+
+            // Invoke callback now that the state is ready
+            callback(state);
+
+        });
+
+    };
+
+    /**
+     * Restores Guacamole.Client protocol and display state based on an opaque
+     * object from a prior call to exportState(). The Guacamole.Client instance
+     * used to export that state need not be the same as this instance.
+     *
+     * @param {Object} state
+     *     An opaque representation of Guacamole.Client state from a prior call
+     *     to exportState().
+     *
+     * @param {function} [callback]
+     *     The function to invoke when state has finished being imported. This
+     *     may happen immediately, or later as images within the provided state
+     *     object are loaded.
+     */
+    this.importState = function importState(state, callback) {
+
+        var key;
+        var index;
+
+        currentState = state.currentState;
+        currentTimestamp = state.currentTimestamp;
+
+        // Dispose of all layers
+        for (key in layers) {
+            index = parseInt(key);
+            if (index > 0)
+                display.dispose(layers[key]);
+        }
+
+        layers = {};
+
+        // Import state of each layer/buffer
+        for (key in state.layers) {
+
+            index = parseInt(key);
+
+            var importLayer = state.layers[key];
+            var layer = getLayer(index);
+
+            // Reset layer size
+            display.resize(layer, importLayer.width, importLayer.height);
+
+            // Initialize new layer if it has associated data
+            if (importLayer.url) {
+                display.setChannelMask(layer, Guacamole.Layer.SRC);
+                display.draw(layer, 0, 0, importLayer.url);
+            }
+
+            // Set layer-specific properties if not a buffer nor the default layer
+            if (index > 0 && importLayer.parent >= 0) {
+
+                // Apply layer position and set parent
+                var parent = getLayer(importLayer.parent);
+                display.move(layer, parent, importLayer.x, importLayer.y, importLayer.z);
+
+                // Set layer transparency
+                display.shade(layer, importLayer.alpha);
+
+                // Apply matrix transform
+                var matrix = importLayer.matrix;
+                display.distort(layer,
+                    matrix[0], matrix[1], matrix[2],
+                    matrix[3], matrix[4], matrix[5]);
+
+            }
+
+        }
+
+        // Flush changes to display
+        display.flush(callback);
+
+    };
+
+    /**
      * Returns the underlying display of this Guacamole.Client. The display
      * contains an Element which can be added to the DOM, causing the
      * display to become visible.
@@ -236,89 +376,98 @@ Guacamole.Client = function(tunnel) {
     };
 
     /**
+     * Allocates an available stream index and creates a new
+     * Guacamole.OutputStream using that index, associating the resulting
+     * stream with this Guacamole.Client. Note that this stream will not yet
+     * exist as far as the other end of the Guacamole connection is concerned.
+     * Streams exist within the Guacamole protocol only when referenced by an
+     * instruction which creates the stream, such as a "clipboard", "file", or
+     * "pipe" instruction.
+     *
+     * @returns {Guacamole.OutputStream}
+     *     A new Guacamole.OutputStream with a newly-allocated index and
+     *     associated with this Guacamole.Client.
+     */
+    this.createOutputStream = function createOutputStream() {
+
+        // Allocate index
+        var index = stream_indices.next();
+
+        // Return new stream
+        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
+        return stream;
+
+    };
+
+    /**
+     * Opens a new audio stream for writing, where audio data having the give
+     * mimetype will be sent along the returned stream. The instruction
+     * necessary to create this stream will automatically be sent.
+     *
+     * @param {String} mimetype
+     *     The mimetype of the audio data that will be sent along the returned
+     *     stream.
+     *
+     * @return {Guacamole.OutputStream}
+     *     The created audio stream.
+     */
+    this.createAudioStream = function(mimetype) {
+
+        // Allocate and associate stream with audio metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("audio", stream.index, mimetype);
+        return stream;
+
+    };
+
+    /**
      * Opens a new file for writing, having the given index, mimetype and
-     * filename.
-     * 
+     * filename. The instruction necessary to create this stream will
+     * automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the file being sent.
      * @param {String} filename The filename of the file being sent.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createFileStream = function(mimetype, filename) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("file", index, mimetype, filename);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with file metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("file", stream.index, mimetype, filename);
         return stream;
 
     };
 
     /**
-     * Opens a new pipe for writing, having the given name and mimetype. 
-     * 
+     * Opens a new pipe for writing, having the given name and mimetype. The
+     * instruction necessary to create this stream will automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the data being sent.
      * @param {String} name The name of the pipe.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createPipeStream = function(mimetype, name) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("pipe", index, mimetype, name);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with pipe metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("pipe", stream.index, mimetype, name);
         return stream;
 
     };
 
     /**
-     * Opens a new clipboard object for writing, having the given mimetype.
-     * 
+     * Opens a new clipboard object for writing, having the given mimetype. The
+     * instruction necessary to create this stream will automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the data being sent.
      * @param {String} name The name of the pipe.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createClipboardStream = function(mimetype) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("clipboard", index, mimetype);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with clipboard metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("clipboard", stream.index, mimetype);
         return stream;
 
     };
@@ -326,7 +475,8 @@ Guacamole.Client = function(tunnel) {
     /**
      * Creates a new output stream associated with the given object and having
      * the given mimetype and name. The legality of a mimetype and name is
-     * dictated by the object itself.
+     * dictated by the object itself. The instruction necessary to create this
+     * stream will automatically be sent.
      *
      * @param {Number} index
      *     The index of the object for which the output stream is being
@@ -344,22 +494,9 @@ Guacamole.Client = function(tunnel) {
      */
     this.createObjectOutputStream = function createObjectOutputStream(index, mimetype, name) {
 
-        // Allocate index
-        var streamIndex = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("put", index, streamIndex, mimetype, name);
-        var stream = output_streams[streamIndex] = new Guacamole.OutputStream(guac_client, streamIndex);
-
-        // Override sendEnd() of stream to automatically free index
-        var oldEnd = stream.sendEnd;
-        stream.sendEnd = function freeStreamIndex() {
-            oldEnd();
-            stream_indices.free(streamIndex);
-            delete output_streams[streamIndex];
-        };
-
-        // Return new, overridden stream
+        // Allocate and ssociate stream with object metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("put", index, stream.index, mimetype, name);
         return stream;
 
     };
@@ -418,9 +555,13 @@ Guacamole.Client = function(tunnel) {
     };
 
     /**
-     * Marks a currently-open stream as complete.
+     * Marks a currently-open stream as complete. The other end of the
+     * Guacamole connection will be notified via an "end" instruction that the
+     * stream is closed, and the index will be made available for reuse in
+     * future streams.
      * 
-     * @param {Number} index The index of the stream to end.
+     * @param {Number} index
+     *     The index of the stream to end.
      */
     this.endStream = function(index) {
 
@@ -428,7 +569,15 @@ Guacamole.Client = function(tunnel) {
         if (!isConnected())
             return;
 
+        // Explicitly close stream by sending "end" instruction
         tunnel.sendMessage("end", index);
+
+        // Free associated index and stream if they exist
+        if (output_streams[index]) {
+            stream_indices.free(index);
+            delete output_streams[index];
+        }
+
     };
 
     /**
@@ -594,6 +743,36 @@ Guacamole.Client = function(tunnel) {
 
     };
 
+    /**
+     * Returns the index passed to getLayer() when the given layer was created.
+     * Positive indices refer to visible layers, an index of zero refers to the
+     * default layer, and negative indices refer to buffers.
+     *
+     * @param {Guacamole.Display.VisibleLayer|Guacamole.Layer} layer
+     *     The layer whose index should be determined.
+     *
+     * @returns {Number}
+     *     The index of the given layer, or null if no such layer is associated
+     *     with this client.
+     */
+    var getLayerIndex = function getLayerIndex(layer) {
+
+        // Avoid searching if there clearly is no such layer
+        if (!layer)
+            return null;
+
+        // Search through each layer, returning the index of the given layer
+        // once found
+        for (var key in layers) {
+            if (layer === layers[key])
+                return parseInt(key);
+        }
+
+        // Otherwise, no such index
+        return null;
+
+    };
+
     function getParser(index) {
 
         var parser = parsers[index];
@@ -642,8 +821,9 @@ Guacamole.Client = function(tunnel) {
                 if (stream.onack)
                     stream.onack(new Guacamole.Status(code, reason));
 
-                // If code is an error, invalidate stream
-                if (code >= 0x0100) {
+                // If code is an error, invalidate stream if not already
+                // invalidated by onack handler
+                if (code >= 0x0100 && output_streams[stream_index] === stream) {
                     stream_indices.free(stream_index);
                     delete output_streams[stream_index];
                 }
@@ -842,6 +1022,13 @@ Guacamole.Client = function(tunnel) {
 
         },
 
+        "disconnect" : function handleDisconnect(parameters) {
+
+            // Explicitly tear down connection
+            guac_client.disconnect();
+
+        },
+
         "dispose": function(parameters) {
             
             var layer_index = parseInt(parameters[0]);
@@ -851,7 +1038,7 @@ Guacamole.Client = function(tunnel) {
 
                 // Remove from parent
                 var layer = getLayer(layer_index);
-                layer.dispose();
+                display.dispose(layer);
 
                 // Delete reference
                 delete layers[layer_index];
@@ -879,7 +1066,7 @@ Guacamole.Client = function(tunnel) {
             // Only valid for visible layers (not buffers)
             if (layer_index >= 0) {
                 var layer = getLayer(layer_index);
-                layer.distort(a, b, c, d, e, f);
+                display.distort(layer, a, b, c, d, e, f);
             }
 
         },
@@ -899,13 +1086,20 @@ Guacamole.Client = function(tunnel) {
 
         "end": function(parameters) {
 
-            // Get stream
             var stream_index = parseInt(parameters[0]);
-            var stream = streams[stream_index];
 
-            // Signal end of stream
-            if (stream && stream.onend)
-                stream.onend();
+            // Get stream
+            var stream = streams[stream_index];
+            if (stream) {
+
+                // Signal end of stream if handler defined
+                if (stream.onend)
+                    stream.onend();
+
+                // Invalidate stream
+                delete streams[stream_index];
+
+            }
 
         },
 
@@ -1016,6 +1210,17 @@ Guacamole.Client = function(tunnel) {
 
         },
 
+        "mouse" : function handleMouse(parameters) {
+
+            var x = parseInt(parameters[0]);
+            var y = parseInt(parameters[1]);
+
+            // Display and move software cursor to received coordinates
+            display.showCursor(true);
+            display.moveCursor(x, y);
+
+        },
+
         "move": function(parameters) {
             
             var layer_index = parseInt(parameters[0]);
@@ -1028,7 +1233,7 @@ Guacamole.Client = function(tunnel) {
             if (layer_index > 0 && parent_index >= 0) {
                 var layer = getLayer(layer_index);
                 var parent = getLayer(parent_index);
-                layer.move(parent, x, y, z);
+                display.move(layer, parent, x, y, z);
             }
 
         },
@@ -1130,7 +1335,7 @@ Guacamole.Client = function(tunnel) {
             // Only valid for visible layers (not buffers)
             if (layer_index >= 0) {
                 var layer = getLayer(layer_index);
-                layer.shade(a);
+                display.shade(layer, a);
             }
 
         },
@@ -1325,7 +1530,7 @@ Guacamole.Client = function(tunnel) {
 
         // Ping every 5 seconds (ensure connection alive)
         pingInterval = window.setInterval(function() {
-            tunnel.sendMessage("sync", currentTimestamp);
+            tunnel.sendMessage("nop");
         }, 5000);
 
         setState(STATE_WAITING);

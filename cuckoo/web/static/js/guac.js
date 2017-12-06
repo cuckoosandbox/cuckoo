@@ -1,23 +1,20 @@
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -78,25 +75,22 @@ Guacamole.ArrayBufferReader = function(stream) {
 
 };
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -144,6 +138,20 @@ Guacamole.ArrayBufferWriter = function(stream) {
     }
 
     /**
+     * The maximum length of any blob sent by this Guacamole.ArrayBufferWriter,
+     * in bytes. Data sent via
+     * [sendData()]{@link Guacamole.ArrayBufferWriter#sendData} which exceeds
+     * this length will be split into multiple blobs. As the Guacamole protocol
+     * limits the maximum size of any instruction or instruction element to
+     * 8192 bytes, and the contents of blobs will be base64-encoded, this value
+     * should only be increased with extreme caution.
+     *
+     * @type {Number}
+     * @default {@link Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH}
+     */
+    this.blobLength = Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH;
+
+    /**
      * Sends the given data.
      * 
      * @param {ArrayBuffer|TypedArray} data The data to send.
@@ -153,13 +161,13 @@ Guacamole.ArrayBufferWriter = function(stream) {
         var bytes = new Uint8Array(data);
 
         // If small enough to fit into single instruction, send as-is
-        if (bytes.length <= 8064)
+        if (bytes.length <= guac_writer.blobLength)
             __send_blob(bytes);
 
         // Otherwise, send as multiple instructions
         else {
-            for (var offset=0; offset<bytes.length; offset += 8064)
-                __send_blob(bytes.subarray(offset, offset + 8094));
+            for (var offset=0; offset<bytes.length; offset += guac_writer.blobLength)
+                __send_blob(bytes.subarray(offset, offset + guac_writer.blobLength));
         }
 
     };
@@ -180,26 +188,113 @@ Guacamole.ArrayBufferWriter = function(stream) {
     this.onack = null;
 
 };
+
+/**
+ * The default maximum blob length for new Guacamole.ArrayBufferWriter
+ * instances.
+ *
+ * @constant
+ * @type {Number}
+ */
+Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH = 6048;
+
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * Maintains a singleton instance of the Web Audio API AudioContext class,
+ * instantiating the AudioContext only in response to the first call to
+ * getAudioContext(), and only if no existing AudioContext instance has been
+ * provided via the singleton property. Subsequent calls to getAudioContext()
+ * will return the same instance.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * @namespace
+ */
+Guacamole.AudioContextFactory = {
+
+    /**
+     * A singleton instance of a Web Audio API AudioContext object, or null if
+     * no instance has yes been created. This property may be manually set if
+     * you wish to supply your own AudioContext instance, but care must be
+     * taken to do so as early as possible. Assignments to this property will
+     * not retroactively affect the value returned by previous calls to
+     * getAudioContext().
+     *
+     * @type {AudioContext}
+     */
+    'singleton' : null,
+
+    /**
+     * Returns a singleton instance of a Web Audio API AudioContext object.
+     *
+     * @return {AudioContext}
+     *     A singleton instance of a Web Audio API AudioContext object, or null
+     *     if the Web Audio API is not supported.
+     */
+    'getAudioContext' : function getAudioContext() {
+
+        // Fallback to Webkit-specific AudioContext implementation
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+        // Get new AudioContext instance if Web Audio API is supported
+        if (AudioContext) {
+            try {
+
+                // Create new instance if none yet exists
+                if (!Guacamole.AudioContextFactory.singleton)
+                    Guacamole.AudioContextFactory.singleton = new AudioContext();
+
+                // Return singleton instance
+                return Guacamole.AudioContextFactory.singleton;
+
+            }
+            catch (e) {
+                // Do not use Web Audio API if not allowed by browser
+            }
+        }
+
+        // Web Audio API not supported
+        return null;
+
+    }
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -311,9 +406,9 @@ Guacamole.RawAudioPlayer = function RawAudioPlayer(stream, mimetype) {
      * The format of audio this player will decode.
      *
      * @private
-     * @type {Guacamole.RawAudioPlayer._Format}
+     * @type {Guacamole.RawAudioFormat}
      */
-    var format = Guacamole.RawAudioPlayer._Format.parse(mimetype);
+    var format = Guacamole.RawAudioFormat.parse(mimetype);
 
     /**
      * An instance of a Web Audio API AudioContext object, or null if the
@@ -322,25 +417,7 @@ Guacamole.RawAudioPlayer = function RawAudioPlayer(stream, mimetype) {
      * @private
      * @type {AudioContext}
      */
-    var context = (function getAudioContext() {
-
-        // Fallback to Webkit-specific AudioContext implementation
-        var AudioContext = window.AudioContext || window.webkitAudioContext;
-
-        // Get new AudioContext instance if Web Audio API is supported
-        if (AudioContext) {
-            try {
-                return new AudioContext();
-            }
-            catch (e) {
-                // Do not use Web Audio API if not allowed by browser
-            }
-        }
-
-        // Web Audio API not supported
-        return null;
-
-    })();
+    var context = Guacamole.AudioContextFactory.getAudioContext();
 
     /**
      * The earliest possible time that the next packet could play without
@@ -660,133 +737,6 @@ Guacamole.RawAudioPlayer = function RawAudioPlayer(stream, mimetype) {
 Guacamole.RawAudioPlayer.prototype = new Guacamole.AudioPlayer();
 
 /**
- * A description of the format of raw PCM audio received by a
- * Guacamole.RawAudioPlayer. This object describes the number of bytes per
- * sample, the number of channels, and the overall sample rate.
- *
- * @private
- * @constructor
- * @param {Guacamole.RawAudioPlayer._Format|Object} template
- *     The object whose properties should be copied into the corresponding
- *     properties of the new Guacamole.RawAudioPlayer._Format.
- */
-Guacamole.RawAudioPlayer._Format = function _Format(template) {
-
-    /**
-     * The number of bytes in each sample of audio data. This value is
-     * independent of the number of channels.
-     *
-     * @type {Number}
-     */
-    this.bytesPerSample = template.bytesPerSample;
-
-    /**
-     * The number of audio channels (ie: 1 for mono, 2 for stereo).
-     *
-     * @type {Number}
-     */
-    this.channels = template.channels;
-
-    /**
-     * The number of samples per second, per channel.
-     *
-     * @type {Number}
-     */
-    this.rate = template.rate;
-
-};
-
-/**
- * Parses the given mimetype, returning a new Guacamole.RawAudioPlayer._Format
- * which describes the type of raw audio data represented by that mimetype. If
- * the mimetype is not supported by Guacamole.RawAudioPlayer, null is returned.
- *
- * @private
- * @param {String} mimetype
- *     The audio mimetype to parse.
- *
- * @returns {Guacamole.RawAudioPlayer._Format}
- *     A new Guacamole.RawAudioPlayer._Format which describes the type of raw
- *     audio data represented by the given mimetype, or null if the given
- *     mimetype is not supported.
- */
-Guacamole.RawAudioPlayer._Format.parse = function parseFormat(mimetype) {
-
-    var bytesPerSample;
-
-    // Rate is absolutely required - if null is still present later, the
-    // mimetype must not be supported
-    var rate = null;
-
-    // Default for both "audio/L8" and "audio/L16" is one channel
-    var channels = 1;
-
-    // "audio/L8" has one byte per sample
-    if (mimetype.substring(0, 9) === 'audio/L8;') {
-        mimetype = mimetype.substring(9);
-        bytesPerSample = 1;
-    }
-
-    // "audio/L16" has two bytes per sample
-    else if (mimetype.substring(0, 10) === 'audio/L16;') {
-        mimetype = mimetype.substring(10);
-        bytesPerSample = 2;
-    }
-
-    // All other types are unsupported
-    else
-        return null;
-
-    // Parse all parameters
-    var parameters = mimetype.split(',');
-    for (var i = 0; i < parameters.length; i++) {
-
-        var parameter = parameters[i];
-
-        // All parameters must have an equals sign separating name from value
-        var equals = parameter.indexOf('=');
-        if (equals === -1)
-            return null;
-
-        // Parse name and value from parameter string
-        var name  = parameter.substring(0, equals);
-        var value = parameter.substring(equals+1);
-
-        // Handle each supported parameter
-        switch (name) {
-
-            // Number of audio channels
-            case 'channels':
-                channels = parseInt(value);
-                break;
-
-            // Sample rate
-            case 'rate':
-                rate = parseInt(value);
-                break;
-
-            // All other parameters are unsupported
-            default:
-                return null;
-
-        }
-
-    };
-
-    // The rate parameter is required
-    if (rate === null)
-        return null;
-
-    // Return parsed format details
-    return new Guacamole.RawAudioPlayer._Format({
-        bytesPerSample : bytesPerSample,
-        channels       : channels,
-        rate           : rate
-    });
-
-};
-
-/**
  * Determines whether the given mimetype is supported by
  * Guacamole.RawAudioPlayer.
  *
@@ -800,10 +750,10 @@ Guacamole.RawAudioPlayer._Format.parse = function parseFormat(mimetype) {
 Guacamole.RawAudioPlayer.isSupportedType = function isSupportedType(mimetype) {
 
     // No supported types if no Web Audio API
-    if (!window.AudioContext && !window.webkitAudioContext)
+    if (!Guacamole.AudioContextFactory.getAudioContext())
         return false;
 
-    return Guacamole.RawAudioPlayer._Format.parse(mimetype) !== null;
+    return Guacamole.RawAudioFormat.parse(mimetype) !== null;
 
 };
 
@@ -823,7 +773,7 @@ Guacamole.RawAudioPlayer.isSupportedType = function isSupportedType(mimetype) {
 Guacamole.RawAudioPlayer.getSupportedTypes = function getSupportedTypes() {
 
     // No supported types if no Web Audio API
-    if (!window.AudioContext && !window.webkitAudioContext)
+    if (!Guacamole.AudioContextFactory.getAudioContext())
         return [];
 
     // We support 8-bit and 16-bit raw PCM
@@ -835,25 +785,590 @@ Guacamole.RawAudioPlayer.getSupportedTypes = function getSupportedTypes() {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * Abstract audio recorder which streams arbitrary audio data to an underlying
+ * Guacamole.OutputStream. It is up to implementations of this class to provide
+ * some means of handling this Guacamole.OutputStream. Data produced by the
+ * recorder is to be sent along the provided stream immediately.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * @constructor
+ */
+Guacamole.AudioRecorder = function AudioRecorder() {
+
+    /**
+     * Callback which is invoked when the audio recording process has stopped
+     * and the underlying Guacamole stream has been closed normally. Audio will
+     * only resume recording if a new Guacamole.AudioRecorder is started. This
+     * Guacamole.AudioRecorder instance MAY NOT be reused.
+     *
+     * @event
+     */
+    this.onclose = null;
+
+    /**
+     * Callback which is invoked when the audio recording process cannot
+     * continue due to an error, if it has started at all. The underlying
+     * Guacamole stream is automatically closed. Future attempts to record
+     * audio should not be made, and this Guacamole.AudioRecorder instance
+     * MAY NOT be reused.
+     *
+     * @event
+     */
+    this.onerror = null;
+
+};
+
+/**
+ * Determines whether the given mimetype is supported by any built-in
+ * implementation of Guacamole.AudioRecorder, and thus will be properly handled
+ * by Guacamole.AudioRecorder.getInstance().
+ *
+ * @param {String} mimetype
+ *     The mimetype to check.
+ *
+ * @returns {Boolean}
+ *     true if the given mimetype is supported by any built-in
+ *     Guacamole.AudioRecorder, false otherwise.
+ */
+Guacamole.AudioRecorder.isSupportedType = function isSupportedType(mimetype) {
+
+    return Guacamole.RawAudioRecorder.isSupportedType(mimetype);
+
+};
+
+/**
+ * Returns a list of all mimetypes supported by any built-in
+ * Guacamole.AudioRecorder, in rough order of priority. Beware that only the
+ * core mimetypes themselves will be listed. Any mimetype parameters, even
+ * required ones, will not be included in the list. For example, "audio/L8" is
+ * a supported raw audio mimetype that is supported, but it is invalid without
+ * additional parameters. Something like "audio/L8;rate=44100" would be valid,
+ * however (see https://tools.ietf.org/html/rfc4856).
+ *
+ * @returns {String[]}
+ *     A list of all mimetypes supported by any built-in
+ *     Guacamole.AudioRecorder, excluding any parameters.
+ */
+Guacamole.AudioRecorder.getSupportedTypes = function getSupportedTypes() {
+
+    return Guacamole.RawAudioRecorder.getSupportedTypes();
+
+};
+
+/**
+ * Returns an instance of Guacamole.AudioRecorder providing support for the
+ * given audio format. If support for the given audio format is not available,
+ * null is returned.
+ *
+ * @param {Guacamole.OutputStream} stream
+ *     The Guacamole.OutputStream to send audio data through.
+ *
+ * @param {String} mimetype
+ *     The mimetype of the audio data to be sent along the provided stream.
+ *
+ * @return {Guacamole.AudioRecorder}
+ *     A Guacamole.AudioRecorder instance supporting the given mimetype and
+ *     writing to the given stream, or null if support for the given mimetype
+ *     is absent.
+ */
+Guacamole.AudioRecorder.getInstance = function getInstance(stream, mimetype) {
+
+    // Use raw audio recorder if possible
+    if (Guacamole.RawAudioRecorder.isSupportedType(mimetype))
+        return new Guacamole.RawAudioRecorder(stream, mimetype);
+
+    // No support for given mimetype
+    return null;
+
+};
+
+/**
+ * Implementation of Guacamole.AudioRecorder providing support for raw PCM
+ * format audio. This recorder relies only on the Web Audio API and does not
+ * require any browser-level support for its audio formats.
+ *
+ * @constructor
+ * @augments Guacamole.AudioRecorder
+ * @param {Guacamole.OutputStream} stream
+ *     The Guacamole.OutputStream to write audio data to.
+ *
+ * @param {String} mimetype
+ *     The mimetype of the audio data to send along the provided stream, which
+ *     must be a "audio/L8" or "audio/L16" mimetype with necessary parameters,
+ *     such as: "audio/L16;rate=44100,channels=2".
+ */
+Guacamole.RawAudioRecorder = function RawAudioRecorder(stream, mimetype) {
+
+    /**
+     * Reference to this RawAudioRecorder.
+     *
+     * @private
+     * @type {Guacamole.RawAudioRecorder}
+     */
+    var recorder = this;
+
+    /**
+     * The size of audio buffer to request from the Web Audio API when
+     * recording or processing audio, in sample-frames. This must be a power of
+     * two between 256 and 16384 inclusive, as required by
+     * AudioContext.createScriptProcessor().
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var BUFFER_SIZE = 2048;
+
+    /**
+     * The window size to use when applying Lanczos interpolation, commonly
+     * denoted by the variable "a".
+     * See: https://en.wikipedia.org/wiki/Lanczos_resampling
+     *
+     * @private
+     * @contant
+     * @type Number
+     */
+    var LANCZOS_WINDOW_SIZE = 3;
+
+    /**
+     * The format of audio this recorder will encode.
+     *
+     * @private
+     * @type {Guacamole.RawAudioFormat}
+     */
+    var format = Guacamole.RawAudioFormat.parse(mimetype);
+
+    /**
+     * An instance of a Web Audio API AudioContext object, or null if the
+     * Web Audio API is not supported.
+     *
+     * @private
+     * @type {AudioContext}
+     */
+    var context = Guacamole.AudioContextFactory.getAudioContext();
+
+    /**
+     * A function which directly invokes the browser's implementation of
+     * navigator.getUserMedia() with all provided parameters.
+     *
+     * @type Function
+     */
+    var getUserMedia = (navigator.getUserMedia
+            || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia
+            || navigator.msGetUserMedia).bind(navigator);
+
+    /**
+     * Guacamole.ArrayBufferWriter wrapped around the audio output stream
+     * provided when this Guacamole.RawAudioRecorder was created.
+     *
+     * @private
+     * @type {Guacamole.ArrayBufferWriter}
+     */
+    var writer = new Guacamole.ArrayBufferWriter(stream);
+
+    /**
+     * The type of typed array that will be used to represent each audio packet
+     * internally. This will be either Int8Array or Int16Array, depending on
+     * whether the raw audio format is 8-bit or 16-bit.
+     *
+     * @private
+     * @constructor
+     */
+    var SampleArray = (format.bytesPerSample === 1) ? window.Int8Array : window.Int16Array;
+
+    /**
+     * The maximum absolute value of any sample within a raw audio packet sent
+     * by this audio recorder. This depends only on the size of each sample,
+     * and will be 128 for 8-bit audio and 32768 for 16-bit audio.
+     *
+     * @private
+     * @type {Number}
+     */
+    var maxSampleValue = (format.bytesPerSample === 1) ? 128 : 32768;
+
+    /**
+     * The total number of audio samples read from the local audio input device
+     * over the life of this audio recorder.
+     *
+     * @private
+     * @type {Number}
+     */
+    var readSamples = 0;
+
+    /**
+     * The total number of audio samples written to the underlying Guacamole
+     * connection over the life of this audio recorder.
+     *
+     * @private
+     * @type {Number}
+     */
+    var writtenSamples = 0;
+
+    /**
+     * The audio stream provided by the browser, if allowed. If no stream has
+     * yet been received, this will be null.
+     *
+     * @type MediaStream
+     */
+    var mediaStream = null;
+
+    /**
+     * The source node providing access to the local audio input device.
+     *
+     * @private
+     * @type {MediaStreamAudioSourceNode}
+     */
+    var source = null;
+
+    /**
+     * The script processing node which receives audio input from the media
+     * stream source node as individual audio buffers.
+     *
+     * @private
+     * @type {ScriptProcessorNode}
+     */
+    var processor = null;
+
+    /**
+     * The normalized sinc function. The normalized sinc function is defined as
+     * 1 for x=0 and sin(PI * x) / (PI * x) for all other values of x.
+     *
+     * See: https://en.wikipedia.org/wiki/Sinc_function
+     *
+     * @private
+     * @param {Number} x
+     *     The point at which the normalized sinc function should be computed.
+     *
+     * @returns {Number}
+     *     The value of the normalized sinc function at x.
+     */
+    var sinc = function sinc(x) {
+
+        // The value of sinc(0) is defined as 1
+        if (x === 0)
+            return 1;
+
+        // Otherwise, normlized sinc(x) is sin(PI * x) / (PI * x)
+        var piX = Math.PI * x;
+        return Math.sin(piX) / piX;
+
+    };
+
+    /**
+     * Calculates the value of the Lanczos kernal at point x for a given window
+     * size. See: https://en.wikipedia.org/wiki/Lanczos_resampling
+     *
+     * @private
+     * @param {Number} x
+     *     The point at which the value of the Lanczos kernel should be
+     *     computed.
+     *
+     * @param {Number} a
+     *     The window size to use for the Lanczos kernel.
+     *
+     * @returns {Number}
+     *     The value of the Lanczos kernel at the given point for the given
+     *     window size.
+     */
+    var lanczos = function lanczos(x, a) {
+
+        // Lanczos is sinc(x) * sinc(x / a) for -a < x < a ...
+        if (-a < x && x < a)
+            return sinc(x) * sinc(x / a);
+
+        // ... and 0 otherwise
+        return 0;
+
+    };
+
+    /**
+     * Determines the value of the waveform represented by the audio data at
+     * the given location. If the value cannot be determined exactly as it does
+     * not correspond to an exact sample within the audio data, the value will
+     * be derived through interpolating nearby samples.
+     *
+     * @private
+     * @param {Float32Array} audioData
+     *     An array of audio data, as returned by AudioBuffer.getChannelData().
+     *
+     * @param {Number} t
+     *     The relative location within the waveform from which the value
+     *     should be retrieved, represented as a floating point number between
+     *     0 and 1 inclusive, where 0 represents the earliest point in time and
+     *     1 represents the latest.
+     *
+     * @returns {Number}
+     *     The value of the waveform at the given location.
+     */
+    var interpolateSample = function getValueAt(audioData, t) {
+
+        // Convert [0, 1] range to [0, audioData.length - 1]
+        var index = (audioData.length - 1) * t;
+
+        // Determine the start and end points for the summation used by the
+        // Lanczos interpolation algorithm (see: https://en.wikipedia.org/wiki/Lanczos_resampling)
+        var start = Math.floor(index) - LANCZOS_WINDOW_SIZE + 1;
+        var end = Math.floor(index) + LANCZOS_WINDOW_SIZE;
+
+        // Calculate the value of the Lanczos interpolation function for the
+        // required range
+        var sum = 0;
+        for (var i = start; i <= end; i++) {
+            sum += (audioData[i] || 0) * lanczos(index - i, LANCZOS_WINDOW_SIZE);
+        }
+
+        return sum;
+
+    };
+
+    /**
+     * Converts the given AudioBuffer into an audio packet, ready for streaming
+     * along the underlying output stream. Unlike the raw audio packets used by
+     * this audio recorder, AudioBuffers require floating point samples and are
+     * split into isolated planes of channel-specific data.
+     *
+     * @private
+     * @param {AudioBuffer} audioBuffer
+     *     The Web Audio API AudioBuffer that should be converted to a raw
+     *     audio packet.
+     *
+     * @returns {SampleArray}
+     *     A new raw audio packet containing the audio data from the provided
+     *     AudioBuffer.
+     */
+    var toSampleArray = function toSampleArray(audioBuffer) {
+
+        // Track overall amount of data read
+        var inSamples = audioBuffer.length;
+        readSamples += inSamples;
+
+        // Calculate the total number of samples that should be written as of
+        // the audio data just received and adjust the size of the output
+        // packet accordingly
+        var expectedWrittenSamples = Math.round(readSamples * format.rate / audioBuffer.sampleRate);
+        var outSamples = expectedWrittenSamples - writtenSamples;
+
+        // Update number of samples written
+        writtenSamples += outSamples;
+
+        // Get array for raw PCM storage
+        var data = new SampleArray(outSamples * format.channels);
+
+        // Convert each channel
+        for (var channel = 0; channel < format.channels; channel++) {
+
+            var audioData = audioBuffer.getChannelData(channel);
+
+            // Fill array with data from audio buffer channel
+            var offset = channel;
+            for (var i = 0; i < outSamples; i++) {
+                data[offset] = interpolateSample(audioData, i / (outSamples - 1)) * maxSampleValue;
+                offset += format.channels;
+            }
+
+        }
+
+        return data;
+
+    };
+
+    /**
+     * Requests access to the user's microphone and begins capturing audio. All
+     * received audio data is resampled as necessary and forwarded to the
+     * Guacamole stream underlying this Guacamole.RawAudioRecorder. This
+     * function must be invoked ONLY ONCE per instance of
+     * Guacamole.RawAudioRecorder.
+     *
+     * @private
+     */
+    var beginAudioCapture = function beginAudioCapture() {
+
+        // Attempt to retrieve an audio input stream from the browser
+        getUserMedia({ 'audio' : true }, function streamReceived(stream) {
+
+            // Create processing node which receives appropriately-sized audio buffers
+            processor = context.createScriptProcessor(BUFFER_SIZE, format.channels, format.channels);
+            processor.connect(context.destination);
+
+            // Send blobs when audio buffers are received
+            processor.onaudioprocess = function processAudio(e) {
+                writer.sendData(toSampleArray(e.inputBuffer).buffer);
+            };
+
+            // Connect processing node to user's audio input source
+            source = context.createMediaStreamSource(stream);
+            source.connect(processor);
+
+            // Save stream for later cleanup
+            mediaStream = stream;
+
+        }, function streamDenied() {
+
+            // Simply end stream if audio access is not allowed
+            writer.sendEnd();
+
+            // Notify of closure
+            if (recorder.onerror)
+                recorder.onerror();
+
+        });
+
+    };
+
+    /**
+     * Stops capturing audio, if the capture has started, freeing all associated
+     * resources. If the capture has not started, this function simply ends the
+     * underlying Guacamole stream.
+     *
+     * @private
+     */
+    var stopAudioCapture = function stopAudioCapture() {
+
+        // Disconnect media source node from script processor
+        if (source)
+            source.disconnect();
+
+        // Disconnect associated script processor node
+        if (processor)
+            processor.disconnect();
+
+        // Stop capture
+        if (mediaStream) {
+            var tracks = mediaStream.getTracks();
+            for (var i = 0; i < tracks.length; i++)
+                tracks[i].stop();
+        }
+
+        // Remove references to now-unneeded components
+        processor = null;
+        source = null;
+        mediaStream = null;
+
+        // End stream
+        writer.sendEnd();
+
+    };
+
+    // Once audio stream is successfully open, request and begin reading audio
+    writer.onack = function audioStreamAcknowledged(status) {
+
+        // Begin capture if successful response and not yet started
+        if (status.code === Guacamole.Status.Code.SUCCESS && !mediaStream)
+            beginAudioCapture();
+
+        // Otherwise stop capture and cease handling any further acks
+        else {
+
+            // Stop capturing audio
+            stopAudioCapture();
+            writer.onack = null;
+
+            // Notify if stream has closed normally
+            if (status.code === Guacamole.Status.Code.RESOURCE_CLOSED) {
+                if (recorder.onclose)
+                    recorder.onclose();
+            }
+
+            // Otherwise notify of closure due to error
+            else {
+                if (recorder.onerror)
+                    recorder.onerror();
+            }
+
+        }
+
+    };
+
+};
+
+Guacamole.RawAudioRecorder.prototype = new Guacamole.AudioRecorder();
+
+/**
+ * Determines whether the given mimetype is supported by
+ * Guacamole.RawAudioRecorder.
+ *
+ * @param {String} mimetype
+ *     The mimetype to check.
+ *
+ * @returns {Boolean}
+ *     true if the given mimetype is supported by Guacamole.RawAudioRecorder,
+ *     false otherwise.
+ */
+Guacamole.RawAudioRecorder.isSupportedType = function isSupportedType(mimetype) {
+
+    // No supported types if no Web Audio API
+    if (!Guacamole.AudioContextFactory.getAudioContext())
+        return false;
+
+    return Guacamole.RawAudioFormat.parse(mimetype) !== null;
+
+};
+
+/**
+ * Returns a list of all mimetypes supported by Guacamole.RawAudioRecorder. Only
+ * the core mimetypes themselves will be listed. Any mimetype parameters, even
+ * required ones, will not be included in the list. For example, "audio/L8" is
+ * a raw audio mimetype that may be supported, but it is invalid without
+ * additional parameters. Something like "audio/L8;rate=44100" would be valid,
+ * however (see https://tools.ietf.org/html/rfc4856).
+ *
+ * @returns {String[]}
+ *     A list of all mimetypes supported by Guacamole.RawAudioRecorder,
+ *     excluding any parameters. If the necessary JavaScript APIs for recording
+ *     raw audio are absent, this list will be empty.
+ */
+Guacamole.RawAudioRecorder.getSupportedTypes = function getSupportedTypes() {
+
+    // No supported types if no Web Audio API
+    if (!Guacamole.AudioContextFactory.getAudioContext())
+        return [];
+
+    // We support 8-bit and 16-bit raw PCM
+    return [
+        'audio/L8',
+        'audio/L16'
+    ];
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -966,25 +1481,268 @@ Guacamole.BlobReader = function(stream, mimetype) {
 
 };
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A writer which automatically writes to the given output stream with the
+ * contents of provided Blob objects.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * @constructor
+ * @param {Guacamole.OutputStream} stream
+ *     The stream that data will be written to.
+ */
+Guacamole.BlobWriter = function BlobWriter(stream) {
+
+    /**
+     * Reference to this Guacamole.BlobWriter.
+     *
+     * @private
+     * @type {Guacamole.BlobWriter}
+     */
+    var guacWriter = this;
+
+    /**
+     * Wrapped Guacamole.ArrayBufferWriter which will be used to send any
+     * provided file data.
+     *
+     * @private
+     * @type {Guacamole.ArrayBufferWriter}
+     */
+    var arrayBufferWriter = new Guacamole.ArrayBufferWriter(stream);
+
+    // Initially, simply call onack for acknowledgements
+    arrayBufferWriter.onack = function(status) {
+        if (guacWriter.onack)
+            guacWriter.onack(status);
+    };
+
+    /**
+     * Browser-independent implementation of Blob.slice() which uses an end
+     * offset to determine the span of the resulting slice, rather than a
+     * length.
+     *
+     * @private
+     * @param {Blob} blob
+     *     The Blob to slice.
+     *
+     * @param {Number} start
+     *     The starting offset of the slice, in bytes, inclusive.
+     *
+     * @param {Number} end
+     *     The ending offset of the slice, in bytes, exclusive.
+     *
+     * @returns {Blob}
+     *     A Blob containing the data within the given Blob starting at
+     *     <code>start</code> and ending at <code>end - 1</code>.
+     */
+    var slice = function slice(blob, start, end) {
+
+        // Use prefixed implementations if necessary
+        var sliceImplementation = (
+                blob.slice
+             || blob.webkitSlice
+             || blob.mozSlice
+        ).bind(blob);
+
+        var length = end - start;
+
+        // The old Blob.slice() was length-based (not end-based). Try the
+        // length version first, if the two calls are not equivalent.
+        if (length !== end) {
+
+            // If the result of the slice() call matches the expected length,
+            // trust that result. It must be correct.
+            var sliceResult = sliceImplementation(start, length);
+            if (sliceResult.size === length)
+                return sliceResult;
+
+        }
+
+        // Otherwise, use the most-recent standard: end-based slice()
+        return sliceImplementation(start, end);
+
+    };
+
+    /**
+     * Sends the contents of the given blob over the underlying stream.
+     *
+     * @param {Blob} blob
+     *     The blob to send.
+     */
+    this.sendBlob = function sendBlob(blob) {
+
+        var offset = 0;
+        var reader = new FileReader();
+
+        /**
+         * Reads the next chunk of the blob provided to
+         * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}. The chunk itself
+         * is read asynchronously, and will not be available until
+         * reader.onload fires.
+         *
+         * @private
+         */
+        var readNextChunk = function readNextChunk() {
+
+            // If no further chunks remain, inform of completion and stop
+            if (offset >= blob.size) {
+
+                // Fire completion event for completed blob
+                if (guacWriter.oncomplete)
+                    guacWriter.oncomplete(blob);
+
+                // No further chunks to read
+                return;
+
+            }
+
+            // Obtain reference to next chunk as a new blob
+            var chunk = slice(blob, offset, offset + arrayBufferWriter.blobLength);
+            offset += arrayBufferWriter.blobLength;
+
+            // Attempt to read the blob contents represented by the blob into
+            // a new array buffer
+            reader.readAsArrayBuffer(chunk);
+
+        };
+
+        // Send each chunk over the stream, continue reading the next chunk
+        reader.onload = function chunkLoadComplete() {
+
+            // Send the successfully-read chunk
+            arrayBufferWriter.sendData(reader.result);
+
+            // Continue sending more chunks after the latest chunk is
+            // acknowledged
+            arrayBufferWriter.onack = function sendMoreChunks(status) {
+
+                if (guacWriter.onack)
+                    guacWriter.onack(status);
+
+                // Abort transfer if an error occurs
+                if (status.isError())
+                    return;
+
+                // Inform of blob upload progress via progress events
+                if (guacWriter.onprogress)
+                    guacWriter.onprogress(blob, offset - arrayBufferWriter.blobLength);
+
+                // Queue the next chunk for reading
+                readNextChunk();
+
+            };
+
+        };
+
+        // If an error prevents further reading, inform of error and stop
+        reader.onerror = function chunkLoadFailed() {
+
+            // Fire error event, including the context of the error
+            if (guacWriter.onerror)
+                guacWriter.onerror(blob, offset, reader.error);
+
+        };
+
+        // Begin reading the first chunk
+        readNextChunk();
+
+    };
+
+    /**
+     * Signals that no further text will be sent, effectively closing the
+     * stream.
+     */
+    this.sendEnd = function sendEnd() {
+        arrayBufferWriter.sendEnd();
+    };
+
+    /**
+     * Fired for received data, if acknowledged by the server.
+     *
+     * @event
+     * @param {Guacamole.Status} status
+     *     The status of the operation.
+     */
+    this.onack = null;
+
+    /**
+     * Fired when an error occurs reading a blob passed to
+     * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}. The transfer for the
+     * the given blob will cease, but the stream will remain open.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that was being read when the error occurred.
+     *
+     * @param {Number} offset
+     *     The offset of the failed read attempt within the blob, in bytes.
+     *
+     * @param {DOMError} error
+     *     The error that occurred.
+     */
+    this.onerror = null;
+
+    /**
+     * Fired for each successfully-read chunk of data as a blob is being sent
+     * via [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that is being read.
+     *
+     * @param {Number} offset
+     *     The offset of the read that just succeeded.
+     */
+    this.onprogress = null;
+
+    /**
+     * Fired when a blob passed to
+     * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob} has finished being
+     * sent.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that was sent.
+     */
+    this.oncomplete = null;
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -1103,6 +1861,149 @@ Guacamole.Client = function(tunnel) {
     }
 
     /**
+     * Produces an opaque representation of Guacamole.Client state which can be
+     * later imported through a call to importState(). This object is
+     * effectively an independent, compressed snapshot of protocol and display
+     * state. Invoking this function implicitly flushes the display.
+     *
+     * @param {function} callback
+     *     Callback which should be invoked once the state object is ready. The
+     *     state object will be passed to the callback as the sole parameter.
+     *     This callback may be invoked immediately, or later as the display
+     *     finishes rendering and becomes ready.
+     */
+    this.exportState = function exportState(callback) {
+
+        // Start with empty state
+        var state = {
+            'currentState' : currentState,
+            'currentTimestamp' : currentTimestamp,
+            'layers' : {}
+        };
+
+        var layersSnapshot = {};
+
+        // Make a copy of all current layers (protocol state)
+        for (var key in layers) {
+            layersSnapshot[key] = layers[key];
+        }
+
+        // Populate layers once data is available (display state, requires flush)
+        display.flush(function populateLayers() {
+
+            // Export each defined layer/buffer
+            for (var key in layersSnapshot) {
+
+                var index = parseInt(key);
+                var layer = layersSnapshot[key];
+                var canvas = layer.toCanvas();
+
+                // Store layer/buffer dimensions
+                var exportLayer = {
+                    'width'  : layer.width,
+                    'height' : layer.height
+                };
+
+                // Store layer/buffer image data, if it can be generated
+                if (layer.width && layer.height)
+                    exportLayer.url = canvas.toDataURL('image/png');
+
+                // Add layer properties if not a buffer nor the default layer
+                if (index > 0) {
+                    exportLayer.x = layer.x;
+                    exportLayer.y = layer.y;
+                    exportLayer.z = layer.z;
+                    exportLayer.alpha = layer.alpha;
+                    exportLayer.matrix = layer.matrix;
+                    exportLayer.parent = getLayerIndex(layer.parent);
+                }
+
+                // Store exported layer
+                state.layers[key] = exportLayer;
+
+            }
+
+            // Invoke callback now that the state is ready
+            callback(state);
+
+        });
+
+    };
+
+    /**
+     * Restores Guacamole.Client protocol and display state based on an opaque
+     * object from a prior call to exportState(). The Guacamole.Client instance
+     * used to export that state need not be the same as this instance.
+     *
+     * @param {Object} state
+     *     An opaque representation of Guacamole.Client state from a prior call
+     *     to exportState().
+     *
+     * @param {function} [callback]
+     *     The function to invoke when state has finished being imported. This
+     *     may happen immediately, or later as images within the provided state
+     *     object are loaded.
+     */
+    this.importState = function importState(state, callback) {
+
+        var key;
+        var index;
+
+        currentState = state.currentState;
+        currentTimestamp = state.currentTimestamp;
+
+        // Dispose of all layers
+        for (key in layers) {
+            index = parseInt(key);
+            if (index > 0)
+                display.dispose(layers[key]);
+        }
+
+        layers = {};
+
+        // Import state of each layer/buffer
+        for (key in state.layers) {
+
+            index = parseInt(key);
+
+            var importLayer = state.layers[key];
+            var layer = getLayer(index);
+
+            // Reset layer size
+            display.resize(layer, importLayer.width, importLayer.height);
+
+            // Initialize new layer if it has associated data
+            if (importLayer.url) {
+                display.setChannelMask(layer, Guacamole.Layer.SRC);
+                display.draw(layer, 0, 0, importLayer.url);
+            }
+
+            // Set layer-specific properties if not a buffer nor the default layer
+            if (index > 0 && importLayer.parent >= 0) {
+
+                // Apply layer position and set parent
+                var parent = getLayer(importLayer.parent);
+                display.move(layer, parent, importLayer.x, importLayer.y, importLayer.z);
+
+                // Set layer transparency
+                display.shade(layer, importLayer.alpha);
+
+                // Apply matrix transform
+                var matrix = importLayer.matrix;
+                display.distort(layer,
+                    matrix[0], matrix[1], matrix[2],
+                    matrix[3], matrix[4], matrix[5]);
+
+            }
+
+        }
+
+        // Flush changes to display
+        display.flush(callback);
+
+    };
+
+    /**
      * Returns the underlying display of this Guacamole.Client. The display
      * contains an Element which can be added to the DOM, causing the
      * display to become visible.
@@ -1203,89 +2104,98 @@ Guacamole.Client = function(tunnel) {
     };
 
     /**
+     * Allocates an available stream index and creates a new
+     * Guacamole.OutputStream using that index, associating the resulting
+     * stream with this Guacamole.Client. Note that this stream will not yet
+     * exist as far as the other end of the Guacamole connection is concerned.
+     * Streams exist within the Guacamole protocol only when referenced by an
+     * instruction which creates the stream, such as a "clipboard", "file", or
+     * "pipe" instruction.
+     *
+     * @returns {Guacamole.OutputStream}
+     *     A new Guacamole.OutputStream with a newly-allocated index and
+     *     associated with this Guacamole.Client.
+     */
+    this.createOutputStream = function createOutputStream() {
+
+        // Allocate index
+        var index = stream_indices.next();
+
+        // Return new stream
+        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
+        return stream;
+
+    };
+
+    /**
+     * Opens a new audio stream for writing, where audio data having the give
+     * mimetype will be sent along the returned stream. The instruction
+     * necessary to create this stream will automatically be sent.
+     *
+     * @param {String} mimetype
+     *     The mimetype of the audio data that will be sent along the returned
+     *     stream.
+     *
+     * @return {Guacamole.OutputStream}
+     *     The created audio stream.
+     */
+    this.createAudioStream = function(mimetype) {
+
+        // Allocate and associate stream with audio metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("audio", stream.index, mimetype);
+        return stream;
+
+    };
+
+    /**
      * Opens a new file for writing, having the given index, mimetype and
-     * filename.
-     * 
+     * filename. The instruction necessary to create this stream will
+     * automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the file being sent.
      * @param {String} filename The filename of the file being sent.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createFileStream = function(mimetype, filename) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("file", index, mimetype, filename);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with file metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("file", stream.index, mimetype, filename);
         return stream;
 
     };
 
     /**
-     * Opens a new pipe for writing, having the given name and mimetype. 
-     * 
+     * Opens a new pipe for writing, having the given name and mimetype. The
+     * instruction necessary to create this stream will automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the data being sent.
      * @param {String} name The name of the pipe.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createPipeStream = function(mimetype, name) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("pipe", index, mimetype, name);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with pipe metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("pipe", stream.index, mimetype, name);
         return stream;
 
     };
 
     /**
-     * Opens a new clipboard object for writing, having the given mimetype.
-     * 
+     * Opens a new clipboard object for writing, having the given mimetype. The
+     * instruction necessary to create this stream will automatically be sent.
+     *
      * @param {String} mimetype The mimetype of the data being sent.
      * @param {String} name The name of the pipe.
      * @return {Guacamole.OutputStream} The created file stream.
      */
     this.createClipboardStream = function(mimetype) {
 
-        // Allocate index
-        var index = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("clipboard", index, mimetype);
-        var stream = output_streams[index] = new Guacamole.OutputStream(guac_client, index);
-
-        // Override sendEnd() of stream to automatically free index
-        var old_end = stream.sendEnd;
-        stream.sendEnd = function() {
-            old_end();
-            stream_indices.free(index);
-            delete output_streams[index];
-        };
-
-        // Return new, overridden stream
+        // Allocate and associate stream with clipboard metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("clipboard", stream.index, mimetype);
         return stream;
 
     };
@@ -1293,7 +2203,8 @@ Guacamole.Client = function(tunnel) {
     /**
      * Creates a new output stream associated with the given object and having
      * the given mimetype and name. The legality of a mimetype and name is
-     * dictated by the object itself.
+     * dictated by the object itself. The instruction necessary to create this
+     * stream will automatically be sent.
      *
      * @param {Number} index
      *     The index of the object for which the output stream is being
@@ -1311,22 +2222,9 @@ Guacamole.Client = function(tunnel) {
      */
     this.createObjectOutputStream = function createObjectOutputStream(index, mimetype, name) {
 
-        // Allocate index
-        var streamIndex = stream_indices.next();
-
-        // Create new stream
-        tunnel.sendMessage("put", index, streamIndex, mimetype, name);
-        var stream = output_streams[streamIndex] = new Guacamole.OutputStream(guac_client, streamIndex);
-
-        // Override sendEnd() of stream to automatically free index
-        var oldEnd = stream.sendEnd;
-        stream.sendEnd = function freeStreamIndex() {
-            oldEnd();
-            stream_indices.free(streamIndex);
-            delete output_streams[streamIndex];
-        };
-
-        // Return new, overridden stream
+        // Allocate and ssociate stream with object metadata
+        var stream = guac_client.createOutputStream();
+        tunnel.sendMessage("put", index, stream.index, mimetype, name);
         return stream;
 
     };
@@ -1385,9 +2283,13 @@ Guacamole.Client = function(tunnel) {
     };
 
     /**
-     * Marks a currently-open stream as complete.
+     * Marks a currently-open stream as complete. The other end of the
+     * Guacamole connection will be notified via an "end" instruction that the
+     * stream is closed, and the index will be made available for reuse in
+     * future streams.
      * 
-     * @param {Number} index The index of the stream to end.
+     * @param {Number} index
+     *     The index of the stream to end.
      */
     this.endStream = function(index) {
 
@@ -1395,7 +2297,15 @@ Guacamole.Client = function(tunnel) {
         if (!isConnected())
             return;
 
+        // Explicitly close stream by sending "end" instruction
         tunnel.sendMessage("end", index);
+
+        // Free associated index and stream if they exist
+        if (output_streams[index]) {
+            stream_indices.free(index);
+            delete output_streams[index];
+        }
+
     };
 
     /**
@@ -1561,6 +2471,36 @@ Guacamole.Client = function(tunnel) {
 
     };
 
+    /**
+     * Returns the index passed to getLayer() when the given layer was created.
+     * Positive indices refer to visible layers, an index of zero refers to the
+     * default layer, and negative indices refer to buffers.
+     *
+     * @param {Guacamole.Display.VisibleLayer|Guacamole.Layer} layer
+     *     The layer whose index should be determined.
+     *
+     * @returns {Number}
+     *     The index of the given layer, or null if no such layer is associated
+     *     with this client.
+     */
+    var getLayerIndex = function getLayerIndex(layer) {
+
+        // Avoid searching if there clearly is no such layer
+        if (!layer)
+            return null;
+
+        // Search through each layer, returning the index of the given layer
+        // once found
+        for (var key in layers) {
+            if (layer === layers[key])
+                return parseInt(key);
+        }
+
+        // Otherwise, no such index
+        return null;
+
+    };
+
     function getParser(index) {
 
         var parser = parsers[index];
@@ -1609,8 +2549,9 @@ Guacamole.Client = function(tunnel) {
                 if (stream.onack)
                     stream.onack(new Guacamole.Status(code, reason));
 
-                // If code is an error, invalidate stream
-                if (code >= 0x0100) {
+                // If code is an error, invalidate stream if not already
+                // invalidated by onack handler
+                if (code >= 0x0100 && output_streams[stream_index] === stream) {
                     stream_indices.free(stream_index);
                     delete output_streams[stream_index];
                 }
@@ -1809,6 +2750,13 @@ Guacamole.Client = function(tunnel) {
 
         },
 
+        "disconnect" : function handleDisconnect(parameters) {
+
+            // Explicitly tear down connection
+            guac_client.disconnect();
+
+        },
+
         "dispose": function(parameters) {
             
             var layer_index = parseInt(parameters[0]);
@@ -1818,7 +2766,7 @@ Guacamole.Client = function(tunnel) {
 
                 // Remove from parent
                 var layer = getLayer(layer_index);
-                layer.dispose();
+                display.dispose(layer);
 
                 // Delete reference
                 delete layers[layer_index];
@@ -1846,7 +2794,7 @@ Guacamole.Client = function(tunnel) {
             // Only valid for visible layers (not buffers)
             if (layer_index >= 0) {
                 var layer = getLayer(layer_index);
-                layer.distort(a, b, c, d, e, f);
+                display.distort(layer, a, b, c, d, e, f);
             }
 
         },
@@ -1866,13 +2814,20 @@ Guacamole.Client = function(tunnel) {
 
         "end": function(parameters) {
 
-            // Get stream
             var stream_index = parseInt(parameters[0]);
-            var stream = streams[stream_index];
 
-            // Signal end of stream
-            if (stream && stream.onend)
-                stream.onend();
+            // Get stream
+            var stream = streams[stream_index];
+            if (stream) {
+
+                // Signal end of stream if handler defined
+                if (stream.onend)
+                    stream.onend();
+
+                // Invalidate stream
+                delete streams[stream_index];
+
+            }
 
         },
 
@@ -1983,6 +2938,17 @@ Guacamole.Client = function(tunnel) {
 
         },
 
+        "mouse" : function handleMouse(parameters) {
+
+            var x = parseInt(parameters[0]);
+            var y = parseInt(parameters[1]);
+
+            // Display and move software cursor to received coordinates
+            display.showCursor(true);
+            display.moveCursor(x, y);
+
+        },
+
         "move": function(parameters) {
             
             var layer_index = parseInt(parameters[0]);
@@ -1995,7 +2961,7 @@ Guacamole.Client = function(tunnel) {
             if (layer_index > 0 && parent_index >= 0) {
                 var layer = getLayer(layer_index);
                 var parent = getLayer(parent_index);
-                layer.move(parent, x, y, z);
+                display.move(layer, parent, x, y, z);
             }
 
         },
@@ -2097,7 +3063,7 @@ Guacamole.Client = function(tunnel) {
             // Only valid for visible layers (not buffers)
             if (layer_index >= 0) {
                 var layer = getLayer(layer_index);
-                layer.shade(a);
+                display.shade(layer, a);
             }
 
         },
@@ -2292,7 +3258,7 @@ Guacamole.Client = function(tunnel) {
 
         // Ping every 5 seconds (ensure connection alive)
         pingInterval = window.setInterval(function() {
-            tunnel.sendMessage("sync", currentTimestamp);
+            tunnel.sendMessage("nop");
         }, 5000);
 
         setState(STATE_WAITING);
@@ -2417,25 +3383,22 @@ Guacamole.Client.DefaultTransferFunction = {
 };
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -2504,25 +3467,22 @@ Guacamole.DataURIReader = function(stream, mimetype) {
 
 };
 /*
- * Copyright (C) 2014 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -2931,7 +3891,7 @@ Guacamole.Display = function() {
 
             // Fire cursor change event
             if (guac_display.oncursor)
-                guac_display.oncursor(cursor.getCanvas(), hotspotX, hotspotY);
+                guac_display.oncursor(cursor.toCanvas(), hotspotX, hotspotY);
 
         });
     };
@@ -3056,13 +4016,20 @@ Guacamole.Display = function() {
 
         // Draw and free blob URL when ready
         var task = scheduleTask(function __display_drawBlob() {
-            layer.drawImage(x, y, image);
+
+            // Draw the image only if it loaded without errors
+            if (image.width && image.height)
+                layer.drawImage(x, y, image);
+
+            // Blob URL no longer needed
             URL.revokeObjectURL(url);
+
         }, true);
 
         // Load image from URL
         var image = new Image();
         image.onload = task.unblock;
+        image.onerror = task.unblock;
         image.src = url;
 
     };
@@ -3080,11 +4047,16 @@ Guacamole.Display = function() {
     this.draw = function(layer, x, y, url) {
 
         var task = scheduleTask(function __display_draw() {
-            layer.drawImage(x, y, image);
+
+            // Draw the image only if it loaded without errors
+            if (image.width && image.height)
+                layer.drawImage(x, y, image);
+
         }, true);
 
         var image = new Image();
         image.onload = task.unblock;
+        image.onerror = task.unblock;
         image.src = url;
 
     };
@@ -3497,6 +4469,92 @@ Guacamole.Display = function() {
     };
 
     /**
+     * Removes the given layer container entirely, such that it is no longer
+     * contained within its parent layer, if any.
+     *
+     * @param {Guacamole.Display.VisibleLayer} layer
+     *     The layer being removed from its parent.
+     */
+    this.dispose = function dispose(layer) {
+        scheduleTask(function disposeLayer() {
+            layer.dispose();
+        });
+    };
+
+    /**
+     * Applies the given affine transform (defined with six values from the
+     * transform's matrix) to the given layer.
+     *
+     * @param {Guacamole.Display.VisibleLayer} layer
+     *     The layer being distorted.
+     *
+     * @param {Number} a
+     *     The first value in the affine transform's matrix.
+     *
+     * @param {Number} b
+     *     The second value in the affine transform's matrix.
+     *
+     * @param {Number} c
+     *     The third value in the affine transform's matrix.
+     *
+     * @param {Number} d
+     *     The fourth value in the affine transform's matrix.
+     *
+     * @param {Number} e
+     *     The fifth value in the affine transform's matrix.
+     *
+     * @param {Number} f
+     *     The sixth value in the affine transform's matrix.
+     */
+    this.distort = function distort(layer, a, b, c, d, e, f) {
+        scheduleTask(function distortLayer() {
+            layer.distort(a, b, c, d, e, f);
+        });
+    };
+
+    /**
+     * Moves the upper-left corner of the given layer to the given X and Y
+     * coordinate, sets the Z stacking order, and reparents the layer
+     * to the given parent layer.
+     *
+     * @param {Guacamole.Display.VisibleLayer} layer
+     *     The layer being moved.
+     *
+     * @param {Guacamole.Display.VisibleLayer} parent
+     *     The parent to set.
+     *
+     * @param {Number} x
+     *     The X coordinate to move to.
+     *
+     * @param {Number} y
+     *     The Y coordinate to move to.
+     *
+     * @param {Number} z
+     *     The Z coordinate to move to.
+     */
+    this.move = function move(layer, parent, x, y, z) {
+        scheduleTask(function moveLayer() {
+            layer.move(parent, x, y, z);
+        });
+    };
+
+    /**
+     * Sets the opacity of the given layer to the given value, where 255 is
+     * fully opaque and 0 is fully transparent.
+     *
+     * @param {Guacamole.Display.VisibleLayer} layer
+     *     The layer whose opacity should be set.
+     *
+     * @param {Number} alpha
+     *     The opacity to set.
+     */
+    this.shade = function shade(layer, alpha) {
+        scheduleTask(function shadeLayer() {
+            layer.shade(alpha);
+        });
+    };
+
+    /**
      * Sets the scale of the client display element such that it renders at
      * a relatively smaller or larger size, without affecting the true
      * resolution of the display.
@@ -3892,25 +4950,22 @@ Guacamole.Display.VisibleLayer = function(width, height) {
 Guacamole.Display.VisibleLayer.__next_id = 0;
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -3966,25 +5021,22 @@ Guacamole.InputStream = function(client, index) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -4046,25 +5098,22 @@ Guacamole.IntegerPool = function() {
 };
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -4164,25 +5213,22 @@ Guacamole.JSONReader = function guacamoleJSONReader(stream) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -4343,8 +5389,9 @@ Guacamole.Keyboard = function(element) {
         this.keysym =  keysym_from_key_identifier(key, location)
                     || keysym_from_keycode(keyCode, location);
 
-        // DOM3 and keyCode are reliable sources
-        if (this.keysym)
+        // DOM3 and keyCode are reliable sources if the corresponding key is
+        // not a printable key
+        if (this.keysym && !isPrintable(this.keysym))
             this.reliable = true;
 
         // Use legacy keyIdentifier as a last resort, if it looks sane
@@ -4754,6 +5801,25 @@ Guacamole.Keyboard = function(element) {
             return null;
 
         return keysyms[location] || keysyms[0];
+    };
+
+    /**
+     * Returns true if the given keysym corresponds to a printable character,
+     * false otherwise.
+     *
+     * @param {Number} keysym
+     *     The keysym to check.
+     *
+     * @returns {Boolean}
+     *     true if the given keysym corresponds to a printable character,
+     *     false otherwise.
+     */
+    var isPrintable = function isPrintable(keysym) {
+
+        // Keysyms with Unicode equivalents are printable
+        return (keysym >= 0x00 && keysym <= 0xFF)
+            || (keysym & 0xFFFF0000) === 0x01000000;
+
     };
 
     function keysym_from_key_identifier(identifier, location, shifted) {
@@ -5327,25 +6393,22 @@ Guacamole.Keyboard.ModifierState.fromKeyboardEvent = function(e) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -5374,6 +6437,17 @@ Guacamole.Layer = function(width, height) {
     var layer = this;
 
     /**
+     * The number of pixels the width or height of a layer must change before
+     * the underlying canvas is resized. The underlying canvas will be kept at
+     * dimensions which are integer multiples of this factor.
+     *
+     * @private
+     * @constant
+     * @type Number
+     */
+    var CANVAS_SIZE_FACTOR = 64;
+
+    /**
      * The canvas element backing this Layer.
      * @private
      */
@@ -5385,6 +6459,16 @@ Guacamole.Layer = function(width, height) {
      */
     var context = canvas.getContext("2d");
     context.save();
+
+    /**
+     * Whether the layer has not yet been drawn to. Once any draw operation
+     * which affects the underlying canvas is invoked, this flag will be set to
+     * false.
+     *
+     * @private
+     * @type Boolean
+     */
+    var empty = true;
 
     /**
      * Whether a new path should be started with the next path drawing
@@ -5429,57 +6513,78 @@ Guacamole.Layer = function(width, height) {
     };
 
     /**
-     * Resizes the canvas element backing this Layer without testing the
-     * new size. This function should only be used internally.
+     * Resizes the canvas element backing this Layer. This function should only
+     * be used internally.
      * 
      * @private
-     * @param {Number} newWidth The new width to assign to this Layer.
-     * @param {Number} newHeight The new height to assign to this Layer.
+     * @param {Number} [newWidth=0]
+     *     The new width to assign to this Layer.
+     *
+     * @param {Number} [newHeight=0]
+     *     The new height to assign to this Layer.
      */
-    function resize(newWidth, newHeight) {
+    var resize = function resize(newWidth, newHeight) {
 
-        // Only preserve old data if width/height are both non-zero
-        var oldData = null;
-        if (layer.width !== 0 && layer.height !== 0) {
+        // Default size to zero
+        newWidth = newWidth || 0;
+        newHeight = newHeight || 0;
 
-            // Create canvas and context for holding old data
-            oldData = document.createElement("canvas");
-            oldData.width = layer.width;
-            oldData.height = layer.height;
+        // Calculate new dimensions of internal canvas
+        var canvasWidth  = Math.ceil(newWidth  / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR;
+        var canvasHeight = Math.ceil(newHeight / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR;
 
-            var oldDataContext = oldData.getContext("2d");
+        // Resize only if canvas dimensions are actually changing
+        if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
 
-            // Copy image data from current
-            oldDataContext.drawImage(canvas,
-                    0, 0, layer.width, layer.height,
-                    0, 0, layer.width, layer.height);
+            // Copy old data only if relevant and non-empty
+            var oldData = null;
+            if (!empty && canvas.width !== 0 && canvas.height !== 0) {
+
+                // Create canvas and context for holding old data
+                oldData = document.createElement("canvas");
+                oldData.width = Math.min(layer.width, newWidth);
+                oldData.height = Math.min(layer.height, newHeight);
+
+                var oldDataContext = oldData.getContext("2d");
+
+                // Copy image data from current
+                oldDataContext.drawImage(canvas,
+                        0, 0, oldData.width, oldData.height,
+                        0, 0, oldData.width, oldData.height);
+
+            }
+
+            // Preserve composite operation
+            var oldCompositeOperation = context.globalCompositeOperation;
+
+            // Resize canvas
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            // Redraw old data, if any
+            if (oldData)
+                context.drawImage(oldData,
+                    0, 0, oldData.width, oldData.height,
+                    0, 0, oldData.width, oldData.height);
+
+            // Restore composite operation
+            context.globalCompositeOperation = oldCompositeOperation;
+
+            // Acknowledge reset of stack (happens on resize of canvas)
+            stackSize = 0;
+            context.save();
 
         }
 
-        // Preserve composite operation
-        var oldCompositeOperation = context.globalCompositeOperation;
+        // If the canvas size is not changing, manually force state reset
+        else
+            layer.reset();
 
-        // Resize canvas
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-
-        // Redraw old data, if any
-        if (oldData)
-                context.drawImage(oldData, 
-                    0, 0, layer.width, layer.height,
-                    0, 0, layer.width, layer.height);
-
-        // Restore composite operation
-        context.globalCompositeOperation = oldCompositeOperation;
-
+        // Assign new layer dimensions
         layer.width = newWidth;
         layer.height = newHeight;
 
-        // Acknowledge reset of stack (happens on resize of canvas)
-        stackSize = 0;
-        context.save();
-
-    }
+    };
 
     /**
      * Given the X and Y coordinates of the upper-left corner of a rectangle
@@ -5556,11 +6661,39 @@ Guacamole.Layer = function(width, height) {
     this.height = height;
 
     /**
-     * Returns the canvas element backing this Layer.
-     * @returns {Element} The canvas element backing this Layer.
+     * Returns the canvas element backing this Layer. Note that the dimensions
+     * of the canvas may not exactly match those of the Layer, as resizing a
+     * canvas while maintaining its state is an expensive operation.
+     *
+     * @returns {HTMLCanvasElement}
+     *     The canvas element backing this Layer.
      */
-    this.getCanvas = function() {
+    this.getCanvas = function getCanvas() {
         return canvas;
+    };
+
+    /**
+     * Returns a new canvas element containing the same image as this Layer.
+     * Unlike getCanvas(), the canvas element returned is guaranteed to have
+     * the exact same dimensions as the Layer.
+     *
+     * @returns {HTMLCanvasElement}
+     *     A new canvas element containing a copy of the image content this
+     *     Layer.
+     */
+    this.toCanvas = function toCanvas() {
+
+        // Create new canvas having same dimensions
+        var canvas = document.createElement('canvas');
+        canvas.width = layer.width;
+        canvas.height = layer.height;
+
+        // Copy image contents to new canvas
+        var context = canvas.getContext('2d');
+        context.drawImage(layer.getCanvas(), 0, 0);
+
+        return canvas;
+
     };
 
     /**
@@ -5588,6 +6721,7 @@ Guacamole.Layer = function(width, height) {
     this.drawImage = function(x, y, image) {
         if (layer.autosize) fitRect(x, y, image.width, image.height);
         context.drawImage(image, x, y);
+        empty = false;
     };
 
     /**
@@ -5666,6 +6800,7 @@ Guacamole.Layer = function(width, height) {
 
         // Draw image data
         context.putImageData(dst, x, y);
+        empty = false;
 
     };
 
@@ -5709,6 +6844,7 @@ Guacamole.Layer = function(width, height) {
         // Get image data from src and dst
         var src = srcLayer.getCanvas().getContext("2d").getImageData(srcx, srcy, srcw, srch);
         context.putImageData(src, x, y);
+        empty = false;
 
     };
 
@@ -5752,6 +6888,7 @@ Guacamole.Layer = function(width, height) {
 
         if (layer.autosize) fitRect(x, y, srcw, srch);
         context.drawImage(srcCanvas, srcx, srcy, srcw, srch, x, y, srcw, srch);
+        empty = false;
 
     };
 
@@ -5914,6 +7051,7 @@ Guacamole.Layer = function(width, height) {
         context.lineWidth = thickness;
         context.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")";
         context.stroke();
+        empty = false;
 
         // Path now implicitly closed
         pathClosed = true;
@@ -5936,6 +7074,7 @@ Guacamole.Layer = function(width, height) {
         // Fill with color
         context.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")";
         context.fill();
+        empty = false;
 
         // Path now implicitly closed
         pathClosed = true;
@@ -5968,6 +7107,7 @@ Guacamole.Layer = function(width, height) {
             "repeat"
         );
         context.stroke();
+        empty = false;
 
         // Path now implicitly closed
         pathClosed = true;
@@ -5992,6 +7132,7 @@ Guacamole.Layer = function(width, height) {
             "repeat"
         );
         context.fill();
+        empty = false;
 
         // Path now implicitly closed
         pathClosed = true;
@@ -6112,8 +7253,7 @@ Guacamole.Layer = function(width, height) {
     };
 
     // Initialize canvas dimensions
-    canvas.width = width;
-    canvas.height = height;
+    resize(width, height);
 
     // Explicitly render canvas below other elements in the layer (such as
     // child layers). Chrome and others may fail to render layers properly
@@ -6232,25 +7372,22 @@ Guacamole.Layer.Pixel = function(r, g, b, a) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -7323,25 +8460,22 @@ Guacamole.Mouse.Touchscreen = function(element) {
 };
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 /**
@@ -7353,25 +8487,22 @@ Guacamole.Mouse.Touchscreen = function(element) {
 var Guacamole = Guacamole || {};
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -7567,25 +8698,22 @@ Guacamole.Object.ROOT_STREAM = '/';
 Guacamole.Object.STREAM_INDEX_MIMETYPE = 'application/vnd.glyptodon.guacamole.stream-index+json';
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -8514,25 +9642,22 @@ Guacamole.OnScreenKeyboard.Key = function(template, name) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -8586,25 +9711,22 @@ Guacamole.OutputStream = function(client, index) {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -8711,7 +9833,7 @@ Guacamole.Parser = function() {
 
                 // Parse length
                 var length = parseInt(buffer.substring(element_end+1, length_end));
-                if (length == NaN)
+                if (isNaN(length))
                     throw new Error("Non-numeric character in element length.");
 
                 // Calculate start of element
@@ -8746,25 +9868,919 @@ Guacamole.Parser = function() {
 };
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A description of the format of raw PCM audio, such as that used by
+ * Guacamole.RawAudioPlayer and Guacamole.RawAudioRecorder. This object
+ * describes the number of bytes per sample, the number of channels, and the
+ * overall sample rate.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * @constructor
+ * @param {Guacamole.RawAudioFormat|Object} template
+ *     The object whose properties should be copied into the corresponding
+ *     properties of the new Guacamole.RawAudioFormat.
+ */
+Guacamole.RawAudioFormat = function RawAudioFormat(template) {
+
+    /**
+     * The number of bytes in each sample of audio data. This value is
+     * independent of the number of channels.
+     *
+     * @type {Number}
+     */
+    this.bytesPerSample = template.bytesPerSample;
+
+    /**
+     * The number of audio channels (ie: 1 for mono, 2 for stereo).
+     *
+     * @type {Number}
+     */
+    this.channels = template.channels;
+
+    /**
+     * The number of samples per second, per channel.
+     *
+     * @type {Number}
+     */
+    this.rate = template.rate;
+
+};
+
+/**
+ * Parses the given mimetype, returning a new Guacamole.RawAudioFormat
+ * which describes the type of raw audio data represented by that mimetype. If
+ * the mimetype is not a supported raw audio data mimetype, null is returned.
+ *
+ * @param {String} mimetype
+ *     The audio mimetype to parse.
+ *
+ * @returns {Guacamole.RawAudioFormat}
+ *     A new Guacamole.RawAudioFormat which describes the type of raw
+ *     audio data represented by the given mimetype, or null if the given
+ *     mimetype is not supported.
+ */
+Guacamole.RawAudioFormat.parse = function parseFormat(mimetype) {
+
+    var bytesPerSample;
+
+    // Rate is absolutely required - if null is still present later, the
+    // mimetype must not be supported
+    var rate = null;
+
+    // Default for both "audio/L8" and "audio/L16" is one channel
+    var channels = 1;
+
+    // "audio/L8" has one byte per sample
+    if (mimetype.substring(0, 9) === 'audio/L8;') {
+        mimetype = mimetype.substring(9);
+        bytesPerSample = 1;
+    }
+
+    // "audio/L16" has two bytes per sample
+    else if (mimetype.substring(0, 10) === 'audio/L16;') {
+        mimetype = mimetype.substring(10);
+        bytesPerSample = 2;
+    }
+
+    // All other types are unsupported
+    else
+        return null;
+
+    // Parse all parameters
+    var parameters = mimetype.split(',');
+    for (var i = 0; i < parameters.length; i++) {
+
+        var parameter = parameters[i];
+
+        // All parameters must have an equals sign separating name from value
+        var equals = parameter.indexOf('=');
+        if (equals === -1)
+            return null;
+
+        // Parse name and value from parameter string
+        var name  = parameter.substring(0, equals);
+        var value = parameter.substring(equals+1);
+
+        // Handle each supported parameter
+        switch (name) {
+
+            // Number of audio channels
+            case 'channels':
+                channels = parseInt(value);
+                break;
+
+            // Sample rate
+            case 'rate':
+                rate = parseInt(value);
+                break;
+
+            // All other parameters are unsupported
+            default:
+                return null;
+
+        }
+
+    };
+
+    // The rate parameter is required
+    if (rate === null)
+        return null;
+
+    // Return parsed format details
+    return new Guacamole.RawAudioFormat({
+        bytesPerSample : bytesPerSample,
+        channels       : channels,
+        rate           : rate
+    });
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A recording of a Guacamole session. Given a {@link Guacamole.Tunnel}, the
+ * Guacamole.SessionRecording automatically handles incoming Guacamole
+ * instructions, storing them for playback. Playback of the recording may be
+ * controlled through function calls to the Guacamole.SessionRecording, even
+ * while the recording has not yet finished being created or downloaded.
+ *
+ * @constructor
+ * @param {Guacamole.Tunnel} tunnel
+ *     The Guacamole.Tunnel from which the instructions of the recording should
+ *     be read.
+ */
+Guacamole.SessionRecording = function SessionRecording(tunnel) {
+
+    /**
+     * Reference to this Guacamole.SessionRecording.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording}
+     */
+    var recording = this;
+
+    /**
+     * The minimum number of characters which must have been read between
+     * keyframes.
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var KEYFRAME_CHAR_INTERVAL = 16384;
+
+    /**
+     * The minimum number of milliseconds which must elapse between keyframes.
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var KEYFRAME_TIME_INTERVAL = 5000;
+
+    /**
+     * All frames parsed from the provided tunnel.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame[]}
+     */
+    var frames = [];
+
+    /**
+     * All instructions which have been read since the last frame was added to
+     * the frames array.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame.Instruction[]}
+     */
+    var instructions = [];
+
+    /**
+     * The approximate number of characters which have been read from the
+     * provided tunnel since the last frame was flagged for use as a keyframe.
+     *
+     * @private
+     * @type {Number}
+     */
+    var charactersSinceLastKeyframe = 0;
+
+    /**
+     * The timestamp of the last frame which was flagged for use as a keyframe.
+     * If no timestamp has yet been flagged, this will be 0.
+     *
+     * @private
+     * @type {Number}
+     */
+    var lastKeyframeTimestamp = 0;
+
+    /**
+     * Tunnel which feeds arbitrary instructions to the client used by this
+     * Guacamole.SessionRecording for playback of the session recording.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._PlaybackTunnel}
+     */
+    var playbackTunnel = new Guacamole.SessionRecording._PlaybackTunnel();
+
+    /**
+     * Guacamole.Client instance used for visible playback of the session
+     * recording.
+     *
+     * @private
+     * @type {Guacamole.Client}
+     */
+    var playbackClient = new Guacamole.Client(playbackTunnel);
+
+    /**
+     * The current frame rendered within the playback client. If no frame is
+     * yet rendered, this will be -1.
+     *
+     * @private
+     * @type {Number}
+     */
+    var currentFrame = -1;
+
+    /**
+     * The timestamp of the frame when playback began, in milliseconds. If
+     * playback is not in progress, this will be null.
+     *
+     * @private
+     * @type {Number}
+     */
+    var startVideoTimestamp = null;
+
+    /**
+     * The real-world timestamp when playback began, in milliseconds. If
+     * playback is not in progress, this will be null.
+     *
+     * @private
+     * @type {Number}
+     */
+    var startRealTimestamp = null;
+
+    /**
+     * The ID of the timeout which will play the next frame, if playback is in
+     * progress. If playback is not in progress, the ID stored here (if any)
+     * will not be valid.
+     *
+     * @private
+     * @type {Number}
+     */
+    var playbackTimeout = null;
+
+    // Start playback client connected
+    playbackClient.connect();
+
+    // Hide cursor unless mouse position is received
+    playbackClient.getDisplay().showCursor(false);
+
+    // Read instructions from provided tunnel, extracting each frame
+    tunnel.oninstruction = function handleInstruction(opcode, args) {
+
+        // Store opcode and arguments for received instruction
+        var instruction = new Guacamole.SessionRecording._Frame.Instruction(opcode, args.slice());
+        instructions.push(instruction);
+        charactersSinceLastKeyframe += instruction.getSize();
+
+        // Once a sync is received, store all instructions since the last
+        // frame as a new frame
+        if (opcode === 'sync') {
+
+            // Parse frame timestamp from sync instruction
+            var timestamp = parseInt(args[0]);
+
+            // Add a new frame containing the instructions read since last frame
+            var frame = new Guacamole.SessionRecording._Frame(timestamp, instructions);
+            frames.push(frame);
+
+            // This frame should eventually become a keyframe if enough data
+            // has been processed and enough recording time has elapsed, or if
+            // this is the absolute first frame
+            if (frames.length === 1 || (charactersSinceLastKeyframe >= KEYFRAME_CHAR_INTERVAL
+                    && timestamp - lastKeyframeTimestamp >= KEYFRAME_TIME_INTERVAL)) {
+                frame.keyframe = true;
+                lastKeyframeTimestamp = timestamp;
+                charactersSinceLastKeyframe = 0;
+            }
+
+            // Clear set of instructions in preparation for next frame
+            instructions = [];
+
+            // Notify that additional content is available
+            if (recording.onprogress)
+                recording.onprogress(recording.getDuration());
+
+        }
+
+    };
+
+    /**
+     * Converts the given absolute timestamp to a timestamp which is relative
+     * to the first frame in the recording.
+     *
+     * @private
+     * @param {Number} timestamp
+     *     The timestamp to convert to a relative timestamp.
+     *
+     * @returns {Number}
+     *     The difference in milliseconds between the given timestamp and the
+     *     first frame of the recording, or zero if no frames yet exist.
+     */
+    var toRelativeTimestamp = function toRelativeTimestamp(timestamp) {
+
+        // If no frames yet exist, all timestamps are zero
+        if (frames.length === 0)
+            return 0;
+
+        // Calculate timestamp relative to first frame
+        return timestamp - frames[0].timestamp;
+
+    };
+
+    /**
+     * Searches through the given region of frames for the frame having a
+     * relative timestamp closest to the timestamp given.
+     *
+     * @private
+     * @param {Number} minIndex
+     *     The index of the first frame in the region (the frame having the
+     *     smallest timestamp).
+     *
+     * @param {Number} maxIndex
+     *     The index of the last frame in the region (the frame having the
+     *     largest timestamp).
+     *
+     * @param {Number} timestamp
+     *     The relative timestamp to search for, where zero denotes the first
+     *     frame in the recording.
+     *
+     * @returns {Number}
+     *     The index of the frame having a relative timestamp closest to the
+     *     given value.
+     */
+    var findFrame = function findFrame(minIndex, maxIndex, timestamp) {
+
+        // Do not search if the region contains only one element
+        if (minIndex === maxIndex)
+            return minIndex;
+
+        // Split search region into two halves
+        var midIndex = Math.floor((minIndex + maxIndex) / 2);
+        var midTimestamp = toRelativeTimestamp(frames[midIndex].timestamp);
+
+        // If timestamp is within lesser half, search again within that half
+        if (timestamp < midTimestamp && midIndex > minIndex)
+            return findFrame(minIndex, midIndex - 1, timestamp);
+
+        // If timestamp is within greater half, search again within that half
+        if (timestamp > midTimestamp && midIndex < maxIndex)
+            return findFrame(midIndex + 1, maxIndex, timestamp);
+
+        // Otherwise, we lucked out and found a frame with exactly the
+        // desired timestamp
+        return midIndex;
+
+    };
+
+    /**
+     * Replays the instructions associated with the given frame, sending those
+     * instructions to the playback client.
+     *
+     * @private
+     * @param {Number} index
+     *     The index of the frame within the frames array which should be
+     *     replayed.
+     */
+    var replayFrame = function replayFrame(index) {
+
+        var frame = frames[index];
+
+        // Replay all instructions within the retrieved frame
+        for (var i = 0; i < frame.instructions.length; i++) {
+            var instruction = frame.instructions[i];
+            playbackTunnel.receiveInstruction(instruction.opcode, instruction.args);
+        }
+
+        // Store client state if frame is flagged as a keyframe
+        if (frame.keyframe && !frame.clientState) {
+            playbackClient.exportState(function storeClientState(state) {
+                frame.clientState = state;
+            });
+        }
+
+    };
+
+    /**
+     * Moves the playback position to the given frame, resetting the state of
+     * the playback client and replaying frames as necessary.
+     *
+     * @private
+     * @param {Number} index
+     *     The index of the frame which should become the new playback
+     *     position.
+     */
+    var seekToFrame = function seekToFrame(index) {
+
+        var startIndex;
+
+        // Back up until startIndex represents current state
+        for (startIndex = index; startIndex >= 0; startIndex--) {
+
+            var frame = frames[startIndex];
+
+            // If we've reached the current frame, startIndex represents
+            // current state by definition
+            if (startIndex === currentFrame)
+                break;
+
+            // If frame has associated absolute state, make that frame the
+            // current state
+            if (frame.clientState) {
+                playbackClient.importState(frame.clientState);
+                break;
+            }
+
+        }
+
+        // Advance to frame index after current state
+        startIndex++;
+
+        // Replay any applicable incremental frames
+        for (; startIndex <= index; startIndex++)
+            replayFrame(startIndex);
+
+        // Current frame is now at requested index
+        currentFrame = index;
+
+        // Notify of changes in position
+        if (recording.onseek)
+            recording.onseek(recording.getPosition());
+
+    };
+
+    /**
+     * Advances playback to the next frame in the frames array and schedules
+     * playback of the frame following that frame based on their associated
+     * timestamps. If no frames exist after the next frame, playback is paused.
+     *
+     * @private
+     */
+    var continuePlayback = function continuePlayback() {
+
+        // Advance to next frame
+        seekToFrame(currentFrame + 1);
+
+        // If frames remain after advancing, schedule next frame
+        if (currentFrame + 1 < frames.length) {
+
+            // Pull the upcoming frame
+            var next = frames[currentFrame + 1];
+
+            // Calculate the real timestamp corresponding to when the next
+            // frame begins
+            var nextRealTimestamp = next.timestamp - startVideoTimestamp + startRealTimestamp;
+
+            // Calculate the relative delay between the current time and
+            // the next frame start
+            var delay = Math.max(nextRealTimestamp - new Date().getTime(), 0);
+
+            // Advance to next frame after enough time has elapsed
+            playbackTimeout = window.setTimeout(function frameDelayElapsed() {
+                continuePlayback();
+            }, delay);
+
+        }
+
+        // Otherwise stop playback
+        else
+            recording.pause();
+
+    };
+
+    /**
+     * Fired when new frames have become available while the recording is
+     * being downloaded.
+     *
+     * @event
+     * @param {Number} duration
+     *     The new duration of the recording, in milliseconds.
+     */
+    this.onprogress = null;
+
+    /**
+     * Fired whenever playback of the recording has started.
+     *
+     * @event
+     */
+    this.onplay = null;
+
+    /**
+     * Fired whenever playback of the recording has been paused. This may
+     * happen when playback is explicitly paused with a call to pause(), or
+     * when playback is implicitly paused due to reaching the end of the
+     * recording.
+     *
+     * @event
+     */
+    this.onpause = null;
+
+    /**
+     * Fired whenever the playback position within the recording changes.
+     *
+     * @event
+     * @param {Number} position
+     *     The new position within the recording, in milliseconds.
+     */
+    this.onseek = null;
+
+    /**
+     * Connects the underlying tunnel, beginning download of the Guacamole
+     * session. Playback of the Guacamole session cannot occur until at least
+     * one frame worth of instructions has been downloaded.
+     *
+     * @param {String} data
+     *     The data to send to the tunnel when connecting.
+     */
+    this.connect = function connect(data) {
+        tunnel.connect(data);
+    };
+
+    /**
+     * Disconnects the underlying tunnel, stopping further download of the
+     * Guacamole session.
+     */
+    this.disconnect = function disconnect() {
+        tunnel.disconnect();
+    };
+
+    /**
+     * Returns the underlying display of the Guacamole.Client used by this
+     * Guacamole.SessionRecording for playback. The display contains an Element
+     * which can be added to the DOM, causing the display (and thus playback of
+     * the recording) to become visible.
+     *
+     * @return {Guacamole.Display}
+     *     The underlying display of the Guacamole.Client used by this
+     *     Guacamole.SessionRecording for playback.
+     */
+    this.getDisplay = function getDisplay() {
+        return playbackClient.getDisplay();
+    };
+
+    /**
+     * Returns whether playback is currently in progress.
+     *
+     * @returns {Boolean}
+     *     true if playback is currently in progress, false otherwise.
+     */
+    this.isPlaying = function isPlaying() {
+        return !!startVideoTimestamp;
+    };
+
+    /**
+     * Returns the current playback position within the recording, in
+     * milliseconds, where zero is the start of the recording.
+     *
+     * @returns {Number}
+     *     The current playback position within the recording, in milliseconds.
+     */
+    this.getPosition = function getPosition() {
+
+        // Position is simply zero if playback has not started at all
+        if (currentFrame === -1)
+            return 0;
+
+        // Return current position as a millisecond timestamp relative to the
+        // start of the recording
+        return toRelativeTimestamp(frames[currentFrame].timestamp);
+
+    };
+
+    /**
+     * Returns the duration of this recording, in milliseconds. If the
+     * recording is still being downloaded, this value will gradually increase.
+     *
+     * @returns {Number}
+     *     The duration of this recording, in milliseconds.
+     */
+    this.getDuration = function getDuration() {
+
+        // If no frames yet exist, duration is zero
+        if (frames.length === 0)
+            return 0;
+
+        // Recording duration is simply the timestamp of the last frame
+        return toRelativeTimestamp(frames[frames.length - 1].timestamp);
+
+    };
+
+    /**
+     * Begins continuous playback of the recording downloaded thus far.
+     * Playback of the recording will continue until pause() is invoked or
+     * until no further frames exist. Playback is initially paused when a
+     * Guacamole.SessionRecording is created, and must be explicitly started
+     * through a call to this function. If playback is already in progress,
+     * this function has no effect.
+     */
+    this.play = function play() {
+
+        // If playback is not already in progress and frames remain,
+        // begin playback
+        if (!recording.isPlaying() && currentFrame + 1 < frames.length) {
+
+            // Notify that playback is starting
+            if (recording.onplay)
+                recording.onplay();
+
+            // Store timestamp of playback start for relative scheduling of
+            // future frames
+            var next = frames[currentFrame + 1];
+            startVideoTimestamp = next.timestamp;
+            startRealTimestamp = new Date().getTime();
+
+            // Begin playback of video
+            continuePlayback();
+
+        }
+
+    };
+
+    /**
+     * Seeks to the given position within the recording. If the recording is
+     * currently being played back, playback will continue after the seek is
+     * performed. If the recording is currently paused, playback will be
+     * paused after the seek is performed.
+     *
+     * @param {Number} position
+     *     The position within the recording to seek to, in milliseconds.
+     */
+    this.seek = function seek(position) {
+
+        // Do not seek if no frames exist
+        if (frames.length === 0)
+            return;
+
+        // Pause playback, preserving playback state
+        var originallyPlaying = recording.isPlaying();
+        recording.pause();
+
+        // Perform seek
+        seekToFrame(findFrame(0, frames.length - 1, position));
+
+        // Restore playback state
+        if (originallyPlaying)
+            recording.play();
+
+    };
+
+    /**
+     * Pauses playback of the recording, if playback is currently in progress.
+     * If playback is not in progress, this function has no effect. Playback is
+     * initially paused when a Guacamole.SessionRecording is created, and must
+     * be explicitly started through a call to play().
+     */
+    this.pause = function pause() {
+
+        // Stop playback only if playback is in progress
+        if (recording.isPlaying()) {
+
+            // Notify that playback is stopping
+            if (recording.onpause)
+                recording.onpause();
+
+            // Stop playback
+            window.clearTimeout(playbackTimeout);
+            startVideoTimestamp = null;
+            startRealTimestamp = null;
+
+        }
+
+    };
+
+};
+
+/**
+ * A single frame of Guacamole session data. Each frame is made up of the set
+ * of instructions used to generate that frame, and the timestamp as dictated
+ * by the "sync" instruction terminating the frame. Optionally, a frame may
+ * also be associated with a snapshot of Guacamole client state, such that the
+ * frame can be rendered without replaying all previous frames.
+ *
+ * @private
+ * @constructor
+ * @param {Number} timestamp
+ *     The timestamp of this frame, as dictated by the "sync" instruction which
+ *     terminates the frame.
+ *
+ * @param {Guacamole.SessionRecording._Frame.Instruction[]} instructions
+ *     All instructions which are necessary to generate this frame relative to
+ *     the previous frame in the Guacamole session.
+ */
+Guacamole.SessionRecording._Frame = function _Frame(timestamp, instructions) {
+
+    /**
+     * Whether this frame should be used as a keyframe if possible. This value
+     * is purely advisory. The stored clientState must eventually be manually
+     * set for the frame to be used as a keyframe. By default, frames are not
+     * keyframes.
+     *
+     * @type {Boolean}
+     * @default false
+     */
+    this.keyframe = false;
+
+    /**
+     * The timestamp of this frame, as dictated by the "sync" instruction which
+     * terminates the frame.
+     *
+     * @type {Number}
+     */
+    this.timestamp = timestamp;
+
+    /**
+     * All instructions which are necessary to generate this frame relative to
+     * the previous frame in the Guacamole session.
+     *
+     * @type {Guacamole.SessionRecording._Frame.Instruction[]}
+     */
+    this.instructions = instructions;
+
+    /**
+     * A snapshot of client state after this frame was rendered, as returned by
+     * a call to exportState(). If no such snapshot has been taken, this will
+     * be null.
+     *
+     * @type {Object}
+     * @default null
+     */
+    this.clientState = null;
+
+};
+
+/**
+ * A Guacamole protocol instruction. Each Guacamole protocol instruction is
+ * made up of an opcode and set of arguments.
+ *
+ * @private
+ * @constructor
+ * @param {String} opcode
+ *     The opcode of this Guacamole instruction.
+ *
+ * @param {String[]} args
+ *     All arguments associated with this Guacamole instruction.
+ */
+Guacamole.SessionRecording._Frame.Instruction = function Instruction(opcode, args) {
+
+    /**
+     * Reference to this Guacamole.SessionRecording._Frame.Instruction.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame.Instruction}
+     */
+    var instruction = this;
+
+    /**
+     * The opcode of this Guacamole instruction.
+     *
+     * @type {String}
+     */
+    this.opcode = opcode;
+
+    /**
+     * All arguments associated with this Guacamole instruction.
+     *
+     * @type {String[]}
+     */
+    this.args = args;
+
+    /**
+     * Returns the approximate number of characters which make up this
+     * instruction. This value is only approximate as it excludes the length
+     * prefixes and various delimiters used by the Guacamole protocol; only
+     * the content of the opcode and each argument is taken into account.
+     *
+     * @returns {Number}
+     *     The approximate size of this instruction, in characters.
+     */
+    this.getSize = function getSize() {
+
+        // Init with length of opcode
+        var size = instruction.opcode.length;
+
+        // Add length of all arguments
+        for (var i = 0; i < instruction.args.length; i++)
+            size += instruction.args[i].length;
+
+        return size;
+
+    };
+
+};
+
+/**
+ * A read-only Guacamole.Tunnel implementation which streams instructions
+ * received through explicit calls to its receiveInstruction() function.
+ *
+ * @private
+ * @constructor
+ * @augments {Guacamole.Tunnel}
+ */
+Guacamole.SessionRecording._PlaybackTunnel = function _PlaybackTunnel() {
+
+    /**
+     * Reference to this Guacamole.SessionRecording._PlaybackTunnel.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._PlaybackTunnel}
+     */
+    var tunnel = this;
+
+    this.connect = function connect(data) {
+        // Do nothing
+    };
+
+    this.sendMessage = function sendMessage(elements) {
+        // Do nothing
+    };
+
+    this.disconnect = function disconnect() {
+        // Do nothing
+    };
+
+    /**
+     * Invokes this tunnel's oninstruction handler, notifying users of this
+     * tunnel (such as a Guacamole.Client instance) that an instruction has
+     * been received. If the oninstruction handler has not been set, this
+     * function has no effect.
+     *
+     * @param {String} opcode
+     *     The opcode of the Guacamole instruction.
+     *
+     * @param {String[]} args
+     *     All arguments associated with this Guacamole instruction.
+     */
+    this.receiveInstruction = function receiveInstruction(opcode, args) {
+        if (tunnel.oninstruction)
+            tunnel.oninstruction(opcode, args);
+    };
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -8883,6 +10899,53 @@ Guacamole.Status.Code = {
     "RESOURCE_CONFLICT": 0x0205,
 
     /**
+     * The operation could not be performed as the requested resource is now
+     * closed.
+     *
+     * @type {Number}
+     */
+    "RESOURCE_CLOSED": 0x0206,
+
+    /**
+     * The operation could not be performed because the upstream server does
+     * not appear to exist.
+     *
+     * @type {Number}
+     */
+    "UPSTREAM_NOT_FOUND": 0x0207,
+
+    /**
+     * The operation could not be performed because the upstream server is not
+     * available to service the request.
+     *
+     * @type {Number}
+     */
+    "UPSTREAM_UNAVAILABLE": 0x0208,
+
+    /**
+     * The session within the upstream server has ended because it conflicted
+     * with another session.
+     *
+     * @type {Number}
+     */
+    "SESSION_CONFLICT": 0x0209,
+
+    /**
+     * The session within the upstream server has ended because it appeared to
+     * be inactive.
+     *
+     * @type {Number}
+     */
+    "SESSION_TIMEOUT": 0x020A,
+
+    /**
+     * The session within the upstream server has been forcibly terminated.
+     *
+     * @type {Number}
+     */
+    "SESSION_CLOSED": 0x020B,
+
+    /**
      * The operation could not be performed because bad parameters were given.
      *
      * @type {Number}
@@ -8937,25 +11000,22 @@ Guacamole.Status.Code = {
 };
 
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -9107,25 +11167,22 @@ Guacamole.StringReader = function(stream) {
 
 };
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -9281,7 +11338,8 @@ Guacamole.StringWriter = function(stream) {
      * @param {String} text The text to send.
      */
     this.sendText = function(text) {
-        array_writer.sendData(__encode_utf8(text));
+        if (text.length)
+            array_writer.sendData(__encode_utf8(text));
     };
 
     /**
@@ -9301,25 +11359,22 @@ Guacamole.StringWriter = function(stream) {
 
 };
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -9376,6 +11431,14 @@ Guacamole.Tunnel = function() {
     this.receiveTimeout = 15000;
 
     /**
+     * The UUID uniquely identifying this tunnel. If not yet known, this will
+     * be null.
+     *
+     * @type {String}
+     */
+    this.uuid = null;
+
+    /**
      * Fired whenever an error is encountered by the tunnel.
      * 
      * @event
@@ -9403,6 +11466,18 @@ Guacamole.Tunnel = function() {
     this.oninstruction = null;
 
 };
+
+/**
+ * The Guacamole protocol instruction opcode reserved for arbitrary internal
+ * use by tunnel implementations. The value of this opcode is guaranteed to be
+ * the empty string (""). Tunnel implementations may use this opcode for any
+ * purpose. It is currently used by the HTTP tunnel to mark the end of the HTTP
+ * response, and by the WebSocket tunnel to transmit the tunnel UUID.
+ *
+ * @constant
+ * @type {String}
+ */
+Guacamole.Tunnel.INTERNAL_DATA_OPCODE = '';
 
 /**
  * All possible tunnel states.
@@ -9456,8 +11531,6 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
      * @private
      */
     var tunnel = this;
-
-    var tunnel_uuid;
 
     var TUNNEL_CONNECT = tunnelURL + "?connect";
     var TUNNEL_READ    = tunnelURL + "?read:";
@@ -9591,7 +11664,7 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
             sendingMessages = true;
 
             var message_xmlhttprequest = new XMLHttpRequest();
-            message_xmlhttprequest.open("POST", TUNNEL_WRITE + tunnel_uuid);
+            message_xmlhttprequest.open("POST", TUNNEL_WRITE + tunnel.uuid);
             message_xmlhttprequest.withCredentials = withCredentials;
             message_xmlhttprequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=UTF-8");
 
@@ -9680,7 +11753,7 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
                 if (pollingMode === POLLING_ENABLED) {
                     if (xmlhttprequest.readyState === 3 && !interval)
                         interval = setInterval(parseResponse, 30);
-                    else if (xmlhttprequest.readyState === 4 && !interval)
+                    else if (xmlhttprequest.readyState === 4 && interval)
                         clearInterval(interval);
                 }
 
@@ -9748,7 +11821,7 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
                         if (length === 0) {
 
                             // Clean up interval if polling
-                            if (!interval)
+                            if (interval)
                                 clearInterval(interval);
                            
                             // Clean up object
@@ -9822,7 +11895,7 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
 
         // Make request, increment request ID
         var xmlhttprequest = new XMLHttpRequest();
-        xmlhttprequest.open("GET", TUNNEL_READ + tunnel_uuid + ":" + (request_id++));
+        xmlhttprequest.open("GET", TUNNEL_READ + tunnel.uuid + ":" + (request_id++));
         xmlhttprequest.withCredentials = withCredentials;
         xmlhttprequest.send(null);
 
@@ -9851,7 +11924,7 @@ Guacamole.HTTPTunnel = function(tunnelURL, crossDomain) {
             reset_timeout();
 
             // Get UUID from response
-            tunnel_uuid = connect_xmlhttprequest.responseText;
+            tunnel.uuid = connect_xmlhttprequest.responseText;
 
             tunnel.state = Guacamole.Tunnel.State.OPEN;
             if (tunnel.onstatechange)
@@ -10038,13 +12111,7 @@ Guacamole.WebSocketTunnel = function(tunnelURL) {
         socket = new WebSocket(tunnelURL + "?" + data, "guacamole");
 
         socket.onopen = function(event) {
-
             reset_timeout();
-
-            tunnel.state = Guacamole.Tunnel.State.OPEN;
-            if (tunnel.onstatechange)
-                tunnel.onstatechange(tunnel.state);
-
         };
 
         socket.onclose = function(event) {
@@ -10099,8 +12166,22 @@ Guacamole.WebSocketTunnel = function(tunnelURL) {
                     // Get opcode
                     var opcode = elements.shift();
 
+                    // Update state and UUID when first instruction received
+                    if (tunnel.state !== Guacamole.Tunnel.State.OPEN) {
+
+                        // Associate tunnel UUID if received
+                        if (opcode === Guacamole.Tunnel.INTERNAL_DATA_OPCODE)
+                            tunnel.uuid = elements[0];
+
+                        // Tunnel is now open and UUID is available
+                        tunnel.state = Guacamole.Tunnel.State.OPEN;
+                        if (tunnel.onstatechange)
+                            tunnel.onstatechange(tunnel.state);
+
+                    }
+
                     // Call instruction handler.
-                    if (tunnel.oninstruction)
+                    if (opcode !== Guacamole.Tunnel.INTERNAL_DATA_OPCODE && tunnel.oninstruction)
                         tunnel.oninstruction(opcode, elements);
 
                     // Clear elements
@@ -10231,6 +12312,7 @@ Guacamole.ChainedTunnel = function(tunnelChain) {
             tunnel.onstatechange = chained_tunnel.onstatechange;
             tunnel.oninstruction = chained_tunnel.oninstruction;
             tunnel.onerror = chained_tunnel.onerror;
+            chained_tunnel.uuid = tunnel.uuid;
             committedTunnel = tunnel;
         }
 
@@ -10304,26 +12386,205 @@ Guacamole.ChainedTunnel = function(tunnelChain) {
 
 Guacamole.ChainedTunnel.prototype = new Guacamole.Tunnel();
 
+/**
+ * Guacamole Tunnel which replays a Guacamole protocol dump from a static file
+ * received via HTTP. Instructions within the file are parsed and handled as
+ * quickly as possible, while the file is being downloaded.
+ *
+ * @constructor
+ * @augments Guacamole.Tunnel
+ * @param {String} url
+ *     The URL of a Guacamole protocol dump.
+ *
+ * @param {Boolean} [crossDomain=false]
+ *     Whether tunnel requests will be cross-domain, and thus must use CORS
+ *     mechanisms and headers. By default, it is assumed that tunnel requests
+ *     will be made to the same domain.
+ */
+Guacamole.StaticHTTPTunnel = function StaticHTTPTunnel(url, crossDomain) {
+
+    /**
+     * Reference to this Guacamole.StaticHTTPTunnel.
+     *
+     * @private
+     */
+    var tunnel = this;
+
+    /**
+     * The current, in-progress HTTP request. If no request is currently in
+     * progress, this will be null.
+     *
+     * @private
+     * @type {XMLHttpRequest}
+     */
+    var xhr = null;
+
+    /**
+     * Changes the stored numeric state of this tunnel, firing the onstatechange
+     * event if the new state is different and a handler has been defined.
+     *
+     * @private
+     * @param {Number} state
+     *     The new state of this tunnel.
+     */
+    var setState = function setState(state) {
+
+        // Notify only if state changes
+        if (state !== tunnel.state) {
+            tunnel.state = state;
+            if (tunnel.onstatechange)
+                tunnel.onstatechange(state);
+        }
+
+    };
+
+    /**
+     * Returns the Guacamole protocol status code which most closely
+     * represents the given HTTP status code.
+     *
+     * @private
+     * @param {Number} httpStatus
+     *     The HTTP status code to translate into a Guacamole protocol status
+     *     code.
+     *
+     * @returns {Number}
+     *     The Guacamole protocol status code which most closely represents the
+     *     given HTTP status code.
+     */
+    var getGuacamoleStatusCode = function getGuacamoleStatusCode(httpStatus) {
+
+        // Translate status codes with known equivalents
+        switch (httpStatus) {
+
+            // HTTP 400 - Bad request
+            case 400:
+                return Guacamole.Status.Code.CLIENT_BAD_REQUEST;
+
+            // HTTP 403 - Forbidden
+            case 403:
+                return Guacamole.Status.Code.CLIENT_FORBIDDEN;
+
+            // HTTP 404 - Resource not found
+            case 404:
+                return Guacamole.Status.Code.RESOURCE_NOT_FOUND;
+
+            // HTTP 429 - Too many requests
+            case 429:
+                return Guacamole.Status.Code.CLIENT_TOO_MANY;
+
+            // HTTP 503 - Server unavailable
+            case 503:
+                return Guacamole.Status.Code.SERVER_BUSY;
+
+        }
+
+        // Default all other codes to generic internal error
+        return Guacamole.Status.Code.SERVER_ERROR;
+
+    };
+
+    this.sendMessage = function sendMessage(elements) {
+        // Do nothing
+    };
+
+    this.connect = function connect(data) {
+
+        // Ensure any existing connection is killed
+        tunnel.disconnect();
+
+        // Connection is now starting
+        setState(Guacamole.Tunnel.State.CONNECTING);
+
+        // Start a new connection
+        xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.withCredentials = !!crossDomain;
+        xhr.responseType = 'text';
+        xhr.send(null);
+
+        var offset = 0;
+
+        // Create Guacamole protocol parser specifically for this connection
+        var parser = new Guacamole.Parser();
+
+        // Invoke tunnel's oninstruction handler for each parsed instruction
+        parser.oninstruction = function instructionReceived(opcode, args) {
+            if (tunnel.oninstruction)
+                tunnel.oninstruction(opcode, args);
+        };
+
+        // Continuously parse received data
+        xhr.onreadystatechange = function readyStateChanged() {
+
+            // Parse while data is being received
+            if (xhr.readyState === 3 || xhr.readyState === 4) {
+
+                // Connection is open
+                setState(Guacamole.Tunnel.State.OPEN);
+
+                var buffer = xhr.responseText;
+                var length = buffer.length;
+
+                // Parse only the portion of data which is newly received
+                if (offset < length) {
+                    parser.receive(buffer.substring(offset));
+                    offset = length;
+                }
+
+            }
+
+            // Clean up and close when done
+            if (xhr.readyState === 4)
+                tunnel.disconnect();
+
+        };
+
+        // Reset state and close upon error
+        xhr.onerror = function httpError() {
+
+            // Fail if file could not be downloaded via HTTP
+            if (tunnel.onerror)
+                tunnel.onerror(new Guacamole.Status(getGuacamoleStatusCode(xhr.status), xhr.statusText));
+
+            tunnel.disconnect();
+        };
+
+    };
+
+    this.disconnect = function disconnect() {
+
+        // Abort and dispose of XHR if a request is in progress
+        if (xhr) {
+            xhr.abort();
+            xhr = null;
+        }
+
+        // Connection is now closed
+        setState(Guacamole.Tunnel.State.CLOSED);
+
+    };
+
+};
+
+Guacamole.StaticHTTPTunnel.prototype = new Guacamole.Tunnel();
+
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -10336,28 +12597,25 @@ var Guacamole = Guacamole || {};
  *
  * @type {String}
  */
-Guacamole.API_VERSION = "0.9.9";
+Guacamole.API_VERSION = "0.9.13-incubating";
 
 /*
- * Copyright (C) 2015 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};

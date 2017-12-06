@@ -1,23 +1,20 @@
 /*
- * Copyright (C) 2013 Glyptodon LLC
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 var Guacamole = Guacamole || {};
@@ -65,6 +62,20 @@ Guacamole.ArrayBufferWriter = function(stream) {
     }
 
     /**
+     * The maximum length of any blob sent by this Guacamole.ArrayBufferWriter,
+     * in bytes. Data sent via
+     * [sendData()]{@link Guacamole.ArrayBufferWriter#sendData} which exceeds
+     * this length will be split into multiple blobs. As the Guacamole protocol
+     * limits the maximum size of any instruction or instruction element to
+     * 8192 bytes, and the contents of blobs will be base64-encoded, this value
+     * should only be increased with extreme caution.
+     *
+     * @type {Number}
+     * @default {@link Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH}
+     */
+    this.blobLength = Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH;
+
+    /**
      * Sends the given data.
      * 
      * @param {ArrayBuffer|TypedArray} data The data to send.
@@ -74,13 +85,13 @@ Guacamole.ArrayBufferWriter = function(stream) {
         var bytes = new Uint8Array(data);
 
         // If small enough to fit into single instruction, send as-is
-        if (bytes.length <= 8064)
+        if (bytes.length <= guac_writer.blobLength)
             __send_blob(bytes);
 
         // Otherwise, send as multiple instructions
         else {
-            for (var offset=0; offset<bytes.length; offset += 8064)
-                __send_blob(bytes.subarray(offset, offset + 8094));
+            for (var offset=0; offset<bytes.length; offset += guac_writer.blobLength)
+                __send_blob(bytes.subarray(offset, offset + guac_writer.blobLength));
         }
 
     };
@@ -101,3 +112,12 @@ Guacamole.ArrayBufferWriter = function(stream) {
     this.onack = null;
 
 };
+
+/**
+ * The default maximum blob length for new Guacamole.ArrayBufferWriter
+ * instances.
+ *
+ * @constant
+ * @type {Number}
+ */
+Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH = 6048;
