@@ -13,20 +13,20 @@ db = Database()
 class AnalysisControlRoutes:
     @staticmethod
     def player(request, task_id):
+        task = db.view_task(task_id)
+        if not task:
+            raise Http404("task not found")
+
+        if not config("cuckoo:remotecontrol:enabled"):
+            raise Http404("remote control is not enabled")
+
+        if task.options.get("remotecontrol") != "yes":
+            raise Http404("remote control was not enabled for this task")
+
+        if task.status != "running":
+            raise Http404("task is not running")
+
         try:
-            task = db.view_task(task_id)
-            if not task:
-                raise Http404("task not found")
-
-            if not config("cuckoo:remotecontrol:enabled"):
-                raise Http404("remote control is not enabled")
-
-            if task.options.get("remotecontrol") != "yes":
-                raise Http404("remote control was not enabled for this task")
-
-            if task.status != "running":
-                raise Http404("task is not running")
-
             data = {
                 "task": task
             }
