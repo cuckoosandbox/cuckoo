@@ -1,4 +1,5 @@
 import Hookable from './Hookable';
+import GuacamoleWrapper from './GuacWrap';
 import RDPToolbar from './RDPToolbar';
 import { RDPSnapshotService, RDPSnapshotSelector } from './RDPSnapshotService';
 import RDPDialog from './RDPDialog';
@@ -9,6 +10,13 @@ class RDPClient extends Hookable {
   constructor(el) {
     super();
     this.$ = el || null;
+
+    // connect guac service wrapper
+    this.service = new GuacamoleWrapper({
+      display: el.find('#guacamole-display'),
+      client: this
+    });
+
     this.snapshots = new RDPSnapshotService(this);
     this.toolbar = new RDPToolbar(this);
 
@@ -84,6 +92,11 @@ class RDPClient extends Hookable {
     this.snapshots.bar.on('removed', () => {
       this.toolbar.buttons.snapshot.update(true);
     });
+
+    // initialize the guacamole
+
+    this.service.on('error', error => console.log(error));
+    this.service.connect();
 
   }
 }
