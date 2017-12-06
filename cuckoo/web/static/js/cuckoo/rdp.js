@@ -7,6 +7,84 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _Hookable2 = require('./Hookable');
+
+var _Hookable3 = _interopRequireDefault(_Hookable2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var GuacamoleWrapper = function (_Hookable) {
+  _inherits(GuacamoleWrapper, _Hookable);
+
+  function GuacamoleWrapper(props) {
+    _classCallCheck(this, GuacamoleWrapper);
+
+    // destructure properties
+
+    // api hooks
+    var _this = _possibleConstructorReturn(this, (GuacamoleWrapper.__proto__ || Object.getPrototypeOf(GuacamoleWrapper)).call(this));
+
+    _this.hooks = {
+      connect: [],
+      error: []
+    };
+
+    // detect Guacamole
+    if (!window.Guacamole) {
+      var _ret;
+
+      console.error('No Guacamole! Did you forget to process the avocados in src/scripts/rdp/guac?');
+      return _ret = false, _possibleConstructorReturn(_this, _ret);
+    }
+
+    // properties
+    _this.display = props.display;
+    _this.parent = props.client; // 'parent' client wrapper
+    _this.client = null; // reserved for the Guacamole client (created on connect)
+
+    return _this;
+  }
+
+  _createClass(GuacamoleWrapper, [{
+    key: 'connect',
+    value: function connect() {
+      var _this2 = this;
+
+      // create the client
+      var guac = this.client = new Guacamole.Client(new Guacamole.HTTPTunnel("tunnel/"));
+
+      // create the display
+      this.display.html(guac.getDisplay().getElement());
+
+      guac.onerror = function (error) {
+        _this2.dispatchHook('error', error);
+      };
+
+      guac.connect();
+      this.dispatchHook('connect', guac);
+    }
+  }]);
+
+  return GuacamoleWrapper;
+}(_Hookable3.default);
+
+exports.default = GuacamoleWrapper;
+
+},{"./Hookable":2}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
@@ -107,7 +185,7 @@ var Hookable = function () {
 
 exports.default = Hookable;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -269,7 +347,7 @@ var RDPDialog = function () {
 
 exports.default = RDPDialog;
 
-},{"./Hookable":1}],3:[function(require,module,exports){
+},{"./Hookable":2}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -496,7 +574,7 @@ var RDPSnapshotSelector = function (_Hookable3) {
 exports.RDPSnapshotService = RDPSnapshotService;
 exports.RDPSnapshotSelector = RDPSnapshotSelector;
 
-},{"./Hookable":1}],4:[function(require,module,exports){
+},{"./Hookable":2}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -628,7 +706,7 @@ var RDPToolbar = function (_Hookable) {
 
 exports.default = RDPToolbar;
 
-},{"./Hookable":1,"./RDPToolbarButton":5}],5:[function(require,module,exports){
+},{"./Hookable":2,"./RDPToolbarButton":6}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -794,12 +872,16 @@ var RDPSnapshotButton = function (_RDPToolbarButton) {
 exports.RDPToolbarButton = RDPToolbarButton;
 exports.RDPSnapshotButton = RDPSnapshotButton;
 
-},{"./Hookable":1}],6:[function(require,module,exports){
+},{"./Hookable":2}],7:[function(require,module,exports){
 'use strict';
 
 var _Hookable2 = require('./Hookable');
 
 var _Hookable3 = _interopRequireDefault(_Hookable2);
+
+var _GuacWrap = require('./GuacWrap');
+
+var _GuacWrap2 = _interopRequireDefault(_GuacWrap);
 
 var _RDPToolbar = require('./RDPToolbar');
 
@@ -830,6 +912,13 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
+
+    // connect guac service wrapper
+    _this.service = new _GuacWrap2.default({
+      display: el.find('#guacamole-display'),
+      client: _this
+    });
+
     _this.snapshots = new _RDPSnapshotService.RDPSnapshotService(_this);
     _this.toolbar = new _RDPToolbar2.default(_this);
 
@@ -909,6 +998,13 @@ var RDPClient = function (_Hookable) {
       _this.toolbar.buttons.snapshot.update(true);
     });
 
+    // initialize the guacamole
+
+    _this.service.on('error', function (error) {
+      return console.log(error);
+    });
+    _this.service.connect();
+
     return _this;
   }
 
@@ -924,7 +1020,7 @@ $(function () {
   }
 });
 
-},{"./Hookable":1,"./RDPDialog":2,"./RDPSnapshotService":3,"./RDPToolbar":4}]},{},[6])
+},{"./GuacWrap":1,"./Hookable":2,"./RDPDialog":3,"./RDPSnapshotService":4,"./RDPToolbar":5}]},{},[7])
 
 
 //# sourceMappingURL=rdp.js.map
