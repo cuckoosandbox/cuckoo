@@ -4,10 +4,11 @@
 
 import logging
 import threading
+import socket
 import uuid
 
+from cuckoo.common.config import config
 from cuckoo.machinery.virtualbox import VirtualBox
-from cuckoo.core.database import Database
 from django.http import StreamingHttpResponse, HttpResponse
 from guacamole.client import GuacamoleClient
 
@@ -28,8 +29,18 @@ class AnalysisControlController:
         params = machinery.get_remote_control_params(task.guest.label)
         protocol, hostname, port = params
 
-        guac = GuacamoleClient("127.0.0.1", 4822, debug=False)
-        guac.handshake(protocol=protocol, hostname=hostname, port=port)
+        guacd_host = config("cuckoo:remotecontrol:guacd_host")
+        guacd_port = config("cuckoo:remotecontrol:guacd_port")
+
+        guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
+        try:
+            guac.handshake(protocol=protocol, hostname=hostname, port=port)
+        except socket.error:
+            log.error(
+                "Failed to connect to guacd on %s:%d"
+                % (guacd_host, guacd_port)
+            )
+            return HttpResponse(status=500)
 
         cache_key = str(uuid.uuid4())
         with sockets_lock:
