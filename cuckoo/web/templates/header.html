@@ -20,6 +20,12 @@
         {% endif %}
 
         <script src="{% static "js/vendor.js" %}"></script>
+        {% if request.extra_scripts %}
+          {% for script in request.extra_scripts %}
+            <script src="{% static "js/"|add:script %}"></script>
+          {% endfor %}
+        {% endif %}
+
         <script src="{% static "js/handlebars-templates.js" %}"></script>
         <script src="{% static "js/hexdump.js" %}"></script>
         <script src="{% static "js/cuckoo/loader.js" %}"></script>

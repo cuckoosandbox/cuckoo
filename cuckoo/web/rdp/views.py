@@ -8,4 +8,5 @@ from cuckoo.web.utils import render_template
 
 @require_safe
 def rdp(request):
+    request.extra_scripts = ['guac.js']
     return render_template(request, "rdp/index.html")
