@@ -47,9 +47,17 @@ var GuacamoleWrapper = function (_Hookable) {
     _this.display = props.display;
     _this.parent = props.client; // 'parent' client wrapper
     _this.client = null; // reserved for the Guacamole client (created on connect)
+    _this._mouse = null;
+    _this._keyboard = null;
 
     return _this;
   }
+
+  /*
+    GuacamoleWrapper.connect
+    - connects to the RDP server
+   */
+
 
   _createClass(GuacamoleWrapper, [{
     key: 'connect',
@@ -68,6 +76,50 @@ var GuacamoleWrapper = function (_Hookable) {
 
       guac.connect();
       this.dispatchHook('connect', guac);
+
+      this.mouse();
+      this.keyboard();
+    }
+
+    /*
+      GuacamoleWrapper.mouse
+      - handles mouse interaction
+     */
+
+  }, {
+    key: 'mouse',
+    value: function mouse() {
+      var _this3 = this;
+
+      if (!this.client) return;
+
+      this._mouse = new Guacamole.Mouse(this.client.getDisplay().getElement());
+      var sendState = function sendState(state) {
+        return _this3.client.sendMouseState(state);
+      };
+
+      // apply sendState function
+      this._mouse.onmousedown = this._mouse.onmouseup = this._mouse.onmousemove = sendState;
+    }
+
+    /*
+      GuacamoleWrapper.keyboard
+      - handles keyboard interaction
+     */
+
+  }, {
+    key: 'keyboard',
+    value: function keyboard() {
+      var _this4 = this;
+
+      if (!this.client) return;
+      this._keyboard = new Guacamole.Keyboard(document);
+      this._keyboard.onkeydown = function (keysym) {
+        return _this4.client.sendKeyEvent(1, keysym);
+      };
+      this._keyboard.onkeyup = function (keysym) {
+        return _this4.client.sendKeyEvent(0, keysym);
+      };
     }
   }]);
 
