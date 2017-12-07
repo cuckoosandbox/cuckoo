@@ -54,6 +54,107 @@ class TestWebInterface(object):
     def test_index_post(self, client):
         assert client.post("/").status_code == 405
 
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+
+        d.return_value = task
+
+        assert client.get("/analysis/1/control/").status_code == 200
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player_notask(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        d.return_value = None
+
+        assert client.get("/analysis/1/control/").status_code == 404
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player_control_disabled(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+
+        d.return_value = task
+
+        assert client.get("/analysis/1/control/").status_code == 404
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player_nocontrol_task(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {}
+            status = "running"
+
+        d.return_value = task
+
+        assert client.get("/analysis/1/control/").status_code == 404
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player_notrunning_task(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "finished"
+
+        d.return_value = task
+
+        assert client.get("/analysis/1/control/").status_code == 404
+
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_summary_office1(self, p, request):
         p._get_report.return_value = {
