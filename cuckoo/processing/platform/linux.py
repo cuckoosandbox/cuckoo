@@ -77,7 +77,11 @@ class LinuxSystemTap(BehaviorHandler):
                 }
                 self.processes.append(process)
                 self.behavior[pid] = BehaviorReconstructor()
-                yield process
+                #yield process
+
+            p = self.post_hook(syscall)
+            if p:
+                yield p
 
             for category, arg in self.behavior[pid].process_apicall(syscall):
                 yield {
@@ -86,9 +90,6 @@ class LinuxSystemTap(BehaviorHandler):
                         "category": category,
                         "value": arg,
                     }
-
-            self.post_hook(syscall)
-
 
     def pre_hook(self, syscall):
         fn = syscall["api"]
@@ -104,6 +105,7 @@ class LinuxSystemTap(BehaviorHandler):
                     str(syscall["arguments"]["filename"])
                 )
                 pid["command_line"] = " ".join(syscall["arguments"]["argv"])
+                return pid
 
     def get_proc(self, pid):
         for process in self.processes:

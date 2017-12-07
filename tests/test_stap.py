@@ -38,16 +38,7 @@ def test_stap_behavior():
         {'category': 'file_read',
             'pid': 1523,
             'type': 'generic',
-            'value': '/proc/net/route'},
-        {'calls': [], 'pid': 1524,
-         'process_name': '',
-         'command_line': '',
-         'first_seen': datetime.datetime(2017, 11, 17, 6, 57, 11, 583697), 'ppid': 1523, 'type': 'process'},
-        {'calls': [], 'pid': 1525,
-         'process_name': '',
-         'command_line': '',
-         'first_seen': datetime.datetime(2017, 11, 17, 6, 57, 11, 586067), 'ppid': 1524, 'type': 'process'}])
-
+            'value': '/proc/net/route'}])
 
 def test_stap_forks():
     ba = BehaviorAnalysis()

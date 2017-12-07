@@ -880,7 +880,7 @@ class TestBehavior(object):
         result["generic"][1]["summary"] = []
         result["generic"][2]["summary"] = []
         result["processtree"][0]["summary"] = []
-        
+
         assert result["generic"] == [{
                 "first_seen": datetime.datetime(2017, 8, 28, 14, 29, 32, 618541),
                 "pid": 820,
