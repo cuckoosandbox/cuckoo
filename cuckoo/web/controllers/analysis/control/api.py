@@ -42,18 +42,18 @@ class ControlApi:
         if task.status != "running":
             return HttpResponse(status=404)
 
-        qs = request.META['QUERY_STRING']
-        if qs == 'connect':
+        qs = request.META["QUERY_STRING"]
+        if qs == "connect":
             return ControlApi._do_connect(task)
         else:
             try:
-                cmd, conn, = qs.split(':')[:2]
+                cmd, conn, = qs.split(":")[:2]
             except ValueError:
                 return HttpResponse(status=400)
 
-            if cmd == 'read':
+            if cmd == "read":
                 return ControlApi._do_read(conn)
-            elif cmd == 'write':
+            elif cmd == "write":
                 return ControlApi._do_write(request, conn)
 
         return HttpResponse(status=400)
@@ -83,7 +83,7 @@ class ControlApi:
             sockets[cache_key] = guac
 
         response = HttpResponse(content=cache_key)
-        response['Cache-Control'] = 'no-cache'
+        response["Cache-Control"] = "no-cache"
 
         return response
 
