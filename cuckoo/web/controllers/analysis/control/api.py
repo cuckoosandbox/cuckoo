@@ -32,8 +32,15 @@ class ControlApi:
         if not task:
             return HttpResponse(status=404)
 
+        # TODO: return appropriate error messages to js frontend here
+        if not config("cuckoo:remotecontrol:enabled"):
+            return HttpResponse(status=404)
+
         if task.options.get("remotecontrol") != "yes":
-            return HttpResponse(status=403)
+            return HttpResponse(status=404)
+
+        if task.status != "running":
+            return HttpResponse(status=404)
 
         qs = request.META['QUERY_STRING']
         if qs == 'connect':
