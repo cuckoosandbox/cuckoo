@@ -263,12 +263,12 @@ class MongoDB(Report):
         previous = self.db.analysis.find({"info.id" : report["info"]["id"]})
         for preport in previous:
             if "behavior" in preport and "processes" in preport["behavior"]:
-               for prev_process in preport["behavior"]["processes"]:
-                   for callchunk in prev_process["calls"]:
-                       self.db.calls.remove({ "_id" : callchunk })
+               for process in preport["behavior"]["processes"]:
+                   for chunk_id in process["calls"]:
+                       self.db.calls.remove({ "_id" : chunk_id })
             if "procmon" in preport:
-               for prev_procmon in preport["procmon"]:
-                   self.db.procmon.remove({ "_id" : prev_procmon })
+               for procmon_id in preport["procmon"]:
+                   self.db.procmon.remove({ "_id" : procmon_id })
 
         self.db.analysis.remove({ "info.id" : report["info"]["id"] })
 
