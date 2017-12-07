@@ -274,6 +274,3 @@ class MongoDB(Report):
 
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
-
-#    def clean_report(self, report_id):
-
