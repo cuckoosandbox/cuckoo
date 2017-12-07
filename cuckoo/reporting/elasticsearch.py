@@ -86,6 +86,19 @@ class ElasticSearch(Report):
         }
         return header
 
+    def delete_report(self, task_id):
+        query = {
+              'query': { 'match' : { 'task_id' : task_id}},
+        }
+        elastic.client.delete_by_query(
+            index=self.dated_index, doc_type=self.report_type,
+            body=query
+        )
+        elastic.client.delete_by_query(
+            index=self.dated_index, doc_type=self.call_type,
+            body=query
+        )
+
     def do_index(self, obj):
         base_document = self.get_base_document()
 
@@ -215,6 +228,7 @@ class ElasticSearch(Report):
         if procmemory:
             doc["procmemory"] = procmemory
 
+        self.delete_report(doc["info"]["id"])
         self.do_index(doc)
 
         # Index the API calls.
