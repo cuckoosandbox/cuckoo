@@ -52,13 +52,13 @@ class LinuxSystemTap(BehaviorHandler):
 
     def parse(self, path):
         parser = StapParser(open(path, "rb"))
-
+        # collect all the pids to monitor
         for syscall in parser:
-            # syscall specific hooks
             self.pre_hook(syscall)
 
+        # rebuild processes and behavior for each pid in forkmap
+        for syscall in parser:
             pid = syscall["pid"]
-
             # skip first analyzer process
             if pid not in self.forkmap:
                 continue
@@ -77,9 +77,9 @@ class LinuxSystemTap(BehaviorHandler):
                 }
                 self.processes.append(process)
                 self.behavior[pid] = BehaviorReconstructor()
-                #yield process
-            
-            for category, arg in self.behavior[pid].process_apicall(syscall):    
+                yield process
+
+            for category, arg in self.behavior[pid].process_apicall(syscall):
                 yield {
                         "type": "generic",
                         "pid": pid,
@@ -87,9 +87,7 @@ class LinuxSystemTap(BehaviorHandler):
                         "value": arg,
                     }
 
-            p = self.post_hook(syscall)
-            if not p == None:
-                yield p
+            self.post_hook(syscall)
 
 
     def pre_hook(self, syscall):
@@ -106,7 +104,6 @@ class LinuxSystemTap(BehaviorHandler):
                     str(syscall["arguments"]["filename"])
                 )
                 pid["command_line"] = " ".join(syscall["arguments"]["argv"])
-                return pid;
 
     def get_proc(self, pid):
         for process in self.processes:
@@ -148,17 +145,17 @@ class BehaviorReconstructor(object):
     def _api_open(self, return_value, arguments, status):
         if return_value >= 0:
             self.files[return_value] = arguments["filename"]
-            return single("files_opened", arguments["filename"])
+            return single("file_opened", arguments["filename"])
         else:
             return single("file_failed", arguments["filename"])
 
     def _api_write(self, return_value, arguments, status):
         if arguments["fd"] in self.files :
-            return single("files_writen",(self.files[arguments["fd"]]))
+            return single("file_writen",(self.files[arguments["fd"]]))
 
     def _api_read(self, return_value, arguments, status):
         if arguments["fd"] in self.files :
-            return single("files_read",(self.files[arguments["fd"]]))
+            return single("file_read",(self.files[arguments["fd"]]))
 
     def _api_close(self, return_value, arguments, status):
         if arguments["fd"] in self.files:
