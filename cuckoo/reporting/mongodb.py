@@ -259,5 +259,7 @@ class MongoDB(Report):
 
             report["procmon"] = procmon
 
+        # Remove previous reports if any
+        self.db.analysis.remove({"info.id" : report["info"]["id"]})
         # Store the report and retrieve its object id.
         self.db.analysis.save(report)
