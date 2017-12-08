@@ -4323,6 +4323,11 @@ pre.reset
     border-radius: 0;
 }
 
+table.table-fixed
+{
+    table-layout: fixed;
+}
+
 /*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
