@@ -13326,9 +13326,11 @@ body.night .process-tree__search
     font-weight: 700;
 
     max-width: 75%;
-    margin: 10px 0;
+    margin: 0;
+    padding: 5px 10px;
 
     color: #6297f8;
+    border-left: 1px solid #ccc;
 
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
@@ -13346,7 +13348,7 @@ body.night .process-tree__search
     overflow: hidden;
 
     max-width: 100%;
-    margin-top: 5px;
+    margin-top: 0;
 
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -13408,11 +13410,6 @@ body.night .process-tree__search
 .process-tree__tree .processes > li:first-child::before
 {
     display: none;
-}
-
-.process-tree__tree .processes div.selected
-{
-    padding-left: 15px;
 }
 
 .process-tree__tree .processes div.selected > *
@@ -13487,6 +13484,11 @@ body.cyborg .process-tree__tree .processes
     background-color: #020e10;
 }
 
+body.cyborg .process-tree__tree .processes p
+{
+    border-left-color: #133b4a;
+}
+
 body.cyborg .process-tree__tree .processes div.selected:before
 {
     background-color: #152d3b;
@@ -13497,6 +13499,11 @@ body.night .process-tree__tree .processes
     background-color: #232323;
 }
 
+body.night .process-tree__tree .processes p
+{
+    border-left-color: #375a7f;
+}
+
 body.night .process-tree__tree .processes div.selected:before
 {
     background-color: #325172;
@@ -13504,7 +13511,7 @@ body.night .process-tree__tree .processes div.selected:before
 
 .process-tree__tree ul
 {
-    padding-left: 10px;
+    padding-left: 20px;
 }
 
 body.cyborg .process-tree__tree
