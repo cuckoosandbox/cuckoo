@@ -2469,6 +2469,12 @@ $(function () {
 								};
 							});
 
+							// if we have 'null' for machines, force it to be mappable by replacing
+							// it with an empty array instead.
+							if (!default_analysis_options.machine) {
+								default_analysis_options.machine = new Array();
+							}
+
 							// parse the available machines
 							default_analysis_options.available_machines = default_analysis_options.machine.map(function (machine) {
 								return {
