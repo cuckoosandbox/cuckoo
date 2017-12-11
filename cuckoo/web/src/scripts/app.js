@@ -50,14 +50,24 @@ class CuckooWeb {
             }
         }).fail(function(err){
 
-            if(err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")){
-                console.log(`POST err: ${err.responseJSON.message}`);
-            } else {
-                console.log(`POST err: ${err}`);
+            // if a responseJSON is sent with an error object, highlight that property
+            if(err.responseJSON !== undefined && err.responseJSON.hasOwnProperty("message")){
+              console.log('XHR error RMessage:');
+              console.log(err.responseJSON.message);
             }
 
+            // always display XHR error status
+            console.log(`XHR error details: `);
+            console.log(err);
+
+            // also try to show xhr status message
+            if(err.statusText) {
+              console.log(`XHR: StatusText: ${err.statusText}`);
+            }
+
+            // if a callback is given, do the callback.
             if(errback) {
-                errback(err);
+              errback(err);
             }
         });
     }
