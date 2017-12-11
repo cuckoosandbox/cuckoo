@@ -15654,6 +15654,252 @@ body.night .app-message
     background-color: #f5f5f5;
 }
 
+/*
+  Inherits bootstraps modal style as a base. .modal-cuckoo is a variation
+  on that same structure.
+ */
+.modal-cuckoo-backdrop
+{
+    background-color: rgba(98, 151, 248, .7);
+}
+
+.modal-cuckoo-backdrop.in
+{
+    opacity: 1;
+}
+
+.modal-cuckoo .modal-footer
+{
+    text-align: left;
+
+    border-top: 0;
+}
+
+.modal-cuckoo .modal-dialog
+{
+    overflow: hidden;
+
+    width: 640px;
+
+    border-radius: 4px;
+}
+
+.modal-cuckoo .modal-content
+{
+    border: 0;
+}
+
+.modal-cuckoo .modal-content > p
+{
+    margin: 0;
+    padding-top: 20px;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']
+{
+    position: relative;
+
+    border-bottom: 1px solid #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:after,
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:before
+{
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 30px;
+
+    width: 0;
+    height: 0;
+
+    content: ' ';
+    pointer-events: none;
+
+    border: solid transparent;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:after
+{
+    margin-left: -9px;
+
+    border-width: 9px;
+    border-color: rgba(255, 255, 255, 0);
+    border-top-color: #fff;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:before
+{
+    margin-left: -10px;
+
+    border-width: 10px;
+    border-color: rgba(210, 210, 210, 0);
+    border-top-color: #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #f6f6f6;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):before
+{
+    border-top-color: #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #f6f6f6;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #fff;
+}
+
+.modal-cuckoo .modal-section
+{
+    position: relative;
+
+    padding: 15px;
+}
+
+.modal-cuckoo .modal-header
+{
+    padding-top: 25px;
+}
+
+.modal-cuckoo .modal-header h4
+{
+    font-size: 26px;
+    font-weight: 400;
+
+    margin: 0;
+}
+
+.modal-cuckoo .modal-header h4 .fa,
+.modal-cuckoo .modal-header h4 .custom-select:after,
+.modal-cuckoo .modal-header h4 .dns-badge__content:before,
+.modal-cuckoo .modal-header h4 .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 .cuckoo-analysis__panel--toggle:before,
+.modal-cuckoo .modal-header h4 .cuckoo-analysis__panel--toggle:after,
+.modal-cuckoo .modal-header h4 .cuckoo-files ul div:before,
+.cuckoo-files ul .modal-cuckoo .modal-header h4 div:before,
+.modal-cuckoo .modal-header h4 .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-header h4 .extension-select:after,
+.modal-cuckoo .modal-header h4 .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-header h4 .extension-select:before,
+.modal-cuckoo .modal-header h4 .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .modal-cuckoo .modal-header h4 .custom-checkbox > input + span,
+.modal-cuckoo .modal-header h4 .breadcrumbs > li:not(:last-child):after,
+.modal-cuckoo .modal-header h4 .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-header h4 input[type='radio'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-header h4 input[type='radio'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-header h4 input[type='checkbox'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-header h4 input[type='checkbox'] + span:before
+{
+    font-size: .8em;
+
+    vertical-align: middle;
+
+    opacity: .8;
+}
+
+.modal-cuckoo .modal-form
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding-bottom: 0;
+}
+
+.modal-cuckoo .modal-form .form-col
+{
+    margin-left: -5px;
+    padding: 10px;
+
+    -ms-flex-preferred-size: 50%;
+    flex-basis: 50%;
+}
+
+.modal-cuckoo .modal-form textarea,
+.modal-cuckoo .modal-form input
+{
+    width: 100%;
+
+    border: 0;
+
+    -webkit-appearance: none;
+}
+
+.modal-cuckoo .modal-form textarea:focus,
+.modal-cuckoo .modal-form input:focus
+{
+    outline: none;
+}
+
+.modal-cuckoo .modal-form textarea
+{
+    height: 150px;
+    padding-top: 10px;
+}
+
+.modal-cuckoo .modal-form fieldset
+{
+    position: relative;
+
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.modal-cuckoo .modal-form fieldset label
+{
+    font-weight: 400;
+    font-style: italic;
+
+    position: absolute;
+    top: 15px;
+    left: 10px;
+
+    transition: all 150ms ease-in-out;
+}
+
+.modal-cuckoo .modal-form fieldset input
+{
+    padding: 20px 10px 5px 10px;
+
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+    -webkit-appearance: none;
+}
+
+.modal-cuckoo .modal-form fieldset input:focus,
+.modal-cuckoo .modal-form fieldset input:valid
+{
+    border-color: #ddd;
+}
+
+.modal-cuckoo .modal-form fieldset input:focus + label,
+.modal-cuckoo .modal-form fieldset input:valid + label
+{
+    font-size: 11px;
+    font-weight: 500;
+    font-style: normal;
+
+    top: 6px;
+
+    color: #6297f8;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org

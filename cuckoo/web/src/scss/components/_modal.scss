@@ -1,0 +1,173 @@
+/*
+  Inherits bootstraps modal style as a base. .modal-cuckoo is a variation
+  on that same structure.
+ */
+.modal-cuckoo {
+
+  // different backdrop for this modal
+  &-backdrop {
+    &.in {
+      opacity: 1;
+    }
+    background-color: rgba(#6297F8, .7);
+  }
+
+  // inherited style corrections
+  .modal-footer {
+    border-top: 0;
+    text-align: left;
+  }
+
+  .modal-dialog {
+    width: 640px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .modal-content {
+    border: 0;
+
+    & > p {
+      margin: 0;
+      padding-top: 20px;
+    }
+  }
+
+  // this modal's inner elements auto-decide which color they
+  // need to be.
+  .modal-content > *[class^="modal-"] {
+
+    position: relative;
+    border-bottom: 1px solid #D2D2D2;
+
+    &.arrow {
+      &:after,
+      &:before {
+        top: 100%;
+        left: 30px;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      &:after {
+        border-color: rgba(255, 255, 255, 0);
+        border-top-color: #ffffff;
+        border-width: 9px;
+        margin-left: -9px;
+      }
+
+      &:before {
+        border-color: rgba(210, 210, 210, 0);
+        border-top-color: #D2D2D2;
+        border-width: 10px;
+        margin-left: -10px;
+      }
+    }
+
+    &:nth-child(odd) {
+      background-color: #F6F6F6;
+      &:before { border-top-color: #D2D2D2; }
+      &:after { border-top-color: #F6F6F6; }
+    }
+    &:nth-child(even) {
+      background-color: #fff;
+    }
+  }
+
+  // syntactic mirror of .modal-body
+  .modal-section {
+    padding: 15px;
+    position: relative;
+  }
+
+  .modal-header {
+
+    padding-top: 25px;
+
+    h4 {
+      font-size: 26px;
+      font-weight: 400;
+      margin: 0;
+
+      .fa {
+        font-size: .8em;
+        vertical-align: middle;
+        opacity: .8;
+      }
+    }
+
+  }
+
+  .modal-form {
+
+    display: flex;
+    padding-bottom: 0;
+
+    .form-col {
+      flex-basis: 50%;
+      padding: 10px;
+      margin-left: -5px;
+    }
+
+    textarea,
+    input {
+      -webkit-appearance: none;
+      width: 100%;
+      border: 0;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    textarea {
+      padding-top: 10px;
+      height: 150px;
+    }
+
+    fieldset {
+      position: relative;
+      width: 100%;
+      margin-bottom: 15px;
+
+      label {
+        position: absolute;
+        top: 15px;
+        left: 10px;
+        font-style: italic;
+        font-weight: 400;
+        transition: all 150ms ease-in-out;
+      }
+
+      input {
+
+        -webkit-appearance: none;
+        border: 1px solid #ddd;
+        padding: 20px 10px 5px 10px;
+        border-radius: 4px;
+
+        &:focus,
+        &:valid {
+
+          border-color: #ddd;
+
+          & + label {
+            font-size: 11px;
+            font-weight: 500;
+            font-style: normal;
+            top: 6px;
+            color: $cuckoo_secundary_color;
+          }
+        }
+      }
+
+    }
+
+  }
+
+}
