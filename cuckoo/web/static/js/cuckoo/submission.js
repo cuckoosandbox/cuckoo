@@ -1083,6 +1083,8 @@ var FileTree = function () {
 	}, {
 		key: 'load',
 		value: function load(url, properties) {
+			var _this = this;
+
 			var self = this;
 
 			// response handler
@@ -1104,7 +1106,11 @@ var FileTree = function () {
 			if (!properties) {
 				$.get(url).done(handleResponse);
 			} else {
-				CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse);
+				CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse, function (err) {
+					if (self.options.load.error) {
+						self.options.load.error.apply(_this, err);
+					}
+				});
 			}
 
 			return this;
@@ -2450,6 +2456,23 @@ $(function () {
 					method: 'POST',
 					params: {
 						"submit_id": window.submit_id
+					},
+					error: function error(err) {
+
+						var $ftErr = $('<div class="filetree-error">\n\t\t\t\t\t\t\t<div class="cross">\n\t\t\t\t\t\t\t\t<span class="cross-line"></span>\n\t\t\t\t\t\t\t\t<span class="cross-line"></span>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<p class="error-message">Something went wrong.</p>\n\t\t\t\t\t\t</div>');
+
+						$(this.el).html($ftErr);
+						setTimeout(function () {
+							$ftErr.addClass('in');
+						}, 500);
+
+						// $(this.el).html(`<div class="filetree-error">
+						// 	<div class="cross">
+						// 		<span class="cross-line"></span>
+						// 		<span class="cross-line"></span>
+						// 	</div>
+						// 	<p class="error-message">Something went wrong.</p>
+						// </div>`);
 					},
 					serialize: function serialize(response) {
 

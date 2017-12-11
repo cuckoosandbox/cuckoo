@@ -27,7 +27,7 @@ class CuckooWeb {
         return bytes.toFixed(1)+' '+units[u];
     }
 
-    static api_post(url, params, callback, errback, beforesend){
+    static api_post(url, params, callback, errback, beforesend, silent = true){
 
         let data = JSON.stringify(params);
 
@@ -50,19 +50,26 @@ class CuckooWeb {
             }
         }).fail(function(err){
 
-            // if a responseJSON is sent with an error object, highlight that property
-            if(err.responseJSON !== undefined && err.responseJSON.hasOwnProperty("message")){
-              console.log('XHR error RMessage:');
-              console.log(err.responseJSON.message);
-            }
+            // if not silent, spit out error details
+            if(!silent) {
 
-            // always display XHR error status
-            console.log(`XHR error details: `);
-            console.log(err);
+              // if a responseJSON is sent with an error object, highlight that property
+              if(err.responseJSON !== undefined && err.responseJSON.hasOwnProperty("message")){
+                if(!silent) {
+                  console.log('XHR error RMessage:');
+                  console.log(err.responseJSON.message);
+                }
+              }
 
-            // also try to show xhr status message
-            if(err.statusText) {
-              console.log(`XHR: StatusText: ${err.statusText}`);
+              // always display XHR error status
+              console.log(`XHR error details: `);
+              console.log(err);
+
+              // also try to show xhr status message
+              if(err.statusText) {
+                console.log(`XHR: StatusText: ${err.statusText}`);
+              }
+
             }
 
             // if a callback is given, do the callback.

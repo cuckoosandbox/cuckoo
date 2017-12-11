@@ -593,7 +593,11 @@ class FileTree {
 		if(!properties) {
 			$.get(url).done(handleResponse);
 		} else {
-			CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse);
+			CuckooWeb.api_post("/submit/api/filetree/", properties, handleResponse, err => {
+				if(self.options.load.error) {
+					self.options.load.error.apply(this, err);
+				}
+			});
 		}
 
 		return this;

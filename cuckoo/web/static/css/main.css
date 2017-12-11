@@ -11558,6 +11558,15 @@ body.cyborg .flex-display > *
 
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
+    /*
+			<div class="filetree-error">
+				<div class="cross">
+					<span class="cross-line"></span>
+					<span class="cross-line"></span>
+				</div>
+				<p class="error-message">Something went wrong.</p>
+			</div>
+		 */
 }
 
 .cuckoo-files > #filetree ul
@@ -11565,12 +11574,85 @@ body.cyborg .flex-display > *
     padding-left: 10px;
 }
 
-.cuckoo-files > #filetree > .loading
+.cuckoo-files > #filetree > .loading,
+.cuckoo-files > #filetree > .filetree-error
 {
     position: relative;
     top: 50%;
 
     margin-top: -40px;
+}
+
+.cuckoo-files > #filetree .filetree-error
+{
+    text-align: center;
+}
+
+.cuckoo-files > #filetree .filetree-error .cross
+{
+    position: relative;
+    left: 50%;
+
+    width: 40px;
+    height: 40px;
+
+    -webkit-transition: all 300ms ease-out;
+            transition: all 300ms ease-out;
+}
+
+.cuckoo-files > #filetree .filetree-error .cross-line
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 5px;
+    height: 40px;
+
+    -webkit-transition: all 300ms ease-out;
+            transition: all 300ms ease-out;
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+    -webkit-transform-origin: 2.5px 20px;
+            transform-origin: 2.5px 20px;
+
+    opacity: 0;
+    border-radius: 5px;
+    background-color: #f00;
+}
+
+.cuckoo-files > #filetree .filetree-error .error-message
+{
+    -webkit-transition: all 300ms ease-out;
+            transition: all 300ms ease-out;
+    -webkit-transition-delay: 100ms;
+            transition-delay: 100ms;
+
+    opacity: 0;
+}
+
+.cuckoo-files > #filetree .filetree-error.in .cross-line
+{
+    left: -5px;
+
+    opacity: 1;
+}
+
+.cuckoo-files > #filetree .filetree-error.in .cross-line:first-child
+{
+    -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+}
+
+.cuckoo-files > #filetree .filetree-error.in .cross-line:last-child
+{
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+}
+
+.cuckoo-files > #filetree .filetree-error.in .error-message
+{
+    opacity: 1;
 }
 
 .cuckoo-files > #filetree > ul
