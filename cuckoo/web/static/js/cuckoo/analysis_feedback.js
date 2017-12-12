@@ -121,7 +121,7 @@ var FeedbackForm = function () {
     });
 
     // cancel the feedback form
-    this.modal.find('[href="feedback:cancel"]').bind('click', function (e) {
+    this.modal.find('[href="modal:cancel"]').bind('click', function (e) {
       e.preventDefault();
       _this.cancel();
     });
@@ -279,7 +279,6 @@ var FeedbackForm = function () {
   }, {
     key: 'cancel',
     value: function cancel() {
-      console.log('cancel');
       this.reset();
       this.close();
     }

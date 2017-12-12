@@ -115,7 +115,7 @@ class FeedbackForm {
     });
 
     // cancel the feedback form
-    this.modal.find('[href="feedback:cancel"]').bind('click', e => {
+    this.modal.find('[href="modal:cancel"]').bind('click', e => {
       e.preventDefault();
       this.cancel();
     });
@@ -241,7 +241,6 @@ class FeedbackForm {
   }
 
   cancel() {
-    console.log('cancel');
     this.reset();
     this.close();
   }
