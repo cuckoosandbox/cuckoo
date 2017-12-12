@@ -52,6 +52,7 @@ function feedback_send(task_id, name, email, company, message, include_analysis,
 
 // a simple wrapper around the feedback functionality
 class FeedbackForm {
+
   constructor(el) {
 
     if(!el) {
@@ -64,19 +65,13 @@ class FeedbackForm {
 
     // default set of params
     this.params = {
-      "task_id": task_id,
-      "email": null,
-      "message": null,
-      "name": null,
-      "company": null,
-      "include_memdump": null,
-      "include_analysis": null
-    }
-
-    // includable params
-    this.include = {
-      files: [],
-      dirs: []
+      "task_id": task_id || false,
+      "email": false,
+      "message": false,
+      "name": false,
+      "company": false,
+      "include_memdump": false,
+      "include_analysis": false
     }
 
     // required fields
@@ -89,6 +84,7 @@ class FeedbackForm {
 
     // submits the form
     this.el.on('submit', e => {
+
       e.preventDefault();
 
       this.resetError();
@@ -104,11 +100,24 @@ class FeedbackForm {
         this.el.find('button[type="submit"]').prop('disabled', false);
         this.el.find('button[type="submit"]').text('Send feedback report');
       });
+
     });
 
-    // estimates size of the feedback report
-    this.estimateSize(est => {
-      this.el.find('.file-estimation').text(est.size_human);
+    // update on init
+    this.update();
+
+    // do a pre-estimate
+    this.estimate();
+
+    // re-estimate each time
+    this.changed(['include_analysis','include_memdump'], value => {
+      this.estimate();
+    });
+
+    // cancel the feedback form
+    this.modal.find('[href="feedback:cancel"]').bind('click', e => {
+      e.preventDefault();
+      this.cancel();
     });
 
   }
@@ -159,8 +168,16 @@ class FeedbackForm {
     }
   }
 
-  estimateSize(done = function() {}) {
+  // a file inclusion estimation
+  estimate() {
+
     let self = this;
+
+    let analysis = this.params.include_analysis;
+    let memory = this.params.include_memdump;
+
+    this.el.find('.file-estimation').text('estimating...');
+    this.el.find('[name="include_analysis"],[name="include_memdump"]').prop('disabled', true);
 
     /*
       I believe underneath code can be done much better backend-wise. Does
@@ -173,9 +190,15 @@ class FeedbackForm {
     }, data => {
 
       if(data.dirs) {
+        let dirs = [];
         data.dirs = data.dirs.map((obj, i) => {
-          return obj[0];
+          // skip 'memory' if include_memdump is toggled to false
+          if(obj[0] == "memory" && !memory) return false;
+          // don't include anything at all if we disabled analysis
+          if(!analysis) return false;
+          dirs.push(obj[0]);
         });
+        data.dirs = dirs;
       }
 
       CuckooWeb.api_post("/analysis/api/task/export_estimate_size/", {
@@ -183,7 +206,8 @@ class FeedbackForm {
         dirs: data.dirs,
         files: data.files
       }, estimation => {
-        done(estimation);
+        this.el.find('.file-estimation').text(estimation.size_human);
+        this.el.find('[name="include_analysis"],[name="include_memdump"]').prop('disabled', false);
       });
 
     });
@@ -205,13 +229,37 @@ class FeedbackForm {
   open() {
     this.modal.modal('show');
   }
+
   close() {
     this.reset();
     this.modal.modal('hide');
   }
+
   reset() {
     this.el.find('input, textarea').val("");
     this.update();
+  }
+
+  cancel() {
+    console.log('cancel');
+    this.reset();
+    this.close();
+  }
+
+  // this is a very small event handler on changed fields to interact
+  // quickly with them.
+  changed(paramName = false, cb = function(){}) {
+    if(!(paramName instanceof Array)) {
+      this.el.find(`[name='${paramName}']`).bind('change', e => {
+        cb(this.params[paramName]);
+      });
+    } else {
+      for(let p in paramName) {
+        this.el.find(`[name='${paramName[p]}']`).bind('change', e => {
+          cb(this.params[paramName[p]]);
+        });
+      }
+    }
   }
 
 }

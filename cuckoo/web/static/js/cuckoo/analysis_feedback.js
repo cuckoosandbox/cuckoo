@@ -72,19 +72,13 @@ var FeedbackForm = function () {
 
     // default set of params
     this.params = {
-      "task_id": task_id,
-      "email": null,
-      "message": null,
-      "name": null,
-      "company": null,
-      "include_memdump": null,
-      "include_analysis": null
-    };
-
-    // includable params
-    this.include = {
-      files: [],
-      dirs: []
+      "task_id": task_id || false,
+      "email": false,
+      "message": false,
+      "name": false,
+      "company": false,
+      "include_memdump": false,
+      "include_analysis": false
     };
 
     // required fields
@@ -97,6 +91,7 @@ var FeedbackForm = function () {
 
     // submits the form
     this.el.on('submit', function (e) {
+
       e.preventDefault();
 
       _this.resetError();
@@ -114,9 +109,21 @@ var FeedbackForm = function () {
       });
     });
 
-    // estimates size of the feedback report
-    this.estimateSize(function (est) {
-      _this.el.find('.file-estimation').text(est.size_human);
+    // update on init
+    this.update();
+
+    // do a pre-estimate
+    this.estimate();
+
+    // re-estimate each time
+    this.changed(['include_analysis', 'include_memdump'], function (value) {
+      _this.estimate();
+    });
+
+    // cancel the feedback form
+    this.modal.find('[href="feedback:cancel"]').bind('click', function (e) {
+      e.preventDefault();
+      _this.cancel();
     });
   }
 
@@ -179,12 +186,21 @@ var FeedbackForm = function () {
         always();
       }
     }
+
+    // a file inclusion estimation
+
   }, {
-    key: 'estimateSize',
-    value: function estimateSize() {
-      var done = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+    key: 'estimate',
+    value: function estimate() {
+      var _this2 = this;
 
       var self = this;
+
+      var analysis = this.params.include_analysis;
+      var memory = this.params.include_memdump;
+
+      this.el.find('.file-estimation').text('estimating...');
+      this.el.find('[name="include_analysis"],[name="include_memdump"]').prop('disabled', true);
 
       /*
         I believe underneath code can be done much better backend-wise. Does
@@ -197,9 +213,17 @@ var FeedbackForm = function () {
       }, function (data) {
 
         if (data.dirs) {
-          data.dirs = data.dirs.map(function (obj, i) {
-            return obj[0];
-          });
+          (function () {
+            var dirs = [];
+            data.dirs = data.dirs.map(function (obj, i) {
+              // skip 'memory' if include_memdump is toggled to false
+              if (obj[0] == "memory" && !memory) return false;
+              // don't include anything at all if we disabled analysis
+              if (!analysis) return false;
+              dirs.push(obj[0]);
+            });
+            data.dirs = dirs;
+          })();
         }
 
         CuckooWeb.api_post("/analysis/api/task/export_estimate_size/", {
@@ -207,10 +231,8 @@ var FeedbackForm = function () {
           dirs: data.dirs,
           files: data.files
         }, function (estimation) {
-          done(estimation);
-          // var size = data["size"];
-          // var size_human = data["size_human"];
-          // $(target_div).html(prefix + size_human);
+          _this2.el.find('.file-estimation').text(estimation.size_human);
+          _this2.el.find('[name="include_analysis"],[name="include_memdump"]').prop('disabled', false);
         });
       });
     }
@@ -253,6 +275,41 @@ var FeedbackForm = function () {
     value: function reset() {
       this.el.find('input, textarea').val("");
       this.update();
+    }
+  }, {
+    key: 'cancel',
+    value: function cancel() {
+      console.log('cancel');
+      this.reset();
+      this.close();
+    }
+
+    // this is a very small event handler on changed fields to interact
+    // quickly with them.
+
+  }, {
+    key: 'changed',
+    value: function changed() {
+      var _this3 = this;
+
+      var paramName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var cb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+
+      if (!(paramName instanceof Array)) {
+        this.el.find('[name=\'' + paramName + '\']').bind('change', function (e) {
+          cb(_this3.params[paramName]);
+        });
+      } else {
+        var _loop = function _loop(p) {
+          _this3.el.find('[name=\'' + paramName[p] + '\']').bind('change', function (e) {
+            cb(_this3.params[paramName[p]]);
+          });
+        };
+
+        for (var p in paramName) {
+          _loop(p);
+        }
+      }
     }
   }]);
 
