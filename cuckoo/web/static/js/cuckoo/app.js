@@ -1002,7 +1002,7 @@ $(function () {
             $(".modal-backdrop").removeClass('modal-cuckoo-backdrop');
         });
 
-        $("#feedback_form").modal('show');
+        // $("#feedback_form").modal('show');
     }
 });
 

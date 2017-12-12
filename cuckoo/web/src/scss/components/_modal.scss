@@ -85,6 +85,14 @@
     &:nth-child(even) {
       background-color: #fff;
     }
+
+    &.error {
+      background-color: tint(#f00, 60%);
+      border-bottom-color: #f00;
+      &:after { border-top-color: tint(#f00, 60%); }
+      &:before { border-top-color: #f00; }
+    }
+
   }
 
   // syntactic mirror of .modal-body
@@ -95,6 +103,7 @@
     &.center {
       text-align: center;
     }
+
   }
 
   .modal-header {
@@ -137,11 +146,13 @@
       &:focus {
         outline: none;
       }
+
     }
 
     textarea {
       padding-top: 10px;
       height: 150px;
+      background-color: transparent;
     }
 
     fieldset {
@@ -151,7 +162,7 @@
 
       label {
         position: absolute;
-        top: 15px;
+        top: 13px;
         left: 10px;
         font-style: italic;
         font-weight: 400;
@@ -178,6 +189,10 @@
             color: $cuckoo_secundary_color;
           }
         }
+      }
+
+      &.error input {
+        border-color: #f00;
       }
 
     }

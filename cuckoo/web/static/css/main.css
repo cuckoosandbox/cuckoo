@@ -15834,6 +15834,22 @@ body.night .app-message
     background-color: #fff;
 }
 
+.modal-cuckoo .modal-content > *[class^='modal-'].error
+{
+    border-bottom-color: #f00;
+    background-color: #f99;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].error:after
+{
+    border-top-color: #f99;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].error:before
+{
+    border-top-color: #f00;
+}
+
 .modal-cuckoo .modal-section
 {
     position: relative;
@@ -15932,6 +15948,8 @@ body.night .app-message
 {
     height: 150px;
     padding-top: 10px;
+
+    background-color: transparent;
 }
 
 .modal-cuckoo .modal-form fieldset
@@ -15948,7 +15966,7 @@ body.night .app-message
     font-style: italic;
 
     position: absolute;
-    top: 15px;
+    top: 13px;
     left: 10px;
 
     transition: all 150ms ease-in-out;
@@ -15980,6 +15998,11 @@ body.night .app-message
     top: 6px;
 
     color: #6297f8;
+}
+
+.modal-cuckoo .modal-form fieldset.error input
+{
+    border-color: #f00;
 }
 
 .modal-cuckoo .modal-form button[type='submit']
