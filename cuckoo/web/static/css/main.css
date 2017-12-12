@@ -15888,8 +15888,8 @@ body.night .app-message
     border-color: #ddd;
 }
 
-.modal-cuckoo .modal-form fieldset input:focus + label,
-.modal-cuckoo .modal-form fieldset input:valid + label
+.modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+.modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
 {
     font-size: 11px;
     font-weight: 500;
@@ -15898,6 +15898,95 @@ body.night .app-message
     top: 6px;
 
     color: #6297f8;
+}
+
+.modal-cuckoo .modal-form__checkbox
+{
+    margin: 10px 10px 10px 0;
+}
+
+.modal-cuckoo .modal-form__checkbox label
+{
+    font-weight: 500;
+
+    padding: 9px 8px 8px 8px;
+
+    border: 1px solid #d2d2d2;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.modal-cuckoo .modal-form__checkbox label span
+{
+    font-weight: 500;
+
+    position: relative;
+    top: -1px;
+
+    display: inline-block;
+
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+
+    vertical-align: middle;
+
+    border: 3px solid #d2d2d2;
+    border-radius: 50%;
+}
+
+.modal-cuckoo .modal-form__checkbox label:hover
+{
+    cursor: pointer;
+
+    background-color: #f5f5f5;
+}
+
+.modal-cuckoo .modal-form__checkbox label:active
+{
+    background-color: #eee;
+}
+
+.modal-cuckoo .modal-form__checkbox input
+{
+    display: none;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label
+{
+    color: #fff;
+    border-color: #5888df;
+    background-color: #6297f8;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label:hover
+{
+    background-color: #5d8fec;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label:active
+{
+    background-color: #5380d3;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label span
+{
+    border-color: #fff;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label span:after
+{
+    position: absolute;
+    top: 4px;
+    left: 4px;
+
+    width: 11px;
+    height: 11px;
+
+    content: '';
+
+    border-radius: 50%;
+    background-color: #fff;
 }
 
 /* 

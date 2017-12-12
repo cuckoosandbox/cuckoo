@@ -156,12 +156,76 @@
 
           border-color: #ddd;
 
-          & + label {
+          & + label:not(.modal-form__checkbox) {
             font-size: 11px;
             font-weight: 500;
             font-style: normal;
             top: 6px;
             color: $cuckoo_secundary_color;
+          }
+        }
+      }
+
+    }
+
+    &__checkbox {
+
+      margin: 10px 10px 10px 0;
+
+      label {
+        border: 1px solid #D2D2D2;
+        background-color: #fff;
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 9px 8px 8px 8px;
+
+        span {
+          position: relative;
+          top: -1px;
+          display: inline-block;
+          width: 25px;
+          height: 25px;
+          border: 3px solid #D2D2D2;
+          font-weight: 500;
+          border-radius: 50%;
+          vertical-align: middle;
+          margin-right: 5px;
+        }
+
+        &:hover {
+          background-color: #F5F5F5;
+          cursor: pointer;
+        }
+
+        &:active {
+          background-color: #eee;
+        }
+      }
+
+      input {
+        display: none;
+
+        &:checked + label {
+          background-color: #6297F8;
+          border-color: shade(#6297F8, 10%);
+          color: #fff;
+
+          &:hover { background-color: shade(#6297F8, 5%); }
+          &:active { background-color: shade(#6297F8, 15%); }
+
+          span {
+            border-color: #fff;
+
+            &:after {
+              content: "";
+              position: absolute;
+              width: 11px;
+              height: 11px;
+              top: 4px;
+              left: 4px;
+              background-color: #fff;
+              border-radius: 50%;
+            }
           }
         }
       }
