@@ -242,7 +242,7 @@ eaffef3b08fd1069ba2d3c977015b598fa150941 signatures/__init__.py
 4db64d1270e1417f2384043c8f956bea8c6ec830 signatures/linux/__init__.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 stuff/.gitignore
 
-# TBD release
+# 2.0.5 release
 992d0ae2a222ea4465633ab0fb2dc6ec9dac5181 agent/agent.py
 41ab395d14ea3902e099e1e78dc654e1b24a7da5 analyzer/windows/analyzer.py
 0000000000000000000000000000000000000000 analyzer/windows/lib/api/dse.py
