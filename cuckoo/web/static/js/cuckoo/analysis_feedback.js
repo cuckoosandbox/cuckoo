@@ -81,6 +81,12 @@ var FeedbackForm = function () {
       "include_analysis": null
     };
 
+    // includable params
+    this.include = {
+      files: [],
+      dirs: []
+    };
+
     // required fields
     this.required = ["name", "email", "company", "message"];
 
@@ -98,16 +104,19 @@ var FeedbackForm = function () {
       _this.el.find('button[type="submit"]').text('Sending...');
 
       _this.send(function (data) {
-        console.log(data);
         _this.reset();
         _this.close();
       }, function (err) {
-        console.log(err);
         _this.displayError(err.responseJSON ? err.responseJSON.message : false);
       }, function () {
         _this.el.find('button[type="submit"]').prop('disabled', false);
         _this.el.find('button[type="submit"]').text('Send feedback report');
       });
+    });
+
+    // estimates size of the feedback report
+    this.estimateSize(function (est) {
+      _this.el.find('.file-estimation').text(est.size_human);
     });
   }
 
@@ -166,8 +175,44 @@ var FeedbackForm = function () {
           always();
         });
       } else {
+        this.displayError('Please fill out all the required fields.');
         always();
       }
+    }
+  }, {
+    key: 'estimateSize',
+    value: function estimateSize() {
+      var done = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
+      var self = this;
+
+      /*
+        I believe underneath code can be done much better backend-wise. Does
+        it really need the backend in the first place here?
+       */
+
+      // get files
+      CuckooWeb.api_post("/analysis/api/task/export_get_files/", {
+        task_id: self.params.task_id
+      }, function (data) {
+
+        if (data.dirs) {
+          data.dirs = data.dirs.map(function (obj, i) {
+            return obj[0];
+          });
+        }
+
+        CuckooWeb.api_post("/analysis/api/task/export_estimate_size/", {
+          task_id: self.params.task_id,
+          dirs: data.dirs,
+          files: data.files
+        }, function (estimation) {
+          done(estimation);
+          // var size = data["size"];
+          // var size_human = data["size_human"];
+          // $(target_div).html(prefix + size_human);
+        });
+      });
     }
 
     // displays an error

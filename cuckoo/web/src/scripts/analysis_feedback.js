@@ -73,6 +73,12 @@ class FeedbackForm {
       "include_analysis": null
     }
 
+    // includable params
+    this.include = {
+      files: [],
+      dirs: []
+    }
+
     // required fields
     this.required = ["name","email","company","message"];
 
@@ -90,16 +96,19 @@ class FeedbackForm {
       this.el.find('button[type="submit"]').text('Sending...');
 
       this.send(data => {
-        console.log(data);
         this.reset();
         this.close();
       }, err => {
-        console.log(err);
         this.displayError(err.responseJSON ? err.responseJSON.message : false);
       }, () => {
         this.el.find('button[type="submit"]').prop('disabled', false);
         this.el.find('button[type="submit"]').text('Send feedback report');
       });
+    });
+
+    // estimates size of the feedback report
+    this.estimateSize(est => {
+      this.el.find('.file-estimation').text(est.size_human);
     });
 
   }
@@ -145,8 +154,39 @@ class FeedbackForm {
         always();
       });
     } else {
+      this.displayError('Please fill out all the required fields.');
       always();
     }
+  }
+
+  estimateSize(done = function() {}) {
+    let self = this;
+
+    /*
+      I believe underneath code can be done much better backend-wise. Does
+      it really need the backend in the first place here?
+     */
+
+    // get files
+    CuckooWeb.api_post("/analysis/api/task/export_get_files/", {
+      task_id: self.params.task_id
+    }, data => {
+
+      if(data.dirs) {
+        data.dirs = data.dirs.map((obj, i) => {
+          return obj[0];
+        });
+      }
+
+      CuckooWeb.api_post("/analysis/api/task/export_estimate_size/", {
+        task_id: self.params.task_id,
+        dirs: data.dirs,
+        files: data.files
+      }, estimation => {
+        done(estimation);
+      });
+
+    });
   }
 
   // displays an error
