@@ -35,7 +35,7 @@ class AnalysisSidebar {
 		$(document).on('scroll', function(e) {
 			e.preventDefault();
 			return self.scrollHandler(e);
-		});	
+		});
 
 		this.$.find('[href^=sidebar]').bind('click', function(e) {
 			e.preventDefault();

@@ -18,8 +18,8 @@
                 </div>
                 {% endif %}
             </header>
-            
-            <!-- snaps back to default bootstrap layout inside flex frame -->            
+
+            <!-- snaps back to default bootstrap layout inside flex frame -->
             <div class="container-fluid">
 
                 <!-- this row breaks into 2 sides -->
@@ -29,7 +29,7 @@
                         {% if report.analysis.debug.errors %}
                             {% include "analysis/pages/summary/_errors.html" %}
                         {% endif %}
-                        
+
                         {% if report.analysis.info.category == "file" and report.analysis.target %}
                             {% include "analysis/pages/summary/_file.html" %}
                         {% elif report.analysis.info.category == "archive" and report.analysis.target %}
@@ -150,7 +150,7 @@
                             {% if report.analysis.feedback %}
                                 Feedback sent on <b>{{ report.analysis.feedback.date }}</b> Thanks!
                             {% else %}
-                                Expecting different results? Send us this analysis and we will inspect it. <a data-toggle="modal" data-target="#modal_feedback" href="#">Click here</a>
+                                Expecting different results? Send us this analysis and we will inspect it. <a data-toggle="modal" data-target="#feedback_form" href="#">Click here</a>
                             {% endif %}
                         </p>
                     </div>
@@ -185,5 +185,5 @@
         </section>
 
     </div>
-    
+
 {% endblock %}

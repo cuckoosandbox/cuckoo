@@ -235,8 +235,18 @@ class FeedbackForm {
 
 // instantiate the feedback form
 $(function() {
+
+  // add an extra class to the backdrop to make it blue.
+  $(".modal-cuckoo").on('show.bs.modal', function(e) {
+    setTimeout(function() {
+      $(".modal-backdrop").addClass('modal-cuckoo-backdrop')
+    }, 50);
+  }).on('hidden.bs.modal', function() {
+      $(".modal-backdrop").removeClass('modal-cuckoo-backdrop');
+  });
+
   if($(".modal-cuckoo#feedback_form").length) {
     let form = new FeedbackForm($(".modal-cuckoo#feedback_form form"));
-    form.open();
   }
+  
 });

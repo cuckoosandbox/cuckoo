@@ -36,10 +36,9 @@ var FeedbackForm = function () {
       "company": false,
       "include_memdump": false,
       "include_analysis": false
-    };
 
-    // required fields
-    this.required = ["name", "email", "company", "message"];
+      // required fields
+    };this.required = ["name", "email", "company", "message"];
 
     // updates the inner params
     this.el.find('input,select,textarea').bind('change', function (e) {
@@ -184,17 +183,15 @@ var FeedbackForm = function () {
       }, function (data) {
 
         if (data.dirs) {
-          (function () {
-            var dirs = [];
-            data.dirs = data.dirs.map(function (obj, i) {
-              // skip 'memory' if include_memdump is toggled to false
-              if (obj[0] == "memory" && !memory) return false;
-              // don't include anything at all if we disabled analysis
-              if (!analysis) return false;
-              dirs.push(obj[0]);
-            });
-            data.dirs = dirs;
-          })();
+          var dirs = [];
+          data.dirs = data.dirs.map(function (obj, i) {
+            // skip 'memory' if include_memdump is toggled to false
+            if (obj[0] == "memory" && !memory) return false;
+            // don't include anything at all if we disabled analysis
+            if (!analysis) return false;
+            dirs.push(obj[0]);
+          });
+          data.dirs = dirs;
         }
 
         CuckooWeb.api_post("/analysis/api/task/export_estimate_size/", {
@@ -290,9 +287,18 @@ var FeedbackForm = function () {
 
 
 $(function () {
+
+  // add an extra class to the backdrop to make it blue.
+  $(".modal-cuckoo").on('show.bs.modal', function (e) {
+    setTimeout(function () {
+      $(".modal-backdrop").addClass('modal-cuckoo-backdrop');
+    }, 50);
+  }).on('hidden.bs.modal', function () {
+    $(".modal-backdrop").removeClass('modal-cuckoo-backdrop');
+  });
+
   if ($(".modal-cuckoo#feedback_form").length) {
     var form = new FeedbackForm($(".modal-cuckoo#feedback_form form"));
-    form.open();
   }
 });
 //# sourceMappingURL=analysis_feedback.js.map
