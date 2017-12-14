@@ -299,6 +299,7 @@ $(function () {
 
   if ($(".modal-cuckoo#feedback_form").length) {
     var form = new FeedbackForm($(".modal-cuckoo#feedback_form form"));
+    form.open();
   }
 });
 //# sourceMappingURL=analysis_feedback.js.map

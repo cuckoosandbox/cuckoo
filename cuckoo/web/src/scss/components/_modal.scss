@@ -10,18 +10,31 @@
       opacity: 1;
     }
     background-color: rgba(#6297F8, .7);
+
+    @include cuckoo-theme('cyborg') {
+      background-color: rgba($cyborg_background_color, .7);
+    }
+
   }
 
   // inherited style corrections
   .modal-footer {
     border-top: 0;
     text-align: left;
+
+    @include cuckoo-theme('cyborg') {
+      border-bottom: 0;
+    }
   }
 
   .modal-dialog {
     width: 640px;
     border-radius: 4px;
     overflow: hidden;
+
+    @include cuckoo-theme('cyborg') {
+      border: 1px solid $cyborg_border_color;
+    }
   }
 
   .modal-content {
@@ -81,9 +94,20 @@
       background-color: #F6F6F6;
       &:before { border-top-color: #D2D2D2; }
       &:after { border-top-color: #F6F6F6; }
+
+      @include cuckoo-theme('cyborg') {
+        background-color: $cyborg_background_color;
+        &:after { border-top-color: $cyborg_background_color; }
+      }
+
     }
     &:nth-child(even) {
       background-color: #fff;
+
+      @include cuckoo-theme('cyborg') {
+        background-color: tint($cyborg_background_color, 5%);
+        &:after { border-top-color: tint($cyborg_background_color, 5%); }
+      }
     }
 
     &.error {
@@ -91,6 +115,11 @@
       border-bottom-color: #f00;
       &:after { border-top-color: tint(#f00, 60%); }
       &:before { border-top-color: #f00; }
+    }
+
+    @include cuckoo-theme('cyborg') {
+      border-bottom-color: $cyborg_border_color;
+      &:before { border-top-color: $cyborg_border_color; }
     }
 
   }
@@ -187,8 +216,17 @@
             font-style: normal;
             top: 6px;
             color: $cuckoo_secundary_color;
+
+            @include cuckoo-theme('cyborg') {
+              color: $cyborg_secundary_color;
+            }
           }
         }
+
+        @include cuckoo-theme('cyborg') {
+          border-color: $cyborg_border_color;
+        }
+
       }
 
       &.error input {
@@ -210,11 +248,15 @@
         border-color: shade(#A1EEA3, 10%);
         color: inherit;
       }
+
+      @include cuckoo-theme('cyborg') { color: #2B712D; }
+      @include cuckoo-theme('night') { color: #2B712D; }
+
     }
 
     &__checkbox {
 
-      margin: 10px 10px 10px 0;
+      margin: 10px 10px 15px 0;
 
       label {
         border: 1px solid #D2D2D2;
@@ -244,6 +286,13 @@
         &:active {
           background-color: #eee;
         }
+
+        @include cuckoo-theme('cyborg') {
+          border-color: $cyborg_border_color;
+          background-color: $cyborg_alt_blue;
+          color: #fff;
+        }
+
       }
 
       input {

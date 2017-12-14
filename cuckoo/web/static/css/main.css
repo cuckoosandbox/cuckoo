@@ -15738,11 +15738,21 @@ body.night .app-message
     opacity: 1;
 }
 
+body.cyborg .modal-cuckoo-backdrop
+{
+    background-color: rgba(2, 14, 16, .7);
+}
+
 .modal-cuckoo .modal-footer
 {
     text-align: left;
 
     border-top: 0;
+}
+
+body.cyborg .modal-cuckoo .modal-footer
+{
+    border-bottom: 0;
 }
 
 .modal-cuckoo .modal-dialog
@@ -15752,6 +15762,11 @@ body.night .app-message
     width: 640px;
 
     border-radius: 4px;
+}
+
+body.cyborg .modal-cuckoo .modal-dialog
+{
+    border: 1px solid #133b4a;
 }
 
 .modal-cuckoo .modal-content
@@ -15829,9 +15844,29 @@ body.night .app-message
     border-top-color: #f6f6f6;
 }
 
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #020e10;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #020e10;
+}
+
 .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
 {
     background-color: #fff;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #0f1a1c;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even):after
+{
+    border-top-color: #0f1a1c;
 }
 
 .modal-cuckoo .modal-content > *[class^='modal-'].error
@@ -15848,6 +15883,16 @@ body.night .app-message
 .modal-cuckoo .modal-content > *[class^='modal-'].error:before
 {
     border-top-color: #f00;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']
+{
+    border-bottom-color: #133b4a;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:before
+{
+    border-top-color: #133b4a;
 }
 
 .modal-cuckoo .modal-section
@@ -16000,6 +16045,17 @@ body.night .app-message
     color: #6297f8;
 }
 
+body.cyborg .modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+body.cyborg .modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
+{
+    color: #0ce3ac;
+}
+
+body.cyborg .modal-cuckoo .modal-form fieldset input
+{
+    border-color: #133b4a;
+}
+
 .modal-cuckoo .modal-form fieldset.error input
 {
     border-color: #f00;
@@ -16022,9 +16078,19 @@ body.night .app-message
     background-color: #99e29b;
 }
 
+body.cyborg .modal-cuckoo .modal-form button[type='submit']
+{
+    color: #2b712d;
+}
+
+body.night .modal-cuckoo .modal-form button[type='submit']
+{
+    color: #2b712d;
+}
+
 .modal-cuckoo .modal-form__checkbox
 {
-    margin: 10px 10px 10px 0;
+    margin: 10px 10px 15px 0;
 }
 
 .modal-cuckoo .modal-form__checkbox label
@@ -16067,6 +16133,13 @@ body.night .app-message
 .modal-cuckoo .modal-form__checkbox label:active
 {
     background-color: #eee;
+}
+
+body.cyborg .modal-cuckoo .modal-form__checkbox label
+{
+    color: #fff;
+    border-color: #133b4a;
+    background-color: #152d3d;
 }
 
 .modal-cuckoo .modal-form__checkbox input

@@ -247,6 +247,7 @@ $(function() {
 
   if($(".modal-cuckoo#feedback_form").length) {
     let form = new FeedbackForm($(".modal-cuckoo#feedback_form form"));
+    form.open();
   }
-  
+
 });
