@@ -29,9 +29,9 @@
         <textarea name="message" id="feedback-message" placeholder="Describe to us what does not seem to work properly."></textarea>
       </div>
 
-      <div class="modal-section modal-form arrow arrow-center">
+      <div class="modal-section modal-form arrow arrow-center" id="feedback-includes">
         <div class="modal-form__checkbox">
-          <input type="checkbox" name="include_analysis" id="feedback-analysis" checked />
+          <input type="checkbox" name="include_analysis" id="feedback-analysis" />
           <label for="feedback-analysis"><span></span> Include analysis</label>
         </div>
         <div class="modal-form__checkbox">
@@ -41,7 +41,7 @@
       </div>
 
       <div class="modal-section modal-form no-flex center">
-        <p>Estimated report size: <strong class="file-estimation">estimating...</strong></p>
+        <p id="feedback-size">Estimated report size: <strong class="file-estimation">estimating...</strong></p>
         <button type="submit" formnovalidate>Send feedback report</button>
         <p>or <a href="modal:cancel">cancel</a></p>
       </div>

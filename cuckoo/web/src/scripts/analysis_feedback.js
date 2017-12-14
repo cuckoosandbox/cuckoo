@@ -59,16 +59,26 @@ class FeedbackForm {
 
     });
 
+    if(!task_id) {
+      this.params.task_id = false;
+      this.params.include_memdump = false;
+      this.params.include_analysis = false;
+      // hide feedback includes and feedback report size when there is no task
+      // id.
+      this.modal.find('#feedback-includes, #feedback-size, .modal-footer').remove();
+      this.modal.find('.modal-form:last-child').prev().addClass('arrow-center');
+    }
+
     // update on init
     this.update();
-
-    // do a pre-estimate
-    this.estimate();
 
     // re-estimate each time
     this.changed(['include_analysis','include_memdump'], value => {
       this.estimate();
     });
+
+    // do a pre-estimate
+    this.estimate();
 
     // cancel the feedback form
     this.modal.find('[href="modal:cancel"]').bind('click', e => {
@@ -128,6 +138,10 @@ class FeedbackForm {
   estimate() {
 
     let self = this;
+
+    if(!self.params.task_id) {
+      return;
+    }
 
     let analysis = this.params.include_analysis;
     let memory = this.params.include_memdump;

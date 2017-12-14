@@ -14,9 +14,13 @@
         <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
         {% if report.analysis.info.id %}
-            <script>
-                var task_id = '{{ report.analysis.info.id }}';
-            </script>
+          <script>
+            var task_id = '{{ report.analysis.info.id }}';
+          </script>
+        {% else %}
+          <script>
+            var task_id = undefined;
+          </script>
         {% endif %}
 
         <script src="{% static "js/vendor.js" %}"></script>
@@ -25,6 +29,7 @@
         <script src="{% static "js/cuckoo/loader.js" %}"></script>
         <script src="{% static "js/cuckoo/sticky.js" %}"></script>
         <script src="{% static "js/cuckoo/analysis_sidebar.js" %}"></script>
+        <script src="{% static "js/cuckoo/analysis_feedback.js" %}"></script>
         <script src="{% static "js/cuckoo/submission.js" %}"></script>
         <script src="{% static "js/cuckoo/process_tree.js" %}"></script>
         <script src="{% static "js/cuckoo/recent.js" %}"></script>
