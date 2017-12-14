@@ -15854,6 +15854,16 @@ body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):aft
     border-top-color: #020e10;
 }
 
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #232323;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #232323;
+}
+
 .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
 {
     background-color: #fff;
@@ -15867,6 +15877,16 @@ body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
 body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even):after
 {
     border-top-color: #0f1a1c;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #2e2e2e;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even):after
+{
+    border-top-color: #2e2e2e;
 }
 
 .modal-cuckoo .modal-content > *[class^='modal-'].error
@@ -15893,6 +15913,16 @@ body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']
 body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:before
 {
     border-top-color: #133b4a;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']
+{
+    border-bottom-color: #375a7f;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:before
+{
+    border-top-color: #375a7f;
 }
 
 .modal-cuckoo .modal-section
@@ -16051,9 +16081,20 @@ body.cyborg .modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-fo
     color: #0ce3ac;
 }
 
+body.night .modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+body.night .modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
+{
+    color: #d7d7d7;
+}
+
 body.cyborg .modal-cuckoo .modal-form fieldset input
 {
     border-color: #133b4a;
+}
+
+body.night .modal-cuckoo .modal-form fieldset input
+{
+    border-color: #375a7f;
 }
 
 .modal-cuckoo .modal-form fieldset.error input
@@ -16140,6 +16181,12 @@ body.cyborg .modal-cuckoo .modal-form__checkbox label
     color: #fff;
     border-color: #133b4a;
     background-color: #152d3d;
+}
+
+body.night .modal-cuckoo .modal-form__checkbox label
+{
+    border-color: #375a7f;
+    background-color: #152d3b;
 }
 
 .modal-cuckoo .modal-form__checkbox input

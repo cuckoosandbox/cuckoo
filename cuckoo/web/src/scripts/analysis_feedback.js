@@ -65,7 +65,7 @@ class FeedbackForm {
       this.params.include_analysis = false;
       // hide feedback includes and feedback report size when there is no task
       // id.
-      this.modal.find('#feedback-includes, #feedback-size, .modal-footer').remove();
+      this.modal.find('#feedback-includes, #feedback-size').remove();
       this.modal.find('.modal-form:last-child').prev().addClass('arrow-center');
     }
 
