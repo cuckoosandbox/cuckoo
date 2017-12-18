@@ -16033,7 +16033,9 @@ body.night .app-message
 
 .rdp-dialog__options button[value='cancel'],
 .rdp__error section > a,
+.rdp__connecting section > a,
 .rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
 .rdp-dialog__options button:not([value='cancel']),
 .rdp-toolbar button
 {
@@ -16057,7 +16059,9 @@ body.night .app-message
 
 .rdp-dialog__options button[value='cancel']:hover,
 .rdp__error section > a:hover,
+.rdp__connecting section > a:hover,
 .rdp__error--buttons > a:hover,
+.rdp__connecting--buttons > a:hover,
 .rdp-dialog__options button:hover:not([value='cancel']),
 .rdp-toolbar button:hover
 {
@@ -16066,12 +16070,16 @@ body.night .app-message
 
 .rdp-dialog__options button.active[value='cancel'],
 .rdp__error section > a.active,
+.rdp__connecting section > a.active,
 .rdp__error--buttons > a.active,
+.rdp__connecting--buttons > a.active,
 .rdp-dialog__options button.active:not([value='cancel']),
 .rdp-toolbar button.active,
 .rdp-dialog__options button[value='cancel']:active,
 .rdp__error section > a:active,
+.rdp__connecting section > a:active,
 .rdp__error--buttons > a:active,
+.rdp__connecting--buttons > a:active,
 .rdp-dialog__options button:active:not([value='cancel']),
 .rdp-toolbar button:active
 {
@@ -16083,12 +16091,16 @@ body.night .app-message
 
 .rdp-dialog__options button.disabled[value='cancel'],
 .rdp__error section > a.disabled,
+.rdp__connecting section > a.disabled,
 .rdp__error--buttons > a.disabled,
+.rdp__connecting--buttons > a.disabled,
 .rdp-dialog__options button.disabled:not([value='cancel']),
 .rdp-toolbar button.disabled,
 .rdp-dialog__options button[disabled][value='cancel'],
 .rdp__error section > a[disabled],
+.rdp__connecting section > a[disabled],
 .rdp__error--buttons > a[disabled],
+.rdp__connecting--buttons > a[disabled],
 .rdp-dialog__options button[disabled]:not([value='cancel']),
 .rdp-toolbar button[disabled]
 {
@@ -16102,7 +16114,9 @@ body.night .app-message
 
 .rdp-dialog__options button[value='cancel']:focus,
 .rdp__error section > a:focus,
+.rdp__connecting section > a:focus,
 .rdp__error--buttons > a:focus,
+.rdp__connecting--buttons > a:focus,
 .rdp-dialog__options button:focus:not([value='cancel']),
 .rdp-toolbar button:focus
 {
@@ -16111,7 +16125,9 @@ body.night .app-message
 
 .rdp-dialog__options button[value='cancel'],
 .rdp__error section > a,
+.rdp__connecting section > a,
 .rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
 .rdp-dialog__options button:not([value='cancel'])
 {
     font-size: 16px;
@@ -16850,7 +16866,8 @@ body.night .app-message
     background-color: rgba(98, 151, 248, .2);
 }
 
-.rdp__error
+.rdp__error,
+.rdp__connecting
 {
     position: relative;
 
@@ -16870,7 +16887,8 @@ body.night .app-message
     justify-content: center;
 }
 
-.rdp__error .combined-icon
+.rdp__error .combined-icon,
+.rdp__connecting .combined-icon
 {
     position: relative;
 
@@ -16907,12 +16925,46 @@ body.night .app-message
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
 .rdp__error .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .guac-icon,
+.rdp__connecting .combined-icon .fa,
+.rdp__connecting .combined-icon .custom-select:after,
+.rdp__connecting .combined-icon .dns-badge__content:before,
+.rdp__connecting .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__connecting .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__connecting .combined-icon div:before,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:after,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:before,
+.rdp__connecting .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__connecting .combined-icon .custom-checkbox > input + span,
+.rdp__connecting .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__connecting .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon
+.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .guac-icon
 {
     position: absolute;
 }
 
-.rdp__error .combined-icon .fa-frown-o
+.rdp__error .combined-icon .fa-frown-o,
+.rdp__error .combined-icon .guac-icon-frown-o,
+.rdp__connecting .combined-icon .fa-frown-o,
+.rdp__connecting .combined-icon .guac-icon-frown-o
 {
     font-size: 43px;
 
@@ -16922,20 +16974,25 @@ body.night .app-message
     color: #cc613c;
 }
 
-.rdp__error .combined-icon .fa-desktop
+.rdp__error .combined-icon .fa-desktop,
+.rdp__error .combined-icon .guac-icon-desktop,
+.rdp__connecting .combined-icon .fa-desktop,
+.rdp__connecting .combined-icon .guac-icon-desktop
 {
     font-size: 140px;
 
     color: #542f21;
 }
 
-.rdp__error > section
+.rdp__error > section,
+.rdp__connecting > section
 {
     position: relative;
     z-index: 2;
 }
 
-.rdp__error section > p
+.rdp__error section > p,
+.rdp__connecting section > p
 {
     font-size: 24px;
     font-weight: 300;
@@ -16947,7 +17004,8 @@ body.night .app-message
     color: #a6a6a6;
 }
 
-.rdp__error section > a
+.rdp__error section > a,
+.rdp__connecting section > a
 {
     top: 0;
 
@@ -16962,7 +17020,8 @@ body.night .app-message
     text-shadow: 0 1px 0 #3b3b3b;
 }
 
-.rdp__error--resolutions
+.rdp__error--resolutions,
+.rdp__connecting--resolutions
 {
     font-size: 16px;
 
@@ -16981,7 +17040,9 @@ body.night .app-message
 }
 
 .rdp__error--resolutions:after,
-.rdp__error--resolutions:before
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:after,
+.rdp__connecting--resolutions:before
 {
     position: absolute;
     bottom: 100%;
@@ -16996,7 +17057,8 @@ body.night .app-message
     border: solid transparent;
 }
 
-.rdp__error--resolutions:before
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:before
 {
     margin-left: -21px;
 
@@ -17005,7 +17067,8 @@ body.night .app-message
     border-bottom-color: #405f97;
 }
 
-.rdp__error--resolutions:after
+.rdp__error--resolutions:after,
+.rdp__connecting--resolutions:after
 {
     margin-left: -20px;
 
@@ -17014,13 +17077,15 @@ body.night .app-message
     border-bottom-color: #293b5c;
 }
 
-.rdp__error--resolutions ol
+.rdp__error--resolutions ol,
+.rdp__connecting--resolutions ol
 {
     margin: 0;
     padding: 0 17px;
 }
 
-.rdp__error--buttons
+.rdp__error--buttons,
+.rdp__connecting--buttons
 {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -17033,7 +17098,14 @@ body.night .app-message
     justify-content: space-between;
 }
 
-.rdp__error:after
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a
+{
+    font-size: 14px;
+}
+
+.rdp__error:not(.rdp__connecting):after,
+.rdp__connecting:not(.rdp__connecting):after
 {
     position: absolute;
     z-index: 1;
@@ -17048,6 +17120,58 @@ body.night .app-message
     opacity: .2;
     background: url(../graphic/white-noise.gif);
     background-size: cover;
+}
+
+.rdp__error.rdp__connecting,
+.rdp__connecting.rdp__connecting
+{
+    background-color: #1f1f1f;
+}
+
+.rdp__error.rdp__connecting .combined-icon,
+.rdp__connecting.rdp__connecting .combined-icon
+{
+    width: 190px;
+    height: 180px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon
+{
+    top: 50%;
+    left: 50%;
+
+    width: 55px;
+    margin-top: -29px;
+    margin-left: -27px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon + .fa-desktop,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon + .fa-desktop
+{
+    font-size: 180px;
+
+    color: #567e84;
+}
+
+.rdp__error .animated-ellipse,
+.rdp__connecting .animated-ellipse
+{
+    display: inline-block;
+}
+
+.rdp__error .animated-ellipse > li,
+.rdp__connecting .animated-ellipse > li
+{
+    display: inline-block;
+
+    opacity: 0;
+}
+
+.rdp__error .animated-ellipse > li.in,
+.rdp__connecting .animated-ellipse > li.in
+{
+    opacity: 1;
 }
 
 .rdp-dialog
