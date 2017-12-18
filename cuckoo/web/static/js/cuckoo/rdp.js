@@ -693,14 +693,22 @@ var RDPToolbar = function (_Hookable) {
 
     // toggle fullscreen mode
     _this.buttons.fullscreen.on('click', function () {
-      // document.getElementsByTagName('body')[0].requestFullscreen();
+      if (CuckooWeb.isFullsceen()) {
+        _this.client.$.removeClass('fullscreen');
+        CuckooWeb.exitFullscreen();
+      } else {
+        _this.client.$.addClass('fullscreen');
+        CuckooWeb.requestFullscreen(document.getElementById('rdp-client'));
+      }
     });
 
+    // snapshots
     _this.buttons.snapshot.on('click', function () {
       return _this.client.snapshots.create();
     });
-    _this.buttons.control.on('toggle', function (toggled) {
 
+    // toggles control modes
+    _this.buttons.control.on('toggle', function (toggled) {
       if (toggled) {
         // enable mouse and keyboard
         _this.client.service.mouse(true);
@@ -993,6 +1001,7 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
+    console.log(_this.$);
 
     // connect guac service wrapper
     _this.service = new _GuacWrap2.default({

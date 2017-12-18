@@ -23,12 +23,20 @@ export default class RDPToolbar extends Hookable {
 
     // toggle fullscreen mode
     this.buttons.fullscreen.on('click', () => {
-      // document.getElementsByTagName('body')[0].requestFullscreen();
+      if(CuckooWeb.isFullsceen()) {
+        this.client.$.removeClass('fullscreen');
+        CuckooWeb.exitFullscreen();
+      } else {
+        this.client.$.addClass('fullscreen');
+        CuckooWeb.requestFullscreen(document.getElementById('rdp-client'));
+      }
     });
 
+    // snapshots
     this.buttons.snapshot.on('click', () => this.client.snapshots.create());
-    this.buttons.control.on('toggle', toggled => {
 
+    // toggles control modes
+    this.buttons.control.on('toggle', toggled => {
       if(toggled) {
         // enable mouse and keyboard
         this.client.service.mouse(true);
@@ -38,7 +46,6 @@ export default class RDPToolbar extends Hookable {
         this.client.service.mouse(false);
         this.client.service.keyboard(false);
       }
-
     });
 
     this.buttons.reboot.on('click', () => {

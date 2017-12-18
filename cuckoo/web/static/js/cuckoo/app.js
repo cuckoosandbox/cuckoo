@@ -228,6 +228,73 @@ var CuckooWeb = function () {
             t.innerHTML = string;
             return t.value;
         }
+
+        /*
+          Below are a bunch of polyfilled helpers for the JS Fullscreen API. since
+          each are quite browser-specific
+         */
+
+        // able to use fullscreen (does the user allow it in the browser config)
+
+    }, {
+        key: 'enabledFullscreen',
+        value: function enabledFullscreen() {
+            if (document.fullscreenEnabled) {
+                return document.fullscreenEnabled;
+            } else if (document.webkitFullscreenEnabled) {
+                return document.webkitFullscreenEnabled;
+            } else if (document.mozFullscreenEnabled) {
+                return document.mozFullscreenEnabled;
+            } else {
+                // ...
+            }
+        }
+    }, {
+        key: 'isFullsceen',
+        value: function isFullsceen() {
+            if (document.fullscreen) {
+                return document.fullscreen;
+            } else if (document.webkitIsFullScreen) {
+                return document.webkitIsFullScreen;
+            } else if (document.mozIsFullScreen) {
+                return document.mozIsFullScreen;
+            } else {
+                // ...
+            }
+        }
+    }, {
+        key: 'exitFullscreen',
+        value: function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozExitFullscreen) {
+                document.mozExitFullscreen();
+            } else {
+                // the message has already been given in the request handler
+            }
+        }
+
+        // shortcuts requestFullscreen as cross-browser as possible
+
+    }, {
+        key: 'requestFullscreen',
+        value: function requestFullscreen(element) {
+            if (CuckooWeb.enabledFullscreen()) {
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullscreen) {
+                    element.mozRequestFullscreen();
+                } else {
+                    console.log('Oh noes! you cannot go in fullscreen due to your browser.');
+                }
+            } else {
+                console.log('You did not enable fullscreen in your browser config. you cannot use this feature.');
+            }
+        }
     }]);
 
     return CuckooWeb;
