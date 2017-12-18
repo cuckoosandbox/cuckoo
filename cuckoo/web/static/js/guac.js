@@ -220,6 +220,86 @@ Guacamole.ArrayBufferWriter.DEFAULT_BLOB_LENGTH = 6048;
 var Guacamole = Guacamole || {};
 
 /**
+ * Maintains a singleton instance of the Web Audio API AudioContext class,
+ * instantiating the AudioContext only in response to the first call to
+ * getAudioContext(), and only if no existing AudioContext instance has been
+ * provided via the singleton property. Subsequent calls to getAudioContext()
+ * will return the same instance.
+ *
+ * @namespace
+ */
+Guacamole.AudioContextFactory = {
+
+    /**
+     * A singleton instance of a Web Audio API AudioContext object, or null if
+     * no instance has yes been created. This property may be manually set if
+     * you wish to supply your own AudioContext instance, but care must be
+     * taken to do so as early as possible. Assignments to this property will
+     * not retroactively affect the value returned by previous calls to
+     * getAudioContext().
+     *
+     * @type {AudioContext}
+     */
+    'singleton' : null,
+
+    /**
+     * Returns a singleton instance of a Web Audio API AudioContext object.
+     *
+     * @return {AudioContext}
+     *     A singleton instance of a Web Audio API AudioContext object, or null
+     *     if the Web Audio API is not supported.
+     */
+    'getAudioContext' : function getAudioContext() {
+
+        // Fallback to Webkit-specific AudioContext implementation
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+        // Get new AudioContext instance if Web Audio API is supported
+        if (AudioContext) {
+            try {
+
+                // Create new instance if none yet exists
+                if (!Guacamole.AudioContextFactory.singleton)
+                    Guacamole.AudioContextFactory.singleton = new AudioContext();
+
+                // Return singleton instance
+                return Guacamole.AudioContextFactory.singleton;
+
+            }
+            catch (e) {
+                // Do not use Web Audio API if not allowed by browser
+            }
+        }
+
+        // Web Audio API not supported
+        return null;
+
+    }
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
  * Abstract audio player which accepts, queues and plays back arbitrary audio
  * data. It is up to implementations of this class to provide some means of
  * handling a provided Guacamole.InputStream. Data received along the provided
@@ -726,6 +806,574 @@ Guacamole.RawAudioPlayer.getSupportedTypes = function getSupportedTypes() {
 var Guacamole = Guacamole || {};
 
 /**
+ * Abstract audio recorder which streams arbitrary audio data to an underlying
+ * Guacamole.OutputStream. It is up to implementations of this class to provide
+ * some means of handling this Guacamole.OutputStream. Data produced by the
+ * recorder is to be sent along the provided stream immediately.
+ *
+ * @constructor
+ */
+Guacamole.AudioRecorder = function AudioRecorder() {
+
+    /**
+     * Callback which is invoked when the audio recording process has stopped
+     * and the underlying Guacamole stream has been closed normally. Audio will
+     * only resume recording if a new Guacamole.AudioRecorder is started. This
+     * Guacamole.AudioRecorder instance MAY NOT be reused.
+     *
+     * @event
+     */
+    this.onclose = null;
+
+    /**
+     * Callback which is invoked when the audio recording process cannot
+     * continue due to an error, if it has started at all. The underlying
+     * Guacamole stream is automatically closed. Future attempts to record
+     * audio should not be made, and this Guacamole.AudioRecorder instance
+     * MAY NOT be reused.
+     *
+     * @event
+     */
+    this.onerror = null;
+
+};
+
+/**
+ * Determines whether the given mimetype is supported by any built-in
+ * implementation of Guacamole.AudioRecorder, and thus will be properly handled
+ * by Guacamole.AudioRecorder.getInstance().
+ *
+ * @param {String} mimetype
+ *     The mimetype to check.
+ *
+ * @returns {Boolean}
+ *     true if the given mimetype is supported by any built-in
+ *     Guacamole.AudioRecorder, false otherwise.
+ */
+Guacamole.AudioRecorder.isSupportedType = function isSupportedType(mimetype) {
+
+    return Guacamole.RawAudioRecorder.isSupportedType(mimetype);
+
+};
+
+/**
+ * Returns a list of all mimetypes supported by any built-in
+ * Guacamole.AudioRecorder, in rough order of priority. Beware that only the
+ * core mimetypes themselves will be listed. Any mimetype parameters, even
+ * required ones, will not be included in the list. For example, "audio/L8" is
+ * a supported raw audio mimetype that is supported, but it is invalid without
+ * additional parameters. Something like "audio/L8;rate=44100" would be valid,
+ * however (see https://tools.ietf.org/html/rfc4856).
+ *
+ * @returns {String[]}
+ *     A list of all mimetypes supported by any built-in
+ *     Guacamole.AudioRecorder, excluding any parameters.
+ */
+Guacamole.AudioRecorder.getSupportedTypes = function getSupportedTypes() {
+
+    return Guacamole.RawAudioRecorder.getSupportedTypes();
+
+};
+
+/**
+ * Returns an instance of Guacamole.AudioRecorder providing support for the
+ * given audio format. If support for the given audio format is not available,
+ * null is returned.
+ *
+ * @param {Guacamole.OutputStream} stream
+ *     The Guacamole.OutputStream to send audio data through.
+ *
+ * @param {String} mimetype
+ *     The mimetype of the audio data to be sent along the provided stream.
+ *
+ * @return {Guacamole.AudioRecorder}
+ *     A Guacamole.AudioRecorder instance supporting the given mimetype and
+ *     writing to the given stream, or null if support for the given mimetype
+ *     is absent.
+ */
+Guacamole.AudioRecorder.getInstance = function getInstance(stream, mimetype) {
+
+    // Use raw audio recorder if possible
+    if (Guacamole.RawAudioRecorder.isSupportedType(mimetype))
+        return new Guacamole.RawAudioRecorder(stream, mimetype);
+
+    // No support for given mimetype
+    return null;
+
+};
+
+/**
+ * Implementation of Guacamole.AudioRecorder providing support for raw PCM
+ * format audio. This recorder relies only on the Web Audio API and does not
+ * require any browser-level support for its audio formats.
+ *
+ * @constructor
+ * @augments Guacamole.AudioRecorder
+ * @param {Guacamole.OutputStream} stream
+ *     The Guacamole.OutputStream to write audio data to.
+ *
+ * @param {String} mimetype
+ *     The mimetype of the audio data to send along the provided stream, which
+ *     must be a "audio/L8" or "audio/L16" mimetype with necessary parameters,
+ *     such as: "audio/L16;rate=44100,channels=2".
+ */
+Guacamole.RawAudioRecorder = function RawAudioRecorder(stream, mimetype) {
+
+    /**
+     * Reference to this RawAudioRecorder.
+     *
+     * @private
+     * @type {Guacamole.RawAudioRecorder}
+     */
+    var recorder = this;
+
+    /**
+     * The size of audio buffer to request from the Web Audio API when
+     * recording or processing audio, in sample-frames. This must be a power of
+     * two between 256 and 16384 inclusive, as required by
+     * AudioContext.createScriptProcessor().
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var BUFFER_SIZE = 2048;
+
+    /**
+     * The window size to use when applying Lanczos interpolation, commonly
+     * denoted by the variable "a".
+     * See: https://en.wikipedia.org/wiki/Lanczos_resampling
+     *
+     * @private
+     * @contant
+     * @type Number
+     */
+    var LANCZOS_WINDOW_SIZE = 3;
+
+    /**
+     * The format of audio this recorder will encode.
+     *
+     * @private
+     * @type {Guacamole.RawAudioFormat}
+     */
+    var format = Guacamole.RawAudioFormat.parse(mimetype);
+
+    /**
+     * An instance of a Web Audio API AudioContext object, or null if the
+     * Web Audio API is not supported.
+     *
+     * @private
+     * @type {AudioContext}
+     */
+    var context = Guacamole.AudioContextFactory.getAudioContext();
+
+    /**
+     * A function which directly invokes the browser's implementation of
+     * navigator.getUserMedia() with all provided parameters.
+     *
+     * @type Function
+     */
+    var getUserMedia = (navigator.getUserMedia
+            || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia
+            || navigator.msGetUserMedia).bind(navigator);
+
+    /**
+     * Guacamole.ArrayBufferWriter wrapped around the audio output stream
+     * provided when this Guacamole.RawAudioRecorder was created.
+     *
+     * @private
+     * @type {Guacamole.ArrayBufferWriter}
+     */
+    var writer = new Guacamole.ArrayBufferWriter(stream);
+
+    /**
+     * The type of typed array that will be used to represent each audio packet
+     * internally. This will be either Int8Array or Int16Array, depending on
+     * whether the raw audio format is 8-bit or 16-bit.
+     *
+     * @private
+     * @constructor
+     */
+    var SampleArray = (format.bytesPerSample === 1) ? window.Int8Array : window.Int16Array;
+
+    /**
+     * The maximum absolute value of any sample within a raw audio packet sent
+     * by this audio recorder. This depends only on the size of each sample,
+     * and will be 128 for 8-bit audio and 32768 for 16-bit audio.
+     *
+     * @private
+     * @type {Number}
+     */
+    var maxSampleValue = (format.bytesPerSample === 1) ? 128 : 32768;
+
+    /**
+     * The total number of audio samples read from the local audio input device
+     * over the life of this audio recorder.
+     *
+     * @private
+     * @type {Number}
+     */
+    var readSamples = 0;
+
+    /**
+     * The total number of audio samples written to the underlying Guacamole
+     * connection over the life of this audio recorder.
+     *
+     * @private
+     * @type {Number}
+     */
+    var writtenSamples = 0;
+
+    /**
+     * The audio stream provided by the browser, if allowed. If no stream has
+     * yet been received, this will be null.
+     *
+     * @type MediaStream
+     */
+    var mediaStream = null;
+
+    /**
+     * The source node providing access to the local audio input device.
+     *
+     * @private
+     * @type {MediaStreamAudioSourceNode}
+     */
+    var source = null;
+
+    /**
+     * The script processing node which receives audio input from the media
+     * stream source node as individual audio buffers.
+     *
+     * @private
+     * @type {ScriptProcessorNode}
+     */
+    var processor = null;
+
+    /**
+     * The normalized sinc function. The normalized sinc function is defined as
+     * 1 for x=0 and sin(PI * x) / (PI * x) for all other values of x.
+     *
+     * See: https://en.wikipedia.org/wiki/Sinc_function
+     *
+     * @private
+     * @param {Number} x
+     *     The point at which the normalized sinc function should be computed.
+     *
+     * @returns {Number}
+     *     The value of the normalized sinc function at x.
+     */
+    var sinc = function sinc(x) {
+
+        // The value of sinc(0) is defined as 1
+        if (x === 0)
+            return 1;
+
+        // Otherwise, normlized sinc(x) is sin(PI * x) / (PI * x)
+        var piX = Math.PI * x;
+        return Math.sin(piX) / piX;
+
+    };
+
+    /**
+     * Calculates the value of the Lanczos kernal at point x for a given window
+     * size. See: https://en.wikipedia.org/wiki/Lanczos_resampling
+     *
+     * @private
+     * @param {Number} x
+     *     The point at which the value of the Lanczos kernel should be
+     *     computed.
+     *
+     * @param {Number} a
+     *     The window size to use for the Lanczos kernel.
+     *
+     * @returns {Number}
+     *     The value of the Lanczos kernel at the given point for the given
+     *     window size.
+     */
+    var lanczos = function lanczos(x, a) {
+
+        // Lanczos is sinc(x) * sinc(x / a) for -a < x < a ...
+        if (-a < x && x < a)
+            return sinc(x) * sinc(x / a);
+
+        // ... and 0 otherwise
+        return 0;
+
+    };
+
+    /**
+     * Determines the value of the waveform represented by the audio data at
+     * the given location. If the value cannot be determined exactly as it does
+     * not correspond to an exact sample within the audio data, the value will
+     * be derived through interpolating nearby samples.
+     *
+     * @private
+     * @param {Float32Array} audioData
+     *     An array of audio data, as returned by AudioBuffer.getChannelData().
+     *
+     * @param {Number} t
+     *     The relative location within the waveform from which the value
+     *     should be retrieved, represented as a floating point number between
+     *     0 and 1 inclusive, where 0 represents the earliest point in time and
+     *     1 represents the latest.
+     *
+     * @returns {Number}
+     *     The value of the waveform at the given location.
+     */
+    var interpolateSample = function getValueAt(audioData, t) {
+
+        // Convert [0, 1] range to [0, audioData.length - 1]
+        var index = (audioData.length - 1) * t;
+
+        // Determine the start and end points for the summation used by the
+        // Lanczos interpolation algorithm (see: https://en.wikipedia.org/wiki/Lanczos_resampling)
+        var start = Math.floor(index) - LANCZOS_WINDOW_SIZE + 1;
+        var end = Math.floor(index) + LANCZOS_WINDOW_SIZE;
+
+        // Calculate the value of the Lanczos interpolation function for the
+        // required range
+        var sum = 0;
+        for (var i = start; i <= end; i++) {
+            sum += (audioData[i] || 0) * lanczos(index - i, LANCZOS_WINDOW_SIZE);
+        }
+
+        return sum;
+
+    };
+
+    /**
+     * Converts the given AudioBuffer into an audio packet, ready for streaming
+     * along the underlying output stream. Unlike the raw audio packets used by
+     * this audio recorder, AudioBuffers require floating point samples and are
+     * split into isolated planes of channel-specific data.
+     *
+     * @private
+     * @param {AudioBuffer} audioBuffer
+     *     The Web Audio API AudioBuffer that should be converted to a raw
+     *     audio packet.
+     *
+     * @returns {SampleArray}
+     *     A new raw audio packet containing the audio data from the provided
+     *     AudioBuffer.
+     */
+    var toSampleArray = function toSampleArray(audioBuffer) {
+
+        // Track overall amount of data read
+        var inSamples = audioBuffer.length;
+        readSamples += inSamples;
+
+        // Calculate the total number of samples that should be written as of
+        // the audio data just received and adjust the size of the output
+        // packet accordingly
+        var expectedWrittenSamples = Math.round(readSamples * format.rate / audioBuffer.sampleRate);
+        var outSamples = expectedWrittenSamples - writtenSamples;
+
+        // Update number of samples written
+        writtenSamples += outSamples;
+
+        // Get array for raw PCM storage
+        var data = new SampleArray(outSamples * format.channels);
+
+        // Convert each channel
+        for (var channel = 0; channel < format.channels; channel++) {
+
+            var audioData = audioBuffer.getChannelData(channel);
+
+            // Fill array with data from audio buffer channel
+            var offset = channel;
+            for (var i = 0; i < outSamples; i++) {
+                data[offset] = interpolateSample(audioData, i / (outSamples - 1)) * maxSampleValue;
+                offset += format.channels;
+            }
+
+        }
+
+        return data;
+
+    };
+
+    /**
+     * Requests access to the user's microphone and begins capturing audio. All
+     * received audio data is resampled as necessary and forwarded to the
+     * Guacamole stream underlying this Guacamole.RawAudioRecorder. This
+     * function must be invoked ONLY ONCE per instance of
+     * Guacamole.RawAudioRecorder.
+     *
+     * @private
+     */
+    var beginAudioCapture = function beginAudioCapture() {
+
+        // Attempt to retrieve an audio input stream from the browser
+        getUserMedia({ 'audio' : true }, function streamReceived(stream) {
+
+            // Create processing node which receives appropriately-sized audio buffers
+            processor = context.createScriptProcessor(BUFFER_SIZE, format.channels, format.channels);
+            processor.connect(context.destination);
+
+            // Send blobs when audio buffers are received
+            processor.onaudioprocess = function processAudio(e) {
+                writer.sendData(toSampleArray(e.inputBuffer).buffer);
+            };
+
+            // Connect processing node to user's audio input source
+            source = context.createMediaStreamSource(stream);
+            source.connect(processor);
+
+            // Save stream for later cleanup
+            mediaStream = stream;
+
+        }, function streamDenied() {
+
+            // Simply end stream if audio access is not allowed
+            writer.sendEnd();
+
+            // Notify of closure
+            if (recorder.onerror)
+                recorder.onerror();
+
+        });
+
+    };
+
+    /**
+     * Stops capturing audio, if the capture has started, freeing all associated
+     * resources. If the capture has not started, this function simply ends the
+     * underlying Guacamole stream.
+     *
+     * @private
+     */
+    var stopAudioCapture = function stopAudioCapture() {
+
+        // Disconnect media source node from script processor
+        if (source)
+            source.disconnect();
+
+        // Disconnect associated script processor node
+        if (processor)
+            processor.disconnect();
+
+        // Stop capture
+        if (mediaStream) {
+            var tracks = mediaStream.getTracks();
+            for (var i = 0; i < tracks.length; i++)
+                tracks[i].stop();
+        }
+
+        // Remove references to now-unneeded components
+        processor = null;
+        source = null;
+        mediaStream = null;
+
+        // End stream
+        writer.sendEnd();
+
+    };
+
+    // Once audio stream is successfully open, request and begin reading audio
+    writer.onack = function audioStreamAcknowledged(status) {
+
+        // Begin capture if successful response and not yet started
+        if (status.code === Guacamole.Status.Code.SUCCESS && !mediaStream)
+            beginAudioCapture();
+
+        // Otherwise stop capture and cease handling any further acks
+        else {
+
+            // Stop capturing audio
+            stopAudioCapture();
+            writer.onack = null;
+
+            // Notify if stream has closed normally
+            if (status.code === Guacamole.Status.Code.RESOURCE_CLOSED) {
+                if (recorder.onclose)
+                    recorder.onclose();
+            }
+
+            // Otherwise notify of closure due to error
+            else {
+                if (recorder.onerror)
+                    recorder.onerror();
+            }
+
+        }
+
+    };
+
+};
+
+Guacamole.RawAudioRecorder.prototype = new Guacamole.AudioRecorder();
+
+/**
+ * Determines whether the given mimetype is supported by
+ * Guacamole.RawAudioRecorder.
+ *
+ * @param {String} mimetype
+ *     The mimetype to check.
+ *
+ * @returns {Boolean}
+ *     true if the given mimetype is supported by Guacamole.RawAudioRecorder,
+ *     false otherwise.
+ */
+Guacamole.RawAudioRecorder.isSupportedType = function isSupportedType(mimetype) {
+
+    // No supported types if no Web Audio API
+    if (!Guacamole.AudioContextFactory.getAudioContext())
+        return false;
+
+    return Guacamole.RawAudioFormat.parse(mimetype) !== null;
+
+};
+
+/**
+ * Returns a list of all mimetypes supported by Guacamole.RawAudioRecorder. Only
+ * the core mimetypes themselves will be listed. Any mimetype parameters, even
+ * required ones, will not be included in the list. For example, "audio/L8" is
+ * a raw audio mimetype that may be supported, but it is invalid without
+ * additional parameters. Something like "audio/L8;rate=44100" would be valid,
+ * however (see https://tools.ietf.org/html/rfc4856).
+ *
+ * @returns {String[]}
+ *     A list of all mimetypes supported by Guacamole.RawAudioRecorder,
+ *     excluding any parameters. If the necessary JavaScript APIs for recording
+ *     raw audio are absent, this list will be empty.
+ */
+Guacamole.RawAudioRecorder.getSupportedTypes = function getSupportedTypes() {
+
+    // No supported types if no Web Audio API
+    if (!Guacamole.AudioContextFactory.getAudioContext())
+        return [];
+
+    // We support 8-bit and 16-bit raw PCM
+    return [
+        'audio/L8',
+        'audio/L16'
+    ];
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
  * A reader which automatically handles the given input stream, assembling all
  * received blobs into a single blob by appending them to each other in order.
  * Note that this object will overwrite any installed event handlers on the
@@ -832,6 +1480,252 @@ Guacamole.BlobReader = function(stream, mimetype) {
     this.onend = null;
 
 };
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A writer which automatically writes to the given output stream with the
+ * contents of provided Blob objects.
+ *
+ * @constructor
+ * @param {Guacamole.OutputStream} stream
+ *     The stream that data will be written to.
+ */
+Guacamole.BlobWriter = function BlobWriter(stream) {
+
+    /**
+     * Reference to this Guacamole.BlobWriter.
+     *
+     * @private
+     * @type {Guacamole.BlobWriter}
+     */
+    var guacWriter = this;
+
+    /**
+     * Wrapped Guacamole.ArrayBufferWriter which will be used to send any
+     * provided file data.
+     *
+     * @private
+     * @type {Guacamole.ArrayBufferWriter}
+     */
+    var arrayBufferWriter = new Guacamole.ArrayBufferWriter(stream);
+
+    // Initially, simply call onack for acknowledgements
+    arrayBufferWriter.onack = function(status) {
+        if (guacWriter.onack)
+            guacWriter.onack(status);
+    };
+
+    /**
+     * Browser-independent implementation of Blob.slice() which uses an end
+     * offset to determine the span of the resulting slice, rather than a
+     * length.
+     *
+     * @private
+     * @param {Blob} blob
+     *     The Blob to slice.
+     *
+     * @param {Number} start
+     *     The starting offset of the slice, in bytes, inclusive.
+     *
+     * @param {Number} end
+     *     The ending offset of the slice, in bytes, exclusive.
+     *
+     * @returns {Blob}
+     *     A Blob containing the data within the given Blob starting at
+     *     <code>start</code> and ending at <code>end - 1</code>.
+     */
+    var slice = function slice(blob, start, end) {
+
+        // Use prefixed implementations if necessary
+        var sliceImplementation = (
+                blob.slice
+             || blob.webkitSlice
+             || blob.mozSlice
+        ).bind(blob);
+
+        var length = end - start;
+
+        // The old Blob.slice() was length-based (not end-based). Try the
+        // length version first, if the two calls are not equivalent.
+        if (length !== end) {
+
+            // If the result of the slice() call matches the expected length,
+            // trust that result. It must be correct.
+            var sliceResult = sliceImplementation(start, length);
+            if (sliceResult.size === length)
+                return sliceResult;
+
+        }
+
+        // Otherwise, use the most-recent standard: end-based slice()
+        return sliceImplementation(start, end);
+
+    };
+
+    /**
+     * Sends the contents of the given blob over the underlying stream.
+     *
+     * @param {Blob} blob
+     *     The blob to send.
+     */
+    this.sendBlob = function sendBlob(blob) {
+
+        var offset = 0;
+        var reader = new FileReader();
+
+        /**
+         * Reads the next chunk of the blob provided to
+         * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}. The chunk itself
+         * is read asynchronously, and will not be available until
+         * reader.onload fires.
+         *
+         * @private
+         */
+        var readNextChunk = function readNextChunk() {
+
+            // If no further chunks remain, inform of completion and stop
+            if (offset >= blob.size) {
+
+                // Fire completion event for completed blob
+                if (guacWriter.oncomplete)
+                    guacWriter.oncomplete(blob);
+
+                // No further chunks to read
+                return;
+
+            }
+
+            // Obtain reference to next chunk as a new blob
+            var chunk = slice(blob, offset, offset + arrayBufferWriter.blobLength);
+            offset += arrayBufferWriter.blobLength;
+
+            // Attempt to read the blob contents represented by the blob into
+            // a new array buffer
+            reader.readAsArrayBuffer(chunk);
+
+        };
+
+        // Send each chunk over the stream, continue reading the next chunk
+        reader.onload = function chunkLoadComplete() {
+
+            // Send the successfully-read chunk
+            arrayBufferWriter.sendData(reader.result);
+
+            // Continue sending more chunks after the latest chunk is
+            // acknowledged
+            arrayBufferWriter.onack = function sendMoreChunks(status) {
+
+                if (guacWriter.onack)
+                    guacWriter.onack(status);
+
+                // Abort transfer if an error occurs
+                if (status.isError())
+                    return;
+
+                // Inform of blob upload progress via progress events
+                if (guacWriter.onprogress)
+                    guacWriter.onprogress(blob, offset - arrayBufferWriter.blobLength);
+
+                // Queue the next chunk for reading
+                readNextChunk();
+
+            };
+
+        };
+
+        // If an error prevents further reading, inform of error and stop
+        reader.onerror = function chunkLoadFailed() {
+
+            // Fire error event, including the context of the error
+            if (guacWriter.onerror)
+                guacWriter.onerror(blob, offset, reader.error);
+
+        };
+
+        // Begin reading the first chunk
+        readNextChunk();
+
+    };
+
+    /**
+     * Signals that no further text will be sent, effectively closing the
+     * stream.
+     */
+    this.sendEnd = function sendEnd() {
+        arrayBufferWriter.sendEnd();
+    };
+
+    /**
+     * Fired for received data, if acknowledged by the server.
+     *
+     * @event
+     * @param {Guacamole.Status} status
+     *     The status of the operation.
+     */
+    this.onack = null;
+
+    /**
+     * Fired when an error occurs reading a blob passed to
+     * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}. The transfer for the
+     * the given blob will cease, but the stream will remain open.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that was being read when the error occurred.
+     *
+     * @param {Number} offset
+     *     The offset of the failed read attempt within the blob, in bytes.
+     *
+     * @param {DOMError} error
+     *     The error that occurred.
+     */
+    this.onerror = null;
+
+    /**
+     * Fired for each successfully-read chunk of data as a blob is being sent
+     * via [sendBlob()]{@link Guacamole.BlobWriter#sendBlob}.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that is being read.
+     *
+     * @param {Number} offset
+     *     The offset of the read that just succeeded.
+     */
+    this.onprogress = null;
+
+    /**
+     * Fired when a blob passed to
+     * [sendBlob()]{@link Guacamole.BlobWriter#sendBlob} has finished being
+     * sent.
+     *
+     * @event
+     * @param {Blob} blob
+     *     The blob that was sent.
+     */
+    this.oncomplete = null;
+
+};
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -8970,6 +9864,903 @@ Guacamole.Parser = function() {
      *                           if any.
      */
     this.oninstruction = null;
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A description of the format of raw PCM audio, such as that used by
+ * Guacamole.RawAudioPlayer and Guacamole.RawAudioRecorder. This object
+ * describes the number of bytes per sample, the number of channels, and the
+ * overall sample rate.
+ *
+ * @constructor
+ * @param {Guacamole.RawAudioFormat|Object} template
+ *     The object whose properties should be copied into the corresponding
+ *     properties of the new Guacamole.RawAudioFormat.
+ */
+Guacamole.RawAudioFormat = function RawAudioFormat(template) {
+
+    /**
+     * The number of bytes in each sample of audio data. This value is
+     * independent of the number of channels.
+     *
+     * @type {Number}
+     */
+    this.bytesPerSample = template.bytesPerSample;
+
+    /**
+     * The number of audio channels (ie: 1 for mono, 2 for stereo).
+     *
+     * @type {Number}
+     */
+    this.channels = template.channels;
+
+    /**
+     * The number of samples per second, per channel.
+     *
+     * @type {Number}
+     */
+    this.rate = template.rate;
+
+};
+
+/**
+ * Parses the given mimetype, returning a new Guacamole.RawAudioFormat
+ * which describes the type of raw audio data represented by that mimetype. If
+ * the mimetype is not a supported raw audio data mimetype, null is returned.
+ *
+ * @param {String} mimetype
+ *     The audio mimetype to parse.
+ *
+ * @returns {Guacamole.RawAudioFormat}
+ *     A new Guacamole.RawAudioFormat which describes the type of raw
+ *     audio data represented by the given mimetype, or null if the given
+ *     mimetype is not supported.
+ */
+Guacamole.RawAudioFormat.parse = function parseFormat(mimetype) {
+
+    var bytesPerSample;
+
+    // Rate is absolutely required - if null is still present later, the
+    // mimetype must not be supported
+    var rate = null;
+
+    // Default for both "audio/L8" and "audio/L16" is one channel
+    var channels = 1;
+
+    // "audio/L8" has one byte per sample
+    if (mimetype.substring(0, 9) === 'audio/L8;') {
+        mimetype = mimetype.substring(9);
+        bytesPerSample = 1;
+    }
+
+    // "audio/L16" has two bytes per sample
+    else if (mimetype.substring(0, 10) === 'audio/L16;') {
+        mimetype = mimetype.substring(10);
+        bytesPerSample = 2;
+    }
+
+    // All other types are unsupported
+    else
+        return null;
+
+    // Parse all parameters
+    var parameters = mimetype.split(',');
+    for (var i = 0; i < parameters.length; i++) {
+
+        var parameter = parameters[i];
+
+        // All parameters must have an equals sign separating name from value
+        var equals = parameter.indexOf('=');
+        if (equals === -1)
+            return null;
+
+        // Parse name and value from parameter string
+        var name  = parameter.substring(0, equals);
+        var value = parameter.substring(equals+1);
+
+        // Handle each supported parameter
+        switch (name) {
+
+            // Number of audio channels
+            case 'channels':
+                channels = parseInt(value);
+                break;
+
+            // Sample rate
+            case 'rate':
+                rate = parseInt(value);
+                break;
+
+            // All other parameters are unsupported
+            default:
+                return null;
+
+        }
+
+    };
+
+    // The rate parameter is required
+    if (rate === null)
+        return null;
+
+    // Return parsed format details
+    return new Guacamole.RawAudioFormat({
+        bytesPerSample : bytesPerSample,
+        channels       : channels,
+        rate           : rate
+    });
+
+};
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+var Guacamole = Guacamole || {};
+
+/**
+ * A recording of a Guacamole session. Given a {@link Guacamole.Tunnel}, the
+ * Guacamole.SessionRecording automatically handles incoming Guacamole
+ * instructions, storing them for playback. Playback of the recording may be
+ * controlled through function calls to the Guacamole.SessionRecording, even
+ * while the recording has not yet finished being created or downloaded.
+ *
+ * @constructor
+ * @param {Guacamole.Tunnel} tunnel
+ *     The Guacamole.Tunnel from which the instructions of the recording should
+ *     be read.
+ */
+Guacamole.SessionRecording = function SessionRecording(tunnel) {
+
+    /**
+     * Reference to this Guacamole.SessionRecording.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording}
+     */
+    var recording = this;
+
+    /**
+     * The minimum number of characters which must have been read between
+     * keyframes.
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var KEYFRAME_CHAR_INTERVAL = 16384;
+
+    /**
+     * The minimum number of milliseconds which must elapse between keyframes.
+     *
+     * @private
+     * @constant
+     * @type {Number}
+     */
+    var KEYFRAME_TIME_INTERVAL = 5000;
+
+    /**
+     * All frames parsed from the provided tunnel.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame[]}
+     */
+    var frames = [];
+
+    /**
+     * All instructions which have been read since the last frame was added to
+     * the frames array.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame.Instruction[]}
+     */
+    var instructions = [];
+
+    /**
+     * The approximate number of characters which have been read from the
+     * provided tunnel since the last frame was flagged for use as a keyframe.
+     *
+     * @private
+     * @type {Number}
+     */
+    var charactersSinceLastKeyframe = 0;
+
+    /**
+     * The timestamp of the last frame which was flagged for use as a keyframe.
+     * If no timestamp has yet been flagged, this will be 0.
+     *
+     * @private
+     * @type {Number}
+     */
+    var lastKeyframeTimestamp = 0;
+
+    /**
+     * Tunnel which feeds arbitrary instructions to the client used by this
+     * Guacamole.SessionRecording for playback of the session recording.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._PlaybackTunnel}
+     */
+    var playbackTunnel = new Guacamole.SessionRecording._PlaybackTunnel();
+
+    /**
+     * Guacamole.Client instance used for visible playback of the session
+     * recording.
+     *
+     * @private
+     * @type {Guacamole.Client}
+     */
+    var playbackClient = new Guacamole.Client(playbackTunnel);
+
+    /**
+     * The current frame rendered within the playback client. If no frame is
+     * yet rendered, this will be -1.
+     *
+     * @private
+     * @type {Number}
+     */
+    var currentFrame = -1;
+
+    /**
+     * The timestamp of the frame when playback began, in milliseconds. If
+     * playback is not in progress, this will be null.
+     *
+     * @private
+     * @type {Number}
+     */
+    var startVideoTimestamp = null;
+
+    /**
+     * The real-world timestamp when playback began, in milliseconds. If
+     * playback is not in progress, this will be null.
+     *
+     * @private
+     * @type {Number}
+     */
+    var startRealTimestamp = null;
+
+    /**
+     * The ID of the timeout which will play the next frame, if playback is in
+     * progress. If playback is not in progress, the ID stored here (if any)
+     * will not be valid.
+     *
+     * @private
+     * @type {Number}
+     */
+    var playbackTimeout = null;
+
+    // Start playback client connected
+    playbackClient.connect();
+
+    // Hide cursor unless mouse position is received
+    playbackClient.getDisplay().showCursor(false);
+
+    // Read instructions from provided tunnel, extracting each frame
+    tunnel.oninstruction = function handleInstruction(opcode, args) {
+
+        // Store opcode and arguments for received instruction
+        var instruction = new Guacamole.SessionRecording._Frame.Instruction(opcode, args.slice());
+        instructions.push(instruction);
+        charactersSinceLastKeyframe += instruction.getSize();
+
+        // Once a sync is received, store all instructions since the last
+        // frame as a new frame
+        if (opcode === 'sync') {
+
+            // Parse frame timestamp from sync instruction
+            var timestamp = parseInt(args[0]);
+
+            // Add a new frame containing the instructions read since last frame
+            var frame = new Guacamole.SessionRecording._Frame(timestamp, instructions);
+            frames.push(frame);
+
+            // This frame should eventually become a keyframe if enough data
+            // has been processed and enough recording time has elapsed, or if
+            // this is the absolute first frame
+            if (frames.length === 1 || (charactersSinceLastKeyframe >= KEYFRAME_CHAR_INTERVAL
+                    && timestamp - lastKeyframeTimestamp >= KEYFRAME_TIME_INTERVAL)) {
+                frame.keyframe = true;
+                lastKeyframeTimestamp = timestamp;
+                charactersSinceLastKeyframe = 0;
+            }
+
+            // Clear set of instructions in preparation for next frame
+            instructions = [];
+
+            // Notify that additional content is available
+            if (recording.onprogress)
+                recording.onprogress(recording.getDuration());
+
+        }
+
+    };
+
+    /**
+     * Converts the given absolute timestamp to a timestamp which is relative
+     * to the first frame in the recording.
+     *
+     * @private
+     * @param {Number} timestamp
+     *     The timestamp to convert to a relative timestamp.
+     *
+     * @returns {Number}
+     *     The difference in milliseconds between the given timestamp and the
+     *     first frame of the recording, or zero if no frames yet exist.
+     */
+    var toRelativeTimestamp = function toRelativeTimestamp(timestamp) {
+
+        // If no frames yet exist, all timestamps are zero
+        if (frames.length === 0)
+            return 0;
+
+        // Calculate timestamp relative to first frame
+        return timestamp - frames[0].timestamp;
+
+    };
+
+    /**
+     * Searches through the given region of frames for the frame having a
+     * relative timestamp closest to the timestamp given.
+     *
+     * @private
+     * @param {Number} minIndex
+     *     The index of the first frame in the region (the frame having the
+     *     smallest timestamp).
+     *
+     * @param {Number} maxIndex
+     *     The index of the last frame in the region (the frame having the
+     *     largest timestamp).
+     *
+     * @param {Number} timestamp
+     *     The relative timestamp to search for, where zero denotes the first
+     *     frame in the recording.
+     *
+     * @returns {Number}
+     *     The index of the frame having a relative timestamp closest to the
+     *     given value.
+     */
+    var findFrame = function findFrame(minIndex, maxIndex, timestamp) {
+
+        // Do not search if the region contains only one element
+        if (minIndex === maxIndex)
+            return minIndex;
+
+        // Split search region into two halves
+        var midIndex = Math.floor((minIndex + maxIndex) / 2);
+        var midTimestamp = toRelativeTimestamp(frames[midIndex].timestamp);
+
+        // If timestamp is within lesser half, search again within that half
+        if (timestamp < midTimestamp && midIndex > minIndex)
+            return findFrame(minIndex, midIndex - 1, timestamp);
+
+        // If timestamp is within greater half, search again within that half
+        if (timestamp > midTimestamp && midIndex < maxIndex)
+            return findFrame(midIndex + 1, maxIndex, timestamp);
+
+        // Otherwise, we lucked out and found a frame with exactly the
+        // desired timestamp
+        return midIndex;
+
+    };
+
+    /**
+     * Replays the instructions associated with the given frame, sending those
+     * instructions to the playback client.
+     *
+     * @private
+     * @param {Number} index
+     *     The index of the frame within the frames array which should be
+     *     replayed.
+     */
+    var replayFrame = function replayFrame(index) {
+
+        var frame = frames[index];
+
+        // Replay all instructions within the retrieved frame
+        for (var i = 0; i < frame.instructions.length; i++) {
+            var instruction = frame.instructions[i];
+            playbackTunnel.receiveInstruction(instruction.opcode, instruction.args);
+        }
+
+        // Store client state if frame is flagged as a keyframe
+        if (frame.keyframe && !frame.clientState) {
+            playbackClient.exportState(function storeClientState(state) {
+                frame.clientState = state;
+            });
+        }
+
+    };
+
+    /**
+     * Moves the playback position to the given frame, resetting the state of
+     * the playback client and replaying frames as necessary.
+     *
+     * @private
+     * @param {Number} index
+     *     The index of the frame which should become the new playback
+     *     position.
+     */
+    var seekToFrame = function seekToFrame(index) {
+
+        var startIndex;
+
+        // Back up until startIndex represents current state
+        for (startIndex = index; startIndex >= 0; startIndex--) {
+
+            var frame = frames[startIndex];
+
+            // If we've reached the current frame, startIndex represents
+            // current state by definition
+            if (startIndex === currentFrame)
+                break;
+
+            // If frame has associated absolute state, make that frame the
+            // current state
+            if (frame.clientState) {
+                playbackClient.importState(frame.clientState);
+                break;
+            }
+
+        }
+
+        // Advance to frame index after current state
+        startIndex++;
+
+        // Replay any applicable incremental frames
+        for (; startIndex <= index; startIndex++)
+            replayFrame(startIndex);
+
+        // Current frame is now at requested index
+        currentFrame = index;
+
+        // Notify of changes in position
+        if (recording.onseek)
+            recording.onseek(recording.getPosition());
+
+    };
+
+    /**
+     * Advances playback to the next frame in the frames array and schedules
+     * playback of the frame following that frame based on their associated
+     * timestamps. If no frames exist after the next frame, playback is paused.
+     *
+     * @private
+     */
+    var continuePlayback = function continuePlayback() {
+
+        // Advance to next frame
+        seekToFrame(currentFrame + 1);
+
+        // If frames remain after advancing, schedule next frame
+        if (currentFrame + 1 < frames.length) {
+
+            // Pull the upcoming frame
+            var next = frames[currentFrame + 1];
+
+            // Calculate the real timestamp corresponding to when the next
+            // frame begins
+            var nextRealTimestamp = next.timestamp - startVideoTimestamp + startRealTimestamp;
+
+            // Calculate the relative delay between the current time and
+            // the next frame start
+            var delay = Math.max(nextRealTimestamp - new Date().getTime(), 0);
+
+            // Advance to next frame after enough time has elapsed
+            playbackTimeout = window.setTimeout(function frameDelayElapsed() {
+                continuePlayback();
+            }, delay);
+
+        }
+
+        // Otherwise stop playback
+        else
+            recording.pause();
+
+    };
+
+    /**
+     * Fired when new frames have become available while the recording is
+     * being downloaded.
+     *
+     * @event
+     * @param {Number} duration
+     *     The new duration of the recording, in milliseconds.
+     */
+    this.onprogress = null;
+
+    /**
+     * Fired whenever playback of the recording has started.
+     *
+     * @event
+     */
+    this.onplay = null;
+
+    /**
+     * Fired whenever playback of the recording has been paused. This may
+     * happen when playback is explicitly paused with a call to pause(), or
+     * when playback is implicitly paused due to reaching the end of the
+     * recording.
+     *
+     * @event
+     */
+    this.onpause = null;
+
+    /**
+     * Fired whenever the playback position within the recording changes.
+     *
+     * @event
+     * @param {Number} position
+     *     The new position within the recording, in milliseconds.
+     */
+    this.onseek = null;
+
+    /**
+     * Connects the underlying tunnel, beginning download of the Guacamole
+     * session. Playback of the Guacamole session cannot occur until at least
+     * one frame worth of instructions has been downloaded.
+     *
+     * @param {String} data
+     *     The data to send to the tunnel when connecting.
+     */
+    this.connect = function connect(data) {
+        tunnel.connect(data);
+    };
+
+    /**
+     * Disconnects the underlying tunnel, stopping further download of the
+     * Guacamole session.
+     */
+    this.disconnect = function disconnect() {
+        tunnel.disconnect();
+    };
+
+    /**
+     * Returns the underlying display of the Guacamole.Client used by this
+     * Guacamole.SessionRecording for playback. The display contains an Element
+     * which can be added to the DOM, causing the display (and thus playback of
+     * the recording) to become visible.
+     *
+     * @return {Guacamole.Display}
+     *     The underlying display of the Guacamole.Client used by this
+     *     Guacamole.SessionRecording for playback.
+     */
+    this.getDisplay = function getDisplay() {
+        return playbackClient.getDisplay();
+    };
+
+    /**
+     * Returns whether playback is currently in progress.
+     *
+     * @returns {Boolean}
+     *     true if playback is currently in progress, false otherwise.
+     */
+    this.isPlaying = function isPlaying() {
+        return !!startVideoTimestamp;
+    };
+
+    /**
+     * Returns the current playback position within the recording, in
+     * milliseconds, where zero is the start of the recording.
+     *
+     * @returns {Number}
+     *     The current playback position within the recording, in milliseconds.
+     */
+    this.getPosition = function getPosition() {
+
+        // Position is simply zero if playback has not started at all
+        if (currentFrame === -1)
+            return 0;
+
+        // Return current position as a millisecond timestamp relative to the
+        // start of the recording
+        return toRelativeTimestamp(frames[currentFrame].timestamp);
+
+    };
+
+    /**
+     * Returns the duration of this recording, in milliseconds. If the
+     * recording is still being downloaded, this value will gradually increase.
+     *
+     * @returns {Number}
+     *     The duration of this recording, in milliseconds.
+     */
+    this.getDuration = function getDuration() {
+
+        // If no frames yet exist, duration is zero
+        if (frames.length === 0)
+            return 0;
+
+        // Recording duration is simply the timestamp of the last frame
+        return toRelativeTimestamp(frames[frames.length - 1].timestamp);
+
+    };
+
+    /**
+     * Begins continuous playback of the recording downloaded thus far.
+     * Playback of the recording will continue until pause() is invoked or
+     * until no further frames exist. Playback is initially paused when a
+     * Guacamole.SessionRecording is created, and must be explicitly started
+     * through a call to this function. If playback is already in progress,
+     * this function has no effect.
+     */
+    this.play = function play() {
+
+        // If playback is not already in progress and frames remain,
+        // begin playback
+        if (!recording.isPlaying() && currentFrame + 1 < frames.length) {
+
+            // Notify that playback is starting
+            if (recording.onplay)
+                recording.onplay();
+
+            // Store timestamp of playback start for relative scheduling of
+            // future frames
+            var next = frames[currentFrame + 1];
+            startVideoTimestamp = next.timestamp;
+            startRealTimestamp = new Date().getTime();
+
+            // Begin playback of video
+            continuePlayback();
+
+        }
+
+    };
+
+    /**
+     * Seeks to the given position within the recording. If the recording is
+     * currently being played back, playback will continue after the seek is
+     * performed. If the recording is currently paused, playback will be
+     * paused after the seek is performed.
+     *
+     * @param {Number} position
+     *     The position within the recording to seek to, in milliseconds.
+     */
+    this.seek = function seek(position) {
+
+        // Do not seek if no frames exist
+        if (frames.length === 0)
+            return;
+
+        // Pause playback, preserving playback state
+        var originallyPlaying = recording.isPlaying();
+        recording.pause();
+
+        // Perform seek
+        seekToFrame(findFrame(0, frames.length - 1, position));
+
+        // Restore playback state
+        if (originallyPlaying)
+            recording.play();
+
+    };
+
+    /**
+     * Pauses playback of the recording, if playback is currently in progress.
+     * If playback is not in progress, this function has no effect. Playback is
+     * initially paused when a Guacamole.SessionRecording is created, and must
+     * be explicitly started through a call to play().
+     */
+    this.pause = function pause() {
+
+        // Stop playback only if playback is in progress
+        if (recording.isPlaying()) {
+
+            // Notify that playback is stopping
+            if (recording.onpause)
+                recording.onpause();
+
+            // Stop playback
+            window.clearTimeout(playbackTimeout);
+            startVideoTimestamp = null;
+            startRealTimestamp = null;
+
+        }
+
+    };
+
+};
+
+/**
+ * A single frame of Guacamole session data. Each frame is made up of the set
+ * of instructions used to generate that frame, and the timestamp as dictated
+ * by the "sync" instruction terminating the frame. Optionally, a frame may
+ * also be associated with a snapshot of Guacamole client state, such that the
+ * frame can be rendered without replaying all previous frames.
+ *
+ * @private
+ * @constructor
+ * @param {Number} timestamp
+ *     The timestamp of this frame, as dictated by the "sync" instruction which
+ *     terminates the frame.
+ *
+ * @param {Guacamole.SessionRecording._Frame.Instruction[]} instructions
+ *     All instructions which are necessary to generate this frame relative to
+ *     the previous frame in the Guacamole session.
+ */
+Guacamole.SessionRecording._Frame = function _Frame(timestamp, instructions) {
+
+    /**
+     * Whether this frame should be used as a keyframe if possible. This value
+     * is purely advisory. The stored clientState must eventually be manually
+     * set for the frame to be used as a keyframe. By default, frames are not
+     * keyframes.
+     *
+     * @type {Boolean}
+     * @default false
+     */
+    this.keyframe = false;
+
+    /**
+     * The timestamp of this frame, as dictated by the "sync" instruction which
+     * terminates the frame.
+     *
+     * @type {Number}
+     */
+    this.timestamp = timestamp;
+
+    /**
+     * All instructions which are necessary to generate this frame relative to
+     * the previous frame in the Guacamole session.
+     *
+     * @type {Guacamole.SessionRecording._Frame.Instruction[]}
+     */
+    this.instructions = instructions;
+
+    /**
+     * A snapshot of client state after this frame was rendered, as returned by
+     * a call to exportState(). If no such snapshot has been taken, this will
+     * be null.
+     *
+     * @type {Object}
+     * @default null
+     */
+    this.clientState = null;
+
+};
+
+/**
+ * A Guacamole protocol instruction. Each Guacamole protocol instruction is
+ * made up of an opcode and set of arguments.
+ *
+ * @private
+ * @constructor
+ * @param {String} opcode
+ *     The opcode of this Guacamole instruction.
+ *
+ * @param {String[]} args
+ *     All arguments associated with this Guacamole instruction.
+ */
+Guacamole.SessionRecording._Frame.Instruction = function Instruction(opcode, args) {
+
+    /**
+     * Reference to this Guacamole.SessionRecording._Frame.Instruction.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._Frame.Instruction}
+     */
+    var instruction = this;
+
+    /**
+     * The opcode of this Guacamole instruction.
+     *
+     * @type {String}
+     */
+    this.opcode = opcode;
+
+    /**
+     * All arguments associated with this Guacamole instruction.
+     *
+     * @type {String[]}
+     */
+    this.args = args;
+
+    /**
+     * Returns the approximate number of characters which make up this
+     * instruction. This value is only approximate as it excludes the length
+     * prefixes and various delimiters used by the Guacamole protocol; only
+     * the content of the opcode and each argument is taken into account.
+     *
+     * @returns {Number}
+     *     The approximate size of this instruction, in characters.
+     */
+    this.getSize = function getSize() {
+
+        // Init with length of opcode
+        var size = instruction.opcode.length;
+
+        // Add length of all arguments
+        for (var i = 0; i < instruction.args.length; i++)
+            size += instruction.args[i].length;
+
+        return size;
+
+    };
+
+};
+
+/**
+ * A read-only Guacamole.Tunnel implementation which streams instructions
+ * received through explicit calls to its receiveInstruction() function.
+ *
+ * @private
+ * @constructor
+ * @augments {Guacamole.Tunnel}
+ */
+Guacamole.SessionRecording._PlaybackTunnel = function _PlaybackTunnel() {
+
+    /**
+     * Reference to this Guacamole.SessionRecording._PlaybackTunnel.
+     *
+     * @private
+     * @type {Guacamole.SessionRecording._PlaybackTunnel}
+     */
+    var tunnel = this;
+
+    this.connect = function connect(data) {
+        // Do nothing
+    };
+
+    this.sendMessage = function sendMessage(elements) {
+        // Do nothing
+    };
+
+    this.disconnect = function disconnect() {
+        // Do nothing
+    };
+
+    /**
+     * Invokes this tunnel's oninstruction handler, notifying users of this
+     * tunnel (such as a Guacamole.Client instance) that an instruction has
+     * been received. If the oninstruction handler has not been set, this
+     * function has no effect.
+     *
+     * @param {String} opcode
+     *     The opcode of the Guacamole instruction.
+     *
+     * @param {String[]} args
+     *     All arguments associated with this Guacamole instruction.
+     */
+    this.receiveInstruction = function receiveInstruction(opcode, args) {
+        if (tunnel.oninstruction)
+            tunnel.oninstruction(opcode, args);
+    };
 
 };
 

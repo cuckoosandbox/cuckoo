@@ -33,10 +33,9 @@ var GuacamoleWrapper = function (_Hookable) {
     _this.hooks = {
       connect: [],
       error: []
-    };
 
-    // detect Guacamole
-    if (!window.Guacamole) {
+      // detect Guacamole
+    };if (!window.Guacamole) {
       var _ret;
 
       console.error('No Guacamole! Did you forget to process the avocados in src/scripts/rdp/guac?');
@@ -96,19 +95,17 @@ var GuacamoleWrapper = function (_Hookable) {
       if (!this.client) return;
 
       if (enable) {
-        (function () {
-          _this3._mouse = new Guacamole.Mouse(_this3.client.getDisplay().getElement());
-          var sendState = function sendState(state) {
-            return _this3.client.sendMouseState(state);
-          };
+        this._mouse = new Guacamole.Mouse(this.client.getDisplay().getElement());
+        var sendState = function sendState(state) {
+          return _this3.client.sendMouseState(state);
+        };
 
-          // apply sendState function
-          _this3._mouse.onmousemove = function () {
-            if (_this3.parent.toolbar.buttons.control.toggled) {
-              sendState();
-            }
-          };
-        })();
+        // apply sendState function
+        this._mouse.onmousemove = function () {
+          if (_this3.parent.toolbar.buttons.control.toggled) {
+            sendState();
+          }
+        };
       }
     }
 
@@ -689,18 +686,25 @@ var RDPToolbar = function (_Hookable) {
       control: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="control"]'), { client: client, holdToggle: true }),
       reboot: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="reboot"]'), { client: client }),
       close: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="close"]'), { client: client })
-    };
 
-    // toggle fullscreen mode
-    _this.buttons.fullscreen.on('click', function () {
-      // document.getElementsByTagName('body')[0].requestFullscreen();
+      // toggle fullscreen mode
+    };_this.buttons.fullscreen.on('click', function () {
+      if (CuckooWeb.isFullsceen()) {
+        _this.client.$.removeClass('fullscreen');
+        CuckooWeb.exitFullscreen();
+      } else {
+        _this.client.$.addClass('fullscreen');
+        CuckooWeb.requestFullscreen(document.getElementById('rdp-client'));
+      }
     });
 
+    // snapshots
     _this.buttons.snapshot.on('click', function () {
       return _this.client.snapshots.create();
     });
-    _this.buttons.control.on('toggle', function (toggled) {
 
+    // toggles control modes
+    _this.buttons.control.on('toggle', function (toggled) {
       if (toggled) {
         // enable mouse and keyboard
         _this.client.service.mouse(true);
@@ -992,6 +996,7 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
+    console.log(_this.$);
 
     // connect guac service wrapper
     _this.service = new _GuacWrap2.default({

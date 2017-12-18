@@ -15878,6 +15878,11 @@ body.night .app-message
     padding-top: 50px;
 }
 
+.rdp-app.fullscreen
+{
+    padding-top: 0;
+}
+
 .rdp-app__display
 {
     position: relative;

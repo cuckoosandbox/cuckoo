@@ -109,6 +109,10 @@ $RDP_APP_CREDIT_BGC: #383838;
     left: 0;
     padding-top: 50px;
 
+    &.fullscreen {
+      padding-top: 0;
+    }
+
     &__display {
       position: relative;
       display: flex;

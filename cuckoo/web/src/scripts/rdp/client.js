@@ -7,9 +7,11 @@ import RDPDialog from './RDPDialog';
 // RDP Client wrapper for collecting all sub classes that belong to this interface
 // - can be treated like a controller. Any processes are catched up on here.
 class RDPClient extends Hookable {
+
   constructor(el) {
     super();
     this.$ = el || null;
+    console.log(this.$);
 
     // connect guac service wrapper
     this.service = new GuacamoleWrapper({
