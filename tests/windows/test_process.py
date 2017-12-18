@@ -58,8 +58,7 @@ def test_is32bit_process():
     p = Process()
 
     with chdir("cuckoo/data/analyzer/windows"):
-        # Normally (i.e., when not Administrator) the user shouldn't be able
-        # to access the lsass.exe process.
+        # Normally the user shouldn't be able to access the SYSTEM process.
         with pytest.raises(CuckooError) as e:
-            p.is32bit(process_name="lsass.exe")
+            p.is32bit(pid=4)
         e.match("process access denied$")

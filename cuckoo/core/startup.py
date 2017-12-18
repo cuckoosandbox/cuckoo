@@ -100,9 +100,9 @@ def check_version():
     print(" Checking for updates...")
 
     try:
-        r = requests.post(
-            "http://api.cuckoosandbox.org/checkversion.php",
-            data={"version": version}
+        r = requests.get(
+            "https://cuckoosandbox.org/updates.json",
+            params={"version": version}, timeout=6
         )
         r.raise_for_status()
         r = r.json()
@@ -110,28 +110,24 @@ def check_version():
         print(red(" Error checking for the latest Cuckoo version: %s!" % e))
         return
 
-    if not isinstance(r, dict) or r.get("error"):
-        print(red(" Error checking for the latest Cuckoo version:"))
-        print(yellow(" Response: %s" % r))
-        return
-
-    rc1_responses = "NEW_VERSION", "NO_UPDATES"
-
-    # Deprecated response.
-    if r.get("response") in rc1_responses and r.get("current") == "2.0-rc1":
-        print(green(" You're good to go!"))
-        return
-
     try:
-        old = StrictVersion(version) < StrictVersion(r.get("current"))
+        old = StrictVersion(version) < StrictVersion(r["version"])
     except ValueError:
         old = True
 
     if old:
-        msg = "Cuckoo Sandbox version %s is available now." % r.get("current")
-        print(red(" Outdated! ") + msg),
+        msg = "Cuckoo Sandbox version %s is available now." % r["version"]
+        print(red(" Outdated! ") + msg)
     else:
         print(green(" You're good to go!"))
+
+    print("\n Our latest blogposts:")
+    for blogpost in r["blogposts"]:
+        print(" * %s, %s." % (yellow(blogpost["title"]), blogpost["date"]))
+        print("   %s" % red(blogpost["oneline"]))
+        print("   More at %s" % blogpost["url"])
+        print("")
+    return r
 
 def init_logging(level):
     """Initializes logging."""

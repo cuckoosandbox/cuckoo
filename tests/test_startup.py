@@ -140,48 +140,13 @@ def test_check_version_disabled(capsys):
     assert "Checking for" not in out
 
 @responses.activate
-def test_version_20rc1(capsys):
-    set_cwd(tempfile.mkdtemp())
-    responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
-        status=200, json={
-            "error": False,
-            "current": "2.0-rc1",
-            "response": "NEW_VERSION",
-        }
-    )
-
-    check_version()
-    out, err = capsys.readouterr()
-    assert "Checking for" in out
-    assert "You're good to go" in out
-
-@responses.activate
-def test_version_20rc1_noupd(capsys):
-    set_cwd(tempfile.mkdtemp())
-    responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
-        status=200, json={
-            "error": False,
-            "current": "2.0-rc1",
-            "response": "NO_UPDATES",
-        }
-    )
-
-    check_version()
-    out, err = capsys.readouterr()
-    assert "Checking for" in out
-    assert "You're good to go" in out
-
-@responses.activate
 def test_version_newer(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        responses.GET, "https://cuckoosandbox.org/updates.json",
         status=200, json={
-            "error": False,
-            "current": "20.0.0",
-            "response": "NEW_VERSION",
+            "version": "20.0.0",
+            "blogposts": [],
         }
     )
 
@@ -195,11 +160,10 @@ def test_version_newer(capsys):
 def test_version_garbage(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        responses.GET, "https://cuckoosandbox.org/updates.json",
         status=200, json={
-            "error": False,
-            "current": "thisisnotaversion",
-            "response": "NEW_VERSION",
+            "version": "thisisnotaversion",
+            "blogposts": [],
         }
     )
 
@@ -215,21 +179,8 @@ def test_version_garbage(capsys):
 def test_version_resp404(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        responses.GET, "https://cuckoosandbox.org/updates.json",
         status=404
-    )
-
-    check_version()
-    out, err = capsys.readouterr()
-    assert "Checking for" in out
-    assert "Error checking for" in out
-
-@responses.activate
-def test_version_respinvld(capsys):
-    set_cwd(tempfile.mkdtemp())
-    responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
-        status=200, json=["this is not a dictionary"]
     )
 
     check_version()
@@ -241,7 +192,7 @@ def test_version_respinvld(capsys):
 def test_version_respnotjson(capsys):
     set_cwd(tempfile.mkdtemp())
     responses.add(
-        responses.POST, "http://api.cuckoosandbox.org/checkversion.php",
+        responses.GET, "https://cuckoosandbox.org/updates.json",
         status=200, body="thisisnotevenjson"
     )
 

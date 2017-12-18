@@ -33,17 +33,17 @@ This is a development version, we do not recommend its use in production.
 You can find a full documentation of the latest stable release
 `here <http://docs.cuckoosandbox.org/>`_.
 
-.. image:: https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=package
+.. image:: https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=master
    :alt: Linux Build Status
    :target: https://travis-ci.org/cuckoosandbox/cuckoo
 
-.. image:: https://ci.appveyor.com/api/projects/status/p892esebjdbhq653/branch/package?svg=true
+.. image:: https://ci.appveyor.com/api/projects/status/p892esebjdbhq653/branch/master?svg=true
    :alt: Windows Build Status
-   :target: https://ci.appveyor.com/project/jbremer/cuckoo/branch/package
+   :target: https://ci.appveyor.com/project/jbremer/cuckoo/branch/master
 
-.. image:: https://coveralls.io/repos/github/cuckoosandbox/cuckoo/badge.svg?branch=package
+.. image:: https://coveralls.io/repos/github/cuckoosandbox/cuckoo/badge.svg?branch=master
    :alt: Coverage Coverage Status
-   :target: https://coveralls.io/github/cuckoosandbox/cuckoo?branch=package
+   :target: https://coveralls.io/github/cuckoosandbox/cuckoo?branch=master
 
 .. image:: https://codecov.io/gh/cuckoosandbox/cuckoo/branch/master/graph/badge.svg
    :alt: Codecov Coverage Status

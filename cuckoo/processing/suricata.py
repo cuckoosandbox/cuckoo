@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -239,7 +238,7 @@ class Suricata(Processing):
                 referer = None
 
             self.results["files"].append({
-                "id": int(filepath.split(".", 1)[-1]),
+                "id": int(filepath.split(".")[-1]),
                 "filesize": event["size"],
                 "filename": os.path.basename(event["filename"]),
                 "hostname": event.get("http_host"),

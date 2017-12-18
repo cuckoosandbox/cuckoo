@@ -12,13 +12,14 @@ import pytest
 import shutil
 import tempfile
 
-from cuckoo.common.abstracts import Processing
+from cuckoo.common.abstracts import Processing, Extractor
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
 )
 from cuckoo.common.files import Files
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
+from cuckoo.core.extract import ExtractManager
 from cuckoo.core.plugins import RunProcessing
 from cuckoo.core.startup import init_console_logging, init_yara
 from cuckoo.main import cuckoo_create
@@ -34,8 +35,9 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile
+from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
 from cuckoo.processing.strings import Strings
+from cuckoo.processing.suricata import Suricata
 from cuckoo.processing.targetinfo import TargetInfo
 from cuckoo.processing.virustotal import VirusTotal
 
@@ -152,6 +154,57 @@ class TestProcessing(object):
         r = s.run()["pdf"][0]
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
+    def test_pdf_stringjs(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf1-stringjs.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf1-stringjs.pdf"
+        r = s.run()["pdf"][12]
+        assert "app.alert({" in r["javascript"][0]["orig_code"]
+
+    def test_pdf_ignorefake(self):
+        set_cwd(tempfile.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "fakepdf.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/fakepdf.pdf"
+        assert s.run() == {
+            "pdf": [],
+        }
+
+    @mock.patch("cuckoo.processing.static.dispatch")
+    def test_pdf_workercrash(self, md):
+        set_cwd(tempfile.mkdtemp())
+        md.return_value = None
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pdf0.pdf",
+        })
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        s.file_path = "tests/files/pdf0.pdf"
+        r = s.run()
+        assert r["pdf"] == []
+
     def test_phishing0_pdf(self):
         set_cwd(tempfile.mkdtemp())
 
@@ -238,6 +291,10 @@ class TestProcessing(object):
         assert "kkkllsslll" in obj["openaction"]
 
     def test_office(self):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
         s = Static()
         s.set_task({
             "id": 1,
@@ -276,11 +333,39 @@ class TestProcessing(object):
         s = Static()
         s.set_task({
             "category": "file",
+            "package": "lnk",
+            "target": "lnk_2.lnk",
+        })
+        s.file_path = "tests/files/lnk_2.lnk"
+        obj = s.run()["lnk"]
+        assert obj["basepath"] == "C:\\Windows\\System32\\cmd.exe"
+        assert obj["flags"] == {
+            "cmdline": True, "description": True, "icon": True,
+            "references": True, "relapath": True, "shellidlist": True,
+            "workingdir": True,
+        }
+        assert "digitale" in obj["description"]
+        assert obj["icon"] == "C:\\Windows\\System32\\write.exe"
+        assert "cmd.exe" in obj["relapath"]
+        assert "bitsadmin.exe" in obj["cmdline"]
+        assert "/transfer" in obj["cmdline"]
+
+    def test_lnk2_generic(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
             "package": "generic",
             "target": "lnk_2.lnk",
         })
         s.file_path = "tests/files/lnk_2.lnk"
         assert "elf" not in s.run()
+
+    def test_incomplete_lnk(self):
+        assert LnkShortcut(Files.temp_put("A"*4)).run() is None
+        assert LnkShortcut(Files.temp_put(
+            "".join(chr(x) for x in LnkShortcut.signature + LnkShortcut.guid) +
+            "A"*100
+        )).run() is None
 
     def test_procmon(self):
         p = Procmon()
@@ -842,18 +927,20 @@ class TestBehavior(object):
             "first_seen": 1,
             "pid": 1234,
             "program": "cmd",
-            "script": cwd("extracted", "0.bat", analysis=1),
+            "raw": cwd("extracted", "0.bat", analysis=1),
             "yara": [],
+            "info": {},
         }, {
             "category": "script",
             "first_seen": 2,
             "pid": 1235,
             "program": "powershell",
-            "script": cwd("extracted", "1.ps1", analysis=1),
+            "raw": cwd("extracted", "1.ps1", analysis=1),
             "yara": [],
+            "info": {},
         }]
-        assert open(out[0]["script"], "rb").read() == "ping 1.2.3.4"
-        assert open(out[1]["script"], "rb").read() == 'echo "Recursive"'
+        assert open(out[0]["raw"], "rb").read() == "ping 1.2.3.4"
+        assert open(out[1]["raw"], "rb").read() == 'echo "Recursive"'
 
     def test_stap_log(self):
         set_cwd(tempfile.mkdtemp())
@@ -1297,3 +1384,75 @@ def test_wsf_language():
     wsf.decode = mock.MagicMock(return_value="codehere")
     assert wsf.run() == ["codehere"]
     wsf.decode.assert_called_once()
+
+class TestSuricata(object):
+    @mock.patch("subprocess.check_call")
+    def test_path(self, p):
+        set_cwd(tempfile.mkdtemp(prefix="."))
+        cuckoo_create()
+        mkdir(cwd(analysis=1))
+
+        def create():
+            mkdir(cwd("suricata", "files", analysis=1))
+
+            f = open(cwd("suricata", "files", "file.1", analysis=1), "wb")
+            f.write("a")
+            f = open(cwd("suricata", "eve.json", analysis=1), "wb")
+            f.write("")
+            f = open(cwd("suricata", "files-json.log", analysis=1), "wb")
+            f.write(json.dumps({
+                "id": 1,
+                "size": 1,
+                "filename": "a.txt",
+            }))
+
+        open(cwd("dump.pcap", analysis=1), "wb").write("pcap")
+
+        s = Suricata()
+        s.set_path(cwd(analysis=1))
+        s.set_options({})
+        s.process_pcap_binary = create
+        s.run()
+
+def test_static_extracted():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "processing": {
+            "analysisinfo": {
+                "enabled": False,
+            },
+            "debug": {
+                "enabled": False,
+            }
+        },
+    })
+    mkdir(cwd(analysis=1))
+    shutil.copy("tests/files/createproc1.docm", cwd("binary", analysis=1))
+
+    open(cwd("yara", "office", "ole.yar"), "wb").write("""
+        rule OleInside {
+            strings:
+                $s1 = "Win32_Process"
+            condition:
+                filename matches /word\/vbaProject.bin/ and $s1
+        }
+    """)
+    init_yara()
+
+    class OleInsideExtractor(Extractor):
+        def handle_yara(self, filepath, match):
+            return (
+                match.category == "office" and
+                match.yara[0].name == "OleInside"
+            )
+
+    ExtractManager._instances = {}
+    ExtractManager.extractors = OleInsideExtractor,
+
+    results = RunProcessing(Dictionary({
+        "id": 1,
+        "category": "file",
+        "target": "tests/files/createproc1.docm",
+    })).run()
+
+    assert len(results["extracted"]) == 1

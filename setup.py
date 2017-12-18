@@ -139,9 +139,11 @@ def do_setup(**kwargs):
         if hasattr(e, "message") and isinstance(e.message, basestring):
             do_help(e, e.message)
 
+        exit(1)
+
 do_setup(
     name="Cuckoo",
-    version="2.0.4.4",
+    version="2.0.5.2",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[

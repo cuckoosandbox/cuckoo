@@ -7,7 +7,7 @@ import fnmatch
 import hashlib
 import io
 import logging
-import os.path
+import os
 import random
 import requests
 import shutil
@@ -500,6 +500,11 @@ def migrate_cwd():
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
+
+    # We remove $CWD/monitor/latest upfront if it's a symbolic link, because
+    # our migration code doesn't properly handle symbolic links.
+    if os.path.islink(cwd("monitor", "latest")):
+        os.remove(cwd("monitor", "latest"))
 
     modified, outdated, deleted = [], [], []
     for filename, hashes in hashes.items():

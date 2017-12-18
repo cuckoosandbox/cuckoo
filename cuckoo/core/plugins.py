@@ -184,7 +184,7 @@ class RunProcessing(object):
         """@param task: task dictionary of the analysis to process."""
         self.task = task
         self.machine = {}
-        self.analysis_path = cwd("storage", "analyses", "%s" % task["id"])
+        self.analysis_path = cwd(analysis=task["id"])
         self.baseline_path = cwd("storage", "baseline")
 
     def process(self, module, results):
@@ -484,7 +484,7 @@ class RunSignatures(object):
             loop_yara("dropped", dropped["path"], dropped["yara"])
 
         for extr in self.results.get("extracted", []):
-            loop_yara("extracted", extr[extr["category"]], extr["yara"])
+            loop_yara("extracted", extr["raw"], extr["yara"])
 
     def process_extracted(self):
         task_id = self.results.get("info", {}).get("id")

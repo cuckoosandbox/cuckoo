@@ -326,6 +326,7 @@ def test_on_yara():
     )
 
     Database().connect()
+    ExtractManager._instances = {}
     results = RunProcessing(task=Dictionary({
         "id": 1,
         "category": "file",
@@ -356,13 +357,13 @@ def test_on_yara():
         def init(self):
             pass
 
-        def on_signature(self):
+        def on_signature(self, sig):
             pass
 
         def on_complete(self):
             pass
 
-        def on_extract(self):
+        def on_extract(self, match):
             pass
 
         on_yara = mock.MagicMock()
@@ -415,8 +416,9 @@ def test_on_extract():
         "pid": 1,
         "first_seen": 2,
         "program": "cmd",
-        "script": cwd("extracted", "0.bat", analysis=2),
+        "raw": cwd("extracted", "0.bat", analysis=2),
         "yara": [],
+        "info": {},
     }]
 
     class sig1(object):

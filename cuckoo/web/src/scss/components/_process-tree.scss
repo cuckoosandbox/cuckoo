@@ -1,3 +1,9 @@
+// indentation bump for the tree
+$tree-indent: 20px;
+$tree-inner-y: 5px;
+$tree-inner-x: 10px;
+$tree-elem-space: 0px;
+
 .process-tree {
 
   position: relative;
@@ -170,8 +176,10 @@
         max-width: 75%;
         font-size: 14px;
         color: #6297F8;
-        margin: 10px 0;
+        margin: 0;
+        padding: $tree-inner-y $tree-inner-x;
         font-weight: 700;
+        border-left: 1px solid #ccc;
 
         // ensures flexible text wrapping
         flex-basis: 100%;
@@ -181,7 +189,7 @@
           display: block;
           color: #818181;
           font-size: 12px;
-          margin-top: 5px;
+          margin-top: $tree-elem-space;
           font-weight: 400;
 
           // configures maximum length - auto-ellipsing
@@ -217,7 +225,7 @@
       div.selected {
 
         // bump extra 15px to assure spacing that does not disturb.
-        padding-left: 15px;
+        // padding-left: 15px;
 
         & > * {
           position: relative;
@@ -246,6 +254,11 @@
       // theming: cyborg
       @include cuckoo-theme('cyborg') {
         background-color: $cyborg_background_color;
+
+        p {
+          border-left-color: $cyborg_border_color;
+        }
+
         div.selected {
           &:before {
             background-color: $cyborg_primary_color;
@@ -256,6 +269,8 @@
       // theming: night
       @include cuckoo-theme('night') {
         background-color: $night_background_color;
+
+        p { border-left-color: $night_border_color; }
         div.selected {
           &:before {
             background-color: shade($night_border_color, 10%);
@@ -267,7 +282,7 @@
 
     // indentation bumps for ul>ul>ul>ul>etc childs
     ul {
-      padding-left: 10px;
+      padding-left: $tree-indent;
     }
 
     @include cuckoo-theme('cyborg') {

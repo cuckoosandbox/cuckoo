@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
@@ -6,6 +5,7 @@
 import datetime
 import logging
 import os.path
+import random
 import time
 
 from cuckoo.distributed.api import node_status, fetch_tasks, delete_task
@@ -18,7 +18,9 @@ log = logging.getLogger(__name__)
 
 def scheduler():
     while True:
-        for node in Node.query.filter_by(enabled=True, mode="normal").all():
+        nodes = Node.query.filter_by(enabled=True, mode="normal").all()
+        random.shuffle(nodes)
+        for node in nodes:
             # Check how many tasks have already been assigned for this node.
             q = Task.query.filter_by(status=Task.ASSIGNED, node_id=node.id)
             if q.count() >= settings.threshold:

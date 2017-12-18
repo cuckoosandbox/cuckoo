@@ -41,7 +41,7 @@ class ExtractManager(object):
                     "compatible with this Extractor (either it's too old or "
                     "too new): cuckoo=%s extractor=%s minversion=%s "
                     "maxversion=%s",
-                    version, ext.__class__.__name__, ext.minimum, ext.maximum
+                    version, ext.__name__, ext.minimum, ext.maximum
                 )
                 continue
 
@@ -52,7 +52,7 @@ class ExtractManager(object):
                 ext.yara_rules = ext.yara_rules,
 
     def __del__(self):
-        del ExtractManager._instances[self.task_id]
+        self._instances.pop(self.task_id, None)
 
     def write_extracted(self, ext, payload):
         dirpath = cwd("extracted", analysis=self.task_id)
@@ -75,10 +75,10 @@ class ExtractManager(object):
         open(filepath, "wb").write(payload)
         return filepath
 
-    def push_command_line(self, cmdline):
+    def push_command_line(self, cmdline, process=None):
         command = Scripting().parse_command(cmdline)
         if command and command.get_script():
-            self.push_script(None, command)
+            self.push_script(process, command)
 
     def push_script(self, process, command):
         filepath = self.write_extracted(
@@ -95,8 +95,9 @@ class ExtractManager(object):
             "program": command.program,
             "pid": process.get("pid"),
             "first_seen": process.get("first_seen"),
-            "script": filepath,
+            "raw": filepath,
             "yara": yara_matches,
+            "info": {},
         })
         for match in yara_matches:
             match = YaraMatch(match, "script")
@@ -119,8 +120,10 @@ class ExtractManager(object):
         self.items.append({
             "category": "shellcode",
             "raw": filepath,
-            "shellcode": "%s.txt" % filepath,
             "yara": yara_matches,
+            "info": {
+                "pretty": "%s.txt" % filepath,
+            },
         })
         for match in yara_matches:
             match = YaraMatch(match, "shellcode")
@@ -137,7 +140,7 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": yara_matches,
-            category: info,
+            "info": info or {},
         })
         for match in yara_matches:
             match = YaraMatch(match, category)
@@ -152,8 +155,14 @@ class ExtractManager(object):
             "category": category,
             "raw": filepath,
             "yara": [],
-            category: info,
+            "info": info or {},
         })
+
+    def enhance(self, filepath, key, value):
+        for item in self.items:
+            if item["raw"] == filepath:
+                item["info"][key] = value
+                break
 
     def peek_office(self, files):
         for filename, content in files.items():

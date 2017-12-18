@@ -470,7 +470,6 @@ class OfficeDocument(object):
     ]
 
     eps_comments = "\\(([\\w\\s]+)\\)"
-    ole_magic = "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
     def __init__(self, filepath, task_id):
         self.filepath = filepath
@@ -533,35 +532,6 @@ class OfficeDocument(object):
                 ret.extend(re.findall(self.eps_comments, content))
         return ret
 
-    def extract_lnk(self):
-        """Extract some information from Encapsulated Post Script files."""
-        ret = []
-        for filename, content in self.files.items():
-            if not content.startswith(self.ole_magic):
-                continue
-
-            ole = olefile.olefile.OleFileIO(content)
-            for stream in ole.listdir():
-                if stream[-1] != "\x01Ole10Native":
-                    continue
-
-                content = ole.openstream(stream).read()
-                stream = oletools.oleobj.OleNativeStream(content)
-
-                info = LnkShortcut(data=stream.data).run()
-                self.ex.push_blob_noyara(stream.data, "lnk", info)
-                self.ex.push_command_line(
-                    "%s %s" % (info["basepath"], info["cmdline"])
-                )
-
-                ret.append({
-                    "filename": stream.filename.decode("latin-1"),
-                    "src_path": stream.src_path.decode("latin-1"),
-                    "temp_path": stream.temp_path.decode("latin-1"),
-                    "lnk": info,
-                })
-        return ret
-
     def run(self):
         self.unpack_docx()
 
@@ -570,7 +540,6 @@ class OfficeDocument(object):
         return {
             "macros": list(self.get_macros()),
             "eps": self.extract_eps(),
-            "lnk": self.extract_lnk(),
         }
 
 class PdfDocument(object):
@@ -630,6 +599,17 @@ class PdfDocument(object):
 
         ref = obj.object.elements["/JS"]
 
+        if isinstance(ref, peepdf.PDFCore.PDFString):
+            return {
+                "orig_code": "".join(ref.getJSCode()),
+                "beautified": jsbeautify("".join(ref.getJSCode())),
+                "urls": []
+            }
+
+        if not isinstance(ref, peepdf.PDFCore.PDFReference):
+            log.warning("PDFObject: can't follow type %s", ref)
+            return
+
         if ref.id not in f.body[version].objects:
             log.warning("PDFObject: Reference is broken, can't follow")
             return
@@ -688,7 +668,7 @@ class PdfDocument(object):
             return action.value
 
         if isinstance(action, peepdf.PDFCore.PDFReference):
-            referenced = f.body[version].objects[action.id]
+            referenced = f.body[version].objects.get(action.id)
             if isinstance(referenced, peepdf.PDFCore.PDFIndirectObject):
                 obj = referenced.object
                 if isinstance(obj, peepdf.PDFCore.PDFDictionary):
@@ -707,7 +687,6 @@ class PdfDocument(object):
             return
 
         ret = []
-
         for version in xrange(f.updates + 1):
             md = f.getBasicMetadata(version)
             row = {
@@ -761,9 +740,8 @@ class LnkShortcut(object):
         "offline", "not_indexed", "encrypted",
     ]
 
-    def __init__(self, filepath=None, data=None):
+    def __init__(self, filepath=None):
         self.filepath = filepath
-        self.buf = data
 
     def read_uint16(self, offset):
         return struct.unpack("H", self.buf[offset:offset+2])[0]
@@ -780,10 +758,7 @@ class LnkShortcut(object):
         return offset + 2 + length, ret
 
     def run(self):
-        if not self.buf and self.filepath:
-            self.buf = open(self.filepath, "rb").read()
-
-        buf = self.buf
+        buf = self.buf = open(self.filepath, "rb").read()
         if len(buf) < ctypes.sizeof(LnkHeader):
             log.warning("Provided .lnk file is corrupted or incomplete.")
             return
@@ -808,7 +783,11 @@ class LnkShortcut(object):
                 ret["attrs"].append(self.attrs[x])
 
         offset = 78 + self.read_uint16(76)
-        off = LnkEntry.from_buffer_copy(buf[offset:offset+28])
+        if len(buf) < offset + 28:
+            log.warning("Provided .lnk file is corrupted or incomplete.")
+            return
+
+        off = LnkEntry.from_buffer_copy(buf[offset:offset + 28])
 
         # Local volume.
         if off.volume_flags & 1:
@@ -918,9 +897,10 @@ class ELF(object):
                     "tag": self._print_addr(
                         ENUM_D_TAG.get(tag.entry.d_tag, tag.entry.d_tag)
                     ),
-                    "type": tag.entry.d_tag[3:],
+                    "type": str(tag.entry.d_tag)[3:],
                     "value": self._parse_tag(tag),
                 })
+
         return dynamic_tags
 
     def _get_symbol_tables(self):
@@ -1023,9 +1003,9 @@ class ELF(object):
             parsed = "Library runpath: [%s]" % tag.runpath
         elif tag.entry.d_tag == "DT_SONAME":
             parsed = "Library soname: [%s]" % tag.soname
-        elif tag.entry.d_tag.endswith(("SZ", "ENT")):
+        elif isinstance(tag.entry.d_tag, basestring) and tag.entry.d_tag.endswith(("SZ", "ENT")):
             parsed = "%i (bytes)" % tag["d_val"]
-        elif tag.entry.d_tag.endswith(("NUM", "COUNT")):
+        elif isinstance(tag.entry.d_tag, basestring) and tag.entry.d_tag.endswith(("NUM", "COUNT")):
             parsed = "%i" % tag["d_val"]
         elif tag.entry.d_tag == "DT_PLTREL":
             s = describe_dyn_tag(tag.entry.d_val)
@@ -1044,7 +1024,7 @@ class Static(Processing):
     """Static analysis."""
 
     office_ext = [
-        "doc", "docm", "dotm", "docx", "ppt", "pptm", "pptx", "potm",
+        "doc", "docm", "dotm", "docx", "hwp", "ppt", "pptm", "pptx", "potm",
         "ppam", "ppsm", "xls", "xlsm", "xlsx",
     ]
 
@@ -1094,10 +1074,13 @@ class Static(Processing):
             static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
 
         if package == "pdf" or ext == "pdf":
-            static["pdf"] = dispatch(
-                _pdf_worker, (f.file_path,),
-                timeout=self.options.pdf_timeout
-            )
+            if f.get_content_type() == "application/pdf":
+                static["pdf"] = dispatch(
+                    _pdf_worker, (f.file_path,),
+                    timeout=self.options.pdf_timeout
+                ) or []
+            else:
+                static["pdf"] = []
 
         if package == "generic" or ext == "lnk":
             static["lnk"] = LnkShortcut(f.file_path).run()

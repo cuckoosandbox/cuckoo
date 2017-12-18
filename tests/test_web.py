@@ -881,6 +881,37 @@ class TestApiEndpoints(object):
         r = client.get("/cuckoo/api/status")
         assert r.status_code == 200
 
+    @mock.patch("cuckoo.web.controllers.cuckoo.api.check_version")
+    def test_api_fetch_once(self, p, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create()
+        Database().connect()
+
+        p.return_value = {
+            "version": "2.0.5",
+            "blogposts": [{
+                "title": "title",
+                "important": False,
+                "oneline": "this is oneliner",
+                "url": "https://cuckoosandbox.org/blog/blogpost",
+                "date": "today or tomorrow",
+            }],
+        }
+
+        # Clear the 'updates' variable.
+        from cuckoo.web.controllers.cuckoo.api import updates
+        updates.clear()
+
+        r = client.get("/cuckoo/api/status")
+        assert r.status_code == 200
+        r = client.get("/cuckoo/api/status")
+        assert r.status_code == 200
+        r = json.loads(r.content)["data"]
+        assert r["latest_version"] == "2.0.5"
+        assert r["blogposts"] == [mock.ANY]
+
+        p.assert_called_once()
+
     @mock.patch("multiprocessing.cpu_count")
     def _test_api_status_cpucount(self, p, client):
         set_cwd(tempfile.mkdtemp())
