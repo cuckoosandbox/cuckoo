@@ -49,8 +49,8 @@ class GuacamoleWrapper extends Hookable {
     guac.connect();
     this.dispatchHook('connect', guac);
 
-    this.mouse();
-    this.keyboard();
+    // this.mouse();
+    // this.keyboard();
 
   }
 
@@ -58,27 +58,39 @@ class GuacamoleWrapper extends Hookable {
     GuacamoleWrapper.mouse
     - handles mouse interaction
    */
-  mouse() {
+  mouse(enable = true) {
     if(!this.client) return;
 
-    this._mouse = new Guacamole.Mouse(this.client.getDisplay().getElement());
-    let sendState = state => this.client.sendMouseState(state);
+    if(enable) {
+      this._mouse = new Guacamole.Mouse(this.client.getDisplay().getElement());
+      let sendState = state => this.client.sendMouseState(state);
 
-    // apply sendState function
-    this._mouse.onmousedown =
-    this._mouse.onmouseup =
-    this._mouse.onmousemove = sendState;
+      // apply sendState function
+      this._mouse.onmousemove = () => {
+        if(this.parent.toolbar.buttons.control.toggled) {
+          sendState();
+        }
+      }
+
+    }
   }
 
   /*
     GuacamoleWrapper.keyboard
     - handles keyboard interaction
    */
-  keyboard() {
+  keyboard(enable = true) {
+
     if(!this.client) return;
-    this._keyboard = new Guacamole.Keyboard(document);
-    this._keyboard.onkeydown = (keysym) => this.client.sendKeyEvent(1, keysym);
-    this._keyboard.onkeyup = (keysym) => this.client.sendKeyEvent(0, keysym);
+
+    if(enable) {
+      this._keyboard = new Guacamole.Keyboard(document);
+      this._keyboard.onkeydown = (keysym) => this.client.sendKeyEvent(1, keysym);
+      this._keyboard.onkeyup = keysym => this.client.sendKeyEvent(0, keysym);
+    } else {
+      this._keyboard = null;
+    }
+
   }
 
 }

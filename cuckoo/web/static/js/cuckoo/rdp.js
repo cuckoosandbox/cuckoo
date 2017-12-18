@@ -77,8 +77,8 @@ var GuacamoleWrapper = function (_Hookable) {
       guac.connect();
       this.dispatchHook('connect', guac);
 
-      this.mouse();
-      this.keyboard();
+      // this.mouse();
+      // this.keyboard();
     }
 
     /*
@@ -91,15 +91,25 @@ var GuacamoleWrapper = function (_Hookable) {
     value: function mouse() {
       var _this3 = this;
 
+      var enable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
       if (!this.client) return;
 
-      this._mouse = new Guacamole.Mouse(this.client.getDisplay().getElement());
-      var sendState = function sendState(state) {
-        return _this3.client.sendMouseState(state);
-      };
+      if (enable) {
+        (function () {
+          _this3._mouse = new Guacamole.Mouse(_this3.client.getDisplay().getElement());
+          var sendState = function sendState(state) {
+            return _this3.client.sendMouseState(state);
+          };
 
-      // apply sendState function
-      this._mouse.onmousedown = this._mouse.onmouseup = this._mouse.onmousemove = sendState;
+          // apply sendState function
+          _this3._mouse.onmousemove = function () {
+            if (_this3.parent.toolbar.buttons.control.toggled) {
+              sendState();
+            }
+          };
+        })();
+      }
     }
 
     /*
@@ -112,14 +122,22 @@ var GuacamoleWrapper = function (_Hookable) {
     value: function keyboard() {
       var _this4 = this;
 
+      var enable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+
       if (!this.client) return;
-      this._keyboard = new Guacamole.Keyboard(document);
-      this._keyboard.onkeydown = function (keysym) {
-        return _this4.client.sendKeyEvent(1, keysym);
-      };
-      this._keyboard.onkeyup = function (keysym) {
-        return _this4.client.sendKeyEvent(0, keysym);
-      };
+
+      if (enable) {
+        this._keyboard = new Guacamole.Keyboard(document);
+        this._keyboard.onkeydown = function (keysym) {
+          return _this4.client.sendKeyEvent(1, keysym);
+        };
+        this._keyboard.onkeyup = function (keysym) {
+          return _this4.client.sendKeyEvent(0, keysym);
+        };
+      } else {
+        this._keyboard = null;
+      }
     }
   }]);
 
@@ -673,14 +691,25 @@ var RDPToolbar = function (_Hookable) {
       close: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="close"]'), { client: client })
     };
 
+    // toggle fullscreen mode
     _this.buttons.fullscreen.on('click', function () {
-      return console.log('fullscreen');
+      // document.getElementsByTagName('body')[0].requestFullscreen();
     });
+
     _this.buttons.snapshot.on('click', function () {
       return _this.client.snapshots.create();
     });
     _this.buttons.control.on('toggle', function (toggled) {
-      return console.log('control is toggled to ' + toggled);
+
+      if (toggled) {
+        // enable mouse and keyboard
+        _this.client.service.mouse(true);
+        _this.client.service.keyboard(true);
+      } else {
+        // disable mouse and keyboard
+        _this.client.service.mouse(false);
+        _this.client.service.keyboard(false);
+      }
     });
 
     _this.buttons.reboot.on('click', function () {
@@ -1049,8 +1078,7 @@ var RDPClient = function (_Hookable) {
       _this.toolbar.buttons.snapshot.update(true);
     });
 
-    // initialize the guacamole
-
+    // initialize the guacamole API
     _this.service.on('error', function (error) {
       return console.log(error);
     });
