@@ -93,8 +93,7 @@ class RDPClient extends Hookable {
       this.toolbar.buttons.snapshot.update(true);
     });
 
-    // initialize the guacamole
-
+    // initialize the guacamole API
     this.service.on('error', error => console.log(error));
     this.service.connect();
 
