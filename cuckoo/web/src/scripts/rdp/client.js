@@ -2,7 +2,7 @@ import Hookable from './Hookable';
 import GuacamoleWrapper from './GuacWrap';
 import RDPToolbar from './RDPToolbar';
 import { RDPSnapshotService, RDPSnapshotSelector } from './RDPSnapshotService';
-import RDPDialog from './RDPDialog';
+import RDPDialog, { RDPRender } from './RDPDialog';
 
 // RDP Client wrapper for collecting all sub classes that belong to this interface
 // - can be treated like a controller. Any processes are catched up on here.
@@ -11,7 +11,6 @@ class RDPClient extends Hookable {
   constructor(el) {
     super();
     this.$ = el || null;
-    console.log(this.$);
 
     // connect guac service wrapper
     this.service = new GuacamoleWrapper({
@@ -86,6 +85,12 @@ class RDPClient extends Hookable {
       }
     });
 
+    // several other 'specific' views, controlled by an 'RDPRender' class.
+    // this class resembles a simple method for spawning different custom views
+    // into the viewport.
+    this.errorDialog = new RDPRender(this, $("template#rdp-error"));
+    this.connectingDialog = new RDPRender(this, $("template#rdp-connecting"));
+
     // bind snapshot interactions
     this.snapshots.on('create', snapshot => {
       this.toolbar.buttons.snapshot.update();
@@ -96,8 +101,11 @@ class RDPClient extends Hookable {
     });
 
     // initialize the guacamole API
-    this.service.on('error', error => console.log(error));
+    this.service.on('error', error => errorDialog.render);
     this.service.connect();
+
+    // spawn the connection view
+    this.connectingDialog.render();
 
   }
 }

@@ -18,6 +18,21 @@ function resolveModel(model, thisArg = false) {
   return resolved;
 }
 
+/*
+  The error state is not really a dialog, but this class will take care of rendering
+  an error inside the viewport as a substitute class.
+ */
+class RDPRender {
+  constructor(client, template) {
+    this.client = client;
+    this.template = parseFragment(template);
+  }
+  render() {
+    if(!this.template) return;
+    this.client.$.find('.rdp-app__viewport').html(this.template);
+  }
+}
+
 class DialogInteractionScheme {
 
   constructor(dialogs, dialog = {}) {
@@ -124,3 +139,6 @@ export default class RDPDialog {
   }
 
 }
+
+// export other functions
+export { RDPRender }

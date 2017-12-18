@@ -535,7 +535,8 @@ $RDP_APP_CREDIT_BGC: #383838;
 
   }
 
-  &__error {
+  &__error,
+  &__connecting {
 
     position: relative;
     display: flex;
@@ -551,7 +552,8 @@ $RDP_APP_CREDIT_BGC: #383838;
       width: 153px;
       margin: 0 auto;
 
-      .fa {
+      .fa,
+      .guac-icon {
 
         position: absolute;
 
@@ -647,10 +649,11 @@ $RDP_APP_CREDIT_BGC: #383838;
       padding: 15px 0 0 0;
       & > a {
         @extend %rdp-regular-button;
+        font-size: 14px;
       }
     }
 
-    &:after {
+    &:not(.rdp__connecting):after {
       content: "";
       position: absolute;
       width: 100%;
@@ -661,6 +664,42 @@ $RDP_APP_CREDIT_BGC: #383838;
       background-size: cover;
       opacity: .2;
       z-index: 1;
+    }
+
+    // specific styles for rdp-connecting
+    &.rdp__connecting {
+      background-color: #1F1F1F;
+
+      .combined-icon {
+
+        width: 190px;
+        height: 180px;
+
+        .guac-icon {
+          width: 55px;
+          left: 50%;
+          top: 50%;
+          margin-left: -27px;
+          margin-top: -29px;
+
+          & + .fa-desktop {
+            font-size: 180px;
+            color: #567E84;
+          }
+        }
+
+      }
+    }
+
+    .animated-ellipse {
+      display: inline-block;
+      & > li {
+        display: inline-block;
+        opacity: 0;
+        &.in {
+          opacity: 1;
+        }
+      }
     }
 
   }

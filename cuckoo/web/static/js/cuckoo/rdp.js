@@ -258,6 +258,7 @@ exports.default = Hookable;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.RDPRender = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -288,6 +289,30 @@ function resolveModel(model) {
   }
   return resolved;
 }
+
+/*
+  The error state is not really a dialog, but this class will take care of rendering
+  an error inside the viewport as a substitute class.
+ */
+
+var RDPRender = function () {
+  function RDPRender(client, template) {
+    _classCallCheck(this, RDPRender);
+
+    this.client = client;
+    this.template = parseFragment(template);
+  }
+
+  _createClass(RDPRender, [{
+    key: 'render',
+    value: function render() {
+      if (!this.template) return;
+      this.client.$.find('.rdp-app__viewport').html(this.template);
+    }
+  }]);
+
+  return RDPRender;
+}();
 
 var DialogInteractionScheme = function DialogInteractionScheme(dialogs) {
   var _this = this;
@@ -412,7 +437,11 @@ var RDPDialog = function () {
   return RDPDialog;
 }();
 
+// export other functions
+
+
 exports.default = RDPDialog;
+exports.RDPRender = RDPRender;
 
 },{"./Hookable":2}],4:[function(require,module,exports){
 'use strict';
@@ -996,7 +1025,6 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
-    console.log(_this.$);
 
     // connect guac service wrapper
     _this.service = new _GuacWrap2.default({
@@ -1074,6 +1102,12 @@ var RDPClient = function (_Hookable) {
       }
     });
 
+    // several other 'specific' views, controlled by an 'RDPRender' class.
+    // this class resembles a simple method for spawning different custom views
+    // into the viewport.
+    _this.errorDialog = new _RDPDialog.RDPRender(_this, $("template#rdp-error"));
+    _this.connectingDialog = new _RDPDialog.RDPRender(_this, $("template#rdp-connecting"));
+
     // bind snapshot interactions
     _this.snapshots.on('create', function (snapshot) {
       _this.toolbar.buttons.snapshot.update();
@@ -1085,9 +1119,12 @@ var RDPClient = function (_Hookable) {
 
     // initialize the guacamole API
     _this.service.on('error', function (error) {
-      return console.log(error);
+      return errorDialog.render;
     });
     _this.service.connect();
+
+    // spawn the connection view
+    _this.connectingDialog.render();
 
     return _this;
   }
