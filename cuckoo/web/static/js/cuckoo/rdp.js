@@ -101,6 +101,13 @@ var GuacamoleWrapper = function (_Hookable) {
         // apply sendState function
         this._mouse.onmousemove = function (state) {
           if (_this3.parent.toolbar.buttons.control.toggled) {
+
+            // the mouse has a 'relative' position due to the css positioning. While
+            // we are stating the mouse interactions, we need to correct the cursor
+            // positions.
+
+            var dp = $(_this3.client.getDisplay().getElement());
+
             sendState(state);
           }
         };

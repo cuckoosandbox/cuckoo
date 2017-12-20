@@ -714,6 +714,7 @@ $RDP_APP_CREDIT_BGC: #383838;
     margin: 0;
     border: 0;
     top: 66px;
+    z-index: 10;
 
     &__body {
       position: absolute;
@@ -757,7 +758,29 @@ $RDP_APP_CREDIT_BGC: #383838;
 
 /*
   fix that will actually show the guac canvas
+  - I hope the guacamole frontend library will improve
+    so I can get rid of these nasty rules.
  */
-#guacamole-display > div > div {
-  z-index: 5 !important;
+#guacamole-display {
+
+  canvas {
+    z-index: 5;
+    &:hover {
+      cursor: none;
+    }
+  }
+
+  & > div > div { z-index: 5 !important; }
+
+  & > div {
+    margin: 0px auto;
+    top: 50%;
+    margin-top: -384px;
+  }
+
+  // this is the custom mouse guacamole is rendering (for whatever reason, why?)
+  & > div > div > div:nth-child(2) {
+    display: none;
+  }
+
 }
