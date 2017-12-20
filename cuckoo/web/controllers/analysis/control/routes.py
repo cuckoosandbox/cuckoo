@@ -28,8 +28,12 @@ class AnalysisControlRoutes:
                 raise Http404("task is not running")
 
             data = {
-                "task": task,
+                "task": task
             }
-            return render_template(request, "analysis/pages/control/player.html", **data)
+
+            request.extra_scripts = ['guac.js']
+
+            # return render_template(request, "analysis/pages/control/player.html", **data)
+            return render_template(request, "rdp/index.html", **data)
         except Exception as e:
             return view_error(request, str(e))

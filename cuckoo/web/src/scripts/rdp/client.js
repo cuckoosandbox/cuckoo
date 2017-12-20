@@ -104,8 +104,8 @@ class RDPClient extends Hookable {
     this.service.on('error', error => errorDialog.render);
     this.service.connect();
 
-    // spawn the connection view
-    this.connectingDialog.render();
+    // // spawn the connection view
+    // this.connectingDialog.render();
 
   }
 }

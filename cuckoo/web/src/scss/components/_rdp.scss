@@ -754,3 +754,10 @@ $RDP_APP_CREDIT_BGC: #383838;
   }
 
 }
+
+/*
+  fix that will actually show the guac canvas
+ */
+#guacamole-display > div > div {
+  z-index: 5 !important;
+}

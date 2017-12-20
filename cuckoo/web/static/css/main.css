@@ -17240,6 +17240,14 @@ body.night .app-message
     margin: 0 12px;
 }
 
+/*
+  fix that will actually show the guac canvas
+ */
+#guacamole-display > div > div
+{
+    z-index: 5 !important;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
