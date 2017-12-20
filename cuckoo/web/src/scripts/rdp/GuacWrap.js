@@ -66,6 +66,13 @@ class GuacamoleWrapper extends Hookable {
       // apply sendState function
       this._mouse.onmousemove = (state) => {
         if(this.parent.toolbar.buttons.control.toggled) {
+
+          // the mouse has a 'relative' position due to the css positioning. While
+          // we are stating the mouse interactions, we need to correct the cursor
+          // positions.
+
+          let dp = $(this.client.getDisplay().getElement());
+
           sendState(state);
         }
       }

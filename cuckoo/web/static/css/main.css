@@ -17176,6 +17176,7 @@ body.night .app-message
 
 .rdp-dialog
 {
+    z-index: 10;
     top: 66px;
 
     width: 100%;
@@ -17242,10 +17243,35 @@ body.night .app-message
 
 /*
   fix that will actually show the guac canvas
+  - I hope the guacamole frontend library will improve
+    so I can get rid of these nasty rules.
  */
+#guacamole-display canvas
+{
+    z-index: 5;
+}
+
+#guacamole-display canvas:hover
+{
+    cursor: none;
+}
+
 #guacamole-display > div > div
 {
     z-index: 5 !important;
+}
+
+#guacamole-display > div
+{
+    top: 50%;
+
+    margin: 0 auto;
+    margin-top: -384px;
+}
+
+#guacamole-display > div > div > div:nth-child(2)
+{
+    display: none;
 }
 
 /* 
