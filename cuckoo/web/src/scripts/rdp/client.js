@@ -91,6 +91,9 @@ class RDPClient extends Hookable {
     this.errorDialog = new RDPRender(this, $("template#rdp-error"));
     this.connectingDialog = new RDPRender(this, $("template#rdp-connecting"));
 
+    // show the connection dialog
+    this.connectingDialog.render();
+
     // bind snapshot interactions
     this.snapshots.on('create', snapshot => {
       this.toolbar.buttons.snapshot.update();
@@ -102,10 +105,8 @@ class RDPClient extends Hookable {
 
     // initialize the guacamole API
     this.service.on('error', error => errorDialog.render);
-    this.service.connect();
 
-    // // spawn the connection view
-    // this.connectingDialog.render();
+    this.service.connect();
 
   }
 }

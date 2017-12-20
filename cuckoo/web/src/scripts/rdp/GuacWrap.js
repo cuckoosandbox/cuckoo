@@ -47,9 +47,6 @@ class GuacamoleWrapper extends Hookable {
     guac.connect();
     this.dispatchHook('connect', guac);
 
-    // this.mouse();
-    // this.keyboard();
-
   }
 
   /*
