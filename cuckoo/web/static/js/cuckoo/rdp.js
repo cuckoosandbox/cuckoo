@@ -74,9 +74,6 @@ var GuacamoleWrapper = function (_Hookable) {
 
       guac.connect();
       this.dispatchHook('connect', guac);
-
-      // this.mouse();
-      // this.keyboard();
     }
 
     /*
@@ -1118,6 +1115,9 @@ var RDPClient = function (_Hookable) {
     _this.errorDialog = new _RDPDialog.RDPRender(_this, $("template#rdp-error"));
     _this.connectingDialog = new _RDPDialog.RDPRender(_this, $("template#rdp-connecting"));
 
+    // show the connection dialog
+    _this.connectingDialog.render();
+
     // bind snapshot interactions
     _this.snapshots.on('create', function (snapshot) {
       _this.toolbar.buttons.snapshot.update();
@@ -1131,10 +1131,8 @@ var RDPClient = function (_Hookable) {
     _this.service.on('error', function (error) {
       return errorDialog.render;
     });
-    _this.service.connect();
 
-    // // spawn the connection view
-    // this.connectingDialog.render();
+    _this.service.connect();
 
     return _this;
   }
