@@ -5,8 +5,6 @@ class GuacamoleWrapper extends Hookable {
   constructor(props) {
     super();
 
-    // destructure properties
-
     // api hooks
     this.hooks = {
       connect: [],
@@ -66,9 +64,9 @@ class GuacamoleWrapper extends Hookable {
       let sendState = state => this.client.sendMouseState(state);
 
       // apply sendState function
-      this._mouse.onmousemove = () => {
+      this._mouse.onmousemove = (state) => {
         if(this.parent.toolbar.buttons.control.toggled) {
-          sendState();
+          sendState(state);
         }
       }
 

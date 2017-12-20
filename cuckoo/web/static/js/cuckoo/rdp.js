@@ -25,8 +25,6 @@ var GuacamoleWrapper = function (_Hookable) {
   function GuacamoleWrapper(props) {
     _classCallCheck(this, GuacamoleWrapper);
 
-    // destructure properties
-
     // api hooks
     var _this = _possibleConstructorReturn(this, (GuacamoleWrapper.__proto__ || Object.getPrototypeOf(GuacamoleWrapper)).call(this));
 
@@ -101,9 +99,9 @@ var GuacamoleWrapper = function (_Hookable) {
         };
 
         // apply sendState function
-        this._mouse.onmousemove = function () {
+        this._mouse.onmousemove = function (state) {
           if (_this3.parent.toolbar.buttons.control.toggled) {
-            sendState();
+            sendState(state);
           }
         };
       }
@@ -1123,8 +1121,8 @@ var RDPClient = function (_Hookable) {
     });
     _this.service.connect();
 
-    // spawn the connection view
-    _this.connectingDialog.render();
+    // // spawn the connection view
+    // this.connectingDialog.render();
 
     return _this;
   }
