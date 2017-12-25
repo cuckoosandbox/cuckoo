@@ -77,6 +77,9 @@ class VirtualBoxRemote(Machinery):
                 self.options.virtualbox_websrv.mode
             )
 
+        if not self.options.virtualbox_websrv.debug:
+            logging.getLogger("zeep").setLevel(logging.INFO)
+
         try:
             vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
                                       self.options.virtualbox_websrv.user,

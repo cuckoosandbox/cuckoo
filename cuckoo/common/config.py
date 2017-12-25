@@ -887,6 +887,7 @@ class Config(object):
                 "interface": String("eth0"),
                 "machines": List(String, "cuckoo1"),
                 "remote_storage": Path("/tmp/cuckoo-storage"),
+                "debug": Boolean(False),
             },
             "*": {
                 "__section__": "cuckoo1",
