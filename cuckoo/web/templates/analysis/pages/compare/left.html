@@ -17,7 +17,9 @@
             e.preventDefault();
             var $choice = $(this).find("input[name='hash']");
             if ($choice.length) {
-                window.location = $choice.val();
+                window.location = window.location.href + encodeURIComponent(
+                    $choice.val()
+                );
             }
         });
     })
