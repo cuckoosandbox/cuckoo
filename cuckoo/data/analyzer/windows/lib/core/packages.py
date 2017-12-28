@@ -65,8 +65,10 @@ def choose_package(file_type, file_name, exports):
         return "python"
     elif file_name.endswith(".vbs"):
         return "vbs"
-    elif file_name.endswith((".js", ".jse")):
+    elif file_name.endswith(".js"):
         return "js"
+    elif file_name.endswith(".jse"):
+        return "jse"
     elif file_name.endswith(".msi"):
         return "msi"
     elif file_name.endswith(".ps1"):
