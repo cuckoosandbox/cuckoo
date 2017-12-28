@@ -56,7 +56,7 @@ def githash():
         return git_value
 
 cwd_public = os.path.join("cuckoo", "data")
-cwd_private = os.path.join("cuckoo", "data-private")
+cwd_private = os.path.join("cuckoo", "private")
 
 hashes_ignore = (
     "whitelist/domain.txt",
@@ -139,9 +139,11 @@ def do_setup(**kwargs):
         if hasattr(e, "message") and isinstance(e.message, basestring):
             do_help(e, e.message)
 
+        exit(1)
+
 do_setup(
     name="Cuckoo",
-    version="2.0.4.4",
+    version="2.0.5.2",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -192,7 +194,7 @@ do_setup(
         "httpreplay>=0.2.1, <0.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
-        "oletools==0.42",
+        "oletools==0.51",
         "peepdf==0.3.6",
         "pefile2==1.2.11",
         "pillow==3.2",

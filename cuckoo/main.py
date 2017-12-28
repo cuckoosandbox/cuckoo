@@ -33,7 +33,8 @@ from cuckoo.core.startup import (
     init_routing
 )
 from cuckoo.misc import (
-    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows
+    cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
+    Pidfile, mkdir
 )
 
 log = logging.getLogger("cuckoo")
@@ -105,6 +106,17 @@ def cuckoo_init(level, ctx, cfg=None):
 
     init_console_logging(level)
 
+    # Only one Cuckoo process should exist per CWD. Run this check before any
+    # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
+    # its CWD migration rules only kick in after the pidfile check.
+    mkdir(cwd("pidfiles"))
+    pidfile = Pidfile("cuckoo")
+    if pidfile.exists():
+        log.error(red("Cuckoo is already running. PID: %s"), pidfile.pid)
+        sys.exit(1)
+
+    pidfile.create()
+
     check_configs()
     check_version()
 
@@ -167,6 +179,8 @@ def cuckoo_main(max_analysis_count=0):
         sched.start()
     except KeyboardInterrupt:
         sched.stop()
+
+    Pidfile("cuckoo").remove()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
@@ -325,6 +339,15 @@ def process(ctx, instance, report, maxcount):
     init_console_logging(level=ctx.parent.level)
 
     if instance:
+        pidfile = Pidfile(instance)
+        if pidfile.exists():
+            log.error(red(
+                "Cuckoo process instance '%s' already exists. PID: %s\n"
+            ), instance, pidfile.pid)
+            sys.exit(1)
+
+        pidfile.create()
+
         init_logfile("process-%s.json" % instance)
 
     Database().connect()
@@ -359,6 +382,9 @@ def process(ctx, instance, report, maxcount):
             process_tasks(instance, maxcount)
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
+
+    if instance:
+        Pidfile(instance).remove()
 
 @main.command()
 @click.argument("socket", type=click.Path(readable=False, dir_okay=False), default="/tmp/cuckoo-rooter", required=False)

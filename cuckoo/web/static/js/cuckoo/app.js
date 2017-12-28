@@ -40,6 +40,8 @@ var CuckooWeb = function () {
     }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
+            var silent = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+
 
             var data = JSON.stringify(params);
 
@@ -62,12 +64,28 @@ var CuckooWeb = function () {
                 }
             }).fail(function (err) {
 
-                if (err.hasOwnProperty("responseJSON") && err.responseJSON.hasOwnProperty("message")) {
-                    console.log('POST err: ' + err.responseJSON.message);
-                } else {
-                    console.log('POST err: ' + err);
+                // if not silent, spit out error details
+                if (!silent) {
+
+                    // if a responseJSON is sent with an error object, highlight that property
+                    if (err.responseJSON !== undefined && err.responseJSON.hasOwnProperty("message")) {
+                        if (!silent) {
+                            console.log('XHR error RMessage:');
+                            console.log(err.responseJSON.message);
+                        }
+                    }
+
+                    // always display XHR error status
+                    console.log('XHR error details: ');
+                    console.log(err);
+
+                    // also try to show xhr status message
+                    if (err.statusText) {
+                        console.log('XHR: StatusText: ' + err.statusText);
+                    }
                 }
 
+                // if a callback is given, do the callback.
                 if (errback) {
                     errback(err);
                 }
@@ -779,10 +797,15 @@ $(function () {
         // // retrieve general info about cuckoo
         $.get('/cuckoo/api/status', function (data) {
 
-            // populate tasks information
+            // ***
+            // cuckoo quickview tables
+            // ***
             var tasks_info = DashboardTable.simpleTable(data.data.tasks);
             $('[data-populate="statistics"]').html(tasks_info);
 
+            // ***
+            // cuckoo disk space usage chart
+            // ***
             if (data.data.diskspace.analyses) {
                 // populate free disk space unit
                 var disk_space = createChart($("#ds-stat > canvas"), data.data.diskspace.analyses);
@@ -793,7 +816,9 @@ $(function () {
                 $("#ds-stat").addClass('no-data');
             }
 
-            // cpu load chart
+            // ***
+            // cuckoo cpu usage chart
+            // ***
             if (data.data.cpucount) {
 
                 // cpu load calculation mechanism
@@ -817,10 +842,9 @@ $(function () {
                 $("#cpu-stat").addClass('no-data');
             }
 
-            // data.data.memtotal = 11989568;
-            // data.data.memavail = 2899792;
-
-            // memory chart
+            // ***
+            // cuckoo memory usage chart
+            // ***
             if (data.data.memtotal) {
 
                 // memory data
@@ -843,6 +867,32 @@ $(function () {
             } else {
                 $("#memory-stat").addClass('no-data');
             }
+
+            // ***
+            // cuckoo versioning block
+            // ***
+            var $versionBlock = $("[data-dashboard-module='installation']");
+
+            var vCur = data.data.version;
+            var vNew = data.data.latest_version;
+
+            // check existence and compare
+            if (vCur && vNew && vCur !== vNew) {
+                // go into 'attention - you need to update' mode if we're not on the latest version
+                $versionBlock.addClass('attention').find('.latest-version td:last-child').text(vNew).parents('tr').show();
+            } else {
+                // show the 'you are up to date message' when the version is the same
+                $versionBlock.find('.up-to-date').show();
+            }
+
+            $versionBlock.addClass('version-loaded');
+
+            // ***
+            // cuckoo recent blogposts block
+            // ***
+            var $blogBlock = $("[data-dashboard-module='blogposts']");
+            var blogTmpl = Handlebars.compile($blogBlock.find('template#blogpost-template').html());
+            $blogBlock.find('.dashboard-module__body').html(blogTmpl({ posts: data.data.blogposts }));
         });
 
         // submit the dashboard url submitter

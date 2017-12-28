@@ -260,3 +260,8 @@ pre.reset {
     display: flex;
     width: 100%;
 }
+
+// shortcut for making a table fixed
+table.table-fixed {
+  table-layout: fixed;
+}

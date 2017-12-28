@@ -6,6 +6,7 @@
 import datetime
 import hashlib
 import io
+import multiprocessing
 import os
 import socket
 import tarfile
@@ -20,7 +21,7 @@ from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
-from cuckoo.misc import cwd, version, decide_cwd
+from cuckoo.misc import cwd, version, decide_cwd, Pidfile
 
 db = Database()
 sm = SubmitManager()
@@ -557,6 +558,11 @@ def cuckoo_status():
     else:
         memory = memavail = memtotal = None
 
+    try:
+        cpu_core_count = multiprocessing.cpu_count()
+    except NotImplementedError:
+        cpu_core_count = None
+
     response = dict(
         version=version,
         hostname=socket.gethostname(),
@@ -573,9 +579,11 @@ def cuckoo_status():
         ),
         diskspace=diskspace,
         cpuload=cpuload,
+        cpu_count=cpu_core_count,
         memory=memory,
         memavail=memavail,
         memtotal=memtotal,
+        processes=Pidfile.get_active_pids()
     )
 
     return jsonify(response)

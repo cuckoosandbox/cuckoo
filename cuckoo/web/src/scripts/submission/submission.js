@@ -93,6 +93,29 @@ $(function() {
 					params: {
 						"submit_id": window.submit_id
 					},
+					error: function(err) {
+
+						let $ftErr = $(`<div class="filetree-error">
+							<div class="cross">
+								<span class="cross-line"></span>
+								<span class="cross-line"></span>
+							</div>
+							<p class="error-message">Something went wrong.</p>
+						</div>`);
+
+						$(this.el).html($ftErr);
+						setTimeout(() => {
+							$ftErr.addClass('in');
+						}, 500);
+
+						// $(this.el).html(`<div class="filetree-error">
+						// 	<div class="cross">
+						// 		<span class="cross-line"></span>
+						// 		<span class="cross-line"></span>
+						// 	</div>
+						// 	<p class="error-message">Something went wrong.</p>
+						// </div>`);
+					},
 					serialize: function(response) {
 
 						// set up defaults for form and settings
@@ -110,6 +133,12 @@ $(function() {
 									value: vpn
 								}
 							});
+
+							// if we have 'null' for machines, force it to be mappable by replacing
+							// it with an empty array instead.
+							if(!default_analysis_options.machine) {
+								default_analysis_options.machine = new Array();
+							}
 
 							// parse the available machines
 							default_analysis_options.available_machines = default_analysis_options.machine.map(function(machine) {

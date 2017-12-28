@@ -1,0 +1,55 @@
+import { transformators } from '../lib/StatsAPI';
+import { fabricate, initializeToolbar } from '../lib/DraggableZ';
+
+const widget = fabricate('running_vm', {
+
+  template: $("#widget--running-vms"),
+  elementId: $("#widget--running-vms").attr('id'),
+
+  widgetLayout: {
+    width: 6,
+    height: 5,
+    x: 6,
+    y: 6
+  },
+
+  chartHeight: 200,
+
+  // chart configuration
+  chart: {
+    type: 'line',
+    options: {
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false
+          }
+        }],
+        xAxes: [{
+          stepSize: 100,
+          maxTicksLimit: 20
+        }]
+      }
+    }
+  },
+
+  // api configuration
+  api: {
+    params: {
+      include: 'vm_running'
+    },
+    transform: transformators.simpleResponseBreakdown
+  }
+
+}).on('render', function() {
+  initializeToolbar(this);
+});
+
+export default widget;

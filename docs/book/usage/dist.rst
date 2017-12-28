@@ -453,11 +453,12 @@ In order to upgrade the Distributed Cuckoo master, one may want to perform the
 following steps::
 
     $ /etc/init.d/uwsgi stop
+    $ supervisorctl -c ~/.cuckoo/supervisord.conf stop distributed
     $ pip uninstall -y cuckoo
     $ pip install cuckoo==2.0.0         # Specify your version here.
     $ pip install Cuckoo-2.0.0.tar.gz   # Or use a locally archived build.
     $ cuckoo distributed migrate
-    $ supervisorctl -c ~/.cuckoo/supervisord.conf restart distributed
+    $ supervisorctl -c ~/.cuckoo/supervisord.conf start distributed
     $ /etc/init.d/uwsgi start
     $ /etc/init.d/nginx restart
 

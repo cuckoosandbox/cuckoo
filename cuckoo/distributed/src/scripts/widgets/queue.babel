@@ -1,0 +1,78 @@
+import { fabricate } from '../lib/DraggableZ';
+
+// humanizes a number for better display
+function humanizeAmount(amount) {
+  if(!amount instanceof Number) {
+    amount = parseInt(amount);
+  }
+  return Humanize.formatNumber(amount);
+}
+
+// creates the jQuery format HTML conditionally (if there is no data, a <p> is
+// is sent with a message.)
+function createQueueOverview(queue) {
+
+  let el = $('<ul />', { class: 'widget-priority-list' });
+  let hasData = false;
+
+  if(queue.amount_prio_queued) {
+    for(let prop in queue.amount_prio_queued.priorities) {
+      let qv = queue.amount_prio_queued.priorities[prop];
+      let li = $('<li />');
+      let t = $('<h4 />', { text: prop });
+      let v = $('<p />', { text: humanizeAmount(qv) });
+      li.append(t);
+      t.after(v);
+      el.append(li);
+      hasData = true;
+    }
+  }
+
+  if(!hasData) {
+    el = $('<p />', {
+      class: 'widget-content-copy message-error center',
+      text: 'No information exists at the moment.'
+    });
+  }
+
+  return el;
+
+}
+
+// fabricate a widget
+const widget = fabricate('amount_prio_queued', {
+
+  template: $("#widget--amount-prio-queued"),
+  elementId: $("#widget--amount-prio-queued").attr('id'),
+
+  widgetLayout: {
+    width: 6,
+    height: 4,
+    x: 0,
+    y: 12
+  },
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    params: {
+      include: 'amount_prio_queued'
+    }
+  }
+
+}).on('render', function() {
+
+  this.api.on('receive', data => {
+    if($(widget.template).find('.widget-priority-list').length > 0) {
+      $(widget.template).find('.widget-priority-list').remove();
+    }
+    $(widget.template).find('.widget-content').append(createQueueOverview(data.data));
+  });
+
+});
+
+export default widget;

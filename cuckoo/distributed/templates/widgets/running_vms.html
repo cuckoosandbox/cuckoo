@@ -1,0 +1,33 @@
+<!-- Widget -->
+<div class="grid-stack-item-content">
+
+  <div class="widget" role="widget">
+
+    <!-- Header -->
+    <header class="widget-header" role="heading">
+      <div class="widget-title" role="title">
+        <h3>Running VM's</h3>
+      </div>
+      {% include 'partials/widget-controls.html' %}
+    </header>
+
+    <!-- Handle -->
+    <a class="widget-handle" role="command"></a>
+
+    <!-- Toolbar -->
+    {% include 'partials/widget-toolbar.html' %}
+
+    <!-- Body -->
+    <section class="widget-content">
+      <div class="widget-chart"><canvas></canvas></div>
+    </section>
+
+    <!-- Loader -->
+    {% include 'partials/widget-loader.html' %}
+
+    <!-- No data -->
+    {% include 'partials/widget-no-data.html' %}
+
+  </div>
+
+</div>

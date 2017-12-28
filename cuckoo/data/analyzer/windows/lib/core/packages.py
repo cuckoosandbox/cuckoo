@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -41,6 +41,8 @@ def choose_package(file_type, file_name, exports):
         return "pdf"
     elif file_name.endswith(".pub"):
         return "pub"
+    elif "Hangul (Korean) Word Processor File 5.x" in file_type or file_name.endswith(".hwp"):
+        return "hwp"
     elif "Rich Text Format" in file_type or \
             "Microsoft Word" in file_type or \
             "Microsoft Office Word" in file_type or \

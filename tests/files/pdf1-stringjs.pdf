@@ -1,0 +1,1024 @@
+%PDF-1.1
+ /Type /Catalog
+ /Name /F1
+837
+5 0 obj
+ /Root 1 0 R
+7 0 obj
+<< /Length 56 >>
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+0000000012 00000 n
+ /Size 8
+endobj
+2 0 obj
+ /BaseFont /Helvetica
+stream
+
+ /OpenAction 7 0 R
+trailer
+ /Type /Catalog
+0000000553 00000 n
+ /Type /Catalog
+ /Outlines 2 0 R
+endobj
+%%EOF
+startxref
+endobj
+ /Kids [4 0 R]
+endobj
+endobj
+ /BaseFont /Helvetica
+endobj
+ /Count 1
+<<
+ /Outlines 2 0 R
+
+endobj
+            >>
+endobj
+>>
+0 8
+ /Size 8
+ /Size 8
+trailer
+7 0 obj
+ /Resources <<
+5 0 obj
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+
+endstream
+<<
+<<
+ /Root 1 0 R
+ /Type /Action
+>>
+ /Name /F1
+ /Pages 3 0 R
+<<
+0000000553 00000 n
+<<
+ /Outlines 2 0 R
+<<
+endobj
+ /Contents 5 0 R
+>>
+ /Subtype /Type1
+ /OpenAction 7 0 R
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+ /BaseFont /Helvetica
+ /Outlines 2 0 R
+ /Type /Action
+
+>>
+0000000165 00000 n
+
+ /Size 8
+ /Type /Action
+
+<<
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+3 0 obj
+0000000012 00000 n
+5 0 obj
+837
+endobj
+endobj
+ /Count 1
+
+0 8
+0000000165 00000 n
+ /Outlines 2 0 R
+2 0 obj
+
+>>
+endobj
+ /Count 1
+stream
+>>
+ /Pages 3 0 R
+
+>>
+<<
+ /MediaBox [0 0 612 792]
+3 0 obj
+ /Encoding /MacRomanEncoding
+endobj
+6 0 obj
+2 0 obj
+2 0 obj
+ /Type /Pages
+ /Count 1
+7 0 obj
+0000000165 00000 n
+0000000012 00000 n
+
+endobj
+ /Contents 5 0 R
+>>
+0000000165 00000 n
+<<
+4 0 obj
+0 8
+endobj
+
+ /Kids [4 0 R]
+ /Count 0
+ /BaseFont /Helvetica
+0000000109 00000 n
+
+<<
+>>
+endobj
+<<
+
+0000000234 00000 n
+            >>
+            >>
+<<
+
+ /Type /Font
+
+6 0 obj
+
+2 0 obj
+endobj
+             /ProcSet [/PDF /Text]
+<<
+ /Type /Catalog
+0000000109 00000 n
+startxref
+837
+endstream
+ /Type /Font
+
+%PDF-1.1
+endstream
+<<
+ /BaseFont /Helvetica
+
+             /ProcSet [/PDF /Text]
+0000000165 00000 n
+<<
+ /Count 0
+<<
+endobj
+
+             /Font << /F1 6 0 R >>
+ /BaseFont /Helvetica
+ /Resources <<
+
+>>
+ /Subtype /Type1
+startxref
+0000000553 00000 n
+<<
+>>
+ /Resources <<
+7 0 obj
+endstream
+>>
+endobj
+ /BaseFont /Helvetica
+ /Type /Action
+>>
+<<
+2 0 obj
+
+<<
+ /Type /Font
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+ /Contents 5 0 R
+endobj
+1 0 obj
+ /Type /Action
+endobj
+ /MediaBox [0 0 612 792]
+ /Parent 3 0 R
+<<
+endobj
+ /S /JavaScript
+endobj
+5 0 obj
+endobj
+>>
+>>
+endobj
+ /Type /Action
+
+>>
+
+
+ /Root 1 0 R
+>>
+<<
+ /Type /Catalog
+ /Count 0
+>>
+0000000000 65535 f
+ /Type /Pages
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+0000000439 00000 n
+ /OpenAction 7 0 R
+7 0 obj
+endobj
+ /S /JavaScript
+<<
+endobj
+3 0 obj
+<<
+>>
+0000000234 00000 n
+6 0 obj
+ /Root 1 0 R
+>>
+ /S /JavaScript
+4 0 obj
+ /Size 8
+5 0 obj
+<< /Length 56 >>
+>>
+0000000165 00000 n
+ /Type /Action
+ /Encoding /MacRomanEncoding
+837
+
+>>
+4 0 obj
+endobj
+endobj
+ /Outlines 2 0 R
+ /Parent 3 0 R
+             /ProcSet [/PDF /Text]
+ /Encoding /MacRomanEncoding
+ /Contents 5 0 R
+ /Count 1
+ /Pages 3 0 R
+ /Pages 3 0 R
+%%EOF
+             /Font << /F1 6 0 R >>
+ /Type /Catalog
+endobj
+ /Encoding /MacRomanEncoding
+0000000677 00000 n
+endobj
+startxref
+ /BaseFont /Helvetica
+%%EOF
+endobj
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+0000000439 00000 n
+ /Root 1 0 R
+>>
+ /Count 1
+endobj
+0000000000 65535 f
+
+2 0 obj
+4 0 obj
+            >>
+ /Outlines 2 0 R
+ /Size 8
+0000000000 65535 f
+<<
+
+<<
+ /Count 1
+<<
+endobj
+<<
+ /S /JavaScript
+
+ /Resources <<
+<<
+0000000000 65535 f
+
+ /OpenAction 7 0 R
+>>
+3 0 obj
+endobj
+0000000012 00000 n
+>>
+endobj
+%%EOF
+4 0 obj
+             /Font << /F1 6 0 R >>
+2 0 obj
+
+7 0 obj
+<<
+>>
+ /Count 1
+<< /Length 56 >>
+
+ /Type /Page
+ /Size 8
+<<
+ /Root 1 0 R
+0000000234 00000 n
+startxref
+endobj
+4 0 obj
+ /Encoding /MacRomanEncoding
+
+0000000109 00000 n
+%PDF-1.1
+6 0 obj
+0000000439 00000 n
+<<
+            >>
+0 8
+ /Size 8
+endobj
+startxref
+%%EOF
+endobj
+%PDF-1.1
+ /Name /F1
+
+ /BaseFont /Helvetica
+
+0000000109 00000 n
+%PDF-1.1
+trailer
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+0000000165 00000 n
+ /Resources <<
+endobj
+ /Count 1
+endobj
+0000000000 65535 f
+             /Font << /F1 6 0 R >>
+>>
+0000000439 00000 n
+<<
+endobj
+xref
+0000000439 00000 n
+0000000439 00000 n
+4 0 obj
+endobj
+2 0 obj
+endstream
+ /Kids [4 0 R]
+<<
+0000000165 00000 n
+>>
+ /Type /Outlines
+
+ /Type /Catalog
+ /Type /Font
+
+ /Subtype /Type1
+endobj
+>>
+0000000165 00000 n
+>>
+0 8
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+2 0 obj
+             /Font << /F1 6 0 R >>
+<<
+ /Type /Action
+ /Type /Catalog
+endobj
+0000000439 00000 n
+>>
+
+0000000165 00000 n
+endobj
+0000000165 00000 n
+ /Subtype /Type1
+ /Type /Pages
+xref
+>>
+ /Type /Catalog
+ /Parent 3 0 R
+%PDF-1.1
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+
+ /Kids [4 0 R]
+endobj
+0000000000 65535 f
+endobj
+<< /Length 56 >>
+4 0 obj
+<<
+ /Count 1
+ /Resources <<
+0000000000 65535 f
+ /OpenAction 7 0 R
+ /Subtype /Type1
+ /MediaBox [0 0 612 792]
+            >>
+ /Type /Font
+endobj
+
+ /Type /Action
+ /Type /Font
+ /Type /Page
+0000000439 00000 n
+ /Type /Font
+
+ /Type /Pages
+0000000553 00000 n
+ /Type /Font
+<<
+%%EOF
+0000000234 00000 n
+             /ProcSet [/PDF /Text]
+ /Type /Page
+>>
+
+>>
+0000000234 00000 n
+3 0 obj
+ /Name /F1
+ /BaseFont /Helvetica
+0000000000 65535 f
+837
+ /Type /Action
+3 0 obj
+endobj
+ /Type /Pages
+endobj
+ /Root 1 0 R
+endstream
+>>
+<<
+ /Parent 3 0 R
+
+2 0 obj
+xref
+ /Resources <<
+<<
+>>
+<<
+ /Resources <<
+3 0 obj
+xref
+ /Outlines 2 0 R
+startxref
+             /ProcSet [/PDF /Text]
+<<
+ /Count 1
+ /Parent 3 0 R
+ /Type /Font
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+ /Resources <<
+ /Outlines 2 0 R
+0000000439 00000 n
+>>
+>>
+<<
+%%EOF
+ /Subtype /Type1
+
+endobj
+>>
+0000000165 00000 n
+ /Size 8
+
+ /Encoding /MacRomanEncoding
+endstream
+            >>
+
+>>
+xref
+endobj
+0000000000 65535 f
+trailer
+             /Font << /F1 6 0 R >>
+ /Type /Page
+ /MediaBox [0 0 612 792]
+ /Parent 3 0 R
+5 0 obj
+endobj
+4 0 obj
+0000000439 00000 n
+3 0 obj
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+<< /Length 56 >>
+>>
+ /Type /Page
+ /Type /Outlines
+ /Pages 3 0 R
+<<
+ /Count 1
+0000000109 00000 n
+3 0 obj
+             /Font << /F1 6 0 R >>
+ /Encoding /MacRomanEncoding
+ /Type /Action
+ /Type /Catalog
+ /Pages 3 0 R
+<<
+>>
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+ /Pages 3 0 R
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+ /Type /Page
+
+0000000677 00000 n
+endobj
+endobj
+0000000165 00000 n
+<<
+0000000000 65535 f
+ /OpenAction 7 0 R
+>>
+0000000165 00000 n
+>>
+%%EOF
+
+%%EOF
+ /Root 1 0 R
+0000000234 00000 n
+0000000000 65535 f
+%PDF-1.1
+            >>
+>>
+<< /Length 56 >>
+startxref
+ /Parent 3 0 R
+0 8
+0000000234 00000 n
+%PDF-1.1
+endobj
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+ /Pages 3 0 R
+>>
+BT /F1 12 Tf 100 700 Td 15 TL (JavaScript example) Tj ET
+ /Resources <<
+5 0 obj
+<<
+5 0 obj
+ /Parent 3 0 R
+ /Root 1 0 R
+             /ProcSet [/PDF /Text]
+ /Type /Font
+ /Resources <<
+0000000234 00000 n
+
+>>
+
+ /Parent 3 0 R
+trailer
+5 0 obj
+4 0 obj
+
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+ /Type /Pages
+ /Type /Pages
+837
+0000000012 00000 n
+
+<<
+<<
+5 0 obj
+ /BaseFont /Helvetica
+trailer
+ /Type /Page
+ /Subtype /Type1
+0000000553 00000 n
+endobj
+
+0000000012 00000 n
+0000000553 00000 n
+1 0 obj
+ /Subtype /Type1
+ /MediaBox [0 0 612 792]
+>>
+ /Name /F1
+xref
+837
+
+%%EOF
+%PDF-1.1
+>>
+<<
+<<
+
+endstream
+837
+
+0000000165 00000 n
+<< /Length 56 >>
+2 0 obj
+ /Encoding /MacRomanEncoding
+<<
+xref
+2 0 obj
+ /Kids [4 0 R]
+0000000165 00000 n
+>>
+
+<< /Length 56 >>
+%%EOF
+ /Encoding /MacRomanEncoding
+ /Type /Pages
+ /Type /Outlines
+>>
+
+837
+ /Type /Action
+endstream
+<<
+endobj
+endobj
+ /Outlines 2 0 R
+endobj
+ /OpenAction 7 0 R
+<<
+             /Font << /F1 6 0 R >>
+ /Count 1
+endobj
+endobj
+0000000439 00000 n
+<<
+endobj
+
+endobj
+6 0 obj
+ /Type /Pages
+6 0 obj
+ /Parent 3 0 R
+3 0 obj
+ /Type /Font
+ /Type /Pages
+5 0 obj
+endobj
+0000000553 00000 n
+0000000553 00000 n
+7 0 obj
+0000000234 00000 n
+            >>
+0000000109 00000 n
+stream
+ /Size 8
+0000000165 00000 n
+7 0 obj
+ /OpenAction 7 0 R
+0000000109 00000 n
+endobj
+endobj
+             /Font << /F1 6 0 R >>
+ /Root 1 0 R
+
+endobj
+ /Type /Action
+%PDF-1.1
+ /Type /Action
+
+ /Contents 5 0 R
+endobj
+<<
+ /S /JavaScript
+endobj
+837
+0000000439 00000 n
+<<
+ /Outlines 2 0 R
+
+ /Type /Action
+ /Type /Outlines
+0000000677 00000 n
+endobj
+0000000012 00000 n
+<<
+0 8
+837
+4 0 obj
+>>
+
+endobj
+endobj
+0000000165 00000 n
+ /Resources <<
+0000000165 00000 n
+0000000000 65535 f
+endobj
+
+6 0 obj
+ /Size 8
+trailer
+ /Contents 5 0 R
+             /Font << /F1 6 0 R >>
+<<
+0000000677 00000 n
+ /Type /Catalog
+ /Root 1 0 R
+ /Type /Font
+ /Contents 5 0 R
+>>
+7 0 obj
+<<
+endobj
+<<
+ /Name /F1
+
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+endobj
+ /Encoding /MacRomanEncoding
+             /Font << /F1 6 0 R >>
+ /Root 1 0 R
+>>
+>>
+ /Parent 3 0 R
+trailer
+ /Kids [4 0 R]
+ /Pages 3 0 R
+trailer
+<<
+            >>
+<<
+>>
+837
+<<
+>>
+3 0 obj
+7 0 obj
+ /Root 1 0 R
+>>
+ /Type /Font
+ /Resources <<
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+ /Type /Action
+ /Count 1
+             /Font << /F1 6 0 R >>
+0000000000 65535 f
+ /Subtype /Type1
+
+             /ProcSet [/PDF /Text]
+
+0000000165 00000 n
+ /Type /Outlines
+ /Type /Font
+ /Type /Outlines
+7 0 obj
+ /Name /F1
+>>
+             /ProcSet [/PDF /Text]
+ /Contents 5 0 R
+ /S /JavaScript
+
+ /Type /Pages
+ /Outlines 2 0 R
+ /Type /Catalog
+endobj
+endobj
+>>
+<< /Length 56 >>
+ /Contents 5 0 R
+0000000109 00000 n
+2 0 obj
+startxref
+trailer
+ /Type /Catalog
+<<
+endobj
+
+
+endobj
+ /OpenAction 7 0 R
+endobj
+ /Parent 3 0 R
+
+<<
+endstream
+
+6 0 obj
+ /Count 0
+
+endobj
+0 8
+ /Contents 5 0 R
+stream
+<<
+
+endobj
+endobj
+>>
+5 0 obj
+ /Outlines 2 0 R
+ /Type /Page
+ /Type /Catalog
+ /Count 1
+<<
+<<
+ /Count 0
+0000000553 00000 n
+
+ /Resources <<
+ /Resources <<
+<<
+ /Root 1 0 R
+
+endobj
+ /Type /Pages
+ /Subtype /Type1
+ /Contents 5 0 R
+ /MediaBox [0 0 612 792]
+ /Count 1
+ /Encoding /MacRomanEncoding
+ /Parent 3 0 R
+
+>>
+
+<<
+<<
+ /Type /Catalog
+ /Kids [4 0 R]
+endobj
+<<
+ /Contents 5 0 R
+0000000000 65535 f
+startxref
+4 0 obj
+0000000012 00000 n
+ /Encoding /MacRomanEncoding
+endobj
+ /BaseFont /Helvetica
+<<
+<<
+0000000012 00000 n
+
+<<
+stream
+endobj
+0000000234 00000 n
+ /Count 1
+startxref
+ /Name /F1
+0000000109 00000 n
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+<< /Length 56 >>
+<<
+
+0000000000 65535 f
+6 0 obj
+ /Contents 5 0 R
+1 0 obj
+5 0 obj
+
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+3 0 obj
+>>
+<<
+>>
+%PDF-1.1
+ /Root 1 0 R
+ /Parent 3 0 R
+
+0000000000 65535 f
+<<
+<<
+endobj
+>>
+ /Resources <<
+0000000000 65535 f
+<<
+endobj
+
+ /Outlines 2 0 R
+>>
+endstream
+4 0 obj
+endstream
+endobj
+0000000234 00000 n
+endobj
+ /Kids [4 0 R]
+5 0 obj
+
+0 8
+%%EOF
+
+1 0 obj
+endobj
+>>
+0000000012 00000 n
+>>
+ /S /JavaScript
+%PDF-1.1
+ /Type /Font
+<<
+
+            >>
+>>
+0000000012 00000 n
+
+
+ /S /JavaScript
+>>
+endobj
+ /S /JavaScript
+<<
+2 0 obj
+<<
+%PDF-1.1
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+>>
+ /Root 1 0 R
+ /Type /Action
+ /Type /Outlines
+
+
+0000000234 00000 n
+
+
+ /Parent 3 0 R
+ /Contents 5 0 R
+ /Count 1
+
+ /Kids [4 0 R]
+0000000553 00000 n
+4 0 obj
+endobj
+endobj
+endobj
+ /Size 8
+>>
+<<
+            >>
+<<
+ /Type /Catalog
+stream
+endobj
+ /Count 1
+0000000000 65535 f
+1 0 obj
+<<
+endobj
+
+4 0 obj
+endobj
+<<
+
+endobj
+<<
+7 0 obj
+ /Name /F1
+ /S /JavaScript
+%%EOF
+
+ /JS (app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)
+<<
+0000000000 65535 f
+             /ProcSet [/PDF /Text]
+>>
+ /Type /Pages
+837
+ /Size 8
+
+endobj
+ /Name /F1
+endobj
+ /OpenAction 7 0 R
+startxref
+>>
+<<
+837
+
+ /Encoding /MacRomanEncoding
+
+endobj
+ /Type /Action
+endobj
+0000000439 00000 n
+
+
+ /Type /Page
+>>
+ /Type /Page
+%%EOF
+ /Type /Font
+endobj
+1 0 obj
+>>
+ /Type /Action
+<<
+ /Encoding /MacRomanEncoding
+%%EOF
+ /Name /F1
+
+ /Type /Page
+>>
+<<
+>>
+ /Root 1 0 R
+<<
+endobj
+ /Kids [4 0 R]
+
+>>
+4 0 obj
+endobj
+0000000439 00000 n
+>>
+6 0 obj
+>>
+             /ProcSet [/PDF /Text]
+>>
+0000000677 00000 n
+ /Type /Action
+837

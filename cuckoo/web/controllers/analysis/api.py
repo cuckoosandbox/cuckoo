@@ -322,7 +322,7 @@ class AnalysisApi(object):
         tasks = {}
         for row in cursor:
             info = row.get("info", {})
-            if not info:
+            if not info or info["id"] in tasks:
                 continue
 
             category = info.get("category")

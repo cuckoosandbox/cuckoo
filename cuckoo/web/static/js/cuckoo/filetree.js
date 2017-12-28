@@ -251,7 +251,7 @@ var FileTree = function () {
                     }
                 });
 
-                [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
+                [".doc", ".docx", ".docm", ".dotx", ".dotm", ".docb", "hwp", ".xltm", ".xls", ".xltx", ".xlsm", ".xlsx", ".xlt", ".ppt", ".pps", ".pot"].forEach(function (x) {
                     if (entry.filepath.endsWith(x)) {
                         entry.type = "office";
                         entry.state = true;

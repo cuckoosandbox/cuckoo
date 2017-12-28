@@ -1,7 +1,7 @@
 {% load analysis_tags %}
 
 <section id="static_analysis">
-    {% if report.analysis.static.pdf|length == 1 and not report.analysis.static.pdf.0.modification and not report.analysis.static.pdf.0.urls and not report.analysis.static.pdf.0.javascript %}
+    {% if not report.analysis.static.pdf or report.analysis.static.pdf|length == 1 and not report.analysis.static.pdf.0.modification and not report.analysis.static.pdf.0.urls and not report.analysis.static.pdf.0.javascript %}
         No PDF metadata could be extracted!
     {% endif %}
 

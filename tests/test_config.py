@@ -1116,6 +1116,17 @@ arch = x64
     assert cfg["qemu"]["ubuntu32"]["enable_kvm"] is False
     assert cfg["qemu"]["ubuntu32"]["snapshot"] is None
 
+def test_migration_204_205():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+script = mitm.py
+""")
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.4", "2.0.5")
+    assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None

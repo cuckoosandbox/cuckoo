@@ -9,6 +9,7 @@ import os
 from _winreg import CreateKey, SetValueEx, CloseKey, REG_DWORD, REG_SZ
 
 from lib.api.process import Process
+from lib.common.decide import dump_memory
 from lib.common.exceptions import CuckooPackageError
 
 class Package(object):
@@ -181,8 +182,7 @@ class Package(object):
         """
         if self.options.get("procmemdump"):
             for pid in self.pids:
-                p = Process(pid=pid)
-                p.dump_memory()
+                dump_memory(pid)
 
         return True
 

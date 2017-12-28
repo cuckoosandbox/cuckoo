@@ -10,7 +10,6 @@ import os
 
 from cuckoo.common.abstracts import Processing, BehaviorHandler
 from cuckoo.common.config import config
-from cuckoo.common.scripting import Scripting
 from cuckoo.core.database import Database
 from cuckoo.core.extract import ExtractManager
 
@@ -219,13 +218,10 @@ class ExtractScripts(BehaviorHandler):
 
     def __init__(self, *args, **kwargs):
         super(ExtractScripts, self).__init__(*args, **kwargs)
-        self.scr = Scripting()
         self.ex = ExtractManager.for_task(self.analysis.task["id"])
 
     def handle_event(self, process):
-        command = self.scr.parse_command(process["command_line"])
-        if command and command.get_script():
-            self.ex.push_script(process, command)
+        self.ex.push_command_line(process["command_line"], process)
 
     def run(self):
         pass

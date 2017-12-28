@@ -1,0 +1,30 @@
+<!-- Widget -->
+<div class="grid-stack-item-content">
+
+  <div class="widget" role="widget">
+
+    <!-- Header -->
+    <header class="widget-header" role="heading">
+      <div class="widget-title" role="title">
+        <h3>Active processes</h3>
+      </div>
+      {% include 'partials/widget-controls.html' %}
+    </header>
+
+    <!-- Handle -->
+    <a class="widget-handle" role="command"></a>
+
+    <!-- Body -->
+    <section class="widget-content">
+      <p class="widget-content-copy center">Current node status:</p>
+    </section>
+
+    <!-- Loader -->
+    {% include 'partials/widget-loader.html' %}
+
+    <!-- No data -->
+    {% include 'partials/widget-no-data.html' %}
+
+  </div>
+
+</div>

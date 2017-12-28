@@ -4,7 +4,6 @@
 
 import logging
 
-from lib.api.dse import Capcom
 from lib.api.process import subprocess_checkcall
 from lib.common.abstracts import Auxiliary
 from lib.common.exceptions import CuckooError
@@ -16,21 +15,9 @@ log = logging.getLogger(__name__)
 class LoadZer0m0n(Auxiliary):
     """Loads the zer0m0n kernel driver."""
 
-    def init(self):
-        self.capcom = None
-
     def start(self):
         if self.options.get("analysis") not in ("both", "kernel"):
             return
-
-        try:
-            self.capcom = Capcom()
-            self.capcom.install()
-        except CuckooError as e:
-            log.error("Driver issue: %s", e)
-            return
-
-        self.capcom.dse(False)
 
         try:
             d = Driver("zer0m0n", random_name)
@@ -47,5 +34,3 @@ class LoadZer0m0n(Auxiliary):
             log.info("Successfully loaded the zer0m0n kernel driver.")
         except CuckooError as e:
             log.error("Error loading zer0m0n: %s", e)
-
-        self.capcom.dse(True)

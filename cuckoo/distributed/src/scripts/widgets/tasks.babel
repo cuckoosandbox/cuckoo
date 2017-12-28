@@ -1,0 +1,124 @@
+import { fabricate, initializeToolbar } from '../lib/DraggableZ';
+import { transformators } from '../lib/StatsAPI';
+
+// widget-specific API middleware. it consumes a bare response
+// and returns it altered to the flavor of the output (in this case chartjs.)
+// it will make use of the api-specific params set for breaking down the content
+// to 'just' what chartjs needs.
+function responseBreakdown(res, params, silent) {
+
+  let result = {
+    labels: [],
+    datasets: []
+  }
+
+  let addDataset = (set) => {
+
+    let selected = res[set];
+
+    if(params.period) {
+      selected = selected[params.period];
+    } else {
+      selected = selected['hour'];
+    }
+
+    result.labels = selected.points.map(point => moment(point.datetime).format('m'));
+
+    result.datasets.push({
+      label: set,
+      data: selected.points.map(point => point.value)
+    });
+
+  }
+
+  if(params.include.indexOf(',') > -1) {
+    params.include.split(',').forEach(inc => addDataset(inc));
+  } else {
+    addDataset(params.include)
+  }
+
+  return result;
+
+}
+
+/*
+  Widget properties
+ */
+const widget = fabricate('tasks', {
+
+  template: $("#widget--tasks"),
+  elementId: $("#widget--tasks").attr('id'),
+  widgetLayout: {
+    width: 6,
+    height: 5,
+    x: 0,
+    y: 6
+  },
+
+  chartHeight: 200,
+
+  // chart configuration
+  chart: {
+    type: 'line',
+    options: {
+      legend: {
+        position: 'bottom',
+        strokeStyle: false,
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          stepSize: 100,
+          maxTicksLimit: 20
+        }]
+      }
+    },
+
+    // layout per data entry, in order.
+    dataLayout: [
+
+      // task_completed
+      {
+        label: "Completed" ,
+        borderWidth: 1,
+        pointRadius: 1
+      },
+
+      // task_uncompleted
+      {
+        label: "Uncompleted",
+        borderWidth: 1,
+        pointRadius: 1
+      }
+
+    ]
+
+  },
+
+  // api configuration
+  api: {
+    params: {
+      include: 'task_completed,task_uncompleted'
+    },
+    transform: transformators.simpleResponseBreakdown
+  }
+
+});
+
+/*
+  Widget event handling
+ */
+widget.on('render', function() {
+  // initializes the toolbar
+  initializeToolbar(this);
+});
+
+// exports the UI widget configuration
+export default widget;

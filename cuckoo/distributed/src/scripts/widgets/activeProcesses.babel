@@ -1,0 +1,76 @@
+import { fabricate } from '../lib/DraggableZ';
+import mock from '../sample-data/example-reply.json';
+
+// generates an HTML list as jQuery from a dataset.
+function createNodelist(data) {
+
+  let el = $('<ul />', { class: 'widget-node-status' });
+  let hasData = false;
+
+  for(let prop in data.active_processes) {
+    let li = $('<li />');
+    let t = $('<h4 />');
+    let s = $('<span />');
+    t.text(prop);
+    s.toggleClass('online', data.active_processes[prop].cuckoo);
+    t.prepend(s);
+    li.append(t);
+    el.append(li);
+    hasData = true;
+  }
+
+  // if there is no data at el, replace the element by a <p> telling something
+  // like: 'no nodes here matey!'
+  if(!hasData) {
+    el = $('<p />', {
+      text: 'There are no measurable nodes at the moment.',
+      class: 'widget-content-copy message-error center'
+    });
+  }
+
+  return el;
+}
+
+// fabricate a widget
+const widget = fabricate('active_processes', {
+
+  template: $("#widget--active-processes"),
+  elementId: $("#widget--active-processes").attr('id'),
+
+  widgetLayout: {
+    width: 6,
+    height: 4,
+    x: 6,
+    y: 12
+  },
+
+  chartHeight: 80,
+
+  // chart configuration
+  chart: {},
+
+  // api configuration
+  api: {
+    // mock: mock.active_processes,
+    // mockDelay: 500,
+    params: {
+      include: 'active_processes'
+    }
+  }
+
+}).on('render', function() {
+
+  // waits for the receive to append the node list to the widget.
+  this.api.on('receive', function(data) {
+    let list = createNodelist(data.data);
+
+    if($(widget.template).find('.widget-node-status').length > 0) {
+      // remove the node list if it already exists
+      $(widget.template).find('.widget-node-status').remove();
+    }
+    $(widget.template).find('.widget-content').append(list);
+  });
+
+});
+
+export default widget;

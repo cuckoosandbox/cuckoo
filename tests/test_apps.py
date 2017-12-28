@@ -739,6 +739,15 @@ class TestMigrateCWD(object):
         open(cwd(".cwd"), "wb").write("somethingelse")
         migrate_cwd()
 
+    @pytest.mark.skipif("sys.platform == 'win32'")
+    def test_monitor_latest_symlink(self):
+        set_cwd(tempfile.mktemp())
+        cuckoo_create()
+        monitor = open(cwd("monitor", "latest"), "rb").read().strip()
+        os.unlink(cwd("monitor", "latest"))
+        os.symlink(cwd("monitor", monitor), cwd("monitor", "latest"))
+        migrate_cwd()
+
 class TestCommunitySuggestion(object):
     @property
     def ctx(self):

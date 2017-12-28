@@ -13,9 +13,12 @@ import time
 
 from cuckoo.common.exceptions import CuckooStartupError
 from cuckoo.common.files import Files
+from cuckoo.common.structures import Structure
+from cuckoo.main import cuckoo_create
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
-    Structure, HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd
+    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
+    Pidfile
 )
 
 def return_value(value):
@@ -237,4 +240,63 @@ def test_structure():
         },
         "b": 0x4141414141414141,
         "c": "A"*32,
+    }
+
+def test_create_pidfile():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    Pidfile("test1").create()
+    assert int(open(cwd("pidfiles", "test1.pid"), "rb").read()) == os.getpid()
+
+def test_remove_pidfile():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    Pidfile("test2").create()
+    assert os.path.exists(cwd("pidfiles", "test2.pid"))
+
+    Pidfile("test2").remove()
+    assert not os.path.exists(cwd("pidfiles", "test2.pid"))
+
+def test_pidfile_exists_false():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+    assert not Pidfile("test3").exists()
+
+def test_pidfile_exists_true():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    p = Pidfile("test4")
+    p.create()
+    assert p.exists() and p.pid == os.getpid()
+
+def test_pidfile_none():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    p = Pidfile("test5")
+    p.create()
+
+    open(cwd("pidfiles", "test5.pid"), "wb").write("notapid")
+    assert p.read() is None
+
+def test_proc_exists():
+    assert Pidfile("hello").proc_exists(os.getpid())
+    # Chances are possible, but slim.
+    assert not Pidfile("hello").proc_exists(13337)
+
+@mock.patch("cuckoo.misc.sys")
+def test_pid_exists_unsupported_platform(p):
+    p.platform = "DogeOS"
+    assert Pidfile("hello").proc_exists(os.getpid()) is None
+
+def test_active_pids():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    Pidfile("test6").create()
+    assert Pidfile.get_active_pids() == {
+        "test6": os.getpid(),
     }

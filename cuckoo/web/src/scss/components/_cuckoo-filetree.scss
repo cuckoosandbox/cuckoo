@@ -18,10 +18,75 @@
 			padding-left: 10px;
 		}
 
-		& > .loading {
+		& > .loading,
+		& > .filetree-error {
 			position: relative;
 			top: 50%;
 			margin-top: -40px;
+		}
+
+		/*
+			<div class="filetree-error">
+				<div class="cross">
+					<span class="cross-line"></span>
+					<span class="cross-line"></span>
+				</div>
+				<p class="error-message">Something went wrong.</p>
+			</div>
+		 */
+
+		.filetree-error {
+
+			text-align: center;
+
+			.cross {
+				position: relative;
+				left: 50%;
+				width: 40px;
+				height: 40px;
+				transition: all 300ms ease-out;
+
+				&-line {
+					position: absolute;
+					opacity: 0;
+					top: 0;
+					left: 0;
+					width: 5px;
+					height: 40px;
+					background-color: #f00;
+					transform-origin: 2.5px 20px;
+					transform: rotate(0deg);
+					transition: all 300ms ease-out;
+					border-radius: 5px;
+				}
+
+			}
+
+			.error-message {
+				opacity: 0;
+				transition: all 300ms ease-out;
+				transition-delay: 100ms;
+			}
+
+			&.in {
+
+				.cross-line {
+					opacity: 1;
+					left: -5px;
+					&:first-child {
+						transform: rotate(45deg);
+					}
+					&:last-child {
+						transform: rotate(-45deg);
+					}
+				}
+
+				.error-message {
+					opacity: 1;
+				}
+
+			}
+
 		}
 
 		// stripes out left padding on the first
@@ -121,17 +186,17 @@
 				}
 			}
 
-			&:before { 
-				@extend .fa; 
+			&:before {
+				@extend .fa;
 				content: "\f016";
-				margin-right: 10px; 
+				margin-right: 10px;
 			}
 
 			&.no-icon {
 				display: flex;
 				padding: 0;
-				&:before { 
-					content: ""; 
+				&:before {
+					content: "";
 					margin-right: 0;
 				}
 			}
@@ -140,12 +205,12 @@
 
 		li {
 
-			[data-type="folder"] { 
-				font-weight: 700; 
+			[data-type="folder"] {
+				font-weight: 700;
 			}
 
-			[data-type="file"] { 
-				font-weight: 400; 
+			[data-type="file"] {
+				font-weight: 400;
 			}
 
 			strong {
@@ -328,13 +393,13 @@
 				text-align-last: center;
 
 				&:focus { outline: none; }
-				&:hover { 
-					cursor: pointer; 
+				&:hover {
+					cursor: pointer;
 					color: darken(#337AB7, 10);
 				}
 
-				&.none-selected { 
-					color: #ccc; 
+				&.none-selected {
+					color: #ccc;
 					&:hover {
 						color: #aaa;
 					}

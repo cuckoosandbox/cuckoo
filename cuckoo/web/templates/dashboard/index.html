@@ -19,14 +19,21 @@
                             <td>Version</td>
                             <td>{{ report.version }}</td>
                         </tr>
+                        <tr class="up-to-date">
+                          <td class="stretch" colspan="2"><em class="show-loaded">You are up to date.</em></td>
+                        </tr>
+                        <tr class="latest-version">
+                            <td>Available</td>
+                            <td></td>
+                        </tr>
                     </tbody>
                 </table>
             </section>
-            <!--
+
             <footer class="dashboard-module__footer">
-                <p><i class="fa fa-info-circle"></i> How to: <a href="http://docs.cuckoosandbox.org/en/latest/installation/upgrade/" target="_blank">Upgrade your Cuckoo installation</a></p>
+                <p><i class="fa fa-exclamation-triangle"></i> A new version has been released. <a href="#">Update now</a></p>
             </footer>
-            -->
+
         </div>
 
         <div class="dashboard-module">
@@ -48,6 +55,48 @@
                 <p><i class="fa fa-info-circle"></i> How to: <a href="http://docs.cuckoosandbox.org/en/latest/usage/utilities/#processing-utility" target="_blank">Manage Cuckoo processes</a></p>
             </footer>
             -->
+        </div>
+
+        <!-- blogpost -->
+        <div class="dashboard-module" data-dashboard-module="blogposts">
+          <header class="dashboard-module__header">
+            <h4><i class="fa fa-newspaper-o icon-left"></i> From the press:</h4>
+          </header>
+          <section class="dashboard-module__body">
+
+            <!--
+              new approach for Handlebars: let's start writing handlebars code where it should be used in the template.
+              steps forward :)
+            -->
+            {% verbatim %}
+            <template id="blogpost-template">
+              {{#if posts}}
+                <ul class="content-list">
+                  {{#each posts}}
+                    <li>
+                      <a href="{{url}}" title="Read '{{title}}' on cuckoosandbox.org" target="_blank">
+                        {{#if important}}
+                          <i class="fa fa-star"></i>
+                        {{/if}}
+                        {{title}}
+                          <time>{{date}}</time>
+                        {{#if oneline}}
+                          <blockquote>&ldquo;{{oneline}}&rdquo;</blockquote>
+                        {{/if}}
+                      </a>
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                <p class="dashboard-module__body--text">No blogposts have been loaded <small>(this indicates version_check has been disabled in cuckoo.conf)</small>.</p>
+              {{/if}}
+            </template>
+            {% endverbatim %}
+
+          </section>
+          <footer class="dashboard-module__footer">
+            <p><a href="http://www.cuckoosandbox.org/blog" target="_blank" title="Full list of our literature on cuckoosandbox.org">Click here for more</a></p>
+          </footer>
         </div>
 
     </div>
@@ -76,7 +125,7 @@
                     <div id="submit-with-link">
                         <form>
                             <h5>Submit URLs/hashes</h5>
-                            <textarea rows="6" class="form-control" placeholder="Submit URLs/hashes"></textarea>   
+                            <textarea rows="6" class="form-control" placeholder="Submit URLs/hashes"></textarea>
                             <div class="text-center">
                                 <button type="submit" class="button--lg">Submit</button>
                             </div>
@@ -84,7 +133,7 @@
                     </div>
                 </div>
 
-            </div>  
+            </div>
 
             <div class="dashboard-module__footer">
                 <p class="align-left"><i class="fa fa-info-circle"></i> Drag your file into the left field or click the icon to select a file.</p>

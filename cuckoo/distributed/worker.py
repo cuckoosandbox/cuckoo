@@ -16,7 +16,7 @@ import sys
 
 from cuckoo.distributed.app import create_app
 from cuckoo.distributed.db import Node
-from cuckoo.distributed.instance import scheduler, handle_node
+from cuckoo.distributed.instance import scheduler, handle_node, status_caching
 from cuckoo.misc import cwd, decide_cwd
 
 logging.basicConfig(level=logging.DEBUG)
@@ -94,7 +94,7 @@ if os.environ.get("CUCKOO_APP") == "worker":
             with_app, "dist.scheduler", scheduler
         ),
         ("dist.status", True): gevent.spawn(
-            with_app, "dist.status", scheduler
+            with_app, "dist.status", status_caching
         ),
     }
 

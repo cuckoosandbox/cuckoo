@@ -3,10 +3,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import ctypes
+import errno
 import importlib
 import logging
 import multiprocessing
-import os.path
+import os
 import pkg_resources
 import subprocess
 import sys
@@ -20,6 +21,9 @@ except ImportError:
 
 import cuckoo
 
+from cuckoo.common.defines import (
+    WIN_PROCESS_QUERY_INFORMATION, WIN_ERR_STILL_ALIVE
+)
 from cuckoo.common.exceptions import CuckooStartupError
 
 log = logging.getLogger(__name__)
@@ -43,7 +47,7 @@ def cwd(*args, **kwargs):
     optionally - when private=True has been passed along - to our private
     Cuckoo Working Directory which is not configurable."""
     if kwargs.get("private"):
-        return os.path.join(cuckoo.__path__[0], "data-private", *args)
+        return os.path.join(cuckoo.__path__[0], "private", *args)
     elif kwargs.get("raw"):
         return _raw
     elif kwargs.get("root"):
@@ -115,6 +119,7 @@ def load_signatures():
     # Forward everything from lib.cuckoo to "our" cuckoo module.
     sys.modules["lib"] = types.ModuleType("lib")
     sys.modules["lib.cuckoo"] = sys.modules["cuckoo"]
+    sys.modules["lib.cuckoo.common"] = sys.modules["cuckoo.common"]
 
     # Import this here in order to avoid recursive import statements.
     from cuckoo.common.abstracts import Signature
@@ -129,7 +134,7 @@ def load_signatures():
     dont_write_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
 
-    # Trigger an import on $CWD/signatures. This will automatically import
+    # Trigger an import on $CWD/signatures/. This will automatically import
     # recursively down the various directories through the use of
     # enumerate_plugins(), which the Cuckoo Community adheres to. For this to
     # work we temporarily insert the CWD in Python's path.
@@ -214,17 +219,69 @@ def drop_privileges(username):
     except OSError as e:
         sys.exit("Failed to drop privileges to %s: %s" % (username, e))
 
-class Structure(ctypes.Structure):
-    def as_dict(self):
-        ret = {}
-        for field, _ in self._fields_:
-            value = getattr(self, field)
-            if isinstance(value, Structure):
-                ret[field] = value.as_dict()
-            elif hasattr(value, "value"):
-                ret[field] = value
-            elif hasattr(value, "__getitem__"):
-                ret[field] = value[:]
-            else:
-                ret[field] = value
-        return ret
+class Pidfile(object):
+    def __init__(self, name):
+        """Manage pidfile of given name."""
+        self.name = name
+        self.filepath = cwd("pidfiles", "%s.pid" % name)
+        self.pid = None
+
+    def create(self):
+        """Creates pidfile for the current process."""
+        with open(self.filepath, "wb") as f:
+            f.write(str(os.getpid()))
+
+    def remove(self):
+        """Remove pidfile if it exists."""
+        if os.path.exists(self.filepath):
+            os.remove(self.filepath)
+
+    def exists(self):
+        """Check if a pidfile (and its associated process) exists."""
+        if not os.path.exists(self.filepath):
+            return False
+        return self.proc_exists(self.read())
+
+    def read(self):
+        """Read PID from pidfile."""
+        try:
+            self.pid = int(open(self.filepath, "rb").read())
+        except ValueError:
+            self.pid = None
+        return self.pid
+
+    def proc_exists(self, pid):
+        """Returns boolean if the process exists or None when unsupported."""
+        if is_windows():
+            from ctypes import windll, wintypes
+            dw_exit = wintypes.DWORD()
+            proc_h = windll.kernel32.OpenProcess(
+                WIN_PROCESS_QUERY_INFORMATION, 0, pid
+            )
+            windll.kernel32.GetExitCodeProcess(proc_h, ctypes.byref(dw_exit))
+            windll.kernel32.CloseHandle(proc_h)
+            return dw_exit.value == WIN_ERR_STILL_ALIVE
+
+        if is_linux() or is_macosx():
+            # Send signal 0 to process. Exception will be thrown if it does
+            # not exist or there is no permission to send to this process.
+            # This indicates a process does exist.
+            try:
+                os.kill(pid, 0)
+            except OSError as e:
+                return e.errno == errno.EPERM
+            return True
+
+    @staticmethod
+    def get_active_pids():
+        """Return a dict containing active pids.
+        Key is the pidfile name and value is pid"""
+        pids = {}
+
+        for filename in os.listdir(cwd("pidfiles")):
+            name, _ = os.path.splitext(filename)
+            pidfile = Pidfile(name)
+            if pidfile.exists():
+                pids[name] = pidfile.pid
+
+        return pids

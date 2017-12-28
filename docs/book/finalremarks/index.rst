@@ -6,13 +6,11 @@ Links
 =====
 
     * `www.cuckoosandbox.org`_
-    * `community.cuckoosandbox.org`_
     * `github.com/cuckoosandbox`_
     * `malwr.com`_
 
-.. _`www.cuckoosandbox.org`: http://www.cuckoosandbox.org
-.. _`community.cuckoosandbox.org`: https://community.cuckoosandbox.org
-.. _`github.com/cuckoosandbox`: http://github.com/cuckoosandbox
+.. _`www.cuckoosandbox.org`: https://www.cuckoosandbox.org
+.. _`github.com/cuckoosandbox`: https://github.com/cuckoosandbox
 .. _`malwr.com`: https://malwr.com
 
 .. _join_the_discussion:
@@ -20,28 +18,26 @@ Links
 Join the discussion
 ===================
 
-You can get in contact with the Cuckoo developers and users through the `Community`_
-portal or on IRC at the official `#cuckoosandbox`_ channel.
-
-If you are encountering an issue you can't solve and are looking for some help,
-go to our `Community`_ website.
+If you are encountering an issue you can't solve and are looking for some
+help, go to our `Discussion`_ page and pick a platform of your choice. This is
+where you can get in contact with the Cuckoo Developers and users (our
+preference go to the Slack & IRC).
 
 Please read the following rules before posting:
 
- * Before posting, read the `Community`_ archives, the Cuckoo blog,
-   the documentation and Google about your issue. **DO NOT** post questions that
-   have already been answered over and over everywhere.
- * Posting messages saying just something like "Doesn't work, help me" are completely
-   useless. If something is not working report the error, paste the logs,
-   the config file, the information on the virtual machine, the
-   results of the troubleshooting, etc. Give context. We are not wizards and we
-   don't have a crystal ball.
+ * Before posting, read our `Github issue tracker`_, the Cuckoo blog,
+   the documentation and Google about your issue. **DO NOT** post questions
+   that have already been answered over and over everywhere.
+ * Posting messages saying just something like "Doesn't work, help me" are
+   completely useless. If something is not working report the error, paste the
+   logs, the configuration files, the information on the virtual machine, the
+   results of the troubleshooting, etc. Give context. We are not wizards and
+   we don't have a crystal ball.
  * Use a proper title. Stuff like "Doesn't work", "Help me", "Error" are not
    proper titles.
 
-.. _`#cuckoosandbox`: irc://irc.freenode.net/cuckoosandbox
-.. _`Markdown`: http://daringfireball.net/projects/markdown/syntax
-.. _`Community`: https://community.cuckoosandbox.org
+.. _`Discussion`: https://cuckoosandbox.org/discussion
+.. _`Github issue tracker`: https://github.com/cuckoosandbox/cuckoo
 
 Support Us
 ==========
@@ -66,11 +62,11 @@ Active Developers
     +------------------------------+--------------------+-------------------------------------+
     | Name                         | Role               | Contact                             |
     +==============================+====================+=====================================+
-    | Claudio `nex`_ Guarnieri     | Project Leader     | ``nex at nex dot sx``               |
+    | Claudio `nex`_ Guarnieri     | Project Founder    | ``nex at nex dot sx``               |
     +------------------------------+--------------------+-------------------------------------+
     | Alessandro `jekil`_ Tanasi   | Core Developer     | ``alessandro at tanasi dot it``     |
     +------------------------------+--------------------+-------------------------------------+
-    | Jurriaan `skier`_ Bremer     | Core Developer     | ``jbr at cuckoo dot sh``            |
+    | Jurriaan `skier`_ Bremer     | Lead Developer     | ``jbr at cuckoo dot sh``            |
     +------------------------------+--------------------+-------------------------------------+
     | Mark `rep`_ Schloesser       | Core Developer     | ``ms at mwcollect dot org``         |
     +------------------------------+--------------------+-------------------------------------+

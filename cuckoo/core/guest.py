@@ -298,7 +298,16 @@ class GuestManager(object):
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        r = session.get(url, *args, **kwargs)
+
+        try:
+            r = session.get(url, *args, **kwargs)
+        except requests.ConnectionError:
+            raise CuckooGuestError(
+                "Cuckoo Agent failed without error status, please try "
+                "upgrading to the latest version of agent.py (>= 0.8) and "
+                "notify us if the issue persists."
+            )
+
         do_raise and r.raise_for_status()
         return r
 
@@ -308,7 +317,16 @@ class GuestManager(object):
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
-        r = session.post(url, *args, **kwargs)
+
+        try:
+            r = session.post(url, *args, **kwargs)
+        except requests.ConnectionError:
+            raise CuckooGuestError(
+                "Cuckoo Agent failed without error status, please try "
+                "upgrading to the latest version of agent.py (>= 0.8) and "
+                "notify us if the issue persists."
+            )
+
         r.raise_for_status()
         return r
 

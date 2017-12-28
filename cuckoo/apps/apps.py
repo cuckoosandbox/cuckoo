@@ -7,7 +7,7 @@ import fnmatch
 import hashlib
 import io
 import logging
-import os.path
+import os
 import random
 import requests
 import shutil
@@ -484,9 +484,9 @@ def migrate_cwd():
         if filename.startswith("index_") and filename.endswith(".yar"):
             os.remove(cwd("yara", filename))
 
-    # Create the new $CWD/stuff/ directory.
-    if not os.path.exists(cwd("stuff")):
-        mkdir(cwd("stuff"))
+    # Create new directories if not present yet.
+    mkdir(cwd("stuff"))
+    mkdir(cwd("yara", "office"))
 
     # Create the new $CWD/whitelist/ directory.
     if not os.path.exists(cwd("whitelist")):
@@ -500,6 +500,11 @@ def migrate_cwd():
             continue
         hash_, filename = line.split()
         hashes[filename] = hashes.get(filename, []) + [hash_]
+
+    # We remove $CWD/monitor/latest upfront if it's a symbolic link, because
+    # our migration code doesn't properly handle symbolic links.
+    if os.path.islink(cwd("monitor", "latest")):
+        os.remove(cwd("monitor", "latest"))
 
     modified, outdated, deleted = [], [], []
     for filename, hashes in hashes.items():

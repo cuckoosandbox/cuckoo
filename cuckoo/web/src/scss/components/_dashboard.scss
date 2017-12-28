@@ -1,3 +1,14 @@
+$attention-red: #e85a5a;
+
+@mixin dashboard-module-attention($parent: false) {
+	@if $parent {
+		&.attention { @content; }
+	}
+	@else {
+		.dashboard-module.attention & { @content; }
+	}
+}
+
 .dashboard {
 
 	background-color: #F7F8FA;
@@ -8,10 +19,11 @@
 	}
 
 	// divides the two columns a 1/3 2/3 division
-	&__left { 
-		flex-basis: 415px; 
+	&__left {
+		flex-basis: 415px;
 		flex-grow: 0;
 		flex-shrink: 0;
+		overflow: visible;
 	}
 	&__right { flex-basis: 100%; }
 
@@ -30,15 +42,28 @@
 		overflow: hidden;
 
 		&__header {
+			position: relative;
+			overflow: hidden;
 			background-color: #fff;
 			border-bottom: 2px solid #DFDFDF;
 			text-align: center;
 
-			h4 { 
+			.icon-left,
+			.icon-right {
+				position: absolute;
+				font-size: 1.4em;
+				top: 15px;
+				color: $cuckoo_default_grey;
+			}
+
+			.icon-left { left: 15px; }
+			.icon-right { right: 15px; }
+
+			h4 {
 				font-size: 14px;
 				color: #337AB8;
 				padding: 20px 0 10px 0;
-				margin: 0; 
+				margin: 0;
 
 				&.align-left {
 					padding: 20px 20px 10px 20px;
@@ -50,7 +75,7 @@
 				}
 
 				.label-used { background-color: #999; }
-				.label-free { 
+				.label-free {
 					background: linear-gradient(to right, #7db9e8 50%,#afb200 50%);
 				}
 				.label-total { background-color: #BE234A; }
@@ -62,6 +87,13 @@
 				}
 
 			}
+
+			@include dashboard-module-attention {
+				background: $attention-red !important;
+				border-color: shade($attention-red, 20%) !important;
+				h4 { color: #fff !important; }
+			}
+
 		}
 
 		&__body {
@@ -102,21 +134,99 @@
 				border-right: 2px solid #DFDFDF;
 			}
 
+			// single line text for the body
+			&--text {
+				flex-basis: 100%;
+				text-align: center;
+				padding: 25px 15px;
+				margin: 0;
+				font-size: 16px;
+				opacity: .4;
+			}
+
 			.cuckoo-table {
 				border: 0;
 			}
-			
+
+			.content-list {
+				// display: block;
+				width: 100%;
+				list-style: none;
+				padding: 15px 0;
+				margin: 0;
+
+				li {
+					border-bottom: 1px solid #DFDFDF;
+					&:last-child { border-bottom: 0; }
+
+					a {
+						display: block;
+						color: $cuckoo_secundary_color;
+						padding: 15px;
+						font-weight: 500;
+						font-size: 20px;
+
+						.fa {
+							margin-right: 5px;
+							font-size: .9em;
+						}
+
+						blockquote {
+							font-size: 13px;
+							font-weight: 400;
+							font-style: italic;
+							color: $cuckoo_default_grey;
+							border-left: 0;
+							padding: 0;
+							margin: 0;
+						}
+
+						time {
+							display: block;
+							font-size: .7em;
+							color: $cuckoo_default_grey;
+
+							& + blockquote {
+								margin-top: 10px;
+							}
+						}
+
+						&:hover {
+							text-decoration: none;
+							color: shade($cuckoo_secundary_color, 20%);
+							background-color: rgba($cuckoo_secundary_color, .05);
+
+							time {
+								color: shade($cuckoo_default_grey, 20%);
+							}
+						}
+					}
+				}
+			}
+
+			@include dashboard-module-attention {
+				background-color: tint($attention-red, 20%) !important;
+				border-color: shade($attention-red, 20%) !important;
+
+				table.simple td,
+				table.simple tr {
+					border-color: $attention-red !important;
+					color: shade($attention-red, 50%) !important;
+					background: none !important;
+				}
+			}
+
 		}
 
 		&__footer {
 			background-color: #fff;
 			text-align: center;
 
-			p { 
+			p {
 				font-weight: 500;
 				font-size: 12px;
 				padding: 5px;
-				margin: 0; 
+				margin: 0;
 				color: #979797;
 
 				&.align-left {
@@ -133,6 +243,37 @@
 				a:hover {
 					cursor: pointer;
 				}
+
+			}
+
+			@include dashboard-module-attention {
+				background-color: $attention-red !important;
+
+				& > * {
+					color: shade($attention-red, 50%) !important;
+					a {
+						color: #fff;
+					}
+				}
+			}
+		}
+
+    // speech element for motivational messages. purely aesthethic.
+		&__speech {
+			border-radius: 8px;
+			padding: 30px;
+
+			blockquote {
+				border: 0;
+				padding: 0;
+				margin: 0;
+				text-align: center;
+				font-weight: 400;
+				font-size: 24px;
+				color: rgba(0,0,0,.25);
+
+				@include cuckoo-theme('cyborg') { color: rgba(255,255,255, .25); }
+				@include cuckoo-theme('night') { color: rgba(255,255,255, .25); }
 
 			}
 		}
@@ -248,7 +389,7 @@
 					border-bottom: 0;
 
 					td {
-						padding-bottom: 20px;
+						padding-bottom: 14px;
 					}
 				}
 
@@ -261,10 +402,15 @@
 					padding: 6px;
 					color: #979797;
 
-					&:first-child { 
+					&:first-child {
 						font-weight: 600;
-						border-right: 1px solid #DFDFDF; 
+						border-right: 1px solid #DFDFDF;
 						text-align: right;
+					}
+
+					&.stretch {
+						text-align: center;
+						padding: 7px 0;
 					}
 
 				}
@@ -402,6 +548,32 @@
 
 		}
 
+		// installation block - gets toggled / stated with javascript.
+		&[data-dashboard-module="installation"] {
+
+			.up-to-date,
+			.latest-version {
+				display: none;
+			}
+
+			.show-loaded {
+				opacity: 0;
+				transition: opacity 150ms linear;
+			}
+
+			&.version-loaded .show-loaded {
+				opacity: 1;
+			}
+
+			.dashboard-module__footer { display: none; }
+
+		}
+
+		@include dashboard-module-attention(true) {
+			border-color: shade($attention-red, 20%) !important;
+			.dashboard-module__footer { display: block; }
+		}
+
 	}
 
 	// cyborg theming
@@ -428,6 +600,10 @@
 				&--left {
 					border-color: $cyborg_border_color;
 				}
+
+				.content-list li {
+					border-bottom-color: $cyborg_border_color;
+				}
 			}
 
 			&__footer {
@@ -449,7 +625,7 @@
 			}
 
 			.stack:not(:last-child) {
-				border-color: $cyborg_border_color;	
+				border-color: $cyborg_border_color;
 			}
 		}
 
@@ -503,6 +679,15 @@
 				&--left {
 					border-color: darken($night_border_color, 10);
 				}
+
+				.content-list li {
+					border-bottom-color: $night_border_color;
+				}
+
+				.attention & {
+					background-color: tint($attention-red, 20%);
+					border-color: shade($attention-red, 20%);
+				}
 			}
 
 			&__footer {
@@ -513,7 +698,7 @@
 		}
 
 		.stack:not(:last-child) {
-			border-color: $night_border_color;	
+			border-color: $night_border_color;
 		}
 
 		table.simple {
@@ -534,6 +719,7 @@
 					background-color: #333333;
 				}
 			}
+
 		}
 
 	}
