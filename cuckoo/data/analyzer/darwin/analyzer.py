@@ -10,6 +10,8 @@ from xmlrpclib import Server
 from traceback import format_exc
 from os import path, getcwd, makedirs
 import pkgutil
+import urllib
+import urllib2
 
 from lib.common.config import Config
 from lib.common.hashing import hash_file
@@ -204,6 +206,16 @@ if __name__ == "__main__":
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
-        # Establish connection with the agent XMLRPC server.
-        server = Server("http://127.0.0.1:8000")
-        server.complete(success, error, PATHS["root"])
+        try:
+            # Establish connection with the agent XMLRPC server.
+            server = Server("http://127.0.0.1:8000")
+            server.complete(success, error, PATHS["root"])
+        except Exception as e:
+            # new agent
+            data = {
+                "status": "complete",
+                "description": success
+            }
+            urllib2.urlopen(
+                "http://127.0.0.1:8000/status", urllib.urlencode(data)
+            )
