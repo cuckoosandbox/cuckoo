@@ -23,14 +23,17 @@ export default class RDPToolbar extends Hookable {
 
     // toggle fullscreen mode
     this.buttons.fullscreen.on('click', () => {
-      if(CuckooWeb.isFullsceen()) {
-        this.client.$.removeClass('fullscreen');
+      if(CuckooWeb.isFullscreen()) {
         CuckooWeb.exitFullscreen();
       } else {
-        this.client.$.addClass('fullscreen');
         CuckooWeb.requestFullscreen(document.getElementById('rdp-client'));
       }
     });
+
+    // make a slight change to the client style to fit into viewport after a
+    // change of fullscreen-ness.
+    CuckooWeb.onFullscreenChange(e => this.client.$.toggleClass('fullscreen', CuckooWeb.isFullscreen()));
+    CuckooWeb.onFullscreenChange(e => console.log(CuckooWeb.isFullscreen()));
 
     // snapshots
     this.buttons.snapshot.on('click', () => this.client.snapshots.create());
