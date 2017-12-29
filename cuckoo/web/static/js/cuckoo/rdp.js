@@ -732,9 +732,6 @@ var RDPToolbar = function (_Hookable) {
     CuckooWeb.onFullscreenChange(function (e) {
       return _this.client.$.toggleClass('fullscreen', CuckooWeb.isFullscreen());
     });
-    CuckooWeb.onFullscreenChange(function (e) {
-      return console.log(CuckooWeb.isFullscreen());
-    });
 
     // snapshots
     _this.buttons.snapshot.on('click', function () {
