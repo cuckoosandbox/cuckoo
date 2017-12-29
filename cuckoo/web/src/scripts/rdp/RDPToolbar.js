@@ -35,7 +35,10 @@ export default class RDPToolbar extends Hookable {
     CuckooWeb.onFullscreenChange(e => this.client.$.toggleClass('fullscreen', CuckooWeb.isFullscreen()));
 
     // snapshots
-    this.buttons.snapshot.on('click', () => this.client.snapshots.create());
+    this.buttons.snapshot.on('click', () => {
+      let image = this.client.snapshots.capture();
+      this.client.snapshots.create(image);
+    });
 
     // toggles control modes
     this.buttons.control.on('toggle', toggled => {

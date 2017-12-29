@@ -95,6 +95,17 @@ class GuacamoleWrapper extends Hookable {
 
   }
 
+  /*
+    GuacamoleWrapper.getCanvas
+    - shortcut for returning default guac layer (active tunnel viewport)
+   */
+  getCanvas() {
+    if(this.client) {
+      return this.client.getDisplay().getDefaultLayer().getCanvas();
+    }
+    return false;
+  }
+
 }
 
 export default GuacamoleWrapper;
