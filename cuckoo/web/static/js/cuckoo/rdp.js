@@ -720,13 +720,20 @@ var RDPToolbar = function (_Hookable) {
 
       // toggle fullscreen mode
     };_this.buttons.fullscreen.on('click', function () {
-      if (CuckooWeb.isFullsceen()) {
-        _this.client.$.removeClass('fullscreen');
+      if (CuckooWeb.isFullscreen()) {
         CuckooWeb.exitFullscreen();
       } else {
-        _this.client.$.addClass('fullscreen');
         CuckooWeb.requestFullscreen(document.getElementById('rdp-client'));
       }
+    });
+
+    // make a slight change to the client style to fit into viewport after a
+    // change of fullscreen-ness.
+    CuckooWeb.onFullscreenChange(function (e) {
+      return _this.client.$.toggleClass('fullscreen', CuckooWeb.isFullscreen());
+    });
+    CuckooWeb.onFullscreenChange(function (e) {
+      return console.log(CuckooWeb.isFullscreen());
     });
 
     // snapshots

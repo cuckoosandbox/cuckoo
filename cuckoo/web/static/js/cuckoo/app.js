@@ -247,19 +247,23 @@ var CuckooWeb = function () {
                 return document.mozFullscreenEnabled;
             } else {
                 // ...
+                return false;
             }
         }
     }, {
-        key: 'isFullsceen',
-        value: function isFullsceen() {
+        key: 'isFullscreen',
+        value: function isFullscreen() {
             if (document.fullscreen) {
                 return document.fullscreen;
             } else if (document.webkitIsFullScreen) {
                 return document.webkitIsFullScreen;
             } else if (document.mozIsFullScreen) {
                 return document.mozIsFullScreen;
+            } else if (document.msIsFullScreen) {
+                return document.msIsFullScreen;
             } else {
                 // ...
+                return false;
             }
         }
     }, {
@@ -271,8 +275,11 @@ var CuckooWeb = function () {
                 document.webkitExitFullscreen();
             } else if (document.mozExitFullscreen) {
                 document.mozExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             } else {
                 // the message has already been given in the request handler
+                return false;
             }
         }
 
@@ -288,12 +295,29 @@ var CuckooWeb = function () {
                     element.webkitRequestFullscreen();
                 } else if (element.mozRequestFullscreen) {
                     element.mozRequestFullscreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
                 } else {
                     console.log('Oh noes! you cannot go in fullscreen due to your browser.');
+                    return false;
                 }
             } else {
                 console.log('You did not enable fullscreen in your browser config. you cannot use this feature.');
+                return false;
             }
+        }
+
+        // shortcuts fullscreen event handling
+
+    }, {
+        key: 'onFullscreenChange',
+        value: function onFullscreenChange() {
+            var handler = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
+            document.addEventListener('webkitfullscreenchange', handler, false);
+            document.addEventListener('fullscreenchange', handler, false);
+            document.addEventListener('mozfullscreenchange', handler, false);
+            document.addEventListener('msfullscreenchange', handler, false);
         }
     }]);
 
