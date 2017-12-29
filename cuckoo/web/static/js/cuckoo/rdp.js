@@ -141,6 +141,20 @@ var GuacamoleWrapper = function (_Hookable) {
         this._keyboard = null;
       }
     }
+
+    /*
+      GuacamoleWrapper.getCanvas
+      - shortcut for returning default guac layer (active tunnel viewport)
+     */
+
+  }, {
+    key: 'getCanvas',
+    value: function getCanvas() {
+      if (this.client) {
+        return this.client.getDisplay().getDefaultLayer().getCanvas();
+      }
+      return false;
+    }
   }]);
 
   return GuacamoleWrapper;
@@ -496,7 +510,7 @@ var SnapshotBar = function (_Hookable) {
     value: function add(s) {
       var _this2 = this;
 
-      var template = $('\n      <li data-snapshot-id="' + s.id + '">\n        <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>\n        <div class="rdp-snapshots--controls">\n          <a href="snapshot:remove"><i class="fa fa-remove"></i></a>\n        </div>\n      </li>\n    ');
+      var template = $('\n      <li data-snapshot-id="' + s.id + '">\n        <figure><img src="' + s.data + '" alt="snapshot" /></figure>\n        <div class="rdp-snapshots--controls">\n          <a href="snapshot:remove"><i class="fa fa-remove"></i></a>\n        </div>\n      </li>\n    ');
 
       // append this to the list
       this.$.prepend(template);
@@ -521,6 +535,7 @@ var Snapshot = function Snapshot(id) {
   _classCallCheck(this, Snapshot);
 
   this.id = id;
+  this.data = null;
 };
 
 var RDPSnapshotService = function (_Hookable2) {
@@ -548,10 +563,13 @@ var RDPSnapshotService = function (_Hookable2) {
   _createClass(RDPSnapshotService, [{
     key: 'create',
     value: function create() {
+      var image = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
 
-      if (this.locked) return;
+
+      if (this.locked || image.length == 0) return;
 
       var s = new Snapshot(this.count);
+      s.data = image;
       this.snapshots.push(s);
       this.count = this.count + 1;
       this.bar.add(s);
@@ -589,6 +607,11 @@ var RDPSnapshotService = function (_Hookable2) {
       } else {
         this.locked = isLocked;
       }
+    }
+  }, {
+    key: 'capture',
+    value: function capture(canvas) {
+      return this.client.service.getCanvas().toDataURL();
     }
   }]);
 
@@ -660,7 +683,7 @@ var RDPSnapshotSelector = function (_Hookable3) {
 
         var snapshot = this.service.snapshots[s];
 
-        var template = $('\n        <li>\n          <label for="snapshot-' + snapshot.id + '">\n            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-' + snapshot.id + '" />\n            <span class="snapshot-selection-image">\n              <img src="/static/graphic/screenshot-sample.png" alt="snapshot-' + snapshot.id + '" />\n            </span>\n          </label>\n        </li>\n      ');
+        var template = $('\n        <li>\n          <label for="snapshot-' + snapshot.id + '">\n            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-' + snapshot.id + '" />\n            <span class="snapshot-selection-image">\n              <img src="' + snapshot.data + '" alt="snapshot-' + snapshot.id + '" />\n            </span>\n          </label>\n        </li>\n      ');
 
         this.el.find('ul').append(template);
       }
@@ -739,7 +762,8 @@ var RDPToolbar = function (_Hookable) {
 
     // snapshots
     _this.buttons.snapshot.on('click', function () {
-      return _this.client.snapshots.create();
+      var image = _this.client.snapshots.capture();
+      _this.client.snapshots.create(image);
     });
 
     // toggles control modes

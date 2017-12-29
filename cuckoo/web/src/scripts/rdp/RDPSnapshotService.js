@@ -18,7 +18,7 @@ class SnapshotBar extends Hookable {
 
     let template = $(`
       <li data-snapshot-id="${s.id}">
-        <figure><img src="/static/graphic/screenshot-sample.png" alt="snapshot" /></figure>
+        <figure><img src="${s.data}" alt="snapshot" /></figure>
         <div class="rdp-snapshots--controls">
           <a href="snapshot:remove"><i class="fa fa-remove"></i></a>
         </div>
@@ -45,6 +45,7 @@ class SnapshotBar extends Hookable {
 class Snapshot {
   constructor(id) {
     this.id = id;
+    this.data = null;
   }
 }
 
@@ -65,11 +66,12 @@ class RDPSnapshotService extends Hookable {
 
   }
 
-  create() {
+  create(image = "") {
 
-    if(this.locked) return;
+    if(this.locked || image.length == 0) return;
 
     let s = new Snapshot(this.count);
+    s.data = image;
     this.snapshots.push(s);
     this.count = this.count+1;
     this.bar.add(s);
@@ -102,7 +104,11 @@ class RDPSnapshotService extends Hookable {
     } else {
       this.locked = isLocked;
     }
-    
+
+  }
+
+  capture(canvas) {
+    return this.client.service.getCanvas().toDataURL();
   }
 
 }
@@ -163,7 +169,7 @@ class RDPSnapshotSelector extends Hookable {
           <label for="snapshot-${snapshot.id}">
             <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-${snapshot.id}" />
             <span class="snapshot-selection-image">
-              <img src="/static/graphic/screenshot-sample.png" alt="snapshot-${snapshot.id}" />
+              <img src="${snapshot.data}" alt="snapshot-${snapshot.id}" />
             </span>
           </label>
         </li>
