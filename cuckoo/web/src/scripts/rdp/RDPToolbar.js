@@ -33,7 +33,6 @@ export default class RDPToolbar extends Hookable {
     // make a slight change to the client style to fit into viewport after a
     // change of fullscreen-ness.
     CuckooWeb.onFullscreenChange(e => this.client.$.toggleClass('fullscreen', CuckooWeb.isFullscreen()));
-    CuckooWeb.onFullscreenChange(e => console.log(CuckooWeb.isFullscreen()));
 
     // snapshots
     this.buttons.snapshot.on('click', () => this.client.snapshots.create());
