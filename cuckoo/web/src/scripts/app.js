@@ -135,15 +135,22 @@ class CuckooWeb {
             console.log("err: " + data);
         });
 
-    }
+ }   
 
     // returns true if the client browser is in the
     // recommended browser list.
     static isRecommendedBrowser() {
 
+	// Chromium compatible (Chrome, Opera, Vivaldi, etc.) or Firefox-based.
+        var isRecommended = (bowser.blink || bowser.gecko);
+	if(isRecommended) {
+                return {
+                    recommended: isRecommended,
+                    browser: bowser.name
+                };
+        }
+	
         var recommended = ['firefox', 'chrome', 'webkit', 'chromium', 'opera'];
-        var isRecommended = false;
-
         for(var recommendation in recommended) {
             if(bowser[recommended[recommendation]]) {
                 isRecommended = true;
