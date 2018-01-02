@@ -134,8 +134,7 @@ class CuckooWeb {
         }, function (data) {
             console.log("err: " + data);
         });
-
- }   
+    }
 
     // returns true if the client browser is in the
     // recommended browser list.
