@@ -17,6 +17,7 @@ import cuckoo
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
@@ -411,3 +412,21 @@ def init_routing():
         if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
+
+def check_tmp_permission():
+    """Verifies if the current user can read and create files in the
+    cuckoo temporary directory."""
+
+    tmp_path = os.path.join(temppath(), "cuckoo-tmp")
+    if not os.path.isdir(tmp_path):
+        tmp_path = temppath()
+
+    if os.access(tmp_path, os.R_OK) and os.access(tmp_path, os.W_OK):
+        return True
+    error = red(
+        "Cuckoo cannot write or read files into the temporary directory '%s',"
+        " please make sure the user running Cuckoo has the ability to do so."
+        % tmp_path
+    )
+    print(error)
+    return False

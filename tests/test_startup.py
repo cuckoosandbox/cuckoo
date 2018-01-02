@@ -13,11 +13,12 @@ from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
 from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_tasks, init_binaries
+    init_tasks, init_binaries, check_tmp_permission
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd, is_linux
@@ -593,3 +594,32 @@ class TestYaraIntegration(object):
         init_yara()
         assert len(File.yara_rules) == 6
         assert not list(File.yara_rules["binaries"])
+
+def test_tmp_permissions_true():
+    set_cwd(tempfile.mkdtemp())
+    tmpdir = tempfile.mkdtemp()
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": tmpdir,
+            }
+        }
+    })
+    tmp_path = os.path.join(temppath(), "cuckoo-tmp")
+    os.mkdir(tmp_path)
+    assert check_tmp_permission()
+
+def test_tmp_permissions_false():
+    set_cwd(tempfile.mkdtemp())
+    tmpdir = tempfile.mkdtemp()
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": tmpdir,
+            }
+        }
+    })
+    tmp_path = os.path.join(temppath(), "cuckoo-tmp")
+    os.mkdir(tmp_path)
+    os.chmod(tmp_path, 0400)
+    assert not check_tmp_permission()
