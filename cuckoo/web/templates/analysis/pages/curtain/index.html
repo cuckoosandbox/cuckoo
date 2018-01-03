@@ -1,0 +1,62 @@
+<!--
+__author__  = "Jeff White [karttoon] @noottrak"
+__email__   = "jwhite@paloaltonetworks.com"
+__version__ = "1.0.1"
+__date__    = "29NOV2017
+-->
+
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load analysis_tags %}
+{% block content %}
+
+    <div class="flex-nav">
+        {% include "analysis/pages/nav-sidebar.html" %}
+            <section class="flex-nav__body cuckoo-analysis" tabindex="0">
+                <header class="page-header cuckoo-analysis__header">
+                    <h1>Curtain</h1>
+                </header>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="tabbable tabs">
+                                <ul class="nav nav-pills" style="margin-bottom: 0;">
+                                    <li class="active">
+                                        <a href="#curtain_orig_tab" data-toggle="tab">Original Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="#curtain_altr_tab" data-toggle="tab">Altered Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="#curtain_filt_tab" data-toggle="tab">Filtered Events</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade in active" id="curtain_orig_tab">
+                                        {% include "analysis/pages/curtain/_orig.html" %}
+                                    </div>
+                                    <div class="tab-pane fade" id="curtain_altr_tab">
+                                        {% include "analysis/pages/curtain/_altr.html" %}
+                                    </div>
+                                    <div class="tab-pane fade" id="curtain_filt_tab">
+                                        {% include "analysis/pages/curtain/_filt.html" %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- footer replacement to avoid double scrollbars -->
+                <footer class="flex-grid__footer center-left">
+                    <p class="footnote">
+                        &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                    </p>
+                    <div class="logo">
+                        <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
+                        <a href="#">Back to Top</a>
+                    </div>
+                </footer>
+            </section>
+    </div>
+{% endblock %}

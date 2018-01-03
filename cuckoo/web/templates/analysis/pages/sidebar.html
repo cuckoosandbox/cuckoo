@@ -12,6 +12,16 @@
                         <i class="glyphicon glyphicon-search"></i>Static Analysis
                     </a>
                 </li>
+		{% if report.analysis.curtain %}
+		    <li>
+        	        <a href="{% url "analysis" report.analaysis.info.id "curtain" %}">
+			    <i class="glyphicon glypicon-download-alt"></i>Curtain
+		            <span class="label label-primary pull-right">
+                		{{ report.analysis.curtain|length }}
+		            </span>
+		        </a>
+		    </li>
+		{% endif %}
                 <li>
                     <a href="{% url "analysis" report.analysis.info.id "extracted" %}">
                         <i class="glyphicon glyphicon-search"></i>Extracted Artifacts

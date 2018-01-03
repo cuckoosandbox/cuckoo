@@ -1,0 +1,24 @@
+<!--
+__author__  = "Jeff White [karttoon] @noottrak"
+__email__   = "jwhite@paloaltonetworks.com"
+__version__ = "1.0.0"
+__date__    = "29NOV2017
+-->
+
+{% if report.analysis.curtain %}
+    {% for pid,dict in report.analysis.curtain.items %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                PID: {{pid}} | Process Name: {{ pid|process_name:report.analysis }}
+            </div>
+            <div class="panel-body">
+                {% for entry in dict.filter %}
+                    {% for event,message in entry.items %}
+                        <b>Event: {{ event }}</b>
+                        <pre>{{ message|linebreaksbr }}</pre>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
