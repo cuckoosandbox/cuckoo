@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,7 +10,7 @@ import shlex
 
 from cuckoo.common.abstracts import BehaviorHandler
 from cuckoo.common.netlog import BsonParser
-from cuckoo.common.utils import guid_name, jsbeautify, htmlprettify
+from cuckoo.common.utils import guid_name, htmlprettify
 
 log = logging.getLogger(__name__)
 
@@ -29,15 +28,6 @@ class MonitorProcessLog(list):
         self.services = {}
         self.vbe6_ptrs = {}
         self.vbe6_func = {}
-
-    def _api_COleScript_Compile(self, event):
-        event["raw"] = "script",
-        event["arguments"]["script"] = \
-            jsbeautify(event["arguments"]["script"])
-
-    def _api_CWindow_AddTimeoutCode(self, event):
-        event["raw"] = "code",
-        event["arguments"]["code"] = jsbeautify(event["arguments"]["code"])
 
     def _api_CElement_put_innerHTML(self, event):
         event["raw"] = "html",
@@ -129,11 +119,6 @@ class MonitorProcessLog(list):
         del event["arguments"]["funcidx"]
 
     # PDF document analysis.
-
-    def _api_pdf_eval(self, event):
-        event["raw"] = "script",
-        event["arguments"]["script"] = \
-            jsbeautify(event["arguments"]["script"])
 
     def _api_pdf_unescape(self, event):
         event["raw"] = "string", "unescaped"

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -276,10 +276,16 @@ def jsbeautify(javascript):
     """Beautifies Javascript through jsbeautifier and ignore some messages."""
     with _jsbeautify_lock:
         origout, sys.stdout = sys.stdout, io.StringIO()
-        javascript = jsbeautifier.beautify(javascript)
+
+        try:
+            javascript = jsbeautifier.beautify(javascript)
+        except Exception as e:
+            log.exception("Unable to beautify javascript: %s", e)
 
         if sys.stdout.getvalue() not in _jsbeautify_blacklist:
-            log.warning("jsbeautifier returned error: %s", sys.stdout.getvalue())
+            log.warning(
+                "jsbeautifier returned error: %s", sys.stdout.getvalue()
+            )
 
         sys.stdout = origout
     return javascript
