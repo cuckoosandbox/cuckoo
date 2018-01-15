@@ -449,6 +449,16 @@ Distributed Cuckoo Worker is temporary disabled, i.e.,
     $ salt cuckoo1 state.apply cuckoo.clean
     $ salt cuckoo1 state.apply cuckoo.start
 
+If a Cuckoo node has a number of tasks that failed to process, therefore
+locking up the Cuckoo node altogether, then upgrading the Cuckoo instances
+with a bugfixed version and re-processing all analyses may do the trick::
+
+    $ salt cuckoo1 state.apply cuckoo.update  # Upgrade Cuckoo.
+    # To make sure there are failed analyses in the first place.
+    $ salt cuckoo1 cmd.run "sudo -u cuckoo psql -c \"SELECT * FROM tasks WHERE status = 'failed_processing'\"
+    # Reset each analyses to be re-processed.
+    $ salt cuckoo1 cmd.run "sudo -u cuckoo psql -c \"UPDATE tasks SET status = 'completed', processing = null WHERE status = 'failed_processing'\""
+
 In order to upgrade the Distributed Cuckoo master, one may want to perform the
 following steps::
 
