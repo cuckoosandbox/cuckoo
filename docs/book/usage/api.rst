@@ -139,6 +139,8 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_list`           | Returns the list of tasks stored in the internal Cuckoo database.                                                |
 |                                     | You can optionally specify a limit of entries to return.                                                         |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_sample`         | Returns the list of tasks stored in the internal Cuckoo database for a given sample.                             |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_view`           | Returns the details on the task assigned to the specified ID.                                                    |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_reschedule`     | Reschedule a task assigned to the specified ID.                                                                  |
@@ -455,6 +457,63 @@ Returns list of tasks.
 
 * ``limit`` *(optional)* *(int)* - maximum number of returned tasks
 * ``offset`` *(optional)* *(int)* - data offset
+
+**Status codes**:
+
+* ``200`` - no error
+
+.. _tasks_sample:
+
+/tasks/sample
+-----------
+
+**GET /tasks/sample/** *(int: sample_id)* **/
+
+Returns list of tasks for sample.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/sample/1
+
+**Example response**.
+
+.. code-block:: json
+
+    {
+        "tasks": [
+            {
+                "category": "file",
+                "machine": null,
+                "errors": [],
+                "target": "/tmp/malware.exe",
+                "package": null,
+                "sample_id": 1,
+                "guest": {},
+                "custom": null,
+                "owner": "",
+                "priority": 1,
+                "platform": null,
+                "options": null,
+                "status": "pending",
+                "enforce_timeout": false,
+                "timeout": 0,
+                "memory": false,
+                "tags": [
+                            "32bit",
+                            "acrobat_6",
+                        ],
+                "id": 2,
+                "added_on": "2012-12-19 14:18:25",
+                "completed_on": null
+            }
+        ]
+    }
+
+**Parameters**:
+
+* ``sample_id`` *(required)* *(int)* - sample id to list tasks for
 
 **Status codes**:
 
