@@ -210,8 +210,7 @@ def tasks_create_submit():
 @app.route("/v1/tasks/list/<int:limit>")
 @app.route("/tasks/list/<int:limit>/<int:offset>")
 @app.route("/v1/tasks/list/<int:limit>/<int:offset>")
-@app.route("/tasks/list/sample/<int:sample_id>")
-@app.route("/v1/tasks/list/sample/<int:sample_id>")
+@app.route("/tasks/sample/<int:sample_id>")
 def tasks_list(limit=None, offset=None, sample_id=None):
     response = {}
 
