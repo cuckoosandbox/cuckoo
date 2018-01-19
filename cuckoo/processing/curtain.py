@@ -1,4 +1,4 @@
-import logging, re, ast
+import logging, os, re, ast
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -7,8 +7,8 @@ log = logging.getLogger(__name__)
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.2"
-__date__    = "13DEC2017"
+__version__ = "1.0.4"
+__date__    = "18JAN2018"
 
 def charReplace(inputString, MODFLAG):
     # OLD: ("{1}{0}{2}" -F"AMP","EX","LE")
@@ -170,8 +170,6 @@ class Curtain(Processing):
     def run(self):
 
         self.key = "curtain"
-        log.info("Starting Curtain processing module")
-
         # Remove some event entries which are commonly found in all samples (noise reduction)
         noise = [
             "$global:?",
@@ -224,11 +222,29 @@ class Curtain(Processing):
             "CmdletsToExport",
             "FormatsToProcess",
             "AliasesToExport",
-            "FunctionsToExport"
+            "FunctionsToExport",
+            "$_.PSParentPath.Replace",
+            "$ExecutionContext.SessionState.Path.Combine",
+            "get-help about_Command_Precedence"
         ]
 
+        # Determine oldest Curtain log and remove the rest
+        curtLog = os.listdir("%s/curtain/" % self.analysis_path)
+        curtLog.sort()
+        curtLog = curtLog[-1]
+
+        # Leave only the most recent file
+        for file in os.listdir("%s/curtain/" % self.analysis_path):
+            if file != curtLog:
+                try:
+                    os.remove("%s/curtain/%s" % (self.analysis_path, file))
+                except:
+                    pass
+
+        os.rename("%s/curtain/%s" % (self.analysis_path, curtLog), "%s/curtain/curtain.log" % self.analysis_path)
+
         try:
-            with open("%s/curtain/curtain.log" % self.analysis_path) as fh:
+            with open("%s/curtain/curtain.log" % (self.analysis_path)) as fh:
                 data = fh.read().decode("utf-16").encode("utf-8")
                 log.debug("Read %s bytes from curtain.log", len(data))
         except Exception as e:
@@ -306,7 +322,10 @@ class Curtain(Processing):
                             ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
 
                         if "replace" in ALTMSG.lower():
-                            ALTMSG, MODFLAG = replaceDecoder(ALTMSG, MODFLAG)
+                            try:
+                                ALTMSG, MODFLAG = replaceDecoder(ALTMSG, MODFLAG)
+                            except Exception as e:
+                                log.error("Curtain processing error for entry - %s" % e)
 
                         # Remove camel case obfuscation as last step
                         ALTMSG, MODFLAG = adjustCase(ALTMSG, MODFLAG)
@@ -338,7 +357,8 @@ class Curtain(Processing):
         for pid in pids:
             for event in pids[pid]["events"]:
                 for entry in event.values():
-                    if "curtain.log" in entry["original"]:
+                    if "curtain.log" in entry["original"] or \
+                    "Process { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog" in entry["original"]:
                         if pid not in remove:
                             remove.append(pid)
 
@@ -352,5 +372,18 @@ class Curtain(Processing):
         for pid in remove:
             del pids[pid]
 
-        log.info("Finished processing curtain.log")
+        # Reorder event counts
+        for pid in pids:
+            tempEvents = []
+            eventCount = len(pids[pid]["events"])
+            for index, entry in enumerate(pids[pid]["events"]):
+                tempEvents.append({"%02d" % (eventCount - index): entry.values()[0]})
+            pids[pid]["events"] = tempEvents
+
+            tempEvents = []
+            eventCount = len(pids[pid]["filter"])
+            for index, entry in enumerate(pids[pid]["filter"]):
+                tempEvents.append({"%02d" % (eventCount - index): entry.values()[0]})
+            pids[pid]["filter"] = tempEvents
+
         return pids
