@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -37,6 +37,15 @@ class TestCmdExe(object):
             'cmd.exe "/k ping 8.8.8.8"'
         ) == {
             "remains": True,
+            "command": ["ping", "8.8.8.8"],
+        }
+
+    def test_cmd_q(self):
+        assert self.cmd.parse_command_line(
+            "cmd.exe /q /c ping 8.8.8.8"
+        ) == {
+            "quiet": True,
+            "remains": False,
             "command": ["ping", "8.8.8.8"],
         }
 

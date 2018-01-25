@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -81,6 +81,11 @@ class CmdExe(Scripting):
                 ret["command"] = cmdline[idx+1:]
                 self.parse_command(cmdline[idx+1:])
                 break
+
+            if cmdline[idx] == "/q":
+                ret["quiet"] = True
+                idx += 1
+                continue
 
             log.warning(
                 "Unhandled cmd.exe command-line argument(s): %s",
