@@ -6,6 +6,7 @@
 import logging
 import os
 import re
+import subprocess
 import time
 
 import xml.etree.ElementTree as ET
@@ -20,6 +21,7 @@ from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
+from cuckoo.misc import Popen 
 
 try:
     import libvirt
@@ -128,16 +130,76 @@ class Machinery(object):
                 # recursion issues by importing ResultServer here.
                 from cuckoo.core.resultserver import ResultServer
                 port = ResultServer().port
+	    """Get the VMID's and Label out of the ESXi"""
+      
+            try:
+                args = [
+                "sshpass", "-p", self.options.esxOssh.password, "ssh", self.options.esxOssh.username + "@" + self.options.esxOssh.host, "vim-cmd", "vmsvc/getallvms", "|", "grep", options[self.LABEL],
+                ]
+                output, _ = Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    close_fds=True
+                ).communicate()
+            except OSError as e:
+                raise CuckooMachineError(
+                    "ESXi error listing installed machines: %s" % e
+                )
+	    log.debug("output from ssh: %s", output)
+	    line = output.split('\n')
+	    vmid = line[0].split()
+	    log.debug("VM Label: '%s'", options[self.LABEL])
+	    log.debug("VM ID: '%s'", vmid[0])
+
+	    """Get snapshot ID of VMID."""
+
+            args = [
+                "sshpass", "-p", self.options.esxOssh.password, "ssh", self.options.esxOssh.username + "@" + self.options.esxOssh.host, "vim-cmd", "vmsvc/snapshot.get", vmid[0],
+            ]
+            try:
+                output, _ = Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                     close_fds=True
+                ).communicate()
+            except OSError as e:
+                 raise CuckooMachineError(
+                     "ESXi error getting Snapshot ID from machines: %s" % e
+                )
+	    snapshot = ""
+	    snapid = ""
+            for line in output.split("\n"):
+	        log.debug("Line: '%s'" , line)
+                if 'Name' in line:
+                    snapsho = line.split(':')
+		    snapshot = snapsho[1].strip()
+                    continue
+
+                if "Id" in line:
+            	    snapi = line.split(":")
+		    snapid = snapi[1].strip()
+
+            log.debug("Snapshot Name: '%s'",  snapshot)
+            log.debug("Snapshot ID: '%s'", snapid)
+	    if snapshot == options.snapshot:
+            	if not snapid:
+                	raise CuckooMachineError(
+                   	"Not Found an usable last snapshot, please check "
+                   	"its state."
+                	)
+                	continue
+
+
 
             self.db.add_machine(
                 name=vmname,
                 label=options[self.LABEL],
+		vmid=vmid[0],
                 ip=options.ip,
                 platform=options.platform,
                 options=options.get("options", ""),
                 tags=options.tags,
                 interface=interface,
                 snapshot=options.snapshot,
+		snapid=snapid,
                 resultserver_ip=ip,
                 resultserver_port=port
             )
