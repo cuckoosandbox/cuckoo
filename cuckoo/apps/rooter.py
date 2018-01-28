@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -152,20 +152,28 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
-    run(s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+        "--source", ipaddr, "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+        "--destination", ipaddr, "-j", "ACCEPT"
+    )
 
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run(s.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
+        "--source", ipaddr, "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
+        "--destination", ipaddr, "-j", "ACCEPT"
+    )
 
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
@@ -178,43 +186,54 @@ def srcroute_disable(rt_table, ipaddr):
     run(s.ip, "route", "flush", "cache")
 
 def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
-    """Enable hijacking of all traffic and send it to InetSIM."""
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    """Enable hijacking of all traffic and send it to InetSim."""
+    run(
+        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
         "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    run(
+        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
+        "INVALID", "-j", "DROP"
+    )
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
+        "INVALID", "-j", "DROP"
+    )
 
     dns_forward("-A", ipaddr, inetsim_ip)
     forward_enable(machinery_iface, machinery_iface, ipaddr)
 
     run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
-
 def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
-    """Enable hijacking of all traffic and send it to InetSIM."""
-    run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
+    """Enable hijacking of all traffic and send it to InetSim."""
+    run(
+        s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
         "--to-destination", inetsim_ip
     )
-    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+    run(
+        s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
+        "INVALID", "-j", "DROP"
+    )
 
-    run(s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
+        "INVALID", "-j", "DROP"
+    )
 
     dns_forward("-D", ipaddr, inetsim_ip)
     forward_disable(machinery_iface, machinery_iface, ipaddr)
