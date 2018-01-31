@@ -41,7 +41,7 @@ def defaults():
             "enforce-timeout": False,
             "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
             "process-memory-dump": True,
-            "remotecontrol": False,
+            "remote-control": False,
             "simulated-human-interaction": True,
         },
     }
