@@ -12,7 +12,8 @@ var default_analysis_options = {
 		'full-memory-dump': false,
 		'enable-injection': true,
 		'process-memory-dump': true,
-		'simulated-human-interaction': true
+		'simulated-human-interaction': true,
+		'remote-control': true
 	},
 	'package': null,
 	'priority': 1,
@@ -24,6 +25,11 @@ var default_analysis_options = {
 
 // default option set for the submission form
 var submission_options = [
+	{
+		name: 'remotecontrol',
+		label: 'Remote Control',
+		description: 'Enables the interactive RDP environment after submission'
+	},
 	{
 		name: 'enable-injection',
 		label: 'Enable Injection',
