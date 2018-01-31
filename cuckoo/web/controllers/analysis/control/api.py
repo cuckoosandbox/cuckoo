@@ -11,7 +11,7 @@ from cuckoo.common.config import config
 from cuckoo.core.database import Database
 from cuckoo.machinery.virtualbox import VirtualBox
 from cuckoo.web.utils import csrf_exempt
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
 from guacamole.client import GuacamoleClient
 
 db = Database()
@@ -38,6 +38,9 @@ class ControlApi:
 
         if task.options.get("remotecontrol") != "yes":
             return HttpResponse(status=404)
+
+        if task.status == "completed":
+            return JsonResponse({'status': "finished"}, status=500)
 
         if task.status != "running":
             return HttpResponse(status=404)
