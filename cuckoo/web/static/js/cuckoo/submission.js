@@ -2382,7 +2382,8 @@ var default_analysis_options = {
 		'full-memory-dump': false,
 		'enable-injection': true,
 		'process-memory-dump': true,
-		'simulated-human-interaction': true
+		'simulated-human-interaction': true,
+		'remote-control': true
 	},
 	'package': null,
 	'priority': 1,
@@ -2394,6 +2395,10 @@ var default_analysis_options = {
 
 // default option set for the submission form
 var submission_options = [{
+	name: 'remotecontrol',
+	label: 'Remote Control',
+	description: 'Enables the interactive RDP environment after submission'
+}, {
 	name: 'enable-injection',
 	label: 'Enable Injection',
 	description: 'Enable behavioral analysis.'
@@ -2416,7 +2421,7 @@ var submission_options = [{
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'hta', 'hwp', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'hta', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
