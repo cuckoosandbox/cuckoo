@@ -26,7 +26,7 @@ var default_analysis_options = {
 // default option set for the submission form
 var submission_options = [
 	{
-		name: 'remotecontrol',
+		name: 'remote-control',
 		label: 'Remote Control',
 		description: 'Enables the interactive RDP environment after submission'
 	},
