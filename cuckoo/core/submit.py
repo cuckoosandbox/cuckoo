@@ -22,7 +22,7 @@ db = Database()
 class SubmitManager(object):
     known_web_options = [
         "enable-injection", "enforce-timeout", "full-memory-dump",
-        "process-memory-dump", "simulated-human-interaction",
+        "process-memory-dump", "remote-control", "simulated-human-interaction",
     ]
 
     def _handle_string(self, submit, tmppath, line):
