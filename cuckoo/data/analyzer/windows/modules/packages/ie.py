@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,6 +11,10 @@ from _winreg import HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER
 from lib.common.abstracts import Package
 
 log = logging.getLogger(__name__)
+
+extensions = (
+    ".htm", ".html", ".mht", ".mhtml", ".swf",
+)
 
 class IE(Package):
     """Internet Explorer analysis package."""
@@ -117,7 +121,7 @@ class IE(Package):
 
         # If it's a HTML file, force an extension, or otherwise Internet
         # Explorer will open it as a text file or something else non-html.
-        if os.path.exists(target) and not target.endswith((".htm", ".html", ".mht", ".mhtml")):
+        if os.path.exists(target) and not target.endswith(extensions):
             os.rename(target, target + ".html")
             target += ".html"
             log.info("Submitted file is missing extension, adding .html")
