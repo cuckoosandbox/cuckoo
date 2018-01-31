@@ -100,8 +100,13 @@ class SubmitManager(object):
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True
 
+        if options.get("remotecontrol") == "yes":
+            ret["remote-control"] = True
+
         if options.get("route"):
             ret["network-routing"] = options["route"]
+
+
 
         return ret
 
