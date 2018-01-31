@@ -231,6 +231,9 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
     dns_forward("-A", ipaddr, inetsim_ip)
     forward_enable(machinery_iface, machinery_iface, ipaddr)
 
+    run(s.iptables, "-t", "nat", "-A", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
+
     run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
 def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
@@ -260,6 +263,9 @@ def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
 
     dns_forward("-D", ipaddr, inetsim_ip)
     forward_disable(machinery_iface, machinery_iface, ipaddr)
+
+    run(s.iptables, "-t", "nat", "-D", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
 
     run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
