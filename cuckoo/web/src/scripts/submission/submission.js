@@ -13,7 +13,7 @@ var default_analysis_options = {
 		'enable-injection': true,
 		'process-memory-dump': true,
 		'simulated-human-interaction': true,
-		'remote-control': true
+		'remote-control': false
 	},
 	'package': null,
 	'priority': 1,

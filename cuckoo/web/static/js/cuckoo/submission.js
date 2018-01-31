@@ -2317,6 +2317,9 @@ var SubmissionTaskTable = function () {
 				item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 				item.time_added = moment(item.added_on).format('HH:mm');
 				item.is_ready = item.status == 'reported';
+				item.is_running = item.status == 'running';
+				item.remote_control = !(item.options.remotecontrol === 'False');
+				item.show_rc_toggle = item.remote_control && item.is_running;
 				return item;
 			});
 
@@ -2382,7 +2385,7 @@ var default_analysis_options = {
 		'enable-injection': true,
 		'process-memory-dump': true,
 		'simulated-human-interaction': true,
-		'remote-control': true
+		'remote-control': false
 	},
 	'package': null,
 	'priority': 1,

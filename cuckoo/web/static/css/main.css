@@ -6401,6 +6401,28 @@ body.cyborg .process-tree__search-submit
     background-color: #ddd;
 }
 
+.cuckoo-table tbody td.postsubmit-status-display,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display,
+.network-display__table > table tbody td.postsubmit-status-display
+{
+    width: 235px;
+}
+
+.cuckoo-table tbody td.postsubmit-status-display > div,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display > div,
+.network-display__table > table tbody td.postsubmit-status-display > div
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: row-reverse;
+
+    -ms-flex-direction: row-reverse;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
 .cuckoo-table thead th,
 .cuckoo-table__fullscreen thead th,
 .network-display__table > table thead th,
