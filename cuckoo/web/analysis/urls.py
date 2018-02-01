@@ -21,6 +21,7 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name="analysis/export"),
     url(r"^(?P<task_id>\d+)/reboot/$", SubmissionRoutes.reboot, name="analysis/reboot"),
     url(r"^(?P<task_id>\d+)/control/$", AnalysisControlRoutes.player, name="analysis/control/player"),
+    url(r"^(?P<task_id>\d+)/control/screenshots/$", ControlApi.store_screenshots, name="analysis/control/screenshots"),
     url(r"^(?P<task_id>\d+)/control/status/$", ControlApi.task_status, name="analysis/control/status"),
     url(r"^(?P<task_id>\d+)/control/tunnel/.*", ControlApi.tunnel, name="analysis/control/tunnel"),
     url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
