@@ -98,13 +98,6 @@ var GuacamoleWrapper = function (_Hookable) {
         // apply sendState function
         this._mouse.onmousemove = function (state) {
           if (_this3.parent.toolbar.buttons.control.toggled) {
-
-            // the mouse has a 'relative' position due to the css positioning. While
-            // we are stating the mouse interactions, we need to correct the cursor
-            // positions.
-
-            var dp = $(_this3.client.getDisplay().getElement());
-
             sendState(state);
           }
         };
@@ -151,6 +144,81 @@ var GuacamoleWrapper = function (_Hookable) {
         return this.client.getDisplay().getDefaultLayer().getCanvas();
       }
       return false;
+    }
+
+    /*
+      GuacamoleWrapper.checkReady
+      - polls to /info api call for checking if the task did finish
+     */
+
+  }, {
+    key: 'checkReady',
+    value: function checkReady(id) {
+      var poll = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+
+      var iv = null;
+
+      // the verification call as a promise
+      var readyCall = function readyCall() {
+        return new Promise(function (resolve, reject) {
+
+          try {
+
+            $.ajax({
+              url: '/analysis/api/tasks/info/',
+              type: 'POST',
+              dataType: 'json',
+              contentType: "application/json; charset=utf-8",
+              data: JSON.stringify({
+                "task_ids": [id]
+              }),
+              success: function success(response, xhr) {
+                if (response.status === true) {
+                  var t = response.data[id];
+                  if (t.status !== 'running') {
+                    resolve(true);
+                  } else {
+                    resolve(false);
+                  }
+                } else {
+                  throw "ajax error";
+                  return;
+                }
+              },
+              error: function error(err) {
+                throw err;
+              }
+            });
+          } catch (err) {
+            return reject(err);
+          }
+        });
+      };
+
+      if (poll === true) {
+        return new Promise(function (resolve, reject) {
+          var iv = setInterval(function () {
+            readyCall().then(function (result) {
+
+              console.log('status: ' + result);
+
+              if (result === true) {
+                iv = clearInterval(iv);
+                console.log('resolve dat shit');
+                return resolve(result);
+              }
+            }, function (err) {
+              return reject(err);
+            });
+          }, 1000);
+        }).catch(function (e) {
+          return console.log(e);
+        });
+      } else {
+        // return the promise
+        return readyCall();
+      }
     }
   }]);
 
@@ -1055,6 +1123,10 @@ var RDPClient = function (_Hookable) {
     var _this = _possibleConstructorReturn(this, (RDPClient.__proto__ || Object.getPrototypeOf(RDPClient)).call(this));
 
     _this.$ = el || null;
+    _this.id = el.data('taskId');
+
+    // alias internal
+    var taskId = _this.id;
 
     // connect guac service wrapper
     _this.service = new _GuacWrap2.default({
@@ -1073,11 +1145,9 @@ var RDPClient = function (_Hookable) {
           template: $('template#rdp-dialog-reboot'),
           interactions: {
             cancel: function cancel(dialog) {
-              console.log('Will not reboot.');
               dialog.close();
             },
             proceed: function proceed(dialog) {
-              console.log('Will reboot.');
               dialog.close();
             }
           }
@@ -1086,11 +1156,9 @@ var RDPClient = function (_Hookable) {
           template: $('template#rdp-dialog-close'),
           interactions: {
             cancel: function cancel(dialog) {
-              console.log('Will not close');
               dialog.close();
             },
             proceed: function proceed(dialog) {
-              console.log('Will close');
               dialog.close();
             }
           }
@@ -1128,6 +1196,21 @@ var RDPClient = function (_Hookable) {
             dialog.selector.on('selected', updateSelected);
             dialog.selector.on('deselected', updateSelected);
           }
+        },
+        completed: {
+          template: $("template#rdp-dialog-completed"),
+          interactions: {
+            close: function close(dialog) {
+              // the module was rendered in a new tab, closing this page
+              // should take us back to the postsubmit page if still opened.
+
+              // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+              window.close();
+            },
+            report: function report(dialog) {
+              window.location = '/analysis/' + taskId + '/summary/';
+            }
+          }
         }
       }
     });
@@ -1150,12 +1233,30 @@ var RDPClient = function (_Hookable) {
       _this.toolbar.buttons.snapshot.update(true);
     });
 
-    // initialize the guacamole API
+    // error handler for service wrapper
     _this.service.on('error', function () {
-      _this.errorDialog.render();
+      // before deciding it's an error, we verify the origin of the
+      // error by confirming the task is not and errored before showing
+      // the dialog.
+
+      // this.service.checkReady(this.id, false).then(isReady => {
+      //   if(isReady === false) {
+      //     this.errorDialog.render();
+      //   }
+      // }, e => console.log(e));
+
     });
 
+    // initialize service wrapper
     _this.service.connect();
+
+    // start polling for status updates to cling onto
+    _this.service.checkReady(_this.id, true).then(function (response) {
+      console.log('and render that dialog.');
+      _this.dialog.render('completed');
+    }).catch(function (e) {
+      return console.log(e);
+    });
 
     return _this;
   }

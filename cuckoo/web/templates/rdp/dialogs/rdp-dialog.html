@@ -14,7 +14,6 @@
     <button value="cancel" type="submit">Cancel</button>
     <button value="proceed" type="submit">Reboot</button>
   </form>
-
 </template>
 
 <!-- html for the close dialog  -->
@@ -40,5 +39,15 @@
   <form class="rdp-dialog__options">
     <button value="cancel" type="submit">Skip and close</button>
     <button value="proceed" type="submit">Include <span data-model="selected">0</span> screenshot(s) and close.</button>
+  </form>
+</template>
+
+<!-- HTML for the 'done' state of the isolated execution -->
+<template id="rdp-dialog-completed">
+  <h4 class="rdp-dialog__title">VM ended the session</h4>
+  <p class="rdp-dialog__text">The report is generated and ready to be reviewed.</p>
+  <form class="rdp-dialog__options">
+    <button value="close" type="submit">Close simulator</button>
+    <button value="report" type="submit">Show report</button>
   </form>
 </template>

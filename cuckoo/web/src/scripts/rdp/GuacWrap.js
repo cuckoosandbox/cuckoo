@@ -63,13 +63,6 @@ class GuacamoleWrapper extends Hookable {
       // apply sendState function
       this._mouse.onmousemove = (state) => {
         if(this.parent.toolbar.buttons.control.toggled) {
-
-          // the mouse has a 'relative' position due to the css positioning. While
-          // we are stating the mouse interactions, we need to correct the cursor
-          // positions.
-
-          let dp = $(this.client.getDisplay().getElement());
-
           sendState(state);
         }
       }
@@ -104,6 +97,73 @@ class GuacamoleWrapper extends Hookable {
       return this.client.getDisplay().getDefaultLayer().getCanvas();
     }
     return false;
+  }
+
+  /*
+    GuacamoleWrapper.checkReady
+    - polls to /info api call for checking if the task did finish
+   */
+  checkReady(id, poll = false) {
+
+    let iv = null;
+
+    // the verification call as a promise
+    let readyCall = () => new Promise((resolve, reject) => {
+
+      try {
+
+        $.ajax({
+          url: '/analysis/api/tasks/info/',
+          type: 'POST',
+          dataType: 'json',
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify({
+            "task_ids": [id]
+          }),
+          success: (response, xhr) => {
+            if(response.status === true) {
+              let t = response.data[id];
+              if(t.status !== 'running') {
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            } else {
+              throw "ajax error";
+              return;
+            }
+          },
+          error: err => {
+            throw err;
+          }
+        });
+
+      } catch(err) {
+        return reject(err);
+      }
+
+    });
+
+    if(poll === true) {
+      return new Promise((resolve, reject) => {
+        let iv = setInterval(() => {
+          readyCall().then(result => {
+
+            console.log(`status: ${result}`);
+
+            if(result === true) {
+              iv = clearInterval(iv);
+              console.log('resolve dat shit');
+              return resolve(result);
+            }
+          }, err => reject(err));
+        }, 1000);
+      }).catch(e => console.log(e));
+    } else {
+      // return the promise
+      return readyCall();
+    }
+
   }
 
 }
