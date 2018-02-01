@@ -2400,7 +2400,7 @@ var default_analysis_options = {
 var submission_options = [{
 	name: 'remote-control',
 	label: 'Remote Control',
-	description: 'Enables the interactive RDP environment after submission'
+	description: 'Enables Guacamole UI for VM'
 }, {
 	name: 'enable-injection',
 	label: 'Enable Injection',
@@ -2418,7 +2418,11 @@ var submission_options = [{
 }, {
 	name: 'simulated-human-interaction',
 	label: 'Enable Simulated Human Interaction',
-	selected: true
+	selected: true,
+	description: 'disable this feature for a better experience when using Remote Control',
+	showWhen: {
+		'remote-control': true
+	}
 }];
 
 // package field contents - hardcoded options vs auto-detected properties
