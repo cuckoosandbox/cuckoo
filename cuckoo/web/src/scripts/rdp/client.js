@@ -74,8 +74,11 @@ class RDPClient extends Hookable {
             let updateSelected = () => dialog.base.find('span[data-model="selected"]').text(dialog.selector.selected.length);
 
             dialog.selector.on('submit', data => {
-              console.log(data);
-              dialog.close();
+              dialog.selector.commit().then(() => {
+                dialog.close();
+              }, err => {
+                console.log(err);
+              });
             });
 
             dialog.selector.on('selected', updateSelected);
