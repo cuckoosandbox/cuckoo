@@ -140,9 +140,8 @@ class ControlApi:
 
     @staticmethod
     def _do_connect(task):
-        # TODO: way to get to the actual used machinery object
-        machinery = VirtualBox()  # hardcoded for virtualbox poc
-        params = machinery.get_remote_control_params(task.guest.label)
+        # TODO: store connection details in the task and grab them from there
+        params = ("rdp", "localhost", 4444)
         protocol, hostname, port = params
 
         guacd_host = config("cuckoo:remotecontrol:guacd_host")
