@@ -32,18 +32,23 @@ class ControlApi:
         if not task:
             return HttpResponse(status=404)
 
-        # TODO: return appropriate error messages to js frontend here
         if not config("cuckoo:remotecontrol:enabled"):
-            return HttpResponse(status=404)
+            return JsonResponse({
+                "status": "failed",
+                "msg": "remote control is not enabled",
+            }, status=500)
 
         if task.options.get("remotecontrol") != "yes":
-            return HttpResponse(status=404)
-
-        if task.status == "completed":
-            return JsonResponse({'status': "finished"}, status=500)
+            return JsonResponse({
+                "status": "failed",
+                "msg": "this task does not have remote control",
+            }, status=500)
 
         if task.status != "running":
-            return HttpResponse(status=404)
+            return JsonResponse({
+                "status": task.status,
+                "msg": "this task is not running",
+            }, status=500)
 
         qs = request.META["QUERY_STRING"]
         if qs == "connect":
@@ -60,6 +65,16 @@ class ControlApi:
                 return ControlApi._do_write(request, conn)
 
         return HttpResponse(status=400)
+
+    @staticmethod
+    def task_status(request, task_id):
+        task = db.view_task(int(task_id))
+        if not task:
+            return HttpResponse(status=404)
+
+        return JsonResponse({
+            "task_status": task.status,
+        })
 
     @staticmethod
     def _do_connect(task):
