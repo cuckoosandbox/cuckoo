@@ -200,12 +200,8 @@ var GuacamoleWrapper = function (_Hookable) {
         return new Promise(function (resolve, reject) {
           var iv = setInterval(function () {
             readyCall().then(function (result) {
-
-              console.log('status: ' + result);
-
               if (result === true) {
                 iv = clearInterval(iv);
-                console.log('resolve dat shit');
                 return resolve(result);
               }
             }, function (err) {
@@ -734,14 +730,20 @@ var RDPSnapshotSelector = function (_Hookable3) {
       _this4.el.find('input[type="checkbox"]').bind('change', function (e) {
         var t = $(e.currentTarget);
         if (t.is(':checked')) {
-          _this4.dispatchHook('selected');
+          (function () {
+            var id = parseInt(t.val());
+            var snapshot = _this4.service.snapshots.find(function (s) {
+              return s.id == id;
+            });
+            _this4.dispatchHook('selected', snapshot);
+          })();
         } else {
           _this4.dispatchHook('deselected');
         }
       });
 
-      _this4.on('selected', function () {
-        return _this4.selected.push({});
+      _this4.on('selected', function (snapshot) {
+        return _this4.selected.push(snapshot);
       });
       _this4.on('deselected', function () {
         return _this4.selected.pop();
@@ -766,12 +768,36 @@ var RDPSnapshotSelector = function (_Hookable3) {
 
         var snapshot = this.service.snapshots[s];
 
-        var template = $('\n        <li>\n          <label for="snapshot-' + snapshot.id + '">\n            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-' + snapshot.id + '" />\n            <span class="snapshot-selection-image">\n              <img src="' + snapshot.data + '" alt="snapshot-' + snapshot.id + '" />\n            </span>\n          </label>\n        </li>\n      ');
+        var template = $('\n        <li>\n          <label for="snapshot-' + snapshot.id + '">\n            <input type="checkbox" name="snapshot-selection[]" value="' + snapshot.id + '" id="snapshot-' + snapshot.id + '" />\n            <span class="snapshot-selection-image">\n              <img src="' + snapshot.data + '" alt="snapshot-' + snapshot.id + '" />\n            </span>\n          </label>\n        </li>\n      ');
 
         this.el.find('ul').append(template);
       }
 
       return done();
+    }
+  }, {
+    key: 'commit',
+    value: function commit() {
+      var _this5 = this;
+
+      return new Promise(function (resolve, reject) {
+
+        var data = _this5.selected;
+
+        $.ajax({
+          url: '/analysis/' + _this5.service.client.id + '/control/screenshots/',
+          type: 'POST',
+          dataType: 'json',
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify(data),
+          success: function success(response, xhr) {
+            resolve();
+          },
+          error: function error(err) {
+            reject(err);
+          }
+        });
+      });
     }
   }]);
 
@@ -1208,8 +1234,11 @@ var RDPClient = function (_Hookable) {
             };
 
             dialog.selector.on('submit', function (data) {
-              console.log(data);
-              dialog.close();
+              dialog.selector.commit().then(function () {
+                dialog.close();
+              }, function (err) {
+                console.log(err);
+              });
             });
 
             dialog.selector.on('selected', updateSelected);

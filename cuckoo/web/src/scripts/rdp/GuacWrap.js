@@ -148,12 +148,8 @@ class GuacamoleWrapper extends Hookable {
       return new Promise((resolve, reject) => {
         let iv = setInterval(() => {
           readyCall().then(result => {
-
-            console.log(`status: ${result}`);
-
             if(result === true) {
               iv = clearInterval(iv);
-              console.log('resolve dat shit');
               return resolve(result);
             }
           }, err => reject(err));

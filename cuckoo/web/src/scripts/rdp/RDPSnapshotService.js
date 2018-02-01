@@ -142,13 +142,15 @@ class RDPSnapshotSelector extends Hookable {
       this.el.find('input[type="checkbox"]').bind('change', e => {
         let t = $(e.currentTarget);
         if(t.is(':checked')) {
-          this.dispatchHook('selected');
+          let id = parseInt(t.val());
+          let snapshot = this.service.snapshots.find(s => s.id == id);
+          this.dispatchHook('selected', snapshot);
         } else {
           this.dispatchHook('deselected');
         }
       });
 
-      this.on('selected', () => this.selected.push({}));
+      this.on('selected', snapshot => this.selected.push(snapshot));
       this.on('deselected', () => this.selected.pop());
 
     });
@@ -167,7 +169,7 @@ class RDPSnapshotSelector extends Hookable {
       let template = $(`
         <li>
           <label for="snapshot-${snapshot.id}">
-            <input type="checkbox" name="snapshot-selection[]" value="1" id="snapshot-${snapshot.id}" />
+            <input type="checkbox" name="snapshot-selection[]" value="${snapshot.id}" id="snapshot-${snapshot.id}" />
             <span class="snapshot-selection-image">
               <img src="${snapshot.data}" alt="snapshot-${snapshot.id}" />
             </span>
@@ -181,6 +183,29 @@ class RDPSnapshotSelector extends Hookable {
 
     return done();
 
+  }
+
+  commit() {
+
+    return new Promise((resolve, reject) => {
+
+      let data = this.selected;
+
+      $.ajax({
+        url: `/analysis/${this.service.client.id}/control/screenshots/`,
+        type: 'POST',
+        dataType: 'json',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(data),
+        success: (response, xhr) => {
+          resolve();
+        },
+        error: err => {
+          reject(err);
+        }
+      });
+
+    });
   }
 
 }
