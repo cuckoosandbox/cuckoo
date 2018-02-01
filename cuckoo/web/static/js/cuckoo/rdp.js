@@ -1156,8 +1156,8 @@ var RDPClient = function (_Hookable) {
     });
 
     // initialize the guacamole API
-    _this.service.on('error', function (error) {
-      return errorDialog.render;
+    _this.service.on('error', function () {
+      _this.errorDialog.render();
     });
 
     _this.service.connect();

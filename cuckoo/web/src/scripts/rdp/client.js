@@ -104,7 +104,9 @@ class RDPClient extends Hookable {
     });
 
     // initialize the guacamole API
-    this.service.on('error', error => errorDialog.render);
+    this.service.on('error', () => {
+      this.errorDialog.render();
+    });
 
     this.service.connect();
 
