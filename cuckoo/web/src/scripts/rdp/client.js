@@ -10,7 +10,12 @@ class RDPClient extends Hookable {
 
   constructor(el) {
     super();
+
     this.$ = el || null;
+    this.id = el.data('taskId');
+
+    // alias internal
+    let taskId = this.id;
 
     // connect guac service wrapper
     this.service = new GuacamoleWrapper({
@@ -29,11 +34,9 @@ class RDPClient extends Hookable {
           template: $('template#rdp-dialog-reboot'),
           interactions: {
             cancel: dialog => {
-              console.log('Will not reboot.');
               dialog.close();
             },
             proceed: dialog => {
-              console.log('Will reboot.');
               dialog.close();
             }
           }
@@ -42,11 +45,9 @@ class RDPClient extends Hookable {
           template: $('template#rdp-dialog-close'),
           interactions: {
             cancel: dialog => {
-              console.log('Will not close');
               dialog.close();
             },
             proceed: dialog => {
-              console.log('Will close');
               dialog.close();
             }
           }
@@ -81,6 +82,21 @@ class RDPClient extends Hookable {
             dialog.selector.on('deselected', updateSelected);
 
           }
+        },
+        completed: {
+          template: $("template#rdp-dialog-completed"),
+          interactions: {
+            close: dialog => {
+              // the module was rendered in a new tab, closing this page
+              // should take us back to the postsubmit page if still opened.
+
+              // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+              window.close();
+            },
+            report: dialog => {
+              window.location = `/analysis/${taskId}/summary/`;
+            }
+          }
         }
       }
     });
@@ -103,12 +119,28 @@ class RDPClient extends Hookable {
       this.toolbar.buttons.snapshot.update(true);
     });
 
-    // initialize the guacamole API
+    // error handler for service wrapper
     this.service.on('error', () => {
-      this.errorDialog.render();
+      // before deciding it's an error, we verify the origin of the
+      // error by confirming the task is not and errored before showing
+      // the dialog.
+
+      // this.service.checkReady(this.id, false).then(isReady => {
+      //   if(isReady === false) {
+      //     this.errorDialog.render();
+      //   }
+      // }, e => console.log(e));
+
     });
 
+    // initialize service wrapper
     this.service.connect();
+
+    // start polling for status updates to cling onto
+    this.service.checkReady(this.id, true).then(response => {
+      console.log('and render that dialog.');
+      this.dialog.render('completed');
+    }).catch(e => console.log(e));
 
   }
 }

@@ -3,7 +3,7 @@
 {% load staticfiles %}
 {% block content %}
 
-  <section class="rdp-app" id="rdp-client" allowfullscreen>
+  <section class="rdp-app" id="rdp-client" allowfullscreen data-task-id="{{ task.id }}">
     <div class="rdp-app__display">
       {% include 'rdp/partials/rdp-header.html' %}
       {% include 'rdp/partials/rdp-viewport.html' %}
