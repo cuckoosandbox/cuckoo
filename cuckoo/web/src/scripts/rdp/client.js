@@ -15,6 +15,7 @@ class RDPClient extends Hookable {
     this.id = el.data('taskId');
 
     // alias internal
+    let self = this;
     let taskId = this.id;
 
     // connect guac service wrapper
@@ -30,28 +31,28 @@ class RDPClient extends Hookable {
     this.dialog = new RDPDialog(this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
-        reboot: {
-          template: $('template#rdp-dialog-reboot'),
-          interactions: {
-            cancel: dialog => {
-              dialog.close();
-            },
-            proceed: dialog => {
-              dialog.close();
-            }
-          }
-        },
-        close: {
-          template: $('template#rdp-dialog-close'),
-          interactions: {
-            cancel: dialog => {
-              dialog.close();
-            },
-            proceed: dialog => {
-              dialog.close();
-            }
-          }
-        },
+        // reboot: {
+        //   template: $('template#rdp-dialog-reboot'),
+        //   interactions: {
+        //     cancel: dialog => {
+        //       dialog.close();
+        //     },
+        //     proceed: dialog => {
+        //       dialog.close();
+        //     }
+        //   }
+        // },
+        // close: {
+        //   template: $('template#rdp-dialog-close'),
+        //   interactions: {
+        //     cancel: dialog => {
+        //       dialog.close();
+        //     },
+        //     proceed: dialog => {
+        //       dialog.close();
+        //     }
+        //   }
+        // },
         snapshots: {
           template: $("template#rdp-dialog-snapshots"),
           model: {
@@ -59,7 +60,6 @@ class RDPClient extends Hookable {
           },
           interactions: {
             cancel: dialog => {
-              console.log('Will not include selected snapshots.');
               dialog.close();
             },
             proceed: dialog => {
@@ -74,7 +74,7 @@ class RDPClient extends Hookable {
             let updateSelected = () => dialog.base.find('span[data-model="selected"]').text(dialog.selector.selected.length);
 
             dialog.selector.on('submit', data => {
-              console.log('The selection is ... insert here, whatever.');
+              console.log(data);
               dialog.close();
             });
 
@@ -89,8 +89,6 @@ class RDPClient extends Hookable {
             close: dialog => {
               // the module was rendered in a new tab, closing this page
               // should take us back to the postsubmit page if still opened.
-
-              // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
               window.close();
             },
             report: dialog => {
@@ -121,25 +119,24 @@ class RDPClient extends Hookable {
 
     // error handler for service wrapper
     this.service.on('error', () => {
-      // before deciding it's an error, we verify the origin of the
-      // error by confirming the task is not and errored before showing
-      // the dialog.
-
-      // this.service.checkReady(this.id, false).then(isReady => {
-      //   if(isReady === false) {
-      //     this.errorDialog.render();
-      //   }
-      // }, e => console.log(e));
-
+      // still need to do something proper here.
     });
 
     // initialize service wrapper
     this.service.connect();
 
     // start polling for status updates to cling onto
-    this.service.checkReady(this.id, true).then(response => {
-      console.log('and render that dialog.');
-      this.dialog.render('completed');
+    this.service.checkReady(this.id, true).then(isReady => {
+      if(isReady === true) {
+        // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+        if(this.snapshots.total() > 0) {
+          let sd = this.dialog.render('snapshots', {
+            onClose: () => self.dialog.render('completed')
+          });
+        } else {
+          this.dialog.render('completed');
+        }
+      }
     }).catch(e => console.log(e));
 
   }

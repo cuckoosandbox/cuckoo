@@ -444,6 +444,7 @@ var RDPDialog = function () {
     this.activeModel = null;
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
+    this.onClose = null;
 
     this.selector = null;
   }
@@ -451,9 +452,15 @@ var RDPDialog = function () {
   _createClass(RDPDialog, [{
     key: 'render',
     value: function render(d) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
 
       // don't render if a dialog is already open
       if (this.isOpen) return;
+
+      if (opts.onClose && opts.onClose instanceof Function) {
+        this.onClose = opts.onClose;
+      }
 
       var dialog = this.dialogs[d];
       if (dialog) {
@@ -466,6 +473,8 @@ var RDPDialog = function () {
         // runs a callback after render for anything related.
         if (dialog.render) dialog.render(this, this.interaction);
       }
+
+      return dialog;
     }
 
     // opens the dialog
@@ -475,7 +484,7 @@ var RDPDialog = function () {
     value: function open() {
       if (!this.isOpen) {
         this.client.$.addClass('dialog-active');
-        this.base.prop('open', true);
+        this.base.attr('open', true);
         this.isOpen = true;
 
         // lock interface components whilst the dialog is open.
@@ -489,8 +498,17 @@ var RDPDialog = function () {
   }, {
     key: 'close',
     value: function close() {
+      var _this2 = this;
+
+      if (this.onClose) {
+        setTimeout(function () {
+          _this2.onClose();
+          _this2.onClose = null;
+        }, 150);
+      }
+
       this.client.$.removeClass('dialog-active');
-      this.base.prop('open', false);
+      this.base.attr('open', false);
       this.base.find('.rdp-dialog__body').empty();
       this.activeModel = null;
       this.interaction = null;
@@ -808,9 +826,9 @@ var RDPToolbar = function (_Hookable) {
     _this.buttons = {
       fullscreen: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="fullscreen"]'), { client: client }),
       snapshot: new _RDPToolbarButton.RDPSnapshotButton(client.$.find('button[name="screenshot"]'), { client: client }),
-      control: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="control"]'), { client: client, holdToggle: true }),
-      reboot: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="reboot"]'), { client: client }),
-      close: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="close"]'), { client: client })
+      control: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="control"]'), { client: client, holdToggle: true })
+      // reboot: new RDPToolbarButton(client.$.find('button[name="reboot"]'), { client }),
+      // close: new RDPToolbarButton(client.$.find('button[name="close"]'), { client })
     };
 
     // toggle fullscreen mode
@@ -847,19 +865,19 @@ var RDPToolbar = function (_Hookable) {
       }
     });
 
-    _this.buttons.reboot.on('click', function () {
-      _this.client.dialog.render('reboot');
-    });
+    // this.buttons.reboot.on('click', () => {
+    //   this.client.dialog.render('reboot');
+    // });
 
     // if we have snapshots, show the snapshots dialog, elsely show the default
     // close dialog.
-    _this.buttons.close.on('click', function () {
-      if (_this.client.snapshots.total() > 0) {
-        _this.client.dialog.render('snapshots');
-      } else {
-        _this.client.dialog.render('close');
-      }
-    });
+    // this.buttons.close.on('click', () => {
+    //   if(this.client.snapshots.total() > 0) {
+    //     this.client.dialog.render('snapshots');
+    //   } else {
+    //     this.client.dialog.render('close');
+    //   }
+    // });
 
     $('body').on('keydown', function (e) {
 
@@ -879,14 +897,14 @@ var RDPToolbar = function (_Hookable) {
         case 67:
           _this.buttons.control.$.trigger('mousedown');
           break;
-        case 82:
-          _this.buttons.reboot.dispatchHook('click');
-          _this.buttons.reboot.blink();
-          break;
-        case 81:
-          _this.buttons.close.dispatchHook('click');
-          _this.buttons.close.blink();
-          break;
+        // case 82:
+        //   this.buttons.reboot.dispatchHook('click');
+        //   this.buttons.reboot.blink();
+        // break;
+        // case 81:
+        //   this.buttons.close.dispatchHook('click');
+        //   this.buttons.close.blink();
+        // break;
       }
     });
 
@@ -1131,6 +1149,7 @@ var RDPClient = function (_Hookable) {
     _this.id = el.data('taskId');
 
     // alias internal
+    var self = _this;
     var taskId = _this.id;
 
     // connect guac service wrapper
@@ -1146,28 +1165,28 @@ var RDPClient = function (_Hookable) {
     _this.dialog = new _RDPDialog2.default(_this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
-        reboot: {
-          template: $('template#rdp-dialog-reboot'),
-          interactions: {
-            cancel: function cancel(dialog) {
-              dialog.close();
-            },
-            proceed: function proceed(dialog) {
-              dialog.close();
-            }
-          }
-        },
-        close: {
-          template: $('template#rdp-dialog-close'),
-          interactions: {
-            cancel: function cancel(dialog) {
-              dialog.close();
-            },
-            proceed: function proceed(dialog) {
-              dialog.close();
-            }
-          }
-        },
+        // reboot: {
+        //   template: $('template#rdp-dialog-reboot'),
+        //   interactions: {
+        //     cancel: dialog => {
+        //       dialog.close();
+        //     },
+        //     proceed: dialog => {
+        //       dialog.close();
+        //     }
+        //   }
+        // },
+        // close: {
+        //   template: $('template#rdp-dialog-close'),
+        //   interactions: {
+        //     cancel: dialog => {
+        //       dialog.close();
+        //     },
+        //     proceed: dialog => {
+        //       dialog.close();
+        //     }
+        //   }
+        // },
         snapshots: {
           template: $("template#rdp-dialog-snapshots"),
           model: {
@@ -1177,7 +1196,6 @@ var RDPClient = function (_Hookable) {
           },
           interactions: {
             cancel: function cancel(dialog) {
-              console.log('Will not include selected snapshots.');
               dialog.close();
             },
             proceed: function proceed(dialog) {
@@ -1194,7 +1212,7 @@ var RDPClient = function (_Hookable) {
             };
 
             dialog.selector.on('submit', function (data) {
-              console.log('The selection is ... insert here, whatever.');
+              console.log(data);
               dialog.close();
             });
 
@@ -1208,8 +1226,6 @@ var RDPClient = function (_Hookable) {
             close: function close(dialog) {
               // the module was rendered in a new tab, closing this page
               // should take us back to the postsubmit page if still opened.
-
-              // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
               window.close();
             },
             report: function report(dialog) {
@@ -1240,25 +1256,26 @@ var RDPClient = function (_Hookable) {
 
     // error handler for service wrapper
     _this.service.on('error', function () {
-      // before deciding it's an error, we verify the origin of the
-      // error by confirming the task is not and errored before showing
-      // the dialog.
-
-      // this.service.checkReady(this.id, false).then(isReady => {
-      //   if(isReady === false) {
-      //     this.errorDialog.render();
-      //   }
-      // }, e => console.log(e));
-
+      // still need to do something proper here.
     });
 
     // initialize service wrapper
     _this.service.connect();
 
     // start polling for status updates to cling onto
-    _this.service.checkReady(_this.id, true).then(function (response) {
-      console.log('and render that dialog.');
-      _this.dialog.render('completed');
+    _this.service.checkReady(_this.id, true).then(function (isReady) {
+      if (isReady === true) {
+        // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+        if (_this.snapshots.total() > 0) {
+          var sd = _this.dialog.render('snapshots', {
+            onClose: function onClose() {
+              return self.dialog.render('completed');
+            }
+          });
+        } else {
+          _this.dialog.render('completed');
+        }
+      }
     }).catch(function (e) {
       return console.log(e);
     });
