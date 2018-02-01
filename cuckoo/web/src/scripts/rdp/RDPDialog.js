@@ -72,15 +72,20 @@ export default class RDPDialog {
     this.activeModel = null;
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
+    this.onClose = null;
 
     this.selector = null;
 
   }
 
-  render(d) {
+  render(d, opts = {}) {
 
     // don't render if a dialog is already open
     if(this.isOpen) return;
+
+    if(opts.onClose && opts.onClose instanceof Function) {
+      this.onClose = opts.onClose;
+    }
 
     let dialog = this.dialogs[d];
     if(dialog) {
@@ -94,13 +99,15 @@ export default class RDPDialog {
       if(dialog.render) dialog.render(this, this.interaction);
     }
 
+    return dialog;
+
   }
 
   // opens the dialog
   open() {
     if(!this.isOpen) {
       this.client.$.addClass('dialog-active');
-      this.base.prop('open', true);
+      this.base.attr('open', true);
       this.isOpen = true;
 
       // lock interface components whilst the dialog is open.
@@ -111,8 +118,16 @@ export default class RDPDialog {
 
   // closes the current dialog
   close() {
+
+    if(this.onClose) {
+      setTimeout(() => {
+        this.onClose();
+        this.onClose = null;
+      }, 150);
+    }
+
     this.client.$.removeClass('dialog-active');
-    this.base.prop('open', false);
+    this.base.attr('open', false);
     this.base.find('.rdp-dialog__body').empty();
     this.activeModel = null;
     this.interaction = null;
@@ -122,6 +137,7 @@ export default class RDPDialog {
     // re-enable other interface components again when closing
     this.client.toolbar.enable();
     this.client.snapshots.lock(false);
+
   }
 
   // injects the model (if it has a model) into the dialog.
