@@ -56,7 +56,7 @@ class MITM(Auxiliary):
 
         args = [
             mitmdump, "-q",
-            "-s", "\"%s\" %s" % (script, self.task.options.get("mitm", "")),
+            "-s", '"{}" {}'.format(script, self.task.options.get("mitm", "")).strip(),
             "-p", "%d" % self.port,
             "-w", outpath
         ]
