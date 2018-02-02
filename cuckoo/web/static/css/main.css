@@ -11798,7 +11798,7 @@ body.night .app-message {
 
 .rdp-details__menu > li {
   padding: 0;
-  margin: 0;
+  margin: 0 0 10px 0;
   font-size: 16px;
   color: #697993;
 }
@@ -11809,7 +11809,7 @@ body.night .app-message {
 }
 
 .rdp-details__menu > li span {
-  width: 160px;
+  width: 180px;
 }
 
 .rdp-details__menu > li strong {

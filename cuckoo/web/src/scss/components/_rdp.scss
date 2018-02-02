@@ -786,7 +786,7 @@ $RDP_APP_CREDIT_BGC: #383838;
 
       & > li {
         padding: 0;
-        margin: 0;
+        margin: 0 0 10px 0;
         font-size: 16px;
         color: #697993;
 
@@ -795,7 +795,7 @@ $RDP_APP_CREDIT_BGC: #383838;
           display: inline-block;
         }
 
-        span { width: 160px; }
+        span { width: 180px; }
         strong { color: #2E3A4F; }
 
       }
