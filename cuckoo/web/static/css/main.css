@@ -15975,6 +15975,25 @@ body.night .app-message
     margin-left: auto;
 }
 
+.rdp-app__header--left
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+}
+
+.rdp-app__header--left .top
+{
+    padding-top: 6px;
+
+    -ms-flex-preferred-size: 38px;
+    flex-basis: 38px;
+}
+
 .rdp-app__viewport
 {
     position: relative;
@@ -16278,55 +16297,28 @@ body.night .app-message
 
 .rdp-title
 {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 400;
+    font-weight: 500;
 
     margin: 0;
 
-    color: #6297f8;
+    color: #fff;
 
     -ms-flex-negative: 0;
     flex-shrink: 0;
 }
 
-.rdp-title .fa,
-.rdp-title .custom-select:after,
-.rdp-title .dns-badge__content:before,
-.rdp-title .cuckoo-table#submission-task-table .status.status-reported:before,
-.cuckoo-table#submission-task-table .rdp-title .status.status-reported:before,
-.rdp-title #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen .rdp-title .status.status-reported:before,
-.rdp-title .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .rdp-title .status.status-reported:before,
-.rdp-title .cuckoo-analysis__panel--toggle:before,
-.rdp-title .cuckoo-analysis__panel--toggle:after,
-.rdp-title .cuckoo-files ul div:before,
-.cuckoo-files ul .rdp-title div:before,
-.rdp-title .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview .rdp-title .extension-select:after,
-.rdp-title .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .rdp-title .extension-select:before,
-.rdp-title .flex-form__header .custom-checkbox > input + span,
-.flex-form__header .rdp-title .custom-checkbox > input + span,
-.rdp-title .breadcrumbs > li:not(:last-child):after,
-.rdp-title .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .rdp-title input[type='radio'] + span:before,
-.rdp-title .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .rdp-title input[type='radio'] + span:before,
-.rdp-title
-.list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .rdp-title input[type='checkbox'] + span:before,
-.rdp-title .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .rdp-title input[type='checkbox'] + span:before
+.rdp-title .rdp-status
 {
-    font-size: 1.4em;
+    display: inline-block;
 
-    position: relative;
-    top: 1px;
-
+    width: 10px;
+    height: 10px;
     margin-right: 10px;
 
-    vertical-align: middle;
+    border-radius: 10px;
+    background-color: #52e875;
 }
 
 .rdp-snapshots
@@ -16935,6 +16927,98 @@ body.night .app-message
 .rdp-dialog__options button
 {
     margin: 0 12px;
+}
+
+.rdp-details
+{
+    position: relative;
+    left: -12px;
+}
+
+.rdp-details__menu
+{
+    position: absolute;
+    z-index: 20;
+    top: 23px;
+
+    display: none;
+
+    margin: 0;
+    padding: 25px;
+
+    list-style: none;
+
+    border-radius: 0 0 2px 2px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+
+.rdp-details__menu > li
+{
+    font-size: 16px;
+
+    margin: 0;
+    padding: 0;
+
+    color: #697993;
+}
+
+.rdp-details__menu > li span,
+.rdp-details__menu > li strong
+{
+    display: inline-block;
+}
+
+.rdp-details__menu > li span
+{
+    width: 160px;
+}
+
+.rdp-details__menu > li strong
+{
+    color: #2e3a4f;
+}
+
+.rdp-details__toggle
+{
+    font-size: 12px;
+    font-weight: 900;
+
+    height: 25px;
+    padding: 5px 10px;
+
+    transition: background-color 75ms ease-out;
+    text-transform: uppercase;
+}
+
+.rdp-details__toggle:hover
+{
+    cursor: pointer;
+    text-decoration: none;
+
+    color: #2e3a4f;
+    background-color: rgba(255, 255, 255, .2);
+}
+
+.rdp-details__toggle::-moz-selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle::selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle.active
+{
+    border-radius: 2px 2px 0 0;
+    background-color: #fff;
+}
+
+.rdp-details__toggle.active + .rdp-details__menu
+{
+    display: block;
 }
 
 /*

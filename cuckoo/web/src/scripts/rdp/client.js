@@ -123,6 +123,7 @@ class RDPClient extends Hookable {
     // error handler for service wrapper
     this.service.on('error', () => {
       // still need to do something proper here.
+      console.log('error!');
     });
 
     // initialize service wrapper
@@ -141,6 +142,37 @@ class RDPClient extends Hookable {
         }
       }
     }).catch(e => console.log(e));
+
+    this.commonBindings();
+
+  }
+
+  // common bindings for non-complicated controls (such as toggling, etc.)
+  commonBindings() {
+
+    // property dropdown init
+    let showProperties = () => {
+
+      let isOpen = false;
+
+      this.$.find('#toggle-properties').bind('click', e => {
+        e.preventDefault();
+        $(e.currentTarget).toggleClass('active', !isOpen);
+        isOpen = $(e.currentTarget).hasClass('active');
+      });
+
+      $('body').bind('click', e => {
+        let el = $(e.target);
+        let partOfDetails = el.parents('.rdp-details').length > 0;
+
+        if(isOpen && !partOfDetails) {
+          this.$.find('#toggle-properties').trigger('click');
+        }
+      });
+
+    };
+
+    showProperties();
 
   }
 }

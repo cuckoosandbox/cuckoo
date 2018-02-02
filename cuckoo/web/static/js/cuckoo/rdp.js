@@ -730,13 +730,11 @@ var RDPSnapshotSelector = function (_Hookable3) {
       _this4.el.find('input[type="checkbox"]').bind('change', function (e) {
         var t = $(e.currentTarget);
         if (t.is(':checked')) {
-          (function () {
-            var id = parseInt(t.val());
-            var snapshot = _this4.service.snapshots.find(function (s) {
-              return s.id == id;
-            });
-            _this4.dispatchHook('selected', snapshot);
-          })();
+          var id = parseInt(t.val());
+          var snapshot = _this4.service.snapshots.find(function (s) {
+            return s.id == id;
+          });
+          _this4.dispatchHook('selected', snapshot);
         } else {
           _this4.dispatchHook('deselected');
         }
@@ -1131,6 +1129,8 @@ exports.RDPSnapshotButton = RDPSnapshotButton;
 },{"./Hookable":2}],7:[function(require,module,exports){
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _Hookable2 = require('./Hookable');
 
 var _Hookable3 = _interopRequireDefault(_Hookable2);
@@ -1282,6 +1282,7 @@ var RDPClient = function (_Hookable) {
     // error handler for service wrapper
     _this.service.on('error', function () {
       // still need to do something proper here.
+      console.log('error!');
     });
 
     // initialize service wrapper
@@ -1305,8 +1306,43 @@ var RDPClient = function (_Hookable) {
       return console.log(e);
     });
 
+    _this.commonBindings();
+
     return _this;
   }
+
+  // common bindings for non-complicated controls (such as toggling, etc.)
+
+
+  _createClass(RDPClient, [{
+    key: 'commonBindings',
+    value: function commonBindings() {
+      var _this2 = this;
+
+      // property dropdown init
+      var showProperties = function showProperties() {
+
+        var isOpen = false;
+
+        _this2.$.find('#toggle-properties').bind('click', function (e) {
+          e.preventDefault();
+          $(e.currentTarget).toggleClass('active', !isOpen);
+          isOpen = $(e.currentTarget).hasClass('active');
+        });
+
+        $('body').bind('click', function (e) {
+          var el = $(e.target);
+          var partOfDetails = el.parents('.rdp-details').length > 0;
+
+          if (isOpen && !partOfDetails) {
+            _this2.$.find('#toggle-properties').trigger('click');
+          }
+        });
+      };
+
+      showProperties();
+    }
+  }]);
 
   return RDPClient;
 }(_Hookable3.default);
