@@ -31,28 +31,6 @@ class RDPClient extends Hookable {
     this.dialog = new RDPDialog(this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
-        // reboot: {
-        //   template: $('template#rdp-dialog-reboot'),
-        //   interactions: {
-        //     cancel: dialog => {
-        //       dialog.close();
-        //     },
-        //     proceed: dialog => {
-        //       dialog.close();
-        //     }
-        //   }
-        // },
-        // close: {
-        //   template: $('template#rdp-dialog-close'),
-        //   interactions: {
-        //     cancel: dialog => {
-        //       dialog.close();
-        //     },
-        //     proceed: dialog => {
-        //       dialog.close();
-        //     }
-        //   }
-        // },
         snapshots: {
           template: $("template#rdp-dialog-snapshots"),
           model: {
@@ -131,7 +109,7 @@ class RDPClient extends Hookable {
       //     this.errorDialog.render();
       //   }
       // });
-      
+
     });
 
     // initialize service wrapper
