@@ -4,51 +4,39 @@
       <h2 class="rdp-title"><span class="rdp-status"></span> {{ task.target }}</h2>
     </div>
     <div class="bottom rdp-details">
-      <a class="rdp-details__toggle" id="toggle-properties">more</a>
+      <a class="rdp-details__toggle" id="toggle-properties">session</a>
       <ul class="rdp-details__menu">
         <li>
-          <span>routing</span>
-          <strong>None</strong>
+          <span>Routing</span>
+          <strong>{{ task.route }}</strong>
         </li>
         <li>
-          <span>vpn</span>
-          <strong>None</strong>
+          <span>Package</span>
+          <strong>{{ task.package }}</strong>
         </li>
         <li>
-          <span>package</span>
-          <strong>None</strong>
+          <span>Priority</span>
+          <strong>{{ task.priority }}</strong>
         </li>
         <li>
-          <span>priority</span>
-          <strong>None</strong>
+          <span>Process Memory Dump</span>
+          <strong>{% if task.options.procmemdump %}Yes{% else %}No{% endif %}</strong>
         </li>
         <li>
-          <span>injection</span>
-          <strong>None</strong>
+          <span>Full Memory Dump</span>
+          <strong>{% if task.memory %}Yes{% else %}No{% endif %}</strong>
         </li>
         <li>
-          <span>process_memdump</span>
-          <strong>No</strong>
+          <span>Enforce Timeout</span>
+          <strong>{% if task.enforce_timeout %}Yes{% else %}No{% endif %}</strong>
         </li>
         <li>
-          <span>memdump</span>
-          <strong>No</strong>
+          <span>Remote Control</span>
+          <strong>{% if task.options.remotecontrol %}Yes{% else %}No{% endif %}</strong>
         </li>
         <li>
-          <span>timeout</span>
-          <strong>0</strong>
-        </li>
-        <li>
-          <span>remotecontrol</span>
-          <strong>No</strong>
-        </li>
-        <li>
-          <span>human</span>
-          <strong>None</strong>
-        </li>
-        <li>
-          <span>machine</span>
-          <strong>None</strong>
+          <span>Human Simulation</span>
+          <strong>{% if task.options.human %}No{% else %}Yes{% endif %}</strong>
         </li>
       </ul>
     </div>

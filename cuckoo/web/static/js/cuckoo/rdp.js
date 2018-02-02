@@ -381,6 +381,7 @@ var RDPRender = function () {
 
     this.client = client;
     this.template = parseFragment(template);
+    this.active = false;
   }
 
   _createClass(RDPRender, [{
@@ -388,6 +389,12 @@ var RDPRender = function () {
     value: function render() {
       if (!this.template) return;
       this.client.$.find('.rdp-app__viewport').html(this.template);
+      this.active = true;
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this.template.remove();
     }
   }]);
 
@@ -438,6 +445,7 @@ var RDPDialog = function () {
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
     this.onClose = null;
+    this.beforeRender = null;
 
     this.selector = null;
   }
@@ -451,13 +459,20 @@ var RDPDialog = function () {
       // don't render if a dialog is already open
       if (this.isOpen) return;
 
+      // attach onClose handler
       if (opts.onClose && opts.onClose instanceof Function) {
         this.onClose = opts.onClose;
+      }
+
+      // attach beforeRender handler
+      if (opts.beforeRender && opts.beforeRender instanceof Function) {
+        this.beforeRender = opts.beforeRender;
       }
 
       var dialog = this.dialogs[d];
       if (dialog) {
         var ctx = parseFragment(dialog.template);
+        if (this.beforeRender) this.beforeRender();
         this.base.find('.rdp-dialog__body').append(ctx);
         this.interaction = new DialogInteractionScheme(this, dialog);
         this._injectModel(this.interaction.model);
@@ -1281,8 +1296,16 @@ var RDPClient = function (_Hookable) {
 
     // error handler for service wrapper
     _this.service.on('error', function () {
+
       // still need to do something proper here.
-      console.log('error!');
+
+      // this.service.checkReady(this.id, false).then(isReady => {
+      //   console.log(`ready in error handler: ${isReady}`);
+      //   if(isReady !== true) {
+      //     this.errorDialog.render();
+      //   }
+      // });
+
     });
 
     // initialize service wrapper
@@ -1299,7 +1322,11 @@ var RDPClient = function (_Hookable) {
             }
           });
         } else {
-          _this.dialog.render('completed');
+          _this.dialog.render('completed', {
+            beforeRender: function beforeRender() {
+              return self.errorDialog ? self.errorDialog.destroy() : function () {};
+            }
+          });
         }
       }
     }).catch(function (e) {

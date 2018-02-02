@@ -26,10 +26,15 @@ class RDPRender {
   constructor(client, template) {
     this.client = client;
     this.template = parseFragment(template);
+    this.active = false;
   }
   render() {
     if(!this.template) return;
     this.client.$.find('.rdp-app__viewport').html(this.template);
+    this.active = true;
+  }
+  destroy() {
+    this.template.remove();
   }
 }
 
@@ -73,6 +78,7 @@ export default class RDPDialog {
     this.dialogs = conf.dialogs || {};
     this.isOpen = this.base.prop('open');
     this.onClose = null;
+    this.beforeRender = null;
 
     this.selector = null;
 
@@ -83,13 +89,20 @@ export default class RDPDialog {
     // don't render if a dialog is already open
     if(this.isOpen) return;
 
+    // attach onClose handler
     if(opts.onClose && opts.onClose instanceof Function) {
       this.onClose = opts.onClose;
+    }
+
+    // attach beforeRender handler
+    if(opts.beforeRender && opts.beforeRender instanceof Function) {
+      this.beforeRender = opts.beforeRender;
     }
 
     let dialog = this.dialogs[d];
     if(dialog) {
       let ctx = parseFragment(dialog.template);
+      if(this.beforeRender) this.beforeRender();
       this.base.find('.rdp-dialog__body').append(ctx);
       this.interaction = new DialogInteractionScheme(this, dialog);
       this._injectModel(this.interaction.model);
