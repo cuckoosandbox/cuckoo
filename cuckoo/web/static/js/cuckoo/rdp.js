@@ -1202,28 +1202,6 @@ var RDPClient = function (_Hookable) {
     _this.dialog = new _RDPDialog2.default(_this, {
       el: el.find('#rdp-dialog'),
       dialogs: {
-        // reboot: {
-        //   template: $('template#rdp-dialog-reboot'),
-        //   interactions: {
-        //     cancel: dialog => {
-        //       dialog.close();
-        //     },
-        //     proceed: dialog => {
-        //       dialog.close();
-        //     }
-        //   }
-        // },
-        // close: {
-        //   template: $('template#rdp-dialog-close'),
-        //   interactions: {
-        //     cancel: dialog => {
-        //       dialog.close();
-        //     },
-        //     proceed: dialog => {
-        //       dialog.close();
-        //     }
-        //   }
-        // },
         snapshots: {
           template: $("template#rdp-dialog-snapshots"),
           model: {
