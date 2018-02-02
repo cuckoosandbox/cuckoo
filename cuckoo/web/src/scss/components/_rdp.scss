@@ -141,6 +141,17 @@ $RDP_APP_CREDIT_BGC: #383838;
       &--right {
         margin-left: auto;
       }
+
+      &--left {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+        .top {
+          flex-basis: 38px;
+          padding-top: 6px;
+        }
+      }
     }
 
     &__viewport {
@@ -357,17 +368,19 @@ $RDP_APP_CREDIT_BGC: #383838;
 
   &-title {
     margin: 0;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 400;
     flex-shrink: 0;
-    color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+    color: #fff;
+    font-weight: 500;
 
-    .fa {
-      position: relative;
-      top: 1px;
-      vertical-align: middle;
-      font-size: 1.4em;
+    .rdp-status {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
       margin-right: 10px;
+      background-color: #52E875;
+      border-radius: 10px;
     }
   }
 
@@ -749,6 +762,71 @@ $RDP_APP_CREDIT_BGC: #383838;
         margin: 0 12px;
         &:not([value="cancel"]) { @extend %rdp-regular-button; }
         &[value="cancel"] { @extend %rdp-cancel-button; }
+      }
+    }
+
+  }
+
+  &-details {
+
+    position: relative;
+    left: -12px;
+
+    &__menu {
+      position: absolute;
+      display: none;
+      z-index: 20;
+      top: 23px;
+      padding: 25px;
+      margin: 0;
+      list-style: none;
+      background-color: #fff;
+      border-radius: 0 0 2px 2px;
+      box-shadow: 0px 2px 4px rgba(0,0,0,.2);
+
+      & > li {
+        padding: 0;
+        margin: 0;
+        font-size: 16px;
+        color: #697993;
+
+        span,
+        strong {
+          display: inline-block;
+        }
+
+        span { width: 160px; }
+        strong { color: #2E3A4F; }
+
+      }
+    }
+
+    &__toggle {
+      height: 25px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      transition: background-color 75ms ease-out;
+
+      &:hover {
+        cursor: pointer;
+        text-decoration: none;
+        color: #2E3A4F;
+        background-color: rgba(#fff, .2);
+      }
+
+      &::selection {
+        background: transparent;
+      }
+
+      &.active {
+        background-color: #fff;
+        border-radius: 2px 2px 0 0;
+
+        & + .rdp-details__menu {
+          display: block;
+        }
       }
     }
 

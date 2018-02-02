@@ -1,5 +1,58 @@
 <header class="rdp-app__header">
-  <h2 class="rdp-title"><i class="fa fa-desktop"></i> {{ task.target }}</h2>
+  <div class="rdp-app__header--left">
+    <div class="top">
+      <h2 class="rdp-title"><span class="rdp-status"></span> {{ task.target }}</h2>
+    </div>
+    <div class="bottom rdp-details">
+      <a class="rdp-details__toggle" id="toggle-properties">more</a>
+      <ul class="rdp-details__menu">
+        <li>
+          <span>routing</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>vpn</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>package</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>priority</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>injection</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>process_memdump</span>
+          <strong>No</strong>
+        </li>
+        <li>
+          <span>memdump</span>
+          <strong>No</strong>
+        </li>
+        <li>
+          <span>timeout</span>
+          <strong>0</strong>
+        </li>
+        <li>
+          <span>remotecontrol</span>
+          <strong>No</strong>
+        </li>
+        <li>
+          <span>human</span>
+          <strong>None</strong>
+        </li>
+        <li>
+          <span>machine</span>
+          <strong>None</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
   <div class="rdp-app__header--right">
     <ul class="rdp-snapshots" id="rdp-snapshot-collection"></ul>
   </div>
