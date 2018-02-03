@@ -3,7 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-import os.path
+import os
 import threading
 import yaml
 
@@ -68,6 +68,11 @@ class MITM(Auxiliary):
         mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
         mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
 
+        # Prepare the configuration for recovering TLS Master keys (useful for Wireshark)
+        mitm_sslkeylogfile = cwd("storage", "analyses", "%d" % self.task.id, "mitm.sslkeylogfile")
+        os.environ["MITMPROXY_SSLKEYLOGFILE"] = mitm_sslkeylogfile
+        log.debug("TLS Master keys will be dropped in this file: "+mitm_sslkeylogfile)
+
         self.proc = Popen(
             args, close_fds=True,
             stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
@@ -86,6 +91,7 @@ class MITM(Auxiliary):
 
         # Load the configuration file and retrieve some information
         try:
+            infile = ""
             with open(conf, "r") as infile:
                 conf = yaml.safe_load(infile)
                 
@@ -94,8 +100,7 @@ class MITM(Auxiliary):
                 # where our mitmdump instance is running. TODO Is this correct?
                     self.task.options["proxy"] = \
                         "%s:%d" % (self.machine.resultserver_ip, port)
-
-
+            infile.close()
 
         except IOError:
             log.exception("Could not open %s" % conf)
