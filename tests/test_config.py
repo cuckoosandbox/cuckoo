@@ -734,6 +734,7 @@ machines = cuckoo1
     assert cfg["auxiliary"]["mitm"]["port_base"] == 50000
     assert cfg["auxiliary"]["mitm"]["script"] == "data/mitm.py"
     assert cfg["auxiliary"]["mitm"]["certificate"] == "bin/cert.p12"
+    assert cfg["auxiliary"]["mitm"]["conf"] == "~/.mitmproxy/config.yaml"
     assert cfg["auxiliary"]["services"]["enabled"] is False
     assert cfg["auxiliary"]["services"]["services"] == "honeyd"
     assert cfg["auxiliary"]["services"]["timeout"] == 0
