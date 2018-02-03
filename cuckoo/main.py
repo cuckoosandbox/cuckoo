@@ -30,12 +30,14 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing
+    init_routing, update_config
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
     Pidfile, mkdir
 )
+
+logging.basicConfig(level=logging.DEBUG)
 
 log = logging.getLogger("cuckoo")
 
@@ -221,6 +223,10 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         level = logging.INFO
 
     ctx.level = level
+
+    # Update the Config.configuration object to have configuration info
+    # from plugins.
+    update_config()
 
     # A subcommand will be invoked, so don't run Cuckoo itself.
     if ctx.invoked_subcommand:

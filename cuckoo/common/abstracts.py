@@ -39,6 +39,10 @@ class Auxiliary(object):
         self.options = None
 
     @classmethod
+    def get_config(cls):
+        pass
+
+    @classmethod
     def init_once(cls):
         pass
 
@@ -610,6 +614,10 @@ class Processing(object):
         self.machine = None
         self.options = None
         self.results = {}
+
+    @classmethod
+    def get_config(cls):
+        pass
 
     @classmethod
     def init_once(cls):
@@ -1216,6 +1224,10 @@ class Report(object):
         self.reports_path = ""
         self.task = None
         self.options = None
+
+    @classmethod
+    def get_config(cls):
+        pass
 
     @classmethod
     def init_once(cls):

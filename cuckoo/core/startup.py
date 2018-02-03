@@ -411,3 +411,19 @@ def init_routing():
         if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
+
+def update_config():
+    """Update the Config.configuration object to have configuration info
+    from plugins."""
+
+    categories = (
+        "auxiliary", "processing", "reporting",
+    )
+
+    for category in categories:
+        config_section = Config.configuration[category]
+        for module in cuckoo.plugins[category]:
+            module_config = module.get_config()
+            if module_config:
+                config_section.update(module_config)
+
