@@ -37,8 +37,6 @@ from cuckoo.misc import (
     Pidfile, mkdir
 )
 
-logging.basicConfig(level=logging.DEBUG)
-
 log = logging.getLogger("cuckoo")
 
 def cuckoo_create(username=None, cfg=None, quiet=False):
