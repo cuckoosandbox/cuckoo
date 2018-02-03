@@ -306,6 +306,7 @@ def _120_20c1(c):
         "port_base": 50000,
         "script": "data/mitm.py",
         "certificate": "bin/cert.p12",
+        "conf": "~/.mitmproxy/config.yaml",
     }
     c["auxiliary"]["services"] = {
         "enabled": False,
