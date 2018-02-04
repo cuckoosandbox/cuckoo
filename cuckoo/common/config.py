@@ -303,10 +303,6 @@ class Config(object):
                     "bin/cert.p12",
                     exists=False, writable=False, readable=True
                 ),
-                "conf": Path(
-                    "~/.mitmproxy/config.yaml",
-                    exists=False, writable=False, readable=True
-                ),
             },
             "services": {
                 "enabled": Boolean(False),
