@@ -1,11 +1,10 @@
-# Copyright (C) 2015-2017 Cuckoo Foundation.
+opyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
-import os
+import os.path
 import threading
-import yaml
 
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.misc import cwd, Popen
@@ -24,7 +23,6 @@ class MITM(Auxiliary):
         port_base = int(self.options.get("port_base", 50000))
         script = cwd(self.options.get("script", "stuff/mitm.py"))
         certificate = self.options.get("certificate", "bin/cert.p12")
-        conf = os.path.expanduser(self.options.get("conf", "~/.mitmproxy/config.yaml"))
 
         outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")
 
@@ -56,22 +54,15 @@ class MITM(Auxiliary):
 
         PORT_LOCK.release()
 
-        # Need at least the v3.0.0 of mitmproxy
         args = [
             mitmdump, "-q",
             "-s", '"{}" {}'.format(script, self.task.options.get("mitm", "")).strip(),
             "-p", "%d" % self.port,
-            "--conf", "%s" % conf,
             "-w", outpath
         ]
 
         mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
         mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
-
-        # Prepare the configuration for recovering TLS Master keys (useful for Wireshark)
-        mitm_sslkeylogfile = cwd("storage", "analyses", "%d" % self.task.id, "mitm.sslkeylogfile")
-        os.environ["MITMPROXY_SSLKEYLOGFILE"] = mitm_sslkeylogfile
-        log.debug("TLS Master keys will be dropped in this file: "+mitm_sslkeylogfile)
 
         self.proc = Popen(
             args, close_fds=True,
@@ -89,23 +80,10 @@ class MITM(Auxiliary):
             log.warning("A proxy has been provided for this task, however, "
                         "this is overridden by the mitm auxiliary module.")
 
-        # Load the configuration file and retrieve some information
-        try:
-            infile = ""
-            with open(conf, "r") as infile:
-                conf = yaml.safe_load(infile)
-                
-                if conf["mode"] == "regular":
-                # We are using the resultserver IP address as address for the host
-                # where our mitmdump instance is running. TODO Is this correct?
-                    self.task.options["proxy"] = \
-                        "%s:%d" % (self.machine.resultserver_ip, port)
-            infile.close()
-
-        except IOError:
-            log.exception("Could not open %s" % conf)
-        except ValueError:
-            log.exception("Invalid YAML file %s" % conf)
+        # We are using the resultserver IP address as address for the host
+        # where our mitmdump instance is running. TODO Is this correct?
+        self.task.options["proxy"] = \
+            "%s:%d" % (self.machine.resultserver_ip, port)
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)
@@ -126,3 +104,4 @@ class MITM(Auxiliary):
                 except Exception as e:
                     log.exception("Unable to stop mitmdump with pid %d: %s",
                                   self.proc.pid, e)
+
