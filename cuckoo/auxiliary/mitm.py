@@ -1,4 +1,4 @@
-opyright (C) 2015-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2017 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -54,6 +54,11 @@ class MITM(Auxiliary):
 
         PORT_LOCK.release()
 
+        # Prepare the configuration for recovering TLS Master keys (useful for Wireshark)
+        tlsmaster_mitm = cwd("storage", "analyses", "%d" % self.task.id, "tlsmaster.mitm")
+        os.environ["MITMPROXY_SSLKEYLOGFILE"] = tlsmaster_mitm
+        log.debug("TLS Master keys will be dropped in this file: "+tlsmaster_mitm)
+
         args = [
             mitmdump, "-q",
             "-s", '"{}" {}'.format(script, self.task.options.get("mitm", "")).strip(),
@@ -82,8 +87,8 @@ class MITM(Auxiliary):
 
         # We are using the resultserver IP address as address for the host
         # where our mitmdump instance is running. TODO Is this correct?
-        self.task.options["proxy"] = \
-            "%s:%d" % (self.machine.resultserver_ip, port)
+#        self.task.options["proxy"] = \
+#            "%s:%d" % (self.machine.resultserver_ip, port)
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)

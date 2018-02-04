@@ -13,7 +13,7 @@ class TLSMasterSecrets(Processing):
     information extracted from the PCAP to dump a master secrets file
     compatible with, e.g., Wireshark."""
 
-    order = 3
+    order = 1
     key = "dumptls"
 
     def run(self):

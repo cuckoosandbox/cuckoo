@@ -896,15 +896,43 @@ class NetworkAnalysis(Processing):
 
     def get_tlsmaster(self):
         """Obtain the client/server random to TLS master secrets mapping that
-        we have obtained through dynamic analysis."""
+        we have obtained through the dumptls processing and from mitmproxy."""
         tlsmaster = {}
-        summary = self.results.get("behavior", {}).get("summary", {})
-        for entry in summary.get("tls_master", []):
-            client_random, server_random, master_secret = entry
-            client_random = client_random.decode("hex")
-            server_random = server_random.decode("hex")
-            master_secret = master_secret.decode("hex")
-            tlsmaster[client_random, server_random] = master_secret
+
+        # Read the tlsmaster.txt file if it exists
+        tlsmaster_txt = cwd("storage", "analyses", "%d" % self.task.id, "tlsmaster.txt")
+        tlsmaster_txt_pattern = "RSA Session-ID:(?P<sid>[0-9a-f]+) Master-Key:(?P<key>[0-9a-f]+)"
+
+        try:
+            infile = ""
+            with open(tlsmaster_txt, "rb") as infile:       
+                for line in infile:
+                    x = re.match(tlsmaster_txt_pattern, line)
+                    if x:
+                        tlsmaster["CLIENT_RANDOM", x.group("sid").decode("hex")] = x.group("key").decode("hex")
+                
+            infile.close()
+
+        except IOError:
+            log.exception("Could not open %s" % tlsmaster_txt)
+
+        # Read the tlsmaster.mitm file if it exists
+        tlsmaster_mitm = cwd("storage", "analyses", "%d" % self.task.id, "tlsmaster.mitm")
+        tlsmaster_mitm_pattern = "CLIENT_RANDOM (?P<sid>[0-9a-f]+) (?P<key>[0-9a-f]+)"
+
+        try:
+            infile = ""
+            with open(tlsmaster_mitm, "rb") as infile:       
+                for line in infile:
+                    x = re.match(tlsmaster_mitm_pattern, line)
+                    if x:
+                        tlsmaster["CLIENT_RANDOM", x.group("sid").decode("hex")] = x.group("key").decode("hex")
+                
+            infile.close()
+
+        except IOError:
+            log.exception("Could not open %s" % tlsmaster_mitm)
+        
         return tlsmaster
 
 def iplayer_from_raw(raw, linktype=1):
