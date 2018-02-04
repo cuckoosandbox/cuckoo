@@ -30,7 +30,7 @@ from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.misc import cwd
 
 # Be less verbose about httpreplay logging messages.
-logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
+logging.getLogger("httpreplay").setLevel(logging.DEBUG)
 
 Keyed = collections.namedtuple("Keyed", ["key", "obj"])
 Packet = collections.namedtuple("Packet", ["raw", "ts"])
@@ -909,7 +909,7 @@ class NetworkAnalysis(Processing):
                 for line in infile:
                     x = re.match(tlsmaster_txt_pattern, line)
                     if x:
-                        tlsmaster["CLIENT_RANDOM", x.group("sid").decode("hex")] = x.group("key").decode("hex")
+                        tlsmaster[x.group("sid").decode("hex")] = x.group("key").decode("hex")
                 
             infile.close()
 
@@ -926,7 +926,7 @@ class NetworkAnalysis(Processing):
                 for line in infile:
                     x = re.match(tlsmaster_mitm_pattern, line)
                     if x:
-                        tlsmaster["CLIENT_RANDOM", x.group("sid").decode("hex")] = x.group("key").decode("hex")
+                        tlsmaster[x.group("sid").decode("hex")] = x.group("key").decode("hex")
                 
             infile.close()
 
