@@ -260,3 +260,6 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 pidfiles/.gitignore
 1fc2c7d224dea8c30821883e01a3f8ee18466778 stuff/gatherer.py
 554151cf678d3304e5c083ecf1a15631e0271bc7 stuff/mitm.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/office/.gitignore
+
+# TBD
+2d01f99ec830ae73deeaf9a283badb72448a4991 analyzer/windows/analyzer.py

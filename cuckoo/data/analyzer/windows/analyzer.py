@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -251,8 +251,6 @@ class CommandPipeHandler(object):
                 self.ignore_list["pid"].append(process_id)
             # Spit out an error once and just ignore it further on.
             elif process_id not in self.ignore_list["pid"]:
-                log.debug("Received request to inject pid=%d, but we are "
-                          "already injected there.", process_id)
                 self.ignore_list["pid"].append(process_id)
 
             # We're done operating on the processes list, release the lock.
