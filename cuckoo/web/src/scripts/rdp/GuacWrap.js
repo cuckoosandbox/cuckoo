@@ -61,7 +61,9 @@ class GuacamoleWrapper extends Hookable {
       let sendState = state => this.client.sendMouseState(state);
 
       // apply sendState function
-      this._mouse.onmousemove = (state) => {
+      this._mouse.onmousemove =
+      this._mouse.onmouseup =
+      this._mouse.onmousedown = (state) => {
         if(this.parent.toolbar.buttons.control.toggled) {
           sendState(state);
         }
