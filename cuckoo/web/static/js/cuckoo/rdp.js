@@ -98,7 +98,7 @@ var GuacamoleWrapper = function (_Hookable) {
           };
 
           // apply sendState function
-          _this3._mouse.onmousemove = function (state) {
+          _this3._mouse.onmousemove = _this3._mouse.onmouseup = _this3._mouse.onmousedown = function (state) {
             if (_this3.parent.toolbar.buttons.control.toggled) {
               sendState(state);
             }
