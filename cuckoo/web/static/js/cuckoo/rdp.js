@@ -122,10 +122,14 @@ var GuacamoleWrapper = function (_Hookable) {
       if (enable) {
         this._keyboard = new Guacamole.Keyboard(document);
         this._keyboard.onkeydown = function (keysym) {
-          return _this4.client.sendKeyEvent(1, keysym);
+          if (_this4.parent.toolbar.buttons.control.toggled) {
+            _this4.client.sendKeyEvent(1, keysym);
+          }
         };
         this._keyboard.onkeyup = function (keysym) {
-          return _this4.client.sendKeyEvent(0, keysym);
+          if (_this4.parent.toolbar.buttons.control.toggled) {
+            _this4.client.sendKeyEvent(0, keysym);
+          }
         };
       } else {
         this._keyboard = null;
@@ -863,9 +867,6 @@ var RDPToolbar = function (_Hookable) {
       fullscreen: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="fullscreen"]'), { client: client }),
       snapshot: new _RDPToolbarButton.RDPSnapshotButton(client.$.find('button[name="screenshot"]'), { client: client }),
       control: new _RDPToolbarButton.RDPToolbarButton(client.$.find('button[name="control"]'), { client: client, holdToggle: true })
-      // reboot: new RDPToolbarButton(client.$.find('button[name="reboot"]'), { client }),
-      // close: new RDPToolbarButton(client.$.find('button[name="close"]'), { client })
-
 
       // toggle fullscreen mode
     };_this.buttons.fullscreen.on('click', function () {
@@ -901,25 +902,14 @@ var RDPToolbar = function (_Hookable) {
       }
     });
 
-    // this.buttons.reboot.on('click', () => {
-    //   this.client.dialog.render('reboot');
-    // });
-
-    // if we have snapshots, show the snapshots dialog, elsely show the default
-    // close dialog.
-    // this.buttons.close.on('click', () => {
-    //   if(this.client.snapshots.total() > 0) {
-    //     this.client.dialog.render('snapshots');
-    //   } else {
-    //     this.client.dialog.render('close');
-    //   }
-    // });
-
     $('body').on('keydown', function (e) {
 
       // prevent triggering when in ctrl/alt/shift key modes, usually reserved for browser actions or
       // OS UX, semantically that should never break so we should prevent it, as well.
       if (cmdKeyPressed(e)) return;
+
+      // in 'control' mode, we do not do shortcut keys to prioritize keyboard interactions to the vm
+      if (_this.buttons.control.toggled) return;
 
       switch (e.keyCode) {
         case 83:
@@ -933,14 +923,6 @@ var RDPToolbar = function (_Hookable) {
         case 67:
           _this.buttons.control.$.trigger('mousedown');
           break;
-        // case 82:
-        //   this.buttons.reboot.dispatchHook('click');
-        //   this.buttons.reboot.blink();
-        // break;
-        // case 81:
-        //   this.buttons.close.dispatchHook('click');
-        //   this.buttons.close.blink();
-        // break;
       }
     });
 
