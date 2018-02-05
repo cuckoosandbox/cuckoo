@@ -2318,6 +2318,9 @@ var SubmissionTaskTable = function () {
 				item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 				item.time_added = moment(item.added_on).format('HH:mm');
 				item.is_ready = item.status == 'reported';
+				item.is_running = item.status == 'running';
+				item.remote_control = item.options.hasOwnProperty('remotecontrol');
+				item.show_rc_toggle = item.remote_control && item.is_running;
 				return item;
 			});
 
@@ -2382,7 +2385,8 @@ var default_analysis_options = {
 		'full-memory-dump': false,
 		'enable-injection': true,
 		'process-memory-dump': true,
-		'simulated-human-interaction': true
+		'simulated-human-interaction': true,
+		'remote-control': false
 	},
 	'package': null,
 	'priority': 1,
@@ -2394,6 +2398,10 @@ var default_analysis_options = {
 
 // default option set for the submission form
 var submission_options = [{
+	name: 'remote-control',
+	label: 'Remote Control',
+	description: 'Enables Guacamole UI for VM'
+}, {
 	name: 'enable-injection',
 	label: 'Enable Injection',
 	description: 'Enable behavioral analysis.'
@@ -2410,13 +2418,17 @@ var submission_options = [{
 }, {
 	name: 'simulated-human-interaction',
 	label: 'Enable Simulated Human Interaction',
-	selected: true
+	selected: true,
+	description: 'disable this feature for a better experience when using Remote Control',
+	showWhen: {
+		'remote-control': true
+	}
 }];
 
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'hta', 'hwp', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'hta', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes

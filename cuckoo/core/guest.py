@@ -500,6 +500,11 @@ class GuestManager(object):
             }
             self.post("/store", files=files, data=data)
 
+        # use this to manually test the vm with remote control
+        #log.info("Uploaded analyzer... HANGING")
+        #while True:
+        #   pass
+
         if "execpy" in features:
             data = {
                 "filepath": "%s/analyzer.py" % self.analyzer_path,

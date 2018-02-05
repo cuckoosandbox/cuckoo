@@ -22,7 +22,7 @@ db = Database()
 class SubmitManager(object):
     known_web_options = [
         "enable-injection", "enforce-timeout", "full-memory-dump",
-        "process-memory-dump", "simulated-human-interaction",
+        "process-memory-dump", "remote-control", "simulated-human-interaction",
     ]
 
     def _handle_string(self, submit, tmppath, line):
@@ -70,6 +70,9 @@ class SubmitManager(object):
         if options.get("process-memory-dump"):
             ret["procmemdump"] = "yes"
 
+        if options.get("remote-control"):
+            ret["remotecontrol"] = "yes"
+
         # VPN takes precedence over the network-routing option (this should
         # actually be resolved in the frontend, though).
         if entry.get("vpn"):
@@ -97,8 +100,13 @@ class SubmitManager(object):
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True
 
+        if options.get("remotecontrol") == "yes":
+            ret["remote-control"] = True
+
         if options.get("route"):
             ret["network-routing"] = options["route"]
+
+
 
         return ret
 

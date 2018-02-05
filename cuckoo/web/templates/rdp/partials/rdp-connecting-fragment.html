@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<template id="rdp-connecting">
+
+  <div class="rdp__connecting">
+    <section>
+      <figure class="combined-icon">
+        <img src="{% static "graphic/guacamole.png" %}" class="guac-icon" />
+        <i class="fa fa-desktop"></i>
+      </figure>
+      <p>Connecting to virtual machine
+        <span class="animated-ellipse">
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </span>
+      </p>
+    </section>
+  </div>
+
+</template>
