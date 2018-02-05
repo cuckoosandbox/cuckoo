@@ -17,8 +17,6 @@ export default class RDPToolbar extends Hookable {
       fullscreen: new RDPToolbarButton(client.$.find('button[name="fullscreen"]'), { client }),
       snapshot: new RDPSnapshotButton(client.$.find('button[name="screenshot"]'), { client }),
       control: new RDPToolbarButton(client.$.find('button[name="control"]'), { client, holdToggle: true })
-      // reboot: new RDPToolbarButton(client.$.find('button[name="reboot"]'), { client }),
-      // close: new RDPToolbarButton(client.$.find('button[name="close"]'), { client })
     }
 
     // toggle fullscreen mode
@@ -53,25 +51,14 @@ export default class RDPToolbar extends Hookable {
       }
     });
 
-    // this.buttons.reboot.on('click', () => {
-    //   this.client.dialog.render('reboot');
-    // });
-
-    // if we have snapshots, show the snapshots dialog, elsely show the default
-    // close dialog.
-    // this.buttons.close.on('click', () => {
-    //   if(this.client.snapshots.total() > 0) {
-    //     this.client.dialog.render('snapshots');
-    //   } else {
-    //     this.client.dialog.render('close');
-    //   }
-    // });
-
     $('body').on('keydown', e => {
 
       // prevent triggering when in ctrl/alt/shift key modes, usually reserved for browser actions or
       // OS UX, semantically that should never break so we should prevent it, as well.
       if(cmdKeyPressed(e)) return;
+
+      // in 'control' mode, we do not do shortcut keys to prioritize keyboard interactions to the vm
+      if(this.buttons.control.toggled) return;
 
       switch(e.keyCode) {
         case 83:
@@ -85,14 +72,6 @@ export default class RDPToolbar extends Hookable {
         case 67:
           this.buttons.control.$.trigger('mousedown');
         break;
-        // case 82:
-        //   this.buttons.reboot.dispatchHook('click');
-        //   this.buttons.reboot.blink();
-        // break;
-        // case 81:
-        //   this.buttons.close.dispatchHook('click');
-        //   this.buttons.close.blink();
-        // break;
       }
 
     });

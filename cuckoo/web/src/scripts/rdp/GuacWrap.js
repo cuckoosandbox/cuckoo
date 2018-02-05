@@ -82,8 +82,16 @@ class GuacamoleWrapper extends Hookable {
 
     if(enable) {
       this._keyboard = new Guacamole.Keyboard(document);
-      this._keyboard.onkeydown = (keysym) => this.client.sendKeyEvent(1, keysym);
-      this._keyboard.onkeyup = keysym => this.client.sendKeyEvent(0, keysym);
+      this._keyboard.onkeydown = (keysym) => {
+        if(this.parent.toolbar.buttons.control.toggled) { 
+          this.client.sendKeyEvent(1, keysym);
+        }
+      }
+      this._keyboard.onkeyup = keysym => {
+        if(this.parent.toolbar.buttons.control.toggled) {
+          this.client.sendKeyEvent(0, keysym);
+        }
+      }
     } else {
       this._keyboard = null;
     }
