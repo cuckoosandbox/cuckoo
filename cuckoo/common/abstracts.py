@@ -283,7 +283,7 @@ class Machinery(object):
     def get_remote_control_params(self, label):
         """Return connection details for remote control.
         @param label: machine name.
-        @return: tuple of (protocol, ip, port)
+        @return: dict with keys: protocol, host, port
         """
         raise NotImplementedError
 

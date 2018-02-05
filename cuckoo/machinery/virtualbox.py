@@ -433,14 +433,14 @@ class VirtualBox(Machinery):
             )
 
     def get_remote_control_params(self, label):
-        # port = self.vminfo(label, "vrdeport")
+        port = int(self.vminfo(label, "vrdeport"))
+        log.info("RDP interface running on port %d" % port)
 
-        try:
-            port = int(config("virtualbox:%s:controlport" % label))
-        except ValueError:
-            port = 3389
-
-        return "rdp", "127.0.0.1", port
+        return {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": port,
+        }
 
     def _set_vrde_ports(self, label, ports):
         proc = self._set_flag(label, "vrdeport", ports)

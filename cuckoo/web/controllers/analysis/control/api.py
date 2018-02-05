@@ -13,7 +13,6 @@ from cuckoo.common.config import config
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.reporting.mongodb import MongoDB
-from cuckoo.machinery.virtualbox import VirtualBox
 from cuckoo.misc import cwd
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
@@ -140,16 +139,19 @@ class ControlApi:
 
     @staticmethod
     def _do_connect(task):
-        # TODO: store connection details in the task and grab them from there
-        params = ("rdp", "localhost", 4444)
-        protocol, hostname, port = params
+        machine = db.view_machine_by_label(task.guest.label)
+        rcparams = machine.rcparams
 
         guacd_host = config("cuckoo:remotecontrol:guacd_host")
         guacd_port = config("cuckoo:remotecontrol:guacd_port")
 
         guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
         try:
-            guac.handshake(protocol=protocol, hostname=hostname, port=port)
+            guac.handshake(
+                protocol=rcparams["protocol"],
+                hostname=rcparams["host"],
+                port=rcparams["port"],
+            )
         except socket.error:
             log.error(
                 "Failed to connect to guacd on %s:%d"
