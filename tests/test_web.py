@@ -135,7 +135,7 @@ class TestWebInterface(object):
         d.return_value = task
 
         assert client.get("/analysis/1/control/").status_code == 404
-        assert client.get("/analysis/1/control/tunnel/").status_code == 404
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
     @mock.patch("cuckoo.core.database.Database.view_task")
     def test_rdp_player_notrunning_task(self, d, client):
@@ -158,7 +158,7 @@ class TestWebInterface(object):
         d.return_value = task
 
         assert client.get("/analysis/1/control/").status_code == 404
-        assert client.get("/analysis/1/control/tunnel/").status_code == 404
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
     @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.get_remote_control_params")
     @mock.patch("cuckoo.core.database.Database.view_task")
@@ -327,6 +327,7 @@ class TestWebInterface(object):
                 "full-memory-dump": False,
                 "enable-injection": True,
                 "process-memory-dump": True,
+                "remote-control": False,
                 "simulated-human-interaction": True,
             }
         }
