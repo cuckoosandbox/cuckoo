@@ -203,6 +203,44 @@ class TestWebInterface(object):
             "/analysis/1/control/tunnel/?write:%s" % key
         ).status_code == 200
 
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_connfail(self, d, d1, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                    "guacd_host": "127.0.0.1",
+                    "guacd_port": 9999,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        class machine(object):
+            id = 1
+            rcparams = {
+                "protocol": "rdp",
+               "host": "127.0.0.1",
+               "port": "3389",
+            }
+
+        d.return_value = task
+        d1.return_value = machine
+
+        assert client.post(
+            "/analysis/1/control/tunnel/?connect"
+        ).status_code == 500
+
     @mock.patch("cuckoo.core.database.Database.view_task")
     def test_rdp_tunnel_control_disabled(self, d, client):
         set_cwd(tempfile.mkdtemp())
