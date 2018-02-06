@@ -301,6 +301,30 @@ class TestWebInterface(object):
         assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
 
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
+    def test_rdp_screenshots(self, a, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {},
+        })
+
+        class report(object):
+            shots = []
+        a.return_value = report
+
+        data = [
+            {"id": 0, "data": "data:image/png;base64,iVBORw=="},
+        ]
+
+        with pytest.raises(IOError):
+            r = client.post(
+                "/analysis/1/control/screenshots/",
+                json.dumps(data),
+                "application/json",
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+            )
+            assert r.status_code == 200
+
+    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_summary_office1(self, p, request):
         p._get_report.return_value = {
             "static": {
