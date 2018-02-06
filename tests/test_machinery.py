@@ -657,6 +657,28 @@ class TestVirtualbox(object):
             mock.call().communicate(),
         ])
 
+    def test_get_remote_control_params(self):
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "vrdeport=5000", ""
+            p.return_value.returncode = 0
+            params = self.m.get_remote_control_params("label")
+
+        p.assert_has_calls([
+            mock.call(
+                [
+                    "/usr/bin/VBoxManage", "showvminfo",
+                    "label", "--machinereadable",
+                ],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
+        assert params == {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": 5000,
+        }
 
 class TestBrokenMachine(object):
     def setup(self):
