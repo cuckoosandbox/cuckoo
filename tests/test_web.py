@@ -203,6 +203,50 @@ class TestWebInterface(object):
             "/analysis/1/control/tunnel/?write:%s" % key
         ).status_code == 200
 
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_control_disabled(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        d.return_value = task
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_invalid(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        d.return_value = task
+        assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
+
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_summary_office1(self, p, request):
         p._get_report.return_value = {
