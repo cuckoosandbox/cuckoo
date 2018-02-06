@@ -165,21 +165,18 @@ class ControlApi:
         def content():
             with sockets_lock:
                 guac = sockets[cache_key]
+
             with read_lock:
                 pending_read_request.clear()
 
                 while True:
                     try:
-                        content = guac.receive()
-                        if content:
-                            yield content
-                        else:
+                        yield guac.receive()
+                        if pending_read_request.is_set():
                             break
-                    except Exception:
+                    except socket.timeout:
                         break
 
-                    if pending_read_request.is_set():
-                        break
                 # End-of-instruction marker
                 yield "0.;"
 
