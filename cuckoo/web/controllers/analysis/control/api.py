@@ -72,16 +72,6 @@ class ControlApi:
 
         return HttpResponse(status=400)
 
-    @staticmethod
-    def task_status(request, task_id):
-        task = db.view_task(int(task_id))
-        if not task:
-            return HttpResponse(status=404)
-
-        return JsonResponse({
-            "task_status": task.status,
-        })
-
     @api_post
     def store_screenshots(request, task_id, body):
         if not body or not isinstance(body, list):
