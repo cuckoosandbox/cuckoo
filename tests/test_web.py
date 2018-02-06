@@ -299,8 +299,8 @@ class TestWebInterface(object):
         d.return_value = task
         assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
 
-    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
-    def test_rdp_screenshots(self, a, client):
+    @mock.patch("cuckoo.web.controllers.analysis.control.api.ControlApi.get_report")
+    def test_rdp_screenshots(self, c, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
             "reporting": {
@@ -310,9 +310,9 @@ class TestWebInterface(object):
             },
         })
 
-        a._get_report.side_effect = lambda x: {
+        c.side_effect = lambda x: {
             "shots": [],
-        } if x == 1 else None
+        } if x == 1 else {}
 
         Folders.create(cwd("shots", analysis=1))
 

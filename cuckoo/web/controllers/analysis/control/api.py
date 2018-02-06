@@ -14,7 +14,6 @@ from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.misc import cwd
-from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
 from guacamole.client import GuacamoleClient
@@ -73,12 +72,18 @@ class ControlApi:
 
         return HttpResponse(status=400)
 
+    @staticmethod
+    def get_report(task_id):
+        return mdb.db.analysis.find_one({
+            "info.id": int(task_id)
+        })
+
     @api_post
     def store_screenshots(request, task_id, body):
         if not body or not isinstance(body, list):
             return json_error_response("screenshots missing")
 
-        report = AnalysisController._get_report(int(task_id))
+        report = ControlApi.get_report(int(task_id))
 
         if not report:
             return json_error_response("report missing")
