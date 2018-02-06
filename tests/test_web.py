@@ -6,7 +6,9 @@ import django
 import gridfs
 import hashlib
 import io
+import itertools
 import json
+import multiprocessing
 import mock
 import os
 import pymongo
@@ -195,9 +197,14 @@ class TestWebInterface(object):
         key = client.post("/analysis/1/control/tunnel/?connect").content
         assert len(key) == 36
 
-        assert client.get(
+        readreq = client.get(
             "/analysis/1/control/tunnel/?read:%s:0" % key
-        ).status_code == 200
+        )
+        assert readreq.status_code == 200
+
+        # read a few times for coverage of empty reply
+        for chunk in itertools.islice(readreq.streaming_content, 20):
+            assert chunk
 
         assert client.post(
             "/analysis/1/control/tunnel/?write:%s" % key
