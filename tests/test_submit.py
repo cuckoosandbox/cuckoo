@@ -412,6 +412,12 @@ def test_option_translations_from():
         "key": "value",
     }
 
+    assert sm.translate_options_from({}, {
+        "remote-control": True,
+    }) == {
+        "remotecontrol": "yes",
+    }
+
 def test_option_translations_to():
     sm = SubmitManager()
 
@@ -427,4 +433,10 @@ def test_option_translations_to():
         "free": "yes",
     }) == {
         "enable-injection": False,
+    }
+
+    assert sm.translate_options_to({
+        "remotecontrol": "yes",
+    }) == {
+        "remote-control": True,
     }
