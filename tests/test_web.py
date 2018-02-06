@@ -160,6 +160,7 @@ class TestWebInterface(object):
         assert client.get("/analysis/1/control/").status_code == 404
         assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
+    @pytest.mark.skipif("sys.platform != 'linux2'")
     @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
     @mock.patch("cuckoo.core.database.Database.view_task")
     def test_rdp_tunnel(self, d, d1, client):
