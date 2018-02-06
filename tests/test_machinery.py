@@ -611,6 +611,39 @@ class TestVirtualbox(object):
             self.m.dump_memory("label", u"mem\u202eory.dmp")
         task_log_stop(1)
 
+    def test_enable_remotecontrol(self):
+        self.m.enable_remote_control("label")
+        assert self.m.remote_control is True
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "", ""
+            p.return_value.returncode = 0
+            self.m._enable_remote_control("label")
+
+        p.assert_has_calls([
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrde", "on"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrdemulticon", "on"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrdeport", "5000-5050"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "showvminfo", "label", "--machinereadable"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
+
 class TestBrokenMachine(object):
     def setup(self):
         set_cwd(tempfile.mkdtemp())
