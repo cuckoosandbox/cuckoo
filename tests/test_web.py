@@ -163,9 +163,10 @@ class TestWebInterface(object):
         assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
     @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("threading._Event.is_set")
     @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
     @mock.patch("cuckoo.core.database.Database.view_task")
-    def test_rdp_tunnel(self, d, d1, client):
+    def test_rdp_tunnel(self, d, d1, l, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
             "cuckoo": {
@@ -197,14 +198,21 @@ class TestWebInterface(object):
         key = client.post("/analysis/1/control/tunnel/?connect").content
         assert len(key) == 36
 
-        readreq = client.get(
-            "/analysis/1/control/tunnel/?read:%s:0" % key
-        )
+        # read with read lock set for full coverage
+        l.return_value = True
+        readreq = client.get("/analysis/1/control/tunnel/?read:%s:0" % key)
         assert readreq.status_code == 200
+        assert len(readreq.streaming_content.next()) > 0
+        # second read with read lock will be end marker
+        assert readreq.streaming_content.next() == "0.;"
 
+        # read without read lock for normal reading
+        l.return_value = False
+        readreq2 = client.get("/analysis/1/control/tunnel/?read:%s:0" % key)
+        assert readreq2.status_code == 200
         # read a few times for coverage of empty reply
-        for chunk in itertools.islice(readreq.streaming_content, 20):
-            assert chunk
+        for chunk in itertools.islice(readreq2.streaming_content, 15):
+            assert len(chunk) > 0
 
         assert client.post(
             "/analysis/1/control/tunnel/?write:%s" % key
