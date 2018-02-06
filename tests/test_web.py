@@ -19,7 +19,7 @@ import tempfile
 import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError, CuckooCriticalError
-from cuckoo.common.files import temppath, Files
+from cuckoo.common.files import temppath, Files, Folders
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.feedback import CuckooFeedback
@@ -304,25 +304,88 @@ class TestWebInterface(object):
     def test_rdp_screenshots(self, a, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
-            "cuckoo": {},
+            "reporting": {
+                "mongodb": {
+                    "enabled": True,
+                },
+            },
         })
 
-        class report(object):
-            shots = []
-        a.return_value = report
+        a._get_report.side_effect = lambda x: {
+            "shots": [],
+        } if x == 1 else None
 
-        data = [
-            {"id": 0, "data": "data:image/png;base64,iVBORw=="},
-        ]
+        Folders.create(cwd("shots", analysis=1))
 
-        with pytest.raises(IOError):
-            r = client.post(
-                "/analysis/1/control/screenshots/",
+        def do_req(task_id, data):
+            return client.post(
+                "/analysis/%d/control/screenshots/" % int(task_id),
                 json.dumps(data),
                 "application/json",
                 HTTP_X_REQUESTED_WITH="XMLHttpRequest"
             )
-            assert r.status_code == 200
+
+        valid_scr = {"id": 0, "data": "data:image/png;base64,iVBORw=="}
+
+        # valid screenshot
+        r = do_req(1, [valid_scr])
+        assert r.status_code == 200
+
+        # no data
+        r = do_req(1, None)
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "screenshots missing",
+        }
+
+        # invalid task
+        r = do_req(2, [valid_scr])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "report missing",
+        }
+
+        # missing field
+        r = do_req(1, [
+            {"id": 0},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # no comma
+        r = do_req(1, [
+            {"id": 0, "data": "partial"},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # illegal type
+        r = do_req(1, [
+            {"id": 0, "data": "illegal, AAAA"},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # no PNG magic
+        r = do_req(1, [
+            {"id": 0, "data": "data:image/png;base64,Tk9QRQ=="}
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
 
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_summary_office1(self, p, request):
