@@ -956,7 +956,7 @@ class Database(object):
     def set_machine_rcparams(self, label, rcparams):
         """Set remote control connection params for a virtual machine.
         @param label: virtual machine label
-        @param rcparams: tuple containing ("protocol", "ipaddr", port)
+        @param rcparams: dict with keys: protocol, host, port
         """
         session = self.Session()
         try:
