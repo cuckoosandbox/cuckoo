@@ -299,6 +299,23 @@ class TestWebInterface(object):
         d.return_value = task
         assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
 
+    def test_rdp_report(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "mongodb": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        assert client.post(
+            "/analysis/1/control/screenshots/",
+            json.dumps(["list"]),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        ).status_code == 501
+
     @mock.patch("cuckoo.web.controllers.analysis.control.api.ControlApi.get_report")
     def test_rdp_screenshots(self, c, client):
         set_cwd(tempfile.mkdtemp())
