@@ -160,9 +160,9 @@ class TestWebInterface(object):
         assert client.get("/analysis/1/control/").status_code == 404
         assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
-    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.get_remote_control_params")
+    @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
     @mock.patch("cuckoo.core.database.Database.view_task")
-    def test_rdp_tunnel(self, d, m, client):
+    def test_rdp_tunnel(self, d, d1, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
             "cuckoo": {
@@ -180,8 +180,16 @@ class TestWebInterface(object):
             status = "running"
             guest = mock.MagicMock()
 
+        class machine(object):
+            id = 1
+            rcparams = {
+                "protocol": "rdp",
+               "host": "127.0.0.1",
+               "port": "3389",
+            }
+
         d.return_value = task
-        m.return_value = "rdp", "localhost", "3389"
+        d1.return_value = machine
 
         key = client.post("/analysis/1/control/tunnel/?connect").content
         assert len(key) == 36

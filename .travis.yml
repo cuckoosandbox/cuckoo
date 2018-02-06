@@ -17,7 +17,9 @@ before_install:
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
         sudo apt-get update -qq
         sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
-        sudo apt-get install libjpeg-dev swig libpq-dev libmysqlclient-dev rar
+        sudo apt-get install swig libpq-dev libmysqlclient-dev rar
+        sudo apt-get install libcairo2-dev libpng12-dev libossp-uuid-dev
+        sudo apt-get install libfreerdp-dev libjpeg-turbo8-dev
 
         sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"
         sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"
@@ -66,7 +68,15 @@ install:
   - git clone https://github.com/volatilityfoundation/volatility vol-setup
   - cd vol-setup && python setup.py install && cd ..
 
+  # Install guacd.
+  - wget https://www.apache.org/dist/guacamole/0.9.13-incubating/source/guacamole-server-0.9.13-incubating.tar.gz
+  - tar xvf guacamole-server-0.9.13-incubating.tar.gz && cd guacamole-server-0.9.13-incubating
+  - ./configure --with-init-dir=/etc/init.d && make && sudo make install && sudo ldconfig && cd ../
+
 script:
+  # Start guacd.
+  - sudo /etc/init.d/guacd start
+
   # Create the Cuckoo Working Directory.
   - cuckoo -d
 
