@@ -643,6 +643,20 @@ class TestVirtualbox(object):
             mock.call().communicate(),
         ])
 
+    def test_disable_remotecontrol(self):
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "", ""
+            p.return_value.returncode = 0
+            self.m.disable_remote_control("label")
+
+        p.assert_has_calls([
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrde", "off"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
 
 class TestBrokenMachine(object):
     def setup(self):
