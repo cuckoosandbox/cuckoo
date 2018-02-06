@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -26,6 +26,7 @@ def cuckoo_dnsserve(host, port, nxdomain, hardcode):
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udps.bind((host, port))
+    log.info("Listening for DNS queries at %s:%d", host, port)
 
     while True:
         data, addr = udps.recvfrom(1024)
