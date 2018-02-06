@@ -8,7 +8,6 @@ import hashlib
 import io
 import itertools
 import json
-import multiprocessing
 import mock
 import os
 import pymongo
