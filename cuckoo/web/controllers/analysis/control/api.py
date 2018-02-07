@@ -16,7 +16,7 @@ from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.misc import cwd
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
-from guacamole.client import GuacamoleClient
+from guacamole.client import GuacamoleClient, GuacamoleError
 
 mdb = MongoDB()
 mdb.init_once()
@@ -136,21 +136,26 @@ class ControlApi:
         machine = db.view_machine_by_label(task.guest.label)
         rcparams = machine.rcparams
 
+        protocol = rcparams.get("protocol", None)
+        host = rcparams.get("host", None)
+        port = rcparams.get("port", None)
+
         guacd_host = config("cuckoo:remotecontrol:guacd_host")
         guacd_port = config("cuckoo:remotecontrol:guacd_port")
 
-        guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
         try:
+            guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
             guac.handshake(
-                protocol=rcparams["protocol"],
-                hostname=rcparams["host"],
-                port=rcparams["port"],
+                protocol=protocol,
+                hostname=host,
+                port=port,
             )
-        except socket.error:
+        except (socket.error, GuacamoleError) as e:
             log.error(
                 "Failed to connect to guacd on %s:%d"
                 % (guacd_host, guacd_port)
             )
+            log.error(e)
             return HttpResponse(status=500)
 
         cache_key = str(uuid.uuid4())
