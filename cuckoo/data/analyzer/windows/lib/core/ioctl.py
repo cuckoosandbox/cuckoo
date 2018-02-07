@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -65,6 +65,7 @@ class Zer0m0nIoctl(Ioctl):
         "dumpmem",
         "yarald",
         "getpids",
+        "hidepid",
     ]
 
     def invoke(self, action, buf):
@@ -93,5 +94,8 @@ class Zer0m0nIoctl(Ioctl):
     def getpids(self):
         pids = self.invoke("getpids", "pids") or ""
         return struct.unpack("I"*(len(pids)/4), pids)
+
+    def hidepid(self, pid):
+        return self.invoke("hidepid", struct.pack("I", pid))
 
 zer0m0n = Zer0m0nIoctl(driver_name)

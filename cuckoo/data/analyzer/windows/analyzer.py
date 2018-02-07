@@ -640,6 +640,10 @@ class Analyzer(object):
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
 
+        # Hide the Cuckoo Analyzer & Cuckoo Agent.
+        zer0m0n.hidepid(self.pid)
+        zer0m0n.hidepid(self.ppid)
+
         # Initialize zer0m0n with our compiled Yara rules.
         zer0m0n.yarald("bin/rules.yarac")
 

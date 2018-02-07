@@ -262,4 +262,5 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 pidfiles/.gitignore
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/office/.gitignore
 
 # TBD
-2d01f99ec830ae73deeaf9a283badb72448a4991 analyzer/windows/analyzer.py
+938296b4ffd21227b734c0a0f2aa1d42af30b133 analyzer/windows/analyzer.py
+fa870428bb4f9191141f7302790fb9509da8d73b analyzer/windows/lib/core/ioctl.py
