@@ -462,8 +462,9 @@ class AnalysisManager(threading.Thread):
 
         # Check if the current task has remotecontrol
         # enabled before starting the machine.
-        control_enabled = config("cuckoo:remotecontrol:enabled")
-        if "remotecontrol" in self.task.options and control_enabled:
+        control_enabled = config("cuckoo:remotecontrol:enabled") \
+            and "remotecontrol" in self.task.options
+        if control_enabled:
             try:
                 machinery.enable_remote_control(self.machine.label)
             except NotImplementedError:
@@ -494,6 +495,16 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
+            # retrieve the port used for remote control
+            if control_enabled:
+                try:
+                    params = machinery.get_remote_control_params(
+                        self.machine.label
+                    )
+                    self.db.set_machine_rcparams(self.machine.label, params)
+                except NotImplementedError:
+                    raise CuckooMachineError("Remote control is not implemented"
+                                             " for this machine type.")
             # Enable network routing.
             self.route_network()
 

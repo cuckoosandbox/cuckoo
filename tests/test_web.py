@@ -6,6 +6,7 @@ import django
 import gridfs
 import hashlib
 import io
+import itertools
 import json
 import mock
 import os
@@ -17,7 +18,7 @@ import tempfile
 import zipfile
 
 from cuckoo.common.exceptions import CuckooFeedbackError, CuckooCriticalError
-from cuckoo.common.files import temppath, Files
+from cuckoo.common.files import temppath, Files, Folders
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 from cuckoo.core.feedback import CuckooFeedback
@@ -135,7 +136,7 @@ class TestWebInterface(object):
         d.return_value = task
 
         assert client.get("/analysis/1/control/").status_code == 404
-        assert client.get("/analysis/1/control/tunnel/").status_code == 404
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
     @mock.patch("cuckoo.core.database.Database.view_task")
     def test_rdp_player_notrunning_task(self, d, client):
@@ -158,11 +159,131 @@ class TestWebInterface(object):
         d.return_value = task
 
         assert client.get("/analysis/1/control/").status_code == 404
-        assert client.get("/analysis/1/control/tunnel/").status_code == 404
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
-    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.get_remote_control_params")
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("threading._Event.is_set")
+    @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
     @mock.patch("cuckoo.core.database.Database.view_task")
-    def test_rdp_tunnel(self, d, m, client):
+    def test_rdp_tunnel(self, d, d1, l, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        class machine(object):
+            id = 1
+            rcparams = {
+                "protocol": "rdp",
+               "host": "127.0.0.1",
+               "port": "3389",
+            }
+
+        d.return_value = task
+        d1.return_value = machine
+
+        key = client.post("/analysis/1/control/tunnel/?connect").content
+        assert len(key) == 36
+
+        # read with read lock set for full coverage
+        l.return_value = True
+        readreq = client.get("/analysis/1/control/tunnel/?read:%s:0" % key)
+        assert readreq.status_code == 200
+        assert len(readreq.streaming_content.next()) > 0
+        # second read with read lock will be end marker
+        assert readreq.streaming_content.next() == "0.;"
+
+        # read without read lock for normal reading
+        l.return_value = False
+        readreq2 = client.get("/analysis/1/control/tunnel/?read:%s:0" % key)
+        assert readreq2.status_code == 200
+        # read a few times for coverage of empty reply
+        for chunk in itertools.islice(readreq2.streaming_content, 15):
+            assert len(chunk) > 0
+
+        assert client.post(
+            "/analysis/1/control/tunnel/?write:%s" % key
+        ).status_code == 200
+
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_connfail(self, d, d1, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                    "guacd_host": "127.0.0.1",
+                    "guacd_port": 9999,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        class machine(object):
+            id = 1
+            rcparams = {
+                "protocol": "rdp",
+               "host": "127.0.0.1",
+               "port": "3389",
+            }
+
+        d.return_value = task
+        d1.return_value = machine
+
+        r = client.post(
+            "/analysis/1/control/tunnel/?connect"
+        )
+        assert r.status_code == 500
+        assert json.loads(r.content) == {
+            "status": "failed",
+            "message": "connection failed",
+        }
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_control_disabled(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": False,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = mock.MagicMock()
+
+        d.return_value = task
+        assert client.get("/analysis/1/control/tunnel/").status_code == 500
+
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_invalid(self, d, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
             "cuckoo": {
@@ -181,18 +302,111 @@ class TestWebInterface(object):
             guest = mock.MagicMock()
 
         d.return_value = task
-        m.return_value = "rdp", "localhost", "3389"
+        assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
 
-        key = client.post("/analysis/1/control/tunnel/?connect").content
-        assert len(key) == 36
-
-        assert client.get(
-            "/analysis/1/control/tunnel/?read:%s:0" % key
-        ).status_code == 200
+    def test_rdp_report(self, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "mongodb": {
+                    "enabled": True,
+                },
+            },
+        })
 
         assert client.post(
-            "/analysis/1/control/tunnel/?write:%s" % key
-        ).status_code == 200
+            "/analysis/1/control/screenshots/",
+            json.dumps(["list"]),
+            "application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        ).status_code == 501
+
+    @mock.patch("cuckoo.web.controllers.analysis.control.api.ControlApi.get_report")
+    def test_rdp_screenshots(self, c, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "reporting": {
+                "mongodb": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        c.side_effect = lambda x: {
+            "shots": [],
+        } if x == 1 else {}
+
+        Folders.create(cwd("shots", analysis=1))
+
+        def do_req(task_id, data):
+            return client.post(
+                "/analysis/%d/control/screenshots/" % int(task_id),
+                json.dumps(data),
+                "application/json",
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+            )
+
+        valid_scr = {"id": 0, "data": "data:image/png;base64,iVBORw=="}
+
+        # valid screenshot
+        r = do_req(1, [valid_scr])
+        assert r.status_code == 200
+
+        # no data
+        r = do_req(1, None)
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "screenshots missing",
+        }
+
+        # invalid task
+        r = do_req(2, [valid_scr])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "report missing",
+        }
+
+        # missing field
+        r = do_req(1, [
+            {"id": 0},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # no comma
+        r = do_req(1, [
+            {"id": 0, "data": "partial"},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # illegal type
+        r = do_req(1, [
+            {"id": 0, "data": "illegal, AAAA"},
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
+
+        # no PNG magic
+        r = do_req(1, [
+            {"id": 0, "data": "data:image/png;base64,Tk9QRQ=="}
+        ])
+        assert r.status_code == 501
+        assert json.loads(r.content) == {
+            "status": False,
+            "message": "invalid format",
+        }
 
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     def test_summary_office1(self, p, request):
@@ -327,6 +541,7 @@ class TestWebInterface(object):
                 "full-memory-dump": False,
                 "enable-injection": True,
                 "process-memory-dump": True,
+                "remote-control": False,
                 "simulated-human-interaction": True,
             }
         }

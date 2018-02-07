@@ -5,6 +5,7 @@
 
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -400,8 +401,8 @@ class VirtualBox(Machinery):
                           "remote control multicon: %d" % proc.returncode)
                 return False
 
-            port = getattr(self.options, label)["controlport"]
-            self._set_vrde_ports(label, port)
+            ports = getattr(self.options, "virtualbox")["controlports"]
+            self._set_vrde_ports(label, ports)
 
             ports = self.vminfo(label, "vrdeports")
             log.info(
@@ -433,16 +434,20 @@ class VirtualBox(Machinery):
             )
 
     def get_remote_control_params(self, label):
-        # port = self.vminfo(label, "vrdeport")
+        port = int(self.vminfo(label, "vrdeport"))
+        log.info("RDP interface running on port %d" % port)
 
-        try:
-            port = int(config("virtualbox:%s:controlport" % label))
-        except ValueError:
-            port = 3389
-
-        return "rdp", "127.0.0.1", port
+        return {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": port,
+        }
 
     def _set_vrde_ports(self, label, ports):
+        if not re.compile('^[0-9\-]+$').match(ports):
+            log.error("Refusing to set illegal port range for VRDE")
+            return False
+
         proc = self._set_flag(label, "vrdeport", ports)
         if proc.returncode != 0:
             log.error(

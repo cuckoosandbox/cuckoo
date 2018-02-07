@@ -13,11 +13,10 @@ from cuckoo.common.config import config
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.reporting.mongodb import MongoDB
-from cuckoo.machinery.virtualbox import VirtualBox
 from cuckoo.misc import cwd
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
-from guacamole.client import GuacamoleClient
+from guacamole.client import GuacamoleClient, GuacamoleError
 
 mdb = MongoDB()
 mdb.init_once()
@@ -74,13 +73,9 @@ class ControlApi:
         return HttpResponse(status=400)
 
     @staticmethod
-    def task_status(request, task_id):
-        task = db.view_task(int(task_id))
-        if not task:
-            return HttpResponse(status=404)
-
-        return JsonResponse({
-            "task_status": task.status,
+    def get_report(task_id):
+        return mdb.db.analysis.find_one({
+            "info.id": int(task_id)
         })
 
     @api_post
@@ -88,9 +83,7 @@ class ControlApi:
         if not body or not isinstance(body, list):
             return json_error_response("screenshots missing")
 
-        report = mdb.db.analysis.find_one({
-            "info.id": int(task_id),
-        })
+        report = ControlApi.get_report(int(task_id))
 
         if not report:
             return json_error_response("report missing")
@@ -140,22 +133,33 @@ class ControlApi:
 
     @staticmethod
     def _do_connect(task):
-        # TODO: store connection details in the task and grab them from there
-        params = ("rdp", "localhost", 4444)
-        protocol, hostname, port = params
+        machine = db.view_machine_by_label(task.guest.label)
+        rcparams = machine.rcparams
+
+        protocol = rcparams.get("protocol", None)
+        host = rcparams.get("host", None)
+        port = rcparams.get("port", None)
 
         guacd_host = config("cuckoo:remotecontrol:guacd_host")
         guacd_port = config("cuckoo:remotecontrol:guacd_port")
 
-        guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
         try:
-            guac.handshake(protocol=protocol, hostname=hostname, port=port)
-        except socket.error:
+            guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
+            guac.handshake(
+                protocol=protocol,
+                hostname=host,
+                port=port,
+            )
+        except (socket.error, GuacamoleError) as e:
             log.error(
                 "Failed to connect to guacd on %s:%d"
                 % (guacd_host, guacd_port)
             )
-            return HttpResponse(status=500)
+            log.error(e)
+            return JsonResponse({
+                "status": "failed",
+                "message": "connection failed",
+            }, status=500)
 
         cache_key = str(uuid.uuid4())
         with sockets_lock:
@@ -173,21 +177,18 @@ class ControlApi:
         def content():
             with sockets_lock:
                 guac = sockets[cache_key]
+
             with read_lock:
                 pending_read_request.clear()
 
                 while True:
                     try:
-                        content = guac.receive()
-                        if content:
-                            yield content
-                        else:
+                        yield guac.receive()
+                        if pending_read_request.is_set():
                             break
-                    except Exception:
+                    except socket.timeout:
                         break
 
-                    if pending_read_request.is_set():
-                        break
                 # End-of-instruction marker
                 yield "0.;"
 

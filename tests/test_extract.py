@@ -16,7 +16,6 @@ from cuckoo.processing.static import Static
 def test_basics():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
-    init_yara()
     mkdir(cwd(analysis=1))
     init_yara()
 

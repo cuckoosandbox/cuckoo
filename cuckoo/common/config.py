@@ -268,6 +268,7 @@ class Config(object):
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
+                "controlports": String("5000-5050"),
             },
             "*": {
                 "__section__": "cuckoo1",
@@ -281,7 +282,6 @@ class Config(object):
                 "tags": String(),
                 "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
-                "controlport": String("default"),
             },
             "__star__": ("virtualbox", "machines"),
         },
