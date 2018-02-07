@@ -104,6 +104,18 @@ class RDPClient extends Hookable {
 
       this.service.connect();
 
+      this.service.on('ended', () => {
+        if(this.snapshots.total() > 0) {
+          let sd = this.dialog.render('snapshots', {
+            onClose: () => self.dialog.render('completed')
+          });
+        } else {
+          this.dialog.render('completed', {
+            beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
+          });
+        }
+      });
+
       // start polling for status updates to cling onto
       this.service.checkReady(this.id, true).then(isReady => {
         if(isReady === true) {
@@ -122,14 +134,7 @@ class RDPClient extends Hookable {
 
       // error handler for service wrapper
       this.service.on('error', () => {
-
-        this.service.checkReady(this.id, false).then(isReady => {
-          console.log(`ready in error handler: ${isReady}`);
-          if(isReady !== true) {
-            this.errorDialog.render();
-          }
-        });
-
+        this.errorDialog.render();
       });
 
     }, 1500);
