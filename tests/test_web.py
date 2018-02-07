@@ -251,9 +251,14 @@ class TestWebInterface(object):
         d.return_value = task
         d1.return_value = machine
 
-        assert client.post(
+        r = client.post(
             "/analysis/1/control/tunnel/?connect"
-        ).status_code == 500
+        )
+        assert r.status_code == 500
+        assert json.loads(r.content) == {
+            "status": "failed",
+            "message": "connection failed",
+        }
 
     @mock.patch("cuckoo.core.database.Database.view_task")
     def test_rdp_tunnel_control_disabled(self, d, client):
