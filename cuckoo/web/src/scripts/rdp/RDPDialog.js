@@ -1,9 +1,9 @@
 import Hookable from './Hookable';
 
-function parseFragment(fragment) {
+function parseFragment(fragment, parsejQuery = true) {
   if(!fragment.length) return false;
-  let result = $.parseHTML(fragment.html());
-  return $(result);
+  let result = fragment.html();
+  return parsejQuery ? $(result) : result;
 }
 
 function resolveModel(model, thisArg = false) {
@@ -30,6 +30,7 @@ class RDPRender {
   }
   render() {
     if(!this.template) return;
+    console.log(this.template);
     this.client.$.find('.rdp-app__viewport').html(this.template);
     this.active = true;
   }
@@ -100,6 +101,7 @@ export default class RDPDialog {
     }
 
     let dialog = this.dialogs[d];
+
     if(dialog) {
       let ctx = parseFragment(dialog.template);
       if(this.beforeRender) this.beforeRender();

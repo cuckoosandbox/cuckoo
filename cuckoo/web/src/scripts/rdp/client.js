@@ -98,38 +98,41 @@ class RDPClient extends Hookable {
       this.toolbar.buttons.snapshot.update(true);
     });
 
-    // error handler for service wrapper
-    this.service.on('error', () => {
+    // initialize service wrapper, wrapped in a timeout to give the UI
+    // a little time to configure itself.
+    setTimeout(() => {
 
-      // still need to do something proper here.
+      this.service.connect();
 
-      // this.service.checkReady(this.id, false).then(isReady => {
-      //   console.log(`ready in error handler: ${isReady}`);
-      //   if(isReady !== true) {
-      //     this.errorDialog.render();
-      //   }
-      // });
-
-    });
-
-    // initialize service wrapper
-    this.service.connect();
-
-    // start polling for status updates to cling onto
-    this.service.checkReady(this.id, true).then(isReady => {
-      if(isReady === true) {
-        // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
-        if(this.snapshots.total() > 0) {
-          let sd = this.dialog.render('snapshots', {
-            onClose: () => self.dialog.render('completed')
-          });
-        } else {
-          this.dialog.render('completed', {
-            beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
-          });
+      // start polling for status updates to cling onto
+      this.service.checkReady(this.id, true).then(isReady => {
+        if(isReady === true) {
+          // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+          if(this.snapshots.total() > 0) {
+            let sd = this.dialog.render('snapshots', {
+              onClose: () => self.dialog.render('completed')
+            });
+          } else {
+            this.dialog.render('completed', {
+              beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
+            });
+          }
         }
-      }
-    }).catch(e => console.log(e));
+      }).catch(e => console.log(e));
+
+      // error handler for service wrapper
+      this.service.on('error', () => {
+
+        this.service.checkReady(this.id, false).then(isReady => {
+          console.log(`ready in error handler: ${isReady}`);
+          if(isReady !== true) {
+            this.errorDialog.render();
+          }
+        });
+
+      });
+
+    }, 1500);
 
     this.commonBindings();
 

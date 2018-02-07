@@ -51,3 +51,51 @@
     <button value="report" type="submit">Show report</button>
   </form>
 </template>
+
+<!-- error template -->
+<template id="rdp-error">
+
+  <div class="rdp__error">
+    <section>
+      <figure class="combined-icon">
+        <i class="fa fa-desktop"></i>
+        <i class="fa fa-frown-o"></i>
+      </figure>
+      <p>An error occured.</p>
+      <div class="rdp__error--resolutions">
+        <p>These may resolve any problems:</p>
+        <ol>
+          <li>Hit reboot and try again</li>
+          <li>Verify RDP settings in rdp.conf</li>
+          <li>Verify virtual machine</li>
+        </ol>
+        <div class="rdp__error--buttons">
+          <a href="#">Send feedback</a>
+          <a href="#">Documentation</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</template>
+
+<!-- connecting template -->
+<template id="rdp-connecting">
+
+  <div class="rdp__connecting">
+    <section>
+      <figure class="combined-icon">
+        <img src="{% static "graphic/guacamole.png" %}" class="guac-icon" />
+        <i class="fa fa-desktop"></i>
+      </figure>
+      <p>Connecting to virtual machine
+        <span class="animated-ellipse">
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </span>
+      </p>
+    </section>
+  </div>
+
+</template>
