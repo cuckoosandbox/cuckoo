@@ -9,7 +9,6 @@ from django.conf.urls import include, url
 
 import dashboard.views
 import analysis.views
-import rdp.views
 import web.errors
 
 urlpatterns = [
@@ -25,7 +24,6 @@ urlpatterns = [
     url(r"^pcap/", include("controllers.pcap.urls")),
     url(r"^machines/", include("controllers.pcap.urls")),
     url(r"^cuckoo/", include("controllers.cuckoo.urls")),
-    url(r"^rdp/", rdp.views.rdp)
 ]
 
 handler404 = web.errors.handler404
