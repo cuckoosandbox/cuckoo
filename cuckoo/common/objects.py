@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -222,13 +222,13 @@ class File(object):
         """Get MIME file type.
         @return: file type.
         """
-        return magic.from_file(self.file_path)
+        return magic.from_file(os.path.realpath(self.file_path))
 
     def get_content_type(self):
         """Get MIME content file type (example: image/jpeg).
         @return: file content type.
         """
-        return magic.from_file(self.file_path, mime=True)
+        return magic.from_file(os.path.realpath(self.file_path), mime=True)
 
     def get_exported_functions(self):
         """Get the exported function names of this PE file."""

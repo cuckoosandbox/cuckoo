@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -101,6 +101,13 @@ class TestMagic(object):
         assert File(__file__).get_content_type() in (
             "text/x-python", "text/plain",
         )
+
+    @pytest.mark.skipif("sys.platform != 'linux2'")
+    def test_symlink_magic(self):
+        filepath = tempfile.mktemp()
+        os.symlink(__file__, filepath)
+        assert File(filepath).get_type().startswith("Python script")
+        assert File(filepath).get_content_type() == "text/x-python"
 
 def test_regex():
     r = re.findall(URL_REGEX, "foo http://google.com/search bar")
