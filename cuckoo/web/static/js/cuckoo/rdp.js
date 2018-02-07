@@ -358,9 +358,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function parseFragment(fragment) {
+  var parsejQuery = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
   if (!fragment.length) return false;
-  var result = $.parseHTML(fragment.html());
-  return $(result);
+  var result = fragment.html();
+  return parsejQuery ? $(result) : result;
 }
 
 function resolveModel(model) {
@@ -395,6 +397,7 @@ var RDPRender = function () {
     key: 'render',
     value: function render() {
       if (!this.template) return;
+      console.log(this.template);
       this.client.$.find('.rdp-app__viewport').html(this.template);
       this.active = true;
     }
@@ -477,6 +480,7 @@ var RDPDialog = function () {
       }
 
       var dialog = this.dialogs[d];
+
       if (dialog) {
         var ctx = parseFragment(dialog.template);
         if (this.beforeRender) this.beforeRender();
@@ -1261,44 +1265,45 @@ var RDPClient = function (_Hookable) {
       _this.toolbar.buttons.snapshot.update(true);
     });
 
-    // error handler for service wrapper
-    _this.service.on('error', function () {
+    // initialize service wrapper, wrapped in a timeout to give the UI
+    // a little time to configure itself.
+    setTimeout(function () {
 
-      // still need to do something proper here.
+      _this.service.connect();
 
-      // this.service.checkReady(this.id, false).then(isReady => {
-      //   console.log(`ready in error handler: ${isReady}`);
-      //   if(isReady !== true) {
-      //     this.errorDialog.render();
-      //   }
-      // });
-
-    });
-
-    // initialize service wrapper
-    _this.service.connect();
-
-    // start polling for status updates to cling onto
-    _this.service.checkReady(_this.id, true).then(function (isReady) {
-      if (isReady === true) {
-        // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
-        if (_this.snapshots.total() > 0) {
-          var sd = _this.dialog.render('snapshots', {
-            onClose: function onClose() {
-              return self.dialog.render('completed');
-            }
-          });
-        } else {
-          _this.dialog.render('completed', {
-            beforeRender: function beforeRender() {
-              return self.errorDialog ? self.errorDialog.destroy() : function () {};
-            }
-          });
+      // start polling for status updates to cling onto
+      _this.service.checkReady(_this.id, true).then(function (isReady) {
+        if (isReady === true) {
+          // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
+          if (_this.snapshots.total() > 0) {
+            var sd = _this.dialog.render('snapshots', {
+              onClose: function onClose() {
+                return self.dialog.render('completed');
+              }
+            });
+          } else {
+            _this.dialog.render('completed', {
+              beforeRender: function beforeRender() {
+                return self.errorDialog ? self.errorDialog.destroy() : function () {};
+              }
+            });
+          }
         }
-      }
-    }).catch(function (e) {
-      return console.log(e);
-    });
+      }).catch(function (e) {
+        return console.log(e);
+      });
+
+      // error handler for service wrapper
+      _this.service.on('error', function () {
+
+        _this.service.checkReady(_this.id, false).then(function (isReady) {
+          console.log('ready in error handler: ' + isReady);
+          if (isReady !== true) {
+            _this.errorDialog.render();
+          }
+        });
+      });
+    }, 1500);
 
     _this.commonBindings();
 

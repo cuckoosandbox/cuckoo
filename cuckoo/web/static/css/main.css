@@ -11554,6 +11554,8 @@ body.night .app-message {
   display: flex;
   width: 100%;
   height: 100%;
+  top: auto;
+  margin-top: auto;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
@@ -11691,7 +11693,7 @@ body.night .app-message {
 }
 
 .rdp__error.rdp__connecting, .rdp__connecting.rdp__connecting {
-  background-color: #1F1F1F;
+  background-color: #030e10;
 }
 
 .rdp__error.rdp__connecting .combined-icon, .rdp__connecting.rdp__connecting .combined-icon {
@@ -11867,7 +11869,7 @@ body.night .app-message {
   z-index: 5 !important;
 }
 
-#guacamole-display > div {
+#guacamole-display > div:not([class^='rdp__']) {
   margin: 0px auto;
   top: 50%;
   margin-top: -384px;

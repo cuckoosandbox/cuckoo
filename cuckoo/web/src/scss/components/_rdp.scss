@@ -555,6 +555,8 @@ $RDP_APP_CREDIT_BGC: #383838;
     display: flex;
     width: 100%;
     height: 100%;
+    top: auto;
+    margin-top: auto;
     align-items: center;
     justify-content: center;
     margin: 0px auto;
@@ -681,7 +683,7 @@ $RDP_APP_CREDIT_BGC: #383838;
 
     // specific styles for rdp-connecting
     &.rdp__connecting {
-      background-color: #1F1F1F;
+      background-color: #030e10;
 
       .combined-icon {
 
@@ -850,7 +852,7 @@ $RDP_APP_CREDIT_BGC: #383838;
 
   & > div > div { z-index: 5 !important; }
 
-  & > div {
+  & > div:not([class^='rdp__']) {
     margin: 0px auto;
     top: 50%;
     margin-top: -384px;
