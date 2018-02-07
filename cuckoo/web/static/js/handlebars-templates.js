@@ -494,7 +494,7 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
 
   return "					<a href=\"/analysis/"
     + this.escapeExpression(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
-    + "/control/\" target=\"_blank\" class=\"button\"><i class=\"fa fa-eye\"></i> REMOTE CONTROL</a>\n";
+    + "/control/\" class=\"button\"><i class=\"fa fa-eye\"></i> REMOTE CONTROL</a>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 

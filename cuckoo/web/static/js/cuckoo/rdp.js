@@ -30,7 +30,8 @@ var GuacamoleWrapper = function (_Hookable) {
 
     _this.hooks = {
       connect: [],
-      error: []
+      error: [],
+      end: []
 
       // detect Guacamole
     };if (!window.Guacamole) {
@@ -62,13 +63,28 @@ var GuacamoleWrapper = function (_Hookable) {
       var _this2 = this;
 
       // create the client
-      var guac = this.client = new Guacamole.Client(new Guacamole.HTTPTunnel("tunnel/"));
+      var tunnel = new Guacamole.HTTPTunnel("tunnel/");
+      var guac = this.client = new Guacamole.Client(tunnel);;
 
       // create the display
       this.display.html(guac.getDisplay().getElement());
 
-      guac.onerror = function (error) {
-        _this2.dispatchHook('error', error);
+      tunnel.onerror = guac.onerror = function (error) {
+        // skipping over error codes, for instance: the ending session is
+        // also thrown as an error, so taking advantage of the status code to
+        // delegate the correct
+        switch (error.code) {
+          case 523:
+            break;
+          default:
+            _this2.dispatchHook('error', error);
+        }
+      };
+
+      tunnel.onstatechange = function (state) {
+        if (state == 2) {
+          _this2.dispatchHook('ended');
+        }
       };
 
       guac.connect();
@@ -1264,6 +1280,22 @@ var RDPClient = function (_Hookable) {
 
       _this.service.connect();
 
+      _this.service.on('ended', function () {
+        if (_this.snapshots.total() > 0) {
+          var sd = _this.dialog.render('snapshots', {
+            onClose: function onClose() {
+              return self.dialog.render('completed');
+            }
+          });
+        } else {
+          _this.dialog.render('completed', {
+            beforeRender: function beforeRender() {
+              return self.errorDialog ? self.errorDialog.destroy() : function () {};
+            }
+          });
+        }
+      });
+
       // start polling for status updates to cling onto
       _this.service.checkReady(_this.id, true).then(function (isReady) {
         if (isReady === true) {
@@ -1288,13 +1320,7 @@ var RDPClient = function (_Hookable) {
 
       // error handler for service wrapper
       _this.service.on('error', function () {
-
-        _this.service.checkReady(_this.id, false).then(function (isReady) {
-          console.log('ready in error handler: ' + isReady);
-          if (isReady !== true) {
-            _this.errorDialog.render();
-          }
-        });
+        _this.errorDialog.render();
       });
     }, 1500);
 

@@ -8,7 +8,8 @@ class GuacamoleWrapper extends Hookable {
     // api hooks
     this.hooks = {
       connect: [],
-      error: []
+      error: [],
+      end: []
     }
 
     // detect Guacamole
@@ -33,15 +34,29 @@ class GuacamoleWrapper extends Hookable {
   connect() {
 
     // create the client
-    let guac = this.client = new Guacamole.Client(
-      new Guacamole.HTTPTunnel("tunnel/")
-    );
+    let tunnel = new Guacamole.HTTPTunnel("tunnel/");
+    let guac = this.client = new Guacamole.Client(tunnel);;
 
     // create the display
     this.display.html(guac.getDisplay().getElement());
 
+    tunnel.onerror =
     guac.onerror = (error) => {
-      this.dispatchHook('error', error);
+      // skipping over error codes, for instance: the ending session is
+      // also thrown as an error, so taking advantage of the status code to
+      // delegate the correct
+      switch(error.code) {
+        case 523:
+        break;
+        default:
+          this.dispatchHook('error', error);
+      }
+    }
+
+    tunnel.onstatechange = (state) => {
+      if(state == 2) {
+        this.dispatchHook('ended');
+      }
     }
 
     guac.connect();
@@ -83,7 +98,7 @@ class GuacamoleWrapper extends Hookable {
     if(enable) {
       this._keyboard = new Guacamole.Keyboard(document);
       this._keyboard.onkeydown = (keysym) => {
-        if(this.parent.toolbar.buttons.control.toggled) { 
+        if(this.parent.toolbar.buttons.control.toggled) {
           this.client.sendKeyEvent(1, keysym);
         }
       }
