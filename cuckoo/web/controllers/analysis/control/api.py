@@ -156,7 +156,10 @@ class ControlApi:
                 % (guacd_host, guacd_port)
             )
             log.error(e)
-            return HttpResponse(status=500)
+            return JsonResponse({
+                "status": "failed",
+                "message": "connection failed",
+            }, status=500)
 
         cache_key = str(uuid.uuid4())
         with sockets_lock:
