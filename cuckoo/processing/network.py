@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -27,7 +27,7 @@ from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.whitelist import is_whitelisted_domain
-from cuckoo.misc import cwd
+from cuckoo.misc import mkdir
 
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
@@ -759,8 +759,7 @@ class Pcap2(object):
             "smtp_ex": []
         }
 
-        if not os.path.exists(self.network_path):
-            os.mkdir(self.network_path)
+        mkdir(self.network_path)
 
         r = httpreplay.reader.PcapReader(open(self.pcap_path, "rb"))
         r.tcp = httpreplay.smegma.TCPPacketStreamer(r, self.handlers)
