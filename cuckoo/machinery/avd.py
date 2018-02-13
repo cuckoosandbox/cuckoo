@@ -1,19 +1,17 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
 import os
+import shlex
+import shutil
 import subprocess
 import time
-import shutil
-import shlex
 
 from cuckoo.common.abstracts import Machinery
 from cuckoo.common.exceptions import CuckooCriticalError
-from cuckoo.core.resultserver import ResultServer
 
 log = logging.getLogger(__name__)
 
@@ -325,14 +323,6 @@ class Avd(Machinery):
         cmd = [self.options.avd.adb_path, "start-server"]
         OSCommand.executeCommand(cmd)
         log.debug("ADB server has been restarted.")
-
-    def get_task_id(self, label):
-        analysistasks = ResultServer().analysistasks
-        for task_ip in analysistasks:
-            if analysistasks[task_ip][1].label is label:
-                return analysistasks[task_ip][0].id
-
-        return None
 
 class OSCommand(object):
     """Tool class that provides common methods to execute commands on the OS."""
