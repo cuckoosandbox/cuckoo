@@ -18,3 +18,4 @@ Guests. For Linux Guests, please read :doc:`linux`.
     agent
     saving
     cloning
+    linux
