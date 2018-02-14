@@ -16321,6 +16321,11 @@ body.night .app-message
     background-color: #52e875;
 }
 
+.rdp-title .rdp-status.done
+{
+    background-color: #d7586f;
+}
+
 .rdp-snapshots
 {
     display: -ms-flexbox;

@@ -381,6 +381,10 @@ $RDP_APP_CREDIT_BGC: #383838;
       margin-right: 10px;
       background-color: #52E875;
       border-radius: 10px;
+
+      &.done {
+        background-color: #D7586F;
+      }
     }
   }
 

@@ -105,19 +105,22 @@ class RDPClient extends Hookable {
       this.service.connect();
 
       this.service.on('ended', () => {
-        if(this.snapshots.total() > 0) {
-          let sd = this.dialog.render('snapshots', {
-            onClose: () => self.dialog.render('completed')
-          });
-        } else {
-          this.dialog.render('completed', {
-            beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
-          });
-        }
+        this.toolbar.disable();
+        el.find('.rdp-status').addClass('done');
+        // if(this.snapshots.total() > 0) {
+        //   let sd = this.dialog.render('snapshots', {
+        //     onClose: () => self.dialog.render('completed')
+        //   });
+        // } else {
+        //   this.dialog.render('completed', {
+        //     beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
+        //   });
+        // }
       });
 
       // start polling for status updates to cling onto
-      this.service.checkReady(this.id, true).then(isReady => {
+      this.service.checkReady(this.id, true, 'reported').then((isReady, task) => {
+
         if(isReady === true) {
           // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
           if(this.snapshots.total() > 0) {

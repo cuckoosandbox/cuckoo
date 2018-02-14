@@ -126,9 +126,27 @@ class GuacamoleWrapper extends Hookable {
 
   /*
     GuacamoleWrapper.checkReady
+
     - polls to /info api call for checking if the task did finish
+    - example:
+
+      // poll
+      client.checkReady(1, true, 'completed').then(ready => {
+        if(ready) {
+          console.log('vm is ready');
+        } else {
+          console.log('vm is not ready');
+        }
+      });
+
+    - ID                = Number
+    - poll              = true|false
+    - pollUntillStatus  = "completed|reported"
+
+    - returns: [ready{Bool},]
+
    */
-  checkReady(id, poll = false) {
+  checkReady(id, poll = false, pollUntillStatus = 'completed') {
 
     let iv = null;
 
@@ -148,10 +166,11 @@ class GuacamoleWrapper extends Hookable {
           success: (response, xhr) => {
             if(response.status === true) {
               let t = response.data[id];
-              if(t.status !== 'running') {
-                resolve(true);
+              // wait untill the file is reported
+              if(t.status === pollUntillStatus) {
+                resolve(true, t);
               } else {
-                resolve(false);
+                resolve(false, t);
               }
             } else {
               throw "ajax error";

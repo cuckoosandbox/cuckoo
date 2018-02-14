@@ -168,13 +168,27 @@ var GuacamoleWrapper = function (_Hookable) {
 
     /*
       GuacamoleWrapper.checkReady
-      - polls to /info api call for checking if the task did finish
-     */
+       - polls to /info api call for checking if the task did finish
+      - example:
+         // poll
+        client.checkReady(1, true, 'completed').then(ready => {
+          if(ready) {
+            console.log('vm is ready');
+          } else {
+            console.log('vm is not ready');
+          }
+        });
+       - ID                = Number
+      - poll              = true|false
+      - pollUntillStatus  = "completed|reported"
+       - returns: [ready{Bool},]
+      */
 
   }, {
     key: 'checkReady',
     value: function checkReady(id) {
       var poll = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var pollUntillStatus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'completed';
 
 
       var iv = null;
@@ -196,10 +210,11 @@ var GuacamoleWrapper = function (_Hookable) {
               success: function success(response, xhr) {
                 if (response.status === true) {
                   var t = response.data[id];
-                  if (t.status !== 'running') {
-                    resolve(true);
+                  // wait untill the file is reported
+                  if (t.status === pollUntillStatus) {
+                    resolve(true, t);
                   } else {
-                    resolve(false);
+                    resolve(false, t);
                   }
                 } else {
                   throw "ajax error";
@@ -410,7 +425,6 @@ var RDPRender = function () {
     key: 'render',
     value: function render() {
       if (!this.template) return;
-      console.log(this.template);
       this.client.$.find('.rdp-app__viewport').html(this.template);
       this.active = true;
     }
@@ -1281,23 +1295,22 @@ var RDPClient = function (_Hookable) {
       _this.service.connect();
 
       _this.service.on('ended', function () {
-        if (_this.snapshots.total() > 0) {
-          var sd = _this.dialog.render('snapshots', {
-            onClose: function onClose() {
-              return self.dialog.render('completed');
-            }
-          });
-        } else {
-          _this.dialog.render('completed', {
-            beforeRender: function beforeRender() {
-              return self.errorDialog ? self.errorDialog.destroy() : function () {};
-            }
-          });
-        }
+        _this.toolbar.disable();
+        el.find('.rdp-status').addClass('done');
+        // if(this.snapshots.total() > 0) {
+        //   let sd = this.dialog.render('snapshots', {
+        //     onClose: () => self.dialog.render('completed')
+        //   });
+        // } else {
+        //   this.dialog.render('completed', {
+        //     beforeRender: () => self.errorDialog ? self.errorDialog.destroy() : function(){}
+        //   });
+        // }
       });
 
       // start polling for status updates to cling onto
-      _this.service.checkReady(_this.id, true).then(function (isReady) {
+      _this.service.checkReady(_this.id, true, 'reported').then(function (isReady, task) {
+
         if (isReady === true) {
           // IF SNAPSHOTS, SHOW SNAPSHOT DIALOG, THOUGH
           if (_this.snapshots.total() > 0) {
