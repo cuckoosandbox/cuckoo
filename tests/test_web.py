@@ -161,6 +161,30 @@ class TestWebInterface(object):
         assert client.get("/analysis/1/control/").status_code == 404
         assert client.get("/analysis/1/control/tunnel/").status_code == 500
 
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_player_reported_task(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "reported"
+
+        d.return_value = task
+
+        r = client.get("/analysis/1/control/")
+        assert r.status_code == 302
+        assert r.url == "http://testserver/analysis/1/summary"
+
     @pytest.mark.skipif("sys.platform != 'linux2'")
     @mock.patch("threading._Event.is_set")
     @mock.patch("cuckoo.core.database.Database.view_machine_by_label")
