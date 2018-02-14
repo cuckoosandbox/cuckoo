@@ -1,5 +1,5 @@
 Thanks for contributing! But first: did you read our community guidelines?
-http://docs.cuckoosandbox.org/en/latest/introduction/community
+https://cuckoo.sh/docs/introduction/community.html
 
 ##### What I have added/changed is:
 
