@@ -5,7 +5,7 @@
 from cuckoo.common.config import config
 from cuckoo.core.database import Database
 from cuckoo.web.utils import view_error, render_template
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 
 db = Database()
 
@@ -23,7 +23,10 @@ class AnalysisControlRoutes:
         if task.options.get("remotecontrol") != "yes":
             raise Http404("remote control was not enabled for this task")
 
-        if task.status != "running":
+        if task.status == "reported":
+            return HttpResponseRedirect("/analysis/%d/summary" % int(task_id))
+
+        if task.status not in ("running", "completed"):
             raise Http404("task is not running")
 
         data = {
