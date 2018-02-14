@@ -66,7 +66,7 @@ this file defines their options.
 
 Following is the default ``$CWD/conf/auxiliary.conf`` file.
 
-.. literalinclude:: ../../../../cuckoo/data/conf/auxiliary.conf
+.. literalinclude:: ../../_files/conf/auxiliary.conf
     :language: ini
 
 .. _machinery_conf:
@@ -88,7 +88,7 @@ assume you're going to use VirtualBox.
 
 Following is the default ``$CWD/conf/virtualbox.conf`` file.
 
-.. literalinclude:: ../../../../cuckoo/data/conf/virtualbox.conf
+.. literalinclude:: ../../_files/conf/virtualbox.conf
     :language: ini
 
 The configuration for the other machinery modules look mostly the same with
@@ -99,7 +99,7 @@ The comments for the options are self-explanatory.
 
 Following is the default ``$CWD/conf/kvm.conf`` file.
 
-.. literalinclude:: ../../../../cuckoo/data/conf/kvm.conf
+.. literalinclude:: ../../_files/conf/kvm.conf
     :language: ini
 
 .. _memory_conf:
@@ -166,7 +166,7 @@ how to digest the raw data collected during the analysis.
 You will find a section for each processing module in
 ``$CWD/conf/processing.conf``.
 
-.. literalinclude:: ../../../../cuckoo/data/conf/processing.conf
+.. literalinclude:: ../../_files/conf/processing.conf
     :language: ini
 
 You might want to configure the `VirusTotal`_ key if you have an account of
@@ -184,7 +184,7 @@ generation.
 
 It contains the following sections.
 
-.. literalinclude:: ../../../../cuckoo/data/conf/reporting.conf
+.. literalinclude:: ../../_files/conf/reporting.conf
     :language: ini
 
 By setting those option to ``on`` or ``off`` you enable or disable the
