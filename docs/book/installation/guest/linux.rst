@@ -1,5 +1,5 @@
 ==========================
-Installing the Linux guest
+Installing the Linux host
 ==========================
 
 Install dependencies on host::
@@ -27,6 +27,9 @@ have ``tap`` prefix::
     $ sudo ip link set dev tap_debian_x64 up
     $ sudo ip link set dev br0 up
 
+The following instructions are only for x32/x64/arm ubuntu 17.04 linux guests
+=========================================================================
+
 ** Note if you run cuckoo with with no cuckoo user, replace cuckoo after -u to
 your user **
 
@@ -35,24 +38,22 @@ Add agent to autorun, the easier way is to add it to crontab::
     $ sudo crontab -e
     @reboot python path_to_agent.py
 
-The following instructions are only for x32/x64 ubuntu 17.04 linux guests
-=========================================================================
 
 Install dependencies inside of the virtual machine::
 
-    $ sudo apt-get install systemtap gcc linux-headers-$(uname -r)
+    $ sudo apt-get install systemtap gcc linux-headers-$(uname -r) patch
 
 Install kernel debugging symbols::
 
     $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
 
-    $ codename=$(lsb_release -c | awk  '{print $2}')
+    $ codename=$(lsb_release -c -s)
     $ sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
       deb http://ddebs.ubuntu.com/ ${codename}          main restricted universe multiverse
       #deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
       deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
       deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
-      EOF
+    EOF
 
     $ sudo apt-get update
     $ sudo apt-get install linux-image-$(uname -r)-dbgsym
@@ -88,3 +89,12 @@ The ``stap_.ko`` file should be placed in /root/.cuckoo::
 Disable firewall inside of the vm, if exists::
 
     $ sudo ufw disable
+    
+Disable NTP inside of the vm:
+    
+    $ sudo timedatectl set-ntp off
+
+Optional - preinstalled remove software and configurations::
+    
+    $ sudo apt-get purge update-notifier update-manager update-manager-core ubuntu-release-upgrader-core  whoopsie  ntpdate cups-daemon avahi-autoipd avahi-daemon avahi-utils account-plugin-salut libnss-mdns telepathy-salut
+    
