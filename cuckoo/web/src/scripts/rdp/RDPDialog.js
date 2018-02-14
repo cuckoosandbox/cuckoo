@@ -30,7 +30,6 @@ class RDPRender {
   }
   render() {
     if(!this.template) return;
-    console.log(this.template);
     this.client.$.find('.rdp-app__viewport').html(this.template);
     this.active = true;
   }
