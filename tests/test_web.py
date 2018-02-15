@@ -268,8 +268,8 @@ class TestWebInterface(object):
             id = 1
             rcparams = {
                 "protocol": "rdp",
-               "host": "127.0.0.1",
-               "port": "3389",
+                "host": "127.0.0.1",
+                "port": "3389",
             }
 
         d.return_value = task
