@@ -37,10 +37,11 @@ def defaults():
             "vpns": vpns,
         },
         "options": {
+            "enable-injection": True,
             "enforce-timeout": False,
             "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
-            "enable-injection": True,
             "process-memory-dump": True,
+            "remote-control": False,
             "simulated-human-interaction": True,
         },
     }

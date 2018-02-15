@@ -460,6 +460,17 @@ class AnalysisManager(threading.Thread):
         # Generate the analysis configuration file.
         options = self.build_options()
 
+        # Check if the current task has remotecontrol
+        # enabled before starting the machine.
+        control_enabled = config("cuckoo:remotecontrol:enabled") \
+            and "remotecontrol" in self.task.options
+        if control_enabled:
+            try:
+                machinery.enable_remote_control(self.machine.label)
+            except NotImplementedError:
+                raise CuckooMachineError("Remote control is not implemented "
+                                         "for this machine type.")
+
         try:
             unlocked = False
             self.interface = None
@@ -484,6 +495,16 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
+            # retrieve the port used for remote control
+            if control_enabled:
+                try:
+                    params = machinery.get_remote_control_params(
+                        self.machine.label
+                    )
+                    self.db.set_machine_rcparams(self.machine.label, params)
+                except NotImplementedError:
+                    raise CuckooMachineError("Remote control is not implemented"
+                                             " for this machine type.")
             # Enable network routing.
             self.route_network()
 
@@ -608,6 +629,17 @@ class AnalysisManager(threading.Thread):
                 action="vm.stop", status="success",
                 vmname=self.machine.name
             )
+
+            # Disable remote control after stopping the machine
+            # if it was enabled for the task.
+            control_enabled = config("cuckoo:remotecontrol:enabled")
+            if "remotecontrol" in self.task.options and control_enabled:
+                try:
+                    machinery.disable_remote_control(self.machine.label)
+                except NotImplementedError:
+                    raise CuckooMachineError("Remote control is not "
+                                             "implemented for this machine "
+                                             "type.")
 
             # Mark the machine in the database as stopped. Unless this machine
             # has been marked as dead, we just keep it as "started" in the

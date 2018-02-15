@@ -202,6 +202,84 @@ class CuckooWeb {
 
     }
 
+    /*
+      Below are a bunch of polyfilled helpers for the JS Fullscreen API. since
+      each are quite browser-specific
+     */
+
+    // able to use fullscreen (does the user allow it in the browser config)
+    static enabledFullscreen() {
+      if(document.fullscreenEnabled) {
+        return document.fullscreenEnabled;
+      } else if(document.webkitFullscreenEnabled) {
+        return document.webkitFullscreenEnabled;
+      } else if (document.mozFullscreenEnabled) {
+        return document.mozFullscreenEnabled;
+      } else {
+        // ...
+        return false;
+      }
+    }
+
+    static isFullscreen() {
+      if(document.fullscreen) {
+        return document.fullscreen;
+      } else if(document.webkitIsFullScreen) {
+        return document.webkitIsFullScreen;
+      } else if(document.mozIsFullScreen) {
+        return document.mozIsFullScreen;
+      } else if(document.msIsFullScreen) {
+        return document.msIsFullScreen;
+      } else {
+        // ...
+        return false;
+      }
+    }
+
+    static exitFullscreen() {
+      if(document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if(document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if(document.mozExitFullscreen) {
+        document.mozExitFullscreen();
+      } else if(document.msExitFullscreen) {
+        document.msExitFullscreen();
+      } else {
+        // the message has already been given in the request handler
+        return false;
+      }
+    }
+
+    // shortcuts requestFullscreen as cross-browser as possible
+    static requestFullscreen(element) {
+      if(CuckooWeb.enabledFullscreen()) {
+        if(element.requestFullscreen) {
+          element.requestFullscreen();
+        } else if(element.webkitRequestFullscreen) {
+          element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullscreen) {
+          element.mozRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+          element.msRequestFullscreen();
+        } else {
+          console.log('Oh noes! you cannot go in fullscreen due to your browser.');
+          return false;
+        }
+      } else {
+        console.log('You did not enable fullscreen in your browser config. you cannot use this feature.');
+        return false;
+      }
+    }
+
+    // shortcuts fullscreen event handling
+    static onFullscreenChange(handler = function(){}) {
+      document.addEventListener('webkitfullscreenchange', handler, false);
+      document.addEventListener('fullscreenchange', handler, false);
+      document.addEventListener('mozfullscreenchange', handler, false)
+      document.addEventListener('msfullscreenchange', handler, false);
+    }
+
 }
 
 /*

@@ -88,6 +88,9 @@ class SubmissionTaskTable {
 			item.date_added = moment(item.added_on).format('DD/MM/YYYY');
 			item.time_added = moment(item.added_on).format('HH:mm');
 			item.is_ready   = (item.status == 'reported');
+			item.is_running = (item.status == 'running');
+			item.remote_control = item.options.hasOwnProperty('remotecontrol');
+			item.show_rc_toggle = (item.remote_control && item.is_running);
 			return item;
 		});
 

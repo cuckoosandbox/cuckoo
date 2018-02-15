@@ -29,7 +29,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "181be2111077"
+SCHEMA_VERSION = "cb1024e614b7"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -99,9 +99,23 @@ class Machine(Base):
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
     resultserver_port = Column(Integer(), nullable=False)
+    _rcparams = Column("rcparams", Text(), nullable=True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
+
+    @hybrid_property
+    def rcparams(self):
+        if not self._rcparams:
+            return {}
+        return parse_options(self._rcparams)
+
+    @rcparams.setter
+    def rcparams(self, value):
+        if isinstance(value, dict):
+            self._rcparams = emit_options(value)
+        else:
+            self._rcparams = value
 
     def to_dict(self):
         """Converts object to dict.
@@ -932,6 +946,35 @@ class Database(object):
                 session.refresh(machine)
             except SQLAlchemyError as e:
                 log.debug("Database error setting machine status: {0}".format(e))
+                session.rollback()
+            finally:
+                session.close()
+        else:
+            session.close()
+
+    @classlock
+    def set_machine_rcparams(self, label, rcparams):
+        """Set remote control connection params for a virtual machine.
+        @param label: virtual machine label
+        @param rcparams: dict with keys: protocol, host, port
+        """
+        session = self.Session()
+        try:
+            machine = session.query(Machine).filter_by(label=label).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting machine rcparams: {0}".format(e))
+            session.close()
+            return
+
+        if machine:
+            machine.rcparams = rcparams
+            try:
+                session.commit()
+                session.refresh(machine)
+            except SQLAlchemyError as e:
+                log.debug(
+                    "Database error setting machine rcparams: {0}".format(e)
+                )
                 session.rollback()
             finally:
                 session.close()

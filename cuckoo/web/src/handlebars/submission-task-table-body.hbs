@@ -7,6 +7,13 @@
 		</td>
 		<td>{{target}}</td>
 		<td>{{package}}</td>
-		<td><span class="status status-{{status}}"></span> {{status}}</td>
+		<td class="postsubmit-status-display">
+			<div>
+				<div><span class="status status-{{status}}"></span> {{status}}</div>
+				{{#if show_rc_toggle}}
+					<a href="/analysis/{{id}}/control/" target="_blank" class="button"><i class="fa fa-eye"></i> REMOTE CONTROL</a>
+				{{/if}}
+			</div>
+		</td>
 	</tr>
 {{/each}}

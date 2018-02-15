@@ -25,7 +25,7 @@ module.exports = function() {
 			]
     }).on('error', sass.logError))
     .pipe(autoprefixer())
-    .pipe(gutil.env['comb-css'] ? comb({
+    .pipe(gutil.env.production ? comb({
       "remove-empty-rulesets": true,
       "always-semicolon": true,
       "color-case": "lower",

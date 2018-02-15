@@ -253,6 +253,11 @@ class Config(object):
                 "critical": Int(60),
                 "vm_state": Int(60),
             },
+            "remotecontrol": {
+                "enabled": Boolean(False),
+                "guacd_host": String("localhost"),
+                "guacd_port": Int(4822),
+            },
         },
         "virtualbox": {
             "virtualbox": {
@@ -263,6 +268,7 @@ class Config(object):
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
+                "controlports": String("5000-5050"),
             },
             "*": {
                 "__section__": "cuckoo1",
