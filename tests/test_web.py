@@ -328,6 +328,33 @@ class TestWebInterface(object):
         d.return_value = task
         assert client.get("/analysis/1/control/tunnel/?X:Y").status_code == 400
 
+    @mock.patch("cuckoo.core.database.Database.view_task")
+    def test_rdp_tunnel_noguest(self, d, client):
+        set_cwd(tempfile.mkdtemp())
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "remotecontrol": {
+                    "enabled": True,
+                },
+            },
+        })
+
+        class task(object):
+            id = 1
+            options = {
+                "remotecontrol": "yes",
+            }
+            status = "running"
+            guest = None
+
+        d.return_value = task
+        r = client.get("/analysis/1/control/tunnel/?connect")
+        assert r.status_code == 500
+        assert json.loads(r.content) == {
+            "status": "failed",
+            "message": "task is not assigned to a machine yet",
+        }
+
     def test_rdp_report(self, client):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={

@@ -133,6 +133,12 @@ class ControlApi:
 
     @staticmethod
     def _do_connect(task):
+        if not task.guest:
+            return JsonResponse({
+                "status": "failed",
+                "message": "task is not assigned to a machine yet",
+            }, status=500)
+
         machine = db.view_machine_by_label(task.guest.label)
         rcparams = machine.rcparams
 
