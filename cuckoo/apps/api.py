@@ -210,7 +210,8 @@ def tasks_create_submit():
 @app.route("/v1/tasks/list/<int:limit>")
 @app.route("/tasks/list/<int:limit>/<int:offset>")
 @app.route("/v1/tasks/list/<int:limit>/<int:offset>")
-def tasks_list(limit=None, offset=None):
+@app.route("/tasks/sample/<int:sample_id>")
+def tasks_list(limit=None, offset=None, sample_id=None):
     response = {}
 
     response["tasks"] = []
@@ -227,7 +228,8 @@ def tasks_list(limit=None, offset=None):
     tasks = db.list_tasks(
         limit=limit, details=True, offset=offset,
         completed_after=completed_after, owner=owner,
-        status=status, order_by=Task.completed_on.asc()
+        status=status, sample_id=sample_id,
+        order_by=Task.completed_on.asc()
     )
 
     for row in tasks:
