@@ -46,6 +46,13 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
             open(cwd("cwd", "init-pre.jinja2", private=True), "rb").read()
         ).render(cwd=cwd, yellow=yellow, red=red)
 
+    if not os.path.exists(cwd(".cwd", private=True)):
+        print red(
+            "The cuckoo/private/.cwd file is missing. Please run "
+            "'python setup.py sdist' before 'pip install ...'!"
+        )
+        return
+
     if not os.path.isdir(cwd()):
         os.mkdir(cwd())
 
