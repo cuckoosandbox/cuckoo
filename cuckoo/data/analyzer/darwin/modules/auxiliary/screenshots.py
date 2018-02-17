@@ -63,11 +63,11 @@ class Screenshots(Auxiliary, Thread):
 
             # workaround as PIL can't write to the socket file object :(
             tmpio = StringIO.StringIO()
-            img_current.save(tmpio, format="JPEG")
+            img_current.save(tmpio, format="PNG")
             tmpio.seek(0)
 
             # now upload to host from the StringIO
-            nf = NetlogFile("shots/%s.jpg" % str(img_counter).rjust(4, "0"))
+            nf = NetlogFile("shots/%s.png" % str(img_counter).rjust(4, "0"))
 
             for chunk in tmpio:
                 nf.sock.sendall(chunk)
