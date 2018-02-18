@@ -675,7 +675,7 @@ def _200_201(c):
 def _201_202(c):
     machineries = (
         "virtualbox", "avd", "esx", "kvm", "physical", "qemu", "vmware",
-        "vsphere", "xenserver",
+        "vsphere", "xenserver", "esxOssh",
     )
     for machinery in machineries:
         for machine in c[machinery][machinery]["machines"]:

@@ -15,12 +15,12 @@ log = logging.getLogger(__name__)
 class Mongo(object):
     def __init__(self):
         self.client = None
-        self.db = None
+        self.db = None 
 
-        self.enabled = None
-        self.hostname = None
-        self.port = None
-        self.database = None
+        self.enabled = True 
+        self.hostname = "127.0.0.1" 
+        self.port = 27017
+        self.database = "cuckoo"
         self.username = None
         self.password = None
         self.grid = None
