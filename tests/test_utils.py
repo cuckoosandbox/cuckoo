@@ -19,7 +19,7 @@ from cuckoo.common.files import Folders, Files, Storage, temppath
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.common import utils
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, getuser
 
 class TestCreateFolders:
     def setup(self):
@@ -92,7 +92,7 @@ class TestCreateFolders:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
         dirpath2 = Folders.create_temp()
-        assert dirpath2.startswith(os.path.join(dirpath, "cuckoo-tmp"))
+        assert dirpath2.startswith(dirpath)
 
     @pytest.mark.skipif("sys.platform != 'linux2'")
     def test_create_invld_linux(self):
@@ -166,7 +166,7 @@ class TestCreateFile:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
         filepath = Files.temp_put("foo")
-        assert filepath.startswith(os.path.join(dirpath, "cuckoo-tmp"))
+        assert filepath.startswith(dirpath)
 
     def test_stringio(self):
         filepath = Files.temp_put(cStringIO.StringIO("foo"), "/tmp")
@@ -318,7 +318,9 @@ def test_temppath():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -328,7 +330,9 @@ def test_temppath():
             },
         },
     })
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -338,7 +342,9 @@ def test_temppath():
             },
         },
     })
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={

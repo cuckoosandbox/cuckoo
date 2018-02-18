@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ import shutil
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.misc import getuser
 
 def temppath():
     """Returns the true temporary directory."""
@@ -17,7 +18,9 @@ def temppath():
 
     # Backwards compatibility with older configuration.
     if not tmppath or tmppath == "/tmp":
-        return tempfile.gettempdir()
+        return os.path.join(
+            tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+        )
 
     return tmppath
 
@@ -66,15 +69,7 @@ class Folders(Storage):
 
     @staticmethod
     def create_temp(path=None):
-        if path:
-            target_path = path
-        else:
-            target_path = os.path.join(temppath(), "cuckoo-tmp")
-
-        if not os.path.exists(target_path):
-            os.mkdir(target_path)
-
-        return tempfile.mkdtemp(dir=target_path)
+        return tempfile.mkdtemp(dir=path or temppath())
 
     @staticmethod
     def delete(*folder):
@@ -98,15 +93,9 @@ class Files(Storage):
         @param content: the content of this file
         @param path: directory path to store the file
         """
-        if path:
-            target_path = path
-        else:
-            target_path = os.path.join(temppath(), "cuckoo-tmp")
-
-        if not os.path.exists(target_path):
-            os.mkdir(target_path)
-
-        fd, filepath = tempfile.mkstemp(prefix="upload_", dir=target_path)
+        fd, filepath = tempfile.mkstemp(
+            prefix="upload_", dir=path or temppath()
+        )
 
         if hasattr(content, "read"):
             chunk = content.read(1024)
@@ -127,17 +116,8 @@ class Files(Storage):
         @param path: directory path to store the file
         @return: full path to the temporary file
         """
-        if path:
-            target_path = path
-        else:
-            target_path = os.path.join(temppath(), "cuckoo-tmp")
-
-        if not os.path.exists(target_path):
-            os.mkdir(target_path)
-
         filename = Storage.get_filename_from_path(filename)
-
-        dirpath = tempfile.mkdtemp(dir=target_path)
+        dirpath = tempfile.mkdtemp(dir=path or temppath())
         Files.create(dirpath, filename, content)
         return os.path.join(dirpath, filename)
 

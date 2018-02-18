@@ -27,7 +27,7 @@ from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, version
+from cuckoo.misc import cwd, version, getuser, mkdir
 
 log = logging.getLogger(__name__)
 
@@ -413,20 +413,25 @@ def init_routing():
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
 
-def check_tmp_permission():
+def ensure_tmpdir():
     """Verifies if the current user can read and create files in the
-    cuckoo temporary directory."""
+    cuckoo temporary directory (and creates it, if needed)."""
+    try:
+        if not os.path.isdir(temppath()):
+            mkdir(temppath())
+    except OSError as e:
+        # Currently we only handle EACCES.
+        if e.errno != errno.EACCES:
+            raise
 
-    tmp_path = os.path.join(temppath(), "cuckoo-tmp")
-    if not os.path.isdir(tmp_path):
-        tmp_path = temppath()
-
-    if os.access(tmp_path, os.R_OK) and os.access(tmp_path, os.W_OK):
+    if os.path.isdir(temppath()) and os.access(temppath(), os.R_OK | os.W_OK):
         return True
 
     print red(
-        "Cuckoo cannot write or read files into the temporary directory '%s',"
-        " please make sure the user running Cuckoo has the ability to do so."
-        % tmp_path
+        "Cuckoo cannot read or write files into the temporary directory '%s',"
+        " please make sure the user running Cuckoo has the ability to do so. "
+        "If the directory does not yet exist and the parent directory is "
+        "owned by root, then please create and chown the directory with root."
+        % temppath()
     )
     return False

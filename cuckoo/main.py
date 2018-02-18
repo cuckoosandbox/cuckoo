@@ -30,7 +30,7 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing, check_tmp_permission
+    init_routing, ensure_tmpdir
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
@@ -136,6 +136,10 @@ def cuckoo_init(level, ctx, cfg=None):
         migrate_cwd()
         open(cwd(".cwd"), "wb").write(latest)
 
+    # Ensure the user is able to create and read temporary files.
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     Database().connect()
 
     # Load additional Signatures.
@@ -228,10 +232,6 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         level = logging.INFO
 
     ctx.level = level
-
-    # Verify if the current user is able to create and read files tmp files.
-    if not check_tmp_permission():
-        sys.exit(1)
 
     # A subcommand will be invoked, so don't run Cuckoo itself.
     if ctx.invoked_subcommand:
