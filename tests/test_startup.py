@@ -606,6 +606,7 @@ def test_tmp_permissions_true():
     })
     assert os.path.isdir(temppath())
 
+@pytest.mark.skipif("sys.platform != 'linux2'")
 def test_tmp_permissions_false():
     set_cwd(tempfile.mkdtemp())
     dirpath = tempfile.mkdtemp()
