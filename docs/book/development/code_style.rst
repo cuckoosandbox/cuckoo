@@ -165,7 +165,7 @@ Additional comments may be added in logical blocks to make the code easier to un
 Automated testing
 =================
 
-We believe in automated testing to provide high quality code and avoid easily 
+We believe in automated testing to provide high quality code and avoid easily
 overlooked mistakes.
 
 When possible, all code must be committed with proper unit tests. Particular

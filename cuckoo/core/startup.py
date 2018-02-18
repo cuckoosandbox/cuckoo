@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -423,10 +423,10 @@ def check_tmp_permission():
 
     if os.access(tmp_path, os.R_OK) and os.access(tmp_path, os.W_OK):
         return True
-    error = red(
+
+    print red(
         "Cuckoo cannot write or read files into the temporary directory '%s',"
         " please make sure the user running Cuckoo has the ability to do so."
         % tmp_path
     )
-    print(error)
     return False

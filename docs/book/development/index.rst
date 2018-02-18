@@ -10,3 +10,5 @@ This chapter explains how to write Cuckoo's code and how to contribute.
     development_notes
     code_style
     package
+    frontend
+    pycharm

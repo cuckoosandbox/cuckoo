@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -211,6 +211,7 @@ def tasks_create_submit():
 @app.route("/tasks/list/<int:limit>/<int:offset>")
 @app.route("/v1/tasks/list/<int:limit>/<int:offset>")
 @app.route("/tasks/sample/<int:sample_id>")
+@app.route("/v1/tasks/sample/<int:sample_id>")
 def tasks_list(limit=None, offset=None, sample_id=None):
     response = {}
 

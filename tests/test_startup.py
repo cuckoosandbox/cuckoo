@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -597,11 +597,10 @@ class TestYaraIntegration(object):
 
 def test_tmp_permissions_true():
     set_cwd(tempfile.mkdtemp())
-    tmpdir = tempfile.mkdtemp()
     cuckoo_create(cfg={
         "cuckoo": {
             "cuckoo": {
-                "tmppath": tmpdir,
+                "tmppath": tempfile.mkdtemp(),
             }
         }
     })
@@ -611,11 +610,10 @@ def test_tmp_permissions_true():
 
 def test_tmp_permissions_false():
     set_cwd(tempfile.mkdtemp())
-    tmpdir = tempfile.mkdtemp()
     cuckoo_create(cfg={
         "cuckoo": {
             "cuckoo": {
-                "tmppath": tmpdir,
+                "tmppath": tempfile.mkdtemp(),
             }
         }
     })

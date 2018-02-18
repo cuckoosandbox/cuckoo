@@ -326,9 +326,9 @@ The easiest workaround for this issue is to bump the soft and hard file
 descriptor limit for the current user. This may be done as documented in the
 `following blogpost <https://easyengine.io/tutorials/linux/increase-open-files-limit/>`_.
 
-In case if you using **Supervisor** set ``minfds`` in **supervisord.conf**
+In case if you using **Supervisor** set ``minfds`` in **supervisord.conf**.
 
-Remember that you have to login to a new shell (i.e., usually check out first)
+Remember that you have to login in to a new shell (i.e., usually logout first)
 session in order for the changes to take effect.
 
 pkg_resources.ContextualVersionConflict

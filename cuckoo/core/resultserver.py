@@ -71,7 +71,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                         "usually happens when you start Cuckoo without "
                         "bringing up the virtual interface associated with "
                         "the ResultServer IP address. Please refer to "
-                        "http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
+                        "https://cuckoo.sh/docs/faq/#troubles-problem"
                         " for more information." % (self.ip, self.port, e)
                     )
                 else:

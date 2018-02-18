@@ -31,7 +31,7 @@ we suggest to start on those pull requests.
 This is a development version, we do not recommend its use in production.
 
 You can find a full documentation of the latest stable release
-`here <http://docs.cuckoosandbox.org/>`_.
+`here <https://cuckoo.sh/docs>`_.
 
 .. image:: https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=master
    :alt: Linux Build Status
@@ -49,5 +49,5 @@ You can find a full documentation of the latest stable release
    :alt: Codecov Coverage Status
    :target: https://codecov.io/gh/cuckoosandbox/cuckoo
 
-.. _`community guidelines`: http://docs.cuckoosandbox.org/en/latest/introduction/community
+.. _`community guidelines`: https://cuckoo.sh/docs/introduction/community.html
 .. _`contribution requirements`: http://www.cuckoofoundation.org/contribute.html

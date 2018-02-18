@@ -465,9 +465,9 @@ Returns list of tasks.
 .. _tasks_sample:
 
 /tasks/sample
------------
+-------------
 
-**GET /tasks/sample/** *(int: sample_id)* **/
+**GET /tasks/sample/** *(int: sample_id)*
 
 Returns list of tasks for sample.
 

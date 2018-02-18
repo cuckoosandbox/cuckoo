@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -229,7 +229,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
 
     ctx.level = level
 
-    # Verify if the current user is able to create and read files tmp files
+    # Verify if the current user is able to create and read files tmp files.
     if not check_tmp_permission():
         sys.exit(1)
 

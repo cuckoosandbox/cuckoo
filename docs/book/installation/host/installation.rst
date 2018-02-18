@@ -117,4 +117,3 @@ By cloning Cuckoo Sandbox from our `official repository`_, you can install it fr
 After cloning, follow the steps mentioned in :doc:`../../development/package` to start the installation.
 
 .. _`official repository`: https://github.com/cuckoosandbox/cuckoo
-
