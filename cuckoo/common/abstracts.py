@@ -1432,12 +1432,21 @@ class ProtocolHandler(object):
     def __init__(self, handler, version=None):
         self.handler = handler
         self.version = version
+        self.sock = None
+        self.task_id = None
+        self.running = True
 
     def init(self):
         pass
 
+    def handle(self):
+        pass
+
     def close(self):
         pass
+
+    def read(self, length):
+        return self.handler.read(self, length)
 
 class Extractor(object):
     """One piece in a series of recursive extractors & unpackers."""

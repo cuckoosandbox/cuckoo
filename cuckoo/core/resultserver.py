@@ -4,13 +4,15 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import errno
-import json
-import os
-import socket
-import select
-import logging
 import datetime
+import gevent.server
+import json
+import logging
+import os
+import select
+import socket
 import SocketServer
+import struct
 import threading
 
 from cuckoo.common.abstracts import ProtocolHandler
@@ -31,7 +33,7 @@ BUFSIZE = 1024 * 1024
 class Disconnect(Exception):
     pass
 
-class ResultServer(SocketServer.ThreadingTCPServer, object):
+class OldResultServer(SocketServer.ThreadingTCPServer, object):
     """Result server. Singleton!
 
     This class handles results coming back from the analysis machines.
@@ -71,8 +73,8 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                         "usually happens when you start Cuckoo without "
                         "bringing up the virtual interface associated with "
                         "the ResultServer IP address. Please refer to "
-                        "https://cuckoo.sh/docs/faq/#troubles-problem"
-                        " for more information." % (self.ip, self.port, e)
+                        "https://cuckoo.sh/docs/faq/#troubles-problem "
+                        "for more information." % (self.ip, self.port, e)
                     )
                 else:
                     raise CuckooCriticalError(
@@ -90,7 +92,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
 
     def serve_forever(self, poll_interval=0.5):
         try:
-            super(ResultServer, self).serve_forever(poll_interval)
+            super(OldResultServer, self).serve_forever(poll_interval)
         except AttributeError as e:
             if "NoneType" not in e.message or "select" not in e.message:
                 raise
@@ -134,7 +136,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
         if not task or not machine:
             return
 
-        return cwd("storage", "analyses", "%s" % task.id)
+        return cwd(analysis=task.id)
 
 class ResultHandler(SocketServer.BaseRequestHandler):
     """Result handler.
@@ -458,3 +460,163 @@ class LogHandler(ProtocolHandler):
         )
 
         return fd
+
+class BsonStore(ProtocolHandler):
+    def init(self):
+        # We cheat a little bit through the "version" variable, but that's
+        # acceptable and backwards compatible (for now). Backwards compatible
+        # in the sense that newer Cuckoo Monitor binaries work with older
+        # versions of Cuckoo, the other way around doesn't apply here.
+        self.f = open(cwd(
+            os.path.join("logs", "%d.bson" % self.version),
+            analysis=self.task_id
+        ), "wb")
+
+    def handle(self):
+        while self.running:
+            lenbuf = self.read(4)
+            if len(lenbuf) != 4:
+                break
+
+            length = struct.unpack("I", lenbuf)[0]
+            buf = self.read(length)
+            if len(buf) != length:
+                break
+
+            # TODO Handle out of disk space.
+            self.f.write(lenbuf + buf)
+
+    def close(self):
+        self.f.close()
+
+class NewResultServerWorker(gevent.server.StreamServer):
+    """The new ResultServer, providing a huge performance boost as well as
+    implementing a new dropped file storage format avoiding small fd limits.
+
+    The old ResultServer would start a new thread per socket, greatly impacting
+    the overall performance of Cuckoo Sandbox. The new ResultServer uses
+    so-called Greenlets, low overhead green-threads by Gevent, imposing much
+    less kernel overhead.
+
+    Furthermore, instead of writing each dropped file to its own location (in
+    $CWD/storage/analyses/<task_id>/files/<partial_hash>_filename.ext) it's
+    capable of storing all dropped files in a streamable container format. This
+    is one of various steps to start being able to use less fd's in Cuckoo.
+    """
+    commands = {
+        "BSON": BsonStore,
+        "FILE": FileUpload,
+        "LOG": LogHandler,
+    }
+
+    def init(self):
+        self.tasks = {}
+        self.handlers = {}
+        self.buf = bytearray(BUFSIZE)
+
+    def add_task(self, task_id, ipaddr):
+        self.tasks[ipaddr] = task_id
+        self.handlers[ipaddr] = self.handlers.get(ipaddr, {})
+
+    def del_task(self, task_id, ipaddr):
+        self.tasks.pop(ipaddr)
+
+        for handler in self.handlers[ipaddr].values():
+            handler.running = False
+
+        self.handlers.pop(ipaddr, None)
+
+    def read_newline(self, sock):
+        buf = ""
+        while "\n" not in buf:
+            buf += sock.recv(1)
+        return buf
+
+    def read(self, protocol, length):
+        ret, offset = [], 0
+        while protocol.running and offset != length:
+            buf = protocol.sock.recv(length - offset)
+            if not buf:
+                # TODO Do we need to do something here?
+                continue
+
+            ret.append(buf)
+            offset += len(buf)
+        return "".join(ret)
+
+    def handle(self, sock, (ipaddr, port)):
+        if ipaddr not in self.tasks:
+            return
+
+        task_log_start(self.tasks[ipaddr])
+
+        protocol = self.read_newline(sock).strip()
+
+        if " " in protocol:
+            command, version = protocol.split()
+            version = int(version)
+        else:
+            command, version = protocol, None
+
+        if command not in self.commands:
+            log.warning(
+                "Unknown netlog protocol requested ('%s'), "
+                "terminating connection.", command
+            )
+            task_log_stop(self.tasks[ipaddr])
+            return
+
+        protocol = self.commands[command](self, version)
+        protocol.sock = sock
+        protocol.task_id = self.tasks[ipaddr]
+
+        # Registering the protocol allows for the handler getting its "running"
+        # field set to False (among other use-cases in the future).
+        self.handlers[ipaddr][port] = protocol
+
+        protocol.init()
+        protocol.handle()
+        protocol.close()
+
+        task_log_stop(self.tasks[ipaddr])
+
+class NewResultServer(object):
+    """Wrapper around the NewResultServerWorker."""
+    __metaclass__ = Singleton
+
+    def __init__(self):
+        self.instance = None
+        self.thread = threading.Thread(target=self.do_run)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def do_run(self):
+        self.instance = NewResultServerWorker((
+            config("cuckoo:resultserver:ip"),
+            config("cuckoo:resultserver:port")
+        ))
+        self.instance.init()
+
+        try:
+            self.instance.serve_forever()
+        except socket.error as e:
+            if e.errno == errno.EACCES:
+                pass
+            if e.errno == errno.EADDRINUSE:
+                pass
+            if e.errno == errno.EADDRNOTAVAIL:
+                pass
+            raise
+
+    def add_task(self, task, machine):
+        self.instance.add_task(task.id, machine.ip)
+
+    def del_task(self, task, machine):
+        self.instance.del_task(task.id, machine.ip)
+
+    @property
+    def port(self):
+        return self.instance.server_port
+
+# TODO Should this be configurable?
+ResultServer = NewResultServer
