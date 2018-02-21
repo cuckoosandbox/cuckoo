@@ -30,7 +30,7 @@ from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.misc import cwd
 
 # Be less verbose about httpreplay logging messages.
-logging.getLogger("httpreplay").setLevel(logging.DEBUG)
+logging.getLogger("httpreplay").setLevel(logging.WARNING)
 
 Keyed = collections.namedtuple("Keyed", ["key", "obj"])
 Packet = collections.namedtuple("Packet", ["raw", "ts"])
