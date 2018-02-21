@@ -523,22 +523,24 @@ class RunSignatures(object):
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
-        score, configuration = 0, []
+        score, configs = 0, []
         for signature in self.signatures:
-            if signature.matched:
-                log.debug(
-                    "Analysis matched signature: %s", signature.name, extra={
-                        "action": "signature.match", "status": "success",
-                        "signature": signature.name,
-                        "severity": signature.severity,
-                    }
-                )
-                self.matched.append(signature.results())
-                score += signature.severity
+            if not signature.matched:
+                continue
 
-                for mark in signature.marks:
-                    if mark["type"] == "config":
-                        configuration.append(mark["config"])
+            log.debug(
+                "Analysis matched signature: %s", signature.name, extra={
+                    "action": "signature.match", "status": "success",
+                    "signature": signature.name,
+                    "severity": signature.severity,
+                }
+            )
+            self.matched.append(signature.results())
+            score += signature.severity
+
+            for mark in signature.marks:
+                if mark["type"] == "config" and mark["config"] not in configs:
+                    configs.append(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -549,10 +551,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if configuration:
+        if configs:
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = configuration
+                self.results["metadata"]["cfgextr"] = configs
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 

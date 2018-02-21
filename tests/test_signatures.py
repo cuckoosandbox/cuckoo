@@ -287,7 +287,7 @@ def test_mark_config():
     rs = RunSignatures({
         "metadata": {},
     })
-    rs.signatures = sig(rs),
+    rs.signatures = sig(rs), sig(rs)
     rs.run()
     assert rs.results["metadata"] == {
         "cfgextr": [{
