@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -61,17 +61,17 @@ class MITM(Auxiliary):
 
         args = [
             mitmdump, "-q",
-            "-s", '"{}" {}'.format(script, self.task.options.get("mitm", "")).strip(),
+            "-s", '"{}" {}'.format(
+                script, self.task.options.get("mitm", "")
+            ).strip(),
             "-p", "%d" % self.port,
             "-w", outpath
         ]
 
-        mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
-        mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
-
         self.proc = Popen(
             args, close_fds=True,
-            stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
+            stdout=open(cwd("mitm.log", task_id=self.task.id), "wb"),
+            stderr=open(cwd("mitm.err", task_id=self.task.id), "wb")
         )
 
         if "cert" in self.task.options:
@@ -87,8 +87,14 @@ class MITM(Auxiliary):
 
         # We are using the resultserver IP address as address for the host
         # where our mitmdump instance is running. TODO Is this correct?
+<<<<<<< HEAD
 #        self.task.options["proxy"] = \
 #            "%s:%d" % (self.machine.resultserver_ip, port)
+=======
+        self.task.options["proxy"] = (
+            "%s:%d" % (self.machine.resultserver_ip, port)
+        )
+>>>>>>> upstream/master
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)

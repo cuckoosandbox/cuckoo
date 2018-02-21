@@ -31,11 +31,11 @@ def test_cuckoo_api():
         get(rsps, "/machines/list", json={"machines": "foo"})
         assert api.list_machines("http://localhost") == "foo"
 
-        get(rsps, "/cuckoo/status", json={"a": "b"})
-        assert api.node_status("http://localhost") == {"a": "b"}
+        get(rsps, ":80/cuckoo/status", json={"a": "b"})
+        assert api.node_status("http://localhost:80") == {"a": "b"}
 
-        get(rsps, "/cuckoo/status", body="TIMEOUT", status=500)
-        assert api.node_status("http://localhost") is None
+        get(rsps, ":8080/cuckoo/status", body="TIMEOUT", status=500)
+        assert api.node_status("http://localhost:8080") is None
 
         get(rsps, "/cuckoo/status", body=requests.ConnectionError("foo"))
         assert api.node_status("http://localhost") is None
@@ -60,11 +60,14 @@ def test_cuckoo_api():
             "enforce_timeout": None,
         }
 
-        post(rsps, "/tasks/create/file", json={"task_id": 12345})
-        assert api.submit_task("http://localhost", d) == 12345
+        post(rsps, ":80/tasks/create/file", json={"task_id": 12345})
+        assert api.submit_task("http://localhost:80", d) == 12345
 
-        post(rsps, "/tasks/create/file", body=requests.ConnectionError("a"))
-        assert api.submit_task("http://localhost", d) is None
+        post(
+            rsps, ":8080/tasks/create/file",
+            body=requests.ConnectionError("a")
+        )
+        assert api.submit_task("http://localhost:8080", d) is None
 
         get(rsps, "/tasks/list/100", json={"tasks": ["foo"]})
         assert api.fetch_tasks("http://localhost", "finished", 100) == ["foo"]

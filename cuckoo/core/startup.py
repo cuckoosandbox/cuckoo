@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -17,6 +17,7 @@ import cuckoo
 from cuckoo.common.colors import red, green, yellow
 from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
+from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
@@ -26,7 +27,7 @@ from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, version
+from cuckoo.misc import cwd, version, getuser, mkdir
 
 log = logging.getLogger(__name__)
 
@@ -411,3 +412,26 @@ def init_routing():
         if config("routing:routing:auto_rt"):
             rooter("flush_rttable", rt_table)
             rooter("init_rttable", rt_table, interface)
+
+def ensure_tmpdir():
+    """Verifies if the current user can read and create files in the
+    cuckoo temporary directory (and creates it, if needed)."""
+    try:
+        if not os.path.isdir(temppath()):
+            mkdir(temppath())
+    except OSError as e:
+        # Currently we only handle EACCES.
+        if e.errno != errno.EACCES:
+            raise
+
+    if os.path.isdir(temppath()) and os.access(temppath(), os.R_OK | os.W_OK):
+        return True
+
+    print red(
+        "Cuckoo cannot read or write files into the temporary directory '%s',"
+        " please make sure the user running Cuckoo has the ability to do so. "
+        "If the directory does not yet exist and the parent directory is "
+        "owned by root, then please create and chown the directory with root."
+        % temppath()
+    )
+    return False

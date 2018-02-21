@@ -1,15 +1,18 @@
 =======================
 Developing with Pycharm
 =======================
+
 Within this section we will cover a vast array of Pycharm configuration options in the context of Cuckoo development. We will try to cover all aspects of running and developing Cuckoo under this IDE.
 
 Cuckoo Web
 ==========
+
 This section covers the Cuckoo Web interface that runs on Django. The code is quite easy to modify and creating custom features is simple.
 
 
 Locations and concepts
 **********************
+
 - Cuckoo Web provides the web interface and a REST API
 - The Django project root is located at ``cuckoo/web``
 - The configuration is located at ``cuckoo/web/web/settings.py``
@@ -22,6 +25,7 @@ Locations and concepts
 
 Running and debugging
 *********************
+
 Running and debugging Cuckoo web straight from Pycharm comes down to circumventing the ``cuckoo`` launcher and using Pycharm's built-in Django server. Thankfully, no modifications are neccesary to the Cuckoo code in order to do this.
 
 Firstly, It is recommended that you work in a ``virtualenv`` to keep the dependencies required by Cuckoo seperate from your system-wide installed Python. Secondly, you should install Cuckoo in development mode; ``python setup.py develop``.
@@ -40,6 +44,7 @@ Cuckoo web can now be run (and debugged) from Pycharm. Go to ``Run->Run->web`` f
 
 JavaScript transpiling
 **********************
+
 .. CAUTION::
    Transpiling JavaScript through Pycharm file watchers is not recommended. The recommended way is explained in the 'Frontend' section of the documentation.
 
@@ -97,6 +102,5 @@ Go to File->Settings->Langauges & Frameworks->Django and;
 
 Testing
 *******
+
 The configuration should now be complete. Try running Cuckoo from within Pycharm & happy coding!
-
-

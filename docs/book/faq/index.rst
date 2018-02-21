@@ -45,7 +45,7 @@ Please also consider that we don't particularly encourage this: since Cuckoo
 employs some rootkit-like technologies to perform its operations, the results
 of a forensic analysis would be polluted by the sandbox's components.
 
-.. _`Volatility`: http://code.google.com/p/volatility/
+.. _`Volatility`: https://github.com/volatilityfoundation/volatility
 
 .. _esxi_reqs:
 
@@ -326,7 +326,9 @@ The easiest workaround for this issue is to bump the soft and hard file
 descriptor limit for the current user. This may be done as documented in the
 `following blogpost <https://easyengine.io/tutorials/linux/increase-open-files-limit/>`_.
 
-Remember that you have to login to a new shell (i.e., usually check out first)
+In case if you using **Supervisor** set ``minfds`` in **supervisord.conf**.
+
+Remember that you have to login in to a new shell (i.e., usually logout first)
 session in order for the changes to take effect.
 
 pkg_resources.ContextualVersionConflict

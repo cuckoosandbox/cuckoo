@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -41,7 +41,7 @@ class TestAPI(object):
         assert len(r["tasks"]) == 1
         assert r["tasks"][0]["id"] == 1
 
-        # Offest 1, limit 1.
+        # Offset 1, limit 1.
         r = json.loads(self.app.get("/tasks/list/1/1").data)
         assert len(r["tasks"]) == 1
         assert r["tasks"][0]["id"] == 2
@@ -51,6 +51,14 @@ class TestAPI(object):
         assert len(r["tasks"]) == 2
         assert r["tasks"][0]["id"] == 2
         assert r["tasks"][1]["id"] == 3
+
+        # List by sample id.
+        r = json.loads(self.app.get("/tasks/sample/1").data)
+        assert len(r["tasks"]) == 3
+        assert sorted((
+            r["tasks"][0]["id"], r["tasks"][1]["id"],
+            r["tasks"][2]["id"]
+        )) == [1, 2, 3]
 
     def test_list_tasks_unicode(self):
         assert self.create_task(u"\u202e.jpg") == 1

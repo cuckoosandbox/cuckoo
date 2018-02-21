@@ -62,3 +62,19 @@ However, any re-imaging platform can be used (Clonezilla, Deepfreeze, etc) to
 accomplish this.
 
 .. _`Fog`: http://www.fogproject.org/
+
+Cuckoo Configuration Requirements
+=================================
+
+Since we are using physical machines to perform our analysis, we must account
+for the reboot/rebuild time of our physical machines in our Cuckoo configuration.
+Specifically, we must modify the vm_state timeout as specified in conf/cuckoo.conf::
+
+	vm_state = 60
+
+By default, this value is set to 60 (seconds). We need to update it so that it
+reflects the amount of time required to reboot and rebuild the physical guest.
+In testing 10 minutes (i.e., vm_state = 600) has proven sufficient, provided a
+Windows 7 setup with a 1 gbit connection. However, it is recommended that you
+analyze the time it takes to reboot/rebuild the phyical machine in your
+environment before setting this value.

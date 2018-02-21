@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -143,6 +143,6 @@ def logo():
     print
     print(" Cuckoo Sandbox %s" % yellow(version))
     print(" www.cuckoosandbox.org")
-    print(" Copyright (c) 2010-2017")
+    print(" Copyright (c) 2010-2018")
     print
     sys.stdout.flush()

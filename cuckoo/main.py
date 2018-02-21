@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -30,7 +30,7 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing
+    init_routing, ensure_tmpdir
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
@@ -45,6 +45,13 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
         print jinja2.Environment().from_string(
             open(cwd("cwd", "init-pre.jinja2", private=True), "rb").read()
         ).render(cwd=cwd, yellow=yellow, red=red)
+
+    if not os.path.exists(cwd(".cwd", private=True)):
+        print red(
+            "The cuckoo/private/.cwd file is missing. Please run "
+            "'python setup.py sdist' before 'pip install ...'!"
+        )
+        return
 
     if not os.path.isdir(cwd()):
         os.mkdir(cwd())
@@ -128,6 +135,10 @@ def cuckoo_init(level, ctx, cfg=None):
     if current != latest:
         migrate_cwd()
         open(cwd(".cwd"), "wb").write(latest)
+
+    # Ensure the user is able to create and read temporary files.
+    if not ensure_tmpdir():
+        sys.exit(1)
 
     Database().connect()
 

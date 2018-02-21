@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,11 +13,12 @@ from cuckoo.common.abstracts import (
     Auxiliary, Machinery, Processing, Signature, Report
 )
 from cuckoo.common.exceptions import CuckooStartupError
+from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.core.startup import (
     init_modules, check_version, init_rooter, init_routing, init_yara,
-    init_tasks, init_binaries
+    init_tasks, init_binaries, ensure_tmpdir
 )
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, load_signatures, cwd, is_linux
@@ -593,3 +594,28 @@ class TestYaraIntegration(object):
         init_yara()
         assert len(File.yara_rules) == 6
         assert not list(File.yara_rules["binaries"])
+
+def test_tmp_permissions_true():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": tempfile.mkdtemp(),
+            }
+        }
+    })
+    assert os.path.isdir(temppath())
+
+@pytest.mark.skipif("sys.platform != 'linux2'")
+def test_tmp_permissions_false():
+    set_cwd(tempfile.mkdtemp())
+    dirpath = tempfile.mkdtemp()
+    cuckoo_create(cfg={
+        "cuckoo": {
+            "cuckoo": {
+                "tmppath": dirpath,
+            }
+        }
+    })
+    os.chmod(dirpath, 0400)
+    assert not ensure_tmpdir()

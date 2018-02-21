@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -118,6 +118,8 @@ class Sniffer(Auxiliary):
             "packets received by filter",
             "packet dropped by kernel",
             "packets dropped by kernel",
+            "packet dropped by interface",
+            "packets dropped by interface",
             "dropped privs to root",
         )
 
