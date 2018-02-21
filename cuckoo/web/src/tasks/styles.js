@@ -24,8 +24,11 @@ module.exports = function() {
         bower('bourbon/app/assets/stylesheets')
 			]
     }).on('error', sass.logError))
-    .pipe(autoprefixer())
-    .pipe(gutil.env['comb-css'] ? comb({
+    .pipe(autoprefixer({
+      browsers: ['last 2 versions'],
+      cascade: false
+    }))
+    .pipe(comb({
       "remove-empty-rulesets": true,
       "always-semicolon": true,
       "color-case": "lower",
@@ -49,8 +52,8 @@ module.exports = function() {
       "strip-spaces": true,
       "tab-size": false,
       "vendor-prefix-align": true
-    }) : gutil.noop())
-    .pipe(gutil.env.production ? gutil.noop() : sourcemaps.write('./'))
+    }))
+    .pipe(sourcemaps.write('./'))
     .pipe(notify('SCSS compiled to CSS!'))
     .pipe(gulp.dest('../static/css'));
 

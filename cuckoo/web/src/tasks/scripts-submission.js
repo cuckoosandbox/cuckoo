@@ -25,7 +25,6 @@ module.exports = function() {
 		.pipe(source('submission.js'))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({loadMaps: true}))
-		.pipe(gutil.env.production ? uglify() : gutil.noop())
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest('../static/js/cuckoo'));
 

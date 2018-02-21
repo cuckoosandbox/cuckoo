@@ -6,7 +6,7 @@
 			"datatables/media/js/jquery.dataTables.js",
 			"datatables/media/js/dataTables.bootstrap.js",
 			"dataTables/media/js/dataTables.responsive.js",
-			"highlight/build/highlight.pack.js",
+			"highlight/src/highlight.js",
 			"js-cookie/src/js.cookie.js",
 			"jquery-ui/jquery-ui.js",
 			"handlebars/handlebars.js",
