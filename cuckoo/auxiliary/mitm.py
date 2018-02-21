@@ -87,14 +87,8 @@ class MITM(Auxiliary):
 
         # We are using the resultserver IP address as address for the host
         # where our mitmdump instance is running. TODO Is this correct?
-<<<<<<< HEAD
 #        self.task.options["proxy"] = \
 #            "%s:%d" % (self.machine.resultserver_ip, port)
-=======
-        self.task.options["proxy"] = (
-            "%s:%d" % (self.machine.resultserver_ip, port)
-        )
->>>>>>> upstream/master
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)
