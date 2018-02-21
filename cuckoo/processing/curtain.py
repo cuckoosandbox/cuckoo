@@ -1,4 +1,5 @@
 import logging, os, re, ast
+import xml.etree.ElementTree as ET
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -7,13 +8,12 @@ log = logging.getLogger(__name__)
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.4"
-__date__    = "18JAN2018"
+__version__ = "1.0.5"
+__date__    = "21FEB2018"
 
 def charReplace(inputString, MODFLAG):
     # OLD: ("{1}{0}{2}" -F"AMP","EX","LE")
     # NEW: "EXAMPLE"
-
     # Find group of obfuscated string
     obfGroup = re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF].+?\'.+?\'\)(?!(\"|\'|;))",inputString).group()
 
@@ -244,123 +244,94 @@ class Curtain(Processing):
         os.rename("%s/curtain/%s" % (self.analysis_path, curtLog), "%s/curtain/curtain.log" % self.analysis_path)
 
         try:
-            with open("%s/curtain/curtain.log" % (self.analysis_path)) as fh:
-                data = fh.read().decode("utf-16").encode("utf-8")
-                log.debug("Read %s bytes from curtain.log", len(data))
+            tree = ET.parse("%s/curtain/curtain.log" % self.analysis_path)
+            root = tree.getroot()
         except Exception as e:
-            raise CuckooProcessingError("Failed processing curtain.log: %s" % e.message)
+            raise CuckooProcessingError("Failed opening curtain.log: %s" % e.message)
 
-        pids          = {}
-        STARTSECTION  = 0
-        ENDSECTION    = 0
-        MESSAGE       = ""
-        SCRIPTBLOCKID = 0
+        pids     = {}
+        COUNTER  = 0
+        FILTERED = 0
 
-        if data is not None:
-            for line in data.splitlines():
+        for i in range(0,len(root)):
 
-                # Identifies the start of a ScriptBlock log and setsup PID dict
-                if line.startswith("#STARTPID "):
-                    PID = line.split(" ")[1].replace("#", "")
+            # Setup PID Dict
+            if root[i][0][1].text == "4104":
+
+                FILTERFLAG = 0
+
+                PID = root[i][0][10].attrib['ProcessID']
+                #TID = root[i][0][10].attrib['ThreadID']
+
+                MESSAGE = root[i][1][2].text
+
+                if PID not in pids:
                     pids[PID] = {
                         "pid": PID,
                         "events": [],
                         "filter": []
                     }
 
-                    COUNTER  = 0
-                    FILTERED = 0
-
-                # Identifies the end of a ScriptBlock log and reset values
-                if line.startswith("#ENDMESSAGESECTION#"):
-                    STARTSECTION  = 0
-                    SCRIPTBLOCKID = 0
-                    FILTERFLAG    = 0
-
-                    # Checks for unique strings in events to filter out
+                # Checks for unique strings in events to filter out
+                if MESSAGE != None:
                     for entry in noise:
                         if entry in MESSAGE:
                             FILTERFLAG = 1
                             FILTERED  += 1
                             pids[PID]["filter"].append({str(FILTERED): MESSAGE.strip()})
 
-                    # Save the record
-                    if FILTERFLAG == 0 and MESSAGE.strip() != "":
+                # Save the record
+                if FILTERFLAG == 0 and MESSAGE != None:
 
-                        COUNTER += 1
-                        MODFLAG = 0
+                    COUNTER += 1
+                    MODFLAG = 0
 
-                        # Attempt to further decode token replacement/other common obfuscation
-                        # Original and altered will be saved
+                    # Attempt to further decode token replacement/other common obfuscation
+                    # Original and altered will be saved
+                    ALTMSG = MESSAGE.strip()
 
-                        ALTMSG = MESSAGE.strip()
+                    if re.search("\x00", ALTMSG):
+                        ALTMSG, MODFLAG = removeNull(ALTMSG, MODFLAG)
 
-                        if re.search("\x00", ALTMSG):
-                            ALTMSG, MODFLAG = removeNull(ALTMSG, MODFLAG)
+                    if re.search("(\\\"|\\\')", ALTMSG):
+                        ALTMSG, MODFLAG = removeEscape(ALTMSG, MODFLAG)
 
-                        if re.search("(\\\"|\\\')", ALTMSG):
-                            ALTMSG, MODFLAG = removeEscape(ALTMSG, MODFLAG)
+                    if re.search("`", ALTMSG):
+                        ALTMSG, MODFLAG = removeTick(ALTMSG, MODFLAG)
 
-                        if re.search("`", ALTMSG):
-                            ALTMSG, MODFLAG = removeTick(ALTMSG, MODFLAG)
+                    if re.search("\^", ALTMSG):
+                        ALTMSG, MODFLAG = removeCaret(ALTMSG, MODFLAG)
 
-                        if re.search("\^", ALTMSG):
-                            ALTMSG, MODFLAG = removeCaret(ALTMSG, MODFLAG)
+                    while re.search("[\x20]{2,}", ALTMSG):
+                        ALTMSG, MODFLAG = spaceReplace(ALTMSG, MODFLAG)
 
-                        while re.search("[\x20]{2,}", ALTMSG):
-                            ALTMSG, MODFLAG = spaceReplace(ALTMSG, MODFLAG)
+                    # One run pre charPreplace
+                    if re.search("(\"\+\"|\'\+\')", ALTMSG):
+                        ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
 
-                        # One run pre charPreplace
-                        if re.search("(\"\+\"|\'\+\')", ALTMSG):
-                            ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
+                    while re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF]+(\'.+?\'\))", ALTMSG):
+                        ALTMSG, MODFLAG = charReplace(ALTMSG, MODFLAG)
 
-                        while re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF]+(\'.+?\'\))", ALTMSG):
-                            ALTMSG, MODFLAG = charReplace(ALTMSG, MODFLAG)
+                    # One run post charReplace for new strings
+                    if re.search("(\"\+\"|\'\+\')", ALTMSG):
+                        ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
 
-                        # One run post charReplace for new strings
-                        if re.search("(\"\+\"|\'\+\')", ALTMSG):
-                            ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
+                    if "replace" in ALTMSG.lower():
+                        try:
+                            ALTMSG, MODFLAG = replaceDecoder(ALTMSG, MODFLAG)
+                        except Exception as e:
+                            log.error("Curtain processing error for entry - %s" % e)
 
-                        if "replace" in ALTMSG.lower():
-                            try:
-                                ALTMSG, MODFLAG = replaceDecoder(ALTMSG, MODFLAG)
-                            except Exception as e:
-                                log.error("Curtain processing error for entry - %s" % e)
+                    # Remove camel case obfuscation as last step
+                    ALTMSG, MODFLAG = adjustCase(ALTMSG, MODFLAG)
 
-                        # Remove camel case obfuscation as last step
-                        ALTMSG, MODFLAG = adjustCase(ALTMSG, MODFLAG)
+                    if MODFLAG == 0:
+                        ALTMSG = "No alteration of event."
 
-                        if MODFLAG == 0:
-                            ALTMSG = "No alteration of event."
+                    # Save the output
+                    pids[PID]["events"].append({str(COUNTER): {"original": MESSAGE.strip(), "altered": ALTMSG}})
 
-                        # Save the output
-                        pids[PID]["events"].append({str(COUNTER): {"original": MESSAGE.strip(), "altered": ALTMSG}})
-
-                    MESSAGE = ""
-
-                # Filters out the ScriptBlock ID footer on each log event
-                if line.startswith("ScriptBlock ID: "):
-                    SCRIPTBLOCKID = 1
-
-                # Capture all lines inbetween header and footer
-                # Newlines manually added for later HTML conversion
-                if STARTSECTION == 1:
-                    if SCRIPTBLOCKID == 0:
-                        MESSAGE += line + "\n"
-
-                # Identifies the start of the actual event log after header
-                if line.startswith("#STARTMESSAGESECTION#"):
-                    STARTSECTION = 1
-
-        # Find Curtain PID if it was picked up in log
         remove = []
-        for pid in pids:
-            for event in pids[pid]["events"]:
-                for entry in event.values():
-                    if "curtain.log" in entry["original"] or \
-                    "Process { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog" in entry["original"]:
-                        if pid not in remove:
-                            remove.append(pid)
 
         # Find empty PID
         for pid in pids:
