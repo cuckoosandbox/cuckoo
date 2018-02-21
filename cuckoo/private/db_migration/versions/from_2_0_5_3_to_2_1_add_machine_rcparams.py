@@ -11,8 +11,8 @@ Create Date: 2018-02-05 11:09:15.947809
 """
 
 # Revision identifiers, used by Alembic.
-revision = 'cb1024e614b7'
-down_revision = '181be2111077'
+revision = "cb1024e614b7"
+down_revision = "181be2111077"
 
 from alembic import op
 import sqlalchemy as sa

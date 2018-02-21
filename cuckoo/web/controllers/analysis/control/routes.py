@@ -1,14 +1,14 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
-from cuckoo.common.config import config
-from cuckoo.core.database import Database
-from cuckoo.web.utils import view_error, render_template
 from django.http import Http404, HttpResponseRedirect
 
-db = Database()
+from cuckoo.common.config import config
+from cuckoo.core.database import Database
+from cuckoo.web.utils import render_template
 
+db = Database()
 
 class AnalysisControlRoutes:
     @staticmethod

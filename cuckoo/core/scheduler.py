@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -462,14 +462,18 @@ class AnalysisManager(threading.Thread):
 
         # Check if the current task has remotecontrol
         # enabled before starting the machine.
-        control_enabled = config("cuckoo:remotecontrol:enabled") \
-            and "remotecontrol" in self.task.options
+        control_enabled = (
+            config("cuckoo:remotecontrol:enabled") and
+            "remotecontrol" in self.task.options
+        )
         if control_enabled:
             try:
                 machinery.enable_remote_control(self.machine.label)
             except NotImplementedError:
-                raise CuckooMachineError("Remote control is not implemented "
-                                         "for this machine type.")
+                raise CuckooMachineError(
+                    "Remote control support has not been implemented "
+                    "for this machinery."
+                )
 
         try:
             unlocked = False
@@ -503,8 +507,11 @@ class AnalysisManager(threading.Thread):
                     )
                     self.db.set_machine_rcparams(self.machine.label, params)
                 except NotImplementedError:
-                    raise CuckooMachineError("Remote control is not implemented"
-                                             " for this machine type.")
+                    raise CuckooMachineError(
+                        "Remote control support has not been implemented "
+                        "for this machinery."
+                    )
+
             # Enable network routing.
             self.route_network()
 
@@ -632,14 +639,14 @@ class AnalysisManager(threading.Thread):
 
             # Disable remote control after stopping the machine
             # if it was enabled for the task.
-            control_enabled = config("cuckoo:remotecontrol:enabled")
-            if "remotecontrol" in self.task.options and control_enabled:
+            if control_enabled:
                 try:
                     machinery.disable_remote_control(self.machine.label)
                 except NotImplementedError:
-                    raise CuckooMachineError("Remote control is not "
-                                             "implemented for this machine "
-                                             "type.")
+                    raise CuckooMachineError(
+                        "Remote control support has not been implemented "
+                        "for this machinery."
+                    )
 
             # Mark the machine in the database as stopped. Unless this machine
             # has been marked as dead, we just keep it as "started" in the

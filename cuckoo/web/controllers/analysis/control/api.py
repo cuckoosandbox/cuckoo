@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,14 +9,15 @@ import os
 import socket
 import uuid
 
+from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
+from guacamole.client import GuacamoleClient, GuacamoleError
+
 from cuckoo.common.config import config
 from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.misc import cwd
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
-from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
-from guacamole.client import GuacamoleClient, GuacamoleError
 
 mdb = MongoDB()
 mdb.init_once()
@@ -29,8 +30,7 @@ read_lock = threading.RLock()
 write_lock = threading.RLock()
 pending_read_request = threading.Event()
 
-
-class ControlApi:
+class ControlApi(object):
     @staticmethod
     @csrf_exempt
     def tunnel(request, task_id):
@@ -59,16 +59,16 @@ class ControlApi:
         qs = request.META["QUERY_STRING"]
         if qs == "connect":
             return ControlApi._do_connect(task)
-        else:
-            try:
-                cmd, conn, = qs.split(":")[:2]
-            except ValueError:
-                return HttpResponse(status=400)
 
-            if cmd == "read":
-                return ControlApi._do_read(conn)
-            elif cmd == "write":
-                return ControlApi._do_write(request, conn)
+        try:
+            cmd, conn, = qs.split(":")[:2]
+        except ValueError:
+            return HttpResponse(status=400)
+
+        if cmd == "read":
+            return ControlApi._do_read(conn)
+        elif cmd == "write":
+            return ControlApi._do_write(request, conn)
 
         return HttpResponse(status=400)
 
@@ -98,11 +98,11 @@ class ControlApi:
 
                 ftype, b64 = data.split(",")
                 if ftype != "data:image/png;base64":
-                    raise ValueError()
+                    raise ValueError
 
                 f = base64.b64decode(b64)
                 if f[:4] != "\x89PNG":
-                    raise ValueError()
+                    raise ValueError
             except ValueError:
                 return json_error_response("invalid format")
 
@@ -113,8 +113,7 @@ class ControlApi:
             shot_file = "remotecontrol_%d.png" % int(sid)
             shot_path = os.path.join(scr_dir, shot_file)
 
-            with open(shot_path, "wb") as sf:
-                sf.write(f)
+            open(shot_path, "wb").write(f)
 
             shot_blob = {}
             shot = File(shot_path)
@@ -130,7 +129,6 @@ class ControlApi:
             "status": "success",
         })
 
-
     @staticmethod
     def _do_connect(task):
         if not task.guest:
@@ -142,26 +140,21 @@ class ControlApi:
         machine = db.view_machine_by_label(task.guest.label)
         rcparams = machine.rcparams
 
-        protocol = rcparams.get("protocol", None)
-        host = rcparams.get("host", None)
-        port = rcparams.get("port", None)
+        protocol = rcparams.get("protocol")
+        host = rcparams.get("host")
+        port = rcparams.get("port")
 
         guacd_host = config("cuckoo:remotecontrol:guacd_host")
         guacd_port = config("cuckoo:remotecontrol:guacd_port")
 
         try:
             guac = GuacamoleClient(guacd_host, guacd_port, debug=False)
-            guac.handshake(
-                protocol=protocol,
-                hostname=host,
-                port=port,
-            )
+            guac.handshake(protocol=protocol, hostname=host, port=port)
         except (socket.error, GuacamoleError) as e:
             log.error(
-                "Failed to connect to guacd on %s:%d"
-                % (guacd_host, guacd_port)
+                "Failed to connect to guacd on %s:%d -> %s",
+                guacd_host, guacd_port, e
             )
-            log.error(e)
             return JsonResponse({
                 "status": "failed",
                 "message": "connection failed",
@@ -173,7 +166,6 @@ class ControlApi:
 
         response = HttpResponse(content=cache_key)
         response["Cache-Control"] = "no-cache"
-
         return response
 
     @staticmethod
@@ -190,17 +182,17 @@ class ControlApi:
                 while True:
                     try:
                         yield guac.receive()
-                        if pending_read_request.is_set():
-                            break
                     except socket.timeout:
                         break
 
-                # End-of-instruction marker
+                    if pending_read_request.is_set():
+                        break
+
+                # End-of-instruction marker.
                 yield "0.;"
 
         response = StreamingHttpResponse(
-            content(),
-            content_type="application/octet-stream"
+            content(), content_type="application/octet-stream"
         )
 
         response["Cache-Control"] = "no-cache"

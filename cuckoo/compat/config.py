@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -694,7 +694,6 @@ def _203_204(c):
 def _204_205(c):
     if c["auxiliary"]["mitm"]["script"] == "mitm.py":
         c["auxiliary"]["mitm"]["script"] = "stuff/mitm.py"
-
     return c
 
 def _205_210(c):
@@ -702,7 +701,6 @@ def _205_210(c):
     c["cuckoo"]["remotecontrol"]["enabled"] = False
     c["cuckoo"]["remotecontrol"]["guacd_host"] = "localhost"
     c["cuckoo"]["remotecontrol"]["guacd_port"] = 4822
-
     c["virtualbox"]["controlports"] = "5000-5050"
     return c
 
@@ -724,7 +722,6 @@ migrations = {
     "2.0.3": ("2.0.4", _203_204),
     "2.0.4": ("2.0.5", _204_205),
     "2.0.5": ("2.1.0", _205_210),
-
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.

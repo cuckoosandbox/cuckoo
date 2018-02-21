@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -945,7 +945,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error setting machine status: {0}".format(e))
+                log.debug("Database error setting machine status: %s", e)
                 session.rollback()
             finally:
                 session.close()
@@ -962,7 +962,7 @@ class Database(object):
         try:
             machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
-            log.debug("Database error setting machine rcparams: {0}".format(e))
+            log.debug("Database error setting machine rcparams: %s", e)
             session.close()
             return
 
@@ -972,9 +972,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug(
-                    "Database error setting machine rcparams: {0}".format(e)
-                )
+                log.debug("Database error setting machine rcparams: %s", e)
                 session.rollback()
             finally:
                 session.close()

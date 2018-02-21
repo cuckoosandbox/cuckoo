@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -611,14 +611,14 @@ class TestVirtualbox(object):
             self.m.dump_memory("label", u"mem\u202eory.dmp")
         task_log_stop(1)
 
-    def test_enable_remotecontrol(self):
+    def test_enable_vrde(self):
         self.m.enable_remote_control("label")
         assert self.m.remote_control is True
 
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = "", ""
             p.return_value.returncode = 0
-            self.m._enable_remote_control("label")
+            self.m.enable_vrde("label")
 
         p.assert_has_calls([
             mock.call(
@@ -643,11 +643,11 @@ class TestVirtualbox(object):
             mock.call().communicate(),
         ])
 
-    def test_disable_remotecontrol(self):
+    def test_disable_vrde(self):
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = "", ""
             p.return_value.returncode = 0
-            self.m.disable_remote_control("label")
+            self.m.disable_vrde("label")
 
         p.assert_has_calls([
             mock.call(

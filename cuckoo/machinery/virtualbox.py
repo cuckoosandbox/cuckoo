@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -121,7 +121,7 @@ class VirtualBox(Machinery):
         self._wait_status(label, self.SAVED)
 
         if self.remote_control:
-            self._enable_remote_control(label)
+            self.enable_vrde(label)
 
         try:
             args = [
@@ -387,7 +387,7 @@ class VirtualBox(Machinery):
     def enable_remote_control(self, label):
         self.remote_control = True
 
-    def _enable_remote_control(self, label):
+    def enable_vrde(self, label):
         try:
             proc = self._set_flag(label, "vrde", "on")
             if proc.returncode != 0:
@@ -401,20 +401,19 @@ class VirtualBox(Machinery):
                           "remote control multicon: %d" % proc.returncode)
                 return False
 
-            ports = getattr(self.options, "virtualbox")["controlports"]
-            self._set_vrde_ports(label, ports)
+            self._set_vrde_ports(label, self.options.virtualbox.controlports)
 
-            ports = self.vminfo(label, "vrdeports")
             log.info(
                 "Successfully enabled remote control for virtual machine "
-                "with label %s on port(s) %s" % (label, ports)
+                "with label %s on port(s): %s",
+                label, self.vminfo(label, "vrdeports")
             )
         except OSError as e:
             raise CuckooMachineError(
                 "VBoxManage failed to enable remote control: %s" % e
             )
 
-    def disable_remote_control(self, label):
+    def disable_vrde(self, label):
         try:
             proc = self._set_flag(label, "vrde", "off")
             if proc.returncode != 0:
@@ -437,6 +436,8 @@ class VirtualBox(Machinery):
         port = int(self.vminfo(label, "vrdeport"))
         log.info("RDP interface running on port %d" % port)
 
+        # TODO The Cuckoo Web Interface may be running at a different host
+        # than the actual Cuckoo daemon (and as such, the VMs).
         return {
             "protocol": "rdp",
             "host": "127.0.0.1",
@@ -463,6 +464,8 @@ class VirtualBox(Machinery):
 
         return proc
 
+    # TODO Optimize this method away simply by invoking "vboxmanage modifyvm"
+    # once with all parameters (i.e., --vrde --vrdeport 1234 etc).
     def _set_flag(self, label, key, val):
         args = [
             self.options.virtualbox.path, "modifyvm", label,

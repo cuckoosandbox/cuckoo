@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -8,11 +8,11 @@ from django.conf.urls import url
 
 from cuckoo.web.controllers.analysis.api import AnalysisApi
 from cuckoo.web.controllers.analysis.compare.routes import AnalysisCompareRoutes
+from cuckoo.web.controllers.analysis.control.api import ControlApi
+from cuckoo.web.controllers.analysis.control.routes import AnalysisControlRoutes
 from cuckoo.web.controllers.analysis.export.api import ExportApi
 from cuckoo.web.controllers.analysis.network.api import AnalysisNetworkApi
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
-from cuckoo.web.controllers.analysis.control.api import ControlApi
-from cuckoo.web.controllers.analysis.control.routes import AnalysisControlRoutes
 from cuckoo.web.controllers.submission.routes import SubmissionRoutes
 
 urlpatterns = [
