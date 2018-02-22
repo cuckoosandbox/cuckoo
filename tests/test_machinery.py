@@ -643,11 +643,11 @@ class TestVirtualbox(object):
             mock.call().communicate(),
         ])
 
-    def test_disable_vrde(self):
+    def test_disable_remotecontrol(self):
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
             p.return_value.communicate.return_value = "", ""
             p.return_value.returncode = 0
-            self.m.disable_vrde("label")
+            self.m.disable_remote_control("label")
 
         p.assert_has_calls([
             mock.call(

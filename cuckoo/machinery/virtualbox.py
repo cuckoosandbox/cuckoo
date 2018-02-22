@@ -413,7 +413,7 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to enable remote control: %s" % e
             )
 
-    def disable_vrde(self, label):
+    def disable_remote_control(self, label):
         try:
             proc = self._set_flag(label, "vrde", "off")
             if proc.returncode != 0:
