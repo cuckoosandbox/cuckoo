@@ -37,6 +37,17 @@ class BoxJS(Processing):
             raise CuckooOperationalError(
                 "Unable to GET results: %r" % e.message
             )
+    def request_json(self, IOC, **kwargs):
+        """Wrapper around doing a request and parsing its JSON output."""
+        try:
+            log.debug(str(IOC))
+            r = requests.get(IOC, timeout=self.timeout, **kwargs)
+            return r.json() if r.status_code == 200 and r.text else {}
+        except (requests.ConnectionError, ValueError) as e:
+            raise CuckooOperationalError(
+                "Unable to GET results: %r" % e.message
+            )
+
 
     def _post_text(self, url, **kwargs):
         """Wrapper around doing a post and parsing its text output."""
@@ -72,6 +83,8 @@ class BoxJS(Processing):
 
         self.url = self.options.get("url")
         self.timeout = int(self.options.get("timeout", 60))
+	self.ioc = self.options.get("IOC")
+
 
         # Post file for scanning.
         # files = {
@@ -126,10 +139,13 @@ class BoxJS(Processing):
         results = {}
         urls_url = "{}/urls".format(base_url)
         resources_url = "{}/resources".format(base_url)
+	iocs_ioc = "{}/IOC".format(base_url)
 
 
         results["urls"] = self.request_json(urls_url)
         results["resources"] = self.request_json(resources_url)
+	results["IOC"] = self.request_json(iocs_ioc)
+
 
         # Delete the results.
         try:
@@ -140,3 +156,4 @@ class BoxJS(Processing):
             )
 
         return results
+
