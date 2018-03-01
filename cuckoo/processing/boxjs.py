@@ -85,7 +85,6 @@ class BoxJS(Processing):
         self.timeout = int(self.options.get("timeout", 60))
 	self.ioc = self.options.get("IOC")
 
-
         # Post file for scanning.
         # files = {
         #     "sample": open(self.file_path, "rb"),
@@ -127,10 +126,6 @@ class BoxJS(Processing):
                 raise CuckooOperationalError("Unknown error code: %s" % code)
 
             if retry:
-                # files = {
-                #     "sample": open(self.file_path, "rb"),
-                #     "flags": flags
-                # }
                 postUrl = urlparse.urljoin(self.url, "/sample")
                 analysis_id = self._post_text(postUrl,  sample=open(self.file_path, "rb"), flags=flags)# returns a UUID
                 base_url = "{}/sample/{}".format(self.url, str(analysis_id))
@@ -140,12 +135,9 @@ class BoxJS(Processing):
         urls_url = "{}/urls".format(base_url)
         resources_url = "{}/resources".format(base_url)
 	iocs_ioc = "{}/IOC".format(base_url)
-
-
         results["urls"] = self.request_json(urls_url)
         results["resources"] = self.request_json(resources_url)
 	results["IOC"] = self.request_json(iocs_ioc)
-
 
         # Delete the results.
         try:
