@@ -623,12 +623,11 @@ class Config(object):
                 "scan": Boolean(False),
                 "key": String("a0283a2c3d55728300d064874239b5346fb991317e8449fe43c902879d758088", sanitize=True),
             },
-                "boxjs": {
+            "boxjs": {
                 "enabled": Boolean(False),
                 "url": String(),
                 "timeout": Int(60),
             },
-
             "irma": {
                 "enabled": Boolean(False),
                 "timeout": Int(60),
