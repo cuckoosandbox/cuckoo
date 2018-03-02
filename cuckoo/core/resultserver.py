@@ -303,7 +303,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
             # Registering the protocol allows for the handler getting its "running"
             # field set to False (among other use-cases in the future).
             with self.handler_lock:
-                s = self.handlers.setdefault(ipaddr, set())
+                s = self.handlers.setdefault(task_id, set())
                 s.add(sock)
 
             try:
