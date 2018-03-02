@@ -1,4 +1,4 @@
-.. image:: http://cuckoosandbox.org/graphic/cuckoo.png
+.. image:: https://cuckoosandbox.org/assets/images/cuckoo-black.png
    :alt: Cuckoo Sandbox
    :target: https://cuckoosandbox.org/
 
