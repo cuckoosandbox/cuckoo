@@ -50,6 +50,9 @@ class HandlerContext:
         self.storagepath = storagepath
         self.sock = sock.makefile(mode='rb')
 
+    def __del__(self):
+        self.sock.close()
+
     def read(self, size):
         buf = self.sock.read(size)
         if not buf:
@@ -256,10 +259,15 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         "FILE": FileUpload,
         "LOG": LogHandler,
     }
+    handler_lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super(GeventResultServerWorker, self).__init__(*args, **kwargs)
+
+        # Store IP address to task_id mapping
         self.tasks = {}
+
+        # Store running handlers for task_id
         self.handlers = {}
 
     def do_run(self):
@@ -267,7 +275,6 @@ class GeventResultServerWorker(gevent.server.StreamServer):
 
     def add_task(self, task_id, ipaddr):
         self.tasks[ipaddr] = task_id
-        self.handlers[ipaddr] = self.handlers.get(ipaddr, {})
 
     def del_task(self, task_id, ipaddr):
         """Delete ResultServer state and wait for pending RequestHandlers."""
@@ -275,15 +282,13 @@ class GeventResultServerWorker(gevent.server.StreamServer):
             log.warning("ResultServer did not have a task with ID %s",
                         task_id)
 
-        handlers = self.handlers.pop(ipaddr, {})
-        for handler in handlers.values():
-            handler.running = False
-            # <WAIT>
-            #h.end_request.set()
-            #h.done_event.wait()
+        with self.handler_lock:
+            socks = self.handlers.pop(task_id, set())
+            for sock in socks:
+                sock.close()
 
     def handle(self, sock, addr):
-        ipaddr, port = addr
+        ipaddr = addr[0]
         task_id = self.tasks.get(ipaddr)
         if not task_id:
             log.warning("ResultServer did not have a task for IP %s", ipaddr)
@@ -297,16 +302,21 @@ class GeventResultServerWorker(gevent.server.StreamServer):
 
             # Registering the protocol allows for the handler getting its "running"
             # field set to False (among other use-cases in the future).
-            self.handlers[ipaddr][port] = protocol
+            with self.handler_lock:
+                s = self.handlers.setdefault(ipaddr, set())
+                s.add(sock)
 
-            protocol.task_id = task_id
             try:
+                protocol.task_id = task_id  # TODO
                 protocol.init()
                 protocol.handle()
             finally:
                 protocol.close()
+                with self.handler_lock:
+                    s.discard(sock)
 
         finally:
+            sock.close()
             task_log_stop(task_id)
 
     def negotiate_protocol(self, ctx):
@@ -339,7 +349,7 @@ class ResultServer(object):
         self.instance.add_task(task.id, machine.ip)
 
     def del_task(self, task, machine):
-        """Delete ResultServer state and wait for pending RequestHandlers."""
+        """Delete running task and cancel existing handlers."""
         self.instance.del_task(task.id, machine.ip)
 
     def create_bg_server(self):
