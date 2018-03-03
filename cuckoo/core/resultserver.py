@@ -4,13 +4,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 # TODO:
-# * NTFS ADS / windows fn protection
 # * gevent doesn't bind until serve_forever()
-# * replace threading with gevent locks (needed?)
-# * lock all filesystem operations?
-# * lock in ProtocolHandler for .running?
-# * fd leaking / no timeout
+# * document filesystem operations locking concern
+# * test fd leaking / timeout
 # * consider creating a folder whitelist
+# * update setup.py dep
 from __future__ import print_function
 
 import errno
@@ -41,6 +39,21 @@ MAX_NETLOG_LINE = 4 * 1024
 BUFSIZE = 16 * 1024
 
 NETLOG_RECV_TIMEOUT = 60
+
+# Prevent malicious clients from using potentially dangerious filenames
+# E.g. C API confusion by using null, or using the colon on NTFS (Alternate
+# Data Streams); XXX: just replace illegal chars?
+BANNED_PATH_CHARS = b'\x00:'
+
+
+def netlog_sanitize_fname(fname):
+    """Validate agent-provided path for result files"""
+    fname = fname.replace("\\", "/")
+    if (fname.startswith('/') or './' in fname or
+            any(c in BANNED_PATH_CHARS for c in fname)):
+        raise CuckooOperationalError("Netlog client supplied banned path: %s"
+                                     % fname)
+    return fname
 
 
 class HandlerContext:
@@ -87,9 +100,10 @@ class FileUpload(ProtocolHandler):
         # Read until newline for file path, e.g.,
         # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
 
-        dump_path = self.handler.read_newline().replace("\\", "/")
+        dump_path = netlog_sanitize_fname(self.handler.read_newline())
 
         if self.version >= 2:
+            # NB: filepath is only used as metadata
             filepath = self.handler.read_newline()
             pids = map(int, self.handler.read_newline().split())
         else:
@@ -99,7 +113,7 @@ class FileUpload(ProtocolHandler):
 
         dir_part, filename = os.path.split(dump_path)
 
-        if "./" in dump_path or not dir_part or dump_path.startswith("/"):
+        if not dir_part:
             raise CuckooOperationalError(
                 "FileUpload failure, banned path: %s" % dump_path
             )
@@ -162,6 +176,7 @@ class FileUpload(ProtocolHandler):
         if self.fd:
             self.fd.close()
 
+
 class LogHandler(ProtocolHandler):
     # TODO: not protected against opening multiple times
     def init(self):
@@ -197,15 +212,18 @@ class LogHandler(ProtocolHandler):
         log.debug("Log analysis.log already existing, appending data.")
         fd = open(self.logpath, "ab")
 
-        # add a fake log entry, saying this had to be re-opened
-        #  use the same format as the default logger, in case anyone wants to parse this
-        #  2015-02-23 12:05:05,092 [lib.api.process] DEBUG: Using QueueUserAPC injection.
+        # Add a fake log entry, saying this had to be re-opened. Use the same
+        # format as the default logger, in case anyone wants to parse this:
+        #  2015-02-23 12:05:05,092 [lib.api.process] DEBUG: Using QueueUserAPC
+        #   injection.
         now = datetime.datetime.now()
         print("\n", now.strftime("%Y-%m-%d %H:%M:%S",),
               now.microsecond / 1000.0,
-              " [lib.core.resultserver] WARNING: This log file was re-opened, log entries will be appended.",
+              " [lib.core.resultserver] WARNING: This log file was re-opened,"
+              " log entries will be appended.",
               sep='', file=fd)
         return fd
+
 
 class BsonStore(ProtocolHandler):
     def init(self):
@@ -227,14 +245,21 @@ class BsonStore(ProtocolHandler):
             except EOFError:
                 break
 
-            length = struct.unpack("I", lenbuf)[0]
-            buf = self.handler.read(length)
-            if len(buf) != length:
-                log.warning("BsonStore short read")
-                break
+            self.f.write(lenbuf)
 
-            # TODO Handle out of disk space.
-            self.f.write(lenbuf + buf)
+            length = struct.unpack("<I", lenbuf)[0]
+            remain = length
+            while remain > 0:
+                size = min(BUFSIZE, remain)
+                buf = self.handler.read(size)
+                remain -= len(buf)
+
+                # TODO Handle out of disk space.
+                self.f.write(buf)
+
+            log.debug("Task %s: uploaded BSON part for PID %s length: %s",
+                      self.task_id,
+                      self.version, length)
 
     def close(self):
         self.f.close()
@@ -274,6 +299,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         self.serve_forever()
 
     def add_task(self, task_id, ipaddr):
+        Folders.create(cwd(analysis=task_id), 'logs')
         self.tasks[ipaddr] = task_id
 
     def del_task(self, task_id, ipaddr):
@@ -284,6 +310,9 @@ class GeventResultServerWorker(gevent.server.StreamServer):
 
         with self.handler_lock:
             socks = self.handlers.pop(task_id, set())
+            if socks:
+                log.debug("Cancel %s socket(s) for task %r", len(socks),
+                          task_id)
             for sock in socks:
                 sock.close()
 
@@ -300,15 +329,15 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         try:
             protocol = self.negotiate_protocol(ctx)
 
-            # Registering the protocol allows for the handler getting its "running"
-            # field set to False (among other use-cases in the future).
+            # Registering the socket allows us to cancel the handler by
+            # closing the socket when the task is deleted
             with self.handler_lock:
                 s = self.handlers.setdefault(task_id, set())
                 s.add(sock)
 
+            protocol.task_id = task_id  # TODO
+            protocol.init()
             try:
-                protocol.task_id = task_id  # TODO
-                protocol.init()
                 protocol.handle()
             finally:
                 protocol.close()
@@ -359,19 +388,20 @@ class ResultServer(object):
         if pool_size:
             pool_size = int(pool_size)
         else:
-            pool_size = 32
+            pool_size = 128
 
         pool = gevent.pool.Pool(pool_size)
         try:
             # TODO: support binding to port 0 for random port
             self.instance = GeventResultServerWorker((ip, port),
                                                      spawn=pool)
+            self.instance.do_run()
         except OSError as e:
             if e.errno == errno.EADDRINUSE:
-                    raise CuckooCriticalError(
-                        "Cannot bind ResultServer on port %d "
-                        "because it was in use, bailing." % port
-                        )
+                raise CuckooCriticalError(
+                    "Cannot bind ResultServer on port %d "
+                    "because it was in use, bailing." % port
+                )
             elif e.errno == errno.EADDRNOTAVAIL:
                 raise CuckooCriticalError(
                     "Unable to bind ResultServer on %s:%s %s. This "
@@ -386,4 +416,3 @@ class ResultServer(object):
                     "Unable to bind ResultServer on %s:%s: %s" %
                     (ip, port, e)
                 )
-        self.instance.do_run()
