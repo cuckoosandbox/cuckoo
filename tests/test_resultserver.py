@@ -17,7 +17,9 @@ import shutil
 import json
 
 from cuckoo.common.exceptions import CuckooOperationalError
+from cuckoo.common.files import Folders
 from cuckoo.core.log import task_log_start, task_log_stop
+from cuckoo.core.resultserver import RESULT_DIRECTORIES
 from cuckoo.core.resultserver import FileUpload, LogHandler, BsonStore
 from cuckoo.core.startup import init_logging
 from cuckoo.main import cuckoo_create
@@ -31,7 +33,8 @@ def cuckoo_cwd():
     print('Temporary path:', path)
     set_cwd(path)
     cuckoo_create()
-    mkdir(cwd(analysis=1))
+    anal_path = cwd(analysis=1)
+    Folders.create(anal_path, RESULT_DIRECTORIES)
     yield path
     shutil.rmtree(path)
 
@@ -115,6 +118,10 @@ class TestFileUpload(object):
 
     def test_invalid_paths(self):
         self.invalid_path("dummy")
+        self.invalid_path("files/p\x00ath.exe")
+        self.invalid_path("files/path.exe:$DATA")
+        self.invalid_path("notallowed/path.exe")
+        self.invalid_path("shots/notallowed/path.jpg")
         self.invalid_path("reports/report.json")
         self.invalid_path("/tmp/foobar")
         self.invalid_path("../hello")

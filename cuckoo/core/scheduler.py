@@ -25,7 +25,7 @@ from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
-from cuckoo.core.resultserver import ResultServer
+from cuckoo.core.resultserver import ResultServer, RESULT_DIRECTORIES
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd
 
@@ -36,6 +36,7 @@ machine_lock = None
 latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
+
 
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
@@ -77,8 +78,10 @@ class AnalysisManager(threading.Thread):
 
         # If we're not able to create the analysis storage folder, we have to
         # abort the analysis.
+        # Also create all directories that the ResultServer can use for file
+        # uploads.
         try:
-            Folders.create(self.storage)
+            Folders.create(self.storage, RESULT_DIRECTORIES)
         except CuckooOperationalError:
             log.error("Unable to create analysis folder %s", self.storage)
             return False

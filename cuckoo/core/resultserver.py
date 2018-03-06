@@ -33,7 +33,10 @@ MAX_NETLOG_LINE = 4 * 1024
 
 BUFSIZE = 16 * 1024
 
-NETLOG_RECV_TIMEOUT = 60
+# Directories in which analysis-related files will be stored; also acts as
+# whitelist
+RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted")
+RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 
 # Prevent malicious clients from using potentially dangerious filenames
 # E.g. C API confusion by using null, or using the colon on NTFS (Alternate
@@ -41,14 +44,17 @@ NETLOG_RECV_TIMEOUT = 60
 BANNED_PATH_CHARS = b'\x00:'
 
 
-def netlog_sanitize_fname(fname):
+def netlog_sanitize_fname(path):
     """Validate agent-provided path for result files"""
-    fname = fname.replace("\\", "/")
-    if (fname.startswith('/') or './' in fname or
-            any(c in BANNED_PATH_CHARS for c in fname)):
-        raise CuckooOperationalError("Netlog client supplied banned path: %s"
-                                     % fname)
-    return fname
+    path = path.replace("\\", "/")
+    dir_part, name = os.path.split(path)
+    if dir_part not in RESULT_UPLOADABLE:
+        raise CuckooOperationalError("Netlog client requested banned path: %s"
+                                     % path)
+    if any(c in BANNED_PATH_CHARS for c in name):
+        raise CuckooOperationalError("Netlog client requested banned path: %s"
+                                     % path)
+    return path
 
 
 class HandlerContext:
@@ -57,9 +63,6 @@ class HandlerContext:
         # The part where artifacts will be stored
         self.storagepath = storagepath
         self.sock = sock.makefile(mode='rb')
-
-    def __del__(self):
-        self.sock.close()
 
     def read(self, size):
         try:
@@ -76,8 +79,8 @@ class HandlerContext:
         line = self.sock.readline(MAX_NETLOG_LINE)
         if not line:
             raise EOFError
-        elif not line.endswith('\n'):
-            raise CuckooOperationalError('Received overly long line')
+        elif not line.endswith("\n"):
+            raise CuckooOperationalError("Received overly long line")
         return line[:-1]
 
     def read_any(self):
@@ -85,9 +88,6 @@ class HandlerContext:
 
 
 class FileUpload(ProtocolHandler):
-    # TODO: this should be a whitelist
-    RESTRICTED_DIRECTORIES = "reports/",
-
     def init(self):
         self.upload_max_size = config("cuckoo:resultserver:upload_max_size")
         self.storagepath = self.handler.storagepath
@@ -108,33 +108,7 @@ class FileUpload(ProtocolHandler):
             filepath, pids = None, []
 
         log.debug("File upload request for %s", dump_path)
-        dir_part, filename = os.path.split(dump_path)
-
-        if not dir_part:
-            raise CuckooOperationalError(
-                "FileUpload failure, banned path: %s" % dump_path
-            )
-
-        dir_part += "/"
-
-        for restricted in self.RESTRICTED_DIRECTORIES:
-            if dir_part.startswith(restricted):
-                raise CuckooOperationalError(
-                    "FileUpload failure, banned path: %s" % dump_path
-                )
-
-        try:
-            Folders.create(self.storagepath, dir_part)
-        except CuckooOperationalError:
-            log.error("Unable to create folder %s", dir_part)
-            return
-
         file_path = os.path.join(self.storagepath, dump_path)
-
-        if not file_path.startswith(self.storagepath):
-            raise CuckooOperationalError(
-                "FileUpload failure, path sanitization failed."
-            )
 
         try:
             self.fd = open_exclusive(file_path)
@@ -238,7 +212,6 @@ class BsonStore(ProtocolHandler):
             self.f = None
             return
 
-        Folders.create(self.handler.storagepath, 'logs')
         self.f = open(os.path.join(self.handler.storagepath,
                                    "logs", "%d.bson" % self.version), "wb")
 
