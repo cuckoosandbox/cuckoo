@@ -10,6 +10,7 @@ import errno
 import datetime
 import gevent.server
 import gevent.pool
+import gevent.socket
 import json
 import logging
 import os
@@ -60,28 +61,45 @@ def netlog_sanitize_fname(path):
 class HandlerContext:
     """Holds context for protocol handlers"""
     def __init__(self, storagepath, sock):
-        # The part where artifacts will be stored
+        # The path where artifacts will be stored
         self.storagepath = storagepath
-        self.sock = sock.makefile(mode='rb')
+        self.sock = sock
+        self.buf = ''
 
-    def read(self, size):
+    def _read_ahead(self, size):
         try:
-            buf = self.sock.read(size)
+            buf = self.sock.recv(size)
+        except gevent.socket.cancel_wait_ex:
+            # We were cancelled elsewhere via .close()
+            raise EOFError
         except socket.error as e:
             if e.errno == errno.ECONNRESET:
-                raise EOFError
-            raise
-        if not buf:
+                if not self.buf:
+                    raise EOFError
+            else:
+                raise
+        self.buf += buf
+        if not self.buf:
             raise EOFError
+
+    def read(self, size):
+        have = len(self.buf)
+        if have < size:
+            self._read_ahead(size - have)
+        buf, self.buf = self.buf[:size], self.buf[size:]
         return buf
 
     def read_newline(self):
-        line = self.sock.readline(MAX_NETLOG_LINE)
-        if not line:
-            raise EOFError
-        elif not line.endswith("\n"):
-            raise CuckooOperationalError("Received overly long line")
-        return line[:-1]
+        while True:
+            pos = self.buf.find("\n")
+            if pos < 0:
+                if len(self.buf) >= MAX_NETLOG_LINE:
+                    raise CuckooOperationalError("Received overly long line")
+                fill = MAX_NETLOG_LINE - len(self.buf)
+                self._read_ahead(fill)
+                continue
+            line, self.buf = self.buf[:pos], self.buf[pos + 1:]
+            return line
 
     def read_any(self):
         return self.read(BUFSIZE)
