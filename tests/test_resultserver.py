@@ -11,10 +11,10 @@ from __future__ import print_function
 # - Double LOG command
 
 import logging
-import mock
 import pytest
 import tempfile
 import shutil
+import json
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.core.log import task_log_start, task_log_stop
@@ -23,33 +23,6 @@ from cuckoo.core.startup import init_logging
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import mkdir, set_cwd, cwd
 
-# TODO: restore this test
-'''
-@mock.patch("cuckoo.core.resultserver.select")
-def test_open_process_log_unicode(p):
-    set_cwd(tempfile.mkdtemp())
-    cuckoo_create()
-    mkdir(cwd(analysis=1))
-    mkdir(cwd("logs", analysis=1))
-
-    request = server = mock.MagicMock()
-
-    class Handler(ResultHandler):
-        storagepath = cwd(analysis=1)
-
-        def handle(self):
-            pass
-
-    init_logging(logging.DEBUG)
-
-    try:
-        task_log_start(1)
-        Handler(request, (None, None), server).open_process_log({
-            "pid": 1, "ppid": 2, "process_name": u"\u202e", "track": True,
-        })
-    finally:
-        task_log_stop(1)
-'''
 
 @pytest.fixture(scope='module')
 def cuckoo_cwd():
@@ -89,14 +62,51 @@ def mock_handler_context(klass, path, lines, data, version=None):
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestFileUpload(object):
-    def test_success(self):
-        mock_handler_context(FileUpload,
-                             cwd(analysis=1),
-                             ['logs/1.log'],
-                             ['this', 'is', 'a', 'test'])
+    @pytest.mark.order1
+    def test_success_noversion(self):
+        fu = mock_handler_context(FileUpload,
+                                  cwd(analysis=1),
+                                  ['files/1.exe'],
+                                  ['this', 'is', 'a', 'test'])
 
-        with open(cwd("logs", "1.log", analysis=1), "rb") as f:
+        with open(cwd("files", "1.exe", analysis=1), "rb") as f:
             assert f.read() == "thisisatest"
+
+        with open(fu.filelog) as f:
+            lines = f.readlines()
+            blob = json.loads(lines[-1])
+            assert blob['filepath'] is None
+            assert blob['path'] == "files/1.exe"
+            assert blob["pids"] == []
+
+    @pytest.mark.order2
+    def test_overwrite(self):
+        with pytest.raises(CuckooOperationalError) as e:
+            mock_handler_context(FileUpload,
+                                 cwd(analysis=1),
+                                 ['files/1.exe'],
+                                 [])
+        e.match("overwrite an existing file")
+
+
+    def test_success_v2(self):
+        fu = mock_handler_context(FileUpload,
+                                  cwd(analysis=1),
+                                  ['files/2.exe', 'C:\\RealFilename.exe',
+                                   '11 12'],
+                                  ['second', 'test'],
+                                  2)
+
+        with open(cwd("files", "2.exe", analysis=1), "rb") as f:
+            assert f.read() == "secondtest"
+
+        with open(fu.filelog) as f:
+            lines = f.readlines()
+            blob = json.loads(lines[-1])
+            assert blob['filepath'] == 'C:\\RealFilename.exe'
+            assert blob['path'] == "files/2.exe"
+            assert blob["pids"] == [11, 12]
+
 
     def invalid_path(self, path):
         with pytest.raises(CuckooOperationalError) as e:
@@ -104,6 +114,8 @@ class TestFileUpload(object):
         e.match("banned path")
 
     def test_invalid_paths(self):
+        self.invalid_path("dummy")
+        self.invalid_path("reports/report.json")
         self.invalid_path("/tmp/foobar")
         self.invalid_path("../hello")
         self.invalid_path("../../foobar")
@@ -111,6 +123,7 @@ class TestFileUpload(object):
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestLogHandler(object):
+    @pytest.mark.order1
     def test_success(self):
         mock_handler_context(LogHandler,
                              cwd(analysis=1),
@@ -119,6 +132,18 @@ class TestLogHandler(object):
 
         with open(cwd("analysis.log", analysis=1), "rb") as f:
             assert f.read() == "first\nsecond\n"
+
+    @pytest.mark.order2
+    def test_reopen(self):
+        mock_handler_context(LogHandler,
+                             cwd(analysis=1),
+                             [],
+                             ['reopen\n'])
+
+        with open(cwd("analysis.log", analysis=1), "rb") as f:
+            data = f.read()
+            assert 'WARNING: This log file was re-opened' in data
+            assert data.endswith('reopen\n')
 
 
 @pytest.mark.usefixtures('cuckoo_cwd')

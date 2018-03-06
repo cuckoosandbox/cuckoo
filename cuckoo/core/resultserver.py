@@ -3,14 +3,9 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-# TODO:
-# * gevent doesn't bind until serve_forever()
-# * document filesystem operations locking concern
-# * test fd leaking / timeout
-# * consider creating a folder whitelist
-# * update setup.py dep
 from __future__ import print_function
 
+import socket
 import errno
 import datetime
 import gevent.server
@@ -26,7 +21,7 @@ from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooResultError
-from cuckoo.common.files import Folders
+from cuckoo.common.files import Folders, open_exclusive
 from cuckoo.common.utils import Singleton
 from cuckoo.core.log import task_log_start, task_log_stop
 from cuckoo.misc import cwd
@@ -67,7 +62,12 @@ class HandlerContext:
         self.sock.close()
 
     def read(self, size):
-        buf = self.sock.read(size)
+        try:
+            buf = self.sock.read(size)
+        except socket.error as e:
+            if e.errno == errno.ECONNRESET:
+                raise EOFError
+            raise
         if not buf:
             raise EOFError
         return buf
@@ -81,13 +81,11 @@ class HandlerContext:
         return line[:-1]
 
     def read_any(self):
-        buf = self.sock.read(BUFSIZE)
-        if not buf:
-            raise EOFError
-        return buf
+        return self.read(BUFSIZE)
 
 
 class FileUpload(ProtocolHandler):
+    # TODO: this should be a whitelist
     RESTRICTED_DIRECTORIES = "reports/",
 
     def init(self):
@@ -110,7 +108,6 @@ class FileUpload(ProtocolHandler):
             filepath, pids = None, []
 
         log.debug("File upload request for %s", dump_path)
-
         dir_part, filename = os.path.split(dump_path)
 
         if not dir_part:
@@ -118,10 +115,12 @@ class FileUpload(ProtocolHandler):
                 "FileUpload failure, banned path: %s" % dump_path
             )
 
+        dir_part += "/"
+
         for restricted in self.RESTRICTED_DIRECTORIES:
-            if restricted in dir_part:
+            if dir_part.startswith(restricted):
                 raise CuckooOperationalError(
-                    "FileUpload failure, banned path."
+                    "FileUpload failure, banned path: %s" % dump_path
                 )
 
         try:
@@ -137,14 +136,14 @@ class FileUpload(ProtocolHandler):
                 "FileUpload failure, path sanitization failed."
             )
 
-        if os.path.exists(file_path):
-            log.warning(
-                "Analyzer tried to overwrite an existing file, "
-                "closing connection."
-            )
-            return
-
-        self.fd = open(file_path, "wb")
+        try:
+            self.fd = open_exclusive(file_path)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                raise CuckooOperationalError(
+                    "Analyzer tried to overwrite an existing file"
+                )
+            raise
         chunk = self.handler.read_any()
         while chunk:
             self.fd.write(chunk)
@@ -163,11 +162,11 @@ class FileUpload(ProtocolHandler):
                 break
 
         with open(self.filelog, "a+b") as f:
-            f.write("%s\n" % json.dumps({
+            print(json.dumps({
                 "path": dump_path,
                 "filepath": filepath,
                 "pids": pids,
-            }))
+            }), file=f)
 
         log.debug("Uploaded file length: %s", self.fd.tell())
         self.fd.close()
@@ -205,9 +204,11 @@ class LogHandler(ProtocolHandler):
             self.fd.close()
 
     def _open(self):
-        if not os.path.exists(self.logpath):
-            # (Race condition)
-            return open(self.logpath, "wb")
+        try:
+            return open_exclusive(self.logpath)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
         log.debug("Log analysis.log already existing, appending data.")
         fd = open(self.logpath, "ab")
@@ -231,6 +232,13 @@ class BsonStore(ProtocolHandler):
         # acceptable and backwards compatible (for now). Backwards compatible
         # in the sense that newer Cuckoo Monitor binaries work with older
         # versions of Cuckoo, the other way around doesn't apply here.
+        if self.version is None:
+            log.warning("Agent is sending BSON files without PID parameter, "
+                        "you should probably update it")
+            self.f = None
+            return
+
+        Folders.create(self.handler.storagepath, 'logs')
         self.f = open(os.path.join(self.handler.storagepath,
                                    "logs", "%d.bson" % self.version), "wb")
 
@@ -245,24 +253,33 @@ class BsonStore(ProtocolHandler):
             except EOFError:
                 break
 
-            self.f.write(lenbuf)
+            if self.f:
+                self.f.write(lenbuf)
 
             length = struct.unpack("<I", lenbuf)[0]
             remain = length
             while remain > 0:
                 size = min(BUFSIZE, remain)
-                buf = self.handler.read(size)
+                try:
+                    buf = self.handler.read(size)
+                except EOFError:
+                    logging.warning("BSON received EOF, but still expecting "
+                                    "%s byte(s)", remain)
+                    break
                 remain -= len(buf)
 
                 # TODO Handle out of disk space.
-                self.f.write(buf)
+                if self.f:
+                    self.f.write(buf)
 
             log.debug("Task %s: uploaded BSON part for PID %s length: %s",
                       self.task_id,
                       self.version, length)
 
     def close(self):
-        self.f.close()
+        if self.f:
+            self.f.close()
+            self.f = None
 
 
 class GeventResultServerWorker(gevent.server.StreamServer):
@@ -299,7 +316,6 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         self.serve_forever()
 
     def add_task(self, task_id, ipaddr):
-        Folders.create(cwd(analysis=task_id), 'logs')
         self.tasks[ipaddr] = task_id
 
     def del_task(self, task_id, ipaddr):
@@ -311,8 +327,8 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         with self.handler_lock:
             socks = self.handlers.pop(task_id, set())
             if socks:
-                log.debug("Cancel %s socket(s) for task %r", len(socks),
-                          task_id)
+                log.warning("Cancel %s socket(s) for task %r",
+                            len(socks), task_id)
             for sock in socks:
                 sock.close()
 
@@ -355,6 +371,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
             version = int(version)
         else:
             command, version = header, None
+        log.debug("Incoming command: %r", header)
         if command not in self.commands:
             log.warning(
                 "Unknown netlog protocol requested (%r), "

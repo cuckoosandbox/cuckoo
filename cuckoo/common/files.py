@@ -7,6 +7,7 @@ import hashlib
 import tempfile
 import ntpath
 import shutil
+import errno
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -23,6 +24,18 @@ def temppath():
         )
 
     return tmppath
+
+
+def open_exclusive(path, mode='wb'):
+    """Open a file with O_EXCL, failing if it already exists
+    [In Python 3, use open with x]"""
+    fd = os.open(path, os.O_CREAT|os.O_EXCL|os.O_WRONLY)
+    try:
+        return os.fdopen(fd, mode)
+    except:
+        os.close(fd)
+        raise
+
 
 class Storage(object):
     @staticmethod
@@ -56,7 +69,10 @@ class Folders(Storage):
             if not os.path.isdir(folder_path):
                 try:
                     os.makedirs(folder_path)
-                except OSError:
+                except OSError as e:
+                    if e.errno == errno.EEXIST:
+                        # Race condition, ignore
+                        continue
                     raise CuckooOperationalError(
                         "Unable to create folder: %s" % folder_path
                     )
