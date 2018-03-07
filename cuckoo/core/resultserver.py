@@ -95,7 +95,7 @@ class HandlerContext:
 
     def drain_buffer(self):
         """Drain buffer and end buffering"""
-        buf, self.buf = "", None
+        buf, self.buf = self.buf, None
         return buf
 
     def read_newline(self):
