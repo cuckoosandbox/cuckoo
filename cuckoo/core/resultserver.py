@@ -32,6 +32,7 @@ log = logging.getLogger(__name__)
 # Maximum line length to read for netlog messages, to avoid memory exhaustion
 MAX_NETLOG_LINE = 4 * 1024
 
+# Maximum number of bytes to buffer for a single connection
 BUFSIZE = 16 * 1024
 
 # Directories in which analysis-related files will be stored; also acts as
@@ -59,50 +60,96 @@ def netlog_sanitize_fname(path):
 
 
 class HandlerContext:
-    """Holds context for protocol handlers"""
-    def __init__(self, storagepath, sock):
+    """Holds context for protocol handlers.
+
+    To avoid losing data that was already buffered, handlers should check if
+    the buffer is empty when handling EOFError.
+
+    Can safely be cancelled from another thread, though in practice this will
+    not occur often -- usually the connection between VM and the ResultServer
+    will be reset during shutdown."""
+    def __init__(self, task_id, storagepath, sock):
+        self.task_id = task_id
+        self.command = None
+
         # The path where artifacts will be stored
         self.storagepath = storagepath
         self.sock = sock
         self.buf = ''
 
-    def _read_ahead(self, size):
+    def __repr__(self):
+        return '<Context for %s>' % self.command
+
+    def cancel(self):
+        """Cancel this context; gevent might complain about this with an
+        exception later on."""
         try:
-            buf = self.sock.recv(size)
-        except gevent.socket.cancel_wait_ex:
-            # We were cancelled elsewhere via .close()
-            raise EOFError
+            self.sock.shutdown(socket.SHUT_RD)
+        except socket.error:
+            pass
+
+    def read(self):
+        try:
+            return self.sock.recv(16384)
         except socket.error as e:
-            if e.errno == errno.ECONNRESET:
-                if not self.buf:
-                    raise EOFError
-            else:
+            if e.errno != errno.ECONNRESET:
                 raise
+            return ''
+
+    def buffered_read(self, size):
+        """Try to fill the buffer with at most `size` bytes
+        Will keep waiting until we're either cancelled, or until we received
+        something.
+        """
+        while True:
+            try:
+                buf = self.sock.recv(size)
+            except socket.timeout:
+                if self.cancelled:
+                    log.debug("Task #%s: connection was cancelled",
+                              self.task_id)
+                    raise Cancelled
+                continue
+            except socket.error as e:
+                log.debug("Task #%s encountered a socket error: %s",
+                          self.task_id, e)
+                if e.errno != errno.ECONNRESET:
+                    raise
+                raise EOFError
+            break
         self.buf += buf
         if not self.buf:
             raise EOFError
 
-    def read(self, size):
-        have = len(self.buf)
-        if have < size:
-            self._read_ahead(size - have)
-        buf, self.buf = self.buf[:size], self.buf[size:]
+    def drain_buffer(self):
+        """Drain buffer and end buffering"""
+        buf, self.buf = "", None
         return buf
 
     def read_newline(self):
+        """Read until the next newline character, but never more than
+        `MAX_NETLOG_LINE`."""
         while True:
             pos = self.buf.find("\n")
             if pos < 0:
                 if len(self.buf) >= MAX_NETLOG_LINE:
                     raise CuckooOperationalError("Received overly long line")
-                fill = MAX_NETLOG_LINE - len(self.buf)
-                self._read_ahead(fill)
+                buf = self.read()
+                if buf == '':
+                    raise EOFError
+                self.buf += buf
                 continue
             line, self.buf = self.buf[:pos], self.buf[pos + 1:]
             return line
 
-    def read_any(self):
-        return self.read(BUFSIZE)
+    def copy_to_fd(self, fd, max_size=None):
+        fd.write(self.drain_buffer())
+        while True:
+            buf = self.read()
+            if buf == '':
+                break
+            fd.write(buf)
+        fd.flush()
 
 
 class FileUpload(ProtocolHandler):
@@ -115,7 +162,6 @@ class FileUpload(ProtocolHandler):
     def handle(self):
         # Read until newline for file path, e.g.,
         # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
-
         dump_path = netlog_sanitize_fname(self.handler.read_newline())
 
         if self.version >= 2:
@@ -125,47 +171,30 @@ class FileUpload(ProtocolHandler):
         else:
             filepath, pids = None, []
 
-        log.debug("File upload request for %s", dump_path)
+        log.debug("Task #%s: File upload for %s", self.task_id, dump_path)
         file_path = os.path.join(self.storagepath, dump_path)
 
         try:
             self.fd = open_exclusive(file_path)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                raise CuckooOperationalError(
-                    "Analyzer tried to overwrite an existing file"
-                )
+                raise CuckooOperationalError("Analyzer for task #%s tried to "
+                                             "overwrite an existing file" %
+                                             self.task_id)
             raise
-        chunk = self.handler.read_any()
-        while chunk:
-            self.fd.write(chunk)
 
-            if self.fd.tell() >= self.upload_max_size:
-                log.warning(
-                    "Uploaded file length larger than upload_max_size, "
-                    "stopping upload."
-                )
-                self.fd.write("... (truncated)")
-                break
-
-            try:
-                chunk = self.handler.read_any()
-            except:
-                break
-
+        # !! race condition !!
         with open(self.filelog, "a+b") as f:
             print(json.dumps({
                 "path": dump_path,
                 "filepath": filepath,
                 "pids": pids,
             }), file=f)
-
-        log.debug("Uploaded file length: %s", self.fd.tell())
-        self.fd.close()
-
-    def close(self):
-        if self.fd:
-            self.fd.close()
+        try:
+            return self.handler.copy_to_fd(self.fd)
+        finally:
+            log.debug("Task #%s uploaded file length: %s", self.task_id,
+                      self.fd.tell())
 
 
 class LogHandler(ProtocolHandler):
@@ -173,27 +202,12 @@ class LogHandler(ProtocolHandler):
     def init(self):
         self.logpath = os.path.join(self.handler.storagepath, "analysis.log")
         self.fd = self._open()
-        log.debug("LogHandler for live analysis.log initialized.")
+        log.debug("Task #%s: live log analysis.log initialized.",
+                  self.task_id)
 
     def handle(self):
-        if not self.fd:
-            return
-
-        while True:
-            try:
-                buf = self.handler.read_any()
-            except EOFError:
-                break
-
-            if not buf:
-                break
-
-            self.fd.write(buf)
-            self.fd.flush()  # Expensive...
-
-    def close(self):
         if self.fd:
-            self.fd.close()
+            return self.handler.copy_to_fd(self.fd)
 
     def _open(self):
         try:
@@ -202,7 +216,8 @@ class LogHandler(ProtocolHandler):
             if e.errno != errno.EEXIST:
                 raise
 
-        log.debug("Log analysis.log already existing, appending data.")
+        log.debug("Task #%s: Log analysis.log already existing, "
+                  "appending data.", self.task_id)
         fd = open(self.logpath, "ab")
 
         # Add a fake log entry, saying this had to be re-opened. Use the same
@@ -227,50 +242,18 @@ class BsonStore(ProtocolHandler):
         if self.version is None:
             log.warning("Agent is sending BSON files without PID parameter, "
                         "you should probably update it")
-            self.f = None
+            self.fd = None
             return
 
-        self.f = open(os.path.join(self.handler.storagepath,
-                                   "logs", "%d.bson" % self.version), "wb")
+        self.fd = open(os.path.join(self.handler.storagepath,
+                                    "logs", "%d.bson" % self.version), "wb")
 
     def handle(self):
-        while self.running:
-            # TODO: just loop read_any
-            try:
-                lenbuf = self.handler.read(4)
-                if len(lenbuf) != 4:
-                    log.warning("BsonStore short read")
-                    break
-            except EOFError:
-                break
-
-            if self.f:
-                self.f.write(lenbuf)
-
-            length = struct.unpack("<I", lenbuf)[0]
-            remain = length
-            while remain > 0:
-                size = min(BUFSIZE, remain)
-                try:
-                    buf = self.handler.read(size)
-                except EOFError:
-                    logging.warning("BSON received EOF, but still expecting "
-                                    "%s byte(s)", remain)
-                    break
-                remain -= len(buf)
-
-                # TODO Handle out of disk space.
-                if self.f:
-                    self.f.write(buf)
-
-            log.debug("Task %s: uploaded BSON part for PID %s length: %s",
-                      self.task_id,
-                      self.version, length)
-
-    def close(self):
-        if self.f:
-            self.f.close()
-            self.f = None
+        """Read a BSON stream, attempting at least basic validation, and
+        log failures."""
+        log.debug("Task #%s is sending a BSON stream", self.task_id)
+        if self.fd:
+            return self.handler.copy_to_fd(self.fd)
 
 
 class GeventResultServerWorker(gevent.server.StreamServer):
@@ -292,7 +275,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         "FILE": FileUpload,
         "LOG": LogHandler,
     }
-    handler_lock = threading.Lock()
+    task_mgmt_lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super(GeventResultServerWorker, self).__init__(*args, **kwargs)
@@ -307,69 +290,85 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         self.serve_forever()
 
     def add_task(self, task_id, ipaddr):
-        self.tasks[ipaddr] = task_id
+        with self.task_mgmt_lock:
+            self.tasks[ipaddr] = task_id
 
     def del_task(self, task_id, ipaddr):
-        """Delete ResultServer state and wait for pending RequestHandlers."""
-        if self.tasks.pop(ipaddr, None) is None:
-            log.warning("ResultServer did not have a task with ID %s",
-                        task_id)
-
-        with self.handler_lock:
-            socks = self.handlers.pop(task_id, set())
-            if socks:
-                log.warning("Cancel %s socket(s) for task %r",
-                            len(socks), task_id)
-            for sock in socks:
-                sock.close()
+        """Delete ResultServer state and abort pending RequestHandlers. Since
+        we're about to shutdown the VM, any remaining open connections can
+        be considered a bug from the VM side, since all connections should
+        have been closed after the analyzer signalled completion."""
+        with self.task_mgmt_lock:
+            if self.tasks.pop(ipaddr, None) is None:
+                log.warning("ResultServer did not have a task with ID %s",
+                            task_id)
+            ctxs = self.handlers.pop(task_id, set())
+            for ctx in ctxs:
+                log.warning("Cancel %s for task %r", ctx, task_id)
+                ctx.cancel()
 
     def handle(self, sock, addr):
+        """Handle the incoming connection.
+        Gevent will close the socket when the function returns."""
         ipaddr = addr[0]
-        task_id = self.tasks.get(ipaddr)
-        if not task_id:
-            log.warning("ResultServer did not have a task for IP %s", ipaddr)
-            return
+
+        with self.task_mgmt_lock:
+            task_id = self.tasks.get(ipaddr)
+            if not task_id:
+                log.warning("ResultServer did not have a task for IP %s",
+                            ipaddr)
+                return
 
         storagepath = cwd(analysis=task_id)
-        ctx = HandlerContext(storagepath, sock)
+        ctx = HandlerContext(task_id, storagepath, sock)
         task_log_start(task_id)
         try:
-            protocol = self.negotiate_protocol(ctx)
+            protocol = self.negotiate_protocol(task_id, ctx)
 
-            # Registering the socket allows us to cancel the handler by
-            # closing the socket when the task is deleted
-            with self.handler_lock:
+            # Registering the context allows us to abort the handler by
+            # shutting down its socket when the task is deleted; this should
+            # prevent lingering sockets
+            with self.task_mgmt_lock:
+                # NOTE: the task may have been cancelled during the negotation
+                # protocol and a different task for that IP address may have
+                # been registered
+                if self.tasks.get(ipaddr) != task_id:
+                    log.warning("Task #%s for IP %s was cancelled during "
+                                "negotiation", task_id, ipaddr)
+                    return
                 s = self.handlers.setdefault(task_id, set())
-                s.add(sock)
+                s.add(ctx)
 
-            protocol.task_id = task_id  # TODO
-            protocol.init()
             try:
-                protocol.handle()
+                with protocol:
+                    protocol.handle()
             finally:
-                protocol.close()
-                with self.handler_lock:
-                    s.discard(sock)
+                with self.task_mgmt_lock:
+                    s.discard(ctx)
+                ctx.cancel()
+                if ctx.buf:
+                    # This is usually not a good sign
+                    log.warning("Task #%s with protocol %s has unprocessed "
+                                "data before getting disconnected",
+                                task_id, protocol)
 
         finally:
-            sock.close()
             task_log_stop(task_id)
 
-    def negotiate_protocol(self, ctx):
+    def negotiate_protocol(self, task_id, ctx):
         header = ctx.read_newline()
         if " " in header:
             command, version = header.split()
             version = int(version)
         else:
             command, version = header, None
-        log.debug("Incoming command: %r", header)
-        if command not in self.commands:
-            log.warning(
-                "Unknown netlog protocol requested (%r), "
-                "terminating connection.", command
-            )
+        klass = self.commands.get(command)
+        if not klass:
+            log.warning("Task #%s: unknown netlog protocol requested (%r), "
+                        "terminating connection.", self.task_id, command)
             return
-        return self.commands[command](ctx, version)
+        ctx.command = command
+        return klass(task_id, ctx, version)
 
 
 class ResultServer(object):
@@ -405,6 +404,7 @@ class ResultServer(object):
                                                      spawn=pool)
             self.instance.do_run()
         except OSError as e:
+            # TODO: this currently does not kill the process itself
             if e.errno == errno.EADDRINUSE:
                 raise CuckooCriticalError(
                     "Cannot bind ResultServer on port %d "

@@ -226,8 +226,8 @@ class WindowsMonitor(BehaviorHandler):
 
     def parse(self, path):
         # Invoke parsing of current log file.
-        parser = BsonParser(open(path, "rb"))
-        parser.init()
+        self.fp = open(path, "rb")   # TODO: no proper cleanup
+        parser = BsonParser(self.fp)
 
         for event in parser:
             if event["type"] == "process":
@@ -255,8 +255,8 @@ class WindowsMonitor(BehaviorHandler):
 
                 # Process the reboot reconstructor.
                 for category, args in reboot.process_apicall(event):
-                    # TODO Improve this where we have to calculate the "real"
-                    # time again even though we already do this in
+                    # TODO Improve this where we have to calculate the
+                    # "real" time again even though we already do this in
                     # MonitorProcessLog.
                     ts = process["first_seen"] + \
                         datetime.timedelta(0, 0, event["time"] * 1000)
@@ -269,7 +269,8 @@ class WindowsMonitor(BehaviorHandler):
                     }
 
                 # Indicate that the process has API calls. For more
-                # information on this matter, see also the __nonzero__ above.
+                # information on this matter, see also the __nonzero__
+                # above.
                 process["calls"].has_apicalls = True
 
             yield event

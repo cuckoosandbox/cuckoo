@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,7 +18,6 @@ if hasattr(bson, "BSON"):
 elif hasattr(bson, "loads"):
     bson_decode = lambda d: bson.loads(d)
 
-from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.files import Storage
 from cuckoo.common.exceptions import CuckooResultError
 
@@ -54,8 +53,8 @@ def default_converter_64bit(v):
         return v.decode("latin-1")
     return v
 
-class BsonParser(ProtocolHandler):
-    """Receive and interpret .bson logs from the monitor.
+class BsonParser(object):
+    """Interprets .bson logs from the monitor.
 
     The monitor provides us with "info" messages that explain how the function
     arguments will come through later on. This class remembers these info
@@ -76,9 +75,8 @@ class BsonParser(ProtocolHandler):
         "x": pointer_converter_32bit,
     }
 
-    def init(self):
-        self.fd = self.handler
-
+    def __init__(self, fd):
+        self.fd = fd
         self.infomap = {}
         self.flags_value = {}
         self.flags_bitmask = {}

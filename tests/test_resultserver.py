@@ -42,22 +42,27 @@ def cuckoo_cwd():
 def mock_handler_context(klass, path, lines, data, version=None):
     class FakeContext:
         storagepath = path
+        buf = ''
+        task_id = 1
 
         def read_newline(self):
             if not lines:
                 raise EOFError
             return lines.pop(0)
 
-        def read_any(self):
+        def read(self, size=None):
             if not data:
                 raise EOFError
             return data.pop(0)
 
-        def read(self, size):
-            # TODO: we can test expected sizes here
-            return self.read_any()
+        def copy_to_fd(self, fd, max_size=None):
+            while True:
+                try:
+                    fd.write(self.read())
+                except EOFError:
+                    break
 
-    h = klass(FakeContext(), version)
+    h = klass(1, FakeContext(), version)
     h.init()
     h.handle()
     h.close()
