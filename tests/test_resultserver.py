@@ -15,6 +15,7 @@ import pytest
 import tempfile
 import shutil
 import json
+from mock import Mock
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders
@@ -62,7 +63,9 @@ def mock_handler_context(klass, path, lines, data, version=None):
                 except EOFError:
                     break
 
-    h = klass(1, FakeContext(), version)
+    ctx = FakeContext()
+    ctx.sock = Mock()
+    h = klass(1, ctx, version)
     h.init()
     h.handle()
     h.close()

@@ -62,9 +62,6 @@ def netlog_sanitize_fname(path):
 class HandlerContext:
     """Holds context for protocol handlers.
 
-    To avoid losing data that was already buffered, handlers should check if
-    the buffer is empty when handling EOFError.
-
     Can safely be cancelled from another thread, though in practice this will
     not occur often -- usually the connection between VM and the ResultServer
     will be reset during shutdown."""
@@ -96,31 +93,6 @@ class HandlerContext:
                 raise
             return ''
 
-    def buffered_read(self, size):
-        """Try to fill the buffer with at most `size` bytes
-        Will keep waiting until we're either cancelled, or until we received
-        something.
-        """
-        while True:
-            try:
-                buf = self.sock.recv(size)
-            except socket.timeout:
-                if self.cancelled:
-                    log.debug("Task #%s: connection was cancelled",
-                              self.task_id)
-                    raise Cancelled
-                continue
-            except socket.error as e:
-                log.debug("Task #%s encountered a socket error: %s",
-                          self.task_id, e)
-                if e.errno != errno.ECONNRESET:
-                    raise
-                raise EOFError
-            break
-        self.buf += buf
-        if not self.buf:
-            raise EOFError
-
     def drain_buffer(self):
         """Drain buffer and end buffering"""
         buf, self.buf = "", None
@@ -143,6 +115,8 @@ class HandlerContext:
             return line
 
     def copy_to_fd(self, fd, max_size=None):
+        if max_size:
+            fd = WriteLimiter(fd, max_size)
         fd.write(self.drain_buffer())
         while True:
             buf = self.read()
@@ -150,6 +124,29 @@ class HandlerContext:
                 break
             fd.write(buf)
         fd.flush()
+
+
+class WriteLimiter(object):
+    def __init__(self, fd, remain):
+        self.fd = fd
+        self.remain = remain
+        self.warned = False
+
+    def write(self, buf):
+        size = len(buf)
+        write = min(size, self.remain)
+        if write:
+            self.fd.write(buf[:write])
+            self.remain -= write
+        if size and size != write:
+            if not self.warned:
+                log.warning("Uploaded file length larger than upload_max_size, "
+                            "stopping upload.")
+                self.fd.write("... (truncated)")
+                self.warned = True
+
+    def flush(self):
+        self.fd.flush()
 
 
 class FileUpload(ProtocolHandler):
@@ -162,6 +159,7 @@ class FileUpload(ProtocolHandler):
     def handle(self):
         # Read until newline for file path, e.g.,
         # shots/0001.jpg or files/9498687557/libcurl-4.dll.bin
+        self.handler.sock.settimeout(30)
         dump_path = netlog_sanitize_fname(self.handler.read_newline())
 
         if self.version >= 2:
@@ -190,8 +188,10 @@ class FileUpload(ProtocolHandler):
                 "filepath": filepath,
                 "pids": pids,
             }), file=f)
+
+        self.handler.sock.settimeout(None)
         try:
-            return self.handler.copy_to_fd(self.fd)
+            return self.handler.copy_to_fd(self.fd, self.upload_max_size)
         finally:
             log.debug("Task #%s uploaded file length: %s", self.task_id,
                       self.fd.tell())
