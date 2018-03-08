@@ -59,7 +59,7 @@ def main(host, port, script):
     tasks = {}
     for node, vmname in machines:
         r = requests.post("%s/api/task" % url, files={
-            "file": (script.name, script.source),
+            "file": (script.filename, script.source),
         }, data={
             "node": node,
             "machine": vmname,
