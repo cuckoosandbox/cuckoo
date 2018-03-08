@@ -120,20 +120,20 @@ def handle_node(instance):
         # Fetching of reports.
         tasks = fetch_tasks(node.url, "reported", settings.threshold)
         for task in tasks:
-            # In the case that a Cuckoo node has been reset over time it's
-            # possible that there are multiple combinations of
-            # node-id/task-id, in this case we take the last one available.
-            # (This makes it possible to re-setup a Cuckoo node).
-            q = Task.query.filter_by(node_id=node.id, task_id=task["id"])
-            t = q.order_by(Task.id.desc()).first()
+            # The node_id/task_id tuple isn't necessarily unique, therefore
+            # also filter on the status. Just in case older analyses didn't
+            # finish, we request the last one.
+            t = Task.query.filter_by(
+                node_id=node.id, task_id=task["id"], status=Task.PROCESSING
+            ).order_by(Task.id.desc()).first()
 
             if t is None:
                 log.debug("Node %s task #%d has not been submitted "
                           "by us!", instance, task["id"])
 
                 # Should we delete this task? Improve through the usage of
-                # the "owner" parameter.
-                delete_task(node.url, task["id"])
+                # the "owner" parameter. TODO Reintroduce.
+                # delete_task(node.url, task["id"])
                 continue
 
             dirpath = os.path.join(settings.reports_directory, "%d" % t.id)
