@@ -19,6 +19,7 @@ from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_READMODE_MESSAGE
 log = logging.getLogger(__name__)
 
 BUFSIZE = 0x10000
+open_handles = set()
 
 class PipeForwarder(threading.Thread):
     """Forward all data received from a local pipe to the Cuckoo
@@ -63,15 +64,16 @@ class PipeForwarder(threading.Thread):
             return
 
         if pid.value:
-            if pid.value not in self.sockets:
-                self.sockets[pid.value] = (
-                    socket.create_connection(self.destination)
-                )
+            sock = self.sockets.get(pid.value)
+            if not sock:
+                sock = socket.create_connection(self.destination)
+                self.sockets[pid.value] = sock
 
-            sock = self.sockets[pid.value]
             self.active[pid.value] = True
         else:
             sock = socket.create_connection(self.destination)
+
+        open_handles.add(sock)
 
         while True:
             success = KERNEL32.ReadFile(
@@ -187,3 +189,10 @@ class PipeServer(threading.Thread):
 
     def stop(self):
         self.do_run = False
+
+def disconnect_pipes():
+    for sock in open_handles:
+        try:
+            sock.close()
+        except:
+            log.exception("Could not close socket")

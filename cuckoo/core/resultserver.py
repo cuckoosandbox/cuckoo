@@ -5,22 +5,22 @@
 
 from __future__ import print_function
 
-import socket
-import errno
 import datetime
-import gevent.server
+import errno
 import gevent.pool
+import gevent.server
 import gevent.socket
 import json
 import logging
 import os
+import socket
 import struct
 import threading
 
 from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.config import config
-from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooResultError
 from cuckoo.common.files import Folders, open_exclusive
 from cuckoo.common.utils import Singleton

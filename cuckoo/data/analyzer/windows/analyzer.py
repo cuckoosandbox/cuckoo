@@ -31,6 +31,7 @@ from lib.core.config import Config
 from lib.core.ioctl import zer0m0n
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
+from lib.core.pipe import disconnect_pipes
 from lib.core.privileges import grant_privilege
 from lib.core.startup import init_logging, disconnect_logger, set_clock
 from modules import auxiliary
@@ -525,6 +526,7 @@ class Analyzer(object):
         log.info("Analysis completed.")
 
         # Cleanly close remaining connections
+        disconnect_pipes()
         disconnect_logger()
 
     def run(self):
