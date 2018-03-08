@@ -352,9 +352,8 @@ class ResultServer(object):
     __metaclass__ = Singleton
 
     def __init__(self):
-        # TODO: support binding to port 0 for random port
         ip = config("cuckoo:resultserver:ip")
-        port = self.port = config("cuckoo:resultserver:port")
+        port = config("cuckoo:resultserver:port")
         pool_size = config('cuckoo:resultserver:poolsize')
         if pool_size:
             pool_size = int(pool_size)
@@ -386,6 +385,10 @@ class ResultServer(object):
                     "Unable to bind ResultServer on %s:%s: %s" %
                     (ip, port, e)
                 )
+
+        # We allow user to specify port 0 to get a random port, report it back
+        # here
+        _, self.port = sock.getsockname()
         sock.listen(pool_size)
 
         self.thread = threading.Thread(target=self.create_server,

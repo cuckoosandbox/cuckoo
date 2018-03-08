@@ -243,7 +243,7 @@ class Config(object):
             "resultserver": {
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
-                "force_port": Boolean(False),
+                "force_port": Boolean(False, False),  # Unused
                 "upload_max_size": Int(128 * 1024 * 1024),
             },
             "processing": {
