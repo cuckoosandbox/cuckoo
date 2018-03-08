@@ -77,6 +77,7 @@ class NetlogConnection(object):
     def close(self):
         try:
             self.sock.close()
+            self.sock = None
         except Exception:
             pass
 
