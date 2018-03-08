@@ -45,6 +45,10 @@ RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 # Data Streams); XXX: just replace illegal chars?
 BANNED_PATH_CHARS = b'\x00:'
 
+# Safeguard againt multiple writes to `files.json` -- note that this really
+# should have per-task granularity
+filelist_lock = threading.Lock()
+
 def netlog_sanitize_fname(path):
     """Validate agent-provided path for result files"""
     path = path.replace("\\", "/")
@@ -179,13 +183,13 @@ class FileUpload(ProtocolHandler):
                                              self.task_id)
             raise
 
-        # Race condition! This needs a lock per task.
-        with open(self.filelog, "a+b") as f:
-            print(json.dumps({
-                "path": dump_path,
-                "filepath": filepath,
-                "pids": pids,
-            }), file=f)
+        with filelist_lock:
+            with open(self.filelog, "a+b") as f:
+                print(json.dumps({
+                    "path": dump_path,
+                    "filepath": filepath,
+                    "pids": pids,
+                }), file=f)
 
         self.handler.sock.settimeout(None)
         try:
