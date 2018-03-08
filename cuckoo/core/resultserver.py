@@ -199,7 +199,7 @@ class LogHandler(ProtocolHandler):
 
     def init(self):
         self.logpath = os.path.join(self.handler.storagepath, "analysis.log")
-        self.fd = open_exclusive(self.logpath)
+        self.fd = open_exclusive(self.logpath, bufsize=1)
         log.debug("Task #%s: live log analysis.log initialized.",
                   self.task_id)
 

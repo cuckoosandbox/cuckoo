@@ -25,17 +25,15 @@ def temppath():
 
     return tmppath
 
-
-def open_exclusive(path, mode='wb'):
+def open_exclusive(path, mode='wb', bufsize=-1):
     """Open a file with O_EXCL, failing if it already exists
     [In Python 3, use open with x]"""
     fd = os.open(path, os.O_CREAT|os.O_EXCL|os.O_WRONLY)
     try:
-        return os.fdopen(fd, mode)
+        return os.fdopen(fd, mode, bufsize)
     except:
         os.close(fd)
         raise
-
 
 class Storage(object):
     @staticmethod
