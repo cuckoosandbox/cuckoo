@@ -10,26 +10,25 @@ from __future__ import print_function
 # - Invalid path tests
 # - Double LOG command
 
-import logging
-import pytest
-import tempfile
-import shutil
-import json
-import socket
-import mock
 import errno
+import json
+import logging
+import mock
+import pytest
+import shutil
+import socket
+import tempfile
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders
 from cuckoo.core.log import task_log_start, task_log_stop
-from cuckoo.core.resultserver import RESULT_DIRECTORIES, MAX_NETLOG_LINE
-from cuckoo.core.resultserver import HandlerContext
-from cuckoo.core.resultserver import GeventResultServerWorker
 from cuckoo.core.resultserver import FileUpload, LogHandler, BsonStore
+from cuckoo.core.resultserver import GeventResultServerWorker
+from cuckoo.core.resultserver import HandlerContext
+from cuckoo.core.resultserver import RESULT_DIRECTORIES, MAX_NETLOG_LINE
 from cuckoo.core.startup import init_logging
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import mkdir, set_cwd, cwd
-
 
 @pytest.fixture(scope='module')
 def cuckoo_cwd():
@@ -42,7 +41,6 @@ def cuckoo_cwd():
     Folders.create(anal_path, RESULT_DIRECTORIES)
     yield path
     shutil.rmtree(path)
-
 
 def mock_handler_context(klass, path, lines, data, version=None):
     class FakeContext:
@@ -74,7 +72,6 @@ def mock_handler_context(klass, path, lines, data, version=None):
     h.handle()
     h.close()
     return h
-
 
 class TestHandlerContext(object):
     def test_pointless_busywork(self):
@@ -133,7 +130,6 @@ class TestHandlerContext(object):
         fd.write.assert_has_calls([mock.call('A' * 32),
                                    mock.call('... (truncated)')])
         assert fd.flush.called
-
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestFileUpload(object):
@@ -209,7 +205,6 @@ class TestFileUpload(object):
         self.invalid_path("../hello")
         self.invalid_path("../../foobar")
 
-
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestLogHandler(object):
     @pytest.mark.order1
@@ -224,15 +219,13 @@ class TestLogHandler(object):
 
     @pytest.mark.order2
     def test_reopen(self):
-        mock_handler_context(LogHandler,
-                             cwd(analysis=1),
-                             [],
-                             ['reopen\n'])
+        with pytest.raises(OSError) as e:
+            mock_handler_context(LogHandler,
+                                 cwd(analysis=1),
+                                 [],
+                                 ['reopen\n'])
 
-        with open(cwd("analysis.log", analysis=1), "rb") as f:
-            data = f.read()
-            assert 'WARNING: This log file was re-opened' in data
-            assert data.endswith('reopen\n')
+        assert e.value.errno == errno.EEXIST
 
     @mock.patch('cuckoo.core.resultserver.open_exclusive')
     def test_open_error(self, open_exclusive):
@@ -241,7 +234,6 @@ class TestLogHandler(object):
         open_exclusive.side_effect = err
         with pytest.raises(OSError):
             mock_handler_context(LogHandler, cwd(analysis=1), [], [])
-
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestBsonStore(object):
@@ -260,6 +252,7 @@ class TestBsonStore(object):
         assert h.fd is None
 
 # Work in progress
+@pytest.mark.usefixtures('cuckoo_cwd')
 class TestWorkerServer(object):
     def test_unregistered(self):
         g = GeventResultServerWorker(('127.0.0.1', 1))
@@ -273,5 +266,5 @@ class TestWorkerServer(object):
         g.add_task(1, '127.0.0.1')
         assert g.tasks == {'127.0.0.1': 1}
         sock = mock.Mock()
-        sock.recv.side_effect = ["LOG\n", "Hello\n", ""]
+        sock.recv.side_effect = ["FILE\n", "files/example.txt\n", "hello", ""]
         g.handle(sock, ('127.0.0.1', 41337))

@@ -45,7 +45,6 @@ RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 # Data Streams); XXX: just replace illegal chars?
 BANNED_PATH_CHARS = b'\x00:'
 
-
 def netlog_sanitize_fname(path):
     """Validate agent-provided path for result files"""
     path = path.replace("\\", "/")
@@ -58,8 +57,7 @@ def netlog_sanitize_fname(path):
                                      % path)
     return path
 
-
-class HandlerContext:
+class HandlerContext(object):
     """Holds context for protocol handlers.
 
     Can safely be cancelled from another thread, though in practice this will
@@ -72,10 +70,10 @@ class HandlerContext:
         # The path where artifacts will be stored
         self.storagepath = storagepath
         self.sock = sock
-        self.buf = ''
+        self.buf = ""
 
     def __repr__(self):
-        return '<Context for %s>' % self.command
+        return "<Context for %s>" % self.command
 
     def cancel(self):
         """Cancel this context; gevent might complain about this with an
@@ -91,7 +89,9 @@ class HandlerContext:
         except socket.error as e:
             if e.errno != errno.ECONNRESET:
                 raise
-            return ''
+            log.debug("Task #%s had connection reset for %r", self.task_id,
+                      self)
+            return ""
 
     def drain_buffer(self):
         """Drain buffer and end buffering"""
@@ -107,7 +107,7 @@ class HandlerContext:
                 if len(self.buf) >= MAX_NETLOG_LINE:
                     raise CuckooOperationalError("Received overly long line")
                 buf = self.read()
-                if buf == '':
+                if buf == "":
                     raise EOFError
                 self.buf += buf
                 continue
@@ -120,11 +120,10 @@ class HandlerContext:
         fd.write(self.drain_buffer())
         while True:
             buf = self.read()
-            if buf == '':
+            if buf == "":
                 break
             fd.write(buf)
         fd.flush()
-
 
 class WriteLimiter(object):
     def __init__(self, fd, remain):
@@ -147,7 +146,6 @@ class WriteLimiter(object):
 
     def flush(self):
         self.fd.flush()
-
 
 class FileUpload(ProtocolHandler):
     def init(self):
@@ -181,7 +179,7 @@ class FileUpload(ProtocolHandler):
                                              self.task_id)
             raise
 
-        # !! race condition !!
+        # Race condition! This needs a lock per task.
         with open(self.filelog, "a+b") as f:
             print(json.dumps({
                 "path": dump_path,
@@ -196,42 +194,18 @@ class FileUpload(ProtocolHandler):
             log.debug("Task #%s uploaded file length: %s", self.task_id,
                       self.fd.tell())
 
-
 class LogHandler(ProtocolHandler):
-    # TODO: not protected against opening multiple times
+    """The live analysis log. Can only be opened once in a single session."""
+
     def init(self):
         self.logpath = os.path.join(self.handler.storagepath, "analysis.log")
-        self.fd = self._open()
+        self.fd = open_exclusive(self.logpath)
         log.debug("Task #%s: live log analysis.log initialized.",
                   self.task_id)
 
     def handle(self):
         if self.fd:
             return self.handler.copy_to_fd(self.fd)
-
-    def _open(self):
-        try:
-            return open_exclusive(self.logpath)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-
-        log.debug("Task #%s: Log analysis.log already existing, "
-                  "appending data.", self.task_id)
-        fd = open(self.logpath, "ab")
-
-        # Add a fake log entry, saying this had to be re-opened. Use the same
-        # format as the default logger, in case anyone wants to parse this:
-        #  2015-02-23 12:05:05,092 [lib.api.process] DEBUG: Using QueueUserAPC
-        #   injection.
-        now = datetime.datetime.now()
-        print("\n", now.strftime("%Y-%m-%d %H:%M:%S",),
-              now.microsecond / 1000.0,
-              " [lib.core.resultserver] WARNING: This log file was re-opened,"
-              " log entries will be appended.",
-              sep='', file=fd)
-        return fd
-
 
 class BsonStore(ProtocolHandler):
     def init(self):
@@ -254,7 +228,6 @@ class BsonStore(ProtocolHandler):
         log.debug("Task #%s is sending a BSON stream", self.task_id)
         if self.fd:
             return self.handler.copy_to_fd(self.fd)
-
 
 class GeventResultServerWorker(gevent.server.StreamServer):
     """The new ResultServer, providing a huge performance boost as well as
@@ -370,25 +343,12 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         ctx.command = command
         return klass(task_id, ctx, version)
 
-
 class ResultServer(object):
     """Manager for the ResultServer worker and task state."""
     __metaclass__ = Singleton
 
     def __init__(self):
-        self.thread = threading.Thread(target=self.create_bg_server)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def add_task(self, task, machine):
-        """Register a task/machine with the ResultServer."""
-        self.instance.add_task(task.id, machine.ip)
-
-    def del_task(self, task, machine):
-        """Delete running task and cancel existing handlers."""
-        self.instance.del_task(task.id, machine.ip)
-
-    def create_bg_server(self):
+        # TODO: support binding to port 0 for random port
         ip = config("cuckoo:resultserver:ip")
         port = self.port = config("cuckoo:resultserver:port")
         pool_size = config('cuckoo:resultserver:poolsize')
@@ -397,14 +357,12 @@ class ResultServer(object):
         else:
             pool_size = 128
 
-        pool = gevent.pool.Pool(pool_size)
+        sock = gevent.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         try:
-            # TODO: support binding to port 0 for random port
-            self.instance = GeventResultServerWorker((ip, port),
-                                                     spawn=pool)
-            self.instance.do_run()
-        except OSError as e:
-            # TODO: this currently does not kill the process itself
+            sock.bind((ip, port))
+        except (OSError, socket.error) as e:
             if e.errno == errno.EADDRINUSE:
                 raise CuckooCriticalError(
                     "Cannot bind ResultServer on port %d "
@@ -424,3 +382,22 @@ class ResultServer(object):
                     "Unable to bind ResultServer on %s:%s: %s" %
                     (ip, port, e)
                 )
+        sock.listen(pool_size)
+
+        self.thread = threading.Thread(target=self.create_server,
+                                       args=(sock, pool_size))
+        self.thread.daemon = True
+        self.thread.start()
+
+    def add_task(self, task, machine):
+        """Register a task/machine with the ResultServer."""
+        self.instance.add_task(task.id, machine.ip)
+
+    def del_task(self, task, machine):
+        """Delete running task and cancel existing handlers."""
+        self.instance.del_task(task.id, machine.ip)
+
+    def create_server(self, sock, pool_size):
+        pool = gevent.pool.Pool(pool_size)
+        self.instance = GeventResultServerWorker(sock, spawn=pool)
+        self.instance.do_run()
