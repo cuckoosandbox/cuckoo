@@ -354,11 +354,7 @@ class ResultServer(object):
     def __init__(self):
         ip = config("cuckoo:resultserver:ip")
         port = config("cuckoo:resultserver:port")
-        pool_size = config('cuckoo:resultserver:poolsize')
-        if pool_size:
-            pool_size = int(pool_size)
-        else:
-            pool_size = 128
+        pool_size = config('cuckoo:resultserver:pool_size')
 
         sock = gevent.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -389,7 +385,7 @@ class ResultServer(object):
         # We allow user to specify port 0 to get a random port, report it back
         # here
         _, self.port = sock.getsockname()
-        sock.listen(pool_size)
+        sock.listen(128)
 
         self.thread = threading.Thread(target=self.create_server,
                                        args=(sock, pool_size))
@@ -405,6 +401,9 @@ class ResultServer(object):
         self.instance.del_task(task.id, machine.ip)
 
     def create_server(self, sock, pool_size):
-        pool = gevent.pool.Pool(pool_size)
+        if pool_size:
+            pool = gevent.pool.Pool(pool_size)
+        else:
+            pool = 'default'
         self.instance = GeventResultServerWorker(sock, spawn=pool)
         self.instance.do_run()
