@@ -1,9 +1,10 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
 import flask_testing
+import io
 import json
 import mock
 import os
@@ -147,7 +148,20 @@ class TestDatabase(flask_testing.TestCase):
         self.db.session.commit()
 
         # No file submitted.
-        assert self.client.post("/api/task").status_code == 404
+        r = self.client.post("/api/task")
+        assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "No file has been provided",
+        }
+
+        # Empty file submission.
+        r = self.client.post("/api/task", data={
+            "file": (io.BytesIO(""), "1.filename"),
+        })
+        assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "Provided file is empty",
+        }
 
         # Regular submission.
         r = self.client.post("/api/task", data={
@@ -168,6 +182,9 @@ class TestDatabase(flask_testing.TestCase):
             "node": "notanode",
         })
         assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "Node not found",
+        }
 
         # Submit to a node.
         r = self.client.post("/api/task", data={
