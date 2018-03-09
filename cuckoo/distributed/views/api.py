@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -249,13 +249,17 @@ def task_post():
     f.save(path)
     os.close(fd)
 
+    if not os.path.getsize(path):
+        os.remove(path)
+        return json_error(404, "Provided file is empty")
+
     task = Task(path=path, filename=os.path.basename(f.filename), **kwargs)
 
     node = request.form.get("node")
     if node:
         node = Node.query.filter_by(name=node, enabled=True).first()
         if not node:
-            return json_error(404, "Node note found")
+            return json_error(404, "Node not found")
         task.assign_node(node.id)
 
     db.session.add(task)
