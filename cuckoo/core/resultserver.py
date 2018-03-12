@@ -160,7 +160,7 @@ class FileUpload(ProtocolHandler):
         self.handler.sock.settimeout(30)
         dump_path = netlog_sanitize_fname(self.handler.read_newline())
 
-        if self.version >= 2:
+        if self.version and self.version >= 2:
             # NB: filepath is only used as metadata
             filepath = self.handler.read_newline()
             pids = map(int, self.handler.read_newline().split())
