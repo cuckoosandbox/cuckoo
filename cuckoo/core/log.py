@@ -3,6 +3,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import copy
+import gevent.thread
 import json
 import logging
 import logging.handlers
@@ -21,6 +22,10 @@ if time.localtime().tm_isdst:
     tz = time.altzone / -3600.
 else:
     tz = time.timezone / -3600.
+
+# The greenlet library (used by Gevent) also creates some state per thread,
+# so we can (ab)use this for both multi-threading and Gevent code
+task_key = gevent.thread.get_ident
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
@@ -41,12 +46,11 @@ class TaskHandler(logging.Handler):
     """
 
     def emit(self, record):
-        task_id = _tasks.get(thread.get_ident())
-        if not task_id:
+        task = _tasks.get(task_key())
+        if not task:
             return
 
-        with open(cwd("cuckoo.log", analysis=task_id), "a+b") as f:
-            f.write("%s\n" % self.format(record))
+        task[1].write("%s\n" % self.format(record))
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
@@ -72,9 +76,8 @@ class JsonFormatter(logging.Formatter):
     def format(self, record):
         action = record.__dict__.get("action")
         status = record.__dict__.get("status")
-        task_id = _tasks.get(
-            thread.get_ident(), record.__dict__.get("task_id")
-        )
+        task = _tasks.get(task_key())
+        task_id = task[0] if task else record.__dict__.get("task_id")
         d = {
             "action": action,
             "task_id": task_id,
@@ -96,11 +99,14 @@ class JsonFormatter(logging.Formatter):
 
 def task_log_start(task_id):
     """Associate a thread with a task."""
-    _tasks[thread.get_ident()] = task_id
+    fp = open(cwd("cuckoo.log", analysis=task_id), "a+b")
+    _tasks[task_key()] = (task_id, fp)
 
 def task_log_stop(task_id):
     """Disassociate a thread from a task."""
-    _tasks.pop(thread.get_ident(), None)
+    task = _tasks.pop(task_key(), None)
+    if task:
+        task[1].close()
 
 def init_logger(name, level=None):
     formatter = logging.Formatter(
