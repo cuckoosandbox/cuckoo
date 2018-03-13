@@ -267,6 +267,33 @@ class TestDatabase(flask_testing.TestCase):
         }
         assert not os.path.exists(filepath)
 
+    def test_tasks_delete(self):
+        filepath1 = Files.temp_put("foobar")
+        filepath2 = Files.temp_put("foobar")
+        assert os.path.exists(filepath1)
+        assert os.path.exists(filepath2)
+
+        self.db.session.add(db.Task(filepath1, status=db.Task.FINISHED))
+        self.db.session.add(db.Task(filepath2, status=db.Task.FINISHED))
+        data = {
+            "task_ids": "1 2",
+        }
+        assert self.client.delete("/api/tasks", data=data).json == {
+            "success": True,
+        }
+        assert not os.path.exists(filepath1)
+        assert not os.path.exists(filepath2)
+        assert self.client.delete("/api/task/1").json == {
+            "success": False,
+            "message": "Task already deleted",
+        }
+        assert self.client.delete("/api/task/2").json == {
+            "success": False,
+            "message": "Task already deleted",
+        }
+        assert not os.path.exists(filepath1)
+        assert not os.path.exists(filepath2)
+
 class TestAPIStats(flask_testing.TestCase):
     TESTING = True
 
