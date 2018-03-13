@@ -294,7 +294,7 @@ def task_get(task_id):
     )})
 
 @blueprint.route("/task/<int:task_id>", methods=["DELETE"])
-def task_delete(task_id):
+def task_delete(task_id, commit=True):
     task = Task.query.get(task_id)
     if task is None:
         return json_error(404, "Task not found")
@@ -321,6 +321,13 @@ def task_delete(task_id):
     else:
         task.status = Task.DELETED
 
+    commit and db.session.commit()
+    return jsonify(success=True)
+
+@blueprint.route("/tasks", methods=["DELETE"])
+def tasks_delete():
+    for task_id in request.form.get("task_ids", "").split():
+        task_delete(int(task_id), commit=False)
     db.session.commit()
     return jsonify(success=True)
 
