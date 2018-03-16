@@ -94,6 +94,22 @@ class IE(Package):
                 "CheckExeSignatures": "no",
             },
         ],
+        [
+            HKEY_LOCAL_MACHINE,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+            {
+                # Disable SmartScreen Windows 8
+                "SmartScreenEnabled": "Off"
+            }
+        ],
+        [
+            HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Internet Explorer\\PhishingFilter",
+            {
+                # Disable SmartScreen Filter Windows 7
+                "EnabledV9": 0
+            }
+        ],
     ]
 
     def setup_proxy(self, proxy_host):
