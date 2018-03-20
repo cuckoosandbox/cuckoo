@@ -19,6 +19,8 @@
 # * TODO More items.
 #
 # Add "@reboot /opt/cuckoo/utils/suricata.sh" to the root crontab.
+# This will reload suricata rules
+# Add "15 * * * * /usr/bin/suricatasc -c reload-rules" to the root crontab.
 
 . /etc/default/cuckoo
 
@@ -30,7 +32,7 @@ fi
 mkdir /var/run/suricata
 chown cuckoo:cuckoo /var/run/suricata
 
-suricata --unix-socket -D
+suricata --unix-socket -k none -D
 
 while [ ! -e /var/run/suricata/cuckoo.socket ]; do
     sleep 1
