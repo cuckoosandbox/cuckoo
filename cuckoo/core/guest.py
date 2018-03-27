@@ -8,6 +8,8 @@ import io
 import json
 import logging
 import os
+from contextlib import closing
+
 import requests
 import socket
 import time
@@ -336,8 +338,9 @@ class GuestManager(object):
 
         while db.guest_get_status(self.task_id) == "starting":
             try:
-                socket.create_connection((self.ipaddr, self.port), 1).close()
-                break
+                with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+                    if sock.connect_ex((self.ipaddr, self.port)) == 0:
+                        break
             except socket.timeout:
                 log.debug("%s: not ready yet", self.vmid)
             except socket.error:
