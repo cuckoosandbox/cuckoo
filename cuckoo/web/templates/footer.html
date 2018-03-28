@@ -173,7 +173,8 @@
     <!-- HIGHLIGHT (_office.html, _pdf.html) -->
     <script>
         $(document).ready(function() {
-            hljs.initHighlightingOnLoad();
+          if(!window.hljs) return;
+          hljs.initHighlightingOnLoad();
         });
     </script>
 

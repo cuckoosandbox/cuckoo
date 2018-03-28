@@ -912,7 +912,7 @@ $(function() {
     });
 
 
-    if(hljs) {
+    if(window.hljs) {
       // initialise hljs
       hljs.configure({
           languages: ['js']
