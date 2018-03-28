@@ -63,6 +63,11 @@ $badge-colors: (
   'pdf': #ccddbb
 );
 
+// responsive hooks (utilized in _mixins.scss)
+$cuckoo_small_screen_limit: 960px;
+$cuckoo_tiny_screen_limit: 650px;
+$cuckoo_nav_collapse_limit: 850px;
+
 // mixin for creating badge swagger based on color
 @mixin badge($color-name, $useTint: false) {
   $color: map-get($badge-colors, $color-name);

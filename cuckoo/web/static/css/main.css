@@ -3920,11 +3920,89 @@ body.cyborg .dashboard .dashboard-module__header
     background: linear-gradient(#284f5c, #112c35);
 }
 
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
+@media screen and (max-width: 960px)
+{
+    *[data-responsive][data-responsive='small-screen-hidden']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 960px)
+{
+    *[data-responsive][data-responsive='small-screen-shown']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 650px)
+{
+    *[data-responsive][data-responsive='tiny-screen-hidden']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 650px)
+{
+    *[data-responsive][data-responsive='tiny-screen-shown']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 850px)
+{
+    *[data-responsive][data-responsive='nav-expanded']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 850px)
+{
+    *[data-responsive][data-responsive='nav-collapsed']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
 html
 {
     background: #1c1c1c;
@@ -4631,6 +4709,19 @@ body.night .dns-badge > *.dns-badge__type
     margin-top: 4px;
 }
 
+@media screen and (max-width: 850px)
+{
+    .app-nav .logo
+    {
+        margin-right: 10px;
+    }
+    .app-nav .logo > img
+    {
+        width: 80px;
+        margin-top: 7px;
+    }
+}
+
 .app-nav a:hover,
 .app-nav a:focus,
 .app-nav a:active
@@ -4721,6 +4812,55 @@ body.night .dns-badge > *.dns-badge__type
     text-decoration: none !important;
 }
 
+@media screen and (max-width: 850px)
+{
+    .app-nav__nav--primary > li > a
+    {
+        font-size: 14px;
+
+        margin: 0 5px;
+    }
+}
+
+@media screen and (max-width: 565px)
+{
+    .app-nav__nav--primary > li > a
+    {
+        font-size: 0;
+    }
+    .app-nav__nav--primary > li > a .fa,
+    .app-nav__nav--primary > li > a .custom-select:after,
+    .app-nav__nav--primary > li > a .dns-badge__content:before,
+    .app-nav__nav--primary > li > a .cuckoo-table#submission-task-table .status.status-reported:before,
+    .cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+    #submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a .network-display__table > table#submission-task-table .status.status-reported:before,
+    .network-display__table > table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:before,
+    .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:after,
+    .app-nav__nav--primary > li > a .cuckoo-files ul div:before,
+    .cuckoo-files ul .app-nav__nav--primary > li > a div:before,
+    .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:after,
+    .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:after,
+    .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:before,
+    .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:before,
+    .app-nav__nav--primary > li > a .flex-form__header .custom-checkbox > input + span,
+    .flex-form__header .app-nav__nav--primary > li > a .custom-checkbox > input + span,
+    .app-nav__nav--primary > li > a .breadcrumbs > li:not(:last-child):after,
+    .app-nav__nav--primary > li > a .list-panel .list-group-option input[type='radio'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='radio'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel .list-group-option input[type='checkbox'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before
+    {
+        font-size: 14px;
+    }
+}
+
 .app-nav__nav--primary > li.active > a
 {
     color: #3678b0 !important;
@@ -4802,9 +4942,79 @@ body.night .dns-badge > *.dns-badge__type
     background-color: #777;
 }
 
+.app-nav__nav--right > li:first-child
+{
+    padding-left: 0;
+}
+
 .app-nav__nav--right > li:last-child
 {
     padding-right: 0;
+}
+
+@media screen and (max-width: 850px)
+{
+    .app-nav__nav--right > li
+    {
+        padding: 0 5px;
+    }
+    .app-nav__nav--right > li .fa,
+    .app-nav__nav--right > li .custom-select:after,
+    .app-nav__nav--right > li .dns-badge__content:before,
+    .app-nav__nav--right > li .cuckoo-table#submission-task-table .status.status-reported:before,
+    .cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+    #submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li .network-display__table > table#submission-task-table .status.status-reported:before,
+    .network-display__table > table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:before,
+    .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:after,
+    .app-nav__nav--right > li .cuckoo-files ul div:before,
+    .cuckoo-files ul .app-nav__nav--right > li div:before,
+    .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:after,
+    .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:after,
+    .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:before,
+    .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:before,
+    .app-nav__nav--right > li .flex-form__header .custom-checkbox > input + span,
+    .flex-form__header .app-nav__nav--right > li .custom-checkbox > input + span,
+    .app-nav__nav--right > li .breadcrumbs > li:not(:last-child):after,
+    .app-nav__nav--right > li .list-panel .list-group-option input[type='radio'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
+    .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='radio'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
+    .app-nav__nav--right > li .list-panel .list-group-option input[type='checkbox'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before,
+    .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before
+    {
+        font-size: 12px;
+
+        margin-right: 0;
+
+        color: inherit;
+    }
+    .app-nav__nav--right > li .button.outline,
+    .app-nav__nav--right > li .outline.button--lg,
+    body.cyborg .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.button:not(.inversed)[type='submit'],
+    body.night .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.button:not(.inversed)[type='submit'],
+    .app-nav__nav--right > li .modal-cuckoo .modal-form button.outline[type='submit'],
+    .modal-cuckoo .modal-form .app-nav__nav--right > li button.outline[type='submit'],
+    .app-nav__nav--right > li .outline.button--sm,
+    body.cyborg .app-error__balloon .list-panel .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.cyborg .app-error__balloon .list-panel__widget .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.night .app-error__balloon .list-panel .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.night .app-error__balloon .list-panel__widget .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    .list-panel .panel-title .app-nav__nav--right > li .outline.button,
+    .app-nav__nav--right > li .list-panel__widget .panel-title .outline.button,
+    .list-panel__widget .panel-title .app-nav__nav--right > li .outline.button,
+    .app-nav__nav--right > li body.cyborg .app-error__balloon .button:not(.inversed),
+    body.cyborg .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
+    .app-nav__nav--right > li body.night .app-error__balloon .button:not(.inversed),
+    body.night .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
+    .app-nav__nav--right > li .outline.process-tree__search-submit
+    {
+        border-width: 1px;
+    }
 }
 
 .app-nav__nav .app-nav__dropdown,
@@ -4941,6 +5151,26 @@ body.night .dns-badge > *.dns-badge__type
     border-bottom-left-radius: 4px;
 }
 
+@media screen and (max-width: 565px)
+{
+    .app-nav .app-nav__nav--primary,
+    .app-nav .app-nav__nav--right
+    {
+        margin: 0;
+
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-pack: distribute;
+        justify-content: space-around;
+        -ms-flex-positive: 0;
+        flex-grow: 0;
+    }
+    .app-nav #select-theme
+    {
+        margin-right: auto;
+    }
+}
+
 body.cyborg .app-nav .app-nav__dropdown
 {
     border-color: #133b4a;
@@ -5004,6 +5234,14 @@ body.night .app-nav .app-nav__dropdown .active
 {
     background-color: #375a7f;
     box-shadow: none;
+}
+
+@media screen and (max-width: 850px)
+{
+    .app-nav
+    {
+        padding: 0 15px;
+    }
 }
 
 .ui-tooltip
@@ -14448,6 +14686,16 @@ body.cyborg .page-freeze.error
     background-color: #f7f8fa;
 }
 
+@media screen and (max-width: 960px)
+{
+    .dashboard
+    {
+            flex-direction: column;
+
+        -ms-flex-direction: column;
+    }
+}
+
 .dashboard.bottom
 {
     padding-top: 0;
@@ -14457,18 +14705,36 @@ body.cyborg .page-freeze.error
 {
     overflow: visible;
 
-    -ms-flex-preferred-size: 415px;
-    flex-basis: 415px;
+    -ms-flex-preferred-size: 355px;
+    flex-basis: 355px;
     -ms-flex-positive: 0;
     flex-grow: 0;
     -ms-flex-negative: 0;
     flex-shrink: 0;
 }
 
+@media screen and (max-width: 960px)
+{
+    .dashboard__left
+    {
+        -ms-flex-order: 2;
+        order: 2;
+    }
+}
+
 .dashboard__right
 {
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
+}
+
+@media screen and (max-width: 960px)
+{
+    .dashboard__right
+    {
+        -ms-flex-order: 1;
+        order: 1;
+    }
 }
 
 .dashboard__col-title

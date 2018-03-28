@@ -14,18 +14,32 @@ $attention-red: #e85a5a;
 	background-color: #F7F8FA;
 	padding: 20px 15px 0 15px;
 
+	@include unless-small-screen {
+		flex-direction: column;
+	}
+
 	&.bottom {
 		padding-top: 0;
 	}
 
 	// divides the two columns a 1/3 2/3 division
 	&__left {
-		flex-basis: 415px;
+		flex-basis: 355px;
 		flex-grow: 0;
 		flex-shrink: 0;
 		overflow: visible;
+
+		@include unless-small-screen {
+			order: 2;
+		}
 	}
-	&__right { flex-basis: 100%; }
+	&__right {
+		flex-basis: 100%;
+
+		@include unless-small-screen {
+			order: 1;
+		}
+	}
 
 	// big titles above the columns
 	&__col-title {
