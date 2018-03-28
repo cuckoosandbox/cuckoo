@@ -945,7 +945,7 @@ $(function () {
         hljs.configure({
             languages: ['js']
         });
-        
+
         hljs.initHighlightingOnLoad();
 
         $("pre code").each(function (i, element) {
