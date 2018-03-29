@@ -309,11 +309,7 @@ class GuestManager(object):
                     r.raise_for_status()
                 return r
             except (requests.ConnectionError, requests.Timeout):
-                pass
-            except requests.HTTPError as e:
-                if e.response.status_code not in [500]:
-                    raise
-            time.sleep(1)
+                time.sleep(1)
         else:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
@@ -335,11 +331,7 @@ class GuestManager(object):
                 r.raise_for_status()
                 return r
             except (requests.ConnectionError, requests.Timeout):
-                pass
-            except requests.HTTPError as e:
-                if e.response.status_code not in [500]:
-                    raise
-            time.sleep(1)
+                time.sleep(1)
         else:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
