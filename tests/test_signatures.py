@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -298,8 +298,6 @@ def test_mark_config():
             "url": [
                 "url1", "url2",
             ],
-            "key": None,
-            "type": None,
         }],
     }
 

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,7 +19,7 @@ from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, make_list
 
 try:
     import libvirt
@@ -28,6 +28,80 @@ except ImportError:
     HAVE_LIBVIRT = False
 
 log = logging.getLogger(__name__)
+
+class Configuration(object):
+    skip = (
+        "family", "extra",
+    )
+    # Single entry values.
+    keywords1 = (
+        "type", "version", "magic",
+    )
+    # Multiple entry values.
+    keywords2 = (
+        "cnc", "url", "mutex", "user_agent", "referrer",
+    )
+    # Encryption key values.
+    keywords3 = (
+        "rc4key", "xorkey", "pubkey",
+    )
+    # Normalize keys.
+    mapping = {
+        "cncs": "cnc",
+        "urls": "url",
+    }
+
+    def __init__(self):
+        self.entries = []
+        self.order = []
+        self.families = {}
+
+    def add(self, entry):
+        self.entries.append(entry)
+
+        if entry["family"] not in self.families:
+            self.families[entry["family"]] = {
+                "family": entry["family"],
+            }
+            self.order.append(entry["family"])
+        family = self.families[entry["family"]]
+
+        for key, value in entry.items():
+            if key in self.skip:
+                continue
+            key = self.mapping.get(key, key)
+            if key in self.keywords1:
+                if family.get(key) and family[key] != value:
+                    log.error(
+                        "Duplicate value for %s => %r vs %r",
+                        key, family[key], value
+                    )
+                    continue
+                family[key] = value
+            elif key in self.keywords2:
+                if key not in family:
+                    family[key] = []
+                for value in make_list(value):
+                    if value not in family[key]:
+                        family[key].append(value)
+            elif key in self.keywords3:
+                if "key" not in family:
+                    family["key"] = {}
+                if key not in family["key"]:
+                    family["key"][key] = []
+                family["key"][key].append(value)
+            elif key not in family.get("extra", {}):
+                if "extra" not in family:
+                    family["extra"] = {}
+                family["extra"][key] = [value]
+            else:
+                family["extra"][key].append(value)
+
+    def results(self):
+        ret = []
+        for family in self.order:
+            ret.append(self.families[family])
+        return ret
 
 class Auxiliary(object):
     """Base abstract class for auxiliary modules."""
@@ -1110,26 +1184,12 @@ class Signature(object):
 
     def mark_config(self, config):
         """Mark configuration from this malware family."""
-        url = config.get("url", [])
-        if isinstance(url, basestring):
-            url = [url]
-
-        cnc = config.get("cnc", [])
-        if isinstance(cnc, basestring):
-            cnc = [cnc]
-
-        if "family" not in config:
+        if not isinstance(config, dict) or "family" not in config:
             raise CuckooCriticalError("Invalid call to mark_config().")
 
         self.marks.append({
             "type": "config",
-            "config": {
-                "family": config["family"],
-                "url": url,
-                "cnc": cnc,
-                "key": config.get("key"),
-                "type": config.get("type"),
-            },
+            "config": config,
         })
 
     def mark(self, **kwargs):
@@ -1332,6 +1392,9 @@ class Extractor(object):
 
     def push_blob_noyara(self, blob, category, info=None):
         self.parent.push_blob_noyara(blob, category, info)
+
+    def push_config(self, config):
+        self.parent.push_config(config)
 
     def enhance(self, filepath, key, value):
         self.parent.enhance(filepath, key, value)

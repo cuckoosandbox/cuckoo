@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ import logging
 
 import cuckoo
 
+from cuckoo.common.abstracts import Configuration
 from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
@@ -523,6 +524,12 @@ class RunSignatures(object):
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
+        # TODO This logic should certainly be moved elsewhere.
+        c = Configuration()
+        for extracted in self.results.get("extracted", []):
+            if extracted["category"] == "config":
+                c.add(extracted["info"])
+
         score, configs = 0, []
         for signature in self.signatures:
             if not signature.matched:
@@ -539,8 +546,8 @@ class RunSignatures(object):
             score += signature.severity
 
             for mark in signature.marks:
-                if mark["type"] == "config" and mark["config"] not in configs:
-                    configs.append(mark["config"])
+                if mark["type"] == "config":
+                    c.add(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -551,10 +558,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if configs:
+        if c.results():
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = configs
+                self.results["metadata"]["cfgextr"] = c.results()
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -285,3 +285,8 @@ class Pidfile(object):
                 pids[name] = pidfile.pid
 
         return pids
+
+def make_list(obj):
+    if isinstance(obj, (tuple, list)):
+        return list(obj)
+    return [obj]

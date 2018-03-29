@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,9 +16,8 @@ from cuckoo.common.files import Files
 from cuckoo.common.structures import Structure
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import (
-    dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
-    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
-    Pidfile
+    dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges, make_list,
+    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd, Pidfile,
 )
 
 def return_value(value):
@@ -300,3 +299,9 @@ def test_active_pids():
     assert Pidfile.get_active_pids() == {
         "test6": os.getpid(),
     }
+
+def test_make_list():
+    assert make_list("hello") == ["hello"]
+    assert make_list(1) == [1]
+    assert make_list((1, 2)) == [1, 2]
+    assert make_list([3, 4]) == [3, 4]

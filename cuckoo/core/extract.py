@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +7,7 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Extractor
+from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.objects import File, YaraMatch, Buffer
 from cuckoo.common.scripting import Scripting
 from cuckoo.common.utils import supported_version
@@ -156,6 +157,17 @@ class ExtractManager(object):
             "raw": filepath,
             "yara": [],
             "info": info or {},
+        })
+
+    def push_config(self, config):
+        if not isinstance(config, dict) or "family" not in config:
+            raise CuckooCriticalError("Invalid call to push_config().")
+
+        self.items.append({
+            "category": "config",
+            "raw": None,
+            "yara": [],
+            "info": config,
         })
 
     def enhance(self, filepath, key, value):
