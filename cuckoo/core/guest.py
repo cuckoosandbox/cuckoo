@@ -293,44 +293,59 @@ class GuestManager(object):
     def aux(self):
         return self.analysis_manager.aux
 
-    def get(self, method, *args, **kwargs):
+    def get(self, method, **kwargs):
         """Simple wrapper around requests.get()."""
         do_raise = kwargs.pop("do_raise", True)
+        kwargs.setdefault('timeout', 10)
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
 
-        try:
-            r = session.get(url, *args, **kwargs)
-        except requests.ConnectionError:
+        for _ in xrange(60):
+            try:
+                r = session.get(url, **kwargs)
+                if do_raise:
+                    r.raise_for_status()
+                return r
+            except (requests.ConnectionError, requests.Timeout):
+                pass
+            except requests.HTTPError as e:
+                if e.response.status_code not in [500]:
+                    raise
+            time.sleep(1)
+        else:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
                 "upgrading to the latest version of agent.py (>= 0.8) and "
                 "notify us if the issue persists."
             )
-
-        do_raise and r.raise_for_status()
-        return r
 
     def post(self, method, *args, **kwargs):
         """Simple wrapper around requests.post()."""
+        kwargs.setdefault('timeout', 10)
         url = "http://%s:%s%s" % (self.ipaddr, self.port, method)
         session = requests.Session()
         session.trust_env = False
         session.proxies = None
 
-        try:
-            r = session.post(url, *args, **kwargs)
-        except requests.ConnectionError:
+        for _ in xrange(60):
+            try:
+                r = session.post(url, *args, **kwargs)
+                r.raise_for_status()
+                return r
+            except (requests.ConnectionError, requests.Timeout):
+                pass
+            except requests.HTTPError as e:
+                if e.response.status_code not in [500]:
+                    raise
+            time.sleep(1)
+        else:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
                 "upgrading to the latest version of agent.py (>= 0.8) and "
                 "notify us if the issue persists."
             )
-
-        r.raise_for_status()
-        return r
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
