@@ -333,6 +333,15 @@ def test_on_yara():
     assert results["target"]["file"]["yara"][0]["offsets"] == {
         "virtualpc": [(0, 0)],
     }
+    assert results["procmemory"][0]["regions"] == [{
+        "addr": "0x00400000",
+        "end": "0x00401000",
+        "offset": 24,
+        "protect": None,
+        "size": 4096,
+        "state": 0,
+        "type": 0,
+    }]
     assert results["procmemory"][0]["yara"][0]["offsets"] == {
         "vmcheckdll": [(24, 0)],
     }
