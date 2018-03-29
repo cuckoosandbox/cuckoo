@@ -252,7 +252,7 @@ def init_yara():
         # rules embedded in it, so create this file to remain compatible.
         if category == "memory":
             f = open(cwd("stuff", "index_memory.yar"), "wb")
-            for filename in indexed:
+            for filename in sorted(indexed):
                 f.write('include "%s"\n' % cwd("yara", "memory", filename))
 
         indexed = sorted(indexed)
