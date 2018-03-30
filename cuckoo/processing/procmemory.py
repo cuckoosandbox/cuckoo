@@ -11,6 +11,7 @@ import roach
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
+from cuckoo.core.extract import ExtractManager
 
 log = logging.getLogger(__name__)
 
@@ -69,8 +70,9 @@ class ProcessMemory(Processing):
 
         # Disable relocations as those have already been applied.
         reloc.VirtualAddress = reloc.Size = 0
-        pe.FILE_HEADER.Characteristics |= \
+        pe.FILE_HEADER.Characteristics |= (
             pefile.IMAGE_CHARACTERISTICS["IMAGE_FILE_RELOCS_STRIPPED"]
+        )
 
     def dump_images(self, process, drop_dlls=False):
         """Dump executable images from this process memory dump."""
@@ -166,6 +168,8 @@ class ProcessMemory(Processing):
                     regions=regions,
                 )
 
+                ExtractManager.for_task(self.task["id"]).peek_procmem(proc)
+
                 if self.options.get("idapro"):
                     self.create_idapy(proc)
 
@@ -178,7 +182,10 @@ class ProcessMemory(Processing):
                     try:
                         os.remove(dump_path)
                     except OSError:
-                        log.error("Unable to delete memory dump file at path \"%s\"", dump_path)
+                        log.error(
+                            "Unable to delete memory dump file at path \"%s\"",
+                            dump_path
+                        )
 
                 results.append(proc)
 
