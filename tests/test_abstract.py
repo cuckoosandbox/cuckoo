@@ -51,7 +51,7 @@ class TestConfiguration(object):
         }]
 
         c.add({
-            "family": "a", "url": "d",
+            "family": "a", "url": ["d", None],
         })
         assert c.results() == [{
             "family": "a", "type": "c", "url": ["b", "d"],
@@ -75,23 +75,28 @@ class TestConfiguration(object):
 
         c = abstracts.Configuration()
         c.add({
-            "family": "a", "randomkey": "hello",
-        })
-        assert c.results() == [{
-            "family": "a",
-            "extra": {
-                "randomkey": ["hello"],
-            }
-        }]
-
-        c.add({
-            "family": "a", "rc4key": "x", "key": "y",
+            "family": "a", "randomkey": "hello", "rc4key": "x",
         })
         assert c.results() == [{
             "family": "a",
             "key": {
                 "rc4key": ["x"],
             },
+            "extra": {
+                "randomkey": ["hello"],
+            }
+        }]
+
+        c.add({
+            "family": "a", "rc4key": "x", "key": "y", "randomkey": "hello",
+            "cnc": ["1", "2", ""],
+        })
+        assert c.results() == [{
+            "family": "a",
+            "key": {
+                "rc4key": ["x"],
+            },
+            "cnc": ["1", "2"],
             "extra": {
                 "randomkey": ["hello"],
                 "key": ["y"],

@@ -43,12 +43,13 @@ class Configuration(object):
     )
     # Encryption key values.
     keywords3 = (
-        "rc4key", "xorkey", "pubkey",
+        "des3key", "rc4key", "xorkey", "pubkey", "privkey", "iv",
     )
     # Normalize keys.
     mapping = {
         "cncs": "cnc",
         "urls": "url",
+        "user-agent": "user_agent",
     }
 
     def __init__(self):
@@ -67,7 +68,7 @@ class Configuration(object):
         family = self.families[entry["family"]]
 
         for key, value in entry.items():
-            if key in self.skip:
+            if key in self.skip or not value:
                 continue
             key = self.mapping.get(key, key)
             if key in self.keywords1:
@@ -82,19 +83,20 @@ class Configuration(object):
                 if key not in family:
                     family[key] = []
                 for value in make_list(value):
-                    if value not in family[key]:
+                    if value and value not in family[key]:
                         family[key].append(value)
             elif key in self.keywords3:
                 if "key" not in family:
                     family["key"] = {}
                 if key not in family["key"]:
                     family["key"][key] = []
-                family["key"][key].append(value)
+                if value not in family["key"][key]:
+                    family["key"][key].append(value)
             elif key not in family.get("extra", {}):
                 if "extra" not in family:
                     family["extra"] = {}
                 family["extra"][key] = [value]
-            else:
+            elif value not in family["extra"][key]:
                 family["extra"][key].append(value)
 
     def results(self):
