@@ -7,6 +7,7 @@ matrix:
       cache:
         pip: true
     - os: osx
+      osx_image: xcode9.3beta
       language: generic
       cache:
         pip: true
