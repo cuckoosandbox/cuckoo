@@ -5,6 +5,7 @@ matrix:
   include:
     - python: 2.7
     - os: osx
+      osx_image: xcode9.3beta
       language: generic
 
 services:
