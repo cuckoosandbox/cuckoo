@@ -1,14 +1,10 @@
-# Copyright (C) 2016 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os.path
 import shlex
 import warnings
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    import pymisp
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -93,6 +89,10 @@ class MISP(Report):
             raise CuckooProcessingError(
                 "Please configure the URL and API key for your MISP instance."
             )
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import pymisp
 
         self.misp = pymisp.PyMISP(url, apikey, False, "json")
 

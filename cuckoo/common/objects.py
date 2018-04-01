@@ -3,7 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import androguard
 import base64
 import binascii
 import hashlib
@@ -275,8 +274,10 @@ class File(object):
         if "Zip archive data" not in filetype and "Java archive data" not in filetype:
             return "", ""
 
+        from androguard.core.bytecodes.apk import APK
+
         try:
-            a = androguard.core.bytecodes.apk.APK(self.file_path)
+            a = APK(self.file_path)
             if not a.is_valid_APK():
                 return "", ""
 

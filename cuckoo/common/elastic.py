@@ -1,8 +1,6 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
-
-import elasticsearch
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -34,6 +32,8 @@ class Elastic(object):
         # TODO Option to throw an exception?
         if not self.enabled:
             return
+
+        import elasticsearch
 
         try:
             self.client = elasticsearch.Elasticsearch(
