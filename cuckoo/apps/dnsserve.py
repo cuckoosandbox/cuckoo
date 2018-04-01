@@ -6,17 +6,13 @@ import logging
 import socket
 import sys
 
-try:
-    logging.getLogger("scapy.loading").setLevel(logging.ERROR)
-    from scapy.layers.dns import DNS, DNSQR, DNSRR
-    HAVE_SCAPY = True
-except ImportError:
-    HAVE_SCAPY = False
-
+logging.getLogger("scapy.loading").setLevel(logging.ERROR)
 log = logging.getLogger(__name__)
 
 def cuckoo_dnsserve(host, port, nxdomain, hardcode):
-    if not HAVE_SCAPY:
+    try:
+        from scapy.layers.dns import DNS, DNSQR, DNSRR
+    except ImportError:
         sys.exit(
             "Currently the DNS serve script is not available due to issues "
             "in upstream Scapy for Windows "

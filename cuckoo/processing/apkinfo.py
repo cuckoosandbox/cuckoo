@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
@@ -7,11 +7,6 @@ import hashlib
 import logging
 import os
 import zipfile
-
-from androguard.core.bytecodes.apk import APK
-from androguard.core.bytecodes.dvm import DalvikVMFormat
-from androguard.core.analysis.analysis import uVMAnalysis
-from androguard.core.analysis import analysis
 
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
@@ -56,6 +51,11 @@ class ApkInfo(Processing):
 
         if "file" not in self.task["category"]:
             return
+
+        from androguard.core.bytecodes.apk import APK
+        from androguard.core.bytecodes.dvm import DalvikVMFormat
+        from androguard.core.analysis.analysis import uVMAnalysis
+        from androguard.core.analysis import analysis
 
         f = File(self.task["target"])
         if f.get_name().endswith((".zip", ".apk")) or "zip" in f.get_type():

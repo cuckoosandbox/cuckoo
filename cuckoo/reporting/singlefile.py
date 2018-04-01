@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,17 +13,11 @@ import logging
 import os
 import random
 
-try:
-    logging.getLogger("weasyprint").setLevel(logging.ERROR)
-
-    import weasyprint
-    HAVE_WEASYPRINT = True
-except ImportError:
-    HAVE_WEASYPRINT = False
-
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.misc import cwd
+
+logging.getLogger("weasyprint").setLevel(logging.ERROR)
 
 class SingleFile(Report):
     """Stores report in a single-file HTML and/or PDF format."""
@@ -93,7 +87,9 @@ class SingleFile(Report):
             codecs.open(report_path, "wb", encoding="utf-8").write(report)
 
         if self.options.get("pdf"):
-            if not HAVE_WEASYPRINT:
+            try:
+                import weasyprint
+            except ImportError:
                 raise CuckooReportError(
                     "The weasyprint library hasn't been installed on your "
                     "Operating System and as such we can't generate a PDF "

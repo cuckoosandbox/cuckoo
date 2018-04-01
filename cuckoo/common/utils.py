@@ -21,7 +21,6 @@ import warnings
 import xmlrpclib
 
 from distutils.version import StrictVersion
-from django.core.validators import URLValidator
 
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd, version
@@ -69,6 +68,7 @@ def validate_hash(h):
 
 def validate_url(url, allow_invalid=False):
     """Validates an URL using Django's built-in URL validator"""
+    from django.core.validators import URLValidator
     val = URLValidator(schemes=["http", "https"])
 
     try:
