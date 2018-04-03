@@ -26,17 +26,3 @@
     {% endfor %}
     </tbody>
 </table>
-
-
-
-
-
-"process_name": str(process.ImageFileName),
-                "process_id": int(process.UniqueProcessId),
-                "pslist": str(offset in ps_sources["pslist"]),
-                "psscan": str(offset in ps_sources["psscan"]),
-                "thrdproc": str(offset in ps_sources["thrdproc"]),
-                "pspcid": str(offset in ps_sources["pspcid"]),
-                "csrss": str(offset in ps_sources["csrss"]),
-                "session": str(offset in ps_sources["session"]),
-                "deskthrd": str(offset in ps_sources["deskthrd"]),
