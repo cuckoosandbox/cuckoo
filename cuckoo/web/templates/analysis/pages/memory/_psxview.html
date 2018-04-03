@@ -1,0 +1,28 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>process_id</th>
+            <th>pslist</th>
+            <th>psscan</th>
+            <th>thrdproc</th>
+            <th>pspcid</th>
+            <th>csrss</th>
+            <th>sessions</th>
+            <th>deskthrd</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.psxview.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.pslist}}</td>
+            <td class="{{ row.class_ }}">{{row.psscan}}</td>
+            <td class="{{ row.class_ }}">{{row.thrdproc}}</td>
+            <td class="{{ row.class_ }}">{{row.pspcid}}</td>
+            <td class="{{ row.class_ }}">{{row.csrss}}</td>
+            <td class="{{ row.class_ }}">{{row.session}}</td>
+            <td class="{{ row.class_ }}">{{row.deskthrd}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
