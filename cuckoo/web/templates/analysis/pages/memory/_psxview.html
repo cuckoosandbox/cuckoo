@@ -1,0 +1,42 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>process_id</th>
+            <th>pslist</th>
+            <th>psscan</th>
+            <th>thrdproc</th>
+            <th>pspcid</th>
+            <th>csrss</th>
+            <th>sessions</th>
+            <th>deskthrd</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.psxview.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.pslist}}</td>
+            <td class="{{ row.class_ }}">{{row.psscan}}</td>
+            <td class="{{ row.class_ }}">{{row.thrdproc}}</td>
+            <td class="{{ row.class_ }}">{{row.pspcid}}</td>
+            <td class="{{ row.class_ }}">{{row.csrss}}</td>
+            <td class="{{ row.class_ }}">{{row.session}}</td>
+            <td class="{{ row.class_ }}">{{row.deskthrd}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+"process_name": str(process.ImageFileName),
+                "process_id": int(process.UniqueProcessId),
+                "pslist": str(offset in ps_sources["pslist"]),
+                "psscan": str(offset in ps_sources["psscan"]),
+                "thrdproc": str(offset in ps_sources["thrdproc"]),
+                "pspcid": str(offset in ps_sources["pspcid"]),
+                "csrss": str(offset in ps_sources["csrss"]),
+                "session": str(offset in ps_sources["session"]),
+                "deskthrd": str(offset in ps_sources["deskthrd"]),
