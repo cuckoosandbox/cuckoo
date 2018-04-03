@@ -15,7 +15,7 @@
         </header>
 
         <div class="container-fluid">
-            <div class="row page-switcher">                
+            <div class="row page-switcher">
 
                 <div class="col-md-12 grouped-buttons__rows">
 
@@ -26,6 +26,7 @@
                         <a href="memory-device-tree" class="no-badge">Device Tree</a>
                         <a href="memory-code-injection" class="no-badge">Code Injection</a>
                         <a href="memory-timers" class="no-badge">Timers</a>
+                        <a href="memory-psxview" class="no-badge">Psxview</a>
                     </div>
 
                     <div class="grouped-buttons__bordered page-switcher__nav justify">
@@ -43,6 +44,7 @@
 
                 <div class="col-md-12 page-switcher__pages">
                     <div id="memory-process-list" class="active">{% include "analysis/pages/memory/_pslist.html" %}</div>
+                    <div id="memory-psxview" class="active">{% include "analysis/pages/memory/_psxview.html" %}</div>
                     <div id="memory-services">{% include "analysis/pages/memory/_svcscan.html" %}</div>
                     <div id="memory-kernel">{% include "analysis/pages/memory/_modscan.html" %}</div>
                     <div id="memory-device-tree">{% include "analysis/pages/memory/_devicetree.html" %}</div>
