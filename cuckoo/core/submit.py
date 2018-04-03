@@ -216,7 +216,7 @@ class SubmitManager(object):
                 machine = None
 
             kw = {
-                "package": info.get("package"),
+                "package": info.get("package") or "",
                 "timeout": info.get("timeout", 120),
                 "priority": info.get("priority"),
                 "custom": info.get("custom"),
