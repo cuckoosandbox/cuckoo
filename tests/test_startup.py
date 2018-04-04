@@ -595,7 +595,7 @@ class TestYaraIntegration(object):
         File.yara_rules = {}
         shutil.rmtree(cwd("yara", "binaries"))
         init_yara()
-        assert len(File.yara_rules) == 6
+        assert len(File.yara_rules) == 7
         assert not list(File.yara_rules["binaries"])
 
 def test_tmp_permissions_true():

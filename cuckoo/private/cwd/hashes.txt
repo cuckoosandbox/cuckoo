@@ -271,3 +271,4 @@ fa870428bb4f9191141f7302790fb9509da8d73b analyzer/windows/lib/core/ioctl.py
 1f56aab8899036e07cb55e646f3c9ab6eeaaaefd analyzer/windows/lib/core/packages.py
 c20de27af88764a032cd26ea4463719020ed356a analyzer/windows/modules/packages/ie.py
 ef61874f212369d734b731f99d01887f317bf49a analyzer/windows/modules/packages/jse.py
+7830f083a2e0b1aca6bff14c27918022e315c230 yara/dumpmem/readme_first.txt
