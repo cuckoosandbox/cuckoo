@@ -107,9 +107,12 @@ class File(object):
         return file_name
 
     def valid(self):
-        return os.path.exists(self.file_path) and \
-            os.path.isfile(self.file_path) and \
+        return (
+            self.file_path and
+            os.path.exists(self.file_path) and
+            os.path.isfile(self.file_path) and
             os.path.getsize(self.file_path) != 0
+        )
 
     def get_data(self):
         """Read file contents.
