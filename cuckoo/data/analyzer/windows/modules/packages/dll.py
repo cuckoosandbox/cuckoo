@@ -17,7 +17,7 @@ class Dll(Package):
 
     def start(self, path):
         rundll32 = self.get_path("rundll32.exe")
-        function = self.options.get("function", "DllMain")
+        function = self.options.get("function", "#1")
         arguments = self.options.get("arguments", "")
         loader_name = self.options.get("loader")
 
