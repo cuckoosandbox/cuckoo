@@ -846,11 +846,6 @@ class Signature(object):
     filter_apinames = []
     filter_categories = []
 
-    # If no on_call() handler is present and this field has been set, then
-    # dispatch on a per-API basis to the accompanying API. That is, rather
-    # than calling the generic on_call(), call, e.g., on_call_CreateFile().
-    on_call_dispatch = False
-
     def __init__(self, caller):
         """
         @param caller: calling object. Stores results in caller.results
@@ -1293,10 +1288,6 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
-        # Dispatch this call to a per-API specific handler.
-        if self.on_call_dispatch:
-            return getattr(self, "on_call_%s" % call["api"])(call, process)
-
         raise NotImplementedError
 
     def on_signature(self, signature):
