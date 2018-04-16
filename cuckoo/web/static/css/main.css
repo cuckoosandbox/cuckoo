@@ -4706,8 +4706,7 @@ body.night .dns-badge > *.dns-badge__type
 .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
 .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
-.app-nav__nav--primary > li > a
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-nav__nav--primary > li > a .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before,
 .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before
@@ -4764,8 +4763,7 @@ body.night .dns-badge > *.dns-badge__type
 .list-panel .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
 .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
-.app-nav__nav--right > li
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-nav__nav--right > li .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before,
 .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before
@@ -4792,6 +4790,7 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--right > li .button--lg:hover,
 .app-nav__nav--right > li .button--sm:hover,
 .list-panel .panel-title .app-nav__nav--right > li .button:hover,
+.app-nav__nav--right > li .list-panel__widget .panel-title .button:hover,
 .list-panel__widget .panel-title .app-nav__nav--right > li .button:hover,
 .app-nav__nav--right > li .process-tree__search-submit:hover
 {
@@ -5464,6 +5463,8 @@ body.cyborg .process-tree__search-submit
 body.cyborg .button:hover,
 body.cyborg .button--lg:hover,
 body.cyborg .button--sm:hover,
+body.cyborg .list-panel__widget .panel-title .button:hover,
+.list-panel__widget .panel-title body.cyborg .button:hover,
 body.cyborg .process-tree__search-submit:hover
 {
     text-decoration: none;
@@ -5486,6 +5487,8 @@ body.night .process-tree__search-submit
 body.night .button:hover,
 body.night .button--lg:hover,
 body.night .button--sm:hover,
+body.night .list-panel__widget .panel-title .button:hover,
+.list-panel__widget .panel-title body.night .button:hover,
 body.night .process-tree__search-submit:hover
 {
     text-decoration: none;
@@ -5536,13 +5539,7 @@ body.night .process-tree__search-submit:hover
 
 .button--sm,
 .list-panel .panel-title .button,
-.list-panel__widget .panel-title .button,
-.list-panel .panel-title .button--lg,
-.list-panel__widget .panel-title .button--lg,
-.list-panel .panel-title .button--sm,
-.list-panel__widget .panel-title .button--sm,
-.list-panel .panel-title .process-tree__search-submit,
-.list-panel__widget .panel-title .process-tree__search-submit
+.list-panel__widget .panel-title .button
 {
     font-size: 13px;
 
@@ -5555,13 +5552,7 @@ body.night .process-tree__search-submit:hover
 .list-panel .panel-title .outline.button,
 .list-panel__widget .panel-title .outline.button,
 body.cyborg .app-error__balloon .button:not(.inversed),
-body.cyborg .app-error__balloon .button--lg:not(.inversed),
-body.cyborg .app-error__balloon .button--sm:not(.inversed),
-body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed),
 body.night .app-error__balloon .button:not(.inversed),
-body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .button--sm:not(.inversed),
-body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .outline.process-tree__search-submit
 {
     padding-top: 4px;
@@ -5580,13 +5571,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:not(.active),
 .inversed.process-tree__search-submit,
 .list-panel.page-switcher .page-switcher__nav > .button:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--lg:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--lg:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--sm:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active)
 {
     color: #6297f8;
     border: 0;
@@ -5596,17 +5581,12 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .button.inversed:hover,
 .inversed.button--lg:hover,
 .inversed.button--sm:hover,
+.list-panel__widget .panel-title .inversed.button:hover,
 .list-panel.page-switcher .panel-title .page-switcher__nav > .button:hover:not(.active),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:hover:not(.active),
 .inversed.process-tree__search-submit:hover,
 .list-panel.page-switcher .page-switcher__nav > .button:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--lg:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--lg:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--sm:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:hover:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active)
 {
     color: #4a87f7;
 }
@@ -5755,22 +5735,17 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .list-group-option .panel-title .button input[type='radio'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
-.button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button input[type='checkbox'] + span:before,
-.button--lg
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.button--lg .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--lg input[type='checkbox'] + span:before,
-.button--sm
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.button--sm .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--sm input[type='checkbox'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .panel-title .button input[type='checkbox'] + span:before,
-.list-panel__widget .panel-title .button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .panel-title .button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .list-panel__widget .panel-title .button input[type='checkbox'] + span:before,
-.process-tree__search-submit
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
 .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button input[type='checkbox'] + span:before,
@@ -6138,14 +6113,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6205,14 +6177,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6278,14 +6247,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6351,14 +6317,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6515,8 +6478,7 @@ body.cyborg .process-tree__search-submit
 body.cyborg .cuckoo-table thead td.no-result,
 body.cyborg .cuckoo-table__fullscreen thead td.no-result,
 body.cyborg .network-display__table > table thead td.no-result,
-body.cyborg
-.cuckoo-table tbody td.no-result,
+body.cyborg .cuckoo-table tbody td.no-result,
 body.cyborg .cuckoo-table__fullscreen tbody td.no-result,
 body.cyborg .network-display__table > table tbody td.no-result
 {
@@ -7854,8 +7816,7 @@ body.night .cuckoo-analysis__panel.danger > a
 .list-panel .list-group-option .dndupload__simple.dragging input[type='radio'] + span:before,
 .dndupload__simple.dragging .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dragging input[type='radio'] + span:before,
-.dndupload__simple.dragging
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dndupload__simple.dragging .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dndupload__simple.dragging input[type='checkbox'] + span:before,
 .dndupload__simple.dragging .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dragging input[type='checkbox'] + span:before
@@ -7882,8 +7843,7 @@ body.night .cuckoo-analysis__panel.danger > a
 .list-panel .list-group-option .dndupload__simple.dropped input[type='radio'] + span:before,
 .dndupload__simple.dropped .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dropped input[type='radio'] + span:before,
-.dndupload__simple.dropped
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dndupload__simple.dropped .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dndupload__simple.dropped input[type='checkbox'] + span:before,
 .dndupload__simple.dropped .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dropped input[type='checkbox'] + span:before
@@ -8197,8 +8157,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .upload-module .allowed-file-types ul li input[type='radio'] + span:before,
 .upload-module .allowed-file-types ul li .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .upload-module .allowed-file-types ul li input[type='radio'] + span:before,
-.upload-module .allowed-file-types ul li
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.upload-module .allowed-file-types ul li .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .upload-module .allowed-file-types ul li input[type='checkbox'] + span:before,
 .upload-module .allowed-file-types ul li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .upload-module .allowed-file-types ul li input[type='checkbox'] + span:before
@@ -8450,8 +8409,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
 .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
-.cuckoo-nav .lock-sidebar
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-nav .lock-sidebar .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before,
 .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before
@@ -8478,8 +8436,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
-.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before
@@ -8687,6 +8644,8 @@ body.cyborg .app-error__balloon:before
 body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .button--lg,
 body.cyborg .app-error__balloon .button--sm,
+body.cyborg .app-error__balloon .list-panel__widget .panel-title .button,
+.list-panel__widget .panel-title body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .process-tree__search-submit
 {
     color: #0ce3ac;
@@ -8749,6 +8708,8 @@ body.night .app-error__balloon:before
 body.night .app-error__balloon .button,
 body.night .app-error__balloon .button--lg,
 body.night .app-error__balloon .button--sm,
+body.night .app-error__balloon .list-panel__widget .panel-title .button,
+.list-panel__widget .panel-title body.night .app-error__balloon .button,
 body.night .app-error__balloon .process-tree__search-submit
 {
     color: #d7d7d7;
@@ -9307,8 +9268,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors li.expanded input[type='radio'] + span:before,
 .errors li.expanded .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .errors li.expanded input[type='radio'] + span:before,
-.errors li.expanded
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.errors li.expanded .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .errors li.expanded input[type='checkbox'] + span:before,
 .errors li.expanded .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .errors li.expanded input[type='checkbox'] + span:before
@@ -9363,8 +9323,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors .expand-error input[type='radio'] + span:before,
 .errors .expand-error .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .errors .expand-error input[type='radio'] + span:before,
-.errors .expand-error
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.errors .expand-error .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .errors .expand-error input[type='checkbox'] + span:before,
 .errors .expand-error .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .errors .expand-error input[type='checkbox'] + span:before
@@ -9398,8 +9357,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors .expand-error input[type='radio'] + span:hover:before + span,
 .errors .expand-error .list-panel__widget .list-group-option input[type='radio'] + span:hover:before + span,
 .list-panel__widget .list-group-option .errors .expand-error input[type='radio'] + span:hover:before + span,
-.errors .expand-error
-.list-panel .list-group-option input[type='checkbox'] + span:hover:before + span,
+.errors .expand-error .list-panel .list-group-option input[type='checkbox'] + span:hover:before + span,
 .list-panel .list-group-option .errors .expand-error input[type='checkbox'] + span:hover:before + span,
 .errors .expand-error .list-panel__widget .list-group-option input[type='checkbox'] + span:hover:before + span,
 .list-panel__widget .list-group-option .errors .expand-error input[type='checkbox'] + span:hover:before + span
@@ -9663,8 +9621,7 @@ body.night .network-display__outer
 .list-panel .list-group-option .network-display__request-summary:hover input[type='radio'] + span:before,
 .network-display__request-summary:hover .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-summary:hover input[type='radio'] + span:before,
-.network-display__request-summary:hover
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-summary:hover .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-summary:hover input[type='checkbox'] + span:before,
 .network-display__request-summary:hover .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-summary:hover input[type='checkbox'] + span:before
@@ -9779,8 +9736,7 @@ body.cyborg .network-display__request-summary .list-panel .list-group-option inp
 .list-panel .list-group-option body.cyborg .network-display__request-summary input[type='radio'] + span:before,
 body.cyborg .network-display__request-summary .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .network-display__request-summary input[type='radio'] + span:before,
-body.cyborg .network-display__request-summary
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .network-display__request-summary .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .network-display__request-summary input[type='checkbox'] + span:before,
 body.cyborg .network-display__request-summary .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .network-display__request-summary input[type='checkbox'] + span:before,
@@ -9841,8 +9797,7 @@ body.night .network-display__request-summary .list-panel .list-group-option inpu
 .list-panel .list-group-option body.night .network-display__request-summary input[type='radio'] + span:before,
 body.night .network-display__request-summary .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .network-display__request-summary input[type='radio'] + span:before,
-body.night .network-display__request-summary
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .network-display__request-summary .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .network-display__request-summary input[type='checkbox'] + span:before,
 body.night .network-display__request-summary .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .network-display__request-summary input[type='checkbox'] + span:before,
@@ -9968,11 +9923,9 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right
 .list-panel__widget .list-group-option .network-display__request-details .detail-field__header input[type='radio'] + span:before,
 .network-display__request-details--single .detail-field__header .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-details--single .detail-field__header input[type='radio'] + span:before,
-.network-display__request-details .detail-field__header
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-details .detail-field__header .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-details .detail-field__header input[type='checkbox'] + span:before,
-.network-display__request-details--single .detail-field__header
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-details--single .detail-field__header .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-details--single .detail-field__header input[type='checkbox'] + span:before,
 .network-display__request-details .detail-field__header .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-details .detail-field__header input[type='checkbox'] + span:before,
@@ -10824,8 +10777,7 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .list-panel .list-group-option .flex-grid__header h3 button input[type='radio'] + span:before,
 .flex-grid__header h3 button .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button input[type='radio'] + span:before,
-.flex-grid__header h3 button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button input[type='checkbox'] + span:before,
 .flex-grid__header h3 button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button input[type='checkbox'] + span:before,
@@ -10839,22 +10791,19 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .dns-badge__content:before,
 .flex-grid__header h3 .flex-grid__button--description .dns-badge__content:before,
 .flex-grid__header h3 .flex-grid__button .cuckoo-table#submission-task-table .status.status-reported:before,
-.cuckoo-table#submission-task-table
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+.cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+.network-display__table > table#submission-task-table .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -10866,29 +10815,25 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files ul div:before,
-.cuckoo-files ul
-.flex-grid__header h3 .flex-grid__button div:before,
+.cuckoo-files ul .flex-grid__header h3 .flex-grid__button div:before,
 .flex-grid__header h3 button--description .cuckoo-files ul div:before,
 .cuckoo-files ul .flex-grid__header h3 button--description div:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files ul div:before,
 .cuckoo-files ul .flex-grid__header h3 .flex-grid__button--description div:before,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview
-.flex-grid__header h3 .flex-grid__button .extension-select:after,
+.cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button .extension-select:after,
 .flex-grid__header h3 button--description .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .flex-grid__header h3 button--description .extension-select:after,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button--description .extension-select:after,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview
-.flex-grid__header h3 .flex-grid__button .extension-select:before,
+.cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button .extension-select:before,
 .flex-grid__header h3 button--description .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .flex-grid__header h3 button--description .extension-select:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button--description .extension-select:before,
 .flex-grid__header h3 .flex-grid__button .flex-form__header .custom-checkbox > input + span,
-.flex-form__header
-.flex-grid__header h3 .flex-grid__button .custom-checkbox > input + span,
+.flex-form__header .flex-grid__header h3 .flex-grid__button .custom-checkbox > input + span,
 .flex-grid__header h3 button--description .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .flex-grid__header h3 button--description .custom-checkbox > input + span,
 .flex-grid__header h3 .flex-grid__button--description .flex-form__header .custom-checkbox > input + span,
@@ -10897,32 +10842,25 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .breadcrumbs > li:not(:last-child):after,
 .flex-grid__header h3 .flex-grid__button--description .breadcrumbs > li:not(:last-child):after,
 .flex-grid__header h3 .flex-grid__button .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
+.list-panel .list-group-option .flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
 .flex-grid__header h3 button--description .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
 .flex-grid__header h3 button--description .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='radio'] + span:before,
-.flex-grid__header h3 .flex-grid__button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
-.flex-grid__header h3 button--description
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 .flex-grid__button .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
+.flex-grid__header h3 button--description .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button--description input[type='checkbox'] + span:before,
-.flex-grid__header h3 .flex-grid__button--description
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 .flex-grid__button--description .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='checkbox'] + span:before,
 .flex-grid__header h3 .flex-grid__button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
 .flex-grid__header h3 button--description .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button--description input[type='checkbox'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
@@ -11537,7 +11475,7 @@ body.night .cuckoo-files > #filetree > ul > li:last-child
     list-style: none;
 }
 
-.cuckoo-files ul:not(.flex-static__summary):not(.flex-form__toggle-list)
+.cuckoo-files ul
 {
     padding: 0 0 0 10px;
 }
@@ -13027,8 +12965,7 @@ body.night .process-tree
 .list-panel .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
-.process-tree__search-submit
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before
@@ -13066,8 +13003,7 @@ body.night .process-tree
 .list-panel .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
 .process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
-.process-tree__search-submit.loading
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit.loading .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before,
 .process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before
@@ -13264,8 +13200,7 @@ body.night .process-tree__search
 .list-panel .list-group-option .process-tree__tree .processes p em input[type='radio'] + span:before,
 .process-tree__tree .processes p em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__tree .processes p em input[type='radio'] + span:before,
-.process-tree__tree .processes p em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__tree .processes p em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__tree .processes p em input[type='checkbox'] + span:before,
 .process-tree__tree .processes p em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__tree .processes p em input[type='checkbox'] + span:before
@@ -13308,42 +13243,30 @@ body.night .process-tree__search
 .process-tree__tree .processes div.selected em > .custom-select:after,
 .process-tree__tree .processes div.selected em > .dns-badge__content:before,
 .process-tree__tree .processes div.selected .cuckoo-table#submission-task-table em > .status.status-reported:before,
-.cuckoo-table#submission-task-table
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected #submission-task-table.cuckoo-table__fullscreen em > .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected .network-display__table > table#submission-task-table em > .status.status-reported:before,
-.network-display__table > table#submission-task-table
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:before,
 .process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:after,
 .process-tree__tree .processes div.selected .cuckoo-files ul em > div:before,
-.cuckoo-files ul
-.process-tree__tree .processes div.selected em > div:before,
+.cuckoo-files ul .process-tree__tree .processes div.selected em > div:before,
 .process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:after,
-.cuckoo-files #selection-overview
-.process-tree__tree .processes div.selected em > .extension-select:after,
+.cuckoo-files #selection-overview .process-tree__tree .processes div.selected em > .extension-select:after,
 .process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:before,
-.cuckoo-files #selection-overview
-.process-tree__tree .processes div.selected em > .extension-select:before,
+.cuckoo-files #selection-overview .process-tree__tree .processes div.selected em > .extension-select:before,
 .process-tree__tree .processes div.selected .flex-form__header em.custom-checkbox > input + span,
-.flex-form__header
-.process-tree__tree .processes div.selected em.custom-checkbox > input + span,
+.flex-form__header .process-tree__tree .processes div.selected em.custom-checkbox > input + span,
 .process-tree__tree .processes div.selected em.breadcrumbs > li:not(:last-child):after,
 .process-tree__tree .processes div.selected .list-panel .list-group-option em > input[type='radio'] + span:before,
-.list-panel .list-group-option
-.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.list-panel .list-group-option .process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
 .process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='radio'] + span:before,
-.list-panel__widget .list-group-option
-.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
-.process-tree__tree .processes div.selected
-.list-panel .list-group-option em > input[type='checkbox'] + span:before,
-.list-panel .list-group-option
-.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.process-tree__tree .processes div.selected .list-panel .list-group-option em > input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before,
 .process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option
-.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before
+.list-panel__widget .list-group-option .process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before
 {
     color: #fff;
 }
@@ -13432,8 +13355,7 @@ body.cyborg .process-tree__tree em .list-panel .list-group-option input[type='ra
 .list-panel .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
 body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
-body.cyborg .process-tree__tree em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .process-tree__tree em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before,
 body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before
@@ -13475,8 +13397,7 @@ body.night .process-tree__tree em .list-panel .list-group-option input[type='rad
 .list-panel .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
 body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
-body.night .process-tree__tree em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .process-tree__tree em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before,
 body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before
@@ -13521,8 +13442,7 @@ body.night .process-tree__tree em .list-panel__widget .list-group-option input[t
 .list-panel .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
 .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:first-child:before,
 .list-panel__widget .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
-.process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:first-child:before,
+.process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:first-child:before,
 .list-panel .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before,
 .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:first-child:before,
 .list-panel__widget .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before
@@ -13584,8 +13504,7 @@ body.cyborg .process-tree__header h4 .list-panel .list-group-option input[type='
 .list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
 body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
-body.cyborg .process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before,
 body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before
@@ -13629,8 +13548,7 @@ body.night .process-tree__header h4 .list-panel .list-group-option input[type='r
 .list-panel .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
 body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
-body.night .process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before,
 body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before
@@ -13705,8 +13623,7 @@ body.night .process-tree__header h4 .list-panel__widget .list-group-option input
 .list-panel .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
 .process-spec--name h2 span .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
-.process-spec--name h2 span
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--name h2 span .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before,
 .process-spec--name h2 span .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before
@@ -14036,6 +13953,7 @@ body.night .process-spec--table .network-display__table > table thead
     color: #434343;
 }
 
+
 .process-spec--table .cuckoo-table .date-api > time,
 .process-spec--table .cuckoo-table__fullscreen .date-api > time,
 .process-spec--table .network-display__table > table .date-api > time
@@ -14098,8 +14016,7 @@ body.night .process-spec--table .network-display__table > table .date-api p
 .list-panel .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
 .process-spec--table .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
-.process-spec--table .search-process
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--table .search-process .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before,
 .process-spec--table .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before
@@ -14138,8 +14055,7 @@ body.night .process-spec--table .search-process
 .list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
 .process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
-.process-spec--table tr.collapsed > .search-process
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--table tr.collapsed > .search-process .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before,
 .process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before
@@ -14732,8 +14648,7 @@ body.night .dashboard-module__body--flex
 .list-panel .list-group-option .dashboard-module__body .content-list li a input[type='radio'] + span:before,
 .dashboard-module__body .content-list li a .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__body .content-list li a input[type='radio'] + span:before,
-.dashboard-module__body .content-list li a
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module__body .content-list li a .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module__body .content-list li a input[type='checkbox'] + span:before,
 .dashboard-module__body .content-list li a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__body .content-list li a input[type='checkbox'] + span:before
@@ -14926,7 +14841,7 @@ body.night .dashboard-module__speech blockquote
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href],
-.dashboard-module__tabs > [href].flex-tabs__tab--right
+.dashboard-module__tabs > .flex-tabs__tab--right[href]
 {
     padding: 20px 30px 10px 30px;
 
@@ -14934,13 +14849,13 @@ body.night .dashboard-module__speech blockquote
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href]:hover,
-.dashboard-module__tabs > [href].flex-tabs__tab--right:hover
+.dashboard-module__tabs > .flex-tabs__tab--right[href]:hover
 {
     text-decoration: none;
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-.dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+.dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #f1f1f1;
 }
@@ -14967,13 +14882,13 @@ body.cyborg .dashboard-module__tabs > .active.flex-tabs__tab--right
 }
 
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-body.cyborg .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #142a33;
 }
 
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href].active,
-body.cyborg .dashboard-module__tabs > [href].active.flex-tabs__tab--right
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right[href].active
 {
     box-shadow: 0 2px 0 #144337;
 }
@@ -14991,13 +14906,13 @@ body.night .dashboard-module__tabs > .flex-tabs__tab--right
 }
 
 body.night .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-body.night .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+body.night .dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #3f6791;
 }
 
 body.night .dashboard-module__tabs > .flex-tabs__tab[href].active,
-body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
+body.night .dashboard-module__tabs > .flex-tabs__tab--right[href].active
 {
     background-color: #2f4d6d;
     box-shadow: 0 2px 0 #20344a;
@@ -15256,11 +15171,9 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 .list-panel__widget .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='radio'] + span:before,
 .dashboard-module__lg .omni-uploader .uploader-area .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__lg .omni-uploader .uploader-area input[type='radio'] + span:before,
-.dashboard-module .omni-uploader .uploader-area
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module .omni-uploader .uploader-area .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='checkbox'] + span:before,
-.dashboard-module__lg .omni-uploader .uploader-area
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module__lg .omni-uploader .uploader-area .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module__lg .omni-uploader .uploader-area input[type='checkbox'] + span:before,
 .dashboard-module .omni-uploader .uploader-area .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='checkbox'] + span:before,
@@ -15292,15 +15205,15 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 }
 
 .dashboard-module[data-dashboard-module='installation'] .up-to-date,
-[data-dashboard-module='installation'].dashboard-module__lg .up-to-date,
+.dashboard-module__lg[data-dashboard-module='installation'] .up-to-date,
 .dashboard-module[data-dashboard-module='installation'] .latest-version,
-[data-dashboard-module='installation'].dashboard-module__lg .latest-version
+.dashboard-module__lg[data-dashboard-module='installation'] .latest-version
 {
     display: none;
 }
 
 .dashboard-module[data-dashboard-module='installation'] .show-loaded,
-[data-dashboard-module='installation'].dashboard-module__lg .show-loaded
+.dashboard-module__lg[data-dashboard-module='installation'] .show-loaded
 {
     transition: opacity 150ms linear;
 
@@ -15308,13 +15221,13 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 }
 
 .dashboard-module[data-dashboard-module='installation'].version-loaded .show-loaded,
-[data-dashboard-module='installation'].version-loaded.dashboard-module__lg .show-loaded
+.dashboard-module__lg[data-dashboard-module='installation'].version-loaded .show-loaded
 {
     opacity: 1;
 }
 
 .dashboard-module[data-dashboard-module='installation'] .dashboard-module__footer,
-[data-dashboard-module='installation'].dashboard-module__lg .dashboard-module__footer
+.dashboard-module__lg[data-dashboard-module='installation'] .dashboard-module__footer
 {
     display: none;
 }
@@ -15545,8 +15458,7 @@ body.night .dashboard table.simple tr:nth-child(even)
 .list-panel .list-group-option .app-message > h5 input[type='radio'] + span:before,
 .app-message > h5 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-message > h5 input[type='radio'] + span:before,
-.app-message > h5
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-message > h5 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-message > h5 input[type='checkbox'] + span:before,
 .app-message > h5 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-message > h5 input[type='checkbox'] + span:before
@@ -15593,11 +15505,14 @@ body.night .app-message
     margin-top: -6px;
 }
 
+.list-panel__widget .panel-title .button,
 .list-panel .panel-title .button--lg,
 .list-panel__widget .panel-title .button--lg,
 .list-panel .panel-title .button--sm,
 .list-panel__widget .panel-title .button--sm,
 .list-panel .panel-title .button,
+.list-panel .list-panel__widget .panel-title .button,
+.list-panel__widget .list-panel .panel-title .button,
 .list-panel__widget .panel-title .button,
 .list-panel .panel-title .process-tree__search-submit,
 .list-panel__widget .panel-title .process-tree__search-submit
