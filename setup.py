@@ -9,6 +9,12 @@ import setuptools
 import sys
 import traceback
 
+if sys.version[0] == "3":
+    sys.exit(
+        "Cuckoo is Python2-only at the moment! Please use Python 2 to "
+        "install it, i.e., `pip2 install -U cuckoo`."
+    )
+
 # Update the MANIFEST.in file to include the one monitor version that is
 # actively shipped for this distribution and exclude all the other monitors
 # that we have lying around. Note: I tried to do this is in a better manner
@@ -104,37 +110,37 @@ if "setup.py" in sys.argv and "sdist" in sys.argv:
 
 def do_help(e, message):
     if isinstance(e, ValueError) and "jpeg is required" in e.message:
-        print "  This particular error may be resolved as follows:"
-        print "      sudo apt-get install libjpeg-dev"
+        print("  This particular error may be resolved as follows:")
+        print("      sudo apt-get install libjpeg-dev")
 
     if isinstance(e, ValueError) and "zlib is required" in e.message:
-        print "  This particular error may be resolved as follows:"
-        print "      sudo apt-get install zlib1g-dev"
+        print("  This particular error may be resolved as follows:")
+        print("      sudo apt-get install zlib1g-dev")
 
     if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
-        print "  This particular error *may* be resolved as follows:"
-        print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+        print("  This particular error *may* be resolved as follows:")
+        print("      sudo apt-get install python-dev libffi-dev libssl-dev")
 
-    print "  But don't forget to check out our documentation for full"
-    print "  installation steps. You might also want to check our FAQ."
+    print("  But don't forget to check out our documentation for full")
+    print("  installation steps. You might also want to check our FAQ.")
 
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
     except (SystemExit, Exception) as e:
-        print "\x1b[31m"
-        print "The following error has occurred while trying to install Cuckoo!"
-        print "\x1b[0m"
-        print traceback.format_exc(),
-        print "\x1b[31m"
-        print "Make sure that you've installed all requirements for Cuckoo "
-        print "to be installed properly! Please refer to our documentation: "
-        print "https://cuckoo.sh/docs/installation/host/requirements.html"
-        print "\x1b[33m"
-        print "Once you have triple checked that all dependencies have been "
-        print "installed but Cuckoo still fails, please feel free to reach "
-        print "out to us on IRC / email / Github!"
-        print "\x1b[0m"
+        print("\x1b[31m")
+        print("The following error has occurred while trying to install Cuckoo!")
+        print("\x1b[0m")
+        print(traceback.format_exc())
+        print("\x1b[31m")
+        print("Make sure that you've installed all requirements for Cuckoo ")
+        print("to be installed properly! Please refer to our documentation: ")
+        print("https://cuckoo.sh/docs/installation/host/requirements.html")
+        print("\x1b[33m")
+        print("Once you have triple checked that all dependencies have been ")
+        print("installed but Cuckoo still fails, please feel free to reach ")
+        print("out to us on IRC / email / Github!")
+        print("\x1b[0m")
 
         if hasattr(e, "message") and isinstance(e.message, basestring):
             do_help(e, e.message)
