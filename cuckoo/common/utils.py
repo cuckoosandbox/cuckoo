@@ -253,16 +253,14 @@ def exception_message():
     msg += "Machine arch: %s\n" % platform.machine()
 
     try:
+        import pip._internal as pip
+    except ImportError:
         import pip
 
-        msg += "Modules: %s\n" % " ".join(sorted(
-            "%s:%s" % (package.key, package.version)
-            for package in pip.get_installed_distributions()
-        ))
-    except ImportError:
-        pass
-
-    msg += "\n"
+    msg += "Modules: %s\n\n" % " ".join(sorted(
+        "%s:%s" % (package.key, package.version)
+        for package in pip.get_installed_distributions()
+    ))
     return msg
 
 _jsbeautify_blacklist = [
