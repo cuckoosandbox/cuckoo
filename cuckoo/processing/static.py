@@ -279,24 +279,31 @@ class PortableExecutable(object):
 
         ret = []
         p7 = M2Crypto.SMIME.PKCS7(pkcs7_obj)
+
+        def get_m2crypto_subject_attr(subject_obj, attr_name):
+            try:
+                return subject_obj.__getattr__(attr_name)
+            except TypeError as err1:
+                log.info("Missing certificate attribute '%s'. Error: %s", attr_name, err1)
+                return ""
+
         for cert in p7.get0_signers(M2Crypto.X509.X509_Stack()) or []:
             subject = cert.get_subject()
             ret.append({
                 "serial_number": "%032x" % cert.get_serial_number(),
-                "common_name": subject.CN,
-                "country": subject.C,
-                "locality": subject.L,
-                "organization": subject.O,
-                "email": subject.Email,
+                "common_name": get_m2crypto_subject_attr(subject,"CN"),
+                "country": get_m2crypto_subject_attr(subject,"C"),
+                "locality": get_m2crypto_subject_attr(subject,"L"),
+                "organization": get_m2crypto_subject_attr(subject,"O"),
+                "email": get_m2crypto_subject_attr(subject,"Email"),
                 "sha1": "%040x" % int(cert.get_fingerprint("sha1"), 16),
                 "md5": "%032x" % int(cert.get_fingerprint("md5"), 16),
             })
-
-            if subject.GN and subject.SN:
+            if get_m2crypto_subject_attr(subject,"GN") != "" and get_m2crypto_subject_attr(subject,"SN") != "":
                 ret[-1]["full_name"] = "%s %s" % (subject.GN, subject.SN)
-            elif subject.GN:
+            elif get_m2crypto_subject_attr(subject,"GN") != "":
                 ret[-1]["full_name"] = subject.GN
-            elif subject.SN:
+            elif get_m2crypto_subject_attr(subject,"SN") != "":
                 ret[-1]["full_name"] = subject.SN
 
         return ret
