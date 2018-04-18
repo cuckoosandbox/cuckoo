@@ -7,7 +7,9 @@ import datetime
 import json
 import logging
 import os
+import sys
 
+from cuckoo.common.colors import green
 from cuckoo.common.config import config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -15,7 +17,7 @@ from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import Singleton, classlock
 from cuckoo.common.utils import SuperLock, json_encode
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, format_command
 
 from sqlalchemy import create_engine, Column, not_, func
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
@@ -486,14 +488,16 @@ class Database(object):
             last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
             if last.version_num != SCHEMA_VERSION and self.schema_check:
-                raise CuckooDatabaseError(
-                    "DB schema version mismatch: found %s, expected %s. "
-                    "Optionally make a backup and then apply the latest "
-                    "database migration(s) by running "
-                    "`cuckoo --cwd %s migrate`." % (
-                        last.version_num, SCHEMA_VERSION, cwd(raw=True),
-                    )
+                log.warning(
+                    "Database schema version mismatch: found %s, expected %s.",
+                    last.version_num, SCHEMA_VERSION
                 )
+                log.error(
+                    "Optionally make a backup and then apply the latest "
+                    "database migration(s) by running:"
+                )
+                log.info("$ %s", green(format_command("migrate")))
+                sys.exit(1)
 
     def __del__(self):
         """Disconnects pool."""

@@ -697,10 +697,11 @@ def _204_205(c):
     return c
 
 def _205_210(c):
-    c["cuckoo"]["remotecontrol"] = {}
-    c["cuckoo"]["remotecontrol"]["enabled"] = False
-    c["cuckoo"]["remotecontrol"]["guacd_host"] = "localhost"
-    c["cuckoo"]["remotecontrol"]["guacd_port"] = 4822
+    c["cuckoo"]["remotecontrol"] = {
+        "enabled": False,
+        "guacd_host": "localhost",
+        "guacd_port": 4822,
+    }
     c["virtualbox"]["controlports"] = "5000-5050"
     return c
 

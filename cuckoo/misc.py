@@ -288,3 +288,13 @@ def make_list(obj):
     if isinstance(obj, (tuple, list)):
         return list(obj)
     return [obj]
+
+def format_command(*args):
+    raw = cwd(raw=True)
+    if raw == "." or raw == "~/.cuckoo":
+        command = "cuckoo "
+    elif " " in raw or "'" in raw:
+        command = 'cuckoo --cwd "%s" ' % raw
+    else:
+        command = "cuckoo --cwd %s " % raw
+    return command + " ".join(args)

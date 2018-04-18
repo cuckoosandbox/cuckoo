@@ -268,7 +268,7 @@ class Config(object):
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
-                "controlports": String("5000-5050"),
+                "controlports": String("5000-5050", required=False),
             },
             "*": {
                 "__section__": "cuckoo1",

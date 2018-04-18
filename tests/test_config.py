@@ -1133,12 +1133,11 @@ def test_migration_205_210():
     Folders.create(cwd(), "conf")
 
     Files.create(cwd("conf"), "cuckoo.conf", """
-[remotecontrol]
+[database]
     """)
     Files.create(cwd("conf"), "virtualbox.conf", """
 [virtualbox]
 machines = vbox1
-controlports = 5000-5050
 [vbox1]
 mode = headless
     """)

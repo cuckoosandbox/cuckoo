@@ -18,6 +18,7 @@ from cuckoo.main import cuckoo_create
 from cuckoo.misc import (
     dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges, make_list,
     HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd, Pidfile,
+    format_command
 )
 
 def return_value(value):
@@ -305,3 +306,22 @@ def test_make_list():
     assert make_list(1) == [1]
     assert make_list((1, 2)) == [1, 2]
     assert make_list([3, 4]) == [3, 4]
+
+def test_format_command():
+    set_cwd(tempfile.mkdtemp(), ".")
+    assert format_command("community") == "cuckoo community"
+
+    set_cwd(tempfile.mkdtemp(), "~/.cuckoo")
+    assert format_command("community") == "cuckoo community"
+
+    dirpath = tempfile.mkdtemp()
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == "cuckoo --cwd %s community" % cwd()
+
+    dirpath = tempfile.mkdtemp("foo bar")
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == 'cuckoo --cwd "%s" community' % cwd()
+
+    dirpath = tempfile.mkdtemp("foo ' bar")
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == 'cuckoo --cwd "%s" community' % cwd()

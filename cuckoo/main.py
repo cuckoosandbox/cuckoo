@@ -34,7 +34,7 @@ from cuckoo.core.startup import (
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    Pidfile, mkdir
+    Pidfile, mkdir, format_command
 )
 
 log = logging.getLogger("cuckoo")
@@ -170,15 +170,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
             "rules, and more goodies by running the following command:"
         )
-        raw = cwd(raw=True)
-        if raw == "." or raw == "~/.cuckoo":
-            command = "cuckoo community"
-        elif " " in raw or "'" in raw:
-            command = 'cuckoo --cwd "%s" community' % raw
-        else:
-            command = "cuckoo --cwd %s community" % raw
-
-        log.info("$ %s", green(command))
+        log.info("$ %s", green(format_command("community")))
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
@@ -244,8 +236,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
-        if e.code:
-            print e
+        pass
     except Exception as e:
         # Deal with an unhandled exception.
         sys.stderr.write(exception_message())
