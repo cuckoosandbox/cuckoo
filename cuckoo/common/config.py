@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -253,6 +253,11 @@ class Config(object):
                 "critical": Int(60),
                 "vm_state": Int(60),
             },
+            "remotecontrol": {
+                "enabled": Boolean(False),
+                "guacd_host": String("localhost"),
+                "guacd_port": Int(4822),
+            },
         },
         "virtualbox": {
             "virtualbox": {
@@ -263,6 +268,7 @@ class Config(object):
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
+                "controlports": String("5000-5050"),
             },
             "*": {
                 "__section__": "cuckoo1",

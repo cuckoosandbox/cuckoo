@@ -289,8 +289,7 @@
 :root .fa-flip-horizontal,
 :root .fa-flip-vertical
 {
-    -webkit-filter: none;
-            filter: none;
+    filter: none;
 }
 
 .fa-stack
@@ -6651,6 +6650,28 @@ body.cyborg .process-tree__search-submit
     cursor: pointer;
 
     background-color: #ddd;
+}
+
+.cuckoo-table tbody td.postsubmit-status-display,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display,
+.network-display__table > table tbody td.postsubmit-status-display
+{
+    width: 235px;
+}
+
+.cuckoo-table tbody td.postsubmit-status-display > div,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display > div,
+.network-display__table > table tbody td.postsubmit-status-display > div
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: row-reverse;
+
+    -ms-flex-direction: row-reverse;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
 .cuckoo-table thead th,
@@ -13206,11 +13227,6 @@ body.night .process-tree
     outline: 0;
 }
 
-.process-tree__search input::-webkit-input-placeholder
-{
-    color: #b5b5b5;
-}
-
 .process-tree__search input:-ms-input-placeholder
 {
     color: #b5b5b5;
@@ -16495,6 +16511,1308 @@ body.night .modal-cuckoo .modal-form__checkbox label
 
     border-radius: 50%;
     background-color: #fff;
+}
+
+@keyframes SnapshotShutter
+{
+    0%
+    {
+        background-color: #6297f8;
+    }
+    25%
+    {
+        background-color: #fff;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, .5);
+    }
+    100%
+    {
+        background-color: #6297f8;
+        box-shadow: 0 2px 0 #456aae;
+    }
+}
+
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__connecting section > a,
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
+.rdp-dialog__options button:not([value='cancel']),
+.rdp-toolbar button
+{
+    font-size: 44px;
+
+    padding: 7px 5px 5px;
+
+    transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+    text-decoration: none;
+
+    color: #1e3c73;
+    border: 0;
+    border-radius: 5px;
+    background-color: #6297f8;
+    box-shadow: 0 2px 0 #456aae;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
+
+    -webkit-appearance: none;
+}
+
+.rdp-dialog__options button:hover[value='cancel'],
+.rdp__error section > a:hover,
+.rdp__connecting section > a:hover,
+.rdp__error--buttons > a:hover,
+.rdp__connecting--buttons > a:hover,
+.rdp-dialog__options button:hover:not([value='cancel']),
+.rdp-toolbar button:hover
+{
+    background-color: #72a1f9;
+}
+
+.rdp-dialog__options button.active[value='cancel'],
+.rdp__error section > a.active,
+.rdp__connecting section > a.active,
+.rdp__error--buttons > a.active,
+.rdp__connecting--buttons > a.active,
+.rdp-dialog__options button.active:not([value='cancel']),
+.rdp-toolbar button.active,
+.rdp-dialog__options button:active[value='cancel'],
+.rdp__error section > a:active,
+.rdp__connecting section > a:active,
+.rdp__error--buttons > a:active,
+.rdp__connecting--buttons > a:active,
+.rdp-dialog__options button:active:not([value='cancel']),
+.rdp-toolbar button:active
+{
+    color: #fff;
+    background-color: #354a71;
+    box-shadow: inset 0 2px 0 #101622, 0 1px 0 #495c7f;
+    text-shadow: 0 1px 0 #101622;
+}
+
+.rdp-dialog__options button.disabled[value='cancel'],
+.rdp__error section > a.disabled,
+.rdp__connecting section > a.disabled,
+.rdp__error--buttons > a.disabled,
+.rdp__connecting--buttons > a.disabled,
+.rdp-dialog__options button.disabled:not([value='cancel']),
+.rdp-toolbar button.disabled,
+.rdp-dialog__options button[disabled][value='cancel'],
+.rdp__error section > a[disabled],
+.rdp__connecting section > a[disabled],
+.rdp__error--buttons > a[disabled],
+.rdp__connecting--buttons > a[disabled],
+.rdp-dialog__options button[disabled]:not([value='cancel']),
+.rdp-toolbar button[disabled]
+{
+    pointer-events: none;
+
+    color: #3e5358;
+    background-color: #4c646a;
+    box-shadow: 0 2px 0 #2e3c40;
+    text-shadow: none;
+}
+
+.rdp-dialog__options button:focus[value='cancel'],
+.rdp__error section > a:focus,
+.rdp__connecting section > a:focus,
+.rdp__error--buttons > a:focus,
+.rdp__connecting--buttons > a:focus,
+.rdp-dialog__options button:focus:not([value='cancel']),
+.rdp-toolbar button:focus
+{
+    outline: none;
+}
+
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__connecting section > a,
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
+.rdp-dialog__options button:not([value='cancel'])
+{
+    font-size: 16px;
+    font-size: 700;
+    font-weight: 500;
+
+    padding: 8px 15px;
+
+    color: #fff;
+    text-shadow: 0 1px 0 #354a71;
+}
+
+.rdp-dialog__options button[value='cancel']
+{
+    font-weight: 500;
+
+    color: #fff;
+    background-color: #829397;
+    box-shadow: 0 2px 0 #35464a;
+    text-shadow: 0 1px 0 #35464a;
+}
+
+.rdp-dialog__options button:hover[value='cancel']
+{
+    background-color: #94a2a6;
+}
+
+.rdp-dialog__options button:active[value='cancel']
+{
+    background-color: #4c646a;
+    box-shadow: inset 0 2px 0 #2c3132, 0 1px 0 #5e7479;
+}
+
+.rdp-app
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    padding-top: 50px;
+}
+
+.rdp-app.fullscreen
+{
+    padding-top: 0;
+}
+
+.rdp-app__display
+{
+    position: relative;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.rdp-app__controls
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    background-color: #15272a;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 128px;
+    flex-basis: 128px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-app__header
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 0 30px;
+
+    background-color: #2e3a4f;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-preferred-size: 66px;
+    flex-basis: 66px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-app__header--right
+{
+    margin-left: auto;
+}
+
+.rdp-app__header--left
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+}
+
+.rdp-app__header--left .top
+{
+    padding-top: 6px;
+
+    -ms-flex-preferred-size: 38px;
+    flex-basis: 38px;
+}
+
+.rdp-app__viewport
+{
+    position: relative;
+
+    background-color: #000;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.rdp-app__viewport img
+{
+    position: absolute;
+    top: 50%;
+
+    width: 100%;
+
+    transition: filter 1s ease-out;
+    transform: translateY(-50%);
+}
+
+.dialog-active .rdp-app__viewport img
+{
+    filter: blur(10px);
+}
+
+.rdp-toolbar
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-y: auto;
+        flex-direction: column;
+
+    padding: 15px 20px 75px;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+    -ms-flex-direction: column;
+}
+
+.rdp-toolbar > .button-fill,
+.rdp-toolbar > button
+{
+    position: relative;
+
+    margin: 25px 0;
+
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-toolbar > .button-fill > button
+{
+    z-index: 2;
+
+    width: 100%;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-']
+{
+    position: absolute;
+    top: 0;
+
+    width: 75px;
+    height: 3px;
+
+    transition: top 250ms linear, opacity 250ms linear;
+    pointer-events: none;
+
+    opacity: 0;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].in
+{
+    opacity: 1;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1
+{
+    z-index: 3;
+    left: 6px;
+
+    background-color: #d8d8d8;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1.in
+{
+    top: -3px;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2
+{
+    z-index: 2;
+    left: 10px;
+
+    width: 67px;
+
+    background-color: #a9a9a9;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2.in
+{
+    top: -6px;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3
+{
+    z-index: 1;
+    left: 13px;
+
+    width: 60px;
+
+    background-color: #616060;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3.in
+{
+    top: -9px;
+}
+
+.rdp-toolbar > .button-fill .button-badge
+{
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 18px;
+
+    position: absolute;
+    z-index: 3;
+    top: -13px;
+    right: -5px;
+
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+
+    text-align: center;
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #d9c7c7;
+    border-radius: 50px;
+    background-color: #d73a3a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .75);
+}
+
+.rdp-toolbar > .button-fill .button-badge:empty
+{
+    display: none;
+}
+
+.rdp-toolbar button .fa,
+.rdp-toolbar button .custom-select:after,
+.rdp-toolbar button .dns-badge__content:before,
+.rdp-toolbar button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:after,
+.rdp-toolbar button .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-toolbar button div:before,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:after,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:before,
+.rdp-toolbar button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-toolbar button .custom-checkbox > input + span,
+.rdp-toolbar button .breadcrumbs > li:not(:last-child):after,
+.rdp-toolbar button .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: 2px;
+}
+
+.rdp-toolbar button:before
+{
+    font-size: 12px;
+    font-weight: 900;
+
+    position: absolute;
+    right: 0;
+    bottom: -2px;
+
+    width: 16px;
+    height: 20px;
+    padding-top: 2px;
+
+    content: attr(data-hotkey);
+
+    color: #444;
+    border-bottom: 2px solid #999;
+    border-radius: 5px 0 5px 0;
+    background-color: #ccc;
+}
+
+.rdp-toolbar button:after
+{
+    font-size: 14px;
+    font-weight: 400;
+
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+
+    width: 100%;
+
+    content: attr(name);
+    text-transform: capitalize;
+    pointer-events: none;
+
+    color: #fff;
+    text-shadow: none;
+}
+
+.rdp-toolbar button:active:after,
+.rdp-toolbar button.active:after
+{
+    font-weight: 700;
+}
+
+.rdp-toolbar button[disabled]:after,
+.rdp-toolbar button.disabled:after
+{
+    color: #4c646a;
+}
+
+.rdp-toolbar button:first-child
+{
+    margin-top: 0;
+}
+
+.rdp-toolbar button:last-child
+{
+    margin-bottom: 0;
+}
+
+.rdp-toolbar button.shutter-in
+{
+    animation: SnapshotShutter;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    pointer-events: none;
+}
+
+.rdp-credits
+{
+    position: relative;
+}
+
+.rdp-credits a
+{
+    display: block;
+
+    height: 58px;
+    padding-top: 14px;
+
+    transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+    text-align: center;
+
+    background-color: #383838;
+    box-shadow: inset 0 2px 4px rgba(11, 11, 11, .8);
+}
+
+.rdp-credits a:hover
+{
+    background-color: #6297f8;
+    box-shadow: inset 0 2px 4px rgba(39, 60, 99, .8);
+}
+
+.rdp-credits img
+{
+    height: 32px;
+}
+
+.rdp-credits:before
+{
+    position: absolute;
+    top: -25px;
+
+    width: 100%;
+    height: 25px;
+
+    content: '';
+
+    background: linear-gradient(to bottom, rgba(21, 39, 42, 0) 0%, #15272a 100%);
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
+}
+
+.rdp-title
+{
+    font-size: 16px;
+    font-weight: 400;
+    font-weight: 500;
+
+    margin: 0;
+
+    color: #fff;
+
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+}
+
+.rdp-title .rdp-status
+{
+    display: inline-block;
+
+    width: 10px;
+    height: 10px;
+    margin-right: 10px;
+
+    border-radius: 10px;
+    background-color: #52e875;
+}
+
+.rdp-title .rdp-status.done
+{
+    background-color: #d7586f;
+}
+
+.rdp-snapshots
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-x: auto;
+
+    max-width: 500px;
+    margin: 0;
+    padding-right: 10px;
+
+    list-style: none;
+
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.rdp-snapshots > li
+{
+    position: relative;
+}
+
+.rdp-snapshots > li:not(:last-child)
+{
+    margin-right: 15px;
+}
+
+.rdp-snapshots > li figure
+{
+    overflow: hidden;
+
+    height: 53px;
+
+    border: 1px solid #88a1cb;
+    border-radius: 6px;
+}
+
+.rdp-snapshots > li figure img
+{
+    height: 100%;
+
+    transition: opacity 100ms ease-out;
+
+    opacity: .4;
+}
+
+.rdp-snapshots > li figure:hover > img
+{
+    opacity: 1;
+}
+
+.rdp-snapshots--controls
+{
+    position: absolute;
+    top: 0;
+    right: -8px;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    height: 100%;
+
+    -ms-flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.rdp-snapshots--controls a
+{
+    font-size: 12px;
+
+    display: inline-block;
+
+    width: 16px;
+    height: 16px;
+    margin: 5px 0;
+
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #88a1cb;
+    border-radius: 50%;
+    background-color: #000;
+}
+
+.rdp-snapshots--controls a .fa,
+.rdp-snapshots--controls a .custom-select:after,
+.rdp-snapshots--controls a .dns-badge__content:before,
+.rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after,
+.rdp-snapshots--controls a .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-snapshots--controls a div:before,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before,
+.rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span,
+.rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after,
+.rdp-snapshots--controls a .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: -1px;
+}
+
+.rdp-snapshot-selection
+{
+    overflow-x: auto;
+
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+
+    list-style: none;
+
+    white-space: nowrap;
+}
+
+.rdp-snapshot-selection *,
+.rdp-snapshot-selection *:before,
+.rdp-snapshot-selection *:after
+{
+    transition: all 200ms linear;
+}
+
+.rdp-snapshot-selection > li
+{
+    display: inline-block;
+
+    margin: 0 15px 50px;
+}
+
+.rdp-snapshot-selection input[type='checkbox']
+{
+    display: none;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image
+{
+    border: 2px solid #5888df;
+    background-color: #6297f8;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image img
+{
+    opacity: 1;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:before
+{
+    border: 0;
+    background-color: #fff;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:after
+{
+    transform: scale(1);
+}
+
+.rdp-snapshot-selection .snapshot-selection-image
+{
+    position: relative;
+
+    display: block;
+
+    width: 350px;
+    padding: 5px;
+
+    border: 2px solid #fff;
+    border-radius: 16px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image img
+{
+    width: 100%;
+
+    opacity: .75;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:before
+{
+    position: absolute;
+    z-index: 2;
+    bottom: -16px;
+    left: 50%;
+
+    display: block;
+
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+
+    content: '';
+
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background-color: #000;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:after
+{
+    position: absolute;
+    z-index: 3;
+    bottom: -11px;
+    left: 50%;
+
+    display: block;
+
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+
+    content: '';
+    transform: scale(0);
+
+    border-radius: 50%;
+    background-color: #6297f8;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:hover
+{
+    cursor: pointer;
+
+    background-color: rgba(98, 151, 248, .2);
+}
+
+.rdp__error,
+.rdp__connecting
+{
+    position: relative;
+    top: auto;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    margin-top: auto;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.rdp__error .combined-icon,
+.rdp__connecting .combined-icon
+{
+    position: relative;
+
+    width: 153px;
+    height: 134px;
+    margin: 0 auto;
+}
+
+.rdp__error .combined-icon .fa,
+.rdp__error .combined-icon .custom-select:after,
+.rdp__error .combined-icon .dns-badge__content:before,
+.rdp__error .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__error .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__error .combined-icon div:before,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:after,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:before,
+.rdp__error .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__error .combined-icon .custom-checkbox > input + span,
+.rdp__error .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__error .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .guac-icon,
+.rdp__connecting .combined-icon .fa,
+.rdp__connecting .combined-icon .custom-select:after,
+.rdp__connecting .combined-icon .dns-badge__content:before,
+.rdp__connecting .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__connecting .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__connecting .combined-icon div:before,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:after,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:before,
+.rdp__connecting .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__connecting .combined-icon .custom-checkbox > input + span,
+.rdp__connecting .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__connecting .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .guac-icon
+{
+    position: absolute;
+}
+
+.rdp__error .combined-icon .fa-frown-o,
+.rdp__error .combined-icon .guac-icon-frown-o,
+.rdp__connecting .combined-icon .fa-frown-o,
+.rdp__connecting .combined-icon .guac-icon-frown-o
+{
+    font-size: 43px;
+
+    top: 25px;
+    left: 58px;
+
+    color: #cc613c;
+}
+
+.rdp__error .combined-icon .fa-desktop,
+.rdp__error .combined-icon .guac-icon-desktop,
+.rdp__connecting .combined-icon .fa-desktop,
+.rdp__connecting .combined-icon .guac-icon-desktop
+{
+    font-size: 140px;
+
+    color: #542f21;
+}
+
+.rdp__error > section,
+.rdp__connecting > section
+{
+    position: relative;
+    z-index: 2;
+}
+
+.rdp__error section > p,
+.rdp__connecting section > p
+{
+    font-size: 24px;
+    font-weight: 300;
+
+    margin: 10px 0;
+
+    text-align: center;
+
+    color: #a6a6a6;
+}
+
+.rdp__error section > a,
+.rdp__connecting section > a
+{
+    top: 0;
+
+    display: block;
+
+    margin: 10px 0;
+
+    text-align: center;
+
+    background-color: #6d6d6d;
+    box-shadow: 0 2px 0 #484848;
+    text-shadow: 0 1px 0 #3b3b3b;
+}
+
+.rdp__error--resolutions,
+.rdp__connecting--resolutions
+{
+    font-size: 16px;
+
+    position: relative;
+    top: -1px;
+
+    width: 300px;
+    margin-top: 25px;
+    padding: 20px;
+
+    color: #fff;
+    border: 1px solid #405f97;
+    border-radius: 8px;
+    background-color: #293b5c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+
+.rdp__error--resolutions:after,
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:after,
+.rdp__connecting--resolutions:before
+{
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+
+    width: 0;
+    height: 0;
+
+    content: ' ';
+    pointer-events: none;
+
+    border: solid transparent;
+}
+
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:before
+{
+    margin-left: -21px;
+
+    border-width: 21px;
+    border-color: rgba(64, 95, 151, 0);
+    border-bottom-color: #405f97;
+}
+
+.rdp__error--resolutions:after,
+.rdp__connecting--resolutions:after
+{
+    margin-left: -20px;
+
+    border-width: 20px;
+    border-color: rgba(41, 59, 92, 0);
+    border-bottom-color: #293b5c;
+}
+
+.rdp__error--resolutions ol,
+.rdp__connecting--resolutions ol
+{
+    margin: 0;
+    padding: 0 17px;
+}
+
+.rdp__error--buttons,
+.rdp__connecting--buttons
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 15px 0 0 0;
+
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a
+{
+    font-size: 14px;
+}
+
+.rdp__error:not(.rdp__connecting):after,
+.rdp__connecting:not(.rdp__connecting):after
+{
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    content: '';
+
+    opacity: .2;
+    background: url(../graphic/white-noise.gif);
+    background-size: cover;
+}
+
+.rdp__error.rdp__connecting,
+.rdp__connecting.rdp__connecting
+{
+    background-color: #030e10;
+}
+
+.rdp__error.rdp__connecting .combined-icon,
+.rdp__connecting.rdp__connecting .combined-icon
+{
+    width: 190px;
+    height: 180px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon
+{
+    top: 50%;
+    left: 50%;
+
+    width: 55px;
+    margin-top: -29px;
+    margin-left: -27px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon + .fa-desktop,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon + .fa-desktop
+{
+    font-size: 180px;
+
+    color: #567e84;
+}
+
+.rdp__error .animated-ellipse,
+.rdp__connecting .animated-ellipse
+{
+    display: inline-block;
+}
+
+.rdp__error .animated-ellipse > li,
+.rdp__connecting .animated-ellipse > li
+{
+    display: inline-block;
+
+    opacity: 0;
+}
+
+.rdp__error .animated-ellipse > li.in,
+.rdp__connecting .animated-ellipse > li.in
+{
+    opacity: 1;
+}
+
+.rdp-dialog
+{
+    z-index: 10;
+    top: 66px;
+
+    width: 100%;
+    height: calc(100% - 66px);
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background-color: rgba(0, 0, 0, .7);
+}
+
+.rdp-dialog__body
+{
+    position: absolute;
+    top: 50%;
+    left: 5%;
+
+    width: 90%;
+
+    transform: translateY(-50%);
+    text-align: center;
+
+    color: #fff;
+}
+
+.rdp-dialog__title
+{
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.rdp-dialog__title strong
+{
+    font-weight: 500;
+}
+
+.rdp-dialog__text
+{
+    font-size: 18px;
+    font-weight: 500;
+
+    margin-bottom: 50px;
+}
+
+.rdp-dialog__options
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.rdp-dialog__options button
+{
+    margin: 0 12px;
+}
+
+.rdp-details
+{
+    position: relative;
+    left: -12px;
+}
+
+.rdp-details__menu
+{
+    position: absolute;
+    z-index: 20;
+    top: 23px;
+
+    display: none;
+
+    margin: 0;
+    padding: 25px;
+
+    list-style: none;
+
+    border-radius: 0 0 2px 2px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+
+.rdp-details__menu > li
+{
+    font-size: 16px;
+
+    margin: 0 0 10px 0;
+    padding: 0;
+
+    color: #697993;
+}
+
+.rdp-details__menu > li span,
+.rdp-details__menu > li strong
+{
+    display: inline-block;
+}
+
+.rdp-details__menu > li span
+{
+    width: 180px;
+}
+
+.rdp-details__menu > li strong
+{
+    color: #2e3a4f;
+}
+
+.rdp-details__toggle
+{
+    font-size: 12px;
+    font-weight: 900;
+
+    height: 25px;
+    padding: 5px 10px;
+
+    transition: background-color 75ms ease-out;
+    text-transform: uppercase;
+}
+
+.rdp-details__toggle:hover
+{
+    cursor: pointer;
+    text-decoration: none;
+
+    color: #2e3a4f;
+    background-color: rgba(255, 255, 255, .2);
+}
+
+.rdp-details__toggle::-moz-selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle::selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle.active
+{
+    border-radius: 2px 2px 0 0;
+    background-color: #fff;
+}
+
+.rdp-details__toggle.active + .rdp-details__menu
+{
+    display: block;
+}
+
+/*
+  fix that will actually show the guac canvas
+  - I hope the guacamole frontend library will improve
+    so I can get rid of these nasty rules.
+ */
+#guacamole-display canvas
+{
+    z-index: 5;
+}
+
+#guacamole-display canvas:hover
+{
+    cursor: none;
+}
+
+#guacamole-display > div > div
+{
+    z-index: 5 !important;
+}
+
+#guacamole-display > div:not([class^='rdp__'])
+{
+    top: 50%;
+
+    margin: 0 auto;
+    margin-top: -384px;
+}
+
+#guacamole-display > div > div > div:nth-child(2)
+{
+    display: none;
 }
 
 /* 

@@ -43,6 +43,18 @@
 				background-color: #ddd;
 			}
 		}
+
+		td {
+			&.postsubmit-status-display {
+				width: 235px;
+				& > div {
+					display: flex;
+					flex-direction: row-reverse;
+					justify-content: space-between;
+					align-items: center;
+				}
+			}
+		}
 	}
 
 	thead,

@@ -1,0 +1,47 @@
+<header class="rdp-app__header">
+  <div class="rdp-app__header--left">
+    <div class="top">
+      <h2 class="rdp-title"><span class="rdp-status"></span> {{ task.target }}</h2>
+    </div>
+    <div class="bottom rdp-details">
+      <a class="rdp-details__toggle" id="toggle-properties">session</a>
+      <ul class="rdp-details__menu">
+        <li>
+          <span>Routing</span>
+          <strong>{{ task.route }}</strong>
+        </li>
+        <li>
+          <span>Package</span>
+          <strong>{{ task.package }}</strong>
+        </li>
+        <li>
+          <span>Priority</span>
+          <strong>{{ task.priority }}</strong>
+        </li>
+        <li>
+          <span>Process Memory Dump</span>
+          <strong>{% if task.options.procmemdump %}Yes{% else %}No{% endif %}</strong>
+        </li>
+        <li>
+          <span>Full Memory Dump</span>
+          <strong>{% if task.memory %}Yes{% else %}No{% endif %}</strong>
+        </li>
+        <li>
+          <span>Enforce Timeout</span>
+          <strong>{% if task.enforce_timeout %}Yes{% else %}No{% endif %}</strong>
+        </li>
+        <li>
+          <span>Remote Control</span>
+          <strong>{% if task.options.remotecontrol %}Yes{% else %}No{% endif %}</strong>
+        </li>
+        <li>
+          <span>Human Simulation</span>
+          <strong>{% if task.options.human %}No{% else %}Yes{% endif %}</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="rdp-app__header--right">
+    <ul class="rdp-snapshots" id="rdp-snapshot-collection"></ul>
+  </div>
+</header>

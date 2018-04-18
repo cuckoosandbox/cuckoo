@@ -480,13 +480,21 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + alias3(((helper = (helper = helpers.target || (depth0 != null ? depth0.target : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"target","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
-    + "</td>\n		<td><span class=\"status status-"
+    + "</td>\n		<td class=\"postsubmit-status-display\">\n			<div>\n				<div><span class=\"status status-"
     + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
     + "\"></span> "
     + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
-    + "</td>\n	</tr>\n";
+    + "</div>\n"
+    + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.show_rc_toggle : depth0),{"name":"if","hash":{},"fn":this.program(4, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
+    + "			</div>\n		</td>\n	</tr>\n";
 },"2":function(depth0,helpers,partials,data) {
     return "clickable finished";
+},"4":function(depth0,helpers,partials,data) {
+    var helper;
+
+  return "					<a href=\"/analysis/"
+    + this.escapeExpression(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
+    + "/control/\" target=\"_blank\" class=\"button\"><i class=\"fa fa-eye\"></i> REMOTE CONTROL</a>\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
     var stack1;
 

@@ -147,6 +147,7 @@ class Machinery(object):
     def __init__(self):
         self.options = None
         self.db = Database()
+        self.remote_control = False
 
         # Machine table is cleaned to be filled from configuration file
         # at each start.
@@ -338,6 +339,27 @@ class Machinery(object):
     def dump_memory(self, label, path):
         """Takes a memory dump of a machine.
         @param path: path to where to store the memory dump.
+        """
+        raise NotImplementedError
+
+    def enable_remote_control(self, label):
+        """Enable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def disable_remote_control(self, label):
+        """Disable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def get_remote_control_params(self, label):
+        """Return connection details for remote control.
+        @param label: machine name.
+        @return: dict with keys: protocol, host, port
         """
         raise NotImplementedError
 

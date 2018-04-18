@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -412,6 +412,12 @@ def test_option_translations_from():
         "key": "value",
     }
 
+    assert sm.translate_options_from({}, {
+        "remote-control": True,
+    }) == {
+        "remotecontrol": "yes",
+    }
+
 def test_option_translations_to():
     sm = SubmitManager()
 
@@ -427,4 +433,10 @@ def test_option_translations_to():
         "free": "yes",
     }) == {
         "enable-injection": False,
+    }
+
+    assert sm.translate_options_to({
+        "remotecontrol": "yes",
+    }) == {
+        "remote-control": True,
     }
