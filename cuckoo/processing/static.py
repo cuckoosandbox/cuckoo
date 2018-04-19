@@ -549,15 +549,29 @@ class PdfDocument(object):
         self.filepath = filepath
 
     def _parse_string(self, s):
-        # Big endian.
-        if s.startswith(u"\xfe\xff"):
-            return s[2:].encode("latin-1").decode("utf-16be")
+        be = u"\xfe\xff"
+        le = u"\xff\xfe"
+        if isinstance(s, unicode):
+            # Big endian.
+            if s.startswith(be):
+                return s[2:].encode("latin-1").decode("utf-16be")
 
-        # Little endian.
-        if s.startswith(u"\xff\xfe"):
-            return s[2:].encode("latin-1").decode("utf-16le")
+            # Little endian.
+            if s.startswith(le):
+                return s[2:].encode("latin-1").decode("utf-16le")
+        elif isinstance(s, (str, basestring)):
+            # Big endian.
+            if s.startswith(be.encode("latin-1")):
+                return s[2:].decode("utf-16be")
 
-        return s
+            # Little endian.
+            if s.startswith(le.encode("latin-1")):
+                return s[2:].decode("utf-16le")
+
+        try:
+            return s.decode("latin-1")
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return s
 
     def _sanitize(self, d, key):
         return self._parse_string(d.get(key, "").decode("latin-1"))
@@ -574,7 +588,7 @@ class PdfDocument(object):
             uri_obj = obj.elements.get("/URI")
             if uri_obj:
                 if isinstance(uri_obj, peepdf.PDFCore.PDFString):
-                    entry["urls"].append(uri_obj.value)
+                    entry["urls"].append(self._parse_string(uri_obj.value))
                 else:
                     log.warning(
                         "Identified a potential URL, but its associated "
@@ -601,8 +615,10 @@ class PdfDocument(object):
 
         if isinstance(ref, peepdf.PDFCore.PDFString):
             return {
-                "orig_code": "".join(ref.getJSCode()),
-                "beautified": jsbeautify("".join(ref.getJSCode())),
+                "orig_code": self._parse_string("".join(ref.getJSCode())),
+                "beautified": self._parse_string(
+                    jsbeautify("".join(ref.getJSCode()))
+                ),
                 "urls": []
             }
 
@@ -616,8 +632,10 @@ class PdfDocument(object):
 
         obj = f.body[version].objects[ref.id]
         return {
-            "orig_code": obj.object.decodedStream,
-            "beautified": jsbeautify(obj.object.decodedStream),
+            "orig_code": self._parse_string("".join(obj.object.getJSCode())),
+            "beautified": self._parse_string(
+                jsbeautify("".join(obj.object.getJSCode()))
+            ),
             "urls": []
         }
 

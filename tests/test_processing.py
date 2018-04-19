@@ -290,6 +290,21 @@ class TestProcessing(object):
         assert obj["attachments"][0]["filename"] == "789IVIIUXSF110.docm"
         assert "kkkllsslll" in obj["openaction"]
 
+    def test_pdf_endian(self):
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "pdf",
+            "target": "pfd-endianerror.pdf"
+        })
+        s.file_path = "tests/files/pfd-endianerror.pdf"
+        s.set_options({
+            "pdf_timeout": 30,
+        })
+        r = s.run()
+        assert u"http://yourmirror.net/kali-security\u548c" \
+               u"http://yourmirror.net/kali-images" in r["pdf"][0]["urls"]
+
     def test_office(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
