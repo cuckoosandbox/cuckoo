@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -35,7 +35,9 @@ from cuckoo.processing.network import Pcap, Pcap2, NetworkAnalysis, sort_pcap
 from cuckoo.processing.platform.windows import RebootReconstructor
 from cuckoo.processing.procmon import Procmon
 from cuckoo.processing.screenshots import Screenshots
-from cuckoo.processing.static import Static, WindowsScriptFile, LnkShortcut
+from cuckoo.processing.static import (
+    Static, WindowsScriptFile, LnkShortcut, PdfDocument
+)
 from cuckoo.processing.strings import Strings
 from cuckoo.processing.suricata import Suricata
 from cuckoo.processing.targetinfo import TargetInfo
@@ -302,8 +304,16 @@ class TestProcessing(object):
             "pdf_timeout": 30,
         })
         r = s.run()
-        assert u"http://yourmirror.net/kali-security\u548c" \
-               u"http://yourmirror.net/kali-images" in r["pdf"][0]["urls"]
+        assert len(r["pdf"][0]["urls"]) == 63
+        assert r["pdf"][0]["urls"][54] == (
+            u"http://yourmirror.net/kali-security\u548c"
+            u"http://yourmirror.net/kali-images"
+        )
+
+    def test_pdf_parse_string(self):
+        p = PdfDocument(None)._parse_string
+        assert p("http://cn.docs.kali.org/") == "http://cn.docs.kali.org/"
+        assert p("\xfe\xff\x00h\x00t\x00t\x00p\x00:\x00/\x00/") == "http://"
 
     def test_office(self):
         set_cwd(tempfile.mkdtemp())

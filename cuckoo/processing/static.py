@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,6 @@ import bs4
 import ctypes
 import datetime
 import logging
-import olefile
 import oletools.olevba
 import oletools.oleobj
 import os
@@ -25,14 +24,6 @@ try:
     HAVE_MCRYPTO = True
 except ImportError:
     HAVE_MCRYPTO = False
-
-try:
-    import PyV8
-    HAVE_PYV8 = True
-
-    PyV8  # Fake usage.
-except:
-    HAVE_PYV8 = False
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
@@ -549,23 +540,22 @@ class PdfDocument(object):
         self.filepath = filepath
 
     def _parse_string(self, s):
-        be = u"\xfe\xff"
-        le = u"\xff\xfe"
         if isinstance(s, unicode):
             # Big endian.
-            if s.startswith(be):
+            if s.startswith(u"\xfe\xff"):
                 return s[2:].encode("latin-1").decode("utf-16be")
 
             # Little endian.
-            if s.startswith(le):
+            if s.startswith(u"\xff\xfe"):
                 return s[2:].encode("latin-1").decode("utf-16le")
-        elif isinstance(s, (str, basestring)):
+
+        if isinstance(s, str):
             # Big endian.
-            if s.startswith(be.encode("latin-1")):
+            if s.startswith("\xfe\xff"):
                 return s[2:].decode("utf-16be")
 
             # Little endian.
-            if s.startswith(le.encode("latin-1")):
+            if s.startswith("\xff\xfe"):
                 return s[2:].decode("utf-16le")
 
         try:
