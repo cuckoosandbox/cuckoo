@@ -5,7 +5,6 @@
 import base64
 import logging
 import threading
-import os
 import socket
 import uuid
 
@@ -19,8 +18,12 @@ from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.misc import cwd
 from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
 
+# TODO Yes, this is far from optimal. In the future we should find a better
+# way to get results from the Cuckoo Web Interface to the analysis report (or
+# simply disable this functionality altogether).
 mdb = MongoDB()
 mdb.init_once()
+
 db = Database()
 log = logging.getLogger(__name__)
 
@@ -106,13 +109,10 @@ class ControlApi(object):
             except ValueError:
                 return json_error_response("invalid format")
 
-            scr_dir = os.path.join(
-                cwd(), "storage", "analyses",
-                "%d" % int(task_id), "shots",
+            shot_path = cwd(
+                "shots", "remotecontrol_%d.png" % int(sid),
+                analysis=int(task_id)
             )
-            shot_file = "remotecontrol_%d.png" % int(sid)
-            shot_path = os.path.join(scr_dir, shot_file)
-
             open(shot_path, "wb").write(f)
 
             shot_blob = {}

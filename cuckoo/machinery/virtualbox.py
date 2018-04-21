@@ -434,7 +434,12 @@ class VirtualBox(Machinery):
 
     def get_remote_control_params(self, label):
         port = int(self.vminfo(label, "vrdeport"))
-        log.info("RDP interface running on port %d" % port)
+        if port < 0:
+            log.error(
+                "The VirtualBox Extension Pack hasn't been installed or "
+                "VirtualBox hasn't been restarted since installation. "
+                "Without the Extension Pack, Remote Control is disabled!"
+            )
 
         # TODO The Cuckoo Web Interface may be running at a different host
         # than the actual Cuckoo daemon (and as such, the VMs).
@@ -445,7 +450,7 @@ class VirtualBox(Machinery):
         }
 
     def _set_vrde_ports(self, label, ports):
-        if not re.compile('^[0-9\-]+$').match(ports):
+        if not re.match("^[0-9\\-]+$", ports):
             log.error("Refusing to set illegal port range for VRDE")
             return False
 
@@ -461,7 +466,6 @@ class VirtualBox(Machinery):
             "Successfully set remote control ports for virtual machine "
             "with label %s: %s" % (label, ports)
         )
-
         return proc
 
     # TODO Optimize this method away simply by invoking "vboxmanage modifyvm"
@@ -476,5 +480,4 @@ class VirtualBox(Machinery):
             close_fds=True
         )
         _, _ = proc.communicate()
-
         return proc

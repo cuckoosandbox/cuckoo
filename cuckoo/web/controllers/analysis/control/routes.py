@@ -10,18 +10,21 @@ from cuckoo.web.utils import render_template
 
 db = Database()
 
-class AnalysisControlRoutes:
+class AnalysisControlRoutes(object):
     @staticmethod
     def player(request, task_id):
         task = db.view_task(task_id)
         if not task:
-            raise Http404("task not found")
+            raise Http404("Task not found!")
 
         if not config("cuckoo:remotecontrol:enabled"):
-            raise Http404("remote control is not enabled")
+            raise Http404(
+                "Remote control is not enabled in the configuration! "
+                "Please check our documentation on configuring Guacamole."
+            )
 
         if task.options.get("remotecontrol") != "yes":
-            raise Http404("remote control was not enabled for this task")
+            raise Http404("Remote control was not enabled for this task.")
 
         if task.status == "reported":
             return HttpResponseRedirect("/analysis/%d/summary" % int(task_id))
@@ -29,8 +32,5 @@ class AnalysisControlRoutes:
         if task.status not in ("running", "completed"):
             raise Http404("task is not running")
 
-        data = {
-            "task": task
-        }
-        request.extra_scripts = ['guac.js']
-        return render_template(request, "rdp/index.html", **data)
+        request.extra_scripts = ["guac.js"]
+        return render_template(request, "rdp/index.html", task=task)

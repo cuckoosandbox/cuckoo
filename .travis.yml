@@ -23,8 +23,8 @@ before_install:
         sudo apt-get install libfreerdp-dev libjpeg-turbo8-dev
 
         # Install guacd.
-        wget https://www.apache.org/dist/guacamole/0.9.13-incubating/source/guacamole-server-0.9.13-incubating.tar.gz
-        tar xvf guacamole-server-0.9.13-incubating.tar.gz && cd guacamole-server-0.9.13-incubating
+        wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+        tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
         ./configure --with-init-dir=/etc/init.d && make && sudo make install && sudo ldconfig && cd ../
 
         sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"

@@ -189,7 +189,7 @@ Installing guacd
 ================
 
 ``guacd`` is an optional service that provides the translation layer for RDP,
-VNC and SSH for the remote control functionality in the Cuckoo web interface.
+VNC, and SSH for the remote control functionality in the Cuckoo web interface.
 
 Without it, remote control won't work. Versions 0.9.9 and up will work, but we
 recommend installing the latest version. On an Ubuntu 17.04 machine the
@@ -201,18 +201,23 @@ If you only want RDP support you can skip the installation of the
 ``libguac-client-vnc0`` and ``libguac-client-ssh0`` packages.
 
 If you are using an older distribution or you just want to use the latest
-version, the following will build the latest version (``0.9.13-incubator``)
-from source::
+version (our recommendation), the following will build the latest version
+(``0.9.14``) from source::
 
     $ sudo apt -y install libcairo2-dev libjpeg-turbo8-dev libpng12-dev libossp-uuid-dev libfreerdp-dev
-    $ mkdir /tmp/guac-build; cd /tmp/guac-build
-    $ wget https://www.apache.org/dist/guacamole/0.9.13-incubating/source/guacamole-server-0.9.13-incubating.tar.gz
-    $ tar xvf guacamole-server-0.9.13-incubating.tar.gz && cd guacamole-server-0.9.13-incubating
+    $ mkdir /tmp/guac-build && cd /tmp/guac-build
+    $ wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+    $ tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
     $ ./configure --with-init-dir=/etc/init.d
-    $ make && sudo make install
+    $ make && sudo make install && cd ..
     $ sudo ldconfig
-    $ sudo systemctl enable guacd
+    $ sudo /etc/init.d/guacd start
 
-When installing from source, make sure you don't have another version of any of
-the ``libguac-`` libraries installed from your package manager or you might
+When installing from source, make sure you don't have another version of any
+of the ``libguac-`` libraries installed from your package manager or you might
 experience issues due to incompatibilities which can crash guacd.
+
+Note that the `VirtualBox Extension Pack`_ must also be installed to take
+advantage of the Cuckoo Control functionality exposed by Guacamole.
+
+.. _VirtualBox Extension Pack: https://www.virtualbox.org/wiki/Downloads
