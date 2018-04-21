@@ -295,9 +295,9 @@ class TestProcessing(object):
         s.set_task({
             "category": "file",
             "package": "pdf",
-            "target": "pfd-endianerror.pdf"
+            "target": "pdf-endianerror.pdf"
         })
-        s.file_path = "tests/files/pfd-endianerror.pdf"
+        s.file_path = "tests/files/pdf-endianerror.pdf"
         s.set_options({
             "pdf_timeout": 30,
         })
