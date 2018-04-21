@@ -627,6 +627,19 @@ def import_(ctx, mode, path):
     """Imports an older Cuckoo setup into a new CWD. The old setup should be
     identified by PATH and the new CWD may be specified with the --cwd
     parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
+    if os.path.exists(os.path.join(path, ".cwd")):
+        print(yellow(
+            "The 'cuckoo import' feature is meant to import a legacy Cuckoo, "
+            "i.e., Cuckoo 1.2, 2.0-dev, 2.0-rc1, or 2.0-rc2 into a new Cuckoo "
+            "CWD."
+        ))
+        print(red(
+            "You're attempting to import an existing Cuckoo CWD. To upgrade "
+            "Cuckoo / your CWD, simply run 'pip install -U cuckoo' and re-run "
+            "the cuckoo commands!"
+        ))
+        sys.exit(1)
+
     if mode == "symlink" and is_windows():
         sys.exit(red(
             "You can only use the 'symlink' mode on non-Windows platforms."

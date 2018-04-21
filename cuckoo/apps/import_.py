@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -127,7 +127,7 @@ def import_cuckoo(username, mode, dirpath):
     if not version:
         raise CuckooOperationalError(
             "The path that you specified is not a proper Cuckoo setup. Please "
-            "point the path to the root of your older Cuckoo setup, i.e., to "
+            "point the path to the root of your legacy Cuckoo setup, i.e., to "
             "the directory containing the cuckoo.py script!"
         )
 

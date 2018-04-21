@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -297,6 +297,18 @@ def init_import_legacy(mode):
     assert open(cwd("cuckoo.log", analysis=2), "rb").read() == "log"
     assert not os.path.exists(cwd(analysis="latest"))
     return dirpath
+
+def test_import_cuckoo_cwd(capsys):
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    with pytest.raises(SystemExit):
+        main.main(
+            ("--cwd", cwd(), "import", cwd()), standalone_mode=False
+        )
+
+    out, _ = capsys.readouterr()
+    assert "import a legacy Cuckoo" in out
 
 def test_import_legacy_analyses_copy():
     dirpath = init_import_legacy("copy")
