@@ -250,6 +250,9 @@ class Pidfile(object):
 
     def proc_exists(self, pid):
         """Returns boolean if the process exists or None when unsupported."""
+        if not pid:
+            return False
+
         if is_windows():
             from ctypes import windll, wintypes
             dw_exit = wintypes.DWORD()

@@ -287,6 +287,9 @@ def test_proc_exists():
     # Chances are possible, but slim.
     assert not Pidfile("hello").proc_exists(13337)
 
+    assert not Pidfile("hello)").proc_exists(None)
+    assert not Pidfile("hello)").proc_exists("")
+
 @mock.patch("cuckoo.misc.sys")
 def test_pid_exists_unsupported_platform(p):
     p.platform = "DogeOS"
