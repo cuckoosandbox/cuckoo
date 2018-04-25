@@ -69,6 +69,7 @@ install:
   - python setup.py sdist
   - pip install -e .
   - pip install pytest pytest-cov codecov coveralls distorm3 pycrypto
+  - pip install flask-testing mock pytest-django pytest-pythonpath responses
 
   # Install Volatility.
   - git clone https://github.com/volatilityfoundation/volatility vol-setup
@@ -91,7 +92,7 @@ script:
   - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
 
   # Run tests from the "tests" directory.
-  - python setup.py test --addopts --cov=cuckoo
+  - py.test --cov=cuckoo
 
 after_success:
   - coveralls

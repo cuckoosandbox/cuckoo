@@ -239,17 +239,4 @@ do_setup(
             "weasyprint==0.36",
         ],
     },
-    setup_requires=[
-        "pytest-runner",
-    ],
-    tests_require=[
-        "coveralls",
-        "flask-testing",
-        "mock==2.0.0",
-        "pytest",
-        "pytest-cov",
-        "pytest-django",
-        "pytest-pythonpath",
-        "responses==0.5.1",
-    ],
 )
