@@ -93,7 +93,7 @@ class Zer0m0nIoctl(Ioctl):
 
     def getpids(self):
         pids = self.invoke("getpids", "pids") or ""
-        return struct.unpack("I"*(len(pids)/4), pids)
+        return struct.unpack("Q"*(len(pids)/8), pids)
 
     def hidepid(self, pid):
         return self.invoke("hidepid", struct.pack("I", pid))
