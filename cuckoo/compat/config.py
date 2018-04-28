@@ -680,6 +680,7 @@ def _201_202(c):
     for machinery in machineries:
         for machine in c[machinery][machinery]["machines"]:
             c[machinery][machine]["osprofile"] = None
+            c[machinery][machine]["mask_pids"] = None
     return c
 
 def _203_204(c):
