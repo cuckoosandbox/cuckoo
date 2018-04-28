@@ -12,12 +12,7 @@ import stat
 import subprocess
 import sys
 
-try:
-    import grp
-    HAVE_GRP = True
-except ImportError:
-    HAVE_GRP = False
-
+from cuckoo.common.colors import red
 from cuckoo.misc import version as __version__
 
 class s(object):
@@ -328,32 +323,34 @@ handlers = {
 }
 
 def cuckoo_rooter(socket_path, group, service, iptables, ip):
-    if not HAVE_GRP:
-        sys.exit(
+    try:
+        import grp
+    except ImportError:
+        sys.exit(red(
             "Could not find the `grp` module, the Cuckoo Rooter is only "
             "supported under Linux operating systems."
-        )
+        ))
 
     if not service or not os.path.exists(service):
-        sys.exit(
+        sys.exit(red(
             "The service binary is not available, please configure it!\n"
             "Note that on CentOS you should provide --service /sbin/service, "
             "rather than using the Ubuntu/Debian default /usr/sbin/service."
-        )
+        ))
 
     if not iptables or not os.path.exists(iptables):
-        sys.exit("The `iptables` binary is not available, eh?!")
+        sys.exit(red("The `iptables` binary is not available, eh?!"))
 
     if not ip or not os.path.exists(ip):
-        sys.exit("The `ip` binary is not available, eh?!")
+        sys.exit(red("The `ip` binary is not available, eh?!"))
 
     if os.getuid():
-        sys.exit(
+        sys.exit(red(
             "This utility is supposed to be ran as root user. Please invoke "
             "it with the --sudo flag (e.g., 'cuckoo rooter --sudo') so it "
             "will automatically prompt for your password (this naturally only "
             "works for users with sudo capabilities)."
-        )
+        ))
 
     if os.path.exists(socket_path):
         os.remove(socket_path)
@@ -366,11 +363,11 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
     try:
         gr = grp.getgrnam(group)
     except KeyError:
-        sys.exit(
+        sys.exit(red(
             "The group ('%s') does not exist. Please define the group / user "
             "through which Cuckoo will connect to the rooter, e.g., "
-            "'cuckoo rooter -g myuser'" % group
-        )
+            "'cuckoo rooter -g myuser'." % group
+        ))
 
     os.chown(socket_path, 0, gr.gr_gid)
     os.chmod(socket_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)

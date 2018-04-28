@@ -418,6 +418,7 @@ def rooter(ctx, socket, group, service, iptables, ip, sudo):
             pass
     else:
         try:
+            log.info("Starting Cuckoo Rooter (group=%s)!", group)
             cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
