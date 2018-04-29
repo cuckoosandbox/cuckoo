@@ -1141,14 +1141,18 @@ machines = vbox1
 [vbox1]
 mode = headless
     """)
+    Files.create(cwd("conf"), "routing.conf", """
+[inetsim]
+enabled = yes
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.5", "2.0.6")
 
     assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
     assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
     assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
-
     assert cfg["virtualbox"]["controlports"] == "5000-5050"
+    assert cfg["routing"]["inetsim"]["ports"] is None
 
 class FullMigration(object):
     DIRPATH = None

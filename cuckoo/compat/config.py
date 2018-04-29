@@ -703,6 +703,7 @@ def _205_206(c):
         "guacd_port": 4822,
     }
     c["virtualbox"]["controlports"] = "5000-5050"
+    c["routing"]["inetsim"]["ports"] = None
     return c
 
 migrations = {
