@@ -77,7 +77,7 @@ class Zer0m0nIoctl(Ioctl):
         )
 
     def addpid(self, pid):
-        return self.invoke("addpid", struct.pack("I", pid))
+        return self.invoke("addpid", struct.pack("Q", pid))
 
     def cmdpipe(self, pipe):
         return self.invoke("cmdpipe", "\x00".join(pipe + "\x00"))
@@ -86,7 +86,7 @@ class Zer0m0nIoctl(Ioctl):
         return self.invoke("channel", "\x00".join(pipe + "\x00"))
 
     def dumpmem(self, pid):
-        return self.invoke("dumpmem", struct.pack("I", pid))
+        return self.invoke("dumpmem", struct.pack("Q", pid))
 
     def yarald(self, rulepath):
         return self.invoke("yarald", open(rulepath, "rb").read())
@@ -96,6 +96,6 @@ class Zer0m0nIoctl(Ioctl):
         return struct.unpack("Q"*(len(pids)/8), pids)
 
     def hidepid(self, pid):
-        return self.invoke("hidepid", struct.pack("I", pid))
+        return self.invoke("hidepid", struct.pack("Q", pid))
 
 zer0m0n = Zer0m0nIoctl(driver_name)
