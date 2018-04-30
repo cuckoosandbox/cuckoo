@@ -310,6 +310,14 @@ class Config(object):
                     exists=False, writable=False, readable=True
                 ),
             },
+            "replay": {
+                "enabled": Boolean(True),
+                "mitmdump": Path(
+                    "/usr/local/bin/mitmdump",
+                    exists=False, writable=False, readable=True
+                ),
+                "port_base": Int(51000),
+            },
             "services": {
                 "enabled": Boolean(False),
                 "services": String("honeyd"),

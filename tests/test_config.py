@@ -1132,6 +1132,9 @@ def test_migration_205_206():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+    """)
     Files.create(cwd("conf"), "cuckoo.conf", """
 [database]
     """)
@@ -1148,7 +1151,10 @@ enabled = yes
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.5", "2.0.6")
 
-    assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
+    assert cfg["auxiliary"]["replay"]["enabled"] is True
+    assert cfg["auxiliary"]["replay"]["mitmdump"] == "/usr/local/bin/mitmdump"
+    assert cfg["auxiliary"]["replay"]["port_base"] == 51000
+    assert cfg["cuckoo"]["remotecontrol"]["enabled"] is False
     assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
     assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
     assert cfg["virtualbox"]["controlports"] == "5000-5050"

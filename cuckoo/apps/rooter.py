@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 
 def run(*args):
     """Wrapper to Popen."""
+    log.debug("Running command: %s", " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
@@ -439,7 +440,7 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
-            log.debug(
+            log.info(
                 "Processing command: %s %s %s", command,
                 " ".join(args),
                 " ".join("%s=%s" % (k, v) for k, v in kwargs.items())

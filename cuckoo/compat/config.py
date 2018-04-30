@@ -697,13 +697,18 @@ def _204_205(c):
     return c
 
 def _205_206(c):
+    c["auxiliary"]["replay"] = {
+        "enabled": True,
+        "mitmdump": "/usr/local/bin/mitmdump",
+        "port_base": 51000,
+    }
     c["cuckoo"]["remotecontrol"] = {
         "enabled": False,
         "guacd_host": "localhost",
         "guacd_port": 4822,
     }
-    c["virtualbox"]["controlports"] = "5000-5050"
     c["routing"]["inetsim"]["ports"] = None
+    c["virtualbox"]["controlports"] = "5000-5050"
     return c
 
 migrations = {
