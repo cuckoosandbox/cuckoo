@@ -19,7 +19,7 @@ before_install:
         sudo apt-get update -qq
         sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
         sudo apt-get install swig libpq-dev libmysqlclient-dev rar
-        sudo apt-get install libcairo2-dev libpng12-dev libossp-uuid-dev
+        sudo apt-get install libcairo2-dev libpng-dev libossp-uuid-dev
         sudo apt-get install libfreerdp-dev libjpeg-turbo8-dev
 
         # Install guacd.
