@@ -117,6 +117,13 @@
 			</a>
 		</li>
 		<li>
+			<a href="{% url "analysis" report.analysis.info.id "misp_export" %}"
+			{% if env.view_kwargs.page == 'misp_export' %} class="active" {% endif %}>
+				<i class="fa fa-upload"></i>
+				<span>Export Analysis to MISP</span>
+			</a>
+		</li>
+		<li>
 		<a href="{% url "analysis/reboot" report.analysis.info.id %}"
 		{% if env.view_kwargs.page == 'behavioral' %} class="active" {% endif %}>
 			<i class="fa fa-power-off"></i>

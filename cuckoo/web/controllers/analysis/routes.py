@@ -95,3 +95,20 @@ class AnalysisRoutes:
         return render_template(request, "submission/reboot.html",
                                task_id=task_id, task_obj=task_obj,
                                baseurl=request.build_absolute_uri("/")[:-1])
+
+    @staticmethod
+    def misp_export(request, task_id):
+        if request.method == "POST":
+            try:
+                ExportController.misp_export(task_id=task_id)
+                return render_template(request, "success.html", **{
+                    "message": "Event uploaded to MISP",
+                })
+
+            except Exception as e:
+                return view_error(request, str(e))
+
+        report = AnalysisController.get_report(task_id)
+
+        return render_template(request, "analysis/misp_export.html",
+                               report=report)

@@ -19,6 +19,7 @@ urlpatterns = [
     url(r"^$", AnalysisRoutes.recent, name="analysis/recent"),
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name="analysis/redirect_default"),
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name="analysis/export"),
+    url(r"^(?P<task_id>\d+)/misp_export/$", AnalysisRoutes.misp_export, name="analysis/misp_export"),
     url(r"^(?P<task_id>\d+)/reboot/$", SubmissionRoutes.reboot, name="analysis/reboot"),
     url(r"^(?P<task_id>\d+)/control/$", AnalysisControlRoutes.player, name="analysis/control/player"),
     url(r"^(?P<task_id>\d+)/control/screenshots/$", ControlApi.store_screenshots, name="analysis/control/screenshots"),
@@ -61,4 +62,5 @@ urlpatterns = [
     url(r"^api/task/export_get_files/$", ExportApi.get_files),
     url(r"^api/task/feedback_send/$", AnalysisApi.feedback_send),
     url(r"^api/task/network_http_data/$", AnalysisNetworkApi.http_data),
+    url(r"^api/task/misp_export/$", ExportApi.misp_export),
 ]

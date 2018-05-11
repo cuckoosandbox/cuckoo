@@ -81,6 +81,12 @@
                 </li>
 
                 <li>
+                    <a href="{% url "analysis" report.analysis.info.id "misp_export" %}">
+                        <i class="glyphicon glyphicon-export"></i>Export Analysis to MISP
+                    </a>
+                </li>
+
+                <li>
                     <a href="{% url "analysis/reboot" report.analysis.info.id%}">
                         <i class="glyphicon glyphicon-repeat"></i>Reboot Analysis
                     </a>
