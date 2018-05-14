@@ -172,6 +172,11 @@ class ExtractManager(object):
             if Buffer(content).get_yara_quick("office", externals):
                 self.push_blob(content, "office", externals)
 
+    def peek_rtf(self, content):
+        externals = {}
+        if Buffer(content).get_yara_quick("office", externals):
+            self.push_blob(content, "office", externals)
+
     def handle_yara(self, filepath, match):
         for plugin in self.extractors:
             if match.name in plugin.yara_rules:

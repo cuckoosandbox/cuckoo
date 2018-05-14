@@ -19,6 +19,7 @@ import re
 import struct
 import zipfile
 import zlib
+import sys
 
 try:
     import M2Crypto
@@ -58,7 +59,34 @@ from elftools.elf.relocation import RelocationSection
 from elftools.elf.sections import SymbolTableSection
 from elftools.elf.segments import NoteSegment
 
+from oletools.rtfobj import RtfObjParser
+
 log = logging.getLogger(__name__)
+
+
+"""
+    Variables defined to use correctly the is_rtf static method.
+    This method is copied from the most recent sflock library, because,
+    the current version of sflock supported by cuckoo doesn't provide this method.
+
+"""
+# some str methods on Python 2.x return characters,
+# while the equivalent bytes methods return integers on Python 3.x:
+if sys.version_info[0] <= 2:
+    # Python 2.x - Characters (str)
+    BACKSLASH = '\\'
+    BRACE_OPEN = '{'
+    BRACE_CLOSE = '}'
+    UNICODE_TYPE = unicode
+else:
+    # Python 3.x - Integers
+    BACKSLASH = ord('\\')
+    BRACE_OPEN = ord('{')
+    BRACE_CLOSE = ord('}')
+    UNICODE_TYPE = str
+
+
+RTF_MAGIC = b'\x7b\\rt'   # \x7b == b'{' but does not mess up auto-indent
 
 # Partially taken from
 # http://malwarecookbook.googlecode.com/svn/trunk/3/8/pescanner.py
@@ -540,6 +568,142 @@ class OfficeDocument(object):
         return {
             "macros": list(self.get_macros()),
             "eps": self.extract_eps(),
+        }
+
+
+class RtfDocument(object):
+    """Static analysis of Microsoft RTF documents."""
+    deobf = [
+        # [
+        #    # Chr(65) -> "A"
+        #    "Chr\\(\\s*(?P<chr>[0-9]+)\\s*\\)",
+        #    lambda x: '"%c"' % int(x.group("chr")),
+        #    0,
+        # ],
+        [
+            # "A" & "B" -> "AB"
+            "\\\"(?P<a>.*?)\\\"\\s+\\&\\s+\\\"(?P<b>.*?)\\\"",
+            lambda x: '"%s%s"' % (x.group("a"), x.group("b")),
+            0,
+        ],
+    ]
+
+    eps_comments = "\\(([\\w\\s]+)\\)"
+
+    def __init__(self, filepath, task_id):
+        self.filepath = filepath
+        self.files = []
+        self.ex = ExtractManager.for_task(task_id)
+
+    def get_macros(self):
+        """Get embedded Macros if this is an Office document."""
+        try:
+            p = oletools.olevba.VBA_Parser(self.filepath)
+        except (TypeError, oletools.olevba.FileOpenError, zlib.error):
+            return
+
+        # We're not interested in plaintext.
+        if p.type == "Text":
+            return
+
+        try:
+            for f, s, v, c in p.extract_macros():
+                yield {
+                    "stream": s,
+                    "filename": v.decode("latin-1"),
+                    "orig_code": c.decode("latin-1"),
+                    "deobf": self.deobfuscate(c.decode("latin-1")),
+                }
+        except ValueError as e:
+            log.warning(
+                "Error extracting macros from office document (this is an "
+                "issue with oletools - please report upstream): %s", e
+            )
+
+    def deobfuscate(self, code):
+        """Bruteforce approach of regex-based deobfuscation."""
+        changes = 1
+        while changes:
+            changes = 0
+
+            for pattern, repl, flags in self.deobf:
+                count = 1
+                while count:
+                    code, count = re.subn(pattern, repl, code, flags=flags)
+                    changes += count
+
+        return code
+
+    def unpack_rtf(self):
+        rtf_stream = open(self.filepath, 'rb').read()
+        rtfp = RtfObjParser(rtf_stream)
+        rtfp.parse()
+
+        for rtf_extracted in rtfp.objects:
+            self.files.append(rtf_extracted.rawdata)
+
+    # def extract_eps(self):
+    #     """Extract some information from Encapsulated Post Script files."""
+    #     ret = []
+    #     for filename, content in self.files.items():
+    #         if filename.lower().endswith(".eps"):
+    #             ret.extend(re.findall(self.eps_comments, content))
+    #     return ret
+
+    @staticmethod
+    def is_rtf(arg, treat_str_as_data=False):
+        """ determine whether given file / stream / array represents an rtf file
+
+        arg can be either a file name, a byte stream (located at start), a
+        list/tuple or a an iterable that contains bytes.
+
+        For str it is not clear whether data is a file name or the data read from
+        it (at least for py2-str which is bytes). Argument treat_str_as_data
+        clarifies.
+        """
+        magic_len = len(RTF_MAGIC)
+        if isinstance(arg, UNICODE_TYPE):
+            with open(arg, 'rb') as reader:
+                return reader.read(len(RTF_MAGIC)) == RTF_MAGIC
+        if isinstance(arg, bytes) and not isinstance(arg, str):  # only in PY3
+            return arg[:magic_len] == RTF_MAGIC
+        if isinstance(arg, bytearray):
+            return arg[:magic_len] == RTF_MAGIC
+        if isinstance(arg, str):      # could be bytes, but we assume file name
+            if treat_str_as_data:
+                try:
+                    return arg[:magic_len].encode('ascii', errors='strict')\
+                        == RTF_MAGIC
+                except UnicodeError:
+                    return False
+            else:
+                with open(arg, 'rb') as reader:
+                    return reader.read(len(RTF_MAGIC)) == RTF_MAGIC
+        if hasattr(arg, 'read'):      # a stream (i.e. file-like object)
+            return arg.read(len(RTF_MAGIC)) == RTF_MAGIC
+        if isinstance(arg, (list, tuple)):
+            iter_arg = iter(arg)
+        else:
+            iter_arg = arg
+
+        # check iterable
+        for magic_byte in zip(RTF_MAGIC):
+            try:
+                if next(iter_arg) not in magic_byte:
+                    return False
+            except StopIteration:
+                return False
+
+        return True  # checked the complete magic without returning False --> match
+
+    def run(self):
+        # self.unpack_rtf()
+
+        self.ex.peek_rtf(open(self.filepath, 'rb').read())
+
+        return {
+            "macros": list(self.get_macros()),
+            # "eps": self.extract_eps(),
         }
 
 class PdfDocument(object):
@@ -1025,7 +1189,7 @@ class Static(Processing):
 
     office_ext = [
         "doc", "docm", "dotm", "docx", "hwp", "ppt", "pptm", "pptx", "potm",
-        "ppam", "ppsm", "xls", "xlsm", "xlsx",
+        "ppam", "ppsm", "xls", "xlsm", "xlsx", "rtf"
     ]
 
     def run(self):
@@ -1071,7 +1235,10 @@ class Static(Processing):
             static["wsf"] = WindowsScriptFile(f.file_path).run()
 
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
-            static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
+            if RtfDocument.is_rtf(f.file_path):
+                static["office"] = RtfDocument(f.file_path, self.task["id"]).run()
+            else:
+                static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
 
         if package == "pdf" or ext == "pdf":
             if f.get_content_type() == "application/pdf":
