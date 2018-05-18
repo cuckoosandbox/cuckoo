@@ -695,6 +695,43 @@ class LibVirtMachinery(Machinery):
 
         return snapshot
 
+    def enable_remote_control(self, label):
+        # TODO: we can't dynamically enable/disable this right now
+        pass
+
+    def disable_remote_control(self, label):
+        pass
+
+    def get_remote_control_params(self, label):
+        conn = self._connect()
+        try:
+            vm = conn.lookupByName(label)
+            if not vm:
+                log.warning("No such VM: %s", label)
+                return {}
+            port = 0
+            desc = ET.fromstring(vm.XMLDesc())
+            for elem in desc.findall('./devices/graphics'):
+                if elem.attrib.get("type") == "vnc":
+                    # Future work: passwd, listen, socket (addr:port)
+                    port = elem.attrib.get("port")
+                    if port:
+                        port = int(port)
+                        break
+        finally:
+            self._disconnect(conn)
+        if port <= 0:
+            log.error("VM %s does not have a valid VNC port", label)
+            return {}
+
+        # TODO The Cuckoo Web Interface may be running at a different host
+        # than the actual Cuckoo daemon (and as such, the VMs).
+        return {
+            "protocol": "vnc",
+            "host": "127.0.0.1",
+            "port": port,
+        }
+
 class Processing(object):
     """Base abstract class for processing module."""
     order = 1
