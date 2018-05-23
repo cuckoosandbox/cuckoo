@@ -11,7 +11,7 @@ import tempfile
 
 from ctypes import (
     c_ulong, create_string_buffer, c_int, c_uint16, c_uint, c_wchar_p,
-    c_void_p, sizeof, byref, Structure
+    c_void_p, sizeof, byref, Structure, cast
 )
 
 from lib.common.constants import SHUTDOWN_MUTEX
@@ -37,9 +37,9 @@ def spCreateProcessW(application_name, command_line, process_attributes,
             ("show_window", c_uint16),
             ("reserved2", c_uint16),
             ("reserved3", c_void_p),
-            ("std_input", c_uint),
-            ("std_output", c_uint),
-            ("std_error", c_uint),
+            ("std_input", c_void_p),
+            ("std_output", c_void_p),
+            ("std_error", c_void_p),
         ]
 
     class PROCESS_INFORMATION(Structure):
@@ -67,9 +67,9 @@ def spCreateProcessW(application_name, command_line, process_attributes,
         si.show_window = startup_info.wShowWindow
 
     if si.flags & subprocess.STARTF_USESTDHANDLES:
-        si.std_input = startup_info.hStdInput
-        si.std_output = startup_info.hStdOutput
-        si.std_error = startup_info.hStdError
+        si.std_input = cast(int(startup_info.hStdInput), c_void_p)
+        si.std_output = cast(int(startup_info.hStdOutput), c_void_p)
+        si.std_error = cast(int(startup_info.hStdError), c_void_p)
 
     pi = PROCESS_INFORMATION()
 
