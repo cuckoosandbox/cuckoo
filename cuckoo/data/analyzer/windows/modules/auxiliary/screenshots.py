@@ -52,7 +52,7 @@ class Screenshots(threading.Thread, Auxiliary):
             return False
 
         img_counter = 0
-        img_last = None
+        img_history_list = []
 
         while self.do_run:
             time.sleep(SHOT_DELAY)
@@ -63,7 +63,12 @@ class Screenshots(threading.Thread, Auxiliary):
                 log.error("Cannot take screenshot: %s", e)
                 continue
 
-            if img_last and scr.equal(img_last, img_current, SKIP_AREA):
+            repead = False
+            for img_old in img_history_list:
+                if scr.equal(img_old, img_current, SKIP_AREA):
+                    repead = True
+                    break;
+            if repead:
                 continue
 
             img_counter += 1
@@ -82,6 +87,6 @@ class Screenshots(threading.Thread, Auxiliary):
 
             nf.close()
 
-            img_last = img_current
+            img_history_list.append(img_current)
 
         return True
