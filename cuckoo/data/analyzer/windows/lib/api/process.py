@@ -194,26 +194,32 @@ class Process(object):
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
-        process_handle = self.open_process()
+        class PROCESS_BASIC_INFORMATION(Structure):
+            _fields_ = [
+                ("ExitStatus", c_void_p),
+                ("PebBaseAddress", c_void_p),
+                ("AffinityMask", c_void_p),
+                ("BasePriority", c_void_p),
+                ("UniqueProcessId", c_void_p),
+                ("InheritedFromUniqueProcessId", c_void_p),
+            ]
 
         NT_SUCCESS = lambda val: val >= 0
 
-        pbi = (c_int * 6)()
+        pbi = PROCESS_BASIC_INFORMATION()
         size = c_int()
 
         # Set return value to signed 32bit integer.
         NTDLL.NtQueryInformationProcess.restype = c_int
 
-        ret = NTDLL.NtQueryInformationProcess(process_handle,
-                                              0,
-                                              byref(pbi),
-                                              sizeof(pbi),
-                                              byref(size))
-
+        process_handle = self.open_process()
+        ret = NTDLL.NtQueryInformationProcess(
+            process_handle, 0, byref(pbi), sizeof(pbi), byref(size)
+        )
         KERNEL32.CloseHandle(process_handle)
 
         if NT_SUCCESS(ret) and size.value == sizeof(pbi):
-            return pbi[5]
+            return pbi.InheritedFromUniqueProcessId
 
         return None
 

@@ -72,3 +72,6 @@ def test_exec_unicode():
         f.write("echo test > uni-hello.txt")
     assert not subprocess.call(["cmd.exe", "/c", u"uni\u1234.bat"])
     assert open("uni-hello.txt", "rb").read().strip() == "test"
+
+def test_parent_pid():
+    assert Process(os.getpid()).get_parent_pid() is not None
