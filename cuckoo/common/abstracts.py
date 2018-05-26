@@ -704,14 +704,16 @@ class LibVirtMachinery(Machinery):
 
     def get_remote_control_params(self, label):
         conn = self._connect()
+
         try:
             vm = conn.lookupByName(label)
             if not vm:
                 log.warning("No such VM: %s", label)
                 return {}
+
             port = 0
             desc = ET.fromstring(vm.XMLDesc())
-            for elem in desc.findall('./devices/graphics'):
+            for elem in desc.findall("./devices/graphics"):
                 if elem.attrib.get("type") == "vnc":
                     # Future work: passwd, listen, socket (addr:port)
                     port = elem.attrib.get("port")
@@ -720,6 +722,7 @@ class LibVirtMachinery(Machinery):
                         break
         finally:
             self._disconnect(conn)
+
         if port <= 0:
             log.error("VM %s does not have a valid VNC port", label)
             return {}

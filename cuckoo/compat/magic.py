@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import logging
 import os
@@ -15,7 +15,10 @@ log = logging.getLogger(__name__)
 # Provide libmagic support in terms of binaries under Windows.
 if sys.platform == "win32":
     if sys.maxsize != 0x7fffffff:
-        log.warning("libmagic is not supported on 64-bit Python on Windows")
+        print(
+            "libmagic is not supported on 64-bit Python on Windows!",
+            file=sys.stderr
+        )
         supported = False
     else:
         supported = True
