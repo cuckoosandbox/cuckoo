@@ -267,7 +267,7 @@ cde76689871c88ef2d4a8fe0c3166eb61611eecf analyzer/darwin/analyzer.py
 f47c2c7c0b1dddee583e81b95af5a8bd91b0dfec analyzer/darwin/lib/api/screenshot.py
 bf3c56805ea0bf44a7fb6c8c16ee91e9d22f9a17 analyzer/darwin/modules/auxiliary/screenshots.py
 938296b4ffd21227b734c0a0f2aa1d42af30b133 analyzer/windows/analyzer.py
-10a8f7c460804c637709422360fbf1cede0fe376 analyzer/windows/lib/api/process.py
+91a0a9899a097bffeffe53dc9f5492e79f64ede0 analyzer/windows/lib/api/process.py
 f3fb4ee79b58b0dc5cae25736bc4044c4928e5e6 analyzer/windows/lib/core/ioctl.py
 1f56aab8899036e07cb55e646f3c9ab6eeaaaefd analyzer/windows/lib/core/packages.py
 c20de27af88764a032cd26ea4463719020ed356a analyzer/windows/modules/packages/ie.py

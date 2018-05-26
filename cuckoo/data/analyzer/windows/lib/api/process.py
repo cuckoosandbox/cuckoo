@@ -514,7 +514,12 @@ class Process(object):
             os.write(fd, "%s=%s\n" % (key, value))
 
         os.close(fd)
-        Process.first_process = False
+
+        # Only change the first_process attribute for processes that we
+        # "track", i.e., the lsass.exe injection doesn't count.
+        if track:
+            Process.first_process = False
+
         return config_path
 
     def dump_memory(self, addr=None, length=None):
