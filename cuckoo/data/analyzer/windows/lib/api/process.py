@@ -221,8 +221,6 @@ class Process(object):
         if NT_SUCCESS(ret) and size.value == sizeof(pbi):
             return pbi.InheritedFromUniqueProcessId
 
-        return None
-
     def _encode_args(self, args):
         """Convert a list of arguments to a string that can be passed along
         on the command-line.
