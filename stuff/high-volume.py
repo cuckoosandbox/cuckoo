@@ -78,6 +78,7 @@ if __name__ == "__main__":
 
     vmcloakdir = os.path.expanduser("~/.vmcloak")
     backupdir = "%s.backup" % vmcloakdir
+    user = getpass.getuser()
 
     if os.path.exists(backupdir):
         images, readonly, temporary = index_vdi(backupdir)
@@ -89,15 +90,23 @@ if __name__ == "__main__":
     vmsize = vmsize / 1024**3 + 1
 
     if not os.path.exists(vmmount):
-        user = getpass.getuser()
         print "# Please run the following commands first!"
         print "# (Assuming the tmpfs mount is not yet in-place!)"
-        print "sudo mkdir -p %s" % vmmount
+        print "$ sudo mkdir -p %s" % vmmount
         if tmpfs:
-            print "sudo mount -t tmpfs -o size=%dG tmpfs %s" % (
+            print "$ sudo mount -t tmpfs -o size=%dG tmpfs %s" % (
                 vmsize, vmmount
             )
-        print "sudo chown %s:%s %s" % (user, user, vmmount)
+        print "$ sudo chown %s:%s %s" % (user, user, vmmount)
+        exit(0)
+
+    parentvfs = os.statvfs(os.path.dirname(vmmount))
+    if tmpfs and parentvfs.f_blocks == os.statvfs(vmmount).f_blocks:
+        print "# Did you initialize the tmpfs mount yet?"
+        print "$ sudo mount -t tmpfs -o size=%dG tmpfs %s" % (
+            vmsize, vmmount
+        )
+        print "$ sudo chown %s:%s %s" % (user, user, vmmount)
         exit(0)
 
     print "Moving original ~/.vmcloak to ~/.vmcloak.backup .."
