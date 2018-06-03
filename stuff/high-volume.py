@@ -14,6 +14,14 @@ ns = {
     "vbox": "http://www.virtualbox.org/",
 }
 
+def mkdir(dirpath):
+    if not os.path.exists(dirpath):
+        os.mkdir(dirpath)
+
+def symlink(src, dst):
+    if not os.path.lexists(dst):
+        os.symlink(src, dst)
+
 def index_vdi(vmcloakdir):
     images, readonly, temporary = [], [], []
 
@@ -71,7 +79,10 @@ if __name__ == "__main__":
     vmcloakdir = os.path.expanduser("~/.vmcloak")
     backupdir = "%s.backup" % vmcloakdir
 
-    images, readonly, temporary = index_vdi(vmcloakdir)
+    if os.path.exists(backupdir):
+        images, readonly, temporary = index_vdi(backupdir)
+    else:
+        images, readonly, temporary = index_vdi(vmcloakdir)
 
     vmsize = sum(filesize for snapshot, vdiname, filesize in readonly)
     vmsize += sum(filesize for filename, filesize in images)
@@ -95,40 +106,40 @@ if __name__ == "__main__":
     if not os.path.exists(backupdir):
         shutil.move(vmcloakdir, backupdir)
 
-        # Now populate the new ~/.vmcloak directory.
-        os.mkdir(vmcloakdir)
+    # Now populate the new ~/.vmcloak directory.
+    mkdir(vmcloakdir)
 
-        os.mkdir(os.path.join(vmcloakdir, "image"))
-        for filename, filesize in images:
-            os.symlink(
-                os.path.join(vmmount, filename),
-                os.path.join(vmcloakdir, "image", filename)
+    mkdir(os.path.join(vmcloakdir, "image"))
+    for filename, filesize in images:
+        symlink(
+            os.path.join(vmmount, filename),
+            os.path.join(vmcloakdir, "image", filename)
+        )
+
+    mkdir(os.path.join(tmpmount, "vms"))
+    symlink(
+        os.path.join(tmpmount, "vms"), os.path.join(vmcloakdir, "vms")
+    )
+
+    for snapshot, vdiname, filesize in readonly:
+        mkdir(os.path.join(tmpmount, "vms", snapshot))
+        mkdir(os.path.join(tmpmount, "vms", snapshot, "Snapshots"))
+        symlink(
+            os.path.join(vmmount, "%s.vdi" % vdiname),
+            os.path.join(
+                vmcloakdir, "vms", snapshot,
+                "Snapshots", "%s.vdi" % vdiname
             )
-
-        os.mkdir(os.path.join(tmpmount, "vms"))
-        os.symlink(
-            os.path.join(tmpmount, "vms"), os.path.join(vmcloakdir, "vms")
         )
 
-        for snapshot, vdiname, filesize in readonly:
-            os.mkdir(os.path.join(tmpmount, "vms", snapshot))
-            os.mkdir(os.path.join(tmpmount, "vms", snapshot, "Snapshots"))
-            os.symlink(
-                os.path.join(vmmount, "%s.vdi" % vdiname),
-                os.path.join(
-                    vmcloakdir, "vms", snapshot,
-                    "Snapshots", "%s.vdi" % vdiname
-                )
-            )
-
-        os.symlink(
-            os.path.join(backupdir, "deps"),
-            os.path.join(vmcloakdir, "deps")
-        )
-        os.symlink(
-            os.path.join(backupdir, "iso"),
-            os.path.join(vmcloakdir, "iso")
-        )
+    symlink(
+        os.path.join(backupdir, "deps"),
+        os.path.join(vmcloakdir, "deps")
+    )
+    symlink(
+        os.path.join(backupdir, "iso"),
+        os.path.join(vmcloakdir, "iso")
+    )
 
     print "Copying ~/.vmcloak.backup files to new locations.."
 
