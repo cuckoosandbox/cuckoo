@@ -696,7 +696,7 @@ def _204_205(c):
         c["auxiliary"]["mitm"]["script"] = "stuff/mitm.py"
     return c
 
-def _205_210(c):
+def _205_206(c):
     c["cuckoo"]["remotecontrol"] = {
         "enabled": False,
         "guacd_host": "localhost",
@@ -722,7 +722,7 @@ migrations = {
     "2.0.2": ("2.0.3", None),
     "2.0.3": ("2.0.4", _203_204),
     "2.0.4": ("2.0.5", _204_205),
-    "2.0.5": ("2.1.0", _205_210),
+    "2.0.5": ("2.0.6", _205_206),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.
