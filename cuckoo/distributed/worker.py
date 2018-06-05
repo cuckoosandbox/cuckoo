@@ -10,6 +10,7 @@ except ImportError:
     HAVE_GEVENT = False
 
 import logging
+import logging.handlers
 import os
 import time
 import sys
