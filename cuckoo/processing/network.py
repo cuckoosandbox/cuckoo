@@ -526,10 +526,7 @@ class Pcap(object):
 
         try:
             record = dpkt.ssl.RECORD_TYPES[record.type](record.data)
-        except dpkt.ssl.SSL3Exception:
-            return
-        except dpkt.NeedData:
-            log.exception("Incomplete possible TLS Handshake record found")
+        except (dpkt.NeedData, dpkt.ssl.SSL3Exception):
             return
 
         # Is this a TLSv1 Handshake packet?

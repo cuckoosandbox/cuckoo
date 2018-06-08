@@ -853,15 +853,16 @@ class Scheduler(object):
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
             log.warning("As you've configured Cuckoo to execute parallel "
-                        "analyses, we recommend you to switch to a MySQL or"
+                        "analyses, we recommend you to switch to a MySQL or "
                         "a PostgreSQL database as SQLite might cause some "
                         "issues.")
 
         if len(machinery.machines()) > 4 and self.cfg.cuckoo.process_results:
             log.warning("When running many virtual machines it is recommended "
-                        "to process the results in a separate process.py to "
-                        "increase throughput and stability. Please read the "
-                        "documentation about the `Processing Utility`.")
+                        "to process the results in separate 'cuckoo process' "
+                        "instances to increase throughput and stability. "
+                        "Please read the documentation about the "
+                        "`Processing Utility`.")
 
         # Drop all existing packet forwarding rules for each VM. Just in case
         # Cuckoo was terminated for some reason and various forwarding rules

@@ -1128,7 +1128,7 @@ script = mitm.py
 
     assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
 
-def test_migration_205_210():
+def test_migration_205_206():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
@@ -1142,7 +1142,7 @@ machines = vbox1
 mode = headless
     """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
-    cfg = migrate(cfg, "2.0.5", "2.1.0")
+    cfg = migrate(cfg, "2.0.5", "2.0.6")
 
     assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
     assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"

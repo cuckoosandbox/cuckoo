@@ -15,6 +15,7 @@ import peepdf.PDFCore
 import pefile
 import peutils
 import re
+import sflock
 import struct
 import zipfile
 import zlib
@@ -29,7 +30,6 @@ from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
-from cuckoo.compat import magic
 from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, dispatch
 
@@ -67,7 +67,7 @@ class PortableExecutable(object):
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        return magic.from_buffer(data)
+        return sflock.magic.from_buffer(data)
 
     def _get_peid_signatures(self):
         """Gets PEID signatures.

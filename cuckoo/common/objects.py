@@ -11,12 +11,12 @@ import mmap
 import os
 import pefile
 import re
+import sflock
 import shutil
 import tempfile
 import zipfile
 
 from cuckoo.common.whitelist import is_whitelisted_domain
-from cuckoo.compat import magic
 
 try:
     import pydeep
@@ -224,13 +224,17 @@ class File(object):
         """Get MIME file type.
         @return: file type.
         """
-        return magic.from_file(os.path.realpath(self.file_path))
+        return sflock.magic.from_file(
+            os.path.realpath(self.file_path)
+        )
 
     def get_content_type(self):
         """Get MIME content file type (example: image/jpeg).
         @return: file content type.
         """
-        return magic.from_file(os.path.realpath(self.file_path), mime=True)
+        return sflock.magic.from_file(
+            os.path.realpath(self.file_path), mime=True
+        )
 
     def get_exported_functions(self):
         """Get the exported function names of this PE file."""

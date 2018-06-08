@@ -214,7 +214,7 @@ class DatabaseEngine(object):
             "port": "3389",
         }
 
-    @mock.patch("cuckoo.common.objects.magic")
+    @mock.patch("sflock.magic")
     def test_add_sample(self, p):
         p.from_file.return_value = ""
         assert self.d.add_path(Files.temp_put(os.urandom(16))) is not None

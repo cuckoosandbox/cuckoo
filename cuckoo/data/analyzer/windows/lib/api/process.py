@@ -11,7 +11,7 @@ import tempfile
 
 from ctypes import (
     c_ulong, create_string_buffer, c_int, c_uint16, c_uint, c_wchar_p,
-    c_void_p, sizeof, byref, Structure
+    c_void_p, sizeof, byref, Structure, cast
 )
 
 from lib.common.constants import SHUTDOWN_MUTEX
@@ -37,9 +37,9 @@ def spCreateProcessW(application_name, command_line, process_attributes,
             ("show_window", c_uint16),
             ("reserved2", c_uint16),
             ("reserved3", c_void_p),
-            ("std_input", c_uint),
-            ("std_output", c_uint),
-            ("std_error", c_uint),
+            ("std_input", c_void_p),
+            ("std_output", c_void_p),
+            ("std_error", c_void_p),
         ]
 
     class PROCESS_INFORMATION(Structure):
@@ -67,9 +67,9 @@ def spCreateProcessW(application_name, command_line, process_attributes,
         si.show_window = startup_info.wShowWindow
 
     if si.flags & subprocess.STARTF_USESTDHANDLES:
-        si.std_input = startup_info.hStdInput
-        si.std_output = startup_info.hStdOutput
-        si.std_error = startup_info.hStdError
+        si.std_input = cast(int(startup_info.hStdInput), c_void_p)
+        si.std_output = cast(int(startup_info.hStdOutput), c_void_p)
+        si.std_error = cast(int(startup_info.hStdError), c_void_p)
 
     pi = PROCESS_INFORMATION()
 
@@ -194,28 +194,32 @@ class Process(object):
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
-        process_handle = self.open_process()
+        class PROCESS_BASIC_INFORMATION(Structure):
+            _fields_ = [
+                ("ExitStatus", c_void_p),
+                ("PebBaseAddress", c_void_p),
+                ("AffinityMask", c_void_p),
+                ("BasePriority", c_void_p),
+                ("UniqueProcessId", c_void_p),
+                ("InheritedFromUniqueProcessId", c_void_p),
+            ]
 
         NT_SUCCESS = lambda val: val >= 0
 
-        pbi = (c_int * 6)()
+        pbi = PROCESS_BASIC_INFORMATION()
         size = c_int()
 
         # Set return value to signed 32bit integer.
         NTDLL.NtQueryInformationProcess.restype = c_int
 
-        ret = NTDLL.NtQueryInformationProcess(process_handle,
-                                              0,
-                                              byref(pbi),
-                                              sizeof(pbi),
-                                              byref(size))
-
+        process_handle = self.open_process()
+        ret = NTDLL.NtQueryInformationProcess(
+            process_handle, 0, byref(pbi), sizeof(pbi), byref(size)
+        )
         KERNEL32.CloseHandle(process_handle)
 
         if NT_SUCCESS(ret) and size.value == sizeof(pbi):
-            return pbi[5]
-
-        return None
+            return pbi.InheritedFromUniqueProcessId
 
     def _encode_args(self, args):
         """Convert a list of arguments to a string that can be passed along
@@ -508,7 +512,12 @@ class Process(object):
             os.write(fd, "%s=%s\n" % (key, value))
 
         os.close(fd)
-        Process.first_process = False
+
+        # Only change the first_process attribute for processes that we
+        # "track", i.e., the lsass.exe injection doesn't count.
+        if track:
+            Process.first_process = False
+
         return config_path
 
     def dump_memory(self, addr=None, length=None):

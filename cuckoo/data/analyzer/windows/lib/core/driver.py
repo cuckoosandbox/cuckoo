@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -83,6 +83,10 @@ class Driver(object):
         us.MaximumLength = us.Length
 
         status = NTDLL.NtLoadDriver(ctypes.byref(us)) % 2**32
+        if status == 0xc0000428:
+            raise CuckooError(
+                "Driver Signature Enforcement has not been disabled."
+            )
         if status:
             raise CuckooError(
                 "Unable to load the %s driver: 0x%x" %

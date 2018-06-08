@@ -204,7 +204,7 @@ If you are using an older distribution or you just want to use the latest
 version (our recommendation), the following will build the latest version
 (``0.9.14``) from source::
 
-    $ sudo apt -y install libcairo2-dev libjpeg-turbo8-dev libpng12-dev libossp-uuid-dev libfreerdp-dev
+    $ sudo apt -y install libcairo2-dev libjpeg-turbo8-dev libpng-dev libossp-uuid-dev libfreerdp-dev
     $ mkdir /tmp/guac-build && cd /tmp/guac-build
     $ wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
     $ tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14

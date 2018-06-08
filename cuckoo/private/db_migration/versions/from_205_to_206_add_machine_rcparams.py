@@ -2,7 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-"""add rcparams field to machine (from Cuckoo 2.0.5.3 to 2.1)
+"""add rcparams field to machine (from Cuckoo 2.0.5 to 2.0.6)
 
 Revision ID: cb1024e614b7
 Revises: 181be2111077

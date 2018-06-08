@@ -267,9 +267,10 @@ cde76689871c88ef2d4a8fe0c3166eb61611eecf analyzer/darwin/analyzer.py
 f47c2c7c0b1dddee583e81b95af5a8bd91b0dfec analyzer/darwin/lib/api/screenshot.py
 bf3c56805ea0bf44a7fb6c8c16ee91e9d22f9a17 analyzer/darwin/modules/auxiliary/screenshots.py
 938296b4ffd21227b734c0a0f2aa1d42af30b133 analyzer/windows/analyzer.py
-9b77313855d866672f5cbd800d3e464981fb993b analyzer/windows/lib/api/process.py
-fa870428bb4f9191141f7302790fb9509da8d73b analyzer/windows/lib/core/ioctl.py
-1f56aab8899036e07cb55e646f3c9ab6eeaaaefd analyzer/windows/lib/core/packages.py
+d91f04fc4905992775b03803d151749b065fd294 analyzer/windows/lib/api/process.py
+53bd205a4ecd531c0ad3b25458dfc52c8a3d42ee analyzer/windows/lib/core/driver.py
+f3fb4ee79b58b0dc5cae25736bc4044c4928e5e6 analyzer/windows/lib/core/ioctl.py
+ac5fdbe143a2f570eb5cf402f55b0d2d533858ea analyzer/windows/lib/core/packages.py
 c20de27af88764a032cd26ea4463719020ed356a analyzer/windows/modules/packages/ie.py
 ef61874f212369d734b731f99d01887f317bf49a analyzer/windows/modules/packages/jse.py
 6fc303501997e2c491417eabcbec7e58cb496c1d monitor/e071e63a66e831163a40abc45109fdf71fee829e/inject-x64.exe
