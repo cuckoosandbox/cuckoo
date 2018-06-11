@@ -149,7 +149,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.6",
+    version="2.0.6.1",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -201,7 +201,7 @@ do_setup(
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
         "oletools==0.51",
-        "peepdf>=0.4.1, <0.5",
+        "peepdf>=0.4.2, <0.5",
         "pefile2==1.2.11",
         "pillow==3.2",
         "pyelftools==0.24",
@@ -211,7 +211,7 @@ do_setup(
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
-        "sflock>=0.3.4, <0.4",
+        "sflock>=0.3.5, <0.4",
         "sqlalchemy==1.0.8",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
