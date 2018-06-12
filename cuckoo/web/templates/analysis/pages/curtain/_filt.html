@@ -1,15 +1,18 @@
 <!--
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.1"
-__date__    = "18JAN2018"
+__version__ = "1.0.2"
+__date__    = "12JUN2018"
 -->
 
 {% if report.analysis.curtain %}
     {% for pid,dict in report.analysis.curtain.items %}
         <div class="panel panel-default">
             <div class="panel-heading">
-                PID: {{pid}}
+                PID: {{pid}} -
+                {% for entry in dict.behaviors %}
+                    <a class="btn btn-primary btn-xs">{{ entry }}</a>
+                {% endfor %}
             </div>
             <div class="panel-body">
                 {% for entry in dict.filter %}

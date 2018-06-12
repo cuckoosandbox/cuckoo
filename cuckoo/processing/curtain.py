@@ -1,4 +1,4 @@
-import logging, os, re, ast
+import logging, os, re, ast, itertools
 import xml.etree.ElementTree as ET
 
 from cuckoo.common.abstracts import Processing
@@ -8,8 +8,127 @@ log = logging.getLogger(__name__)
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.5"
-__date__    = "21FEB2018"
+__version__ = "1.0.6"
+__date__    = "12JUN2018"
+
+def buildBehaviors(entry, behaviorTags):
+    # Generates possible code injection variations
+    # {Behavior:[["entry1","entry2"],["entry3","entry4"]]}
+    behaviorCol = {}
+
+    codeInject = [["VirtualAlloc", "NtAllocateVirtualMemory", "ZwAllocateVirtualMemory", "HeapAlloc"],
+        ["RtlMoveMemory", "WriteProcessMemory", "memset"],
+        ["CallWindowProcA", "CallWindowProcW", "DialogBoxIndirectParamA", "DialogBoxIndirectParamW",
+         "EnumCalendarInfoA", "EnumCalendarInfoW", "EnumDateFormatsA", "EnumDateFormatsW", "EnumDesktopWindows",
+         "EnumDesktopsA", "EnumDesktopsW", "EnumLanguageGroupLocalesA", "EnumLanguageGroupLocalesW", "EnumPropsExA",
+         "EnumPropsExW", "EnumPwrSchemes", "EnumResourceTypesA", "EnumResourceTypesW", "EnumResourceTypesExA",
+         "EnumResourceTypesExW", "EnumSystemCodePagesA", "EnumSystemCodePagesW", "EnumSystemLanguageGroupsA",
+         "EnumSystemLanguageGroupsW", "EnumSystemLocalesA", "EnumSystemLocalesW", "EnumThreadWindows",
+         "EnumTimeFormatsA", "EnumTimeFormatsW", "EnumUILanguagesA", "EnumUILanguagesW", "EnumWindowStationsA",
+         "EnumWindowStationsW", "EnumWindows", "EnumerateLoadedModules", "EnumerateLoadedModulesEx",
+         "EnumerateLoadedModulesExW", "GrayStringA", "GrayStringW", "NotifyIpInterfaceChange", "NotifyTeredoPortChange",
+         "NotifyUnicastIpAddressChange", "SHCreateThread", "SHCreateThreadWithHandle", "SendMessageCallbackA",
+         "SendMessageCallbackW", "SetWinEventHook", "SetWindowsHookExA", "SetWindowsHookExW", "CreateThread"]]
+
+    behaviorCol["Code Injection"] = list(itertools.product(*codeInject))
+
+    behaviorCol["Downloader"] = [["New-Object System.Net.WebClient","DownloadFile"],
+                                 ["New-Object System.Net.WebClient","DownloadString"],
+                                 ["New-Object System.Net.WebClient","DownloadData"],
+                                 ["System.Net.WebRequest","WebProxy","System.Net.CredentialCache"],
+                                 ["Import-Module BitsTransfer", "Start-BitsTransfer", "Source", "Destination"],
+                                 ["New-Object System.Net.Sockets.TCPClient", "GetStream"],
+                                 ["$env:LocalAppData"]]
+
+    behaviorCol["Starts Process"] = [["Start-Process"],
+                                     ["New-Object IO.MemoryStream", "New-Object IO.StreamReader"],
+                                     ["System.Diagnostics.Process]::Start"]]
+
+    behaviorCol["Compression"] = [["Convert", "FromBase64String", "System.Text.Encoding"],
+                                  ["New-Object IO.Compression.GzipStream"],
+                                  ["[IO.Compression.CompressionMode]::Decompress"],
+                                  ["New-Object IO.Compression.DeflateStream"]]
+
+    behaviorCol["Uses Stealth"] = [["WindowStyle", "Hidden"],
+                                   ["CreateNoWindow=$true"],
+                                   ["ErrorActionPreference", "SilentlyContinue"]]
+
+    behaviorCol["Key Logging"] = [["GetAsyncKeyState", "Windows.Forms.Keys"]]
+
+    behaviorCol["Screen Scraping"] = [["New-Object Drawing.Bitmap", "Width", "Height"],
+                                      ["[Drawing.Graphics]::FromImage"],
+                                      ["CopyFroMScreen", "Location", "[Drawing.Point]::Empty", "Size"]]
+
+    behaviorCol["Custom Web Fields"] = [["Headers.Add"],
+                                        ["SessionKey", "SessiodID"]]
+
+    behaviorCol["Persistence"] = [["New-Object -COMObject", "Schedule.Service"],
+                                  ["SCHTASKS"]]
+
+    behaviorCol["Sleeps"] = [["Start-Sleep"]]
+
+    behaviorCol["Uninstalls Apps"] = [["foreach", "UninstallString"]]
+
+    behaviorCol["Obfuscation"] = [["-Join", "[int]", "-as", "[char]"]]
+
+    behaviorCol["Crypto"] = [["New-Object System.Security.Cryptography.AESCryptoServiceProvider", "Mode", "Key", "IV"],
+                             ["CreateEncryptor().TransformFinalBlock"],
+                             ["CreateDecryptor().TransformFinalBlock"]]
+
+    behaviorCol["Enumeration/Profiling"] = [["[Environment]::UserDomainName"],
+                                            ["[Environment]::UserName"],
+                                            ["$env:username"],
+                                            ["[Environment]::MachineName"],
+                                            ["[Environment]::GetFolderPath"],
+                                            ["[System.IO.Path]::GetTempPath"],
+                                            ["$env:windir"],
+                                            ["GWMI Win32_NetworkAdapterConfiguration"],
+                                            ["Get-WMIObject Win32_NetworkAdapterConfiguration"],
+                                            ["GWMI Win32_OperatingSystem"],
+                                            ["Get-WMIObject Win32_OperatingSystem"],
+                                            ["[Security.Principal.WindowsIdentity]::GetCurrent"],
+                                            ["[Security.Principal.WindowsBuiltInRole]", "Administrator"],
+                                            ["[System.Diagnostics.Process]::GetCurrentProcess"],
+                                            ["PSVersionTable.PSVersion"],
+                                            ["New-Object System.Diagnostics.ProcessStartInfo"],
+                                            ["GWMI Win32_ComputerSystemProduct"],
+                                            ["Get-WMIObject Win32_ComputerSystemProduct"],
+                                            ["Get-Process -id"],
+                                            ["$env:userprofile"],
+                                            ["[Windows.Forms.SystemInformation]::VirtualScreen"]]
+
+    behaviorCol["Registry"] = [["HKCU:\\"],
+                               ["HKLM:\\"],
+                               ["New-ItemProperty", "-Path", "-Name", "-PropertyType", "-Value"]]
+
+    behaviorCol["Sends Data"] = [["UploadData", "POST"]]
+
+    behaviorCol["AppLocker Bypass"] = [["regsvr32", "/i:http", "scrobj.dll"]]
+
+    behaviorCol["AMSI Bypass"] = [["System.Management.Automation.AMSIUtils", "amsiInitFailed"],
+                                  ["Expect100Continue"]]
+
+    for event in entry:
+
+        for message in entry[event]:
+
+            message = entry[event][message]
+
+            for behavior in behaviorCol:
+
+                for check in behaviorCol[behavior]:
+
+                    bhFlag = True
+
+                    for value in check:
+                        if value.lower() not in message.lower():
+                            bhFlag = False
+
+                    if bhFlag == True:
+                        if behavior not in behaviorTags:
+                            behaviorTags.append(behavior)
+
+    return behaviorTags
 
 def charReplace(inputString, MODFLAG):
     # OLD: ("{1}{0}{2}" -F"AMP","EX","LE")
@@ -356,5 +475,12 @@ class Curtain(Processing):
             for index, entry in enumerate(pids[pid]["filter"]):
                 tempEvents.append({"%02d" % (eventCount - index): entry.values()[0]})
             pids[pid]["filter"] = tempEvents
+
+        # Identify behaviors per PID
+        for pid in pids:
+            behaviorTags = []
+            for entry in pids[pid]["events"]:
+                behaviorTags = buildBehaviors(entry, behaviorTags)
+                pids[pid]["behaviors"] = behaviorTags
 
         return pids
