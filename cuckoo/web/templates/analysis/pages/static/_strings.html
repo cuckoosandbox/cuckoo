@@ -1,7 +1,32 @@
 <section id="static_strings">
-    <div class="well" style="font-family:monospace;width:75%;">
-        {% for string in report.analysis.strings %}
-            <div>{{string}}</div>
-        {% endfor %}
-    </div>
+    {% if report.analysis.strings.decoded %}
+        <div class="well" style="font-family:monospace;width:75%;">
+            <h4>Decoded Strings</h4>
+            {% for string in report.analysis.strings.decoded %}
+                <div>{{string}}</div>
+            {% endfor %}
+        </div>
+    {% endif &}
+
+    <br>
+
+    {% if report.analysis.strings.stack %}
+        <div class="well" style="font-family:monospace;width:75%;">
+            <h4>Stackstrings</h4>
+            {% for string in report.analysis.strings.stack %}
+                <div>{{string}}</div>
+            {% endfor %}
+        </div>
+    {% endif &}
+
+    <br>
+
+    {% if report.analysis.strings.static %}
+        <div class="well" style="font-family:monospace;width:75%;">
+            <h4>Static Strings</h4>
+            {% for string in report.analysis.strings.static %}
+                <div>{{string}}</div>
+            {% endfor %}
+        </div>
+    {% endif &}
 </section>
