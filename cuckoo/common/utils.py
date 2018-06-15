@@ -21,7 +21,6 @@ import warnings
 import xmlrpclib
 
 from distutils.version import StrictVersion
-from django.core.validators import URLValidator
 
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd, version
@@ -69,6 +68,7 @@ def validate_hash(h):
 
 def validate_url(url, allow_invalid=False):
     """Validates an URL using Django's built-in URL validator"""
+    from django.core.validators import URLValidator
     val = URLValidator(schemes=["http", "https"])
 
     try:
@@ -253,16 +253,14 @@ def exception_message():
     msg += "Machine arch: %s\n" % platform.machine()
 
     try:
+        import pip._internal as pip
+    except ImportError:
         import pip
 
-        msg += "Modules: %s\n" % " ".join(sorted(
-            "%s:%s" % (package.key, package.version)
-            for package in pip.get_installed_distributions()
-        ))
-    except ImportError:
-        pass
-
-    msg += "\n"
+    msg += "Modules: %s\n\n" % " ".join(sorted(
+        "%s:%s" % (package.key, package.version)
+        for package in pip.get_installed_distributions()
+    ))
     return msg
 
 _jsbeautify_blacklist = [

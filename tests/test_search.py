@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -158,7 +158,7 @@ def test_elastic_init():
     assert e.index_time_pattern == "yearly"
     assert e.cuckoo_node is None
 
-@mock.patch("cuckoo.common.elastic.elasticsearch")
+@mock.patch("elasticsearch.Elasticsearch")
 def test_elastic_connect_notenabled(p):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -171,9 +171,9 @@ def test_elastic_connect_notenabled(p):
     e = Elastic()
     e.init()
     e.connect()
-    p.Elasticsearch.assert_not_called()
+    p.assert_not_called()
 
-@mock.patch("cuckoo.common.elastic.elasticsearch")
+@mock.patch("elasticsearch.Elasticsearch")
 def test_elastic_connect_enabled(p):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -186,4 +186,4 @@ def test_elastic_connect_enabled(p):
     e = Elastic()
     e.init()
     e.connect()
-    p.Elasticsearch.assert_called_once_with(["127.0.0.1"], timeout=300)
+    p.assert_called_once_with(["127.0.0.1"], timeout=300)

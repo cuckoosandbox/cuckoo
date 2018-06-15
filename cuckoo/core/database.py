@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,9 @@ import datetime
 import json
 import logging
 import os
+import sys
 
+from cuckoo.common.colors import green
 from cuckoo.common.config import config, parse_options, emit_options
 from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
@@ -15,7 +17,7 @@ from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import Singleton, classlock
 from cuckoo.common.utils import SuperLock, json_encode
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, format_command
 
 from sqlalchemy import create_engine, Column, not_, func
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
@@ -29,7 +31,7 @@ Base = declarative_base()
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "181be2111077"
+SCHEMA_VERSION = "cb1024e614b7"
 TASK_PENDING = "pending"
 TASK_RUNNING = "running"
 TASK_COMPLETED = "completed"
@@ -99,9 +101,23 @@ class Machine(Base):
     status_changed_on = Column(DateTime(timezone=False), nullable=True)
     resultserver_ip = Column(String(255), nullable=False)
     resultserver_port = Column(Integer(), nullable=False)
+    _rcparams = Column("rcparams", Text(), nullable=True)
 
     def __repr__(self):
         return "<Machine('{0}','{1}')>".format(self.id, self.name)
+
+    @hybrid_property
+    def rcparams(self):
+        if not self._rcparams:
+            return {}
+        return parse_options(self._rcparams)
+
+    @rcparams.setter
+    def rcparams(self, value):
+        if isinstance(value, dict):
+            self._rcparams = emit_options(value)
+        else:
+            self._rcparams = value
 
     def to_dict(self):
         """Converts object to dict.
@@ -472,14 +488,16 @@ class Database(object):
             last = tmp_session.query(AlembicVersion).first()
             tmp_session.close()
             if last.version_num != SCHEMA_VERSION and self.schema_check:
-                raise CuckooDatabaseError(
-                    "DB schema version mismatch: found %s, expected %s. "
-                    "Optionally make a backup and then apply the latest "
-                    "database migration(s) by running "
-                    "`cuckoo --cwd %s migrate`." % (
-                        last.version_num, SCHEMA_VERSION, cwd(raw=True),
-                    )
+                log.warning(
+                    "Database schema version mismatch: found %s, expected %s.",
+                    last.version_num, SCHEMA_VERSION
                 )
+                log.error(
+                    "Optionally make a backup and then apply the latest "
+                    "database migration(s) by running:"
+                )
+                log.info("$ %s", green(format_command("migrate")))
+                sys.exit(1)
 
     def __del__(self):
         """Disconnects pool."""
@@ -931,7 +949,34 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error setting machine status: {0}".format(e))
+                log.debug("Database error setting machine status: %s", e)
+                session.rollback()
+            finally:
+                session.close()
+        else:
+            session.close()
+
+    @classlock
+    def set_machine_rcparams(self, label, rcparams):
+        """Set remote control connection params for a virtual machine.
+        @param label: virtual machine label
+        @param rcparams: dict with keys: protocol, host, port
+        """
+        session = self.Session()
+        try:
+            machine = session.query(Machine).filter_by(label=label).first()
+        except SQLAlchemyError as e:
+            log.debug("Database error setting machine rcparams: %s", e)
+            session.close()
+            return
+
+        if machine:
+            machine.rcparams = rcparams
+            try:
+                session.commit()
+                session.refresh(machine)
+            except SQLAlchemyError as e:
+                log.debug("Database error setting machine rcparams: %s", e)
                 session.rollback()
             finally:
                 session.close()

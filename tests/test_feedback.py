@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -95,29 +95,6 @@ class TestFeedback(object):
             ))
         e.match("Could not validate")
 
-    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
-    def test_include_report(self, p):
-        p._get_report.return_value = self.report(
-            "tests/files/sample_analysis_storage"
-        )
-
-        feedback = CuckooFeedbackObject()
-        feedback.include_report_web(1)
-
-        assert feedback.report.target["file"]["name"] == "binary"
-        assert feedback.report.target["file"]["size"] == 91010
-
-    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
-    def test_include_analysis(self, p):
-        p._get_report.return_value = self.report(
-            "tests/files/sample_analysis_storage"
-        )
-
-        feedback = CuckooFeedbackObject()
-        feedback.include_report_web(1)
-        feedback.include_analysis(memdump=False)
-        assert len(feedback.to_files()) == 1
-
     def test_append_error(self):
         feedback = CuckooFeedbackObject(message="test")
         feedback.add_error("test")
@@ -125,42 +102,6 @@ class TestFeedback(object):
         obj = feedback.to_dict()
         assert obj["message"] == "test"
         assert obj["errors"] == ["test"]
-
-    @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
-    @mock.patch("cuckoo.core.feedback.requests")
-    def test_send_data(self, p, q):
-        q._get_report.return_value = self.report(
-            "tests/files/sample_analysis_storage"
-        )
-
-        p.post.return_value.json.return_value = {
-            "status": True, "feedback_id": 1,
-        }
-
-        feedback = CuckooFeedback()
-        cf = CuckooFeedbackObject(
-            "message", "email@google.com", "name", "company", True
-        )
-        cf.include_report_web(1)
-        cf.include_analysis()
-        assert feedback.send_feedback(cf) == 1
-
-        p.post.assert_called_once_with(
-            feedback.endpoint,
-            data={
-                "feedback": mock.ANY,
-            },
-            files={
-                "file": mock.ANY,
-            },
-            headers=mock.ANY
-        )
-
-        # Ensure that the second entry for each file is an open file handle.
-        files = p.post.call_args[1]["files"]
-        z = zipfile.ZipFile(files["file"])
-        assert "Starting analyzer" in z.read("analysis.log")
-        assert len(z.read("cuckoo.log")) == 15274
 
     @mock.patch("cuckoo.web.controllers.analysis.analysis.AnalysisController")
     @mock.patch("cuckoo.core.feedback.CuckooFeedbackObject")

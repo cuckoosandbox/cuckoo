@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2016 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,10 +6,6 @@ import datetime
 import logging
 import os.path
 import warnings
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    import pymisp
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -69,6 +65,10 @@ class MISP(Processing):
 
         self.key = "misp"
         self.iocs = {}
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import pymisp
 
         self.misp = pymisp.PyMISP(self.url, self.apikey, False, "json")
         iocs = set()

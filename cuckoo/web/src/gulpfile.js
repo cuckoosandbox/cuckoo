@@ -18,7 +18,7 @@ var gulp = require('gulp');
 require('gulp-task-loader')('./tasks');
 
 // define the default task when 'gulp' is called from the CLI
-gulp.task('default', ['bower','styles','scripts','scripts-submission','handlebars','watch']);
+gulp.task('default', ['bower','styles','scripts','scripts-submission','scripts-rdp','handlebars','watch']);
 
 // task for ONLY building to static
-gulp.task('build', ['bower','styles','scripts','scripts-submission','handlebars']);
+gulp.task('build', ['bower','styles','scripts','scripts-submission','scripts-rdp','handlebars','build-guac']);

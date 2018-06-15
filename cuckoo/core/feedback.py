@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,15 +10,10 @@ import requests
 import traceback
 import zipfile
 
-from django.core.validators import validate_email, ValidationError
-from django.http import Http404
-from django.template import TemplateSyntaxError, TemplateDoesNotExist
-
 from cuckoo.common.config import Config, config
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.core.report import Report
 from cuckoo.misc import version, cwd
-from cuckoo.web.controllers.analysis.analysis import AnalysisController
 
 log = logging.getLogger(__name__)
 
@@ -27,9 +22,6 @@ class CuckooFeedback(object):
     endpoint = "https://feedback.cuckoosandbox.org/api/submit/"
     exc_whitelist = (
         CuckooFeedbackError,
-    )
-    exc_django = (
-        TemplateDoesNotExist, TemplateSyntaxError
     )
 
     def enabled(self):
@@ -54,10 +46,12 @@ class CuckooFeedback(object):
             return
 
         # Ignore 404 exceptions regarding ".map" development files.
+        from django.http import Http404
         if isinstance(exception, Http404) and ".map" in exception.message:
             return
 
-        if isinstance(exception, self.exc_django):
+        from django.template import TemplateSyntaxError, TemplateDoesNotExist
+        if isinstance(exception, (TemplateSyntaxError, TemplateDoesNotExist)):
             feedback.add_error(
                 "A Django-related exception occurred: %s" % exception
             )
@@ -195,6 +189,8 @@ class CuckooFeedbackObject(object):
         self.report = report
 
     def include_report_web(self, task_id):
+        from cuckoo.web.controllers.analysis.analysis import AnalysisController
+        from django.http import Http404
         try:
             report = Report(AnalysisController.get_report(task_id)["analysis"])
         except Http404:
@@ -269,6 +265,7 @@ class CuckooFeedbackObject(object):
         if not self.contact.get("email"):
             raise CuckooFeedbackError("Missing contact email")
 
+        from django.core.validators import validate_email, ValidationError
         try:
             validate_email(self.contact["email"])
         except ValidationError:

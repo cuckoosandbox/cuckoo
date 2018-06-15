@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -195,7 +195,26 @@ class DatabaseEngine(object):
         assert m3.options == ["opt1", "opt2"]
         assert m4.options == ["opt3", "opt4"]
 
-    @mock.patch("cuckoo.common.objects.magic")
+    def test_set_machine_rcparams(self):
+        self.d.add_machine(
+            "name5", "label5", "1.2.3.4", "windows", None,
+            "tag1 tag2", "int0", "snap0", "5.6.7.8", 2043
+        )
+
+        self.d.set_machine_rcparams("label5", {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": 3389,
+        })
+
+        m = self.d.view_machine("name5")
+        assert m.rcparams == {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": "3389",
+        }
+
+    @mock.patch("sflock.magic")
     def test_add_sample(self, p):
         p.from_file.return_value = ""
         assert self.d.add_path(Files.temp_put(os.urandom(16))) is not None

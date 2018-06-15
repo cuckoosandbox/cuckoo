@@ -3,10 +3,13 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import mock
+import json
 import os
 import pytest
 import responses
 import shutil
+import subprocess
+import sys
 import tempfile
 
 from cuckoo.common.abstracts import (
@@ -592,7 +595,7 @@ class TestYaraIntegration(object):
         File.yara_rules = {}
         shutil.rmtree(cwd("yara", "binaries"))
         init_yara()
-        assert len(File.yara_rules) == 6
+        assert len(File.yara_rules) == 7
         assert not list(File.yara_rules["binaries"])
 
 def test_tmp_permissions_true():
@@ -619,3 +622,25 @@ def test_tmp_permissions_false():
     })
     os.chmod(dirpath, 0400)
     assert not ensure_tmpdir()
+
+def test_light_startup():
+    fetch_imports = (
+        "import json, sys ; "
+        "import cuckoo ; "
+        "from cuckoo.main import main ; "
+        "print json.dumps(sys.modules.keys())"
+    )
+    out, err = subprocess.Popen(
+        [sys.executable, "-"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+    ).communicate(fetch_imports)
+
+    assert not err
+    modules = json.loads(out)
+    assert "androguard" not in modules
+    assert "capstone" not in modules
+    assert "django" not in modules
+    assert "elasticsearch" not in modules
+    assert "pkg_resources" not in modules
+    assert "pymisp" not in modules
+    assert "scapy" not in modules
+    assert "weasyprint" not in modules

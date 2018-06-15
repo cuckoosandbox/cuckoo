@@ -5,6 +5,7 @@ matrix:
   include:
     - python: 2.7
     - os: osx
+      osx_image: xcode9.3beta
       language: generic
 
 services:
@@ -17,7 +18,14 @@ before_install:
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
         sudo apt-get update -qq
         sudo apt-get install python-dev python-libvirt libffi-dev libssl-dev
-        sudo apt-get install libjpeg-dev swig libpq-dev libmysqlclient-dev rar
+        sudo apt-get install swig libpq-dev libmysqlclient-dev rar
+        sudo apt-get install libcairo2-dev libpng-dev libossp-uuid-dev
+        sudo apt-get install libfreerdp-dev libjpeg-turbo8-dev
+
+        # Install guacd.
+        wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+        tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
+        ./configure --with-init-dir=/etc/init.d && make && sudo make install && sudo ldconfig && cd ../
 
         sudo mysql -e "CREATE USER cuckoo@localhost IDENTIFIED BY 'cuckoo'"
         sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO cuckoo@localhost"
@@ -61,12 +69,19 @@ install:
   - python setup.py sdist
   - pip install -e .
   - pip install pytest pytest-cov codecov coveralls distorm3 pycrypto
+  - pip install flask-testing mock pytest-django pytest-pythonpath responses
 
   # Install Volatility.
   - git clone https://github.com/volatilityfoundation/volatility vol-setup
   - cd vol-setup && python setup.py install && cd ..
 
 script:
+  # Start guacd.
+  - |
+    if [[ $TRAVIS_OS_NAME == "linux" ]]; then
+      sudo /etc/init.d/guacd start
+    fi
+
   # Create the Cuckoo Working Directory.
   - cuckoo -d
 
@@ -77,7 +92,7 @@ script:
   - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
 
   # Run tests from the "tests" directory.
-  - python setup.py test --addopts --cov=cuckoo
+  - py.test --cov=cuckoo
 
 after_success:
   - coveralls

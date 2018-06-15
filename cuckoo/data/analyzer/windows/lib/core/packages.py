@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -50,7 +50,7 @@ def choose_package(file_type, file_name, exports):
         return "doc"
     elif "Microsoft Office Excel" in file_type or \
             "Microsoft Excel" in file_type or \
-            file_name.endswith((".xls", ".xlsx", ".xlt", ".xlsm")):
+            file_name.endswith((".xls", ".xlsx", ".xlt", ".xlsm", ".iqy", ".slk")):
         return "xls"
     elif "Microsoft PowerPoint" in file_type or \
             file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
@@ -75,7 +75,7 @@ def choose_package(file_type, file_name, exports):
         return "ps1"
     elif file_name.endswith((".wsf", ".wsc")):
         return "wsf"
-    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta", ".mht", ".mhtml")):
+    elif "HTML" in file_type or file_name.endswith((".htm", ".html", ".hta", ".mht", ".mhtml", ".url")):
         return "ie"
     else:
         return "generic"

@@ -25,7 +25,6 @@ module.exports = function(done) {
 			console.log(`>>> ${path.basename(err.fileName)} (line ${err.loc.line}, col ${err.loc.column} ]\n`);
 			this.emit('end');
 		})
-		.pipe(gutil.env.production ? uglify() : gutil.noop())
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('../static/js/cuckoo'));
 

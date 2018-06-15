@@ -1,5 +1,5 @@
 .app-nav {
-	
+
 	// maintain the fixed top nav layout
 	position: fixed;
 	display: flex;
@@ -17,9 +17,17 @@
 	.logo {
 		padding: 7px 0 12px 0;
 		margin-right: 20px;
-		& > img { 
-			width: 90px; 
+		& > img {
+			width: 90px;
 			margin-top: 4px;
+		}
+
+		@include unless-nav-collapsed {
+			margin-right: 10px;
+			& > img {
+				width: 80px;
+				margin-top: 7px;
+			}
 		}
 	}
 
@@ -64,11 +72,23 @@
 					&:hover {
 						text-decoration: none !important;
 					}
+
+					@include unless-nav-collapsed {
+						font-size: 14px;
+						margin: 0 5px;
+					}
+
+					@include respond-to-max-width(565px) {
+						font-size: 0;
+						.fa {
+							font-size: 14px;
+						}
+					}
+
 				}
 
 				&.active > a {
 					color: #3678b0 !important;
-
 				}
 
 			}
@@ -97,11 +117,28 @@
 						background-color: #777;
 						color: #fff;
 					}
+
 				}
 
+				&:first-child {
+					padding-left: 0;
+				}
 				&:last-child {
 					padding-right: 0;
 				}
+
+				@include unless-nav-collapsed {
+					padding: 0 5px;
+
+					.fa {
+						margin-right: 0;
+						color: inherit;
+						font-size: 12px;
+					}
+
+					.button.outline { border-width: 1px; }
+				}
+
 			}
 
 		}
@@ -204,6 +241,27 @@
 
 	}
 
+	// secundary collapsed nav state - flexing out every item equally among the nav bar
+	// this is yet experimental, and thus contained within its own parentheses to toggle
+	// this on and off or modify easily
+	@include respond-to-max-width(565px) {
+
+		// reset flex states
+		.app-nav__nav--primary,
+		.app-nav__nav--right {
+			flex-basis: 100%;
+			justify-content: space-around;
+			flex-grow: 0;
+			margin: 0;
+		}
+
+		// EXCEPT the theme tool
+		#select-theme {
+			margin-right: auto;
+		}
+
+	}
+
 	@include cuckoo-theme('cyborg') {
 
 		.app-nav__dropdown {
@@ -248,6 +306,10 @@
 			}
 		}
 
+	}
+
+	@include unless-nav-collapsed {
+		padding: 0 15px;
 	}
 
 }

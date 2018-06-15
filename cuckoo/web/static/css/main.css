@@ -228,80 +228,57 @@
 
 .fa-spin
 {
-    -webkit-animation: fa-spin 2s infinite linear;
-            animation: fa-spin 2s infinite linear;
+    animation: fa-spin 2s infinite linear;
 }
 
 .fa-pulse
 {
-    -webkit-animation: fa-spin 1s infinite steps(8);
-            animation: fa-spin 1s infinite steps(8);
-}
-
-@-webkit-keyframes fa-spin
-{
-    0%
-    {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
-    }
-    100%
-    {
-        -webkit-transform: rotate(359deg);
-                transform: rotate(359deg);
-    }
+    animation: fa-spin 1s infinite steps(8);
 }
 
 @keyframes fa-spin
 {
     0%
     {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100%
     {
-        -webkit-transform: rotate(359deg);
-                transform: rotate(359deg);
+        transform: rotate(359deg);
     }
 }
 
 .fa-rotate-90
 {
-    -webkit-transform: rotate(90deg);
-            transform: rotate(90deg);
+    transform: rotate(90deg);
 
     -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=1)';
 }
 
 .fa-rotate-180
 {
-    -webkit-transform: rotate(180deg);
-            transform: rotate(180deg);
+    transform: rotate(180deg);
 
     -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=2)';
 }
 
 .fa-rotate-270
 {
-    -webkit-transform: rotate(270deg);
-            transform: rotate(270deg);
+    transform: rotate(270deg);
 
     -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=3)';
 }
 
 .fa-flip-horizontal
 {
-    -webkit-transform: scale(-1, 1);
-            transform: scale(-1, 1);
+    transform: scale(-1, 1);
 
     -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)';
 }
 
 .fa-flip-vertical
 {
-    -webkit-transform: scale(1, -1);
-            transform: scale(1, -1);
+    transform: scale(1, -1);
 
     -ms-filter: 'progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)';
 }
@@ -312,8 +289,7 @@
 :root .fa-flip-horizontal,
 :root .fa-flip-vertical
 {
-    -webkit-filter: none;
-            filter: none;
+    filter: none;
 }
 
 .fa-stack
@@ -3940,15 +3916,92 @@ body.cyborg .dashboard .dashboard-module__header
     border-top: 1px solid #2b5a6a;
     border-right: 1px solid #003f54;
     border-left: 1px solid #003f54;
-    background: -webkit-linear-gradient(#284f5c, #112c35);
-    background:         linear-gradient(#284f5c, #112c35);
+    background: linear-gradient(#284f5c, #112c35);
 }
 
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
  */
+@media screen and (max-width: 960px)
+{
+    *[data-responsive][data-responsive='small-screen-hidden']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 960px)
+{
+    *[data-responsive][data-responsive='small-screen-shown']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 650px)
+{
+    *[data-responsive][data-responsive='tiny-screen-hidden']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 650px)
+{
+    *[data-responsive][data-responsive='tiny-screen-shown']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 850px)
+{
+    *[data-responsive][data-responsive='nav-expanded']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
+@media screen and (min-width: 850px)
+{
+    *[data-responsive][data-responsive='nav-collapsed']
+    {
+        display: none;
+        visibility: hidden;
+
+        pointer-events: none;
+
+        opacity: 0;
+    }
+}
+
 html
 {
     background: #1c1c1c;
@@ -4311,7 +4364,6 @@ body.night pre code.hljs .hljs-keyword
 
 pre.reset
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -4539,28 +4591,24 @@ table.table-fixed
 
 .dns-badge
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     min-height: 40px;
     padding: 0;
 
-    -webkit-box-align: stretch;
     -ms-flex-align: stretch;
     align-items: stretch;
 }
 
 .dns-badge > *
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     border: 1px solid #ccc;
     border-width: 0 1px 1px 1px;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -4594,7 +4642,6 @@ body.night .dns-badge > *.dns-badge__type
     color: #949494;
     border-right: 0;
 
-    -webkit-box-pack: end;
     -ms-flex-pack: end;
     justify-content: flex-end;
     -ms-flex-preferred-size: 80px;
@@ -4638,7 +4685,6 @@ body.night .dns-badge > *.dns-badge__type
     z-index: 50;
     top: 0;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -4662,6 +4708,19 @@ body.night .dns-badge > *.dns-badge__type
     margin-top: 4px;
 }
 
+@media screen and (max-width: 850px)
+{
+    .app-nav .logo
+    {
+        margin-right: 10px;
+    }
+    .app-nav .logo > img
+    {
+        width: 80px;
+        margin-top: 7px;
+    }
+}
+
 .app-nav a:hover,
 .app-nav a:focus,
 .app-nav a:active
@@ -4673,7 +4732,6 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--primary,
 .app-nav__nav--right
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -4684,7 +4742,6 @@ body.night .dns-badge > *.dns-badge__type
 
     -ms-flex-item-align: stretch;
     align-self: stretch;
-    -webkit-box-align: stretch;
     -ms-flex-align: stretch;
     align-items: stretch;
 }
@@ -4693,14 +4750,12 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--primary > li,
 .app-nav__nav--right > li
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 }
 
 .app-nav__nav--primary > li
 {
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -4741,8 +4796,7 @@ body.night .dns-badge > *.dns-badge__type
 .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
 .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
-.app-nav__nav--primary > li > a
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-nav__nav--primary > li > a .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before,
 .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before
@@ -4755,6 +4809,55 @@ body.night .dns-badge > *.dns-badge__type
 .app-nav__nav--primary > li > a:hover
 {
     text-decoration: none !important;
+}
+
+@media screen and (max-width: 850px)
+{
+    .app-nav__nav--primary > li > a
+    {
+        font-size: 14px;
+
+        margin: 0 5px;
+    }
+}
+
+@media screen and (max-width: 565px)
+{
+    .app-nav__nav--primary > li > a
+    {
+        font-size: 0;
+    }
+    .app-nav__nav--primary > li > a .fa,
+    .app-nav__nav--primary > li > a .custom-select:after,
+    .app-nav__nav--primary > li > a .dns-badge__content:before,
+    .app-nav__nav--primary > li > a .cuckoo-table#submission-task-table .status.status-reported:before,
+    .cuckoo-table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+    #submission-task-table.cuckoo-table__fullscreen .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a .network-display__table > table#submission-task-table .status.status-reported:before,
+    .network-display__table > table#submission-task-table .app-nav__nav--primary > li > a .status.status-reported:before,
+    .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:before,
+    .app-nav__nav--primary > li > a .cuckoo-analysis__panel--toggle:after,
+    .app-nav__nav--primary > li > a .cuckoo-files ul div:before,
+    .cuckoo-files ul .app-nav__nav--primary > li > a div:before,
+    .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:after,
+    .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:after,
+    .app-nav__nav--primary > li > a .cuckoo-files #selection-overview .extension-select:before,
+    .cuckoo-files #selection-overview .app-nav__nav--primary > li > a .extension-select:before,
+    .app-nav__nav--primary > li > a .flex-form__header .custom-checkbox > input + span,
+    .flex-form__header .app-nav__nav--primary > li > a .custom-checkbox > input + span,
+    .app-nav__nav--primary > li > a .breadcrumbs > li:not(:last-child):after,
+    .app-nav__nav--primary > li > a .list-panel .list-group-option input[type='radio'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='radio'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='radio'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel .list-group-option input[type='checkbox'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before,
+    .app-nav__nav--primary > li > a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--primary > li > a input[type='checkbox'] + span:before
+    {
+        font-size: 14px;
+    }
 }
 
 .app-nav__nav--primary > li.active > a
@@ -4771,7 +4874,6 @@ body.night .dns-badge > *.dns-badge__type
 {
     padding: 0 10px;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -4800,8 +4902,7 @@ body.night .dns-badge > *.dns-badge__type
 .list-panel .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
 .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
-.app-nav__nav--right > li
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-nav__nav--right > li .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before,
 .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before
@@ -4813,6 +4914,8 @@ body.night .dns-badge > *.dns-badge__type
 
 .app-nav__nav--right > li .button,
 .app-nav__nav--right > li .button--lg,
+.app-nav__nav--right > li .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form .app-nav__nav--right > li button[type='submit'],
 .app-nav__nav--right > li .button--sm,
 .app-nav__nav--right > li .list-panel .panel-title .button,
 .list-panel .panel-title .app-nav__nav--right > li .button,
@@ -4826,8 +4929,11 @@ body.night .dns-badge > *.dns-badge__type
 
 .app-nav__nav--right > li .button:hover,
 .app-nav__nav--right > li .button--lg:hover,
+.app-nav__nav--right > li .modal-cuckoo .modal-form button:hover[type='submit'],
+.modal-cuckoo .modal-form .app-nav__nav--right > li button:hover[type='submit'],
 .app-nav__nav--right > li .button--sm:hover,
 .list-panel .panel-title .app-nav__nav--right > li .button:hover,
+.app-nav__nav--right > li .list-panel__widget .panel-title .button:hover,
 .list-panel__widget .panel-title .app-nav__nav--right > li .button:hover,
 .app-nav__nav--right > li .process-tree__search-submit:hover
 {
@@ -4835,9 +4941,79 @@ body.night .dns-badge > *.dns-badge__type
     background-color: #777;
 }
 
+.app-nav__nav--right > li:first-child
+{
+    padding-left: 0;
+}
+
 .app-nav__nav--right > li:last-child
 {
     padding-right: 0;
+}
+
+@media screen and (max-width: 850px)
+{
+    .app-nav__nav--right > li
+    {
+        padding: 0 5px;
+    }
+    .app-nav__nav--right > li .fa,
+    .app-nav__nav--right > li .custom-select:after,
+    .app-nav__nav--right > li .dns-badge__content:before,
+    .app-nav__nav--right > li .cuckoo-table#submission-task-table .status.status-reported:before,
+    .cuckoo-table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+    #submission-task-table.cuckoo-table__fullscreen .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li .network-display__table > table#submission-task-table .status.status-reported:before,
+    .network-display__table > table#submission-task-table .app-nav__nav--right > li .status.status-reported:before,
+    .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:before,
+    .app-nav__nav--right > li .cuckoo-analysis__panel--toggle:after,
+    .app-nav__nav--right > li .cuckoo-files ul div:before,
+    .cuckoo-files ul .app-nav__nav--right > li div:before,
+    .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:after,
+    .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:after,
+    .app-nav__nav--right > li .cuckoo-files #selection-overview .extension-select:before,
+    .cuckoo-files #selection-overview .app-nav__nav--right > li .extension-select:before,
+    .app-nav__nav--right > li .flex-form__header .custom-checkbox > input + span,
+    .flex-form__header .app-nav__nav--right > li .custom-checkbox > input + span,
+    .app-nav__nav--right > li .breadcrumbs > li:not(:last-child):after,
+    .app-nav__nav--right > li .list-panel .list-group-option input[type='radio'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
+    .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='radio'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='radio'] + span:before,
+    .app-nav__nav--right > li .list-panel .list-group-option input[type='checkbox'] + span:before,
+    .list-panel .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before,
+    .app-nav__nav--right > li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+    .list-panel__widget .list-group-option .app-nav__nav--right > li input[type='checkbox'] + span:before
+    {
+        font-size: 12px;
+
+        margin-right: 0;
+
+        color: inherit;
+    }
+    .app-nav__nav--right > li .button.outline,
+    .app-nav__nav--right > li .outline.button--lg,
+    body.cyborg .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.button:not(.inversed)[type='submit'],
+    body.night .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.button:not(.inversed)[type='submit'],
+    .app-nav__nav--right > li .modal-cuckoo .modal-form button.outline[type='submit'],
+    .modal-cuckoo .modal-form .app-nav__nav--right > li button.outline[type='submit'],
+    .app-nav__nav--right > li .outline.button--sm,
+    body.cyborg .app-error__balloon .list-panel .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.cyborg .app-error__balloon .list-panel__widget .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.night .app-error__balloon .list-panel .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    body.night .app-error__balloon .list-panel__widget .panel-title .app-nav__nav--right > li .button:not(.inversed),
+    .list-panel .panel-title .app-nav__nav--right > li .outline.button,
+    .app-nav__nav--right > li .list-panel__widget .panel-title .outline.button,
+    .list-panel__widget .panel-title .app-nav__nav--right > li .outline.button,
+    .app-nav__nav--right > li body.cyborg .app-error__balloon .button:not(.inversed),
+    body.cyborg .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
+    .app-nav__nav--right > li body.night .app-error__balloon .button:not(.inversed),
+    body.night .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
+    .app-nav__nav--right > li .outline.process-tree__search-submit
+    {
+        border-width: 1px;
+    }
 }
 
 .app-nav__nav .app-nav__dropdown,
@@ -4974,6 +5150,26 @@ body.night .dns-badge > *.dns-badge__type
     border-bottom-left-radius: 4px;
 }
 
+@media screen and (max-width: 565px)
+{
+    .app-nav .app-nav__nav--primary,
+    .app-nav .app-nav__nav--right
+    {
+        margin: 0;
+
+        -ms-flex-preferred-size: 100%;
+        flex-basis: 100%;
+        -ms-flex-pack: distribute;
+        justify-content: space-around;
+        -ms-flex-positive: 0;
+        flex-grow: 0;
+    }
+    .app-nav #select-theme
+    {
+        margin-right: auto;
+    }
+}
+
 body.cyborg .app-nav .app-nav__dropdown
 {
     border-color: #133b4a;
@@ -5039,6 +5235,14 @@ body.night .app-nav .app-nav__dropdown .active
     box-shadow: none;
 }
 
+@media screen and (max-width: 850px)
+{
+    .app-nav
+    {
+        padding: 0 15px;
+    }
+}
+
 .ui-tooltip
 {
     position: absolute;
@@ -5101,7 +5305,6 @@ body.cyborg .cuckoo-tooltip
 .grouped-buttons,
 .grouped-buttons__bordered
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -5109,7 +5312,6 @@ body.cyborg .cuckoo-tooltip
 
     background-color: #fff;
 
-    -webkit-box-align: stretch;
     -ms-flex-align: stretch;
     align-items: stretch;
 }
@@ -5214,7 +5416,6 @@ body.night .grouped-buttons__bordered a.active
 .grouped-buttons__bordered button,
 .grouped-buttons__bordered a
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -5322,7 +5523,6 @@ body.night .grouped-buttons__bordered a.active
 {
     padding: 10px;
 
-    -webkit-box-flex: 0;
     -ms-flex: 0 0 auto;
         flex: 0 0 auto;
 }
@@ -5419,13 +5619,10 @@ body.night .grouped-buttons__bordered a:focus
     flex-basis: 100%;
     -ms-flex-negative: 1;
     flex-shrink: 1;
-    -webkit-box-flex: 1;
     -ms-flex-positive: 1;
     flex-grow: 1;
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
 }
@@ -5473,6 +5670,7 @@ body.night .grouped-buttons__bordered a:focus
 
 .button,
 .button--lg,
+.modal-cuckoo .modal-form button[type='submit'],
 .button--sm,
 .list-panel .panel-title .button,
 .list-panel__widget .panel-title .button,
@@ -5494,6 +5692,8 @@ body.night .grouped-buttons__bordered a:focus
 
 body.cyborg .button,
 body.cyborg .button--lg,
+body.cyborg .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form body.cyborg button[type='submit'],
 body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
@@ -5506,7 +5706,11 @@ body.cyborg .process-tree__search-submit
 
 body.cyborg .button:hover,
 body.cyborg .button--lg:hover,
+body.cyborg .modal-cuckoo .modal-form button:hover[type='submit'],
+.modal-cuckoo .modal-form body.cyborg button:hover[type='submit'],
 body.cyborg .button--sm:hover,
+body.cyborg .list-panel__widget .panel-title .button:hover,
+.list-panel__widget .panel-title body.cyborg .button:hover,
 body.cyborg .process-tree__search-submit:hover
 {
     text-decoration: none;
@@ -5516,6 +5720,8 @@ body.cyborg .process-tree__search-submit:hover
 
 body.night .button,
 body.night .button--lg,
+body.night .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form body.night button[type='submit'],
 body.night .button--sm,
 body.night .list-panel .panel-title .button,
 .list-panel .panel-title body.night .button,
@@ -5528,7 +5734,11 @@ body.night .process-tree__search-submit
 
 body.night .button:hover,
 body.night .button--lg:hover,
+body.night .modal-cuckoo .modal-form button:hover[type='submit'],
+.modal-cuckoo .modal-form body.night button:hover[type='submit'],
 body.night .button--sm:hover,
+body.night .list-panel__widget .panel-title .button:hover,
+.list-panel__widget .panel-title body.night .button:hover,
 body.night .process-tree__search-submit:hover
 {
     text-decoration: none;
@@ -5538,6 +5748,7 @@ body.night .process-tree__search-submit:hover
 
 .button:hover,
 .button--lg:hover,
+.modal-cuckoo .modal-form button:hover[type='submit'],
 .button--sm:hover,
 .list-panel .panel-title .button:hover,
 .list-panel__widget .panel-title .button:hover,
@@ -5552,12 +5763,14 @@ body.night .process-tree__search-submit:hover
 
 .button:focus,
 .button--lg:focus,
+.modal-cuckoo .modal-form button:focus[type='submit'],
 .button--sm:focus,
 .list-panel .panel-title .button:focus,
 .list-panel__widget .panel-title .button:focus,
 .process-tree__search-submit:focus,
 .button:active,
 .button--lg:active,
+.modal-cuckoo .modal-form button:active[type='submit'],
 .button--sm:active,
 .list-panel .panel-title .button:active,
 .list-panel__widget .panel-title .button:active,
@@ -5568,7 +5781,8 @@ body.night .process-tree__search-submit:hover
     outline: none;
 }
 
-.button--lg
+.button--lg,
+.modal-cuckoo .modal-form button[type='submit']
 {
     font-size: 16px;
 
@@ -5579,13 +5793,7 @@ body.night .process-tree__search-submit:hover
 
 .button--sm,
 .list-panel .panel-title .button,
-.list-panel__widget .panel-title .button,
-.list-panel .panel-title .button--lg,
-.list-panel__widget .panel-title .button--lg,
-.list-panel .panel-title .button--sm,
-.list-panel__widget .panel-title .button--sm,
-.list-panel .panel-title .process-tree__search-submit,
-.list-panel__widget .panel-title .process-tree__search-submit
+.list-panel__widget .panel-title .button
 {
     font-size: 13px;
 
@@ -5594,17 +5802,12 @@ body.night .process-tree__search-submit:hover
 
 .button.outline,
 .outline.button--lg,
+.modal-cuckoo .modal-form button.outline[type='submit'],
 .outline.button--sm,
 .list-panel .panel-title .outline.button,
 .list-panel__widget .panel-title .outline.button,
 body.cyborg .app-error__balloon .button:not(.inversed),
-body.cyborg .app-error__balloon .button--lg:not(.inversed),
-body.cyborg .app-error__balloon .button--sm:not(.inversed),
-body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed),
 body.night .app-error__balloon .button:not(.inversed),
-body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .button--sm:not(.inversed),
-body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .outline.process-tree__search-submit
 {
     padding-top: 4px;
@@ -5616,6 +5819,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 .button.inversed,
 .inversed.button--lg,
+.modal-cuckoo .modal-form button.inversed[type='submit'],
 .inversed.button--sm,
 .list-panel .panel-title .inversed.button,
 .list-panel__widget .panel-title .inversed.button,
@@ -5623,13 +5827,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:not(.active),
 .inversed.process-tree__search-submit,
 .list-panel.page-switcher .page-switcher__nav > .button:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--lg:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--lg:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--sm:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active)
 {
     color: #6297f8;
     border: 0;
@@ -5638,36 +5836,35 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 .button.inversed:hover,
 .inversed.button--lg:hover,
+.modal-cuckoo .modal-form button.inversed:hover[type='submit'],
 .inversed.button--sm:hover,
+.list-panel__widget .panel-title .inversed.button:hover,
 .list-panel.page-switcher .panel-title .page-switcher__nav > .button:hover:not(.active),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:hover:not(.active),
 .inversed.process-tree__search-submit:hover,
 .list-panel.page-switcher .page-switcher__nav > .button:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--lg:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--lg:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .button--sm:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .button--sm:hover:not(.active),
-.list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:hover:not(.active),
-.page-switcher.list-panel__widget .page-switcher__nav > .process-tree__search-submit:hover:not(.active)
+.page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active)
 {
     color: #4a87f7;
 }
 
 .button .fa,
 .button--lg .fa,
+.modal-cuckoo .modal-form button[type='submit'] .fa,
 .button--sm .fa,
 .list-panel .panel-title .button .fa,
 .list-panel__widget .panel-title .button .fa,
 .process-tree__search-submit .fa,
 .button .custom-select:after,
 .button--lg .custom-select:after,
+.modal-cuckoo .modal-form button[type='submit'] .custom-select:after,
 .button--sm .custom-select:after,
 .list-panel .panel-title .button .custom-select:after,
 .list-panel__widget .panel-title .button .custom-select:after,
 .process-tree__search-submit .custom-select:after,
 .button .dns-badge__content:before,
 .button--lg .dns-badge__content:before,
+.modal-cuckoo .modal-form button[type='submit'] .dns-badge__content:before,
 .button--sm .dns-badge__content:before,
 .list-panel .panel-title .button .dns-badge__content:before,
 .list-panel__widget .panel-title .button .dns-badge__content:before,
@@ -5676,6 +5873,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-table#submission-task-table .button .status.status-reported:before,
 .button--lg .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--lg .status.status-reported:before,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
 .button--sm .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--sm .status.status-reported:before,
 .list-panel .panel-title .button .cuckoo-table#submission-task-table .status.status-reported:before,
@@ -5688,6 +5887,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 #submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before,
 .button--lg #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before,
+.modal-cuckoo .modal-form button[type='submit'] #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
 .button--sm #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--sm .status.status-reported:before,
 .list-panel .panel-title .button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
@@ -5700,6 +5901,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .network-display__table > table#submission-task-table .button .status.status-reported:before,
 .button--lg .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--lg .status.status-reported:before,
+.modal-cuckoo .modal-form button[type='submit'] .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
 .button--sm .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--sm .status.status-reported:before,
 .list-panel .panel-title .button .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -5710,12 +5913,14 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .network-display__table > table#submission-task-table .process-tree__search-submit .status.status-reported:before,
 .button .cuckoo-analysis__panel--toggle:before,
 .button--lg .cuckoo-analysis__panel--toggle:before,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-analysis__panel--toggle:before,
 .button--sm .cuckoo-analysis__panel--toggle:before,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:before,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:before,
 .process-tree__search-submit .cuckoo-analysis__panel--toggle:before,
 .button .cuckoo-analysis__panel--toggle:after,
 .button--lg .cuckoo-analysis__panel--toggle:after,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-analysis__panel--toggle:after,
 .button--sm .cuckoo-analysis__panel--toggle:after,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:after,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:after,
@@ -5724,6 +5929,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files ul .button div:before,
 .button--lg .cuckoo-files ul div:before,
 .cuckoo-files ul .button--lg div:before,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files ul div:before,
+.cuckoo-files ul .modal-cuckoo .modal-form button[type='submit'] div:before,
 .button--sm .cuckoo-files ul div:before,
 .cuckoo-files ul .button--sm div:before,
 .list-panel .panel-title .button .cuckoo-files ul div:before,
@@ -5736,6 +5943,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files #selection-overview .button .extension-select:after,
 .button--lg .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--lg .extension-select:after,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-form button[type='submit'] .extension-select:after,
 .button--sm .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--sm .extension-select:after,
 .list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:after,
@@ -5748,6 +5957,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files #selection-overview .button .extension-select:before,
 .button--lg .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--lg .extension-select:before,
+.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-form button[type='submit'] .extension-select:before,
 .button--sm .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--sm .extension-select:before,
 .list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:before,
@@ -5760,6 +5971,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .flex-form__header .button .custom-checkbox > input + span,
 .button--lg .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--lg .custom-checkbox > input + span,
+.modal-cuckoo .modal-form button[type='submit'] .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .modal-cuckoo .modal-form button[type='submit'] .custom-checkbox > input + span,
 .button--sm .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--sm .custom-checkbox > input + span,
 .list-panel .panel-title .button .flex-form__header .custom-checkbox > input + span,
@@ -5770,6 +5983,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .flex-form__header .process-tree__search-submit .custom-checkbox > input + span,
 .button .breadcrumbs > li:not(:last-child):after,
 .button--lg .breadcrumbs > li:not(:last-child):after,
+.modal-cuckoo .modal-form button[type='submit'] .breadcrumbs > li:not(:last-child):after,
 .button--sm .breadcrumbs > li:not(:last-child):after,
 .list-panel .panel-title .button .breadcrumbs > li:not(:last-child):after,
 .list-panel__widget .panel-title .button .breadcrumbs > li:not(:last-child):after,
@@ -5778,6 +5992,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button--lg input[type='radio'] + span:before,
+.modal-cuckoo .modal-form button[type='submit'] .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='radio'] + span:before,
 .button--sm .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button--sm input[type='radio'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='radio'] + span:before,
@@ -5790,6 +6006,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='radio'] + span:before,
+.modal-cuckoo .modal-form button[type='submit'] .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='radio'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='radio'] + span:before,
 .list-panel .panel-title .button .list-panel__widget .list-group-option input[type='radio'] + span:before,
@@ -5798,27 +6016,26 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .list-group-option .panel-title .button input[type='radio'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
-.button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button input[type='checkbox'] + span:before,
-.button--lg
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.button--lg .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--lg input[type='checkbox'] + span:before,
-.button--sm
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.modal-cuckoo .modal-form button[type='submit'] .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='checkbox'] + span:before,
+.button--sm .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--sm input[type='checkbox'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .panel-title .button input[type='checkbox'] + span:before,
-.list-panel__widget .panel-title .button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .panel-title .button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .list-panel__widget .panel-title .button input[type='checkbox'] + span:before,
-.process-tree__search-submit
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
 .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button input[type='checkbox'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='checkbox'] + span:before,
+.modal-cuckoo .modal-form button[type='submit'] .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='checkbox'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='checkbox'] + span:before,
 .list-panel .panel-title .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
@@ -5833,6 +6050,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 body.cyborg .button,
 body.cyborg .button--lg,
+body.cyborg .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form body.cyborg button[type='submit'],
 body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
@@ -5977,7 +6196,6 @@ body.cyborg .process-tree__search-submit
 {
     position: relative;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -5990,10 +6208,8 @@ body.cyborg .process-tree__search-submit
     overflow: hidden;
     overflow-y: auto;
 
-    -webkit-transition: -webkit-flex-basis 200ms ease-in-out;
-            transition: -webkit-flex-basis 200ms ease-in-out;
-            transition:         flex-basis 200ms ease-in-out;
-            transition:         flex-basis 200ms ease-in-out, -webkit-flex-basis 200ms ease-in-out, -ms-flex-preferred-size 200ms ease-in-out;
+    transition: flex-basis 200ms ease-in-out;
+    transition: flex-basis 200ms ease-in-out, -ms-flex-preferred-size 200ms ease-in-out;
 
     background-color: #444;
 
@@ -6001,25 +6217,20 @@ body.cyborg .process-tree__search-submit
     flex-basis: 65px;
     -ms-flex-negative: 0;
     flex-shrink: 0;
-    -webkit-box-flex: 0;
     -ms-flex-positive: 0;
     flex-grow: 0;
 }
 
 .flex-nav__nav .cuckoo-nav
 {
-    -webkit-transition: -webkit-transform 0 linear;
-            transition: -webkit-transform 0 linear;
-            transition:         transform 0 linear;
-            transition:         transform 0 linear, -webkit-transform 0 linear;
+    transition: transform 0 linear;
 }
 
 .flex-nav__nav .cuckoo-nav em,
 .flex-nav__nav .cuckoo-nav span,
 .flex-nav__nav .cuckoo-nav button
 {
-    -webkit-transition: opacity 100ms linear;
-            transition: opacity 100ms linear;
+    transition: opacity 100ms linear;
 
     opacity: 0;
 }
@@ -6051,7 +6262,6 @@ body.cyborg .process-tree__search-submit
 .flex-nav__body,
 .flex-nav__body--disable-overflow
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow-y: auto;
@@ -6059,8 +6269,6 @@ body.cyborg .process-tree__search-submit
 
     padding: 15px 0 0 0;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
@@ -6090,7 +6298,6 @@ body.cyborg .process-tree__search-submit
     flex-basis: 99px;
     -ms-flex-negative: 0;
     flex-shrink: 0;
-    -webkit-box-flex: 0;
     -ms-flex-positive: 0;
     flex-grow: 0;
 }
@@ -6193,14 +6400,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6260,14 +6464,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6333,14 +6534,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-asc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-asc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-asc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6406,14 +6604,11 @@ body.cyborg .process-tree__search-submit
 .list-panel__widget .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='radio'] + span:before,
 .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='radio'] + span:before,
-.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .cuckoo-table__fullscreen thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
-.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.sorting-desc .network-display__table > table thead tr:not(.table-display-config) th .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .sorting-desc .network-display__table > table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
 .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .sorting-desc .cuckoo-table thead tr:not(.table-display-config) th input[type='checkbox'] + span:before,
@@ -6455,6 +6650,28 @@ body.cyborg .process-tree__search-submit
     cursor: pointer;
 
     background-color: #ddd;
+}
+
+.cuckoo-table tbody td.postsubmit-status-display,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display,
+.network-display__table > table tbody td.postsubmit-status-display
+{
+    width: 235px;
+}
+
+.cuckoo-table tbody td.postsubmit-status-display > div,
+.cuckoo-table__fullscreen tbody td.postsubmit-status-display > div,
+.network-display__table > table tbody td.postsubmit-status-display > div
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: row-reverse;
+
+    -ms-flex-direction: row-reverse;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
 .cuckoo-table thead th,
@@ -6570,8 +6787,7 @@ body.cyborg .process-tree__search-submit
 body.cyborg .cuckoo-table thead td.no-result,
 body.cyborg .cuckoo-table__fullscreen thead td.no-result,
 body.cyborg .network-display__table > table thead td.no-result,
-body.cyborg
-.cuckoo-table tbody td.no-result,
+body.cyborg .cuckoo-table tbody td.no-result,
 body.cyborg .cuckoo-table__fullscreen tbody td.no-result,
 body.cyborg .network-display__table > table tbody td.no-result
 {
@@ -6629,12 +6845,10 @@ body.cyborg .network-display__table > table tbody td.no-result
 {
     line-height: 21px;
 
-    display: -webkit-inline-box;
     display: -ms-inline-flexbox;
     display: inline-flex;
     float: right;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -6662,7 +6876,6 @@ body.cyborg .network-display__table > table tbody td.no-result
 .cuckoo-table__fullscreen .pagination,
 .network-display__table > table .pagination
 {
-    display: -webkit-inline-box;
     display: -ms-inline-flexbox;
     display: inline-flex;
 
@@ -6671,7 +6884,6 @@ body.cyborg .network-display__table > table tbody td.no-result
 
     list-style: none;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -7125,7 +7337,6 @@ body.night .network-display__table > table .less-entries td .badge
 
 .cuckoo-analysis__header
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -7136,7 +7347,6 @@ body.night .network-display__table > table .less-entries td .badge
 
     -ms-flex-negative: 0;
     flex-shrink: 0;
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -7257,14 +7467,11 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle)
 
 .flex-nav__body--disable-overflow .cuckoo-analysis__header + .container-fluid
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
         flex-direction: column;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
@@ -7272,7 +7479,6 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle)
 
 .flex-nav__body--disable-overflow .cuckoo-analysis__header + .container-fluid > .row
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
@@ -7281,8 +7487,6 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle)
     width: 100%;
     margin: auto;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
@@ -7311,7 +7515,6 @@ body.night .cuckoo-analysis__header .header-right a:not(.btn-circle)
 
 .flex-nav__body--disable-overflow .cuckoo-analysis__header + .container-fluid > .row .network-analysis-pages
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -7585,7 +7788,6 @@ body.night .cuckoo-analysis__panel.danger > a
 
 .network_http_request .panel > .panel-heading
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -7648,37 +7850,15 @@ body.night .cuckoo-analysis__panel.danger > a
 {
     0%
     {
-        -webkit-transform: translateY(100%);
-                transform: translateY(100%);
+        transform: translateY(100%);
     }
     50%
     {
-        -webkit-transform: translateY(75%);
-                transform: translateY(75%);
+        transform: translateY(75%);
     }
     100%
     {
-        -webkit-transform: translateY(100%);
-                transform: translateY(100%);
-    }
-}
-
-@-webkit-keyframes indicatorBounce
-{
-    0%
-    {
-        -webkit-transform: translateY(100%);
-                transform: translateY(100%);
-    }
-    50%
-    {
-        -webkit-transform: translateY(75%);
-                transform: translateY(75%);
-    }
-    100%
-    {
-        -webkit-transform: translateY(100%);
-                transform: translateY(100%);
+        transform: translateY(100%);
     }
 }
 
@@ -7702,8 +7882,7 @@ body.night .cuckoo-analysis__panel.danger > a
     height: 100%;
     padding: 50px 20px;
 
-    -webkit-transition: outline-offset .1s ease-in-out, background-color .1s linear;
-            transition: outline-offset .1s ease-in-out, background-color .1s linear;
+    transition: outline-offset .1s ease-in-out, background-color .1s linear;
 
     outline: 1px dashed #92b0b3;
     outline-offset: -10px;
@@ -7723,8 +7902,7 @@ body.night .cuckoo-analysis__panel.danger > a
     position: relative;
     top: 50%;
 
-    -webkit-transform: translateY(-50%);
-            transform: translateY(-50%);
+    transform: translateY(-50%);
 }
 
 .dndupload .holder_input,
@@ -7846,8 +8024,7 @@ body.night .cuckoo-analysis__panel.danger > a
 {
     padding-top: 55px;
 
-    -webkit-transition: padding 100ms ease-in;
-            transition: padding 100ms ease-in;
+    transition: padding 100ms ease-in;
 
     outline: 0;
     outline-offset: 0;
@@ -7876,8 +8053,7 @@ body.night .cuckoo-analysis__panel.danger > a
 
     width: calc(90% - 10px);
 
-    -webkit-transition: opacity 100ms ease-in;
-            transition: opacity 100ms ease-in;
+    transition: opacity 100ms ease-in;
 
     opacity: 0;
 
@@ -7906,8 +8082,7 @@ body.night .cuckoo-analysis__panel.danger > a
     height: 80%;
 
     content: '';
-    -webkit-transition: opacity 100ms ease-in, border 100ms ease-in;
-            transition: opacity 100ms ease-in, border 100ms ease-in;
+    transition: opacity 100ms ease-in, border 100ms ease-in;
 
     opacity: 0;
     border: 5px dashed #ccc;
@@ -7950,8 +8125,7 @@ body.night .cuckoo-analysis__panel.danger > a
 .list-panel .list-group-option .dndupload__simple.dragging input[type='radio'] + span:before,
 .dndupload__simple.dragging .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dragging input[type='radio'] + span:before,
-.dndupload__simple.dragging
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dndupload__simple.dragging .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dndupload__simple.dragging input[type='checkbox'] + span:before,
 .dndupload__simple.dragging .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dragging input[type='checkbox'] + span:before
@@ -7978,8 +8152,7 @@ body.night .cuckoo-analysis__panel.danger > a
 .list-panel .list-group-option .dndupload__simple.dropped input[type='radio'] + span:before,
 .dndupload__simple.dropped .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dropped input[type='radio'] + span:before,
-.dndupload__simple.dropped
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dndupload__simple.dropped .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dndupload__simple.dropped input[type='checkbox'] + span:before,
 .dndupload__simple.dropped .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dndupload__simple.dropped input[type='checkbox'] + span:before
@@ -8002,8 +8175,7 @@ body.night .cuckoo-analysis__panel.danger > a
     margin-bottom: 55px;
     padding: 0;
 
-    -webkit-transition: border 300ms linear;
-            transition: border 300ms linear;
+    transition: border 300ms linear;
 
     border: 5px dashed #ccc;
     border-radius: 50%;
@@ -8094,8 +8266,7 @@ body.night .cuckoo-analysis__panel.danger > a
 
 .dndupload__v2.error .alternate-progress
 {
-    background-image: -webkit-linear-gradient(top, #fda19c 0%, #f86262 100%);
-    background-image:         linear-gradient(-180deg, #fda19c 0%, #f86262 100%);
+    background-image: linear-gradient(-180deg, #fda19c 0%, #f86262 100%);
 }
 
 .dndupload__v2 form#uploader
@@ -8167,27 +8338,20 @@ body.night .cuckoo-analysis__panel.danger > a
     width: 100%;
     height: 100%;
 
-    -webkit-transition: -webkit-transform 300ms ease-out;
-            transition: -webkit-transform 300ms ease-out;
-            transition:         transform 300ms ease-out;
-            transition:         transform 300ms ease-out, -webkit-transform 300ms ease-out;
-    -webkit-transform: translateY(100%);
-            transform: translateY(100%);
+    transition: transform 300ms ease-out;
+    transform: translateY(100%);
 
-    background-image: -webkit-linear-gradient(top, #9cc8fd 0%, #6297f8 100%);
-    background-image:         linear-gradient(-180deg, #9cc8fd 0%, #6297f8 100%);
+    background-image: linear-gradient(-180deg, #9cc8fd 0%, #6297f8 100%);
 }
 
 body.cyborg .dndupload__v2 .alternate-progress
 {
-    background-image: -webkit-linear-gradient(top, #0ce3ac 0%, #5fe6c4 100%);
-    background-image:         linear-gradient(-180deg, #0ce3ac 0%, #5fe6c4 100%);
+    background-image: linear-gradient(-180deg, #0ce3ac 0%, #5fe6c4 100%);
 }
 
 body.night .dndupload__v2 .alternate-progress
 {
-    background-image: -webkit-linear-gradient(top, #324456 0%, #242b38 100%);
-    background-image:         linear-gradient(-180deg, #324456 0%, #242b38 100%);
+    background-image: linear-gradient(-180deg, #324456 0%, #242b38 100%);
 }
 
 body.cyborg .dndupload__v2
@@ -8259,7 +8423,6 @@ body.night .dndupload__v2
 
 .upload-module .allowed-file-types ul
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -8303,8 +8466,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .upload-module .allowed-file-types ul li input[type='radio'] + span:before,
 .upload-module .allowed-file-types ul li .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .upload-module .allowed-file-types ul li input[type='radio'] + span:before,
-.upload-module .allowed-file-types ul li
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.upload-module .allowed-file-types ul li .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .upload-module .allowed-file-types ul li input[type='checkbox'] + span:before,
 .upload-module .allowed-file-types ul li .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .upload-module .allowed-file-types ul li input[type='checkbox'] + span:before
@@ -8411,7 +8573,6 @@ body.night .dndupload__v2
  */
 .cuckoo-nav
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
         flex-direction: column;
@@ -8421,8 +8582,6 @@ body.night .dndupload__v2
 
     list-style: none;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
 }
 
@@ -8436,7 +8595,6 @@ body.night .dndupload__v2
 .cuckoo-nav > li > a,
 .cuckoo-nav > li.cuckoo-nav__search > div
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -8445,7 +8603,6 @@ body.night .dndupload__v2
 
     color: #eee;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -8561,8 +8718,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
 .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
-.cuckoo-nav .lock-sidebar
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.cuckoo-nav .lock-sidebar .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before,
 .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before
@@ -8589,8 +8745,7 @@ body.night .dndupload__v2
 .list-panel .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='radio'] + span:before,
-.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before,
 .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .locked:not(.locked-silent) .cuckoo-nav .lock-sidebar input[type='checkbox'] + span:before
@@ -8797,7 +8952,11 @@ body.cyborg .app-error__balloon:before
 
 body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .button--lg,
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit'],
 body.cyborg .app-error__balloon .button--sm,
+body.cyborg .app-error__balloon .list-panel__widget .panel-title .button,
+.list-panel__widget .panel-title body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .process-tree__search-submit
 {
     color: #0ce3ac;
@@ -8805,6 +8964,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit
 
 body.cyborg .app-error__balloon .button:not(.inversed),
 body.cyborg .app-error__balloon .button--lg:not(.inversed),
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button:not(.inversed)[type='submit'],
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button:not(.inversed)[type='submit'],
 body.cyborg .app-error__balloon .button--sm:not(.inversed),
 body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
@@ -8813,6 +8974,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed)
 
 body.cyborg .app-error__balloon .button:not(.inversed):hover,
 body.cyborg .app-error__balloon .button--lg:not(.inversed):hover,
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button:not(.inversed):hover[type='submit'],
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button:not(.inversed):hover[type='submit'],
 body.cyborg .app-error__balloon .button--sm:not(.inversed):hover,
 body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
@@ -8822,6 +8985,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed):hove
 
 body.cyborg .app-error__balloon .button:hover,
 body.cyborg .app-error__balloon .button--lg:hover,
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button:hover[type='submit'],
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button:hover[type='submit'],
 body.cyborg .app-error__balloon .button--sm:hover,
 body.cyborg .app-error__balloon .process-tree__search-submit:hover
 {
@@ -8859,7 +9024,11 @@ body.night .app-error__balloon:before
 
 body.night .app-error__balloon .button,
 body.night .app-error__balloon .button--lg,
+body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit'],
 body.night .app-error__balloon .button--sm,
+body.night .app-error__balloon .list-panel__widget .panel-title .button,
+.list-panel__widget .panel-title body.night .app-error__balloon .button,
 body.night .app-error__balloon .process-tree__search-submit
 {
     color: #d7d7d7;
@@ -8867,6 +9036,8 @@ body.night .app-error__balloon .process-tree__search-submit
 
 body.night .app-error__balloon .button:not(.inversed),
 body.night .app-error__balloon .button--lg:not(.inversed),
+body.night .app-error__balloon .modal-cuckoo .modal-form button:not(.inversed)[type='submit'],
+.modal-cuckoo .modal-form body.night .app-error__balloon button:not(.inversed)[type='submit'],
 body.night .app-error__balloon .button--sm:not(.inversed),
 body.night .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
@@ -8875,6 +9046,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed)
 
 body.night .app-error__balloon .button:not(.inversed):hover,
 body.night .app-error__balloon .button--lg:not(.inversed):hover,
+body.night .app-error__balloon .modal-cuckoo .modal-form button:not(.inversed):hover[type='submit'],
+.modal-cuckoo .modal-form body.night .app-error__balloon button:not(.inversed):hover[type='submit'],
 body.night .app-error__balloon .button--sm:not(.inversed):hover,
 body.night .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
@@ -8884,6 +9057,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 
 body.night .app-error__balloon .button:hover,
 body.night .app-error__balloon .button--lg:hover,
+body.night .app-error__balloon .modal-cuckoo .modal-form button:hover[type='submit'],
+.modal-cuckoo .modal-form body.night .app-error__balloon button:hover[type='submit'],
 body.night .app-error__balloon .button--sm:hover,
 body.night .app-error__balloon .process-tree__search-submit:hover
 {
@@ -9092,8 +9267,7 @@ body.night .app-error__message
     width: 18px;
     height: 18px;
 
-    -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-            animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+    animation: sk-bouncedelay 1.4s infinite ease-in-out both;
 
     border-radius: 100px;
     background-color: #337ab7;
@@ -9101,14 +9275,12 @@ body.night .app-error__message
 
 .loading .spinner > div:first-child
 {
-    -webkit-animation-delay: -.32s;
-            animation-delay: -.32s;
+    animation-delay: -.32s;
 }
 
 .loading .spinner > div:nth-child(2)
 {
-    -webkit-animation-delay: -.16s;
-            animation-delay: -.16;
+    animation-delay: -.16;
 }
 
 .loading .loading-message
@@ -9123,35 +9295,17 @@ body.night .app-error__message
     display: none;
 }
 
-@-webkit-keyframes sk-bouncedelay
-{
-    0%,
-    80%,
-    100%
-    {
-        -webkit-transform: scale(0);
-                transform: scale(0);
-    }
-    40%
-    {
-        -webkit-transform: scale(1);
-                transform: scale(1);
-    }
-}
-
 @keyframes sk-bouncedelay
 {
     0%,
     80%,
     100%
     {
-        -webkit-transform: scale(0);
-                transform: scale(0);
+        transform: scale(0);
     }
     40%
     {
-        -webkit-transform: scale(1);
-                transform: scale(1);
+        transform: scale(1);
     }
 }
 
@@ -9342,14 +9496,12 @@ body.night .app-error__message
 
 .cuckoo-errors .troubleshoot ul li
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     margin-bottom: 5px;
     padding: 0 15px;
 
-    -webkit-box-align: start;
     -ms-flex-align: start;
     align-items: flex-start;
 }
@@ -9441,8 +9593,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors li.expanded input[type='radio'] + span:before,
 .errors li.expanded .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .errors li.expanded input[type='radio'] + span:before,
-.errors li.expanded
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.errors li.expanded .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .errors li.expanded input[type='checkbox'] + span:before,
 .errors li.expanded .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .errors li.expanded input[type='checkbox'] + span:before
@@ -9497,8 +9648,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors .expand-error input[type='radio'] + span:before,
 .errors .expand-error .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .errors .expand-error input[type='radio'] + span:before,
-.errors .expand-error
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.errors .expand-error .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .errors .expand-error input[type='checkbox'] + span:before,
 .errors .expand-error .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .errors .expand-error input[type='checkbox'] + span:before
@@ -9532,8 +9682,7 @@ body.night .cuckoo-errors .troubleshoot
 .list-panel .list-group-option .errors .expand-error input[type='radio'] + span:hover:before + span,
 .errors .expand-error .list-panel__widget .list-group-option input[type='radio'] + span:hover:before + span,
 .list-panel__widget .list-group-option .errors .expand-error input[type='radio'] + span:hover:before + span,
-.errors .expand-error
-.list-panel .list-group-option input[type='checkbox'] + span:hover:before + span,
+.errors .expand-error .list-panel .list-group-option input[type='checkbox'] + span:hover:before + span,
 .list-panel .list-group-option .errors .expand-error input[type='checkbox'] + span:hover:before + span,
 .errors .expand-error .list-panel__widget .list-group-option input[type='checkbox'] + span:hover:before + span,
 .list-panel__widget .list-group-option .errors .expand-error input[type='checkbox'] + span:hover:before + span
@@ -9630,17 +9779,14 @@ footer:not(.dashboard-module__footer) a:hover
 
 .network-display__outer.no-content
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     border: 0;
     background-color: transparent;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
 }
@@ -9673,8 +9819,7 @@ body.night .network-display__outer
 
     height: 0;
 
-    -webkit-transition: height 250ms ease-out;
-            transition: height 250ms ease-out;
+    transition: height 250ms ease-out;
 }
 
 .network-display__loader.active
@@ -9698,7 +9843,6 @@ body.night .network-display__outer
     font-size: 14px;
     font-weight: 700;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -9709,7 +9853,6 @@ body.night .network-display__outer
     border-radius: 4px;
     background-color: #f5f5f5;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -9803,8 +9946,7 @@ body.night .network-display__outer
 .list-panel .list-group-option .network-display__request-summary:hover input[type='radio'] + span:before,
 .network-display__request-summary:hover .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-summary:hover input[type='radio'] + span:before,
-.network-display__request-summary:hover
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-summary:hover .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-summary:hover input[type='checkbox'] + span:before,
 .network-display__request-summary:hover .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-summary:hover input[type='checkbox'] + span:before
@@ -9875,8 +10017,7 @@ body.night .is-open .network-display__request-summary .fa-long-arrow-right
 body.cyborg .is-open .network-display__request-summary
 {
     border-bottom: 2px solid #133b4a;
-    background: -webkit-linear-gradient(#20404a, #112c35);
-    background:         linear-gradient(#20404a, #112c35);
+    background: linear-gradient(#20404a, #112c35);
 }
 
 body.cyborg .network-display__request-summary
@@ -9920,8 +10061,7 @@ body.cyborg .network-display__request-summary .list-panel .list-group-option inp
 .list-panel .list-group-option body.cyborg .network-display__request-summary input[type='radio'] + span:before,
 body.cyborg .network-display__request-summary .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .network-display__request-summary input[type='radio'] + span:before,
-body.cyborg .network-display__request-summary
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .network-display__request-summary .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .network-display__request-summary input[type='checkbox'] + span:before,
 body.cyborg .network-display__request-summary .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .network-display__request-summary input[type='checkbox'] + span:before,
@@ -9938,8 +10078,7 @@ body.cyborg .network-display__request-summary .fa-long-arrow-right
 
 body.cyborg .network-display__request-summary:hover
 {
-    background: -webkit-linear-gradient(#20404a, #112c35);
-    background:         linear-gradient(#20404a, #112c35);
+    background: linear-gradient(#20404a, #112c35);
 }
 
 body.night .network-display__request-summary
@@ -9983,8 +10122,7 @@ body.night .network-display__request-summary .list-panel .list-group-option inpu
 .list-panel .list-group-option body.night .network-display__request-summary input[type='radio'] + span:before,
 body.night .network-display__request-summary .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .network-display__request-summary input[type='radio'] + span:before,
-body.night .network-display__request-summary
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .network-display__request-summary .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .network-display__request-summary input[type='checkbox'] + span:before,
 body.night .network-display__request-summary .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .network-display__request-summary input[type='checkbox'] + span:before,
@@ -10110,11 +10248,9 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right
 .list-panel__widget .list-group-option .network-display__request-details .detail-field__header input[type='radio'] + span:before,
 .network-display__request-details--single .detail-field__header .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-details--single .detail-field__header input[type='radio'] + span:before,
-.network-display__request-details .detail-field__header
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-details .detail-field__header .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-details .detail-field__header input[type='checkbox'] + span:before,
-.network-display__request-details--single .detail-field__header
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.network-display__request-details--single .detail-field__header .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .network-display__request-details--single .detail-field__header input[type='checkbox'] + span:before,
 .network-display__request-details .detail-field__header .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .network-display__request-details .detail-field__header input[type='checkbox'] + span:before,
@@ -10268,13 +10404,11 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right
 .network-display__request-details .detail-field-group,
 .network-display__request-details--single .detail-field-group
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     margin-bottom: 30px;
 
-    -webkit-box-align: stretch;
     -ms-flex-align: stretch;
     align-items: stretch;
 }
@@ -10288,17 +10422,13 @@ body.night .network-display__request-summary:hover .fa-long-arrow-right
 .network-display__request-details .detail-field-group .detail-field,
 .network-display__request-details--single .detail-field-group .detail-field
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
         flex-direction: column;
 
     margin-bottom: 0;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
-    -webkit-box-align: stretch;
     -ms-flex-align: stretch;
     align-items: stretch;
 }
@@ -10479,7 +10609,6 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 
 .source-destination
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
@@ -10493,8 +10622,6 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
     border: 1px solid #cecece;
     border-radius: 5px;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
 }
 
@@ -10639,7 +10766,6 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 
 .scroll-internal .source-destination
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow-y: hidden;
@@ -10647,8 +10773,6 @@ body.night .network-display__request-details--single table tr:nth-child(even) .k
 
     height: 100%;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
 }
 
@@ -10770,7 +10894,6 @@ body.night .source-destination .content > ul > li a.active .destination-address:
  */
 .flex-tabs__tabs
 {
-    display: -webkit-inline-box;
     display: -ms-inline-flexbox;
     display: inline-flex;
 }
@@ -10864,7 +10987,6 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 
 .flex-tabs__tab-group
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 }
@@ -10897,7 +11019,6 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 {
     font-family: 'Roboto', sans-serif;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
         flex-direction: column;
@@ -10905,8 +11026,6 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
     width: 100vw;
     height: calc(100vh - 50px);
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
 }
 
@@ -10983,8 +11102,7 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .list-panel .list-group-option .flex-grid__header h3 button input[type='radio'] + span:before,
 .flex-grid__header h3 button .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button input[type='radio'] + span:before,
-.flex-grid__header h3 button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 button .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button input[type='checkbox'] + span:before,
 .flex-grid__header h3 button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button input[type='checkbox'] + span:before,
@@ -10998,22 +11116,19 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .dns-badge__content:before,
 .flex-grid__header h3 .flex-grid__button--description .dns-badge__content:before,
 .flex-grid__header h3 .flex-grid__button .cuckoo-table#submission-task-table .status.status-reported:before,
-.cuckoo-table#submission-task-table
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+.cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .flex-grid__header h3 .flex-grid__button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table
-.flex-grid__header h3 .flex-grid__button .status.status-reported:before,
+.network-display__table > table#submission-task-table .flex-grid__header h3 .flex-grid__button .status.status-reported:before,
 .flex-grid__header h3 button--description .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .flex-grid__header h3 button--description .status.status-reported:before,
 .flex-grid__header h3 .flex-grid__button--description .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -11025,29 +11140,25 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-analysis__panel--toggle:after,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files ul div:before,
-.cuckoo-files ul
-.flex-grid__header h3 .flex-grid__button div:before,
+.cuckoo-files ul .flex-grid__header h3 .flex-grid__button div:before,
 .flex-grid__header h3 button--description .cuckoo-files ul div:before,
 .cuckoo-files ul .flex-grid__header h3 button--description div:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files ul div:before,
 .cuckoo-files ul .flex-grid__header h3 .flex-grid__button--description div:before,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview
-.flex-grid__header h3 .flex-grid__button .extension-select:after,
+.cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button .extension-select:after,
 .flex-grid__header h3 button--description .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .flex-grid__header h3 button--description .extension-select:after,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button--description .extension-select:after,
 .flex-grid__header h3 .flex-grid__button .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview
-.flex-grid__header h3 .flex-grid__button .extension-select:before,
+.cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button .extension-select:before,
 .flex-grid__header h3 button--description .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .flex-grid__header h3 button--description .extension-select:before,
 .flex-grid__header h3 .flex-grid__button--description .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .flex-grid__header h3 .flex-grid__button--description .extension-select:before,
 .flex-grid__header h3 .flex-grid__button .flex-form__header .custom-checkbox > input + span,
-.flex-form__header
-.flex-grid__header h3 .flex-grid__button .custom-checkbox > input + span,
+.flex-form__header .flex-grid__header h3 .flex-grid__button .custom-checkbox > input + span,
 .flex-grid__header h3 button--description .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .flex-grid__header h3 button--description .custom-checkbox > input + span,
 .flex-grid__header h3 .flex-grid__button--description .flex-form__header .custom-checkbox > input + span,
@@ -11056,32 +11167,25 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
 .flex-grid__header h3 button--description .breadcrumbs > li:not(:last-child):after,
 .flex-grid__header h3 .flex-grid__button--description .breadcrumbs > li:not(:last-child):after,
 .flex-grid__header h3 .flex-grid__button .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
+.list-panel .list-group-option .flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
 .flex-grid__header h3 button--description .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button input[type='radio'] + span:before,
 .flex-grid__header h3 button--description .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button--description input[type='radio'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='radio'] + span:before,
-.flex-grid__header h3 .flex-grid__button
-.list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
-.flex-grid__header h3 button--description
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 .flex-grid__button .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
+.flex-grid__header h3 button--description .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 button--description input[type='checkbox'] + span:before,
-.flex-grid__header h3 .flex-grid__button--description
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.flex-grid__header h3 .flex-grid__button--description .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .flex-grid__header h3 .flex-grid__button--description input[type='checkbox'] + span:before,
 .flex-grid__header h3 .flex-grid__button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option
-.flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .flex-grid__header h3 .flex-grid__button input[type='checkbox'] + span:before,
 .flex-grid__header h3 button--description .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .flex-grid__header h3 button--description input[type='checkbox'] + span:before,
 .flex-grid__header h3 .flex-grid__button--description .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
@@ -11166,7 +11270,6 @@ body.night .flex-grid__header
 .flex-grid__body,
 .flex-grid__body--center
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: auto;
@@ -11185,7 +11288,6 @@ body.night .flex-grid__header
 {
     overflow-y: auto;
 
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
 }
@@ -11211,7 +11313,6 @@ body.cyborg .flex-grid__body--center
 
 .flex-grid__footer
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -11221,7 +11322,6 @@ body.cyborg .flex-grid__body--center
 
     -ms-flex-negative: 0;
     flex-shrink: 0;
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
     -ms-flex-preferred-size: 50px;
@@ -11259,7 +11359,6 @@ body.cyborg .flex-grid__body--center
 {
     padding: 20px 30px 15px;
 
-    -webkit-box-pack: justify;
     -ms-flex-pack: justify;
     justify-content: space-between;
 }
@@ -11300,7 +11399,6 @@ body.night .flex-grid__nav
 
 .flex-grid__container
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -11356,7 +11454,6 @@ body.night .flex-grid__nav
 .flex-grid__horizontal .flex-grid__column--md,
 .flex-grid__horizontal--grow .flex-grid__column--md
 {
-    -webkit-box-flex: 0;
     -ms-flex-positive: 0;
     flex-grow: 0;
     -ms-flex-negative: 0;
@@ -11379,8 +11476,6 @@ body.night .flex-grid__nav
 {
         flex-direction: row;
 
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
     -ms-flex-direction: row;
 }
 
@@ -11431,7 +11526,6 @@ body.night .flex-grid__nav
 
 .flex-display
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -11473,7 +11567,6 @@ body.night .flex-grid__nav
     color: #fff;
     background-color: #999;
 
-    -webkit-box-flex: 0;
     -ms-flex: 0 0 auto;
         flex: 0 0 auto;
 }
@@ -11522,14 +11615,11 @@ body.cyborg .flex-display > *
  */
 .flex-distribute
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: justify;
     -ms-flex-pack: justify;
     justify-content: space-between;
 }
@@ -11538,7 +11628,6 @@ body.cyborg .flex-display > *
 {
     font-family: 'Roboto';
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -11596,8 +11685,7 @@ body.cyborg .flex-display > *
     width: 40px;
     height: 40px;
 
-    -webkit-transition: all 300ms ease-out;
-            transition: all 300ms ease-out;
+    transition: all 300ms ease-out;
 }
 
 .cuckoo-files > #filetree .filetree-error .cross-line
@@ -11609,12 +11697,9 @@ body.cyborg .flex-display > *
     width: 5px;
     height: 40px;
 
-    -webkit-transition: all 300ms ease-out;
-            transition: all 300ms ease-out;
-    -webkit-transform: rotate(0deg);
-            transform: rotate(0deg);
-    -webkit-transform-origin: 2.5px 20px;
-            transform-origin: 2.5px 20px;
+    transition: all 300ms ease-out;
+    transform: rotate(0deg);
+    transform-origin: 2.5px 20px;
 
     opacity: 0;
     border-radius: 5px;
@@ -11623,10 +11708,8 @@ body.cyborg .flex-display > *
 
 .cuckoo-files > #filetree .filetree-error .error-message
 {
-    -webkit-transition: all 300ms ease-out;
-            transition: all 300ms ease-out;
-    -webkit-transition-delay: 100ms;
-            transition-delay: 100ms;
+    transition: all 300ms ease-out;
+    transition-delay: 100ms;
 
     opacity: 0;
 }
@@ -11640,14 +11723,12 @@ body.cyborg .flex-display > *
 
 .cuckoo-files > #filetree .filetree-error.in .cross-line:first-child
 {
-    -webkit-transform: rotate(45deg);
-            transform: rotate(45deg);
+    transform: rotate(45deg);
 }
 
 .cuckoo-files > #filetree .filetree-error.in .cross-line:last-child
 {
-    -webkit-transform: rotate(-45deg);
-            transform: rotate(-45deg);
+    transform: rotate(-45deg);
 }
 
 .cuckoo-files > #filetree .filetree-error.in .error-message
@@ -11719,7 +11800,7 @@ body.night .cuckoo-files > #filetree > ul > li:last-child
     list-style: none;
 }
 
-.cuckoo-files ul:not(.flex-static__summary):not(.flex-form__toggle-list)
+.cuckoo-files ul
 {
     padding: 0 0 0 10px;
 }
@@ -11786,7 +11867,6 @@ body.cyborg .cuckoo-files ul div .label-duplicate
 
 .cuckoo-files ul div.no-icon
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -11926,21 +12006,18 @@ body.cyborg .cuckoo-files ul label:not(.flex-form__toggle-list-switch) input:che
 
 .cuckoo-files__controls
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     color: #fff;
     background-color: #337ab7;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
 
 .cuckoo-files__controls ul
 {
-    display: -webkit-inline-box;
     display: -ms-inline-flexbox;
     display: inline-flex;
 
@@ -12218,7 +12295,6 @@ body.cyborg .flex-form__header .custom-checkbox input:checked + span:before
 
 .flex-form__toggle-group
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -12321,14 +12397,12 @@ body.cyborg .flex-form__header .custom-checkbox input:checked + span:before
 
 .flex-form__toggle-group > li .manual-input
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     width: 126px;
     padding: 0;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -12491,7 +12565,6 @@ body.night .flex-form__toggle-group > li > input:checked + label
 
 .flex-form__toggle-list > li
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -12500,7 +12573,6 @@ body.night .flex-form__toggle-group > li > input:checked + label
     border-bottom: 1px solid #d0d0d0;
     background-color: #fff;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -12558,8 +12630,7 @@ body.night .flex-form__toggle-list > li
     width: 50px;
     height: 24px;
 
-    -webkit-transition: all 100ms linear;
-            transition: all 100ms linear;
+    transition: all 100ms linear;
 
     border: 1px solid #d53d50;
     border-radius: 30px;
@@ -12578,8 +12649,7 @@ body.night .flex-form__toggle-list > li
     height: 20px;
 
     content: '';
-    -webkit-transition: all 100ms ease-in-out;
-            transition: all 100ms ease-in-out;
+    transition: all 100ms ease-in-out;
 
     border-radius: 45px;
     background-color: #fff;
@@ -12642,7 +12712,6 @@ body.night .flex-form__toggle-list-switch > input:checked + span
     font-size: 10px;
     font-weight: 700;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -12847,11 +12916,9 @@ body.night .flex-form__table td
 
 .flex-form__select--horizontal
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -12951,13 +13018,11 @@ body.night .flex-form__select--horizontal
 
 .flex-form__simple-inline
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     color: #d0d0d0;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
 }
@@ -12990,7 +13055,6 @@ body.night .flex-form__select--horizontal
 
 .flex-form .fieldset__split
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 }
@@ -13163,11 +13227,6 @@ body.night .process-tree
     outline: 0;
 }
 
-.process-tree__search input::-webkit-input-placeholder
-{
-    color: #b5b5b5;
-}
-
 .process-tree__search input:-ms-input-placeholder
 {
     color: #b5b5b5;
@@ -13226,8 +13285,7 @@ body.night .process-tree
 .list-panel .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='radio'] + span:before,
-.process-tree__search-submit
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before,
 .process-tree__search-submit .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit input[type='checkbox'] + span:before
@@ -13265,8 +13323,7 @@ body.night .process-tree
 .list-panel .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
 .process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='radio'] + span:before,
-.process-tree__search-submit.loading
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__search-submit.loading .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before,
 .process-tree__search-submit.loading .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__search-submit.loading input[type='checkbox'] + span:before
@@ -13316,16 +13373,13 @@ body.night .process-tree__search
 {
     position: relative;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
     padding-right: 15px;
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: justify;
     -ms-flex-pack: justify;
     justify-content: space-between;
 }
@@ -13421,7 +13475,6 @@ body.night .process-tree__search
 
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
-    -webkit-box-flex: 0;
     -ms-flex-positive: 0;
     flex-grow: 0;
 }
@@ -13467,8 +13520,7 @@ body.night .process-tree__search
 .list-panel .list-group-option .process-tree__tree .processes p em input[type='radio'] + span:before,
 .process-tree__tree .processes p em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-tree__tree .processes p em input[type='radio'] + span:before,
-.process-tree__tree .processes p em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-tree__tree .processes p em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-tree__tree .processes p em input[type='checkbox'] + span:before,
 .process-tree__tree .processes p em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-tree__tree .processes p em input[type='checkbox'] + span:before
@@ -13511,42 +13563,30 @@ body.night .process-tree__search
 .process-tree__tree .processes div.selected em > .custom-select:after,
 .process-tree__tree .processes div.selected em > .dns-badge__content:before,
 .process-tree__tree .processes div.selected .cuckoo-table#submission-task-table em > .status.status-reported:before,
-.cuckoo-table#submission-task-table
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.cuckoo-table#submission-task-table .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected #submission-task-table.cuckoo-table__fullscreen em > .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected .network-display__table > table#submission-task-table em > .status.status-reported:before,
-.network-display__table > table#submission-task-table
-.process-tree__tree .processes div.selected em > .status.status-reported:before,
+.network-display__table > table#submission-task-table .process-tree__tree .processes div.selected em > .status.status-reported:before,
 .process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:before,
 .process-tree__tree .processes div.selected em > .cuckoo-analysis__panel--toggle:after,
 .process-tree__tree .processes div.selected .cuckoo-files ul em > div:before,
-.cuckoo-files ul
-.process-tree__tree .processes div.selected em > div:before,
+.cuckoo-files ul .process-tree__tree .processes div.selected em > div:before,
 .process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:after,
-.cuckoo-files #selection-overview
-.process-tree__tree .processes div.selected em > .extension-select:after,
+.cuckoo-files #selection-overview .process-tree__tree .processes div.selected em > .extension-select:after,
 .process-tree__tree .processes div.selected .cuckoo-files #selection-overview em > .extension-select:before,
-.cuckoo-files #selection-overview
-.process-tree__tree .processes div.selected em > .extension-select:before,
+.cuckoo-files #selection-overview .process-tree__tree .processes div.selected em > .extension-select:before,
 .process-tree__tree .processes div.selected .flex-form__header em.custom-checkbox > input + span,
-.flex-form__header
-.process-tree__tree .processes div.selected em.custom-checkbox > input + span,
+.flex-form__header .process-tree__tree .processes div.selected em.custom-checkbox > input + span,
 .process-tree__tree .processes div.selected em.breadcrumbs > li:not(:last-child):after,
 .process-tree__tree .processes div.selected .list-panel .list-group-option em > input[type='radio'] + span:before,
-.list-panel .list-group-option
-.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.list-panel .list-group-option .process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
 .process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='radio'] + span:before,
-.list-panel__widget .list-group-option
-.process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
-.process-tree__tree .processes div.selected
-.list-panel .list-group-option em > input[type='checkbox'] + span:before,
-.list-panel .list-group-option
-.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .process-tree__tree .processes div.selected em > input[type='radio'] + span:before,
+.process-tree__tree .processes div.selected .list-panel .list-group-option em > input[type='checkbox'] + span:before,
+.list-panel .list-group-option .process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before,
 .process-tree__tree .processes div.selected .list-panel__widget .list-group-option em > input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option
-.process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before
+.list-panel__widget .list-group-option .process-tree__tree .processes div.selected em > input[type='checkbox'] + span:before
 {
     color: #fff;
 }
@@ -13635,8 +13675,7 @@ body.cyborg .process-tree__tree em .list-panel .list-group-option input[type='ra
 .list-panel .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
 body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='radio'] + span:before,
-body.cyborg .process-tree__tree em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .process-tree__tree em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before,
 body.cyborg .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__tree em input[type='checkbox'] + span:before
@@ -13678,8 +13717,7 @@ body.night .process-tree__tree em .list-panel .list-group-option input[type='rad
 .list-panel .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
 body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__tree em input[type='radio'] + span:before,
-body.night .process-tree__tree em
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .process-tree__tree em .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before,
 body.night .process-tree__tree em .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__tree em input[type='checkbox'] + span:before
@@ -13724,8 +13762,7 @@ body.night .process-tree__tree em .list-panel__widget .list-group-option input[t
 .list-panel .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
 .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:first-child:before,
 .list-panel__widget .list-group-option .process-tree__header h4 input[type='radio'] + span:first-child:before,
-.process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:first-child:before,
+.process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:first-child:before,
 .list-panel .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before,
 .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:first-child:before,
 .list-panel__widget .list-group-option .process-tree__header h4 input[type='checkbox'] + span:first-child:before
@@ -13787,8 +13824,7 @@ body.cyborg .process-tree__header h4 .list-panel .list-group-option input[type='
 .list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
 body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='radio'] + span:before,
-body.cyborg .process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.cyborg .process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before,
 body.cyborg .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.cyborg .process-tree__header h4 input[type='checkbox'] + span:before
@@ -13832,8 +13868,7 @@ body.night .process-tree__header h4 .list-panel .list-group-option input[type='r
 .list-panel .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
 body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='radio'] + span:before,
-body.night .process-tree__header h4
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+body.night .process-tree__header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before,
 body.night .process-tree__header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option body.night .process-tree__header h4 input[type='checkbox'] + span:before
@@ -13908,8 +13943,7 @@ body.night .process-tree__header h4 .list-panel__widget .list-group-option input
 .list-panel .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
 .process-spec--name h2 span .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--name h2 span input[type='radio'] + span:before,
-.process-spec--name h2 span
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--name h2 span .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before,
 .process-spec--name h2 span .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--name h2 span input[type='checkbox'] + span:before
@@ -13986,7 +14020,6 @@ body.night .process-spec--name .network-display__table > table tbody tr
 
 .process-spec--tags
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -14033,7 +14066,6 @@ body.night .process-spec--tags
 
 .process-spec--pagination > ul
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
@@ -14241,6 +14273,7 @@ body.night .process-spec--table .network-display__table > table thead
     color: #434343;
 }
 
+
 .process-spec--table .cuckoo-table .date-api > time,
 .process-spec--table .cuckoo-table__fullscreen .date-api > time,
 .process-spec--table .network-display__table > table .date-api > time
@@ -14303,8 +14336,7 @@ body.night .process-spec--table .network-display__table > table .date-api p
 .list-panel .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
 .process-spec--table .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table .search-process input[type='radio'] + span:before,
-.process-spec--table .search-process
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--table .search-process .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before,
 .process-spec--table .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table .search-process input[type='checkbox'] + span:before
@@ -14343,8 +14375,7 @@ body.night .process-spec--table .search-process
 .list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
 .process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='radio'] + span:before,
-.process-spec--table tr.collapsed > .search-process
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.process-spec--table tr.collapsed > .search-process .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before,
 .process-spec--table tr.collapsed > .search-process .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .process-spec--table tr.collapsed > .search-process input[type='checkbox'] + span:before
@@ -14439,7 +14470,6 @@ body.night .process-spec .loading
 {
     font-size: 11px;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -14481,45 +14511,15 @@ body.night .process-spec .loading
     color: #337ab7;
 }
 
-@-webkit-keyframes c1
-{
-    0%
-    {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
-    }
-    100%
-    {
-        -webkit-transform: rotate(360deg);
-                transform: rotate(360deg);
-    }
-}
-
 @keyframes c1
 {
     0%
     {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100%
     {
-        -webkit-transform: rotate(360deg);
-                transform: rotate(360deg);
-    }
-}
-
-@-webkit-keyframes c2
-{
-    0%
-    {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
-    }
-    100%
-    {
-        -webkit-transform: rotate(360deg);
-                transform: rotate(360deg);
+        transform: rotate(360deg);
     }
 }
 
@@ -14527,13 +14527,11 @@ body.night .process-spec .loading
 {
     0%
     {
-        -webkit-transform: rotate(0deg);
-                transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100%
     {
-        -webkit-transform: rotate(360deg);
-                transform: rotate(360deg);
+        transform: rotate(360deg);
     }
 }
 
@@ -14546,7 +14544,6 @@ body.night .process-spec .loading
     top: -100vh;
     left: 0;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
         flex-direction: column;
@@ -14554,20 +14551,15 @@ body.night .process-spec .loading
     width: 100vw;
     height: 100vh;
 
-    -webkit-transition: opacity 300ms ease-in-out;
-            transition: opacity 300ms ease-in-out;
+    transition: opacity 300ms ease-in-out;
 
     opacity: 0;
     background-color: rgba(102, 204, 204, .9);
 
-    -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
 }
 
@@ -14622,8 +14614,7 @@ body.night .process-spec .loading
     width: 100%;
     height: 100%;
 
-    -webkit-animation: c1 3s infinite linear;
-            animation: c1 3s infinite linear;
+    animation: c1 3s infinite linear;
 
     border: 15px solid #d9e8e8;
     border-top-color: transparent;
@@ -14638,8 +14629,7 @@ body.night .process-spec .loading
     width: 100%;
     height: 100%;
 
-    -webkit-animation: c2 3.5s infinite linear;
-            animation: c2 3.5s infinite linear;
+    animation: c2 3.5s infinite linear;
 
     border: 15px solid #307575;
     border-top-color: transparent;
@@ -14712,6 +14702,16 @@ body.cyborg .page-freeze.error
     background-color: #f7f8fa;
 }
 
+@media screen and (max-width: 960px)
+{
+    .dashboard
+    {
+            flex-direction: column;
+
+        -ms-flex-direction: column;
+    }
+}
+
 .dashboard.bottom
 {
     padding-top: 0;
@@ -14721,19 +14721,36 @@ body.cyborg .page-freeze.error
 {
     overflow: visible;
 
-    -ms-flex-preferred-size: 415px;
-    flex-basis: 415px;
-    -webkit-box-flex: 0;
+    -ms-flex-preferred-size: 355px;
+    flex-basis: 355px;
     -ms-flex-positive: 0;
     flex-grow: 0;
     -ms-flex-negative: 0;
     flex-shrink: 0;
 }
 
+@media screen and (max-width: 960px)
+{
+    .dashboard__left
+    {
+        -ms-flex-order: 2;
+        order: 2;
+    }
+}
+
 .dashboard__right
 {
     -ms-flex-preferred-size: 100%;
     flex-basis: 100%;
+}
+
+@media screen and (max-width: 960px)
+{
+    .dashboard__right
+    {
+        -ms-flex-order: 1;
+        order: 1;
+    }
 }
 
 .dashboard__col-title
@@ -14816,8 +14833,7 @@ body.cyborg .page-freeze.error
 
 .dashboard-module__header h4 .label-free
 {
-    background: -webkit-linear-gradient(left, #7db9e8 50%, #afb200 50%);
-    background:         linear-gradient(to right, #7db9e8 50%, #afb200 50%);
+    background: linear-gradient(to right, #7db9e8 50%, #afb200 50%);
 }
 
 .dashboard-module__header h4 .label-total
@@ -14849,7 +14865,6 @@ body.cyborg .page-freeze.error
 
 .dashboard-module__body
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 
@@ -14864,7 +14879,6 @@ body.cyborg .page-freeze.error
 
     -ms-flex-preferred-size: 50%;
     flex-basis: 50%;
-    -webkit-box-flex: 0;
     -ms-flex-positive: 0;
     flex-grow: 0;
     -ms-flex-negative: 0;
@@ -14982,8 +14996,7 @@ body.night .dashboard-module__body--flex
 .list-panel .list-group-option .dashboard-module__body .content-list li a input[type='radio'] + span:before,
 .dashboard-module__body .content-list li a .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__body .content-list li a input[type='radio'] + span:before,
-.dashboard-module__body .content-list li a
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module__body .content-list li a .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module__body .content-list li a input[type='checkbox'] + span:before,
 .dashboard-module__body .content-list li a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__body .content-list li a input[type='checkbox'] + span:before
@@ -15157,7 +15170,6 @@ body.night .dashboard-module__speech blockquote
 
 .dashboard-module__tabs
 {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
 }
@@ -15177,7 +15189,7 @@ body.night .dashboard-module__speech blockquote
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href],
-.dashboard-module__tabs > [href].flex-tabs__tab--right
+.dashboard-module__tabs > .flex-tabs__tab--right[href]
 {
     padding: 20px 30px 10px 30px;
 
@@ -15185,13 +15197,13 @@ body.night .dashboard-module__speech blockquote
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href]:hover,
-.dashboard-module__tabs > [href].flex-tabs__tab--right:hover
+.dashboard-module__tabs > .flex-tabs__tab--right[href]:hover
 {
     text-decoration: none;
 }
 
 .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-.dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+.dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #f1f1f1;
 }
@@ -15218,13 +15230,13 @@ body.cyborg .dashboard-module__tabs > .active.flex-tabs__tab--right
 }
 
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-body.cyborg .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #142a33;
 }
 
 body.cyborg .dashboard-module__tabs > .flex-tabs__tab[href].active,
-body.cyborg .dashboard-module__tabs > [href].active.flex-tabs__tab--right
+body.cyborg .dashboard-module__tabs > .flex-tabs__tab--right[href].active
 {
     box-shadow: 0 2px 0 #144337;
 }
@@ -15242,13 +15254,13 @@ body.night .dashboard-module__tabs > .flex-tabs__tab--right
 }
 
 body.night .dashboard-module__tabs > .flex-tabs__tab[href]:hover:not(.active),
-body.night .dashboard-module__tabs > [href].flex-tabs__tab--right:hover:not(.active)
+body.night .dashboard-module__tabs > .flex-tabs__tab--right[href]:hover:not(.active)
 {
     background-color: #3f6791;
 }
 
 body.night .dashboard-module__tabs > .flex-tabs__tab[href].active,
-body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
+body.night .dashboard-module__tabs > .flex-tabs__tab--right[href].active
 {
     background-color: #2f4d6d;
     box-shadow: 0 2px 0 #20344a;
@@ -15378,7 +15390,6 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
     top: 20px;
     left: 50%;
 
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
@@ -15392,10 +15403,7 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 
     border-radius: 50%;
 
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
     -ms-flex-direction: column;
-    -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
 }
@@ -15511,11 +15519,9 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 .list-panel__widget .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='radio'] + span:before,
 .dashboard-module__lg .omni-uploader .uploader-area .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module__lg .omni-uploader .uploader-area input[type='radio'] + span:before,
-.dashboard-module .omni-uploader .uploader-area
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module .omni-uploader .uploader-area .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='checkbox'] + span:before,
-.dashboard-module__lg .omni-uploader .uploader-area
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.dashboard-module__lg .omni-uploader .uploader-area .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .dashboard-module__lg .omni-uploader .uploader-area input[type='checkbox'] + span:before,
 .dashboard-module .omni-uploader .uploader-area .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .dashboard-module .omni-uploader .uploader-area input[type='checkbox'] + span:before,
@@ -15547,30 +15553,29 @@ body.night .dashboard-module__tabs > [href].active.flex-tabs__tab--right
 }
 
 .dashboard-module[data-dashboard-module='installation'] .up-to-date,
-[data-dashboard-module='installation'].dashboard-module__lg .up-to-date,
+.dashboard-module__lg[data-dashboard-module='installation'] .up-to-date,
 .dashboard-module[data-dashboard-module='installation'] .latest-version,
-[data-dashboard-module='installation'].dashboard-module__lg .latest-version
+.dashboard-module__lg[data-dashboard-module='installation'] .latest-version
 {
     display: none;
 }
 
 .dashboard-module[data-dashboard-module='installation'] .show-loaded,
-[data-dashboard-module='installation'].dashboard-module__lg .show-loaded
+.dashboard-module__lg[data-dashboard-module='installation'] .show-loaded
 {
-    -webkit-transition: opacity 150ms linear;
-            transition: opacity 150ms linear;
+    transition: opacity 150ms linear;
 
     opacity: 0;
 }
 
 .dashboard-module[data-dashboard-module='installation'].version-loaded .show-loaded,
-[data-dashboard-module='installation'].version-loaded.dashboard-module__lg .show-loaded
+.dashboard-module__lg[data-dashboard-module='installation'].version-loaded .show-loaded
 {
     opacity: 1;
 }
 
 .dashboard-module[data-dashboard-module='installation'] .dashboard-module__footer,
-[data-dashboard-module='installation'].dashboard-module__lg .dashboard-module__footer
+.dashboard-module__lg[data-dashboard-module='installation'] .dashboard-module__footer
 {
     display: none;
 }
@@ -15801,8 +15806,7 @@ body.night .dashboard table.simple tr:nth-child(even)
 .list-panel .list-group-option .app-message > h5 input[type='radio'] + span:before,
 .app-message > h5 .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .app-message > h5 input[type='radio'] + span:before,
-.app-message > h5
-.list-panel .list-group-option input[type='checkbox'] + span:before,
+.app-message > h5 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .app-message > h5 input[type='checkbox'] + span:before,
 .app-message > h5 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .app-message > h5 input[type='checkbox'] + span:before
@@ -15849,11 +15853,18 @@ body.night .app-message
     margin-top: -6px;
 }
 
+.list-panel__widget .panel-title .button,
 .list-panel .panel-title .button--lg,
 .list-panel__widget .panel-title .button--lg,
+.list-panel .panel-title .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form .list-panel .panel-title button[type='submit'],
+.list-panel__widget .panel-title .modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form .list-panel__widget .panel-title button[type='submit'],
 .list-panel .panel-title .button--sm,
 .list-panel__widget .panel-title .button--sm,
 .list-panel .panel-title .button,
+.list-panel .list-panel__widget .panel-title .button,
+.list-panel__widget .list-panel .panel-title .button,
 .list-panel__widget .panel-title .button,
 .list-panel .panel-title .process-tree__search-submit,
 .list-panel__widget .panel-title .process-tree__search-submit
@@ -15993,6 +16004,1815 @@ body.night .app-message
 
     border-top: 1px solid #ccc;
     background-color: #f5f5f5;
+}
+
+/*
+  Inherits bootstraps modal style as a base. .modal-cuckoo is a variation
+  on that same structure.
+ */
+.modal-cuckoo-backdrop
+{
+    background-color: rgba(98, 151, 248, .7);
+}
+
+.modal-cuckoo-backdrop.in
+{
+    opacity: 1;
+}
+
+body.cyborg .modal-cuckoo-backdrop
+{
+    background-color: rgba(2, 14, 16, .7);
+}
+
+.modal-cuckoo .modal-footer
+{
+    text-align: left;
+
+    border-top: 0;
+}
+
+body.cyborg .modal-cuckoo .modal-footer
+{
+    border-bottom: 0;
+}
+
+.modal-cuckoo .modal-dialog
+{
+    overflow: hidden;
+
+    width: 640px;
+
+    border-radius: 4px;
+}
+
+body.cyborg .modal-cuckoo .modal-dialog
+{
+    border: 1px solid #133b4a;
+}
+
+.modal-cuckoo .modal-content
+{
+    border: 0;
+}
+
+.modal-cuckoo .modal-content > p
+{
+    margin: 0;
+    padding-top: 20px;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']
+{
+    position: relative;
+
+    border-bottom: 1px solid #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:after,
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:before
+{
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 30px;
+
+    width: 0;
+    height: 0;
+
+    content: ' ';
+    pointer-events: none;
+
+    border: solid transparent;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:after
+{
+    margin-left: -9px;
+
+    border-width: 9px;
+    border-color: rgba(255, 255, 255, 0);
+    border-top-color: #fff;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow:before
+{
+    margin-left: -10px;
+
+    border-width: 10px;
+    border-color: rgba(210, 210, 210, 0);
+    border-top-color: #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow-center:before,
+.modal-cuckoo .modal-content > *[class^='modal-'].arrow-center:after
+{
+    top: 100%;
+    left: 50%;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #f6f6f6;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):before
+{
+    border-top-color: #d2d2d2;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #f6f6f6;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #020e10;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #020e10;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd)
+{
+    background-color: #232323;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(odd):after
+{
+    border-top-color: #232323;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #fff;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #0f1a1c;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even):after
+{
+    border-top-color: #0f1a1c;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even)
+{
+    background-color: #2e2e2e;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:nth-child(even):after
+{
+    border-top-color: #2e2e2e;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].error
+{
+    border-bottom-color: #f00;
+    background-color: #f99;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].error:after
+{
+    border-top-color: #f99;
+}
+
+.modal-cuckoo .modal-content > *[class^='modal-'].error:before
+{
+    border-top-color: #f00;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']
+{
+    border-bottom-color: #133b4a;
+}
+
+body.cyborg .modal-cuckoo .modal-content > *[class^='modal-']:before
+{
+    border-top-color: #133b4a;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']
+{
+    border-bottom-color: #375a7f;
+}
+
+body.night .modal-cuckoo .modal-content > *[class^='modal-']:before
+{
+    border-top-color: #375a7f;
+}
+
+.modal-cuckoo .modal-section
+{
+    position: relative;
+
+    padding: 15px;
+}
+
+.modal-cuckoo .modal-section.center
+{
+    text-align: center;
+}
+
+.modal-cuckoo .modal-header
+{
+    padding-top: 25px;
+}
+
+.modal-cuckoo .modal-header h4
+{
+    font-size: 26px;
+    font-weight: 400;
+
+    margin: 0;
+}
+
+.modal-cuckoo .modal-header h4 .fa,
+.modal-cuckoo .modal-header h4 .custom-select:after,
+.modal-cuckoo .modal-header h4 .dns-badge__content:before,
+.modal-cuckoo .modal-header h4 .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .modal-cuckoo .modal-header h4 .status.status-reported:before,
+.modal-cuckoo .modal-header h4 .cuckoo-analysis__panel--toggle:before,
+.modal-cuckoo .modal-header h4 .cuckoo-analysis__panel--toggle:after,
+.modal-cuckoo .modal-header h4 .cuckoo-files ul div:before,
+.cuckoo-files ul .modal-cuckoo .modal-header h4 div:before,
+.modal-cuckoo .modal-header h4 .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-header h4 .extension-select:after,
+.modal-cuckoo .modal-header h4 .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-header h4 .extension-select:before,
+.modal-cuckoo .modal-header h4 .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .modal-cuckoo .modal-header h4 .custom-checkbox > input + span,
+.modal-cuckoo .modal-header h4 .breadcrumbs > li:not(:last-child):after,
+.modal-cuckoo .modal-header h4 .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-header h4 input[type='radio'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-header h4 input[type='radio'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-header h4 input[type='checkbox'] + span:before,
+.modal-cuckoo .modal-header h4 .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-header h4 input[type='checkbox'] + span:before
+{
+    font-size: .8em;
+
+    vertical-align: middle;
+
+    opacity: .8;
+}
+
+.modal-cuckoo .modal-form:not(.no-flex)
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding-bottom: 0;
+}
+
+.modal-cuckoo .modal-form .form-col
+{
+    margin-left: -5px;
+    padding: 10px;
+
+    -ms-flex-preferred-size: 50%;
+    flex-basis: 50%;
+}
+
+.modal-cuckoo .modal-form textarea,
+.modal-cuckoo .modal-form input
+{
+    width: 100%;
+
+    border: 0;
+
+    -webkit-appearance: none;
+}
+
+.modal-cuckoo .modal-form textarea:focus,
+.modal-cuckoo .modal-form input:focus
+{
+    outline: none;
+}
+
+.modal-cuckoo .modal-form textarea
+{
+    height: 150px;
+    padding-top: 10px;
+
+    background-color: transparent;
+}
+
+.modal-cuckoo .modal-form fieldset
+{
+    position: relative;
+
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.modal-cuckoo .modal-form fieldset label
+{
+    font-weight: 400;
+    font-style: italic;
+
+    position: absolute;
+    top: 13px;
+    left: 10px;
+
+    transition: all 150ms ease-in-out;
+}
+
+.modal-cuckoo .modal-form fieldset input
+{
+    padding: 18px 10px 5px 10px;
+
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+    -webkit-appearance: none;
+}
+
+.modal-cuckoo .modal-form fieldset input:focus,
+.modal-cuckoo .modal-form fieldset input:valid
+{
+    border-color: #ddd;
+}
+
+.modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+.modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
+{
+    font-size: 11px;
+    font-weight: 500;
+    font-style: normal;
+
+    top: 6px;
+
+    color: #6297f8;
+}
+
+body.cyborg .modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+body.cyborg .modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
+{
+    color: #0ce3ac;
+}
+
+body.night .modal-cuckoo .modal-form fieldset input:focus + label:not(.modal-form__checkbox),
+body.night .modal-cuckoo .modal-form fieldset input:valid + label:not(.modal-form__checkbox)
+{
+    color: #d7d7d7;
+}
+
+body.cyborg .modal-cuckoo .modal-form fieldset input
+{
+    border-color: #133b4a;
+}
+
+body.night .modal-cuckoo .modal-form fieldset input
+{
+    border-color: #375a7f;
+}
+
+.modal-cuckoo .modal-form fieldset.error input
+{
+    border-color: #f00;
+}
+
+.modal-cuckoo .modal-form button[type='submit']
+{
+    margin: 5px 0;
+    padding: 10px;
+
+    color: #2b712d;
+    border: 1px solid #91d693;
+    background-color: #a1eea3;
+}
+
+.modal-cuckoo .modal-form button[type='submit']:hover
+{
+    color: inherit;
+    border-color: #91d693;
+    background-color: #99e29b;
+}
+
+body.cyborg .modal-cuckoo .modal-form button[type='submit']
+{
+    color: #2b712d;
+}
+
+body.night .modal-cuckoo .modal-form button[type='submit']
+{
+    color: #2b712d;
+}
+
+.modal-cuckoo .modal-form__checkbox
+{
+    margin: 10px 10px 15px 0;
+}
+
+.modal-cuckoo .modal-form__checkbox label
+{
+    font-weight: 500;
+
+    padding: 9px 8px 8px 8px;
+
+    border: 1px solid #d2d2d2;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.modal-cuckoo .modal-form__checkbox label span
+{
+    font-weight: 500;
+
+    position: relative;
+    top: -1px;
+
+    display: inline-block;
+
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+
+    vertical-align: middle;
+
+    border: 3px solid #d2d2d2;
+    border-radius: 50%;
+}
+
+.modal-cuckoo .modal-form__checkbox label:hover
+{
+    cursor: pointer;
+
+    background-color: #f5f5f5;
+}
+
+.modal-cuckoo .modal-form__checkbox label:active
+{
+    background-color: #eee;
+}
+
+body.cyborg .modal-cuckoo .modal-form__checkbox label
+{
+    color: #fff;
+    border-color: #133b4a;
+    background-color: #152d3d;
+}
+
+body.night .modal-cuckoo .modal-form__checkbox label
+{
+    border-color: #375a7f;
+    background-color: #152d3b;
+}
+
+.modal-cuckoo .modal-form__checkbox input
+{
+    display: none;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label
+{
+    color: #fff;
+    border-color: #5888df;
+    background-color: #6297f8;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label:hover
+{
+    background-color: #5d8fec;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label:active
+{
+    background-color: #5380d3;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label span
+{
+    border-color: #fff;
+}
+
+.modal-cuckoo .modal-form__checkbox input:checked + label span:after
+{
+    position: absolute;
+    top: 4px;
+    left: 4px;
+
+    width: 11px;
+    height: 11px;
+
+    content: '';
+
+    border-radius: 50%;
+    background-color: #fff;
+}
+
+@keyframes SnapshotShutter
+{
+    0%
+    {
+        background-color: #6297f8;
+    }
+    25%
+    {
+        background-color: #fff;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, .5);
+    }
+    100%
+    {
+        background-color: #6297f8;
+        box-shadow: 0 2px 0 #456aae;
+    }
+}
+
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__connecting section > a,
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
+.rdp-dialog__options button:not([value='cancel']),
+.rdp-toolbar button
+{
+    font-size: 44px;
+
+    padding: 7px 5px 5px;
+
+    transition: background-color 100ms linear, box-shadow 100ms linear, color 150ms linear;
+    text-decoration: none;
+
+    color: #1e3c73;
+    border: 0;
+    border-radius: 5px;
+    background-color: #6297f8;
+    box-shadow: 0 2px 0 #456aae;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
+
+    -webkit-appearance: none;
+}
+
+.rdp-dialog__options button:hover[value='cancel'],
+.rdp__error section > a:hover,
+.rdp__connecting section > a:hover,
+.rdp__error--buttons > a:hover,
+.rdp__connecting--buttons > a:hover,
+.rdp-dialog__options button:hover:not([value='cancel']),
+.rdp-toolbar button:hover
+{
+    background-color: #72a1f9;
+}
+
+.rdp-dialog__options button.active[value='cancel'],
+.rdp__error section > a.active,
+.rdp__connecting section > a.active,
+.rdp__error--buttons > a.active,
+.rdp__connecting--buttons > a.active,
+.rdp-dialog__options button.active:not([value='cancel']),
+.rdp-toolbar button.active,
+.rdp-dialog__options button:active[value='cancel'],
+.rdp__error section > a:active,
+.rdp__connecting section > a:active,
+.rdp__error--buttons > a:active,
+.rdp__connecting--buttons > a:active,
+.rdp-dialog__options button:active:not([value='cancel']),
+.rdp-toolbar button:active
+{
+    color: #fff;
+    background-color: #354a71;
+    box-shadow: inset 0 2px 0 #101622, 0 1px 0 #495c7f;
+    text-shadow: 0 1px 0 #101622;
+}
+
+.rdp-dialog__options button.disabled[value='cancel'],
+.rdp__error section > a.disabled,
+.rdp__connecting section > a.disabled,
+.rdp__error--buttons > a.disabled,
+.rdp__connecting--buttons > a.disabled,
+.rdp-dialog__options button.disabled:not([value='cancel']),
+.rdp-toolbar button.disabled,
+.rdp-dialog__options button[disabled][value='cancel'],
+.rdp__error section > a[disabled],
+.rdp__connecting section > a[disabled],
+.rdp__error--buttons > a[disabled],
+.rdp__connecting--buttons > a[disabled],
+.rdp-dialog__options button[disabled]:not([value='cancel']),
+.rdp-toolbar button[disabled]
+{
+    pointer-events: none;
+
+    color: #3e5358;
+    background-color: #4c646a;
+    box-shadow: 0 2px 0 #2e3c40;
+    text-shadow: none;
+}
+
+.rdp-dialog__options button:focus[value='cancel'],
+.rdp__error section > a:focus,
+.rdp__connecting section > a:focus,
+.rdp__error--buttons > a:focus,
+.rdp__connecting--buttons > a:focus,
+.rdp-dialog__options button:focus:not([value='cancel']),
+.rdp-toolbar button:focus
+{
+    outline: none;
+}
+
+.rdp-dialog__options button[value='cancel'],
+.rdp__error section > a,
+.rdp__connecting section > a,
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a,
+.rdp-dialog__options button:not([value='cancel'])
+{
+    font-size: 16px;
+    font-size: 700;
+    font-weight: 500;
+
+    padding: 8px 15px;
+
+    color: #fff;
+    text-shadow: 0 1px 0 #354a71;
+}
+
+.rdp-dialog__options button[value='cancel']
+{
+    font-weight: 500;
+
+    color: #fff;
+    background-color: #829397;
+    box-shadow: 0 2px 0 #35464a;
+    text-shadow: 0 1px 0 #35464a;
+}
+
+.rdp-dialog__options button:hover[value='cancel']
+{
+    background-color: #94a2a6;
+}
+
+.rdp-dialog__options button:active[value='cancel']
+{
+    background-color: #4c646a;
+    box-shadow: inset 0 2px 0 #2c3132, 0 1px 0 #5e7479;
+}
+
+.rdp-app
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    padding-top: 50px;
+}
+
+.rdp-app.fullscreen
+{
+    padding-top: 0;
+}
+
+.rdp-app__display
+{
+    position: relative;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.rdp-app__controls
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    background-color: #15272a;
+
+    -ms-flex-direction: column;
+    -ms-flex-preferred-size: 128px;
+    flex-basis: 128px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-app__header
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 0 30px;
+
+    background-color: #2e3a4f;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-preferred-size: 66px;
+    flex-basis: 66px;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-app__header--right
+{
+    margin-left: auto;
+}
+
+.rdp-app__header--left
+{
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    -ms-flex-direction: column;
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+}
+
+.rdp-app__header--left .top
+{
+    padding-top: 6px;
+
+    -ms-flex-preferred-size: 38px;
+    flex-basis: 38px;
+}
+
+.rdp-app__viewport
+{
+    position: relative;
+
+    background-color: #000;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.rdp-app__viewport img
+{
+    position: absolute;
+    top: 50%;
+
+    width: 100%;
+
+    transition: filter 1s ease-out;
+    transform: translateY(-50%);
+}
+
+.dialog-active .rdp-app__viewport img
+{
+    filter: blur(10px);
+}
+
+.rdp-toolbar
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-y: auto;
+        flex-direction: column;
+
+    padding: 15px 20px 75px;
+
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+    -ms-flex-direction: column;
+}
+
+.rdp-toolbar > .button-fill,
+.rdp-toolbar > button
+{
+    position: relative;
+
+    margin: 25px 0;
+
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+}
+
+.rdp-toolbar > .button-fill > button
+{
+    z-index: 2;
+
+    width: 100%;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-']
+{
+    position: absolute;
+    top: 0;
+
+    width: 75px;
+    height: 3px;
+
+    transition: top 250ms linear, opacity 250ms linear;
+    pointer-events: none;
+
+    opacity: 0;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].in
+{
+    opacity: 1;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1
+{
+    z-index: 3;
+    left: 6px;
+
+    background-color: #d8d8d8;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-1.in
+{
+    top: -3px;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2
+{
+    z-index: 2;
+    left: 10px;
+
+    width: 67px;
+
+    background-color: #a9a9a9;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-2.in
+{
+    top: -6px;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3
+{
+    z-index: 1;
+    left: 13px;
+
+    width: 60px;
+
+    background-color: #616060;
+}
+
+.rdp-toolbar > .button-fill span[class^='ss-v-e-'].ss-v-e-3.in
+{
+    top: -9px;
+}
+
+.rdp-toolbar > .button-fill .button-badge
+{
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 18px;
+
+    position: absolute;
+    z-index: 3;
+    top: -13px;
+    right: -5px;
+
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+
+    text-align: center;
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #d9c7c7;
+    border-radius: 50px;
+    background-color: #d73a3a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .75);
+}
+
+.rdp-toolbar > .button-fill .button-badge:empty
+{
+    display: none;
+}
+
+.rdp-toolbar button .fa,
+.rdp-toolbar button .custom-select:after,
+.rdp-toolbar button .dns-badge__content:before,
+.rdp-toolbar button .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-toolbar button .status.status-reported:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:before,
+.rdp-toolbar button .cuckoo-analysis__panel--toggle:after,
+.rdp-toolbar button .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-toolbar button div:before,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:after,
+.rdp-toolbar button .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-toolbar button .extension-select:before,
+.rdp-toolbar button .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-toolbar button .custom-checkbox > input + span,
+.rdp-toolbar button .breadcrumbs > li:not(:last-child):after,
+.rdp-toolbar button .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='radio'] + span:before,
+.rdp-toolbar button .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before,
+.rdp-toolbar button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-toolbar button input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: 2px;
+}
+
+.rdp-toolbar button:before
+{
+    font-size: 12px;
+    font-weight: 900;
+
+    position: absolute;
+    right: 0;
+    bottom: -2px;
+
+    width: 16px;
+    height: 20px;
+    padding-top: 2px;
+
+    content: attr(data-hotkey);
+
+    color: #444;
+    border-bottom: 2px solid #999;
+    border-radius: 5px 0 5px 0;
+    background-color: #ccc;
+}
+
+.rdp-toolbar button:after
+{
+    font-size: 14px;
+    font-weight: 400;
+
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+
+    width: 100%;
+
+    content: attr(name);
+    text-transform: capitalize;
+    pointer-events: none;
+
+    color: #fff;
+    text-shadow: none;
+}
+
+.rdp-toolbar button:active:after,
+.rdp-toolbar button.active:after
+{
+    font-weight: 700;
+}
+
+.rdp-toolbar button[disabled]:after,
+.rdp-toolbar button.disabled:after
+{
+    color: #4c646a;
+}
+
+.rdp-toolbar button:first-child
+{
+    margin-top: 0;
+}
+
+.rdp-toolbar button:last-child
+{
+    margin-bottom: 0;
+}
+
+.rdp-toolbar button.shutter-in
+{
+    animation: SnapshotShutter;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+    pointer-events: none;
+}
+
+.rdp-credits
+{
+    position: relative;
+}
+
+.rdp-credits a
+{
+    display: block;
+
+    height: 58px;
+    padding-top: 14px;
+
+    transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+    text-align: center;
+
+    background-color: #383838;
+    box-shadow: inset 0 2px 4px rgba(11, 11, 11, .8);
+}
+
+.rdp-credits a:hover
+{
+    background-color: #6297f8;
+    box-shadow: inset 0 2px 4px rgba(39, 60, 99, .8);
+}
+
+.rdp-credits img
+{
+    height: 32px;
+}
+
+.rdp-credits:before
+{
+    position: absolute;
+    top: -25px;
+
+    width: 100%;
+    height: 25px;
+
+    content: '';
+
+    background: linear-gradient(to bottom, rgba(21, 39, 42, 0) 0%, #15272a 100%);
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
+}
+
+.rdp-title
+{
+    font-size: 16px;
+    font-weight: 400;
+    font-weight: 500;
+
+    margin: 0;
+
+    color: #fff;
+
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+}
+
+.rdp-title .rdp-status
+{
+    display: inline-block;
+
+    width: 10px;
+    height: 10px;
+    margin-right: 10px;
+
+    border-radius: 10px;
+    background-color: #52e875;
+}
+
+.rdp-title .rdp-status.done
+{
+    background-color: #d7586f;
+}
+
+.rdp-snapshots
+{
+    display: -ms-flexbox;
+    display: flex;
+    overflow-x: auto;
+
+    max-width: 500px;
+    margin: 0;
+    padding-right: 10px;
+
+    list-style: none;
+
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.rdp-snapshots > li
+{
+    position: relative;
+}
+
+.rdp-snapshots > li:not(:last-child)
+{
+    margin-right: 15px;
+}
+
+.rdp-snapshots > li figure
+{
+    overflow: hidden;
+
+    height: 53px;
+
+    border: 1px solid #88a1cb;
+    border-radius: 6px;
+}
+
+.rdp-snapshots > li figure img
+{
+    height: 100%;
+
+    transition: opacity 100ms ease-out;
+
+    opacity: .4;
+}
+
+.rdp-snapshots > li figure:hover > img
+{
+    opacity: 1;
+}
+
+.rdp-snapshots--controls
+{
+    position: absolute;
+    top: 0;
+    right: -8px;
+
+    display: -ms-flexbox;
+    display: flex;
+        flex-direction: column;
+
+    height: 100%;
+
+    -ms-flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.rdp-snapshots--controls a
+{
+    font-size: 12px;
+
+    display: inline-block;
+
+    width: 16px;
+    height: 16px;
+    margin: 5px 0;
+
+    text-align: center;
+
+    color: #fff;
+    border: 1px solid #88a1cb;
+    border-radius: 50%;
+    background-color: #000;
+}
+
+.rdp-snapshots--controls a .fa,
+.rdp-snapshots--controls a .custom-select:after,
+.rdp-snapshots--controls a .dns-badge__content:before,
+.rdp-snapshots--controls a .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp-snapshots--controls a .status.status-reported:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:before,
+.rdp-snapshots--controls a .cuckoo-analysis__panel--toggle:after,
+.rdp-snapshots--controls a .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp-snapshots--controls a div:before,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:after,
+.rdp-snapshots--controls a .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp-snapshots--controls a .extension-select:before,
+.rdp-snapshots--controls a .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp-snapshots--controls a .custom-checkbox > input + span,
+.rdp-snapshots--controls a .breadcrumbs > li:not(:last-child):after,
+.rdp-snapshots--controls a .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='radio'] + span:before,
+.rdp-snapshots--controls a .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before,
+.rdp-snapshots--controls a .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp-snapshots--controls a input[type='checkbox'] + span:before
+{
+    position: relative;
+    top: -1px;
+}
+
+.rdp-snapshot-selection
+{
+    overflow-x: auto;
+
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+
+    list-style: none;
+
+    white-space: nowrap;
+}
+
+.rdp-snapshot-selection *,
+.rdp-snapshot-selection *:before,
+.rdp-snapshot-selection *:after
+{
+    transition: all 200ms linear;
+}
+
+.rdp-snapshot-selection > li
+{
+    display: inline-block;
+
+    margin: 0 15px 50px;
+}
+
+.rdp-snapshot-selection input[type='checkbox']
+{
+    display: none;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image
+{
+    border: 2px solid #5888df;
+    background-color: #6297f8;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image img
+{
+    opacity: 1;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:before
+{
+    border: 0;
+    background-color: #fff;
+}
+
+.rdp-snapshot-selection input[type='checkbox']:checked + .snapshot-selection-image:after
+{
+    transform: scale(1);
+}
+
+.rdp-snapshot-selection .snapshot-selection-image
+{
+    position: relative;
+
+    display: block;
+
+    width: 350px;
+    padding: 5px;
+
+    border: 2px solid #fff;
+    border-radius: 16px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image img
+{
+    width: 100%;
+
+    opacity: .75;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:before
+{
+    position: absolute;
+    z-index: 2;
+    bottom: -16px;
+    left: 50%;
+
+    display: block;
+
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+
+    content: '';
+
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background-color: #000;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:after
+{
+    position: absolute;
+    z-index: 3;
+    bottom: -11px;
+    left: 50%;
+
+    display: block;
+
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+
+    content: '';
+    transform: scale(0);
+
+    border-radius: 50%;
+    background-color: #6297f8;
+}
+
+.rdp-snapshot-selection .snapshot-selection-image:hover
+{
+    cursor: pointer;
+
+    background-color: rgba(98, 151, 248, .2);
+}
+
+.rdp__error,
+.rdp__connecting
+{
+    position: relative;
+    top: auto;
+
+    display: -ms-flexbox;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    margin-top: auto;
+
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.rdp__error .combined-icon,
+.rdp__connecting .combined-icon
+{
+    position: relative;
+
+    width: 153px;
+    height: 134px;
+    margin: 0 auto;
+}
+
+.rdp__error .combined-icon .fa,
+.rdp__error .combined-icon .custom-select:after,
+.rdp__error .combined-icon .dns-badge__content:before,
+.rdp__error .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__error .combined-icon .status.status-reported:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__error .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__error .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__error .combined-icon div:before,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:after,
+.rdp__error .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__error .combined-icon .extension-select:before,
+.rdp__error .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__error .combined-icon .custom-checkbox > input + span,
+.rdp__error .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__error .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='radio'] + span:before,
+.rdp__error .combined-icon .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__error .combined-icon input[type='checkbox'] + span:before,
+.rdp__error .combined-icon .guac-icon,
+.rdp__connecting .combined-icon .fa,
+.rdp__connecting .combined-icon .custom-select:after,
+.rdp__connecting .combined-icon .dns-badge__content:before,
+.rdp__connecting .combined-icon .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .rdp__connecting .combined-icon .status.status-reported:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:before,
+.rdp__connecting .combined-icon .cuckoo-analysis__panel--toggle:after,
+.rdp__connecting .combined-icon .cuckoo-files ul div:before,
+.cuckoo-files ul .rdp__connecting .combined-icon div:before,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:after,
+.rdp__connecting .combined-icon .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .rdp__connecting .combined-icon .extension-select:before,
+.rdp__connecting .combined-icon .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .rdp__connecting .combined-icon .custom-checkbox > input + span,
+.rdp__connecting .combined-icon .breadcrumbs > li:not(:last-child):after,
+.rdp__connecting .combined-icon .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='radio'] + span:before,
+.rdp__connecting .combined-icon .list-panel .list-group-option input[type='checkbox'] + span:before,
+.list-panel .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .rdp__connecting .combined-icon input[type='checkbox'] + span:before,
+.rdp__connecting .combined-icon .guac-icon
+{
+    position: absolute;
+}
+
+.rdp__error .combined-icon .fa-frown-o,
+.rdp__error .combined-icon .guac-icon-frown-o,
+.rdp__connecting .combined-icon .fa-frown-o,
+.rdp__connecting .combined-icon .guac-icon-frown-o
+{
+    font-size: 43px;
+
+    top: 25px;
+    left: 58px;
+
+    color: #cc613c;
+}
+
+.rdp__error .combined-icon .fa-desktop,
+.rdp__error .combined-icon .guac-icon-desktop,
+.rdp__connecting .combined-icon .fa-desktop,
+.rdp__connecting .combined-icon .guac-icon-desktop
+{
+    font-size: 140px;
+
+    color: #542f21;
+}
+
+.rdp__error > section,
+.rdp__connecting > section
+{
+    position: relative;
+    z-index: 2;
+}
+
+.rdp__error section > p,
+.rdp__connecting section > p
+{
+    font-size: 24px;
+    font-weight: 300;
+
+    margin: 10px 0;
+
+    text-align: center;
+
+    color: #a6a6a6;
+}
+
+.rdp__error section > a,
+.rdp__connecting section > a
+{
+    top: 0;
+
+    display: block;
+
+    margin: 10px 0;
+
+    text-align: center;
+
+    background-color: #6d6d6d;
+    box-shadow: 0 2px 0 #484848;
+    text-shadow: 0 1px 0 #3b3b3b;
+}
+
+.rdp__error--resolutions,
+.rdp__connecting--resolutions
+{
+    font-size: 16px;
+
+    position: relative;
+    top: -1px;
+
+    width: 300px;
+    margin-top: 25px;
+    padding: 20px;
+
+    color: #fff;
+    border: 1px solid #405f97;
+    border-radius: 8px;
+    background-color: #293b5c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+
+.rdp__error--resolutions:after,
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:after,
+.rdp__connecting--resolutions:before
+{
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+
+    width: 0;
+    height: 0;
+
+    content: ' ';
+    pointer-events: none;
+
+    border: solid transparent;
+}
+
+.rdp__error--resolutions:before,
+.rdp__connecting--resolutions:before
+{
+    margin-left: -21px;
+
+    border-width: 21px;
+    border-color: rgba(64, 95, 151, 0);
+    border-bottom-color: #405f97;
+}
+
+.rdp__error--resolutions:after,
+.rdp__connecting--resolutions:after
+{
+    margin-left: -20px;
+
+    border-width: 20px;
+    border-color: rgba(41, 59, 92, 0);
+    border-bottom-color: #293b5c;
+}
+
+.rdp__error--resolutions ol,
+.rdp__connecting--resolutions ol
+{
+    margin: 0;
+    padding: 0 17px;
+}
+
+.rdp__error--buttons,
+.rdp__connecting--buttons
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    padding: 15px 0 0 0;
+
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+.rdp__error--buttons > a,
+.rdp__connecting--buttons > a
+{
+    font-size: 14px;
+}
+
+.rdp__error:not(.rdp__connecting):after,
+.rdp__connecting:not(.rdp__connecting):after
+{
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    content: '';
+
+    opacity: .2;
+    background: url(../graphic/white-noise.gif);
+    background-size: cover;
+}
+
+.rdp__error.rdp__connecting,
+.rdp__connecting.rdp__connecting
+{
+    background-color: #030e10;
+}
+
+.rdp__error.rdp__connecting .combined-icon,
+.rdp__connecting.rdp__connecting .combined-icon
+{
+    width: 190px;
+    height: 180px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon
+{
+    top: 50%;
+    left: 50%;
+
+    width: 55px;
+    margin-top: -29px;
+    margin-left: -27px;
+}
+
+.rdp__error.rdp__connecting .combined-icon .guac-icon + .fa-desktop,
+.rdp__connecting.rdp__connecting .combined-icon .guac-icon + .fa-desktop
+{
+    font-size: 180px;
+
+    color: #567e84;
+}
+
+.rdp__error .animated-ellipse,
+.rdp__connecting .animated-ellipse
+{
+    display: inline-block;
+}
+
+.rdp__error .animated-ellipse > li,
+.rdp__connecting .animated-ellipse > li
+{
+    display: inline-block;
+
+    opacity: 0;
+}
+
+.rdp__error .animated-ellipse > li.in,
+.rdp__connecting .animated-ellipse > li.in
+{
+    opacity: 1;
+}
+
+.rdp-dialog
+{
+    z-index: 10;
+    top: 66px;
+
+    width: 100%;
+    height: calc(100% - 66px);
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background-color: rgba(0, 0, 0, .7);
+}
+
+.rdp-dialog__body
+{
+    position: absolute;
+    top: 50%;
+    left: 5%;
+
+    width: 90%;
+
+    transform: translateY(-50%);
+    text-align: center;
+
+    color: #fff;
+}
+
+.rdp-dialog__title
+{
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.rdp-dialog__title strong
+{
+    font-weight: 500;
+}
+
+.rdp-dialog__text
+{
+    font-size: 18px;
+    font-weight: 500;
+
+    margin-bottom: 50px;
+}
+
+.rdp-dialog__options
+{
+    display: -ms-flexbox;
+    display: flex;
+
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.rdp-dialog__options button
+{
+    margin: 0 12px;
+}
+
+.rdp-details
+{
+    position: relative;
+    left: -12px;
+}
+
+.rdp-details__menu
+{
+    position: absolute;
+    z-index: 20;
+    top: 23px;
+
+    display: none;
+
+    margin: 0;
+    padding: 25px;
+
+    list-style: none;
+
+    border-radius: 0 0 2px 2px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+
+.rdp-details__menu > li
+{
+    font-size: 16px;
+
+    margin: 0 0 10px 0;
+    padding: 0;
+
+    color: #697993;
+}
+
+.rdp-details__menu > li span,
+.rdp-details__menu > li strong
+{
+    display: inline-block;
+}
+
+.rdp-details__menu > li span
+{
+    width: 180px;
+}
+
+.rdp-details__menu > li strong
+{
+    color: #2e3a4f;
+}
+
+.rdp-details__toggle
+{
+    font-size: 12px;
+    font-weight: 900;
+
+    height: 25px;
+    padding: 5px 10px;
+
+    transition: background-color 75ms ease-out;
+    text-transform: uppercase;
+}
+
+.rdp-details__toggle:hover
+{
+    cursor: pointer;
+    text-decoration: none;
+
+    color: #2e3a4f;
+    background-color: rgba(255, 255, 255, .2);
+}
+
+.rdp-details__toggle::-moz-selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle::selection
+{
+    background: transparent;
+}
+
+.rdp-details__toggle.active
+{
+    border-radius: 2px 2px 0 0;
+    background-color: #fff;
+}
+
+.rdp-details__toggle.active + .rdp-details__menu
+{
+    display: block;
+}
+
+/*
+  fix that will actually show the guac canvas
+  - I hope the guacamole frontend library will improve
+    so I can get rid of these nasty rules.
+ */
+#guacamole-display canvas
+{
+    z-index: 5;
+}
+
+#guacamole-display canvas:hover
+{
+    cursor: none;
+}
+
+#guacamole-display > div > div
+{
+    z-index: 5 !important;
+}
+
+#guacamole-display > div:not([class^='rdp__'])
+{
+    top: 50%;
+
+    margin: 0 auto;
+    margin-top: -384px;
+}
+
+#guacamole-display > div > div > div:nth-child(2)
+{
+    display: none;
 }
 
 /* 
@@ -16502,8 +18322,7 @@ bade[data-theme='cyborg'] .navbar-inverse,
 body.cyborg .navbar-inverse
 {
     border-color: #122539;
-    background: -webkit-linear-gradient(#3a4f6f, #16292f);
-    background:         linear-gradient(#3a4f6f, #16292f);
+    background: linear-gradient(#3a4f6f, #16292f);
 }
 
 bade[data-theme='cyborg'] .navbar-inverse .navbar-nav > li > a,
@@ -16580,8 +18399,7 @@ body.cyborg .panel-default > .panel-heading
     border-top: 1px solid #2b5a6a;
     border-right: 1px solid #003f54;
     border-left: 1px solid #003f54;
-    background: -webkit-linear-gradient(#284f5c, #112c35);
-    background:         linear-gradient(#284f5c, #112c35);
+    background: linear-gradient(#284f5c, #112c35);
 }
 
 bade[data-theme='cyborg'] .panel-default > .panel-heading + .panel-collapse > .panel-body,
@@ -16618,8 +18436,7 @@ body.cyborg .panel-primary > .panel-heading
     border-top: 1px solid #2b5a6a;
     border-right: 1px solid #003f54;
     border-left: 1px solid #003f54;
-    background: -webkit-linear-gradient(#284f5c, #112c35);
-    background:         linear-gradient(#284f5c, #112c35);
+    background: linear-gradient(#284f5c, #112c35);
 }
 
 bade[data-theme='cyborg'] .panel-primary > .panel-heading + .panel-collapse > .panel-body,
@@ -17160,18 +18977,6 @@ body.cyborg .alert-danger .alert-link
     color: #e6e6e6;
 }
 
-@-webkit-keyframes progress-bar-stripes
-{
-    from
-    {
-        background-position: 40px 0;
-    }
-    to
-    {
-        background-position: 0 0;
-    }
-}
-
 @keyframes progress-bar-stripes
 {
     from
@@ -17208,8 +19013,7 @@ body.cyborg .progress-bar
     width: 0;
     height: 100%;
 
-    -webkit-transition: width .6s ease;
-            transition: width .6s ease;
+    transition: width .6s ease;
     text-align: center;
 
     color: #fff;
@@ -17222,8 +19026,7 @@ bade[data-theme='cyborg'] .progress-bar-striped,
 body.cyborg .progress-striped .progress-bar,
 body.cyborg .progress-bar-striped
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
     background-size: 40px 40px;
 }
 
@@ -17232,8 +19035,7 @@ bade[data-theme='cyborg'] .progress-bar.active,
 body.cyborg .progress.active .progress-bar,
 body.cyborg .progress-bar.active
 {
-    -webkit-animation: progress-bar-stripes 2s linear infinite;
-            animation: progress-bar-stripes 2s linear infinite;
+    animation: progress-bar-stripes 2s linear infinite;
 }
 
 bade[data-theme='cyborg'] .progress-bar-success,
@@ -17245,8 +19047,7 @@ body.cyborg .progress-bar-success
 bade[data-theme='cyborg'] .progress-striped .progress-bar-success,
 body.cyborg .progress-striped .progress-bar-success
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 bade[data-theme='cyborg'] .progress-bar-info,
@@ -17258,8 +19059,7 @@ body.cyborg .progress-bar-info
 bade[data-theme='cyborg'] .progress-striped .progress-bar-info,
 body.cyborg .progress-striped .progress-bar-info
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 bade[data-theme='cyborg'] .progress-bar-warning,
@@ -17271,8 +19071,7 @@ body.cyborg .progress-bar-warning
 bade[data-theme='cyborg'] .progress-striped .progress-bar-warning,
 body.cyborg .progress-striped .progress-bar-warning
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 bade[data-theme='cyborg'] .progress-bar-danger,
@@ -17284,8 +19083,7 @@ body.cyborg .progress-bar-danger
 bade[data-theme='cyborg'] .progress-striped .progress-bar-danger,
 body.cyborg .progress-striped .progress-bar-danger
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 bade[data-theme='cyborg'] .well,
@@ -17394,19 +19192,14 @@ body.cyborg .modal
 bade[data-theme='cyborg'] .modal.fade .modal-dialog,
 body.cyborg .modal.fade .modal-dialog
 {
-    -webkit-transition: -webkit-transform .3s ease-out;
-            transition: -webkit-transform .3s ease-out;
-            transition:         transform .3s ease-out;
-            transition:         transform .3s ease-out, -webkit-transform .3s ease-out;
-    -webkit-transform: translate(0, -25%);
-            transform: translate(0, -25%);
+    transition: transform .3s ease-out;
+    transform: translate(0, -25%);
 }
 
 bade[data-theme='cyborg'] .modal.in .modal-dialog,
 body.cyborg .modal.in .modal-dialog
 {
-    -webkit-transform: translate(0, 0);
-            transform: translate(0, 0);
+    transform: translate(0, 0);
 }
 
 bade[data-theme='cyborg'] .modal-open .modal,
@@ -18531,9 +20324,8 @@ body.cyborg fieldset[disabled] .btn-link:focus
 bade[data-theme='cyborg'] a,
 body.cyborg a
 {
-    -webkit-transition: .5s;
     /* ...and now for the proper property */
-            transition: .5s;
+    transition: .5s;
     text-decoration: none;
 
     color: #0ce3ac;
@@ -19122,8 +20914,7 @@ body.night
 {
     /* random */
     color: #d7d7d7;
-    background: -webkit-linear-gradient(#313131, #3c3c3c);
-    background:         linear-gradient(#313131, #3c3c3c);
+    background: linear-gradient(#313131, #3c3c3c);
     /* checkboxes */
     /* sidebar */
     /* navbar */
@@ -19147,8 +20938,7 @@ body.night
 body[data-theme='night'] .cuckoo-analysis,
 body.night .cuckoo-analysis
 {
-    background: -webkit-linear-gradient(#313131, #3c3c3c);
-    background:         linear-gradient(#313131, #3c3c3c);
+    background: linear-gradient(#313131, #3c3c3c);
 }
 
 body[data-theme='night'] .cuckoo-analysis__header,
@@ -19983,18 +21773,6 @@ body.night .alert-danger .alert-link
     color: #e6e6e6;
 }
 
-@-webkit-keyframes progress-bar-stripes
-{
-    from
-    {
-        background-position: 40px 0;
-    }
-    to
-    {
-        background-position: 0 0;
-    }
-}
-
 @keyframes progress-bar-stripes
 {
     from
@@ -20031,8 +21809,7 @@ body.night .progress-bar
     width: 0;
     height: 100%;
 
-    -webkit-transition: width .6s ease;
-            transition: width .6s ease;
+    transition: width .6s ease;
     text-align: center;
 
     color: #fff;
@@ -20045,8 +21822,7 @@ body[data-theme='night'] .progress-bar-striped,
 body.night .progress-striped .progress-bar,
 body.night .progress-bar-striped
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
     background-size: 40px 40px;
 }
 
@@ -20055,8 +21831,7 @@ body[data-theme='night'] .progress-bar.active,
 body.night .progress.active .progress-bar,
 body.night .progress-bar.active
 {
-    -webkit-animation: progress-bar-stripes 2s linear infinite;
-            animation: progress-bar-stripes 2s linear infinite;
+    animation: progress-bar-stripes 2s linear infinite;
 }
 
 body[data-theme='night'] .progress-bar-success,
@@ -20068,8 +21843,7 @@ body.night .progress-bar-success
 body[data-theme='night'] .progress-striped .progress-bar-success,
 body.night .progress-striped .progress-bar-success
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 body[data-theme='night'] .progress-bar-info,
@@ -20081,8 +21855,7 @@ body.night .progress-bar-info
 body[data-theme='night'] .progress-striped .progress-bar-info,
 body.night .progress-striped .progress-bar-info
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 body[data-theme='night'] .progress-bar-warning,
@@ -20094,8 +21867,7 @@ body.night .progress-bar-warning
 body[data-theme='night'] .progress-striped .progress-bar-warning,
 body.night .progress-striped .progress-bar-warning
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 body[data-theme='night'] .progress-bar-danger,
@@ -20107,8 +21879,7 @@ body.night .progress-bar-danger
 body[data-theme='night'] .progress-striped .progress-bar-danger,
 body.night .progress-striped .progress-bar-danger
 {
-    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
 
 body[data-theme='night'] .well,
@@ -20217,19 +21988,14 @@ body.night .modal
 body[data-theme='night'] .modal.fade .modal-dialog,
 body.night .modal.fade .modal-dialog
 {
-    -webkit-transition: -webkit-transform .3s ease-out;
-            transition: -webkit-transform .3s ease-out;
-            transition:         transform .3s ease-out;
-            transition:         transform .3s ease-out, -webkit-transform .3s ease-out;
-    -webkit-transform: translate(0, -25%);
-            transform: translate(0, -25%);
+    transition: transform .3s ease-out;
+    transform: translate(0, -25%);
 }
 
 body[data-theme='night'] .modal.in .modal-dialog,
 body.night .modal.in .modal-dialog
 {
-    -webkit-transform: translate(0, 0);
-            transform: translate(0, 0);
+    transform: translate(0, 0);
 }
 
 body[data-theme='night'] .modal-open .modal,
@@ -21347,9 +23113,8 @@ body.night fieldset[disabled] .btn-link:focus
 body[data-theme='night'] a,
 body.night a
 {
-    -webkit-transition: .5s;
     /* ...and now for the proper property */
-            transition: .5s;
+    transition: .5s;
     text-decoration: none;
 
     color: #0ce3ac;

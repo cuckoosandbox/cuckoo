@@ -34,7 +34,7 @@ from cuckoo.core.startup import (
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    Pidfile, mkdir
+    Pidfile, mkdir, format_command
 )
 
 log = logging.getLogger("cuckoo")
@@ -170,15 +170,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
             "rules, and more goodies by running the following command:"
         )
-        raw = cwd(raw=True)
-        if raw == "." or raw == "~/.cuckoo":
-            command = "cuckoo community"
-        elif " " in raw or "'" in raw:
-            command = 'cuckoo --cwd "%s" community' % raw
-        else:
-            command = "cuckoo --cwd %s community" % raw
-
-        log.info("$ %s", green(command))
+        log.info("$ %s", green(format_command("community")))
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
@@ -244,8 +236,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
-        if e.code:
-            print e
+        pass
     except Exception as e:
         # Deal with an unhandled exception.
         sys.stderr.write(exception_message())
@@ -427,6 +418,7 @@ def rooter(ctx, socket, group, service, iptables, ip, sudo):
             pass
     else:
         try:
+            log.info("Starting Cuckoo Rooter (group=%s)!", group)
             cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
@@ -636,6 +628,19 @@ def import_(ctx, mode, path):
     """Imports an older Cuckoo setup into a new CWD. The old setup should be
     identified by PATH and the new CWD may be specified with the --cwd
     parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
+    if os.path.exists(os.path.join(path, ".cwd")):
+        print(yellow(
+            "The 'cuckoo import' feature is meant to import a legacy Cuckoo, "
+            "i.e., Cuckoo 1.2, 2.0-dev, 2.0-rc1, or 2.0-rc2 into a new Cuckoo "
+            "CWD."
+        ))
+        print(red(
+            "You're attempting to import an existing Cuckoo CWD. To upgrade "
+            "Cuckoo / your CWD, simply run 'pip install -U cuckoo' and re-run "
+            "the cuckoo commands!"
+        ))
+        sys.exit(1)
+
     if mode == "symlink" and is_windows():
         sys.exit(red(
             "You can only use the 'symlink' mode on non-Windows platforms."

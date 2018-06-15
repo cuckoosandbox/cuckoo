@@ -5,9 +5,6 @@
 *.pem
 *.cert
 
-# .map files (css/js debugging)
-*.map
-
 # OS generated files
 .DS_Store*
 .AppleDouble
@@ -30,6 +27,7 @@ lib/python2.7/
 build/
 dist/
 local/
+.pytest_cache/
 
 # Cuckoo package stuff
 cuckoo/private/.cwd
@@ -38,3 +36,5 @@ cuckoo/private/.cwd
 node_modules/
 bower_components/
 .sass-cache/
+cuckoo/web/src/package-lock.json
+*.map

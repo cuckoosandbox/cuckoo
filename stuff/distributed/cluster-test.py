@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -41,6 +41,7 @@ def main(host, port, script):
         print "Unknown script:", script
         exit(1)
 
+    owner = "cluster.test.%d" % int(time.time())
     url = "http://%s:%s" % (host, port)
 
     r = requests.get("%s/api/node" % url).json()
@@ -58,13 +59,13 @@ def main(host, port, script):
     tasks = {}
     for node, vmname in machines:
         r = requests.post("%s/api/task" % url, files={
-            "file": (script.name, script.source),
+            "file": (script.filename, script.source),
         }, data={
             "node": node,
             "machine": vmname,
             "options": "json.calls=0",
             "priority": 5,
-            "owner": "cluster.test",
+            "owner": owner,
         })
         tasks[r.json()["task_id"]] = node, vmname
         print "submitted..", node, vmname, r.json()["task_id"]
@@ -73,20 +74,22 @@ def main(host, port, script):
     while tasks:
         r = requests.get("%s/api/task" % url, params={
             "status": "finished",
-            "owner": "cluster.test",
+            "owner": owner,
         })
         assert r.status_code == 200
 
         for task in r.json()["tasks"].values():
             r = requests.get("%s/api/report/%d" % (url, task["id"]))
+            if task["id"] not in tasks:
+                continue
             node, vmname = tasks.pop(task["id"])
             ret = script.check(r.json())
             status.append((node, vmname, task["id"], ret))
             print "finished..", status[-1], "report.length=%d" % len(r.text)
             if not ret:
                 print "^-- incorrect return value!"
-
-            requests.delete("%s/api/task/%d" % (url, task["id"]))
+            else:
+                requests.delete("%s/api/task/%d" % (url, task["id"]))
 
         counts = {}
         for node, _ in tasks.values():

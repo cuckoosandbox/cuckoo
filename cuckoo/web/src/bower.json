@@ -15,19 +15,22 @@
     "tests"
   ],
   "devDependencies": {
-    "font-awesome": "fontawesome#^4.7.0",
-    "handlebars": "^3.0.0",
-    "font-roboto": "^0.0.2",
-    "string": "stringjs#^3.3.3",
-    "moment": "^2.17.1",
-    "chart.js": "^2.5.0",
-    "bootstrap": "^3.3.7",
-    "js-cookie": "^2.1.4",
-    "datatables": "^1.10.13",
-    "highlight": "^9.10.0",
-    "jquery-ui": "^1.12.1",
-    "bowser": "browser#^1.6.1",
-    "Split.js": "^1.2.0",
-    "bourbon": "^4.3.4"
+    "font-awesome": "fontawesome#4.7.0",
+    "handlebars": "3.0.0",
+    "font-roboto": "0.0.2",
+    "string": "stringjs#3.3.3",
+    "moment": "2.17.1",
+    "chart.js": "2.5.0",
+    "bootstrap": "3.3.7",
+    "js-cookie": "2.1.4",
+    "datatables": "1.10.13",
+    "highlight": "9.10.0",
+    "lightbox2": "lightbox#2.10.0",
+    "jquery-ui": "1.12.1",
+    "bowser": "browser#1.6.1",
+    "Split.js": "1.2.0",
+    "bourbon": "4.3.4",
+    "jquery": "2.2.4",
+    "lightbox2": "2.10.0"
   }
 }

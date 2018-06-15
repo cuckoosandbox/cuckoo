@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,7 +8,6 @@ import importlib
 import logging
 import multiprocessing
 import os
-import pkg_resources
 import subprocess
 import sys
 import types
@@ -32,10 +31,9 @@ log = logging.getLogger(__name__)
 _root = None
 _raw = None
 
-# This normalizes the installed version of Cuckoo to a regular minor version.
-# That is, both 2.0.4.2 and 2.0.4 return version 2.0.4, avoiding issues with
-# distutils later on.
-version = ".".join(pkg_resources.require("Cuckoo")[0].version.split(".")[:3])
+# Normalized Cuckoo version (i.e., "2.0.5.3" in setup is "2.0.5" here). This
+# because we use StrictVersion() later on which doesn't accept "2.0.5.3".
+version = "2.0.6"
 
 def set_cwd(path, raw=None):
     global _root, _raw
@@ -252,6 +250,9 @@ class Pidfile(object):
 
     def proc_exists(self, pid):
         """Returns boolean if the process exists or None when unsupported."""
+        if not pid:
+            return False
+
         if is_windows():
             from ctypes import windll, wintypes
             dw_exit = wintypes.DWORD()
@@ -285,3 +286,18 @@ class Pidfile(object):
                 pids[name] = pidfile.pid
 
         return pids
+
+def make_list(obj):
+    if isinstance(obj, (tuple, list)):
+        return list(obj)
+    return [obj]
+
+def format_command(*args):
+    raw = cwd(raw=True)
+    if raw == "." or raw == "~/.cuckoo":
+        command = "cuckoo "
+    elif " " in raw or "'" in raw:
+        command = 'cuckoo --cwd "%s" ' % raw
+    else:
+        command = "cuckoo --cwd %s " % raw
+    return command + " ".join(args)

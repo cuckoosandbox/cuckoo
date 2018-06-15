@@ -1,0 +1,100 @@
+{% load staticfiles %}
+
+<!-- The actual dialog -->
+<dialog class="rdp-dialog" id="rdp-dialog">
+  <div class="rdp-dialog__body"></div>
+</dialog>
+
+<!-- html for the reboot dialog  -->
+<template id="rdp-dialog-reboot">
+  <h4 class="rdp-dialog__title">Are you sure you want to <strong>reboot</strong>?</h4>
+  <p class="rdp-dialog__text">Your current changes will be lost.</p>
+
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="submit">Cancel</button>
+    <button value="proceed" type="submit">Reboot</button>
+  </form>
+</template>
+
+<!-- html for the close dialog  -->
+<template id="rdp-dialog-close">
+  <h4 class="rdp-dialog__title">Are you sure you want to <strong>close</strong>?</h4>
+  <p class="rdp-dialog__text">Your current changes will be lost.</p>
+
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="submit">Cancel</button>
+    <button value="proceed" type="submit">Close</button>
+  </form>
+</template>
+
+<!-- html for the snapshots dialog  -->
+<template id="rdp-dialog-snapshots">
+  <h4 class="rdp-dialog__title">Session ended. You made <strong data-model="total">0</strong> manual screenshots during this session</h4>
+  <p class="rdp-dialog__text">Please select the ones to include in the analysis.</p>
+
+  <form id="snapshot-selection-form">
+    <ul class="rdp-snapshot-selection"></ul>
+  </form>
+
+  <form class="rdp-dialog__options">
+    <button value="cancel" type="submit">Skip and close</button>
+    <button value="proceed" type="submit">Include <span data-model="selected">0</span> screenshot(s) and close.</button>
+  </form>
+</template>
+
+<!-- HTML for the 'done' state of the isolated execution -->
+<template id="rdp-dialog-completed">
+  <h4 class="rdp-dialog__title">VM ended the session</h4>
+  <p class="rdp-dialog__text">The report is generated and ready to be reviewed.</p>
+  <form class="rdp-dialog__options">
+    <button value="close" type="submit">Close simulator</button>
+    <button value="report" type="submit">Show report</button>
+  </form>
+</template>
+
+<!-- error template -->
+<template id="rdp-error">
+
+  <div class="rdp__error">
+    <section>
+      <figure class="combined-icon">
+        <i class="fa fa-desktop"></i>
+        <i class="fa fa-frown-o"></i>
+      </figure>
+      <p>An error occured.</p>
+      <div class="rdp__error--resolutions">
+        <p>These may resolve any problems:</p>
+        <ol>
+          <li>Hit reboot and try again</li>
+          <li>Verify virtual machine config</li>
+        </ol>
+        <div class="rdp__error--buttons">
+          <a href="#">Send feedback</a>
+          <a href="#">Documentation</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</template>
+
+<!-- connecting template -->
+<template id="rdp-connecting">
+
+  <div class="rdp__connecting">
+    <section>
+      <figure class="combined-icon">
+        <img src="{% static "graphic/guacamole.png" %}" class="guac-icon" />
+        <i class="fa fa-desktop"></i>
+      </figure>
+      <p>Connecting to virtual machine
+        <span class="animated-ellipse">
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </span>
+      </p>
+    </section>
+  </div>
+
+</template>

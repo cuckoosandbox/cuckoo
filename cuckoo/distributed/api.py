@@ -40,7 +40,7 @@ def submit_task(url, task):
     # If the file does not exist anymore, ignore it and move on
     # to the next file.
     if not os.path.isfile(task["path"]):
-        return task["id"], None
+        return task["id"]
 
     files = {"file": (task["filename"], open(task["path"], "rb"))}
     try:
@@ -48,8 +48,9 @@ def submit_task(url, task):
             urlparse.urljoin(url, "/tasks/create/file"),
             data=data, files=files
         )
+        r.raise_for_status()
         return r.json()["task_id"]
-    except Exception:
+    except requests.RequestException:
         pass
 
 def fetch_tasks(url, status, limit):

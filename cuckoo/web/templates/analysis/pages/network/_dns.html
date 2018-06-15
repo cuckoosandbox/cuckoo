@@ -12,7 +12,7 @@
         </thead>
         <tbody>
 
-            {% if report.analysis.network.hosts %}
+            {% if report.analysis.network.hosts or report.analysis.network.dns %}
                 {% for p in report.analysis.network.dns %}
                     <tr>
                         <td>

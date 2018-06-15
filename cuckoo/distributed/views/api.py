@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -249,13 +249,17 @@ def task_post():
     f.save(path)
     os.close(fd)
 
+    if not os.path.getsize(path):
+        os.remove(path)
+        return json_error(404, "Provided file is empty")
+
     task = Task(path=path, filename=os.path.basename(f.filename), **kwargs)
 
     node = request.form.get("node")
     if node:
         node = Node.query.filter_by(name=node, enabled=True).first()
         if not node:
-            return json_error(404, "Node note found")
+            return json_error(404, "Node not found")
         task.assign_node(node.id)
 
     db.session.add(task)
@@ -290,7 +294,7 @@ def task_get(task_id):
     )})
 
 @blueprint.route("/task/<int:task_id>", methods=["DELETE"])
-def task_delete(task_id):
+def task_delete(task_id, commit=True):
     task = Task.query.get(task_id)
     if task is None:
         return json_error(404, "Task not found")
@@ -317,6 +321,13 @@ def task_delete(task_id):
     else:
         task.status = Task.DELETED
 
+    commit and db.session.commit()
+    return jsonify(success=True)
+
+@blueprint.route("/tasks", methods=["DELETE"])
+def tasks_delete():
+    for task_id in request.form.get("task_ids", "").split():
+        task_delete(int(task_id), commit=False)
     db.session.commit()
     return jsonify(success=True)
 

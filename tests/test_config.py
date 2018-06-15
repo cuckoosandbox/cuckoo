@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -1125,7 +1125,30 @@ script = mitm.py
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.4", "2.0.5")
+
     assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
+
+def test_migration_205_206():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[database]
+    """)
+    Files.create(cwd("conf"), "virtualbox.conf", """
+[virtualbox]
+machines = vbox1
+[vbox1]
+mode = headless
+    """)
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.5", "2.0.6")
+
+    assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
+
+    assert cfg["virtualbox"]["controlports"] == "5000-5050"
 
 class FullMigration(object):
     DIRPATH = None

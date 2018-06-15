@@ -1,0 +1,360 @@
+/*
+  Inherits bootstraps modal style as a base. .modal-cuckoo is a variation
+  on that same structure.
+ */
+.modal-cuckoo {
+
+  // different backdrop for this modal
+  &-backdrop {
+    &.in {
+      opacity: 1;
+    }
+    background-color: rgba(#6297F8, .7);
+
+    @include cuckoo-theme('cyborg') {
+      background-color: rgba($cyborg_background_color, .7);
+    }
+
+  }
+
+  // inherited style corrections
+  .modal-footer {
+    border-top: 0;
+    text-align: left;
+
+    @include cuckoo-theme('cyborg') {
+      border-bottom: 0;
+    }
+  }
+
+  .modal-dialog {
+    width: 640px;
+    border-radius: 4px;
+    overflow: hidden;
+
+    @include cuckoo-theme('cyborg') {
+      border: 1px solid $cyborg_border_color;
+    }
+  }
+
+  .modal-content {
+    border: 0;
+
+    & > p {
+      margin: 0;
+      padding-top: 20px;
+    }
+  }
+
+  // this modal's inner elements auto-decide which color they
+  // need to be.
+  .modal-content > *[class^="modal-"] {
+
+    position: relative;
+    border-bottom: 1px solid #D2D2D2;
+
+    &.arrow {
+      &:after,
+      &:before {
+        top: 100%;
+        left: 30px;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      &:after {
+        border-color: rgba(255, 255, 255, 0);
+        border-top-color: #ffffff;
+        border-width: 9px;
+        margin-left: -9px;
+      }
+
+      &:before {
+        border-color: rgba(210, 210, 210, 0);
+        border-top-color: #D2D2D2;
+        border-width: 10px;
+        margin-left: -10px;
+      }
+
+      &-center {
+        &:before,
+        &:after {
+          top: 100%;
+          left: 50%;
+        }
+      }
+    }
+
+    &:nth-child(odd) {
+      background-color: #F6F6F6;
+      &:before { border-top-color: #D2D2D2; }
+      &:after { border-top-color: #F6F6F6; }
+
+      @include cuckoo-theme('cyborg') {
+        background-color: $cyborg_background_color;
+        &:after { border-top-color: $cyborg_background_color; }
+      }
+
+      @include cuckoo-theme('night') {
+        background-color: $night_background_color;
+        &:after { border-top-color: $night_background_color; }
+      }
+
+    }
+    &:nth-child(even) {
+      background-color: #fff;
+
+      @include cuckoo-theme('cyborg') {
+        background-color: tint($cyborg_background_color, 5%);
+        &:after { border-top-color: tint($cyborg_background_color, 5%); }
+      }
+
+      @include cuckoo-theme('night') {
+        background-color: tint($night_background_color, 5%);
+        &:after { border-top-color: tint($night_background_color, 5%); }
+      }
+
+    }
+
+    &.error {
+      background-color: tint(#f00, 60%);
+      border-bottom-color: #f00;
+      &:after { border-top-color: tint(#f00, 60%); }
+      &:before { border-top-color: #f00; }
+    }
+
+    @include cuckoo-theme('cyborg') {
+      border-bottom-color: $cyborg_border_color;
+      &:before { border-top-color: $cyborg_border_color; }
+    }
+
+    @include cuckoo-theme('night') {
+      border-bottom-color: $night_border_color;
+      &:before { border-top-color: $night_border_color; }
+    }
+
+  }
+
+  // syntactic mirror of .modal-body
+  .modal-section {
+    padding: 15px;
+    position: relative;
+
+    &.center {
+      text-align: center;
+    }
+
+  }
+
+  .modal-header {
+
+    padding-top: 25px;
+
+    h4 {
+      font-size: 26px;
+      font-weight: 400;
+      margin: 0;
+
+      .fa {
+        font-size: .8em;
+        vertical-align: middle;
+        opacity: .8;
+      }
+    }
+
+  }
+
+  .modal-form {
+
+    &:not(.no-flex) {
+      display: flex;
+      padding-bottom: 0;
+    }
+
+    .form-col {
+      flex-basis: 50%;
+      padding: 10px;
+      margin-left: -5px;
+    }
+
+    textarea,
+    input {
+      -webkit-appearance: none;
+      width: 100%;
+      border: 0;
+
+      &:focus {
+        outline: none;
+      }
+
+    }
+
+    textarea {
+      padding-top: 10px;
+      height: 150px;
+      background-color: transparent;
+    }
+
+    fieldset {
+      position: relative;
+      width: 100%;
+      margin-bottom: 15px;
+
+      label {
+        position: absolute;
+        top: 13px;
+        left: 10px;
+        font-style: italic;
+        font-weight: 400;
+        transition: all 150ms ease-in-out;
+      }
+
+      input {
+
+        -webkit-appearance: none;
+        border: 1px solid #ddd;
+        padding: 18px 10px 5px 10px;
+        border-radius: 4px;
+
+        &:focus,
+        &:valid {
+
+          border-color: #ddd;
+
+          & + label:not(.modal-form__checkbox) {
+            font-size: 11px;
+            font-weight: 500;
+            font-style: normal;
+            top: 6px;
+            color: $cuckoo_secundary_color;
+
+            @include cuckoo-theme('cyborg') {
+              color: $cyborg_secundary_color;
+            }
+
+            @include cuckoo-theme('night') {
+              color: $night_text_color;
+            }
+
+          }
+        }
+
+        @include cuckoo-theme('cyborg') {
+          border-color: $cyborg_border_color;
+        }
+
+        @include cuckoo-theme('night') {
+          border-color: $night_border_color;
+        }
+
+      }
+
+      &.error input {
+        border-color: #f00;
+      }
+
+    }
+
+    button[type="submit"] {
+      @extend .button--lg;
+      background-color: #A1EEA3;
+      border: 1px solid shade(#A1EEA3, 10%);
+      color: #2B712D;
+      margin: 5px 0;
+      padding: 10px;
+
+      &:hover {
+        background-color: shade(#A1EEA3, 5%);
+        border-color: shade(#A1EEA3, 10%);
+        color: inherit;
+      }
+
+      @include cuckoo-theme('cyborg') { color: #2B712D; }
+      @include cuckoo-theme('night') { color: #2B712D; }
+
+    }
+
+    &__checkbox {
+
+      margin: 10px 10px 15px 0;
+
+      label {
+        border: 1px solid #D2D2D2;
+        background-color: #fff;
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 9px 8px 8px 8px;
+
+        span {
+          position: relative;
+          top: -1px;
+          display: inline-block;
+          width: 25px;
+          height: 25px;
+          border: 3px solid #D2D2D2;
+          font-weight: 500;
+          border-radius: 50%;
+          vertical-align: middle;
+          margin-right: 5px;
+        }
+
+        &:hover {
+          background-color: #F5F5F5;
+          cursor: pointer;
+        }
+
+        &:active {
+          background-color: #eee;
+        }
+
+        @include cuckoo-theme('cyborg') {
+          border-color: $cyborg_border_color;
+          background-color: $cyborg_alt_blue;
+          color: #fff;
+        }
+
+        @include cuckoo-theme('night') {
+          border-color: $night_border_color;
+          background-color: $night_primary_color;
+        }
+
+      }
+
+      input {
+        display: none;
+
+        &:checked + label {
+          background-color: #6297F8;
+          border-color: shade(#6297F8, 10%);
+          color: #fff;
+
+          &:hover { background-color: shade(#6297F8, 5%); }
+          &:active { background-color: shade(#6297F8, 15%); }
+
+          span {
+            border-color: #fff;
+
+            &:after {
+              content: "";
+              position: absolute;
+              width: 11px;
+              height: 11px;
+              top: 4px;
+              left: 4px;
+              background-color: #fff;
+              border-radius: 50%;
+            }
+          }
+        }
+      }
+
+    }
+
+  }
+
+}

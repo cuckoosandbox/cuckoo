@@ -24,8 +24,6 @@ class MITM(Auxiliary):
         script = cwd(self.options.get("script", "stuff/mitm.py"))
         certificate = self.options.get("certificate", "bin/cert.p12")
 
-        outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")
-
         if not os.path.exists(mitmdump):
             log.error("Mitmdump does not exist at path \"%s\", man in the "
                       "middle interception aborted.", mitmdump)
@@ -65,13 +63,13 @@ class MITM(Auxiliary):
                 script, self.task.options.get("mitm", "")
             ).strip(),
             "-p", "%d" % self.port,
-            "-w", outpath
+            "-w", cwd("dump.mitm", analysis=self.task.id),
         ]
 
         self.proc = Popen(
             args, close_fds=True,
-            stdout=open(cwd("mitm.log", task_id=self.task.id), "wb"),
-            stderr=open(cwd("mitm.err", task_id=self.task.id), "wb")
+            stdout=open(cwd("mitm.log", analysis=self.task.id), "wb"),
+            stderr=open(cwd("mitm.err", analysis=self.task.id), "wb")
         )
 
         if "cert" in self.task.options:

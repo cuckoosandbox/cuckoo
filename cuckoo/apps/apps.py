@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -493,6 +493,10 @@ def migrate_cwd():
         shutil.copytree(
             cwd("..", "data", "whitelist", private=True), cwd("whitelist")
         )
+
+    # Create the new $CWD/yara/dumpmem/ directory.
+    if not os.path.exists(cwd("yara", "dumpmem")):
+        mkdir(cwd("yara", "dumpmem"))
 
     hashes = {}
     for line in open(cwd("cwd", "hashes.txt", private=True), "rb"):

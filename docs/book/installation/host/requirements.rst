@@ -184,3 +184,40 @@ If ``SWIG`` is present on the system one may install ``M2Crypto`` as follows::
     $ sudo pip install m2crypto==0.24.0
 
 .. _SWIG: http://www.swig.org/
+
+Installing guacd
+================
+
+``guacd`` is an optional service that provides the translation layer for RDP,
+VNC, and SSH for the remote control functionality in the Cuckoo web interface.
+
+Without it, remote control won't work. Versions 0.9.9 and up will work, but we
+recommend installing the latest version. On an Ubuntu 17.04 machine the
+following command will install version ``0.9.9-2``::
+
+    $ sudo apt install libguac-client-rdp0 libguac-client-vnc0 libguac-client-ssh0 guacd
+
+If you only want RDP support you can skip the installation of the
+``libguac-client-vnc0`` and ``libguac-client-ssh0`` packages.
+
+If you are using an older distribution or you just want to use the latest
+version (our recommendation), the following will build the latest version
+(``0.9.14``) from source::
+
+    $ sudo apt -y install libcairo2-dev libjpeg-turbo8-dev libpng-dev libossp-uuid-dev libfreerdp-dev
+    $ mkdir /tmp/guac-build && cd /tmp/guac-build
+    $ wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+    $ tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
+    $ ./configure --with-init-dir=/etc/init.d
+    $ make && sudo make install && cd ..
+    $ sudo ldconfig
+    $ sudo /etc/init.d/guacd start
+
+When installing from source, make sure you don't have another version of any
+of the ``libguac-`` libraries installed from your package manager or you might
+experience issues due to incompatibilities which can crash guacd.
+
+Note that the `VirtualBox Extension Pack`_ must also be installed to take
+advantage of the Cuckoo Control functionality exposed by Guacamole.
+
+.. _VirtualBox Extension Pack: https://www.virtualbox.org/wiki/Downloads

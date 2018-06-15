@@ -718,6 +718,7 @@ class TestMigrateCWD(object):
         assert open(cwd("whitelist", "domain.txt"), "rb").read().strip() == (
             "# You can add whitelisted domains here."
         )
+        assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
     def test_using_community(self):
