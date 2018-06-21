@@ -149,7 +149,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.6.1",
+    version="2.0.6.2",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -193,7 +193,7 @@ do_setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "egghatch==0.2.2",
+        "egghatch>=0.2.3, <0.3",
         "elasticsearch==5.3.0",
         "flask==0.12.2",
         "flask-sqlalchemy==2.1",
