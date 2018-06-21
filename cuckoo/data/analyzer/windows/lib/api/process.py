@@ -13,6 +13,7 @@ from ctypes import (
     c_ulong, create_string_buffer, c_int, c_uint16, c_uint, c_wchar_p,
     c_void_p, sizeof, byref, Structure, cast
 )
+from _subprocess import STARTF_USESTDHANDLES
 
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
@@ -66,7 +67,7 @@ def spCreateProcessW(application_name, command_line, process_attributes,
         si.flags = startup_info.dwFlags
         si.show_window = startup_info.wShowWindow
 
-    if si.flags & subprocess.STARTF_USESTDHANDLES:
+    if si.flags & STARTF_USESTDHANDLES:
         si.std_input = cast(int(startup_info.hStdInput), c_void_p)
         si.std_output = cast(int(startup_info.hStdOutput), c_void_p)
         si.std_error = cast(int(startup_info.hStdError), c_void_p)

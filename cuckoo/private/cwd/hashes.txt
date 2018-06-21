@@ -261,7 +261,7 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 pidfiles/.gitignore
 554151cf678d3304e5c083ecf1a15631e0271bc7 stuff/mitm.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/office/.gitignore
 
-# TBD
+# 2.0.6 release
 cde76689871c88ef2d4a8fe0c3166eb61611eecf analyzer/darwin/analyzer.py
 12be07bcede77c7b505a1999ffcdd1128bf2446f analyzer/darwin/lib/api/__init__.py
 f47c2c7c0b1dddee583e81b95af5a8bd91b0dfec analyzer/darwin/lib/api/screenshot.py
@@ -280,3 +280,6 @@ d9036d462ecf16c73dd4a3ab8fab5c4453b3b8ec monitor/e071e63a66e831163a40abc45109fdf
 f76a7295cdfb78f9353225536af1e3d0f3ac1672 monitor/e071e63a66e831163a40abc45109fdf71fee829e/monitor-x86.dll
 b3c28c2d5bb316072d0590fb73b221e7191c155b monitor/latest
 7830f083a2e0b1aca6bff14c27918022e315c230 yara/dumpmem/readme_first.txt
+
+# 2.0.6.2 release
+9d17b524c7f7c62473485e672a1b91a0120629b6 analyzer/windows/lib/api/process.py
