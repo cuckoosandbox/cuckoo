@@ -130,7 +130,8 @@ class VirtualBoxRemote(Machinery):
         machine.restore()
 
         if machine.state() != self.POWEROFF:
-            machine.poweroff()
+            machine.save()
+            machine.discard()
 
         log.debug("Enable network tracing")
         machine.enable_net_trace(self.options.virtualbox_websrv.remote_storage +
