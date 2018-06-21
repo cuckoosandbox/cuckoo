@@ -129,8 +129,10 @@ class VirtualBoxRemote(Machinery):
         log.debug("Restoring machine and powering it off")
         machine.restore()
 
-        if machine.state() != self.POWEROFF:
+        if machine.state() == self.RUNNING:
             machine.save()
+            machine.discard()
+        elif machine.state() == self.SAVED:
             machine.discard()
 
         log.debug("Enable network tracing")
