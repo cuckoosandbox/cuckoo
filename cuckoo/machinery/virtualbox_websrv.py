@@ -105,7 +105,11 @@ class VirtualBoxRemote(Machinery):
                 continue
 
             vmachine = vbox.get_machine(machine.label)
-            vmachine.restore(machine.snapshot)
+
+            if machine.snapshot:
+                vmachine.restore(machine.snapshot)
+            else:
+                vmachine.restore()
 
         vbox.disconnect()
 
@@ -116,6 +120,7 @@ class VirtualBoxRemote(Machinery):
         @raise CuckooMachineError: if unable to start.
         """
         log.debug("Obtaining vm %s", label)
+
         vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
                                   self.options.virtualbox_websrv.user,
                                   self.options.virtualbox_websrv.password)
@@ -127,8 +132,6 @@ class VirtualBoxRemote(Machinery):
             )
 
         log.debug("Restoring machine and powering it off")
-        machine.restore()
-
         if machine.state() == self.RUNNING:
             machine.save()
             machine.discard()
@@ -136,13 +139,27 @@ class VirtualBoxRemote(Machinery):
             machine.discard()
 
         log.debug("Enable network tracing")
-        machine.enable_net_trace(self.options.virtualbox_websrv.remote_storage +
-                                 '/analyses/' +
-                                 str(task.id) +
-                                 '/dump.pcap')
+        try:
+            machine.enable_net_trace(self.options.virtualbox_websrv.remote_storage +
+                                     '/analyses/' +
+                                     str(task.id) +
+                                     '/dump.pcap')
+        except remotevbox.exceptions.MachineEnableNetTraceError as e:
+            CuckooMachineError(
+                "Can't enable net trace: %s" % e
+            )
+        except remotevbox.exceptions.MachineSetTraceFileError as e:
+            CuckooMachineError(
+                "Can't enable net trace: %s" % e
+            )
 
-        log.debug("Start vm")
-        machine.launch()
+        log.debug("Start vm %s" % label)
+        try:
+            machine.launch()
+        except remotevbox.exceptions.MachineLaunchError as e:
+            CuckooMachineError(
+                "Can't start virtual machine: %s" % e
+            )
 
         vbox.disconnect()
 
@@ -158,10 +175,6 @@ class VirtualBoxRemote(Machinery):
         machine = vbox.get_machine(label)
 
         status = machine.state()
-
-        # The VM has already been restored, don't shut it down again. This
-        # appears to be a VirtualBox-specific state though, hence we handle
-        # it here rather than in Machinery._initialize_check().
         if status == self.POWEROFF or status == self.ABORTED:
             raise CuckooMachineError(
                 "Trying to stop an already stopped VM: %s" % label
@@ -202,5 +215,9 @@ class VirtualBoxRemote(Machinery):
             raise CuckooMachineError(
                 "Failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
+            )
+        except remotevbox.exceptions.MachineCoredumpError as e:
+            CuckooMachineError(
+                "Failed to coredump machine: %s" % e
             )
         vbox.disconnect()
