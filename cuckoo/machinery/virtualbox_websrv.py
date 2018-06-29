@@ -7,6 +7,7 @@ import logging
 import os
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.misc import mkdir, cwd
 from cuckoo.common.exceptions import (
     CuckooCriticalError, CuckooMachineError, CuckooDependencyError
 )
@@ -48,7 +49,7 @@ class VirtualBoxRemote(Machinery):
         """Runs all checks when a machine manager is initialized.
         @raise CuckooCriticalError: if VirtualBox Web Service is
         not available remotely or some configuration variables are
-        not set.
+        not set or wrong.
         """
         if not self.options.virtualbox_websrv.url:
             raise CuckooCriticalError(
@@ -56,18 +57,19 @@ class VirtualBoxRemote(Machinery):
                 "virtualbox_websrv.conf configuration file!"
             )
 
-        if (not self.options.virtualbox_websrv.user or
-           not self.options.virtualbox_websrv.password):
-            raise CuckooCriticalError(
-                "VirtualBox Web Service user or password is missing, please "
-                "add it to the virtualbox_websrv.conf configuration file!"
-            )
-
         if not self.options.virtualbox_websrv.remote_storage:
             raise CuckooCriticalError(
                 "VirtualBox host path is missing, please add remote_storage "
                 "to the virtualbox_websrv.conf configuration file!"
             )
+
+        if not os.access(cwd("storage"), os.F_OK | os.W_OK | os.X_OK):
+            raise CuckooCriticalError(
+                "Not enough permissions to work with remote storage"
+            )
+
+        mkdir(cwd("storage", "analyses"))
+        mkdir(cwd("storage", "binaries"))
 
         if self.options.virtualbox_websrv.mode not in ("gui", "headless"):
             raise CuckooCriticalError(
@@ -80,10 +82,12 @@ class VirtualBoxRemote(Machinery):
         if not self.options.virtualbox_websrv.debug:
             logging.getLogger("zeep").setLevel(logging.INFO)
 
+        self.user = self.options.virtualbox_websrv.user or ""
+        self.password = self.options.virtualbox_websrv.password or ""
         try:
             vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                      self.options.virtualbox_websrv.user,
-                                      self.options.virtualbox_websrv.password)
+                                      self.user,
+                                      self.password)
         except remotevbox.exceptions.WebServiceConnectionError:
             raise CuckooCriticalError(
                 "Can't connect to VirtualBox Web Service, check your network "
@@ -122,8 +126,8 @@ class VirtualBoxRemote(Machinery):
         log.debug("Obtaining vm %s", label)
 
         vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.options.virtualbox_websrv.user,
-                                  self.options.virtualbox_websrv.password)
+                                  self.user,
+                                  self.password)
         machine = vbox.get_machine(label)
 
         if machine.state() == self.RUNNING:
@@ -170,8 +174,8 @@ class VirtualBoxRemote(Machinery):
         """
         log.debug("Stopping vm %s" % label)
         vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.options.virtualbox_websrv.user,
-                                  self.options.virtualbox_websrv.password)
+                                  self.user,
+                                  self.password)
         machine = vbox.get_machine(label)
 
         status = machine.state()
@@ -197,8 +201,8 @@ class VirtualBoxRemote(Machinery):
         """
 
         vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.options.virtualbox_websrv.user,
-                                  self.options.virtualbox_websrv.password)
+                                  self.user,
+                                  self.password)
         machine = vbox.get_machine(label)
         filename = os.path.basename(path)
         task_id = os.path.basename(os.path.dirname(path))
