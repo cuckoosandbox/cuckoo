@@ -283,3 +283,6 @@ b3c28c2d5bb316072d0590fb73b221e7191c155b monitor/latest
 
 # 2.0.6.2 release
 9d17b524c7f7c62473485e672a1b91a0120629b6 analyzer/windows/lib/api/process.py
+
+# TBD
+e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
