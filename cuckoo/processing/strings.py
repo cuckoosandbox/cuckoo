@@ -4,7 +4,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
 import os.path
 import re
 import vivisect
@@ -12,19 +11,17 @@ import vivisect
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.objects import File
+
 from floss import identification_manager as id_man
 from floss import main
 from floss import stackstrings
 from floss import strings as static
 
-log = logging.getLogger(__name__)
-log_level = logging.getLogger().level
-
 class Strings(Processing):
-    """Extract encoded & static strings from analyzed file with floss"""
+    """Extract encoded & static strings from analyzed file with Floss"""
     def run(self):
-        """Run floss on analyzed file.
-        @return: floss results dict.
+        """Run Floss on analyzed file.
+        @return: Floss results dict.
         """
         self.key = "strings"
         self.floss = self.options.get("floss")
@@ -76,10 +73,10 @@ class Strings(Processing):
 
             if self.floss and (package == "exe" or ext == "exe" or "PE32" in f.get_type()):
                 # Disable floss verbose logging
-
+                main.set_logging_levels()
                 
                 try:
-                    # Prepare FLOSS for extracting hidden & encoded strings
+                    # Prepare Floss for extracting hidden & encoded strings
                     vw = vivisect.VivWorkspace()
                     vw.loadFromFile(self.file_path)
                     vw.analyze()
@@ -96,48 +93,49 @@ class Strings(Processing):
                     decoded_strings = main.decode_strings(
                         vw, decoding_functions_candidates, self.MIN_STRINGLEN
                     )
-                    decoded_strings = main.filter_unique_decoded(decoded_strings)
+                    decoded_strs = main.filter_unique_decoded(decoded_strings)
 
-                    stack_strs = stackstrings.extract_stackstrings(
+                    stack_strings = stackstrings.extract_stackstrings(
                         vw, selected_functions, self.MIN_STRINGLEN
                     )
-                    stack_strs = set(stack_strs)
+                    stack_strings = list(stack_strings)
+
+                    decoded_strings = [x for x in decoded_strs if not x in static_strings]
                 except Exception as e:
                     raise CuckooProcessingError("Error extracting strings with floss: %s" % e)
 
-                # Create annotated scripts
-                if self.idapro:
-                    main.create_ida_script(
-                        self.file_path, os.path.join(self.str_script_path, base_name + ".idb"),
-                        decoded_strings, stack_strs
-                    )
+                if len(decoded_strings) or len(stack_strings):
+                    # Create annotated scripts
+                    if self.idapro:
+                        main.create_ida_script(
+                            self.file_path, os.path.join(self.str_script_path, base_name + ".idb"),
+                            decoded_strings, stack_strings, True
+                        )
 
-                if self.radare:
-                    main.create_r2_script(
-                        self.file_path, os.path.join(self.str_script_path, base_name + ".r2"),
-                        decoded_strings, stack_strs
-                    )
+                    if self.radare:
+                        main.create_r2_script(
+                            self.file_path, os.path.join(self.str_script_path, base_name + ".r2"),
+                            decoded_strings, stack_strings, True
+                        )
 
-                if self.x64dbg:
-                    imagebase = vw.filemeta.values()[0]['imagebase']
-                    main.create_x64dbg_database(
-                        self.file_path, os.path.join(self.str_script_path, base_name + ".json"),
-                        imagebase, decoded_strings
-                    )
+                    if self.x64dbg:
+                        imagebase = vw.filemeta.values()[0]['imagebase']
+                        main.create_x64dbg_database(
+                            self.file_path, os.path.join(self.str_script_path, base_name + ".json"),
+                            imagebase, decoded_strings, True
+                        )
 
-                for i, s in enumerate(decoded_strings):
-                    decoded_strings[i] = main.sanitize_string_for_printing(s.s)
-                    
-                uniq_decoded_strings = [x for x in decoded_strings if not x in static_strings]
+                # convert Floss strings into regular, readable strings
+                for idx, s in enumerate(decoded_strings):
+                    decoded_strings[idx] = main.sanitize_string_for_printing(s.s)
 
-                stack_strings = []
-                for s in stack_strs:
-                    stack_strings.append(s.s)
+                for idx, s in enumerate(stack_strings):
+                    stack_strings[idx] = s.s
 
-                results = [uniq_decoded_strings, stack_strings, static_strings]
+                results = [decoded_strings, stack_strings, static_strings]
 
-                for i, str_type in enumerate(STRING_TYPES):
-                    strings[str_type] = results[i]
+                for idx, str_type in enumerate(STRING_TYPES):
+                    strings[str_type] = results[idx]
 
             else:
                 strings["static"] = static_strings
