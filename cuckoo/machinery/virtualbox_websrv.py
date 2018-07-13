@@ -128,7 +128,7 @@ class VirtualBoxRemote(Machinery):
             )
         return vbox
 
-    def _get_machine(vbox, label):
+    def _get_machine(self, vbox, label):
         """Get virtual machine by a label.
         @return remotevbox.IMachine
         @raise remotevbox.exceptions.FindMachineError: if unable to find
