@@ -24,12 +24,6 @@ log = logging.getLogger(__name__)
 class VirtualBoxRemote(Machinery):
     """Virtualization layer for VirtualBox."""
 
-    # VM states.
-    SAVED = "Saved"
-    RUNNING = "Running"
-    POWEROFF = "PoweredOff"
-    ABORTED = "Aborted"
-
     def __init__(self):
         if not HAVE_REMOTEVBOX:
             raise CuckooDependencyError(
@@ -92,16 +86,27 @@ class VirtualBoxRemote(Machinery):
         # Restore each virtual machine to its snapshot. This will crash early
         # for users that don't have proper snapshots in-place, which is good.
         machines = vbox.list_machines()
+        if len(machines) == 0:
+            raise CuckooCriticalError(
+                "No virtual machines available"
+            )
+
         for machine in self.machines():
             if machine.label not in machines:
                 continue
 
-            vmachine = vbox.get_machine(machine.label)
+            vmachine = self._get_machine(vbox, machine.label)
 
-            if machine.snapshot:
-                vmachine.restore(machine.snapshot)
-            else:
-                vmachine.restore()
+            try:
+                if machine.snapshot:
+                    vmachine.restore(machine.snapshot)
+                else:
+                    vmachine.restore()
+            except remotevbox.exceptions.MachineSnapshotNX as e:
+                raise CuckooCriticalError(
+                    "No current snapshot or a specified snapshot "
+                    "not found: %s" % e
+                )
 
         vbox.disconnect()
 
@@ -153,9 +158,9 @@ class VirtualBoxRemote(Machinery):
         vbox = self._connect()
         machine = self._get_machine(vbox, label)
 
-        if machine.state() == self.RUNNING:
+        if machine.state() == machine.RUNNING:
             log.debug("Turning off machine")
-            machine.save()
+            machine.poweroff()
 
         log.debug("Restoring machine")
         machine_conf = self.db.view_machine_by_label(label)
@@ -167,7 +172,8 @@ class VirtualBoxRemote(Machinery):
                 machine.restore()
         except remotevbox.exceptions.MachineSnapshotNX as e:
             raise CuckooMachineError(
-                "Snapshot not found: %s" % e
+                "No current snapshot or a specified snapshot "
+                "not found: %s" % e
             )
 
         log.debug("Enable network tracing")
@@ -205,7 +211,7 @@ class VirtualBoxRemote(Machinery):
         machine = self._get_machine(vbox, label)
 
         status = machine.state()
-        if status == self.POWEROFF or status == self.ABORTED:
+        if status == machine.POWEROFF or status == machine.ABORTED:
             raise CuckooMachineError(
                 "Trying to stop an already stopped VM: %s" % label
             )
