@@ -167,7 +167,7 @@ class VirtualBoxRemote(Machinery):
                 machine.restore()
         except remotevbox.exceptions.MachineSnapshotNX as e:
             raise CuckooMachineError(
-                "Can't restore machine to a snapshot %s: %s" % e
+                "Snapshot not found: %s" % e
             )
 
         log.debug("Enable network tracing")
