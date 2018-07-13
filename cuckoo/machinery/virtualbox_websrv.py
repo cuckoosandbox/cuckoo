@@ -84,20 +84,8 @@ class VirtualBoxRemote(Machinery):
 
         self.user = self.options.virtualbox_websrv.user or ""
         self.password = self.options.virtualbox_websrv.password or ""
-        try:
-            vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                      self.user,
-                                      self.password)
-        except remotevbox.exceptions.WebServiceConnectionError:
-            raise CuckooCriticalError(
-                "Can't connect to VirtualBox Web Service, check your network "
-                "and if web service is really started"
-            )
-        except remotevbox.exceptions.WrongCredentialsError:
-            raise CuckooCriticalError(
-                "Wrong credentials supplied in virtualbox_websrv.conf "
-                "configuration file!"
-            )
+
+        vbox = self._connect()
 
         super(VirtualBoxRemote, self)._initialize_check()
 
@@ -117,6 +105,43 @@ class VirtualBoxRemote(Machinery):
 
         vbox.disconnect()
 
+    def _connect(self):
+        """Connect to a VirtualBox WebService.
+        @return remotevbox.IVirtualBox
+        @raise remotevbox.exceptions.WebServiceConnectionError: if
+        VirtualBox Web Service is not available
+        @raise remotevbox.exceptions.WrongCredentialsError: if credentials
+        are not valid"""
+        try:
+            vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
+                                      self.user,
+                                      self.password)
+        except remotevbox.exceptions.WebServiceConnectionError:
+            raise CuckooCriticalError(
+                "Can't connect to VirtualBox Web Service, check your network "
+                "and if web service is really started"
+            )
+        except remotevbox.exceptions.WrongCredentialsError:
+            raise CuckooCriticalError(
+                "Wrong credentials supplied in virtualbox_websrv.conf "
+                "configuration file!"
+            )
+        return vbox
+
+    def _get_machine(vbox, label):
+        """Get virtual machine by a label.
+        @return remotevbox.IMachine
+        @raise remotevbox.exceptions.FindMachineError: if unable to find
+        machine
+        """
+        try:
+            machine = vbox.get_machine(label)
+        except remotevbox.exceptions.FindMachineError as e:
+            raise CuckooCriticalError(
+                "Machine %s not found: %s" % (label, e)
+            )
+        return machine
+
     def start(self, label, task):
         """Start a virtual machine.
         @param label: virtual machine name.
@@ -125,22 +150,25 @@ class VirtualBoxRemote(Machinery):
         """
         log.debug("Obtaining vm %s", label)
 
-        vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.user,
-                                  self.password)
-        machine = vbox.get_machine(label)
+        vbox = self._connect()
+        machine = self._get_machine(vbox, label)
 
         if machine.state() == self.RUNNING:
-            raise CuckooMachineError(
-                "Trying to start an already started VM: %s" % label
-            )
-
-        log.debug("Restoring machine and powering it off")
-        if machine.state() == self.RUNNING:
+            log.debug("Turning off machine")
             machine.save()
-            machine.discard()
-        elif machine.state() == self.SAVED:
-            machine.discard()
+
+        log.debug("Restoring machine")
+        machine_conf = self.db.view_machine_by_label(label)
+        try:
+            if machine_conf.snapshot:
+                machine.restore(machine_conf.snapshot)
+            else:
+                """Restore to a current snapshot"""
+                machine.restore()
+        except remotevbox.exceptions.MachineSnapshotNX as e:
+            raise CuckooMachineError(
+                "Can't restore machine to a snapshot %s: %s" % e
+            )
 
         log.debug("Enable network tracing")
         try:
@@ -173,10 +201,8 @@ class VirtualBoxRemote(Machinery):
         @raise CuckooMachineError: if unable to stop.
         """
         log.debug("Stopping vm %s" % label)
-        vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.user,
-                                  self.password)
-        machine = vbox.get_machine(label)
+        vbox = self._connect()
+        machine = self._get_machine(vbox, label)
 
         status = machine.state()
         if status == self.POWEROFF or status == self.ABORTED:
@@ -200,10 +226,9 @@ class VirtualBoxRemote(Machinery):
         @param path: path to where to store the memory dump.
         """
 
-        vbox = remotevbox.connect(self.options.virtualbox_websrv.url,
-                                  self.user,
-                                  self.password)
-        machine = vbox.get_machine(label)
+        vbox = self._connect()
+        machine = self._get_machine(vbox, label)
+
         filename = os.path.basename(path)
         task_id = os.path.basename(os.path.dirname(path))
 
