@@ -56,6 +56,10 @@ Install kernel debugging symbols::
 
     $ sudo apt-get update
     $ sudo apt-get install linux-image-$(uname -r)-dbgsym
+    
+(For Debian 9 amd64) Install kernel debugging symbols::
+
+    $ sudo apt-get install linux-image-$(uname -r)-dbg
 
 Patch SystemTap tapset (this will change in the future)::
 
