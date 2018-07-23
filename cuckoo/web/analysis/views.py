@@ -328,10 +328,11 @@ def search(request):
         body={
             "query": {
                 "query_string": {
-                    "query": '"%s"*' % value,
+                    "query": "*%s*" % value,
                 },
             },
-        }
+        },
+        size=1000
     )
 
     analyses = []
