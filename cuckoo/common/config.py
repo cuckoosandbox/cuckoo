@@ -317,6 +317,10 @@ class Config(object):
                     exists=False, writable=False, readable=True
                 ),
                 "port_base": Int(51000),
+                "certificate": Path(
+                    "bin/cert.p12",
+                    exists=False, writable=False, readable=True
+                ),
             },
             "services": {
                 "enabled": Boolean(False),

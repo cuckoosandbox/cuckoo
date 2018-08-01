@@ -11,7 +11,7 @@ import threading
 from cuckoo.common.abstracts import Auxiliary
 from cuckoo.common.config import config
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import Popen
+from cuckoo.misc import Popen, cwd
 
 log = logging.getLogger(__name__)
 PORTS = []
@@ -23,11 +23,11 @@ class Replay(Auxiliary):
         self.proc = None
         self.port = None
 
-    def pcap2mitm(self, pcappath):
+    def pcap2mitm(self, pcappath, tlsmaster):
         """Used to translate a .pcap into a .mitm file."""
         mitmpath = tempfile.mktemp(suffix=".mitm")
         with open(mitmpath, "wb") as f:
-            httpreplay.utils.pcap2mitm(pcappath, f, None, True)
+            httpreplay.utils.pcap2mitm(pcappath, f, tlsmaster, True)
         return mitmpath
 
     def start(self):
@@ -45,6 +45,14 @@ class Replay(Auxiliary):
         # TODO We have to do version checking on mitmdump.
         mitmdump = self.options["mitmdump"]
         port_base = self.options["port_base"]
+        certificate = self.options["certificate"]
+
+        cert_path = cwd("analyzer", "windows", certificate)
+        if not os.path.exists(cert_path):
+            log.error("Mitmdump root certificate not found at path \"%s\" "
+                      "(real path \"%s\"), man in the middle interception "
+                      "aborted.", certificate, cert_path)
+            return
 
         mitmpath = self.task.options["replay"]
         if not mitmpath.endswith((".pcap", ".mitm")):
@@ -56,7 +64,8 @@ class Replay(Auxiliary):
 
         # We support both .mitm and .pcap files.
         if mitmpath.endswith(".pcap"):
-            mitmpath = self.pcap2mitm(mitmpath)
+            tlsmaster = self.task.options.get("replay.tls")
+            mitmpath = self.pcap2mitm(mitmpath, tlsmaster)
 
         if not os.path.getsize(mitmpath):
             log.error(
@@ -101,6 +110,13 @@ class Replay(Auxiliary):
         ]
 
         self.proc = Popen(args, close_fds=True)
+
+        if "cert" in self.task.options:
+            log.warning("A root certificate has been provided for this task, "
+                        "however, this is overridden by the mitm auxiliary "
+                        "module.")
+
+        self.task.options["cert"] = certificate
 
         log.info(
             "Started PCAP replay PID %d (ip=%s, port=%d).",
