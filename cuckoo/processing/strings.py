@@ -29,12 +29,14 @@ class Strings(Processing):
                 )
 
             try:
-                data = open(self.file_path, "r").read(self.MAX_FILESIZE)
+                data = open(self.file_path, "rb").read(self.MAX_FILESIZE)
             except (IOError, OSError) as e:
                 raise CuckooProcessingError("Error opening file %s" % e)
 
-            strings = re.findall("[\x1f-\x7e]{6,}", data)
-            for s in re.findall("(?:[\x1f-\x7e][\x00]){6,}", data):
+            strings = []
+            for s in re.findall(b"[\x1f-\x7e]{6,}", data):
+                strings.append(s.decode("utf-8"))
+            for s in re.findall(b"(?:[\x1f-\x7e][\x00]){6,}", data):
                 strings.append(s.decode("utf-16le"))
 
         # Now limit the amount & length of the strings.
