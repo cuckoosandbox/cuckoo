@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import pkgutil
+import sys
 
 import cuckoo
 
@@ -363,15 +364,14 @@ class RunSignatures(object):
     def _on_call_defined(self, sig):
         """Test if on_call is defined.  This is not pretty, but it allows
         on_call to be defined in `abstracts` for documentation purposes.
+        """
 
-        NB: In Python 3, we can just use `sig.on_call is Signature.on_call`."""
-        try:
-            sig.on_call(None, None)
-        except NotImplementedError:
-            return False
-        except:
-            pass
-        return True
+        # In Python 3, we can just use a simple check
+        if sys.version_info[0] >= 3:
+            return sig.on_call is not Signature.on_call
+
+        # Check where the method was defined
+        return sig.on_call.__func__.__module__ != Signature.on_call.__func__.__module__
 
     @classmethod
     def init_once(cls):
