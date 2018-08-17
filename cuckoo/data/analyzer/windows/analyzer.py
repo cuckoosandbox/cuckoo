@@ -647,6 +647,9 @@ class Analyzer(object):
         # Initialize zer0m0n with our compiled Yara rules.
         zer0m0n.yarald("bin/rules.yarac")
 
+        # Propagate the requested dump interval, if set.
+        zer0m0n.dumpint(int(self.config.options.get("dumpint", "0")))
+
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         pids = self.package.start(self.target)

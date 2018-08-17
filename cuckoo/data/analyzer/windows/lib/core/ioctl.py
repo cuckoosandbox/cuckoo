@@ -66,6 +66,7 @@ class Zer0m0nIoctl(Ioctl):
         "yarald",
         "getpids",
         "hidepid",
+        "dumpint",
     ]
 
     def invoke(self, action, buf):
@@ -97,5 +98,8 @@ class Zer0m0nIoctl(Ioctl):
 
     def hidepid(self, pid):
         return self.invoke("hidepid", struct.pack("Q", pid))
+
+    def dumpint(self, ms):
+        return self.invoke("dumpint", struct.pack("I", ms))
 
 zer0m0n = Zer0m0nIoctl(driver_name)

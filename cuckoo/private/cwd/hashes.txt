@@ -285,4 +285,6 @@ b3c28c2d5bb316072d0590fb73b221e7191c155b monitor/latest
 9d17b524c7f7c62473485e672a1b91a0120629b6 analyzer/windows/lib/api/process.py
 
 # TBD
+3feecc072857e18f1cf6654ea863bd8096e03fb8 analyzer/windows/analyzer.py
+d23fcf2567de80b22d0eaa8921c9f3e6ed4c8db9 analyzer/windows/lib/core/ioctl.py
 e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
