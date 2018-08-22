@@ -4,9 +4,15 @@ matrix:
   fast_finish: true
   include:
     - python: 2.7
+      cache:
+        pip: true
     - os: osx
       osx_image: xcode9.3beta
       language: generic
+      cache:
+        pip: true
+        directories:
+          - $HOME/Library/Caches
 
 services:
   - mongodb
