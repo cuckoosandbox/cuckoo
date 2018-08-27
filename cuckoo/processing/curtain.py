@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.6"
-__date__    = "12JUN2018"
+__version__ = "1.0.7"
+__date__    = "27JUN2018"
 
 def buildBehaviors(entry, behaviorTags):
     # Generates possible code injection variations
@@ -32,22 +32,22 @@ def buildBehaviors(entry, behaviorTags):
 
     behaviorCol["Code Injection"] = list(itertools.product(*codeInject))
 
-    behaviorCol["Downloader"] = [["New-Object System.Net.WebClient","DownloadFile"],
-                                 ["New-Object System.Net.WebClient","DownloadString"],
-                                 ["New-Object System.Net.WebClient","DownloadData"],
-                                 ["System.Net.WebRequest","WebProxy","System.Net.CredentialCache"],
-                                 ["Import-Module BitsTransfer", "Start-BitsTransfer", "Source", "Destination"],
-                                 ["New-Object System.Net.Sockets.TCPClient", "GetStream"],
+    behaviorCol["Downloader"] = [["Net.WebClient","DownloadFile"],
+                                 ["Net.WebClient","DownloadString"],
+                                 ["Net.WebClient","DownloadData"],
+                                 ["Net.WebRequest","WebProxy","Net.CredentialCache"],
+                                 ["Start-BitsTransfer", "Source", "Destination"],
+                                 ["Net.Sockets.TCPClient", "GetStream"],
                                  ["$env:LocalAppData"]]
 
     behaviorCol["Starts Process"] = [["Start-Process"],
-                                     ["New-Object IO.MemoryStream", "New-Object IO.StreamReader"],
+                                     ["IO.MemoryStream", "IO.StreamReader"],
                                      ["System.Diagnostics.Process]::Start"]]
 
     behaviorCol["Compression"] = [["Convert", "FromBase64String", "System.Text.Encoding"],
-                                  ["New-Object IO.Compression.GzipStream"],
+                                  ["IO.Compression.GzipStream"],
                                   ["[IO.Compression.CompressionMode]::Decompress"],
-                                  ["New-Object IO.Compression.DeflateStream"]]
+                                  ["IO.Compression.DeflateStream"]]
 
     behaviorCol["Uses Stealth"] = [["WindowStyle", "Hidden"],
                                    ["CreateNoWindow=$true"],
@@ -55,7 +55,7 @@ def buildBehaviors(entry, behaviorTags):
 
     behaviorCol["Key Logging"] = [["GetAsyncKeyState", "Windows.Forms.Keys"]]
 
-    behaviorCol["Screen Scraping"] = [["New-Object Drawing.Bitmap", "Width", "Height"],
+    behaviorCol["Screen Scraping"] = [["Drawing.Bitmap", "Width", "Height"],
                                       ["[Drawing.Graphics]::FromImage"],
                                       ["CopyFroMScreen", "Location", "[Drawing.Point]::Empty", "Size"]]
 
@@ -71,7 +71,7 @@ def buildBehaviors(entry, behaviorTags):
 
     behaviorCol["Obfuscation"] = [["-Join", "[int]", "-as", "[char]"]]
 
-    behaviorCol["Crypto"] = [["New-Object System.Security.Cryptography.AESCryptoServiceProvider", "Mode", "Key", "IV"],
+    behaviorCol["Crypto"] = [["System.Security.Cryptography.AESCryptoServiceProvider", "Mode", "Key", "IV"],
                              ["CreateEncryptor().TransformFinalBlock"],
                              ["CreateDecryptor().TransformFinalBlock"]]
 
@@ -90,7 +90,7 @@ def buildBehaviors(entry, behaviorTags):
                                             ["[Security.Principal.WindowsBuiltInRole]", "Administrator"],
                                             ["[System.Diagnostics.Process]::GetCurrentProcess"],
                                             ["PSVersionTable.PSVersion"],
-                                            ["New-Object System.Diagnostics.ProcessStartInfo"],
+                                            ["System.Diagnostics.ProcessStartInfo"],
                                             ["GWMI Win32_ComputerSystemProduct"],
                                             ["Get-WMIObject Win32_ComputerSystemProduct"],
                                             ["Get-Process -id"],
