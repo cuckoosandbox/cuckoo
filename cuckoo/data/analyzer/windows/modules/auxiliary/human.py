@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -37,6 +37,7 @@ def foreach_child(hwnd, lparam):
         "install", "installer",
         "file", "fichier",
         "run", "start", "marrer", "cuter",
+        "extract",
         "i agree", "accepte",
         "enable", "activer", "accord", "valider",
         "don't send", "ne pas envoyer",
