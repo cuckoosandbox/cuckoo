@@ -18,14 +18,28 @@
     {% include "analysis/search_results.html" %}
 </div>
 
-<script type="text/javascript">
-$("#form_search").on("input", function() {
+function debounce(func, wait, immediate) {
+        var timeout;
+        return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                        timeout = null;
+                        if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+        };
+};
+
+$("#form_search").keyup(debounce(function() {
     $.post("{% url "analysis.views.search" %}", {
         raw: true,
         search: $("#form_search").val(),
     }, function(data) {
         $("#results").html(data);
-    });
-});
-</script>
+    })
+},1000));
+
 {% endblock %}
