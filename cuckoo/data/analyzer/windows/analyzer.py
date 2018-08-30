@@ -636,6 +636,9 @@ class Analyzer(object):
                           module.__name__)
                 aux_enabled.append(aux)
 
+        # Inform zer0m0n of the ResultServer address.
+        zer0m0n.resultserver(self.config.ip, self.config.port)
+
         # Forward the command pipe and logpipe names on to zer0m0n.
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)

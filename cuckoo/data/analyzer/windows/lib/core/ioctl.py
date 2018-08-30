@@ -4,6 +4,7 @@
 
 import ctypes
 import logging
+import socket
 import struct
 
 from lib.common.defines import (
@@ -67,6 +68,7 @@ class Zer0m0nIoctl(Ioctl):
         "getpids",
         "hidepid",
         "dumpint",
+        "resultserver",
     ]
 
     def invoke(self, action, buf):
@@ -101,5 +103,17 @@ class Zer0m0nIoctl(Ioctl):
 
     def dumpint(self, ms):
         return self.invoke("dumpint", struct.pack("I", ms))
+
+    def resultserver(self, ip, port):
+        # Just a regular SOCKADDR structure, up to 128 bytes
+        if ":" in ip:
+            rs = struct.pack("<H", socket.AF_INET6)
+            rs += struct.pack("!H", port)
+            rs += socket.inet_pton(socket.AF_INET6, ip)
+        else:
+            rs = struct.pack("<H", socket.AF_INET)
+            rs += struct.pack("!H", port)
+            rs += socket.inet_aton(ip)
+        return self.invoke("resultserver", rs)
 
 zer0m0n = Zer0m0nIoctl(driver_name)
