@@ -791,6 +791,7 @@ class Processing(object):
         self.shots_path = os.path.join(self.analysis_path, "shots")
         self.pcap_path = os.path.join(self.analysis_path, "dump.pcap")
         self.pmemory_path = os.path.join(self.analysis_path, "memory")
+        self.str_script_path = os.path.join(self.analysis_path, "str_script")
         self.memory_path = os.path.join(self.analysis_path, "memory.dmp")
         self.mitmout_path = os.path.join(self.analysis_path, "mitm.log")
         self.mitmerr_path = os.path.join(self.analysis_path, "mitm.err")

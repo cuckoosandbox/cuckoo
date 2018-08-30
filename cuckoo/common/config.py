@@ -563,7 +563,7 @@ class Config(object):
             },
             "procmemory": {
                 "enabled": Boolean(True),
-                "idapro": Boolean(False),
+                "idapro_dmp_sct": Boolean(False),
                 "extract_img": Boolean(True),
                 "extract_dll": Boolean(False),
                 "dump_delete": Boolean(False),
@@ -592,6 +592,13 @@ class Config(object):
             },
             "strings": {
                 "enabled": Boolean(True),
+                "floss": Boolean(True),
+                "min_str_len": Int(4),
+                "max_str_len": Int(1024),
+                "max_str_cnt": Int(2048),
+                "idapro_str_sct": Boolean(False),
+                "radare_str_sct": Boolean(False),
+                "x64dbg_str_sct": Boolean(False),
             },
             "suricata": {
                 "enabled": Boolean(False),

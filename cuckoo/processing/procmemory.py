@@ -170,7 +170,7 @@ class ProcessMemory(Processing):
 
                 ExtractManager.for_task(self.task["id"]).peek_procmem(proc)
 
-                if self.options.get("idapro"):
+                if self.options.get("idapro_dmp_sct"):
                     self.create_idapy(proc)
 
                 if self.options.get("extract_img"):
