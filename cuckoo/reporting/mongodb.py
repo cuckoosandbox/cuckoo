@@ -141,6 +141,33 @@ class MongoDB(Report):
                     if f.valid():
                         extracted["extracted_id"] = self.store_file(f)
 
+        # Store the scripts that Floss generated in GredFS and reference
+        # them back in the report.
+        if "strings" in report:
+            if "idapro_sct_name" in report["strings"]:
+                idapro_sct_path = os.path.join(
+                    self.analysis_path, "str_script", report["strings"]["idapro_sct_name"]
+                )
+                idapro_sct_file = File(idapro_sct_path)
+                if idapro_sct_file.valid():
+                    report["strings"]["idapro_sct_id"] = self.store_file(idapro_sct_file)
+
+            if "radare_sct_name" in report["strings"]:
+                radare_sct_path = os.path.join(
+                    self.analysis_path, "str_script", report["strings"]["radare_sct_name"]
+                )
+                radare_sct_file = File(radare_sct_path)
+                if radare_sct_file.valid():
+                    report["strings"]["radare_sct_id"] = self.store_file(radare_sct_file)
+
+            if "x64dbg_sct_name" in report["strings"]:
+                x64dbg_sct_path = os.path.join(
+                    self.analysis_path, "str_script", report["strings"]["x64dbg_sct_name"]
+                )
+                x64dbg_sct_file = File(x64dbg_sct_path)
+                if x64dbg_sct_file.valid():
+                    report["strings"]["x64dbg_sct_id"] = self.store_file(x64dbg_sct_file)
+
         # Walk through the dropped files, store them in GridFS and update the
         # report with the ObjectIds.
         new_dropped = []

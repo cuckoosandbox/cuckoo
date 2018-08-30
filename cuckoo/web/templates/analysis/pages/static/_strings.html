@@ -1,6 +1,24 @@
 <section id="static_strings">
+    {% if report.analysis.strings.idapro_sct_name %}
+        <div class="header-right valign-bottom">
+            <a href="{% url "analysis.views.file" "str_script" report.analysis.strings.idapro_sct_id %}" title="Download Ida Pro Script">Download Ida Pro Script</a>
+        </div>
+    {% endif %}
+
+    {% if report.analysis.strings.radare_sct_name %}
+        <div class="header-right valign-bottom">
+            <a href="{% url "analysis.views.file" "str_script" report.analysis.strings.radare_sct_id %}" title="Download Radare2 Script">Download Radare2 Script</a>
+        </div>
+    {% endif %}
+
+    {% if report.analysis.strings.x64dbg_sct_name %}
+        <div class="header-right valign-bottom">
+            <a href="{% url "analysis.views.file" "str_script" report.analysis.strings.x64dbg_sct_id %}" title="Download x64dbg Database">Download x64dbg Database</a>
+        </div>
+    {% endif %}
+    
     {% if report.analysis.strings.decoded %}
-    <h4>Decoded Strings</h4>
+        <h4>Decoded Strings</h4>
         <div class="well" style="font-family:monospace;width:75%;">
             {% for string in report.analysis.strings.decoded %}
                 <div>{{string}}</div>

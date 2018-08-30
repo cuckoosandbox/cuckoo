@@ -28,9 +28,6 @@ class Strings(Processing):
         self.MIN_STRINGLEN = int(self.options.get("min_str_len"))
         self.MAX_STRINGLEN = self.options.get("max_str_len")
         self.MAX_STRINGCNT = self.options.get("max_str_cnt")
-        self.idapro = self.options.get("idapro_str_sct")
-        self.radare = self.options.get("radare_str_sct")
-        self.x64dbg = self.options.get("x64dbg_str_sct")
         self.MAX_FILESIZE = 16*1024*1024
         
         STRING_TYPES = [
@@ -106,23 +103,32 @@ class Strings(Processing):
 
                 if len(decoded_strings) or len(stack_strings):
                     # Create annotated scripts
-                    if self.idapro:
+                    if self.options.get("idapro_str_sct"):
+                        idapro_sct_name = base_name + ".idb"
+                        strings["idapro_sct_name"] = idapro_sct_name
+
                         main.create_ida_script(
-                            self.file_path, os.path.join(self.str_script_path, base_name + ".idb"),
-                            decoded_strings, stack_strings, True
+                            self.file_path, os.path.join(self.str_script_path, idapro_sct_name), 
+                            decoded_strings, stack_strings
                         )
 
-                    if self.radare:
+                    if self.options.get("radare_str_sct"):
+                        radare_sct_name = base_name + ".r2"
+                        strings["radare_sct_name"] = radare_sct_name
+
                         main.create_r2_script(
-                            self.file_path, os.path.join(self.str_script_path, base_name + ".r2"),
-                            decoded_strings, stack_strings, True
+                            self.file_path, os.path.join(self.str_script_path, radare_sct_name), 
+                            decoded_strings, stack_strings
                         )
 
-                    if self.x64dbg:
+                    if self.options.get("x64dbg_str_sct"):
+                        x64dbg_sct_name = base_name + ".json"
+                        strings["x64dbg_sct_name"] = x64dbg_sct_name
+
                         imagebase = vw.filemeta.values()[0]['imagebase']
                         main.create_x64dbg_database(
-                            self.file_path, os.path.join(self.str_script_path, base_name + ".json"),
-                            imagebase, decoded_strings, True
+                            self.file_path, os.path.join(self.str_script_path, base_name + ".json"), 
+                            imagebase, decoded_strings
                         )
 
                 # convert Floss strings into regular, readable strings
