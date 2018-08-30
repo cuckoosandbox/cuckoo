@@ -197,7 +197,6 @@ do_setup(
         "elasticsearch==5.3.0",
         "flask==0.12.2",
         "flask-sqlalchemy==2.1",
-        "git+https://github.com/fireeye/flare-floss/zipball/master"
         "httpreplay>=0.2.2, <0.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
@@ -215,9 +214,12 @@ do_setup(
         "sflock>=0.3.4, <0.4",
         "sqlalchemy==1.0.8",
         "unicorn==1.0.1",
-        "git+https://github.com/williballenthin/vivisect/zipball/master"
         "wakeonlan==0.2.2",
         "yara-python==3.6.3",
+    ],
+    dependency_links=[
+        "git+https://github.com/fireeye/flare-floss/zipball/master",
+        "git+https://github.com/williballenthin/vivisect/zipball/master",
     ],
     extras_require={
         ":sys_platform == 'win32'": [
