@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import os
 from _winreg import HKEY_CURRENT_USER
 
 from lib.common.abstracts import Package
@@ -65,6 +66,9 @@ class PUB(Package):
 
     def start(self, path):
         publisher = self.get_path("Microsoft Office Publisher")
+        if not path.endswith(".pub"):
+             os.rename(path, path + ".pub")
+             path += ".pub"
         return self.execute(
             publisher, args=["/o", path], mode="office", trigger="file:%s" % path
         )
