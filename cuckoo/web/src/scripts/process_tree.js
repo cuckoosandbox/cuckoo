@@ -380,9 +380,9 @@ class ProcessBehaviorView {
 
       let url = `/analysis/search/${window.task_id}/`;
 
-      $.post(url, {
+      CuckooWeb.api_post(url, {
         search: query
-      }).done(response => {
+      }, function(response) {
 
         self.isLoadingSearch = false;
         self._search.find('button').removeClass('loading');
