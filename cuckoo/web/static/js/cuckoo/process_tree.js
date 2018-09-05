@@ -421,7 +421,7 @@ var ProcessBehaviorView = function () {
 
         var url = '/analysis/search/' + window.task_id + '/';
 
-        CuckooWeb.api_post(url, {
+        CuckooWeb.post(url, {
           search: query
         }, function (response) {
 

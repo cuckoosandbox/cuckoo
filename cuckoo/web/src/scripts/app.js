@@ -27,30 +27,59 @@ class CuckooWeb {
         return bytes.toFixed(1)+' '+units[u];
     }
 
+    static csrf_token() {
+        let token = Cookies.get("csrftoken");
+        if(!token) {
+            // Fallback. Maybe there is a form on the page?
+            let field = $("input[name=csrfmiddlewaretoken]");
+            if(field && field.val()) {
+                token = field.val();
+            }
+        }
+        return token;
+    }
+
+    // Wrapper that adds support for CSRF tokens
+    static ajax(args) {
+        if(args.type !== "get") {
+            const token = CuckooWeb.csrf_token();
+            if(!token) {
+                console.warn("Request to " + args.url + " on page without CSRF token");
+            }
+            const beforeSend = args.beforeSend;
+            args.beforeSend = function(request) {
+                if(token)
+                    request.setRequestHeader("X-CSRFToken", token);
+                if(beforeSend)
+                    beforeSend(request);
+            }
+        }
+        return $.ajax(args);
+    }
+
+    // Form
+    static post(url, data, success) {
+        return CuckooWeb.ajax({
+            url: url,
+            type: "post",
+            data: data,
+            success: success
+        });
+    }
+
+    // JSON
     static api_post(url, params, callback, errback, beforesend, silent = true){
 
         let data = JSON.stringify(params);
 
-        $.ajax({
+        CuckooWeb.ajax({
             type: "post",
             contentType: "application/json",
             url: url,
             dataType: "json",
             data: data,
             timeout: 20000,
-            beforeSend: function(request){
-                let token = Cookies.get("csrftoken");
-                if(!token) {
-                    let field = $("input[name=csrfmiddlewaretoken]");
-                    if(field && field.val()) {
-                        token = field.val();
-                    }
-                }
-                if(token) {
-                    request.setRequestHeader("X-CSRFToken", token);
-                } else {
-                    console.warn("Request to " + url + " on page without CSRF token");
-                }
+            beforeSend: function(){
                 if(beforesend){
                     beforesend()
                 }

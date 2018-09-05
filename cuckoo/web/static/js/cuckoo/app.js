@@ -38,6 +38,54 @@ var CuckooWeb = function () {
             return bytes.toFixed(1) + ' ' + units[u];
         }
     }, {
+        key: 'csrf_token',
+        value: function csrf_token() {
+            var token = Cookies.get("csrftoken");
+            if (!token) {
+                // Fallback. Maybe there is a form on the page?
+                var field = $("input[name=csrfmiddlewaretoken]");
+                if (field && field.val()) {
+                    token = field.val();
+                }
+            }
+            return token;
+        }
+
+        // Wrapper that adds support for CSRF tokens
+
+    }, {
+        key: 'ajax',
+        value: function ajax(args) {
+            if (args.type !== "get") {
+                var token = CuckooWeb.csrf_token();
+                if (!token) {
+                    console.warn("Request to " + args.url + " on page without CSRF token");
+                }
+                var beforeSend = args.beforeSend;
+                args.beforeSend = function (request) {
+                    if (token) request.setRequestHeader("X-CSRFToken", token);
+                    if (beforeSend) beforeSend(request);
+                };
+            }
+            return $.ajax(args);
+        }
+
+        // Form
+
+    }, {
+        key: 'post',
+        value: function post(url, data, success) {
+            return CuckooWeb.ajax({
+                url: url,
+                type: "post",
+                data: data,
+                success: success
+            });
+        }
+
+        // JSON
+
+    }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
             var silent = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
@@ -45,26 +93,14 @@ var CuckooWeb = function () {
 
             var data = JSON.stringify(params);
 
-            $.ajax({
+            CuckooWeb.ajax({
                 type: "post",
                 contentType: "application/json",
                 url: url,
                 dataType: "json",
                 data: data,
                 timeout: 20000,
-                beforeSend: function beforeSend(request) {
-                    var token = Cookies.get("csrftoken");
-                    if (!token) {
-                        var field = $("input[name=csrfmiddlewaretoken]");
-                        if (field && field.val()) {
-                            token = field.val();
-                        }
-                    }
-                    if (token) {
-                        request.setRequestHeader("X-CSRFToken", token);
-                    } else {
-                        console.warn("Request to " + url + " on page without CSRF token");
-                    }
+                beforeSend: function beforeSend() {
                     if (beforesend) {
                         beforesend();
                     }
