@@ -20,7 +20,7 @@ those values, you can use the following syntax::
     $ cuckoo api --host 0.0.0.0 --port 1337
     $ cuckoo api -H 0.0.0.0 -p 1337
 
-To allow only authentication access to the API, the ``api_token`` in
+To allow only authenticated access to the API, the ``api_token`` in
 ``cuckoo.conf`` must be set to a secret value. In new Cuckoo installations,
 a random token is automatically generated for you.
 To access the API, you must send the ``Authorization: Bearer <token>`` header
