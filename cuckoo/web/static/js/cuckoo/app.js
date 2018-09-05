@@ -52,7 +52,19 @@ var CuckooWeb = function () {
                 dataType: "json",
                 data: data,
                 timeout: 20000,
-                beforeSend: function beforeSend() {
+                beforeSend: function beforeSend(request) {
+                    var token = Cookies.get("csrftoken");
+                    if (!token) {
+                        var field = $("input[name=csrfmiddlewaretoken]");
+                        if (field && field.val()) {
+                            token = field.val();
+                        }
+                    }
+                    if (token) {
+                        request.setRequestHeader("X-CSRFToken", token);
+                    } else {
+                        console.warn("Request to " + url + " on page without CSRF token");
+                    }
                     if (beforesend) {
                         beforesend();
                     }
@@ -672,33 +684,22 @@ var DashboardTable = function () {
             var _this = this;
             var limit = parseInt(this.options.limit);
 
-            $.ajax({
-                type: "POST",
-                url: "/analysis/api/tasks/recent/",
-                contentType: "application/json",
-                dataType: "json",
-                data: JSON.stringify({
-                    cats: [],
-                    limit: isNaN(limit) ? 3 : limit,
-                    offset: 0,
-                    packs: [],
-                    score: ""
-                }),
-                success: function success(response) {
-
-                    if (response.tasks && $.isArray(response.tasks)) {
-
-                        response = response.tasks.map(function (item) {
-                            if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-                            return item;
-                        });
-                    } else {
-
-                        response = [];
-                    }
-
-                    _this.afterLoad(response);
+            CuckooWeb.api_post("/analysis/api/tasks/recent/", {
+                cats: [],
+                limit: isNaN(limit) ? 3 : limit,
+                offset: 0,
+                packs: [],
+                score: ""
+            }, function (response) {
+                if (response.tasks && $.isArray(response.tasks)) {
+                    response = response.tasks.map(function (item) {
+                        if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                        return item;
+                    });
+                } else {
+                    response = [];
                 }
+                _this.afterLoad(response);
             });
         }
     }, {
