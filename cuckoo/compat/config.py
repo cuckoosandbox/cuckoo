@@ -713,6 +713,9 @@ def _205_206(c):
 
 def _206_210(c):
     c["auxiliary"]["replay"]["certificate"] = "bin/cert.p12"
+    # We'd like to provide a secure default, but let's not inconvenience
+    # upgrading users.
+    c["cuckoo"]["cuckoo"]["api_token"] = ""
     return c
 
 migrations = {

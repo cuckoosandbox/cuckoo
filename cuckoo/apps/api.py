@@ -6,23 +6,25 @@
 import datetime
 import hashlib
 import io
+import logging
 import multiprocessing
 import os
 import socket
 import tarfile
 import zipfile
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, abort
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
-from cuckoo.common.utils import parse_bool
+from cuckoo.common.utils import parse_bool, constant_time_compare
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import cwd, version, decide_cwd, Pidfile
 
+log = logging.getLogger(__name__)
 db = Database()
 sm = SubmitManager()
 
@@ -646,7 +648,29 @@ def exit_api():
     else:
         return jsonify(message="Server stopped")
 
+@app.errorhandler(401)
+def api_auth_required(error):
+    return json_error(
+        401, "Authentication in the form of an "
+        "'Authorization: Bearer <TOKEN>' header is required"
+    )
+
+@app.before_request
+def check_authentication():
+    token = config("cuckoo:cuckoo:api_token")
+    if token:
+        expect = "Bearer " + token
+        auth = request.headers.get("Authorization")
+        if not constant_time_compare(auth, expect):
+            abort(401)
+
 def cuckoo_api(hostname, port, debug):
+    if not config("cuckoo:cuckoo:api_token"):
+        log.warning(
+            "It is strongly recommended to enable API authentication to "
+            "protect against unauthorized access and CSRF attacks."
+        )
+        log.warning("Please check the API documentation for more information.")
     app.run(host=hostname, port=port, debug=debug)
 
 if os.environ.get("CUCKOO_APP") == "api":

@@ -11,7 +11,7 @@ import re
 
 from cuckoo.common.exceptions import CuckooConfigurationError
 from cuckoo.common.objects import Dictionary
-from cuckoo.common.utils import parse_bool
+from cuckoo.common.utils import parse_bool, random_token
 from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
@@ -222,6 +222,7 @@ class Config(object):
                     exists=True, writable=True, readable=False,
                     allow_empty=True
                 ),
+                "api_token": String(random_token(), allow_empty=True),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=False
