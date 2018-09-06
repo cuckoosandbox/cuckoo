@@ -13266,8 +13266,8 @@ body.night .dns-badge > *.dns-badge__type
 
 .app-nav__nav--right > li .button,
 .app-nav__nav--right > li .button--lg,
-.app-nav__nav--right > li .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form .app-nav__nav--right > li button[type='submit'],
+.app-nav__nav--right > li .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form .app-nav__nav--right > li button.modal-submit,
 .app-nav__nav--right > li .button--sm,
 .app-nav__nav--right > li .list-panel .panel-title .button,
 .list-panel .panel-title .app-nav__nav--right > li .button,
@@ -13281,8 +13281,8 @@ body.night .dns-badge > *.dns-badge__type
 
 .app-nav__nav--right > li .button:hover,
 .app-nav__nav--right > li .button--lg:hover,
-.app-nav__nav--right > li .modal-cuckoo .modal-form button[type='submit']:hover,
-.modal-cuckoo .modal-form .app-nav__nav--right > li button[type='submit']:hover,
+.app-nav__nav--right > li .modal-cuckoo .modal-form button.modal-submit:hover,
+.modal-cuckoo .modal-form .app-nav__nav--right > li button.modal-submit:hover,
 .app-nav__nav--right > li .button--sm:hover,
 .list-panel .panel-title .app-nav__nav--right > li .button:hover,
 .list-panel__widget .panel-title .app-nav__nav--right > li .button:hover,
@@ -13346,8 +13346,8 @@ body.night .dns-badge > *.dns-badge__type
     }
     .app-nav__nav--right > li .button.outline,
     .app-nav__nav--right > li .outline.button--lg,
-    .app-nav__nav--right > li .modal-cuckoo .modal-form button.outline[type='submit'],
-    .modal-cuckoo .modal-form .app-nav__nav--right > li button.outline[type='submit'],
+    .app-nav__nav--right > li .modal-cuckoo .modal-form button.outline.modal-submit,
+    .modal-cuckoo .modal-form .app-nav__nav--right > li button.outline.modal-submit,
     .app-nav__nav--right > li .outline.button--sm,
     body.cyborg .app-error__balloon .list-panel .panel-title .app-nav__nav--right > li .button:not(.inversed),
     body.cyborg .app-error__balloon .list-panel__widget .panel-title .app-nav__nav--right > li .button:not(.inversed),
@@ -13359,10 +13359,10 @@ body.night .dns-badge > *.dns-badge__type
     body.cyborg .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
     .app-nav__nav--right > li body.cyborg .app-error__balloon .button--lg:not(.inversed),
     body.cyborg .app-error__balloon .app-nav__nav--right > li .button--lg:not(.inversed),
-    .app-nav__nav--right > li body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-    body.cyborg .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button[type='submit']:not(.inversed),
-    .app-nav__nav--right > li .modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit']:not(.inversed),
-    .modal-cuckoo .modal-form body.cyborg .app-error__balloon .app-nav__nav--right > li button[type='submit']:not(.inversed),
+    .app-nav__nav--right > li body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+    body.cyborg .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.modal-submit:not(.inversed),
+    .app-nav__nav--right > li .modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit:not(.inversed),
+    .modal-cuckoo .modal-form body.cyborg .app-error__balloon .app-nav__nav--right > li button.modal-submit:not(.inversed),
     .app-nav__nav--right > li body.cyborg .app-error__balloon .button--sm:not(.inversed),
     body.cyborg .app-error__balloon .app-nav__nav--right > li .button--sm:not(.inversed),
     .app-nav__nav--right > li body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed),
@@ -13371,10 +13371,10 @@ body.night .dns-badge > *.dns-badge__type
     body.night .app-error__balloon .app-nav__nav--right > li .button:not(.inversed),
     .app-nav__nav--right > li body.night .app-error__balloon .button--lg:not(.inversed),
     body.night .app-error__balloon .app-nav__nav--right > li .button--lg:not(.inversed),
-    .app-nav__nav--right > li body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-    body.night .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button[type='submit']:not(.inversed),
-    .app-nav__nav--right > li .modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit']:not(.inversed),
-    .modal-cuckoo .modal-form body.night .app-error__balloon .app-nav__nav--right > li button[type='submit']:not(.inversed),
+    .app-nav__nav--right > li body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+    body.night .app-error__balloon .modal-cuckoo .modal-form .app-nav__nav--right > li button.modal-submit:not(.inversed),
+    .app-nav__nav--right > li .modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit:not(.inversed),
+    .modal-cuckoo .modal-form body.night .app-error__balloon .app-nav__nav--right > li button.modal-submit:not(.inversed),
     .app-nav__nav--right > li body.night .app-error__balloon .button--sm:not(.inversed),
     body.night .app-error__balloon .app-nav__nav--right > li .button--sm:not(.inversed),
     .app-nav__nav--right > li body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
@@ -14039,7 +14039,7 @@ body.night .grouped-buttons__bordered a:focus
 
 .button,
 .button--lg,
-.modal-cuckoo .modal-form button[type='submit'],
+.modal-cuckoo .modal-form button.modal-submit,
 .button--sm,
 .list-panel .panel-title .button,
 .list-panel__widget .panel-title .button,
@@ -14061,8 +14061,8 @@ body.night .grouped-buttons__bordered a:focus
 
 body.cyborg .button,
 body.cyborg .button--lg,
-body.cyborg .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form body.cyborg button[type='submit'],
+body.cyborg .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form body.cyborg button.modal-submit,
 body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
@@ -14075,8 +14075,8 @@ body.cyborg .process-tree__search-submit
 
 body.cyborg .button:hover,
 body.cyborg .button--lg:hover,
-body.cyborg .modal-cuckoo .modal-form button[type='submit']:hover,
-.modal-cuckoo .modal-form body.cyborg button[type='submit']:hover,
+body.cyborg .modal-cuckoo .modal-form button.modal-submit:hover,
+.modal-cuckoo .modal-form body.cyborg button.modal-submit:hover,
 body.cyborg .button--sm:hover,
 body.cyborg .process-tree__search-submit:hover
 {
@@ -14087,8 +14087,8 @@ body.cyborg .process-tree__search-submit:hover
 
 body.night .button,
 body.night .button--lg,
-body.night .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form body.night button[type='submit'],
+body.night .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form body.night button.modal-submit,
 body.night .button--sm,
 body.night .list-panel .panel-title .button,
 .list-panel .panel-title body.night .button,
@@ -14101,8 +14101,8 @@ body.night .process-tree__search-submit
 
 body.night .button:hover,
 body.night .button--lg:hover,
-body.night .modal-cuckoo .modal-form button[type='submit']:hover,
-.modal-cuckoo .modal-form body.night button[type='submit']:hover,
+body.night .modal-cuckoo .modal-form button.modal-submit:hover,
+.modal-cuckoo .modal-form body.night button.modal-submit:hover,
 body.night .button--sm:hover,
 body.night .process-tree__search-submit:hover
 {
@@ -14113,7 +14113,7 @@ body.night .process-tree__search-submit:hover
 
 .button:hover,
 .button--lg:hover,
-.modal-cuckoo .modal-form button[type='submit']:hover,
+.modal-cuckoo .modal-form button.modal-submit:hover,
 .button--sm:hover,
 .list-panel .panel-title .button:hover,
 .list-panel__widget .panel-title .button:hover,
@@ -14128,14 +14128,14 @@ body.night .process-tree__search-submit:hover
 
 .button:focus,
 .button--lg:focus,
-.modal-cuckoo .modal-form button[type='submit']:focus,
+.modal-cuckoo .modal-form button.modal-submit:focus,
 .button--sm:focus,
 .list-panel .panel-title .button:focus,
 .list-panel__widget .panel-title .button:focus,
 .process-tree__search-submit:focus,
 .button:active,
 .button--lg:active,
-.modal-cuckoo .modal-form button[type='submit']:active,
+.modal-cuckoo .modal-form button.modal-submit:active,
 .button--sm:active,
 .list-panel .panel-title .button:active,
 .list-panel__widget .panel-title .button:active,
@@ -14147,7 +14147,7 @@ body.night .process-tree__search-submit:hover
 }
 
 .button--lg,
-.modal-cuckoo .modal-form button[type='submit']
+.modal-cuckoo .modal-form button.modal-submit
 {
     font-size: 16px;
 
@@ -14161,10 +14161,10 @@ body.night .process-tree__search-submit:hover
 .list-panel__widget .panel-title .button,
 .list-panel .panel-title .button--lg,
 .list-panel__widget .panel-title .button--lg,
-.list-panel .panel-title .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form .list-panel .panel-title button[type='submit'],
-.list-panel__widget .panel-title .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form .list-panel__widget .panel-title button[type='submit'],
+.list-panel .panel-title .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form .list-panel .panel-title button.modal-submit,
+.list-panel__widget .panel-title .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form .list-panel__widget .panel-title button.modal-submit,
 .list-panel .panel-title .button--sm,
 .list-panel__widget .panel-title .button--sm,
 .list-panel .panel-title .process-tree__search-submit,
@@ -14177,20 +14177,20 @@ body.night .process-tree__search-submit:hover
 
 .button.outline,
 .outline.button--lg,
-.modal-cuckoo .modal-form button.outline[type='submit'],
+.modal-cuckoo .modal-form button.outline.modal-submit,
 .outline.button--sm,
 .list-panel .panel-title .outline.button,
 .list-panel__widget .panel-title .outline.button,
 body.cyborg .app-error__balloon .button:not(.inversed),
 body.cyborg .app-error__balloon .button--lg:not(.inversed),
-body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit']:not(.inversed),
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit:not(.inversed),
 body.cyborg .app-error__balloon .button--sm:not(.inversed),
 body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed),
 body.night .app-error__balloon .button:not(.inversed),
 body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit']:not(.inversed),
+body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+.modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit:not(.inversed),
 body.night .app-error__balloon .button--sm:not(.inversed),
 body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .outline.process-tree__search-submit
@@ -14204,7 +14204,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 .button.inversed,
 .inversed.button--lg,
-.modal-cuckoo .modal-form button.inversed[type='submit'],
+.modal-cuckoo .modal-form button.inversed.modal-submit,
 .inversed.button--sm,
 .list-panel .panel-title .inversed.button,
 .list-panel__widget .panel-title .inversed.button,
@@ -14215,10 +14215,10 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .page-switcher.list-panel__widget .page-switcher__nav > .button:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--lg:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--lg:not(.active),
-.list-panel.page-switcher .modal-cuckoo .modal-form .page-switcher__nav > button[type='submit']:not(.active),
-.modal-cuckoo .modal-form .list-panel.page-switcher .page-switcher__nav > button[type='submit']:not(.active),
-.page-switcher.list-panel__widget .modal-cuckoo .modal-form .page-switcher__nav > button[type='submit']:not(.active),
-.modal-cuckoo .modal-form .page-switcher.list-panel__widget .page-switcher__nav > button[type='submit']:not(.active),
+.list-panel.page-switcher .modal-cuckoo .modal-form .page-switcher__nav > button.modal-submit:not(.active),
+.modal-cuckoo .modal-form .list-panel.page-switcher .page-switcher__nav > button.modal-submit:not(.active),
+.page-switcher.list-panel__widget .modal-cuckoo .modal-form .page-switcher__nav > button.modal-submit:not(.active),
+.modal-cuckoo .modal-form .page-switcher.list-panel__widget .page-switcher__nav > button.modal-submit:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--sm:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--sm:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:not(.active),
@@ -14231,7 +14231,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 .button.inversed:hover,
 .inversed.button--lg:hover,
-.modal-cuckoo .modal-form button.inversed[type='submit']:hover,
+.modal-cuckoo .modal-form button.inversed.modal-submit:hover,
 .inversed.button--sm:hover,
 .list-panel.page-switcher .panel-title .page-switcher__nav > .button:hover:not(.active),
 .page-switcher.list-panel__widget .panel-title .page-switcher__nav > .button:hover:not(.active),
@@ -14240,10 +14240,10 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .page-switcher.list-panel__widget .page-switcher__nav > .button:hover:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--lg:hover:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--lg:hover:not(.active),
-.list-panel.page-switcher .modal-cuckoo .modal-form .page-switcher__nav > button[type='submit']:hover:not(.active),
-.modal-cuckoo .modal-form .list-panel.page-switcher .page-switcher__nav > button[type='submit']:hover:not(.active),
-.page-switcher.list-panel__widget .modal-cuckoo .modal-form .page-switcher__nav > button[type='submit']:hover:not(.active),
-.modal-cuckoo .modal-form .page-switcher.list-panel__widget .page-switcher__nav > button[type='submit']:hover:not(.active),
+.list-panel.page-switcher .modal-cuckoo .modal-form .page-switcher__nav > button.modal-submit:hover:not(.active),
+.modal-cuckoo .modal-form .list-panel.page-switcher .page-switcher__nav > button.modal-submit:hover:not(.active),
+.page-switcher.list-panel__widget .modal-cuckoo .modal-form .page-switcher__nav > button.modal-submit:hover:not(.active),
+.modal-cuckoo .modal-form .page-switcher.list-panel__widget .page-switcher__nav > button.modal-submit:hover:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .button--sm:hover:not(.active),
 .page-switcher.list-panel__widget .page-switcher__nav > .button--sm:hover:not(.active),
 .list-panel.page-switcher .page-switcher__nav > .process-tree__search-submit:hover:not(.active),
@@ -14252,23 +14252,50 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
     color: #4a87f7;
 }
 
+.button.variation-blue,
+.variation-blue.button--lg,
+.modal-cuckoo .modal-form button.variation-blue.modal-submit,
+.variation-blue.button--sm,
+.list-panel .panel-title .variation-blue.button,
+.list-panel__widget .panel-title .variation-blue.button,
+.variation-blue.process-tree__search-submit
+{
+    border: 1px solid #528fff;
+    background-color: #6297f8;
+    box-shadow: 0 1px 0 #4f7ccf;
+}
+
+.button.variation-grey,
+.variation-grey.button--lg,
+.modal-cuckoo .modal-form button.variation-grey.modal-submit,
+.variation-grey.button--sm,
+.list-panel .panel-title .variation-grey.button,
+.list-panel__widget .panel-title .variation-grey.button,
+.variation-grey.process-tree__search-submit
+{
+    color: #757575;
+    border: 1px solid #ebebeb;
+    background-color: #fff;
+    box-shadow: 0 1px 0 #c5c5c5;
+}
+
 .button .fa,
 .button--lg .fa,
-.modal-cuckoo .modal-form button[type='submit'] .fa,
+.modal-cuckoo .modal-form button.modal-submit .fa,
 .button--sm .fa,
 .list-panel .panel-title .button .fa,
 .list-panel__widget .panel-title .button .fa,
 .process-tree__search-submit .fa,
 .button .custom-select:after,
 .button--lg .custom-select:after,
-.modal-cuckoo .modal-form button[type='submit'] .custom-select:after,
+.modal-cuckoo .modal-form button.modal-submit .custom-select:after,
 .button--sm .custom-select:after,
 .list-panel .panel-title .button .custom-select:after,
 .list-panel__widget .panel-title .button .custom-select:after,
 .process-tree__search-submit .custom-select:after,
 .button .dns-badge__content:before,
 .button--lg .dns-badge__content:before,
-.modal-cuckoo .modal-form button[type='submit'] .dns-badge__content:before,
+.modal-cuckoo .modal-form button.modal-submit .dns-badge__content:before,
 .button--sm .dns-badge__content:before,
 .list-panel .panel-title .button .dns-badge__content:before,
 .list-panel__widget .panel-title .button .dns-badge__content:before,
@@ -14277,8 +14304,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-table#submission-task-table .button .status.status-reported:before,
 .button--lg .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--lg .status.status-reported:before,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-table#submission-task-table .status.status-reported:before,
-.cuckoo-table#submission-task-table .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-table#submission-task-table .status.status-reported:before,
+.cuckoo-table#submission-task-table .modal-cuckoo .modal-form button.modal-submit .status.status-reported:before,
 .button--sm .cuckoo-table#submission-task-table .status.status-reported:before,
 .cuckoo-table#submission-task-table .button--sm .status.status-reported:before,
 .list-panel .panel-title .button .cuckoo-table#submission-task-table .status.status-reported:before,
@@ -14291,8 +14318,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 #submission-task-table.cuckoo-table__fullscreen .button .status.status-reported:before,
 .button--lg #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--lg .status.status-reported:before,
-.modal-cuckoo .modal-form button[type='submit'] #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
-#submission-task-table.cuckoo-table__fullscreen .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
+.modal-cuckoo .modal-form button.modal-submit #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
+#submission-task-table.cuckoo-table__fullscreen .modal-cuckoo .modal-form button.modal-submit .status.status-reported:before,
 .button--sm #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
 #submission-task-table.cuckoo-table__fullscreen .button--sm .status.status-reported:before,
 .list-panel .panel-title .button #submission-task-table.cuckoo-table__fullscreen .status.status-reported:before,
@@ -14305,8 +14332,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .network-display__table > table#submission-task-table .button .status.status-reported:before,
 .button--lg .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--lg .status.status-reported:before,
-.modal-cuckoo .modal-form button[type='submit'] .network-display__table > table#submission-task-table .status.status-reported:before,
-.network-display__table > table#submission-task-table .modal-cuckoo .modal-form button[type='submit'] .status.status-reported:before,
+.modal-cuckoo .modal-form button.modal-submit .network-display__table > table#submission-task-table .status.status-reported:before,
+.network-display__table > table#submission-task-table .modal-cuckoo .modal-form button.modal-submit .status.status-reported:before,
 .button--sm .network-display__table > table#submission-task-table .status.status-reported:before,
 .network-display__table > table#submission-task-table .button--sm .status.status-reported:before,
 .list-panel .panel-title .button .network-display__table > table#submission-task-table .status.status-reported:before,
@@ -14317,14 +14344,14 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .network-display__table > table#submission-task-table .process-tree__search-submit .status.status-reported:before,
 .button .cuckoo-analysis__panel--toggle:before,
 .button--lg .cuckoo-analysis__panel--toggle:before,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-analysis__panel--toggle:before,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-analysis__panel--toggle:before,
 .button--sm .cuckoo-analysis__panel--toggle:before,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:before,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:before,
 .process-tree__search-submit .cuckoo-analysis__panel--toggle:before,
 .button .cuckoo-analysis__panel--toggle:after,
 .button--lg .cuckoo-analysis__panel--toggle:after,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-analysis__panel--toggle:after,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-analysis__panel--toggle:after,
 .button--sm .cuckoo-analysis__panel--toggle:after,
 .list-panel .panel-title .button .cuckoo-analysis__panel--toggle:after,
 .list-panel__widget .panel-title .button .cuckoo-analysis__panel--toggle:after,
@@ -14333,8 +14360,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files ul .button div:before,
 .button--lg .cuckoo-files ul div:before,
 .cuckoo-files ul .button--lg div:before,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files ul div:before,
-.cuckoo-files ul .modal-cuckoo .modal-form button[type='submit'] div:before,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-files ul div:before,
+.cuckoo-files ul .modal-cuckoo .modal-form button.modal-submit div:before,
 .button--sm .cuckoo-files ul div:before,
 .cuckoo-files ul .button--sm div:before,
 .list-panel .panel-title .button .cuckoo-files ul div:before,
@@ -14347,8 +14374,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files #selection-overview .button .extension-select:after,
 .button--lg .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--lg .extension-select:after,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files #selection-overview .extension-select:after,
-.cuckoo-files #selection-overview .modal-cuckoo .modal-form button[type='submit'] .extension-select:after,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-files #selection-overview .extension-select:after,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-form button.modal-submit .extension-select:after,
 .button--sm .cuckoo-files #selection-overview .extension-select:after,
 .cuckoo-files #selection-overview .button--sm .extension-select:after,
 .list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:after,
@@ -14361,8 +14388,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .cuckoo-files #selection-overview .button .extension-select:before,
 .button--lg .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--lg .extension-select:before,
-.modal-cuckoo .modal-form button[type='submit'] .cuckoo-files #selection-overview .extension-select:before,
-.cuckoo-files #selection-overview .modal-cuckoo .modal-form button[type='submit'] .extension-select:before,
+.modal-cuckoo .modal-form button.modal-submit .cuckoo-files #selection-overview .extension-select:before,
+.cuckoo-files #selection-overview .modal-cuckoo .modal-form button.modal-submit .extension-select:before,
 .button--sm .cuckoo-files #selection-overview .extension-select:before,
 .cuckoo-files #selection-overview .button--sm .extension-select:before,
 .list-panel .panel-title .button .cuckoo-files #selection-overview .extension-select:before,
@@ -14375,8 +14402,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .flex-form__header .button .custom-checkbox > input + span,
 .button--lg .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--lg .custom-checkbox > input + span,
-.modal-cuckoo .modal-form button[type='submit'] .flex-form__header .custom-checkbox > input + span,
-.flex-form__header .modal-cuckoo .modal-form button[type='submit'] .custom-checkbox > input + span,
+.modal-cuckoo .modal-form button.modal-submit .flex-form__header .custom-checkbox > input + span,
+.flex-form__header .modal-cuckoo .modal-form button.modal-submit .custom-checkbox > input + span,
 .button--sm .flex-form__header .custom-checkbox > input + span,
 .flex-form__header .button--sm .custom-checkbox > input + span,
 .list-panel .panel-title .button .flex-form__header .custom-checkbox > input + span,
@@ -14387,7 +14414,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .flex-form__header .process-tree__search-submit .custom-checkbox > input + span,
 .button .breadcrumbs > li:not(:last-child):after,
 .button--lg .breadcrumbs > li:not(:last-child):after,
-.modal-cuckoo .modal-form button[type='submit'] .breadcrumbs > li:not(:last-child):after,
+.modal-cuckoo .modal-form button.modal-submit .breadcrumbs > li:not(:last-child):after,
 .button--sm .breadcrumbs > li:not(:last-child):after,
 .list-panel .panel-title .button .breadcrumbs > li:not(:last-child):after,
 .list-panel__widget .panel-title .button .breadcrumbs > li:not(:last-child):after,
@@ -14396,8 +14423,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button--lg input[type='radio'] + span:before,
-.modal-cuckoo .modal-form button[type='submit'] .list-panel .list-group-option input[type='radio'] + span:before,
-.list-panel .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='radio'] + span:before,
+.modal-cuckoo .modal-form button.modal-submit .list-panel .list-group-option input[type='radio'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-form button.modal-submit input[type='radio'] + span:before,
 .button--sm .list-panel .list-group-option input[type='radio'] + span:before,
 .list-panel .list-group-option .button--sm input[type='radio'] + span:before,
 .list-panel .panel-title .button .list-group-option input[type='radio'] + span:before,
@@ -14410,8 +14437,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .list-group-option .button input[type='radio'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='radio'] + span:before,
-.modal-cuckoo .modal-form button[type='submit'] .list-panel__widget .list-group-option input[type='radio'] + span:before,
-.list-panel__widget .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='radio'] + span:before,
+.modal-cuckoo .modal-form button.modal-submit .list-panel__widget .list-group-option input[type='radio'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-form button.modal-submit input[type='radio'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='radio'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='radio'] + span:before,
 .list-panel .panel-title .button .list-panel__widget .list-group-option input[type='radio'] + span:before,
@@ -14426,9 +14453,9 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .button--lg
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--lg input[type='checkbox'] + span:before,
-.modal-cuckoo .modal-form button[type='submit']
+.modal-cuckoo .modal-form button.modal-submit
 .list-panel .list-group-option input[type='checkbox'] + span:before,
-.list-panel .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='checkbox'] + span:before,
+.list-panel .list-group-option .modal-cuckoo .modal-form button.modal-submit input[type='checkbox'] + span:before,
 .button--sm
 .list-panel .list-group-option input[type='checkbox'] + span:before,
 .list-panel .list-group-option .button--sm input[type='checkbox'] + span:before,
@@ -14444,8 +14471,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .list-group-option .button input[type='checkbox'] + span:before,
 .button--lg .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--lg input[type='checkbox'] + span:before,
-.modal-cuckoo .modal-form button[type='submit'] .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
-.list-panel__widget .list-group-option .modal-cuckoo .modal-form button[type='submit'] input[type='checkbox'] + span:before,
+.modal-cuckoo .modal-form button.modal-submit .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
+.list-panel__widget .list-group-option .modal-cuckoo .modal-form button.modal-submit input[type='checkbox'] + span:before,
 .button--sm .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
 .list-panel__widget .list-group-option .button--sm input[type='checkbox'] + span:before,
 .list-panel .panel-title .button .list-panel__widget .list-group-option input[type='checkbox'] + span:before,
@@ -14460,8 +14487,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 
 body.cyborg .button,
 body.cyborg .button--lg,
-body.cyborg .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form body.cyborg button[type='submit'],
+body.cyborg .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form body.cyborg button.modal-submit,
 body.cyborg .button--sm,
 body.cyborg .list-panel .panel-title .button,
 .list-panel .panel-title body.cyborg .button,
@@ -14470,6 +14497,23 @@ body.cyborg .list-panel__widget .panel-title .button,
 body.cyborg .process-tree__search-submit
 {
     color: #fff;
+}
+
+.button-nav
+{
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.button-nav > *
+{
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.button-nav__right
+{
+    text-align: right;
 }
 
 /*
@@ -17380,8 +17424,8 @@ body.cyborg .app-error__balloon:before
 
 body.cyborg .app-error__balloon .button,
 body.cyborg .app-error__balloon .button--lg,
-body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit'],
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit,
 body.cyborg .app-error__balloon .button--sm,
 body.cyborg .app-error__balloon .process-tree__search-submit
 {
@@ -17390,8 +17434,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit
 
 body.cyborg .app-error__balloon .button:not(.inversed),
 body.cyborg .app-error__balloon .button--lg:not(.inversed),
-body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit']:not(.inversed),
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit:not(.inversed),
 body.cyborg .app-error__balloon .button--sm:not(.inversed),
 body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
@@ -17400,8 +17444,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed)
 
 body.cyborg .app-error__balloon .button:not(.inversed):hover,
 body.cyborg .app-error__balloon .button--lg:not(.inversed):hover,
-body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed):hover,
-.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit']:not(.inversed):hover,
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed):hover,
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit:not(.inversed):hover,
 body.cyborg .app-error__balloon .button--sm:not(.inversed):hover,
 body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
@@ -17411,8 +17455,8 @@ body.cyborg .app-error__balloon .process-tree__search-submit:not(.inversed):hove
 
 body.cyborg .app-error__balloon .button:hover,
 body.cyborg .app-error__balloon .button--lg:hover,
-body.cyborg .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:hover,
-.modal-cuckoo .modal-form body.cyborg .app-error__balloon button[type='submit']:hover,
+body.cyborg .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:hover,
+.modal-cuckoo .modal-form body.cyborg .app-error__balloon button.modal-submit:hover,
 body.cyborg .app-error__balloon .button--sm:hover,
 body.cyborg .app-error__balloon .process-tree__search-submit:hover
 {
@@ -17450,8 +17494,8 @@ body.night .app-error__balloon:before
 
 body.night .app-error__balloon .button,
 body.night .app-error__balloon .button--lg,
-body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit'],
+body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit,
 body.night .app-error__balloon .button--sm,
 body.night .app-error__balloon .process-tree__search-submit
 {
@@ -17460,8 +17504,8 @@ body.night .app-error__balloon .process-tree__search-submit
 
 body.night .app-error__balloon .button:not(.inversed),
 body.night .app-error__balloon .button--lg:not(.inversed),
-body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed),
-.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit']:not(.inversed),
+body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed),
+.modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit:not(.inversed),
 body.night .app-error__balloon .button--sm:not(.inversed),
 body.night .app-error__balloon .process-tree__search-submit:not(.inversed)
 {
@@ -17470,8 +17514,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed)
 
 body.night .app-error__balloon .button:not(.inversed):hover,
 body.night .app-error__balloon .button--lg:not(.inversed):hover,
-body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:not(.inversed):hover,
-.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit']:not(.inversed):hover,
+body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:not(.inversed):hover,
+.modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit:not(.inversed):hover,
 body.night .app-error__balloon .button--sm:not(.inversed):hover,
 body.night .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 {
@@ -17481,8 +17525,8 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed):hover
 
 body.night .app-error__balloon .button:hover,
 body.night .app-error__balloon .button--lg:hover,
-body.night .app-error__balloon .modal-cuckoo .modal-form button[type='submit']:hover,
-.modal-cuckoo .modal-form body.night .app-error__balloon button[type='submit']:hover,
+body.night .app-error__balloon .modal-cuckoo .modal-form button.modal-submit:hover,
+.modal-cuckoo .modal-form body.night .app-error__balloon button.modal-submit:hover,
 body.night .app-error__balloon .button--sm:hover,
 body.night .app-error__balloon .process-tree__search-submit:hover
 {
@@ -24335,10 +24379,10 @@ body.night .app-message
 
 .list-panel .panel-title .button--lg,
 .list-panel__widget .panel-title .button--lg,
-.list-panel .panel-title .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form .list-panel .panel-title button[type='submit'],
-.list-panel__widget .panel-title .modal-cuckoo .modal-form button[type='submit'],
-.modal-cuckoo .modal-form .list-panel__widget .panel-title button[type='submit'],
+.list-panel .panel-title .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form .list-panel .panel-title button.modal-submit,
+.list-panel__widget .panel-title .modal-cuckoo .modal-form button.modal-submit,
+.modal-cuckoo .modal-form .list-panel__widget .panel-title button.modal-submit,
 .list-panel .panel-title .button--sm,
 .list-panel__widget .panel-title .button--sm,
 .list-panel .panel-title .button,
@@ -24763,6 +24807,17 @@ body.night .modal-cuckoo .modal-content > *[class^='modal-']:before
     flex-basis: 50%;
 }
 
+.modal-cuckoo .modal-form .form-col.fill
+{
+    -ms-flex-preferred-size: 100%;
+    flex-basis: 100%;
+}
+
+.modal-cuckoo .modal-form .form-col > fieldset:last-child
+{
+    margin-bottom: 0;
+}
+
 .modal-cuckoo .modal-form textarea,
 .modal-cuckoo .modal-form input
 {
@@ -24862,7 +24917,7 @@ body.night .modal-cuckoo .modal-form fieldset input
     border-color: #f00;
 }
 
-.modal-cuckoo .modal-form button[type='submit']
+.modal-cuckoo .modal-form button.modal-submit
 {
     margin: 5px 0;
     padding: 10px;
@@ -24872,19 +24927,19 @@ body.night .modal-cuckoo .modal-form fieldset input
     background-color: #a1eea3;
 }
 
-.modal-cuckoo .modal-form button[type='submit']:hover
+.modal-cuckoo .modal-form button.modal-submit:hover
 {
     color: inherit;
     border-color: #91d693;
     background-color: #99e29b;
 }
 
-body.cyborg .modal-cuckoo .modal-form button[type='submit']
+body.cyborg .modal-cuckoo .modal-form button.modal-submit
 {
     color: #2b712d;
 }
 
-body.night .modal-cuckoo .modal-form button[type='submit']
+body.night .modal-cuckoo .modal-form button.modal-submit
 {
     color: #2b712d;
 }
@@ -26318,6 +26373,12 @@ body.night .modal-cuckoo .modal-form__checkbox label
 #page-secret .modal-header h4 i
 {
     float: right;
+}
+
+#page-secret .modal-dialog
+{
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* 

@@ -1,4 +1,12 @@
-// window.addEventListener('DOMContentLoaded', function(e) {
-//   const modal = document.querySelector('#secret-modal');
-//   $(modal).modal('show');
-// });
+window.addEventListener('DOMContentLoaded', e => {
+
+  const modal  = document.querySelector('.modal-cuckoo');
+  const form   =    modal.querySelector('form.modal-dialog');
+  const secret =     form.querySelector('input#cuckoo-secret');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log('lets verify that key.');
+  });
+
+});
