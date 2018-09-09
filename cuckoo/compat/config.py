@@ -714,8 +714,8 @@ def _205_206(c):
 def _206_210(c):
     c["auxiliary"]["replay"]["certificate"] = "bin/cert.p12"
     # We'd like to provide a secure default, but let's not inconvenience
-    # upgrading users.
-    c["cuckoo"]["cuckoo"]["api_token"] = ""
+    # upgrading users. TODO Might need to revisited once we write back config.
+    c["cuckoo"]["cuckoo"]["api_token"] = None
     return c
 
 migrations = {

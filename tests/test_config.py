@@ -1164,6 +1164,9 @@ def test_migration_206_210():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[cuckoo]
+    """)
     Files.create(cwd("conf"), "auxiliary.conf", """
 [replay]
     """)
