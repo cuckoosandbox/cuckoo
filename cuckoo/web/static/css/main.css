@@ -14260,6 +14260,7 @@ body.night .app-error__balloon .process-tree__search-submit:not(.inversed),
 .list-panel__widget .panel-title .variation-blue.button,
 .variation-blue.process-tree__search-submit
 {
+    color: #fff;
     border: 1px solid #528fff;
     background-color: #6297f8;
     box-shadow: 0 1px 0 #4f7ccf;
@@ -24860,6 +24861,11 @@ body.night .modal-cuckoo .modal-content > *[class^='modal-']:before
     left: 10px;
 
     transition: all 150ms ease-in-out;
+}
+
+.modal-cuckoo .modal-form fieldset label .input-message
+{
+    float: right;
 }
 
 .modal-cuckoo .modal-form fieldset input

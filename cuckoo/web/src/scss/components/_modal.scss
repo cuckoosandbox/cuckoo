@@ -214,6 +214,8 @@
         font-style: italic;
         font-weight: 400;
         transition: all 150ms ease-in-out;
+
+        .input-message { float: right; }
       }
 
       input {
