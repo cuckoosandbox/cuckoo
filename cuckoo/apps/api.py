@@ -12,7 +12,7 @@ import socket
 import tarfile
 import zipfile
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, json
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
@@ -378,11 +378,25 @@ def tasks_report(task_id, report_format="json"):
     if not os.path.exists(report_path):
         return json_error(404, "Report not found")
 
-    if report_format == "json":
-        response = make_response(open(report_path, "rb").read())
+    elements = request.args.get("elements")
+    if report_format.lower() == "json":
+        report_content = open(report_path, "rb").read()
+        if elements is not None:
+            elements_content = json.loads(report_content).get(elements)
+            if elements_content is None:
+                return json_error(404, "'{0}' not found".format(elements))
+            else:
+                response = make_response(json.dumps(elements_content))
+                response.headers["Content-Type"] = "application/json"
+                return response
+        
+        response = make_response(report_content)
         response.headers["Content-Type"] = "application/json"
         return response
     else:
+        if elements is not None:
+            return json_error(404, "Get specific field is not available in HTML format,"\
+                              " try again with JSON format")
         return open(report_path, "rb").read()
 
 @app.route("/tasks/screenshots/<int:task_id>")
