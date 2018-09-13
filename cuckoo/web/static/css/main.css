@@ -26379,6 +26379,8 @@ body.night .modal-cuckoo .modal-form__checkbox label
 #page-secret .modal-header h4 i
 {
     float: right;
+
+    color: #6297f8;
 }
 
 #page-secret .modal-dialog
@@ -26403,6 +26405,26 @@ body.night .modal-cuckoo .modal-form__checkbox label
     float: right;
 
     color: #d91e18;
+}
+
+#page-secret .effect-slide
+{
+    transition: opacity 450ms ease-out, transform 650ms ease-out;
+    transform: translateY(0);
+
+    opacity: 1;
+}
+
+#page-secret .effect-slide-hold
+{
+    transform: translateY(-20px);
+
+    opacity: 0;
+}
+
+#page-secret .effect-slide[data-delay='1']
+{
+    transition-delay: 200ms;
 }
 
 /* 

@@ -12,8 +12,7 @@ window.addEventListener('DOMContentLoaded', function (e) {
   var smsg = secret.parentNode.querySelector('label .input-message');
   var action = modal.querySelectorAll('a[href^="action:"]');
   var more = modal.querySelector('[data-toggleable-col]');
-
-  console.log(secret.parentNode);
+  var effect = document.querySelectorAll('.effect-slide');
 
   var actions = {
     leave: function leave() {
@@ -71,6 +70,13 @@ window.addEventListener('DOMContentLoaded', function (e) {
       }
       return;
     }
+  });
+
+  // run the wooshies
+  [].forEach.call(effect, function (eff) {
+    setTimeout(function () {
+      eff.classList.remove('effect-slide-hold');
+    }, 100);
   });
 });
 //# sourceMappingURL=secret.js.map
