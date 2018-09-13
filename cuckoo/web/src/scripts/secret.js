@@ -11,6 +11,8 @@ window.addEventListener('DOMContentLoaded', e => {
   const action  = modal.querySelectorAll('a[href^="action:"]');
   const more    = modal.querySelector('[data-toggleable-col]');
 
+  console.log(secret.parentNode);
+
   const actions = {
     leave: () => window.close(),
     'toggle-info': el => {
@@ -37,6 +39,15 @@ window.addEventListener('DOMContentLoaded', e => {
     smsg.textContent = message;
   }
 
+  // forcibly prevent HTML5 'required' popup to not show, we will handle this ourself.
+  secret.addEventListener('invalid', (() => {
+    return e => {
+      e.preventDefault();
+      handleInvalidInput('You have to enter a key. This field is empty.')
+      secret.focus();
+    }
+  })(), true);
+
   // validates the user input / processes the input
   form.addEventListener('submit', e => {
 
@@ -46,7 +57,6 @@ window.addEventListener('DOMContentLoaded', e => {
       // perform any pre-submit validations here
       let value = secret.value;
       if(!value.length) {
-        handleInvalidInput('You have to enter a key. This field is empty.')
         state.form_submitted = false;
       } else {
         // submit the form without the !form_submitted condition, this will

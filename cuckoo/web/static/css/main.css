@@ -26387,6 +26387,24 @@ body.night .modal-cuckoo .modal-form__checkbox label
     margin-bottom: 0;
 }
 
+#page-secret fieldset label
+{
+    width: 100%;
+    padding-right: 25px;
+}
+
+#page-secret .input-message
+{
+    font-size: .8em;
+
+    position: relative;
+    top: 3px;
+
+    float: right;
+
+    color: #d91e18;
+}
+
 /* 
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
