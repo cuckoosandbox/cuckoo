@@ -2,6 +2,10 @@
 
 window.addEventListener('DOMContentLoaded', function (e) {
 
+  var state = {
+    form_submitted: false
+  };
+
   var modal = document.querySelector('.modal-cuckoo');
   var form = modal.querySelector('form.modal-dialog');
   var secret = form.querySelector('input#cuckoo-secret');
@@ -41,12 +45,21 @@ window.addEventListener('DOMContentLoaded', function (e) {
 
   // validates the user input / processes the input
   form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var value = secret.value;
-    if (!value.length) {
-      handleInvalidInput('You have to enter a key. This field is empty.');
-    } else {
-      handleInvalidInput('This is not a good key.');
+
+    if (!state.form_submitted) {
+      e.preventDefault();
+      state.form_submitted = true;
+      // perform any pre-submit validations here
+      var value = secret.value;
+      if (!value.length) {
+        handleInvalidInput('You have to enter a key. This field is empty.');
+        state.form_submitted = false;
+      } else {
+        // submit the form without the !form_submitted condition, this will
+        // actually start the POST submission.
+        form.submit();
+      }
+      return;
     }
   });
 });
