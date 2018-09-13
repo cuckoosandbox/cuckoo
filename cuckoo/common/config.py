@@ -223,6 +223,7 @@ class Config(object):
                     allow_empty=True
                 ),
                 "api_token": String(allow_empty=True),
+                "web_secret": String(allow_empty=True),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=False

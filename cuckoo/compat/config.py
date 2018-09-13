@@ -716,6 +716,7 @@ def _206_210(c):
     # We'd like to provide a secure default, but let's not inconvenience
     # upgrading users. TODO Might need to revisited once we write back config.
     c["cuckoo"]["cuckoo"]["api_token"] = None
+    c["cuckoo"]["cuckoo"]["web_secret"] = None
     return c
 
 migrations = {
