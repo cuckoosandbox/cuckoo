@@ -1174,6 +1174,8 @@ def test_migration_206_210():
     cfg = migrate(cfg, "2.0.6", "2.1.0")
 
     assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
+    assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
+    assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
 
 class FullMigration(object):
     DIRPATH = None

@@ -222,8 +222,8 @@ class Config(object):
                     exists=True, writable=True, readable=False,
                     allow_empty=True
                 ),
-                "api_token": String(allow_empty=True),
-                "web_secret": String(allow_empty=True),
+                "api_token": String(allow_empty=True, sanitize=True),
+                "web_secret": String(allow_empty=True, sanitize=True),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=False

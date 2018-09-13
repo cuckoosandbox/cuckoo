@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', function (e) {
 
   var modal = document.querySelector('.modal-cuckoo');
   var form = modal.querySelector('form.modal-dialog');
-  var secret = form.querySelector('input#cuckoo-secret');
+  var secret = form.querySelector('input#secret');
   var smsg = secret.parentNode.querySelector('label .input-message');
   var action = modal.querySelectorAll('a[href^="action:"]');
   var more = modal.querySelector('[data-toggleable-col]');

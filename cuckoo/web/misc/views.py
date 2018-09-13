@@ -3,12 +3,12 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from django.shortcuts import redirect
-from django.views.decorators.http import require_safe
+from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.config import config
 from cuckoo.web.utils import render_template
 
-@require_safe
+@require_http_methods(["GET", "POST"])
 def secret(request):
     if request.method == "GET":
         return render_template(request, "secret.html")
