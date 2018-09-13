@@ -12,7 +12,7 @@ window.addEventListener('DOMContentLoaded', function (e) {
   var smsg = secret.parentNode.querySelector('label .input-message');
   var action = modal.querySelectorAll('a[href^="action:"]');
   var more = modal.querySelector('[data-toggleable-col]');
-  var effect = document.querySelectorAll('.effect-slide');
+  var effect = document.querySelectorAll('.effect');
 
   var actions = {
     leave: function leave() {
@@ -76,6 +76,7 @@ window.addEventListener('DOMContentLoaded', function (e) {
   [].forEach.call(effect, function (eff) {
     setTimeout(function () {
       eff.classList.remove('effect-slide-hold');
+      eff.classList.remove('effect-fade-hold');
     }, 100);
   });
 });

@@ -26409,7 +26409,7 @@ body.night .modal-cuckoo .modal-form__checkbox label
 
 #page-secret .effect-slide
 {
-    transition: opacity 450ms ease-out, transform 650ms ease-out;
+    transition: opacity 450ms linear, transform 650ms linear;
     transform: translateY(0);
 
     opacity: 1;
@@ -26422,9 +26422,66 @@ body.night .modal-cuckoo .modal-form__checkbox label
     opacity: 0;
 }
 
-#page-secret .effect-slide[data-delay='1']
+#page-secret .effect-fade
 {
-    transition-delay: 200ms;
+    transition: opacity 300ms linear;
+
+    opacity: 1;
+}
+
+#page-secret .effect-fade-hold
+{
+    opacity: 0;
+}
+
+#page-secret .effect[data-effect-delay='1']
+{
+    transition-delay: 180ms;
+}
+
+#page-secret .effect[data-effect-delay='2']
+{
+    transition-delay: 360ms;
+}
+
+#page-secret .effect[data-effect-delay='3']
+{
+    transition-delay: 540ms;
+}
+
+#page-secret .effect[data-effect-delay='4']
+{
+    transition-delay: 720ms;
+}
+
+#page-secret .effect[data-effect-delay='5']
+{
+    transition-delay: 900ms;
+}
+
+#page-secret .effect[data-effect-delay='6']
+{
+    transition-delay: 1080ms;
+}
+
+#page-secret .effect[data-effect-delay='7']
+{
+    transition-delay: 1260ms;
+}
+
+#page-secret .effect[data-effect-delay='8']
+{
+    transition-delay: 1440ms;
+}
+
+#page-secret .effect[data-effect-delay='9']
+{
+    transition-delay: 1620ms;
+}
+
+#page-secret .effect[data-effect-delay='10']
+{
+    transition-delay: 1800ms;
 }
 
 /* 

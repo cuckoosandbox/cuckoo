@@ -10,7 +10,7 @@ window.addEventListener('DOMContentLoaded', e => {
   const smsg    = secret.parentNode.querySelector('label .input-message');
   const action  = modal.querySelectorAll('a[href^="action:"]');
   const more    = modal.querySelector('[data-toggleable-col]');
-  const effect  = document.querySelectorAll('.effect-slide');
+  const effect  = document.querySelectorAll('.effect');
 
   const actions = {
     leave: () => window.close(),
@@ -71,6 +71,7 @@ window.addEventListener('DOMContentLoaded', e => {
   [].forEach.call(effect, eff => {
     setTimeout(() => {
       eff.classList.remove('effect-slide-hold');
+      eff.classList.remove('effect-fade-hold');
     }, 100);
   });
 
