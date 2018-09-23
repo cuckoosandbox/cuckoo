@@ -520,15 +520,15 @@ class RunSignatures(object):
         # Iterate through all Extracted matches.
         self.process_extracted()
 
+        # TODO This logic should certainly be moved elsewhere.
+        self.c = Configuration()
+        for extracted in self.results.get("extracted", []):
+            if extracted["category"] == "config":
+                self.c.add(extracted["info"])
+
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
-
-        # TODO This logic should certainly be moved elsewhere.
-        c = Configuration()
-        for extracted in self.results.get("extracted", []):
-            if extracted["category"] == "config":
-                c.add(extracted["info"])
 
         score, configs = 0, []
         for signature in self.signatures:
@@ -547,7 +547,7 @@ class RunSignatures(object):
 
             for mark in signature.marks:
                 if mark["type"] == "config":
-                    c.add(mark["config"])
+                    self.c.add(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -558,10 +558,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if c.results():
+        if self.c.results():
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = c.results()
+                self.results["metadata"]["cfgextr"] = self.c.results()
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 
