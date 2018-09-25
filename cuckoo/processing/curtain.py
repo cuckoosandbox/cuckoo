@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 
 __author__  = "Jeff White [karttoon] @noottrak"
 __email__   = "jwhite@paloaltonetworks.com"
-__version__ = "1.0.7"
-__date__    = "27JUN2018"
+__version__ = "1.0.8"
+__date__    = "25SEP2018"
 
 def buildBehaviors(entry, behaviorTags):
     # Generates possible code injection variations
@@ -108,6 +108,8 @@ def buildBehaviors(entry, behaviorTags):
     behaviorCol["AMSI Bypass"] = [["System.Management.Automation.AMSIUtils", "amsiInitFailed"],
                                   ["Expect100Continue"]]
 
+    behaviorCol["Clear Logs"] = [["GlobalSession.ClearLog"]]
+
     for event in entry:
 
         for message in entry[event]:
@@ -130,11 +132,15 @@ def buildBehaviors(entry, behaviorTags):
 
     return behaviorTags
 
-def charReplace(inputString, MODFLAG):
+def formatReplace(inputString, MODFLAG):
     # OLD: ("{1}{0}{2}" -F"AMP","EX","LE")
     # NEW: "EXAMPLE"
+
     # Find group of obfuscated string
-    obfGroup = re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF].+?\'.+?\'\)(?!(\"|\'|;))",inputString).group()
+    obfGroup = re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ fF-].+?\'.+?\'\)(?!(\"|\'|;))",inputString).group()
+
+    # There are issues with multiple nested groupings that I haven't been able to solve yet, but doesn't change the final output of the PS script
+    #obfGroup = re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF]+?(\"|\').+?(\"|\')(?=\)([!.\"\';)( ]))", inputString).group()
 
     # Build index and string lists
     indexList = [int(x) for x in re.findall("\d+", obfGroup.split("-")[0])]
@@ -154,13 +160,26 @@ def charReplace(inputString, MODFLAG):
     # Build output string
     stringOutput = ""
     for value in indexList:
-        stringOutput += stringList[value]
+        try:
+            stringOutput += stringList[value]
+        except:
+            pass
     stringOutput = '"' + stringOutput + '")'
-    # Replace original input with obfuscated group replaced
 
+    # Replace original input with obfuscated group replaced
     if MODFLAG == 0:
         MODFLAG = 1
     return inputString.replace(obfGroup, stringOutput), MODFLAG
+
+def charReplace(inputString, MODFLAG):
+    # OLD: [char]101
+    # NEW: e
+    for value in re.findall("\[[Cc][Hh][Aa][Rr]\][0-9]{1,3}", inputString):
+        inputString = inputString.replace(value, '"%s"' % chr(int(value.split("]")[1])))
+
+    if MODFLAG == 0:
+        MODFLAG = 1
+    return inputString, MODFLAG
 
 def spaceReplace(inputString, MODFLAG):
     # OLD: $var=    "EXAMPLE"
@@ -424,14 +443,17 @@ class Curtain(Processing):
                     while re.search("[\x20]{2,}", ALTMSG):
                         ALTMSG, MODFLAG = spaceReplace(ALTMSG, MODFLAG)
 
-                    # One run pre charPreplace
+                    if re.search ("\[[Cc][Hh][Aa][Rr]\][0-9]{1,3}", ALTMSG):
+                        ALTMSG, MODFLAG = charReplace(ALTMSG, MODFLAG)
+
+                    # One run pre formatReplace
                     if re.search("(\"\+\"|\'\+\')", ALTMSG):
                         ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
 
                     while re.search("(\"|\')(\{[0-9]{1,2}\})+(\"|\')[ -fF]+(\'.+?\'\))", ALTMSG):
-                        ALTMSG, MODFLAG = charReplace(ALTMSG, MODFLAG)
+                        ALTMSG, MODFLAG = formatReplace(ALTMSG, MODFLAG)
 
-                    # One run post charReplace for new strings
+                    # One run post formatReplace for new strings
                     if re.search("(\"\+\"|\'\+\')", ALTMSG):
                         ALTMSG, MODFLAG = joinStrings(ALTMSG, MODFLAG)
 
@@ -451,6 +473,14 @@ class Curtain(Processing):
                     pids[PID]["events"].append({str(COUNTER): {"original": MESSAGE.strip(), "altered": ALTMSG}})
 
         remove = []
+
+        # Find Curtain PID if it was picked up in log
+        for pid in pids:
+            for event in pids[pid]["events"]:
+                for entry in event.values():
+                    if "Process { [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog" in entry["original"]:
+                        if pid not in remove:
+                            remove.append(pid)
 
         # Find empty PID
         for pid in pids:
