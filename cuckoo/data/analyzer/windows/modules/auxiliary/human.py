@@ -52,7 +52,7 @@ def foreach_child(hwnd, lparam):
         "launch", "lancer",
         "save", "sauvegarder",
         "download", "load", "charger",
-        "end", "fin", "terminer"
+        "end", "fin", "terminer",
         "later",
         "finish",
         "end",
