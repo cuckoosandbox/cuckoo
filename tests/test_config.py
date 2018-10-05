@@ -1167,6 +1167,9 @@ def test_migration_206_210():
     Files.create(cwd("conf"), "cuckoo.conf", """
 [cuckoo]
     """)
+    Files.create(cwd("conf"), "processing.conf", """
+[irma]
+    """)
     Files.create(cwd("conf"), "auxiliary.conf", """
 [replay]
     """)
@@ -1176,6 +1179,7 @@ def test_migration_206_210():
     assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
     assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
     assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
+    assert cfg["processing"]["irma"]["probes"] is None
 
 class FullMigration(object):
     DIRPATH = None

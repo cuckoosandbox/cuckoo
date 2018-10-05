@@ -60,6 +60,8 @@ class Irma(Processing):
         params = {
             "force": force,
         }
+        if self.options.get("probes"):
+            params["probes"] = self.options.get("probes")
         url = urlparse.urljoin(
             self.url, "/api/v1.1/scans/%s/launch" % init.get("id")
         )
