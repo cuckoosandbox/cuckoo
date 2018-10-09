@@ -133,4 +133,15 @@ class Irma(Processing):
                 log.debug("Ignoring PE results at index {0}".format(idx))
                 results["probe_results"][idx]["results"] = "... scrapped ..."
 
+            """ When VT results comes back with 'detected by 0/58' then it gets
+            catched as malicious with signature due to the fact that the result
+            exists. This is a workaround to override that tragedy and make it
+            compatible with other results.
+            """
+            if result["name"] == "VirusTotal" \
+                    and results["probe_results"][idx]["results"].startswith("detected by 0/"):
+                log.debug("Fixing empty match from VT")
+                results["probe_results"][idx]["status"] = 0
+                results["probe_results"][idx]["results"] = None
+
         return results
