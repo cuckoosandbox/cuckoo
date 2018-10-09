@@ -132,6 +132,9 @@ command will suffice to install `tcpdump`_::
 Tcpdump requires root privileges, but since you don't want Cuckoo to run as
 root you'll have to set specific Linux capabilities to the binary::
 
+    $ sudo groupadd pcap
+    $ sudo usermod -a -G pcap cuckoo
+    $ sudo chgrp pcap /usr/sbin/tcpdump
     $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 You can verify the results of the last command with::
