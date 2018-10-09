@@ -293,3 +293,4 @@ e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
 
 # TBD
 93727e778dadc13d83cea61a9ea88bf6b5906686 analyzer/windows/modules/auxiliary/human.py
+6e6680e26bf1cf41909a4efcbd86917cf4b14603 analyzer/windows/modules/packages/pub.py
