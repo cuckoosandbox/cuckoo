@@ -94,7 +94,7 @@ Finally; a mock ``manage.py`` file needs to be created in order for Pycharm to s
       execute_from_command_line(sys.argv)
 
 
-Go to File->Settings->Langauges & Frameworks->Django and;
+Go to File->Settings->Languages & Frameworks->Django and;
 
 - **Django Project root** - ``cuckoo/web``
 - **Settings** - ``web/settings.py``
