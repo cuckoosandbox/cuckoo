@@ -336,6 +336,9 @@ class Config(object):
             "reboot": {
                 "enabled": Boolean(True),
             },
+            "curtain": {
+                "enabled": Boolean(True),
+            },
         },
         "avd": {
             "avd": {
@@ -542,6 +545,9 @@ class Config(object):
                 "enabled": Boolean(True),
             },
             "buffer": {
+                "enabled": Boolean(True),
+            },
+            "curtain": {
                 "enabled": Boolean(True),
             },
             "debug": {

@@ -24,6 +24,16 @@
 				<span>Static Analysis</span>
 			</a>
 		</li>
+                {% if report.analysis.curtain %}
+                    <li>
+                        <a href="{% url "analysis" report.analysis.info.id "curtain" %}"
+                            {% if env.view_kwards.page == "curtain" %} class="active" {% endif %}>
+                            <i class="fa fa-file-code-o"></i>
+                            <span>Curtain</span>
+                            <em>{{ report.analysis.curtain|length }}</em>
+                        </a>
+                    </li>
+                {% endif %}
 		<li>
 			<a href="{% url "analysis" report.analysis.info.id "extracted" %}"
 			{% if env.view_kwargs.page == 'extracted' %} class="active" {% endif %}>

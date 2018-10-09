@@ -34,7 +34,8 @@ class AnalysisRoutes:
             "memory": "memory/index",
             "procmemory": "procmemory/index",
             "options": "options/index",
-            "feedback": "feedback/index"
+            "feedback": "feedback/index",
+	    "curtain": "curtain/index"
         }
 
         if page in pages.keys():
