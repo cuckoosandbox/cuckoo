@@ -14,7 +14,7 @@ If you want to contribute to development, report a bug, make a feature request
 or ask a question, please first take a look at our `community guidelines`_.
 For development, please also take a look at the `contribution requirements`_.
 Make sure you check our existing Issues and Pull Requests and that you join
-our IRC at `#cuckoosandbox` on FreeNode.
+our `IRC or Slack channel <https://cuckoosandbox.org/discussion>`_.
 
 For setup instructions, please refer
 `to <https://cuckoo.sh/docs/installation/host/requirements.html>`_
